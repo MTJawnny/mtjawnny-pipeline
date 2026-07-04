@@ -139,15 +139,35 @@ def compose_text(card: dict, self_token: str) -> str:
 
 def download_cache() -> None:
     CACHE_LOCAL.parent.mkdir(parents=True, exist_ok=True)
+
+    # Check existence with `lsf` first so a genuinely-first-run empty cache
+    # (safe to proceed) can't be confused with a real failure to reach R2
+    # (network/DNS/auth) — the latter must halt loudly, not be silently
+    # treated as "first run" and burn 20-30 minutes re-embedding for nothing
+    # only to fail later at upload time anyway.
+    listing = subprocess.run(
+        ["rclone", "lsf", CACHE_REMOTE_FILE], capture_output=True, text=True
+    )
+    if listing.returncode != 0:
+        halt(
+            f"could not list {CACHE_REMOTE_FILE} to check for an existing cache "
+            f"(rclone lsf failed, not a confirmed first-run): {listing.stderr.strip()}"
+        )
+    if not listing.stdout.strip():
+        print("no cache found in R2 (confirmed first run) — starting from an empty cache")
+        return
+
     result = subprocess.run(
         ["rclone", "copy", CACHE_REMOTE_FILE, str(CACHE_LOCAL.parent)],
         capture_output=True,
         text=True,
     )
-    if result.returncode == 0 and CACHE_LOCAL.exists():
-        print(f"downloaded existing cache from R2: {CACHE_REMOTE_FILE}")
-    else:
-        print("no cache found in R2 (first run) — starting from an empty cache")
+    if result.returncode != 0 or not CACHE_LOCAL.exists():
+        halt(
+            f"{CACHE_REMOTE_FILE} exists in R2 but rclone copy failed to fetch it "
+            f"— refusing to proceed as if this were a first run: {result.stderr.strip()}"
+        )
+    print(f"downloaded existing cache from R2: {CACHE_REMOTE_FILE}")
 
 
 def load_cache_map() -> dict:
