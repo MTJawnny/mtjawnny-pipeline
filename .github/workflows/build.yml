@@ -46,6 +46,19 @@ jobs:
             region=auto \
             no_check_bucket=true
 
+      - name: "DEBUG (temporary): verify rclone config is clean"
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          echo "--- rclone config redacted (secrets masked by rclone itself) ---"
+          rclone config redacted r2
+          echo "--- secret lengths (length only, never contents) ---"
+          echo -n "R2_ACCOUNT_ID length: "; echo -n "$R2_ACCOUNT_ID" | wc -c
+          echo -n "R2_ACCESS_KEY_ID length: "; echo -n "$R2_ACCESS_KEY_ID" | wc -c
+          echo -n "R2_SECRET_ACCESS_KEY length: "; echo -n "$R2_SECRET_ACCESS_KEY" | wc -c
+
       - name: Smoke-test R2 connectivity
         run: rclone lsd r2:mtjawnny
 
