@@ -23,6 +23,15 @@ jobs:
       - name: Install rclone
         run: curl https://rclone.org/install.sh | sudo bash
 
+      - name: Work around GH-runner systemd-resolved DNS flakiness
+        # Go binaries (rclone) intermittently fail to resolve hosts through
+        # the runner's 127.0.0.53 systemd-resolved stub ("server misbehaving"),
+        # even when other tools (Python requests) resolve the same runner's
+        # DNS fine. Point resolv.conf at a real public resolver before any
+        # rclone network call happens. Known GH Actions runner flakiness,
+        # not specific to this repo's R2 config.
+        run: echo "nameserver 1.1.1.1" | sudo tee /etc/resolv.conf
+
       - name: Configure rclone remote (r2)
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -36,6 +45,9 @@ jobs:
             endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
             region=auto \
             no_check_bucket=true
+
+      - name: Smoke-test R2 connectivity
+        run: rclone lsd r2:mtjawnny
 
       - name: Fetch Scryfall bulk data (live)
         run: python3 pipeline/fetch.py
