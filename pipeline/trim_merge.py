@@ -67,6 +67,24 @@ def trim_card(card: dict, line_no: int) -> dict:
     trimmed["is_dfc"] = dfc
     trimmed["has_root_image"] = has_root_image(card)
 
+    faces = card.get("card_faces")
+    trimmed["card_faces"] = (
+        [
+            {
+                "name": face.get("name"),
+                "mana_cost": face.get("mana_cost"),
+                "type_line": face.get("type_line"),
+                "oracle_text": face.get("oracle_text"),
+                "power": face.get("power"),
+                "toughness": face.get("toughness"),
+                "loyalty": face.get("loyalty"),
+            }
+            for face in faces
+        ]
+        if faces
+        else None
+    )
+
     return trimmed
 
 

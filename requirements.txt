@@ -1,2 +1,7 @@
 requests
 pyyaml
+sentence-transformers
+torch
+numpy
+pandas
+pyarrow
