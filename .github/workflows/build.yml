@@ -1,0 +1,53 @@
+name: build
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "fetch step placeholder — pipeline/fetch.py"
+
+  trim_merge:
+    needs: fetch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "trim/merge step placeholder — pipeline/trim_merge.py"
+
+  embed:
+    needs: trim_merge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "embed step placeholder — pipeline/embed.py"
+
+  neighbors:
+    needs: embed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "neighbors step placeholder — pipeline/neighbors.py"
+
+  build:
+    needs: neighbors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "build_db + finisher_artifacts placeholder"
+
+  validate:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "validate step placeholder — pipeline/validate.py"
+
+  upload:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "upload step placeholder — pipeline/upload.py"

@@ -1,0 +1,5 @@
+# Pinned NOW even though embed.py is a stub — switching models later
+# invalidates all cached vectors, so this is a deliberate, versioned choice.
+model: BAAI/bge-small-en-v1.5
+input_recipe: "name. type_line. oracle_text (keywords)"
+self_name_token: "~"

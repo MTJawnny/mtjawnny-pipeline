@@ -1,0 +1,15 @@
+# Custom oracle_id-keyed card tags — the differentiator layer merged onto
+# trimmed Scryfall data by pipeline/trim_merge.py.
+#
+# Schema: top-level key is the card's oracle_id (from Scryfall bulk data).
+# Value is a mapping of arbitrary extra fields — roles, archetypes,
+# thesaurus synonyms, hand-tuned overrides, anything. All fields here
+# become additional columns/JSON on that card's trimmed record.
+#
+# Example (schema only — remove or replace before real entries land):
+# 00000000-0000-0000-0000-000000000000:
+#   role: ["example-role"]
+#   note: "why this override exists"
+
+e3afc704-220f-498f-9eaa-0821b17dc24c:  # Sakura-Tribe Elder
+  role: ["ramp"]
