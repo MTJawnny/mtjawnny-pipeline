@@ -4,50 +4,62 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  fetch:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "fetch step placeholder — pipeline/fetch.py"
-
-  trim_merge:
-    needs: fetch
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "trim/merge step placeholder — pipeline/trim_merge.py"
-
-  embed:
-    needs: trim_merge
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "embed step placeholder — pipeline/embed.py"
-
-  neighbors:
-    needs: embed
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "neighbors step placeholder — pipeline/neighbors.py"
-
   build:
-    needs: neighbors
     runs-on: ubuntu-latest
+    env:
+      RCLONE_REMOTE: "r2:"
     steps:
       - uses: actions/checkout@v4
-      - run: echo "build_db + finisher_artifacts placeholder"
 
-  validate:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "validate step placeholder — pipeline/validate.py"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
 
-  upload:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "upload step placeholder — pipeline/upload.py"
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone remote (r2)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          rclone config create r2 s3 \
+            provider=Cloudflare \
+            access_key_id="$R2_ACCESS_KEY_ID" \
+            secret_access_key="$R2_SECRET_ACCESS_KEY" \
+            endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            region=auto \
+            no_check_bucket=true
+
+      - name: Fetch Scryfall bulk data (live)
+        run: python3 pipeline/fetch.py
+
+      - name: Trim + merge tags
+        run: python3 pipeline/trim_merge.py
+
+      - name: Embed (incremental, cache pulled from R2)
+        run: python3 pipeline/embed.py
+
+      - name: Compute neighbors
+        run: python3 pipeline/neighbors.py
+
+      - name: Build cards.sqlite
+        run: python3 pipeline/build_db.py
+
+      - name: Build finisher artifacts
+        run: python3 pipeline/finisher_artifacts.py
+
+      - name: Build shards
+        run: python3 pipeline/shards.py
+
+      - name: Validate
+        run: python3 pipeline/validate.py
+
+      - name: Upload versioned artifacts + flip latest.json
+        run: python3 pipeline/upload.py

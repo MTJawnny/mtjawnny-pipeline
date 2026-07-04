@@ -1,0 +1,9 @@
+# Resolver proof test (plan 3.11 done-when): 1 resolved + 3 loud halts.
+# line 1: clean single-face card -> resolves
+# line 2: "Red Herring" matches 2 real (non-token) oracle_ids -> ambiguous halt
+# line 3: valid card, but slug "pris" is already pris.html in the site repo -> taken-slug halt
+# line 4: DFC card name with a typo ("Delver of Secret", missing the "s") -> zero-match halt (no fuzzy fallback, even this close)
+Sakura-Tribe Elder | sakura-tribe-elder
+Red Herring | red-herring
+Sol Ring | pris
+Delver of Secret | delver

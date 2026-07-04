@@ -1,0 +1,6 @@
+{
+  "_comment": "Known-card oracle-text panel for validate.py (plan 3.9). Verified against Scryfall oracle_cards bulk data, 2026-07-03. Text must match cards.sqlite exactly, including punctuation.",
+  "Sol Ring": "{T}: Add {C}{C}.",
+  "Pox": "Each player loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice. Round up each time.",
+  "Chains of Mephistopheles": "If a player would draw a card except the first one they draw in each of their draw steps, that player discards a card instead. If the player discards a card this way, they draw a card. If the player doesn't discard a card this way, they mill a card."
+}
