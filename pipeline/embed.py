@@ -14,6 +14,7 @@ cards are the face values joined with " // " in face order.
 import gzip
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -28,8 +29,9 @@ from sentence_transformers import SentenceTransformer
 RECIPE_PATH = Path("recipes/embedding.yaml")
 TRIMMED_PATH = Path("data/trimmed/cards.jsonl.gz")
 CACHE_LOCAL = Path("data/cache/embeddings.parquet")
-CACHE_REMOTE_FILE = "r2:mtjawnny/data/cache/embeddings.parquet"
-CACHE_REMOTE_DIR = "r2:mtjawnny/data/cache/"
+RCLONE_REMOTE = os.environ.get("RCLONE_REMOTE", "r2:")
+CACHE_REMOTE_FILE = f"{RCLONE_REMOTE}mtjawnny/data/cache/embeddings.parquet"
+CACHE_REMOTE_DIR = f"{RCLONE_REMOTE}mtjawnny/data/cache/"
 
 EXPECTED_MODEL = "BAAI/bge-small-en-v1.5"
 EXPECTED_DIM = 384

@@ -13,6 +13,7 @@ followed via jsonl_download_uri only.
 """
 import argparse
 import gzip
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -21,7 +22,8 @@ import requests
 
 USER_AGENT = "MTJawnnyPipeline/1.0 (mtjawnny.com)"
 BULK_DATA_URL = "https://api.scryfall.com/bulk-data"
-SNAPSHOT_BUCKET_PREFIX = "r2:mtjawnny/data/snapshots"
+RCLONE_REMOTE = os.environ.get("RCLONE_REMOTE", "r2:")
+SNAPSHOT_BUCKET_PREFIX = f"{RCLONE_REMOTE}mtjawnny/data/snapshots"
 OUT_DIR = Path("data/raw")
 
 ORACLE_CARDS_FILENAME = "oracle-cards.jsonl.gz"
