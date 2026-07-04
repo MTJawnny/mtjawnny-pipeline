@@ -5,3 +5,7 @@ data/
 *.sqlite
 __pycache__/
 .venv/
+.DS_Store
+*.pyc
+.pytest_cache/
+*.egg-info/
