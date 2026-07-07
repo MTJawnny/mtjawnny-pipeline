@@ -1,0 +1,20 @@
+# v2.7 viewer export -- one card name per line, exact Scryfall name.
+# Resolved against data/artifacts/cards.sqlite by emit_viewer.py; blank
+# lines and lines starting with # are ignored. An unresolvable name
+# (0 or >1 sqlite match, or a match not present in the jsonl corpus)
+# is printed and skipped -- this list does not need to be perfectly
+# curated to be usable.
+#
+# Seeded with the six Captain-approved anchors (TIER-ENGINE-STATE-AND-
+# V2.5-HANDOFF.md). Add more names below as the panel grows.
+Grand Abolisher
+Myrel, Shield of Argive
+Preordain
+Sol Ring
+Marisi, Breaker of the Coil
+Sakura-Tribe Elder
+
+# Ad hoc additions
+Zurgo, Thunder's Decree
+Delney, Streetwise Lookout
+Goldnight Commander

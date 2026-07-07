@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tier Engine Viewer (internal)</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --bg: #1b1420;
+    --panel: #241a2b;
+    --panel-alt: #2c2033;
+    --border: #4a3a52;
+    --text: #ede3d3;
+    --text-muted: #a8998a;
+    --accent: #b8874f;
+    --accent-strong: #d9a765;
+    --legal: #8a9a6b;
+    --illegal: #a25c4a;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+  }
+  body { padding: 16px 20px 60px; }
+  h1 {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.02em;
+    text-transform: uppercase; color: var(--accent-strong);
+    margin: 0 0 4px;
+  }
+  .subtitle { color: var(--text-muted); font-size: 12px; margin-bottom: 16px; }
+  .toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 10px 14px; margin-bottom: 16px;
+  }
+  .toolbar label { color: var(--text-muted); font-size: 12px; margin-right: 6px; }
+  select, input[type="checkbox"] { accent-color: var(--accent); }
+  select {
+    background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
+    padding: 4px 8px; font-family: var(--sans); font-size: 13px;
+  }
+  .toggle { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+  #status { color: var(--text-muted); font-size: 12px; }
+
+  .anchor-block {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 14px 16px; margin-bottom: 18px;
+  }
+  .anchor-name { font-size: 16px; font-weight: 700; color: var(--accent-strong); }
+  .anchor-meta { color: var(--text-muted); font-size: 12px; margin: 2px 0 8px; }
+  .anchor-text { white-space: pre-wrap; font-size: 13px; line-height: 1.45; }
+  .badge {
+    display: inline-block; padding: 1px 7px; font-size: 11px; font-weight: 600;
+    border: 1px solid; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .badge-legal { color: var(--legal); border-color: var(--legal); }
+  .badge-illegal { color: var(--illegal); border-color: var(--illegal); }
+  .badge-unknown { color: var(--text-muted); border-color: var(--border); }
+
+  .tier-section {
+    background: var(--panel); border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .tier-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: var(--panel-alt);
+  }
+  .tier-title { font-weight: 700; color: var(--accent-strong); font-size: 13px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .tier-counts { color: var(--text-muted); font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em;
+    color: var(--text-muted); padding: 6px 10px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--panel);
+  }
+  tbody tr.row { cursor: pointer; border-bottom: 1px solid var(--panel-alt); }
+  tbody tr.row:hover { background: var(--panel-alt); }
+  tbody tr.row.hidden-row { display: none; }
+  tbody td { padding: 6px 10px; vertical-align: top; }
+  td.pos { color: var(--text-muted); width: 2.5em; font-family: var(--mono); }
+  td.name { font-weight: 600; }
+  td.num { font-family: var(--mono); text-align: right; white-space: nowrap; }
+  tr.detail-row td {
+    background: var(--panel-alt); padding: 10px 14px; border-bottom: 1px solid var(--border);
+  }
+  tr.detail-row.hidden-row { display: none; }
+  .breakdown-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 6px; margin-bottom: 8px; font-family: var(--mono); font-size: 12px;
+  }
+  .breakdown-grid div span.k { color: var(--text-muted); display: block; font-size: 10px; text-transform: uppercase; }
+  .fragment-box {
+    font-family: var(--mono); font-size: 12px; background: var(--bg);
+    border: 1px solid var(--border); padding: 6px 8px; margin-top: 4px; white-space: pre-wrap;
+  }
+  .empty-note { padding: 14px; color: var(--text-muted); font-style: italic; }
+
+  .tier-section.tier3 { opacity: 0.82; }
+  .tier-section.tier3 .tier-title { color: var(--text-muted); font-weight: 600; }
+  .tier-section.tier3 .tier-header { background: var(--bg); }
+  .show-proposals-btn {
+    display: block; width: 100%; text-align: left; padding: 10px 14px;
+    background: transparent; border: none; border-top: 1px solid var(--border);
+    color: var(--accent); font-family: var(--sans); font-size: 12px; cursor: pointer;
+  }
+  .show-proposals-btn:hover { background: var(--panel-alt); color: var(--accent-strong); }
+  .tag-chip {
+    display: inline-block; font-family: var(--mono); font-size: 11px;
+    background: var(--bg); border: 1px solid var(--border); padding: 1px 6px;
+    margin: 2px 4px 2px 0;
+  }
+  .tag-chip.inherited { color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <h1>Tier Engine Viewer</h1>
+  <div class="subtitle">Internal dev tool — experiments/, never leaves the pipeline repo. Read-only view of tier_engine.py's exported Tiers 0/1/2/3 (full lists).</div>
+
+  <div class="toolbar">
+    <div>
+      <label for="anchor-select">Anchor</label>
+      <select id="anchor-select"></select>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="legal-toggle" checked>
+      <label for="legal-toggle" style="margin:0;color:var(--text);">Commander-legal only</label>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <div id="anchor-block" class="anchor-block" style="display:none;"></div>
+  <div id="tiers"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TIER_LABELS = {
+    "0": "Tier 0 — Functional reprint",
+    "1": "Tier 1 — Whole ability shared verbatim",
+    "2": "Tier 2 — Shared verbatim fragment",
+    "3": "Tier 3 — tag-overlap proposals (machine-suggested, not confirmed)"
+  };
+  var BREAKDOWN_LABELS = [
+    ["raw", "raw"], ["ci", "ci"], ["mv", "mv"], ["scope", "scope"],
+    ["dur", "dur"], ["exc", "exc"], ["pol", "pol"], ["cond", "cond"], ["aff", "aff"]
+  ];
+
+  var state = { index: null, currentSlug: null, legalOnly: true };
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return "";
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function fmtNum(n, digits) {
+    if (n === null || n === undefined) return "—";
+    return Number(n).toFixed(digits === undefined ? 2 : digits);
+  }
+
+  function legalBadge(legal) {
+    if (legal === true) return '<span class="badge badge-legal">Legal</span>';
+    if (legal === false) return '<span class="badge badge-illegal">Not legal</span>';
+    return '<span class="badge badge-unknown">Unknown</span>';
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status").textContent = msg;
+  }
+
+  function loadIndex() {
+    setStatus("loading index.json…");
+    fetch("./data/index.json")
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (idx) {
+        state.index = idx;
+        var select = document.getElementById("anchor-select");
+        select.innerHTML = "";
+        idx.anchors.forEach(function (a) {
+          var opt = document.createElement("option");
+          opt.value = a.slug;
+          opt.textContent = a.name + "  (T1=" + a.tier_counts["1"] + " T2=" + a.tier_counts["2"] + ")";
+          select.appendChild(opt);
+        });
+        setStatus(idx.anchors.length + " anchor(s) — generated " + idx.generated_at);
+        if (idx.anchors.length > 0) loadAnchor(idx.anchors[0].slug);
+      })
+      .catch(function (err) {
+        setStatus("failed to load ./data/index.json: " + err.message + " — run emit_viewer.py and serve this directory over HTTP (fetch of local files fails under file://).");
+      });
+  }
+
+  function loadAnchor(slug) {
+    state.currentSlug = slug;
+    setStatus("loading " + slug + ".json…");
+    fetch("./data/" + slug + ".json")
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        renderAnchor(data);
+        setStatus("anchor generated " + data.generated_at + " · corpus " + data.corpus_cards.toLocaleString() + " cards · export runtime " + data.runtime_seconds + "s");
+      })
+      .catch(function (err) {
+        setStatus("failed to load " + slug + ".json: " + err.message);
+      });
+  }
+
+  function renderAnchor(data) {
+    var a = data.anchor;
+    var block = document.getElementById("anchor-block");
+    block.style.display = "";
+    block.innerHTML =
+      '<div class="anchor-name">' + escapeHtml(a.name) + " " + legalBadge(a.legal_commander) + '</div>' +
+      '<div class="anchor-meta">' + escapeHtml(a.mana_cost) + " · " + escapeHtml(a.type_line) +
+        " · CI: " + (a.color_identity.length ? escapeHtml(a.color_identity.join("")) : "colorless") +
+        (a.subtypes.length ? " · subtypes: " + escapeHtml(a.subtypes.join(", ")) : "") +
+      '</div>' +
+      '<div class="anchor-text">' + escapeHtml(a.oracle_text) + '</div>';
+
+    var tiersDiv = document.getElementById("tiers");
+    tiersDiv.innerHTML = "";
+    ["0", "1", "2"].forEach(function (t) {
+      tiersDiv.appendChild(renderTierSection(t, data.tiers[t]));
+    });
+    if (data.tiers["3"]) {
+      tiersDiv.appendChild(renderTier3Section(data.tiers["3"]));
+    }
+    applyFilter();
+  }
+
+  function renderTierSection(tierKey, tierData) {
+    var section = document.createElement("div");
+    section.className = "tier-section";
+    section.dataset.tier = tierKey;
+
+    var header = document.createElement("div");
+    header.className = "tier-header";
+    header.innerHTML =
+      '<span class="tier-title">' + TIER_LABELS[tierKey] + '</span>' +
+      '<span class="tier-counts" data-role="counts">' + tierData.count + ' total</span>';
+    section.appendChild(header);
+
+    if (tierData.rows.length === 0) {
+      var empty = document.createElement("div");
+      empty.className = "empty-note";
+      empty.textContent = "none";
+      section.appendChild(empty);
+      return section;
+    }
+
+    var table = document.createElement("table");
+    var hasRank = tierData.rows.some(function (r) { return r.rank_score !== null; });
+    table.innerHTML =
+      '<thead><tr>' +
+        '<th class="pos">#</th><th>Name</th>' +
+        (hasRank ? '<th class="num">Rank</th>' : '') +
+        '<th class="num">MVΔ</th><th>CI relation</th><th>Type bucket</th><th>Legal</th>' +
+      '</tr></thead>';
+    var tbody = document.createElement("tbody");
+
+    tierData.rows.forEach(function (row, i) {
+      var tr = document.createElement("tr");
+      tr.className = "row";
+      tr.dataset.legal = row.legal_commander === true ? "1" : (row.legal_commander === false ? "0" : "u");
+      tr.innerHTML =
+        '<td class="pos">' + (i + 1) + '</td>' +
+        '<td class="name">' + escapeHtml(row.name) + '</td>' +
+        (hasRank ? '<td class="num">' + fmtNum(row.rank_score) + '</td>' : '') +
+        '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
+        '<td>' + escapeHtml(row.ci_relation) + '</td>' +
+        '<td>' + escapeHtml(row.type_bucket) + '</td>' +
+        '<td>' + legalBadge(row.legal_commander) + '</td>';
+
+      var detailTr = document.createElement("tr");
+      detailTr.className = "detail-row";
+      detailTr.dataset.legal = tr.dataset.legal;
+      detailTr.style.display = "none";
+      var detailTd = document.createElement("td");
+      detailTd.colSpan = hasRank ? 7 : 6;
+      detailTd.innerHTML = renderDetail(row);
+      detailTr.appendChild(detailTd);
+
+      tr.addEventListener("click", function () {
+        detailTr.style.display = detailTr.style.display === "none" ? "" : "none";
+      });
+
+      tbody.appendChild(tr);
+      tbody.appendChild(detailTr);
+    });
+
+    table.appendChild(tbody);
+    section.appendChild(table);
+    return section;
+  }
+
+  function renderDetail(row) {
+    var html = "";
+    if (row.breakdown) {
+      html += '<div class="breakdown-grid">';
+      BREAKDOWN_LABELS.forEach(function (pair) {
+        html += '<div><span class="k">' + pair[0] + '</span>' + fmtNum(row.breakdown[pair[1]]) + '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div style="color:var(--text-muted);font-size:12px;margin-bottom:6px;">No rank formula for this tier (full-text/frame equality).</div>';
+    }
+    if (row.fragment) {
+      var dfLabel = row.fragment_df === null || row.fragment_df === undefined
+        ? ""
+        : (" (DF" + (row.fragment_df_exact ? "=" : "≈") + row.fragment_df + ")");
+      html += '<div class="fragment-box">' + escapeHtml(row.fragment) + dfLabel + '</div>';
+    } else if (row.evidence) {
+      html += '<div class="fragment-box">' + escapeHtml(row.evidence) + '</div>';
+    }
+    var extras = [];
+    if (row.type_match !== null && row.type_match !== undefined) extras.push("type_match=" + row.type_match);
+    if (row.shared_subtypes && row.shared_subtypes.length) extras.push("shared_subtypes=" + row.shared_subtypes.join(","));
+    if (row.keyword_overlap && row.keyword_overlap.length) extras.push("keywords=" + row.keyword_overlap.join(","));
+    if (extras.length) {
+      html += '<div style="color:var(--text-muted);font-size:11px;margin-top:6px;">' + escapeHtml(extras.join("  ·  ")) + '</div>';
+    }
+    return html;
+  }
+
+  function renderTier3Section(tierData) {
+    var section = document.createElement("div");
+    section.className = "tier-section tier3";
+    section.dataset.tier = "3";
+
+    var header = document.createElement("div");
+    header.className = "tier-header";
+    header.innerHTML =
+      '<span class="tier-title">' + TIER_LABELS["3"] + '</span>' +
+      '<span class="tier-counts" data-role="counts">' + tierData.count + ' total</span>';
+    section.appendChild(header);
+
+    if (tierData.rows.length === 0) {
+      var empty = document.createElement("div");
+      empty.className = "empty-note";
+      empty.textContent = "none";
+      section.appendChild(empty);
+      return section;
+    }
+
+    var body = document.createElement("div");
+    var btn = document.createElement("button");
+    btn.className = "show-proposals-btn";
+    btn.type = "button";
+    btn.textContent = "▸ show " + tierData.rows.length + " proposal" + (tierData.rows.length === 1 ? "" : "s");
+    var expanded = false;
+    btn.addEventListener("click", function () {
+      expanded = !expanded;
+      if (expanded && !body.dataset.built) {
+        body.appendChild(renderTier3Table(tierData.rows));
+        body.dataset.built = "1";
+        applyFilter();
+      }
+      body.style.display = expanded ? "" : "none";
+      btn.textContent = (expanded ? "▾ hide " : "▸ show ") + tierData.rows.length + " proposal" + (tierData.rows.length === 1 ? "" : "s");
+    });
+    section.appendChild(btn);
+    body.style.display = "none";
+    section.appendChild(body);
+    return section;
+  }
+
+  function renderTier3Table(rows) {
+    var table = document.createElement("table");
+    table.innerHTML =
+      '<thead><tr>' +
+        '<th class="pos">#</th><th>Name</th><th class="num">Score</th>' +
+        '<th class="num">MVΔ</th><th>CI relation</th><th>Type bucket</th><th>Legal</th>' +
+      '</tr></thead>';
+    var tbody = document.createElement("tbody");
+
+    rows.forEach(function (row, i) {
+      var tr = document.createElement("tr");
+      tr.className = "row";
+      tr.dataset.legal = row.legal_commander === true ? "1" : (row.legal_commander === false ? "0" : "u");
+      tr.innerHTML =
+        '<td class="pos">' + (i + 1) + '</td>' +
+        '<td class="name">' + escapeHtml(row.name) + '</td>' +
+        '<td class="num">' + fmtNum(row.score) + '</td>' +
+        '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
+        '<td>' + escapeHtml(row.ci_relation) + '</td>' +
+        '<td>' + escapeHtml(row.type_bucket) + '</td>' +
+        '<td>' + legalBadge(row.legal_commander) + '</td>';
+
+      var detailTr = document.createElement("tr");
+      detailTr.className = "detail-row";
+      detailTr.dataset.legal = tr.dataset.legal;
+      detailTr.style.display = "none";
+      var detailTd = document.createElement("td");
+      detailTd.colSpan = 7;
+      detailTd.innerHTML = renderTier3Detail(row);
+      detailTr.appendChild(detailTd);
+
+      tr.addEventListener("click", function () {
+        detailTr.style.display = detailTr.style.display === "none" ? "" : "none";
+      });
+
+      tbody.appendChild(tr);
+      tbody.appendChild(detailTr);
+    });
+
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function renderTier3Detail(row) {
+    if (!row.shared_tags || row.shared_tags.length === 0) {
+      return '<div style="color:var(--text-muted);font-size:12px;">no shared tags recorded</div>';
+    }
+    var html = '<div>';
+    row.shared_tags.forEach(function (t) {
+      var directness = (t.anchor_direct && t.candidate_direct) ? "direct" : "inherited";
+      html += '<span class="tag-chip' + (directness === "inherited" ? " inherited" : "") + '">' +
+        escapeHtml(t.slug) + ' (idf=' + fmtNum(t.idf) + ', ' + directness + ')</span>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function applyFilter() {
+    var legalOnly = state.legalOnly;
+    document.querySelectorAll(".tier-section").forEach(function (section) {
+      var rows = section.querySelectorAll("tr.row");
+      var shown = 0, hidden = 0;
+      rows.forEach(function (tr) {
+        var isLegal = tr.dataset.legal === "1";
+        var visible = !legalOnly || isLegal;
+        tr.classList.toggle("hidden-row", !visible);
+        var detail = tr.nextElementSibling;
+        if (detail && detail.classList.contains("detail-row")) {
+          detail.classList.toggle("hidden-row", !visible);
+          if (!visible) detail.style.display = "none";
+        }
+        if (visible) shown++; else hidden++;
+      });
+      var countsEl = section.querySelector('[data-role="counts"]');
+      if (countsEl && rows.length > 0) {
+        countsEl.textContent = shown + " shown / " + hidden + " hidden (of " + rows.length + ")";
+      }
+    });
+  }
+
+  document.getElementById("anchor-select").addEventListener("change", function (e) {
+    loadAnchor(e.target.value);
+  });
+  document.getElementById("legal-toggle").addEventListener("change", function (e) {
+    state.legalOnly = e.target.checked;
+    applyFilter();
+  });
+
+  loadIndex();
+})();
+</script>
+</body>
+</html>

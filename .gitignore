@@ -3,6 +3,7 @@ data/
 *.jsonl.gz
 *.parquet
 *.sqlite
+experiments/out/
 __pycache__/
 .venv/
 .DS_Store
