@@ -48,6 +48,19 @@
   .toggle { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
   #status { color: var(--text-muted); font-size: 12px; }
 
+  .search-box { position: relative; }
+  #card-search {
+    background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
+    padding: 4px 8px; font-family: var(--sans); font-size: 13px; width: 240px;
+  }
+  .search-results {
+    position: absolute; top: calc(100% + 2px); left: 0; z-index: 10; width: 280px;
+    background: var(--panel); border: 1px solid var(--border); max-height: 260px; overflow-y: auto;
+  }
+  .search-results .result-item { padding: 6px 10px; cursor: pointer; font-size: 13px; }
+  .search-results .result-item:hover { background: var(--panel-alt); }
+  .search-results .no-results { padding: 6px 10px; color: var(--text-muted); font-size: 12px; font-style: italic; }
+
   .anchor-block {
     background: var(--panel); border: 1px solid var(--border);
     padding: 14px 16px; margin-bottom: 18px;
@@ -129,6 +142,11 @@
       <label for="anchor-select">Anchor</label>
       <select id="anchor-select"></select>
     </div>
+    <div class="search-box">
+      <label for="card-search">Search</label>
+      <input type="text" id="card-search" placeholder="Card name…" autocomplete="off">
+      <div id="search-results" class="search-results" style="display:none;"></div>
+    </div>
     <div class="toggle">
       <input type="checkbox" id="legal-toggle" checked>
       <label for="legal-toggle" style="margin:0;color:var(--text);">Commander-legal only</label>
@@ -178,6 +196,17 @@
     document.getElementById("status").textContent = msg;
   }
 
+  function populateSelect(idx) {
+    var select = document.getElementById("anchor-select");
+    select.innerHTML = "";
+    idx.anchors.forEach(function (a) {
+      var opt = document.createElement("option");
+      opt.value = a.slug;
+      opt.textContent = a.name + "  (T1=" + a.tier_counts["1"] + " T2=" + a.tier_counts["2"] + ")";
+      select.appendChild(opt);
+    });
+  }
+
   function loadIndex() {
     setStatus("loading index.json…");
     fetch("./data/index.json")
@@ -187,20 +216,112 @@
       })
       .then(function (idx) {
         state.index = idx;
-        var select = document.getElementById("anchor-select");
-        select.innerHTML = "";
-        idx.anchors.forEach(function (a) {
-          var opt = document.createElement("option");
-          opt.value = a.slug;
-          opt.textContent = a.name + "  (T1=" + a.tier_counts["1"] + " T2=" + a.tier_counts["2"] + ")";
-          select.appendChild(opt);
-        });
+        populateSelect(idx);
         setStatus(idx.anchors.length + " anchor(s) — generated " + idx.generated_at);
         if (idx.anchors.length > 0) loadAnchor(idx.anchors[0].slug);
       })
       .catch(function (err) {
         setStatus("failed to load ./data/index.json: " + err.message + " — run emit_viewer.py and serve this directory over HTTP (fetch of local files fails under file://).");
       });
+  }
+
+  function refreshIndexAndSelect(name) {
+    return fetch("./data/index.json")
+      .then(function (r) { return r.json(); })
+      .then(function (idx) {
+        state.index = idx;
+        populateSelect(idx);
+        var match = idx.anchors.filter(function (a) { return a.name === name; })[0];
+        if (match) {
+          document.getElementById("anchor-select").value = match.slug;
+          state.currentSlug = match.slug;
+        }
+      });
+  }
+
+  function renderSearchResults(results) {
+    var box = document.getElementById("search-results");
+    box.innerHTML = "";
+    if (results.length === 0) {
+      box.innerHTML = '<div class="no-results">no matches</div>';
+      box.style.display = "";
+      return;
+    }
+    results.forEach(function (r) {
+      var item = document.createElement("div");
+      item.className = "result-item";
+      item.textContent = r.name;
+      item.addEventListener("click", function () {
+        selectSearchResult(r.name);
+      });
+      box.appendChild(item);
+    });
+    box.style.display = "";
+  }
+
+  function selectSearchResult(name) {
+    document.getElementById("search-results").style.display = "none";
+    document.getElementById("card-search").value = "";
+    setStatus("computing " + name + "…");
+    fetch("api/anchor?name=" + encodeURIComponent(name))
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().then(function (e) { throw new Error(e.error || ("HTTP " + r.status)); });
+        }
+        return r.json();
+      })
+      .then(function (data) {
+        renderAnchor(data);
+        setStatus("anchor generated " + data.generated_at + " · corpus " + data.corpus_cards.toLocaleString() + " cards · export runtime " + data.runtime_seconds + "s");
+        return refreshIndexAndSelect(data.anchor.name);
+      })
+      .catch(function (err) {
+        setStatus("search failed: " + err.message);
+      });
+  }
+
+  function wireSearch() {
+    var input = document.getElementById("card-search");
+    var box = document.getElementById("search-results");
+    var debounceTimer = null;
+
+    input.addEventListener("input", function (e) {
+      var q = e.target.value.trim();
+      clearTimeout(debounceTimer);
+      if (q.length < 2) {
+        box.style.display = "none";
+        return;
+      }
+      debounceTimer = setTimeout(function () {
+        fetch("api/search?q=" + encodeURIComponent(q))
+          .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.json();
+          })
+          .then(function (data) { renderSearchResults(data.results); })
+          .catch(function (err) {
+            box.innerHTML = '<div class="no-results">search unavailable (' + err.message + ') — run via serve_viewer.py</div>';
+            box.style.display = "";
+          });
+      }, 250);
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      var items = box.querySelectorAll(".result-item");
+      if (items.length === 1) {
+        selectSearchResult(items[0].textContent);
+      } else if (e.target.value.trim()) {
+        selectSearchResult(e.target.value.trim());
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target !== input && !box.contains(e.target)) {
+        box.style.display = "none";
+      }
+    });
   }
 
   function loadAnchor(slug) {
@@ -466,6 +587,7 @@
     state.legalOnly = e.target.checked;
     applyFilter();
   });
+  wireSearch();
 
   loadIndex();
 })();
