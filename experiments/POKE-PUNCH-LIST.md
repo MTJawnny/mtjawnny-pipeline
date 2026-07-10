@@ -1076,3 +1076,45 @@ keys, `GRANT_CLAUSE_RE`, `PT_MODIFIER_RE`, `parse_pt_modifier()`,
 `granted_keyword_kinship_match()`, `assign_tier()`'s keyword_grant
 evidence string, `GRANT_PT_MISMATCH_PENALTY_PER_POINT`,
 `GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS`.
+
+### Follow-up, same session: P/T mismatch corrected from penalty to guaranteed graduated priority
+
+**Ruled, 2026-07-10.** Captain's feedback on the P/T work above: a scalar
+penalty blended into the same score as tag_score/affinity/CI isn't
+"priority" — it can be swamped by unrelated terms. Wanted: "exact buff get
+priority, then near buffs" as a hard rule, same guarantee-not-nudge
+principle as Part 1's keyword-vs-reminder fix. **Ruling: fully graduated
+by distance** (not just a 2-tier exact/non-exact split).
+
+Implemented as `pt_exactness_priority()`, a second categorical sort-key
+dimension alongside `keyword_over_reminder_priority()`. Noted directly, not
+glossed over: a single global total-order sort CANNOT make "exact P/T
+beats near beats far" absolute among `keyword_grant` rows while ALSO
+leaving every other mechanism's ordering completely untouched — if a
+text-mechanism row's rank legitimately falls between two keyword_grant
+rows of different P/T distance, something has to give. Pragmatic
+resolution, mirroring Part 1's own 2-bucket shape: an EXACT-match (distance
+0, including "neither side has a P/T mod") keyword_grant row stays in the
+shared pool, competing on rank normally, unaffected. Only a NON-exact match
+gets pushed into a graduated lower tier (1 per point of distance) below
+that shared pool — guarantees exact > near > far among keyword_grant rows,
+at the documented cost that a near/far match also sorts below every other
+mechanism's rows, not just below closer keyword_grant matches specifically.
+The fact-selection logic (`best_grant = min(...)` when a pair has multiple
+qualifying combinations) was also reordered to prefer P/T-closeness first,
+keyword-mismatch only as a tie-break.
+
+**Verified**: monotonically non-decreasing P/T distance confirmed directly
+across Behemoth Sledge's full `keyword_grant` row list (64 rows, live via
+`/api/anchor`) — no exact match exists in its pool today, so distance-1
+rows correctly lead, distance-2 correctly follows, etc. Full gate suite
+73/73 green after updating `check_gb_swiftfoot_boots_gate`'s measured floor
+a THIRD time (`2 -> 4`) — the graduated priority pushes every non-exact
+keyword_grant match below the shared pool by design, letting more
+equip-reminder rows into Swiftfoot Boots' fixed top-10 window purely by
+relative displacement. Flagged explicitly in that constant's own comment:
+this floor has moved 3 times this session from unrelated precision
+improvements elsewhere, expected to keep moving as ranking gets sharper — a
+future redesign (ratio/percentage check instead of an exact count) might be
+more stable long-term, not built here. Zurgo/Delney and determinism
+reverified, viewer regenerated and confirmed live.

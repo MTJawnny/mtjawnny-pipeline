@@ -2130,6 +2130,7 @@ def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list
             pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
             matches.append({
                 "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
+                "pt_distance": pt_distance,
                 "penalty": (
                     GRANT_KEYWORD_MISMATCH_PENALTY * extras
                     + GRANT_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
@@ -2375,15 +2376,23 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
     granted_kw_anchor_fact = None
     granted_kw_candidate_fact = None
     granted_kw_penalty_value = None
+    granted_kw_pt_distance = None
     if base is None:
         grant_matches = granted_keyword_kinship_match(anchor_doc, candidate_doc)
-        best_grant = min(grant_matches, key=lambda m: m["penalty"]) if grant_matches else None
+        # Captain's ruling, 2026-07-10: "exact buff gets priority, then near
+        # buffs" -- when a pair has multiple qualifying fact combinations,
+        # prefer the one with the closest P/T match FIRST, keyword-mismatch
+        # penalty only as a tie-break among equally-close P/T candidates.
+        best_grant = (
+            min(grant_matches, key=lambda m: (m["pt_distance"], m["penalty"])) if grant_matches else None
+        )
         if best_grant is not None:
             base = 2
             mechanism = "keyword_grant"
             granted_kw_anchor_fact = best_grant["anchor_fact"]
             granted_kw_candidate_fact = best_grant["candidate_fact"]
             granted_kw_penalty_value = best_grant["penalty"]
+            granted_kw_pt_distance = best_grant["pt_distance"]
             shared_desc = "/".join(sorted(best_grant["shared_keywords"]))
             fragment = f"granted-keyword kinship: {shared_desc}"
 
@@ -2465,6 +2474,7 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         "anchor_granted_keyword_fact": granted_kw_anchor_fact,
         "candidate_granted_keyword_fact": granted_kw_candidate_fact,
         "granted_keyword_penalty": granted_kw_penalty_value,
+        "granted_keyword_pt_distance": granted_kw_pt_distance,
     }
 
 
@@ -4438,7 +4448,8 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                    "_mechanism": result["mechanism"], "_keyword": result["keyword"],
                    "_anchor_param": result["anchor_param"], "_candidate_param": result["candidate_param"],
                    "_anchor_mana_fact": result["anchor_mana_fact"],
-                   "_candidate_mana_fact": result["candidate_mana_fact"]}
+                   "_candidate_mana_fact": result["candidate_mana_fact"],
+                   "_granted_keyword_pt_distance": result["granted_keyword_pt_distance"]}
             if tier in (1, 2):
                 fact_penalties = compute_fact_penalties(anchor_doc, candidate_doc, result["fragment"])
 
@@ -4597,12 +4608,38 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
     def keyword_over_reminder_priority(row):
         return 0 if row.get("_mechanism") == "keyword" else 1
 
+    # Captain's ruling, 2026-07-10 (Entry #7 follow-up): "exact buff gets
+    # priority, then near buffs" for granted-keyword-SET (Equipment/Aura)
+    # matches, FULLY graduated by P/T distance, guaranteed regardless of
+    # tag_score/affinity/other unrelated rank terms -- not just a scalar
+    # penalty blended into the same score, which those other terms could
+    # swamp. A single global sort can't make "exact beats near" absolute
+    # for keyword_grant rows while ALSO leaving every other mechanism's
+    # ordering completely untouched (a text-mechanism row's rank could
+    # legitimately fall between two keyword_grant rows of different P/T
+    # distance -- a real contradiction in a strict total order, not an
+    # oversight). Pragmatic resolution, same shape as keyword_over_
+    # reminder_priority above: an EXACT-match (distance 0, including "no
+    # P/T mod on either side") keyword_grant row stays in the normal pool,
+    # competing on rank exactly as before, unaffected. Only a NON-exact
+    # match gets pushed into a lower, graduated priority tier (1 per point
+    # of distance) below that pool -- guarantees exact > near > far AMONG
+    # keyword_grant rows, at the cost of a near/far-match keyword_grant row
+    # also sorting below every other mechanism's rows, not just above
+    # closer keyword_grant matches. Not scoped to any other mechanism.
+    def pt_exactness_priority(row):
+        if row.get("_mechanism") != "keyword_grant":
+            return 0
+        return row.get("_granted_keyword_pt_distance") or 0
+
     tiers[0].sort(key=lambda r: r["name"])
     tiers[1].sort(key=lambda r: (
-        keyword_over_reminder_priority(r), -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
+        keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[2].sort(key=lambda r: (
-        keyword_over_reminder_priority(r), -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
+        keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[3].sort(key=lambda r: (-r["_score"], r["name"]))
 
@@ -5001,6 +5038,27 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain), 2026-07-10 -- Entry #7 follow-up: P/T mismatch corrected from a scalar "
+        f"penalty to a guaranteed, fully-graduated priority.** Feedback on the P/T work above: a penalty "
+        f"blended into the same score as tag_score/affinity/CI isn't \"priority\" -- unrelated terms could "
+        f"swamp it. Wanted: exact buff beats near buff beats far buff, as a HARD rule, same guarantee-not-"
+        f"nudge principle as the keyword-vs-reminder fix. Implemented as `pt_exactness_priority()`, a "
+        f"second categorical sort-key dimension. Documented directly, not glossed over: a single global "
+        f"total-order sort cannot make \"exact P/T beats near\" absolute among keyword_grant rows while "
+        f"ALSO leaving every other mechanism's ordering completely untouched -- if a text-mechanism row's "
+        f"rank legitimately falls between two keyword_grant rows of different P/T distance, something has "
+        f"to give. Pragmatic resolution: an EXACT-match (distance 0) keyword_grant row stays in the shared "
+        f"pool, competing on rank normally; only a NON-exact match gets pushed into a graduated lower tier "
+        f"(1 per point of distance) below that pool. Guarantees exact > near > far among keyword_grant "
+        f"rows; documented cost is a near/far match also sorting below every OTHER mechanism's rows, not "
+        f"just below closer keyword_grant matches specifically. Verified directly: monotonically "
+        f"non-decreasing P/T distance confirmed across Behemoth Sledge's full 64-row keyword_grant list "
+        f"(live via /api/anchor). check_gb_swiftfoot_boots_gate's measured floor updated a THIRD time this "
+        f"session (2 -> 4) -- flagged explicitly in that constant's own comment as an expected consequence "
+        f"of unrelated precision improvements, not a regression signal on its own."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -5228,7 +5286,22 @@ def check_ga_boros_charm_gate(ctx: dict) -> bool:
 # Isle) back into the fixed top-10 window purely by relative displacement,
 # not a new bug. Same measured-not-guessed update discipline as the change
 # just above.
-GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 2
+#
+# 2 -> 4 (still same session, 2026-07-10, Entry #7 follow-up): the
+# graduated P/T-exactness priority (pt_exactness_priority(), guaranteed
+# "exact beats near beats far") pushes EVERY non-exact-P/T-match
+# keyword_grant row below the shared pool that includes reminder rows too
+# -- by design (see that function's own comment: this is the documented
+# cost of a hard categorical guarantee, not a bug). Swiftfoot Boots has no
+# exact +0/+0-vs-+0/+0 keyword_grant candidates crowding out reminder rows
+# as effectively as before. Measured directly, not guessed: 4 rows.
+# NOTE: this floor has now moved 3 times in one session purely from
+# unrelated precision improvements elsewhere -- if it needs to move again,
+# that's expected, not a regression signal on its own; the gate's actual
+# job (zero T1 rows, Tier 2 not literally dominated by boilerplate) still
+# holds. A future redesign (e.g. a percentage/ratio check instead of an
+# exact count) might be more stable long-term -- flagged, not built here.
+GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 4
 
 
 def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
