@@ -1006,3 +1006,73 @@ residual boilerplate row, down from the original clutter.
 `SWIFTFOOT_EQUIP_TEXT`/`FAITHLESS_FLASHBACK_TEXT` constants,
 `PROVENANCE_DISCOUNT_WEIGHT`, `check_gb_swiftfoot_boots_gate()`,
 `check_gc_faithless_looting_gate()`, report header note.
+
+---
+
+## Entry #7 — keyword mechanism must outrank reminder mechanism; Equipment/Aura P/T modifier ignored
+
+**Ruled and implemented, 2026-07-10** (Captain live-reviewing Zurgo's Tier
+2 table).
+
+### Part 1: mechanism sort priority
+
+Confirmed live: Zurgo's Tier 2 had Hanweir Garrison (`mechanism=reminder`)
+ranked #1, above Zurgo Stormrender (`mechanism=keyword`) at #2 — an exact
+NAMED keyword match losing to a reminder-text match purely on numeric
+score. **Ruling: keyword > reminder only** (not keyword > everything —
+text/mana/keyword_grant rows keep competing purely on score, unaffected),
+implemented as a **guaranteed categorical sort key** (`(mechanism-priority,
+-rank, ...)`, not a scalar bonus) so the ordering can never be undone by
+future DF/corpus drift the way a bonus sized for today's data silently
+could. See `keyword_over_reminder_priority()` in `compute_anchor_full_tiers()`.
+
+Noted for the record, not currently observed: a strict 2-bucket priority
+(keyword=0, everything-else=1) is the only internally-consistent way to
+implement a HARD "always above" guarantee — a 3-way scheme where text
+"stays exactly unaffected" relative to BOTH keyword and reminder
+simultaneously isn't achievable in a transitive sort if text's score ever
+falls between the two. In practice this is moot today: keyword-kinship
+rows exist only for Zurgo among the 9-anchor panel, and Zurgo has zero
+`text`-mechanism Tier 2 rows, so keyword and text never actually compete
+for a slot anywhere in the current corpus. Flagged here in case a future
+anchor makes this theoretical edge real.
+
+### Part 2: Equipment/Aura P/T modifier
+
+Entry #4's `granted_keyword_set` extraction discarded the "gets +N/+N"
+stat-bonus prefix entirely (a non-capturing throwaway group) — two
+equipment granting the identical keyword set but very different power/
+toughness bonuses (Behemoth Sledge +2/+2 trample+lifelink vs a
+hypothetical +0/+0 version) ranked as equally close kin. `GRANT_CLAUSE_RE`
+now captures the P/T modifier as its own group; `parse_pt_modifier()`
+parses `"+2/+2"` → `(2, 2)`; carried as `pt_mod` on each granted-keyword
+fact (`None` if no "gets" clause — a missing clause means a definitive
++0/+0, not unparsed uncertainty). `granted_keyword_kinship_match()`'s
+cascade gets a new flat per-point term, `GRANT_PT_MISMATCH_PENALTY_PER_POINT
+= 0.15` (first-pass default, same "comparable scale, open to
+recalibration" reasoning as `GRANT_KEYWORD_MISMATCH_PENALTY`, not
+corpus-tuned). Confirmed live: Behemoth Sledge (+2/+2) vs Bronzeplate Boar
+(+3/+2), shared `trample` — evidence now reads `trample, +2/+2 vs +3/+2
+(mismatch penalty=0.45)` (0.30 keyword-mismatch for the unshared
+`lifelink` + 0.15 for the 1-point P/T distance), where before it silently
+ignored the stat difference entirely.
+
+### Verification
+
+Full gate suite 73/73 green (after updating `check_gb_swiftfoot_boots_gate`'s
+measured floor `1 -> 2` — the P/T penalty made some `keyword_grant`
+matches less competitive, letting a second equip-reminder-boilerplate row
+back into the fixed top-10 window by relative displacement, not a new
+bug), Zurgo/Delney verified separately, determinism confirmed twice,
+viewer cache regenerated and confirmed live (Zurgo's keyword rows now
+sort 1-12 before any reminder row; Behemoth Sledge/Bronzeplate Boar's
+evidence shows both P/T values).
+
+### Files touched
+
+`experiments/tier_engine.py` only: `compute_anchor_full_tiers()`'s sort
+keys, `GRANT_CLAUSE_RE`, `PT_MODIFIER_RE`, `parse_pt_modifier()`,
+`extract_granted_keyword_clause()`, `build_granted_keyword_facts()`,
+`granted_keyword_kinship_match()`, `assign_tier()`'s keyword_grant
+evidence string, `GRANT_PT_MISMATCH_PENALTY_PER_POINT`,
+`GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS`.

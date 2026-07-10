@@ -304,8 +304,20 @@ MANA_KINSHIP_BASE_RANK = 5.0
 # (has/have/gains, optional "gets ... and" stat-buff prefix) per the
 # entry's own step 1 instruction.
 GRANT_CLAUSE_RE = re.compile(
-    r"^(?:equipped|enchanted) creature (?:gets? [^.]*? and )?(?:has|have|gains) (.+?)\.?$"
+    r"^(?:equipped|enchanted) creature "
+    r"(?:gets? ([+-]\d+/[+-]\d+)[^.]*? and )?"
+    r"(?:has|have|gains) (.+?)\.?$"
 )
+# Captain's ruling, 2026-07-10: the P/T modifier ("gets +2/+2") sits right
+# next to the granted-keyword clause this mechanism already parses and was
+# previously discarded entirely (the whole "gets ... and" prefix was a
+# non-capturing throwaway group) -- two equipment granting the SAME
+# keyword but very different stat bonuses (Behemoth Sledge +2/+2 trample/
+# lifelink vs a hypothetical +0/+0 trample/lifelink granter) aren't
+# equally close kin. Captured as its own group now, fed into
+# granted_keyword_kinship_match()'s cascade as an additional penalty term
+# -- see GRANT_PT_MISMATCH_PENALTY_PER_POINT below.
+PT_MODIFIER_RE = re.compile(r"^([+-]\d+)/([+-]\d+)$")
 # Conditional grants (Champion's Helm's "as long as ... legendary", a
 # per-creature-type set) are EXCLUDED from the fact entirely, not extracted
 # and discounted -- the entry's own open question, resolved here: reusing
@@ -334,6 +346,17 @@ GRANT_SIZE_CEILING = 2
 # missing/extra asymmetry the way mana amount has a natural "more/less"
 # direction (a granted keyword set has no such directionality).
 GRANT_KEYWORD_MISMATCH_PENALTY = 0.3
+# Captain's ruling, 2026-07-10: P/T modifier mismatch, a secondary/refining
+# cascade term alongside the keyword-mismatch penalty above -- a missing
+# "gets X/Y" clause is treated as a definitive +0/+0 (the oracle text
+# genuinely says nothing about a stat bonus, a KNOWN fact, not an unparsed
+# uncertainty -- unlike e.g. duration's "unknown means don't penalize"
+# convention). Flat per-point cost, no direction asymmetry (unlike mana's
+# amount-heavier-penalized-than-lighter or MV's pricier-vs-cheaper split --
+# a stat swing in either direction is an equally real difference here).
+# First-pass default, same "comparable scale to the keyword-mismatch term,
+# open to recalibration" reasoning as that constant -- not corpus-tuned.
+GRANT_PT_MISMATCH_PENALTY_PER_POINT = 0.15
 # Independent tuning knob from mana kinship's base rank, even though the
 # initial value matches it -- same "flat baseline, no natural corpus-DF
 # analog" reasoning as MANA_KINSHIP_BASE_RANK's own comment, deliberately
@@ -2015,17 +2038,32 @@ def build_keyword_vocabulary(cards: dict) -> frozenset:
     return frozenset(names)
 
 
+def parse_pt_modifier(text):
+    """"+2/+2" / "-1/-1" / "+0/+1" -> (power_delta, toughness_delta) ints,
+    or None if text is None or doesn't match the closed +N/+N shape (e.g. a
+    variable "+X/+X" grant -- left unparsed, not guessed at)."""
+    if text is None:
+        return None
+    m = PT_MODIFIER_RE.match(text)
+    if not m:
+        return None
+    return int(m.group(1)), int(m.group(2))
+
+
 def extract_granted_keyword_clause(paragraph: str, keyword_vocabulary: frozenset):
     """Parses an already-normalized (lowercased, reminder-stripped)
     matchable paragraph for the Equipment/Aura "confers keywords" idiom.
-    Returns a frozenset of granted keyword names, or None if the paragraph
-    doesn't match the idiom, is conditional (excluded outright -- see
-    CONDITIONAL_GRANT_MARKERS' comment for why), or contains ANY clause
-    fragment that isn't an exact known keyword name -- the corpus-measured
-    "false-positive idiom match" category (84 cards, e.g. Compulsory Rest's
-    `Enchanted creature has "{2}, Sacrifice this creature: ..."`, a granted
-    ACTIVATED ABILITY in quotes, not a keyword list) -- all-or-nothing, no
-    partial credit for a clause that's part real keywords, part noise."""
+    Returns (keywords, pt_mod) -- keywords a frozenset of granted keyword
+    names, pt_mod a (power_delta, toughness_delta) int tuple or None if no
+    "gets +N/+N" clause is present -- or None (not a tuple) if the
+    paragraph doesn't match the idiom at all, is conditional (excluded
+    outright -- see CONDITIONAL_GRANT_MARKERS' comment for why), or
+    contains ANY clause fragment that isn't an exact known keyword name --
+    the corpus-measured "false-positive idiom match" category (84 cards,
+    e.g. Compulsory Rest's `Enchanted creature has "{2}, Sacrifice this
+    creature: ..."`, a granted ACTIVATED ABILITY in quotes, not a keyword
+    list) -- all-or-nothing, no partial credit for a clause that's part
+    real keywords, part noise."""
     if not paragraph:
         return None
     if any(marker in paragraph for marker in CONDITIONAL_GRANT_MARKERS):
@@ -2033,14 +2071,15 @@ def extract_granted_keyword_clause(paragraph: str, keyword_vocabulary: frozenset
     m = GRANT_CLAUSE_RE.match(paragraph)
     if not m:
         return None
-    clause = m.group(1).rstrip(".")
+    pt_mod = parse_pt_modifier(m.group(1))
+    clause = m.group(2).rstrip(".")
     pieces = [p.strip() for p in re.split(r",\s*(?:and\s+)?|\s+and\s+", clause) if p.strip()]
     if not pieces:
         return None
     keywords = frozenset(pieces)
     if not keywords <= keyword_vocabulary:
         return None
-    return keywords
+    return keywords, pt_mod
 
 
 def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> list:
@@ -2054,9 +2093,10 @@ def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> lis
     facts = []
     for face in doc["faces"]:
         for paragraph in face["matchable_paragraphs"]:
-            keywords = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
-            if keywords is not None:
-                facts.append({"keywords": keywords, "paragraph": paragraph})
+            extracted = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
+            if extracted is not None:
+                keywords, pt_mod = extracted
+                facts.append({"keywords": keywords, "pt_mod": pt_mod, "paragraph": paragraph})
     return facts
 
 
@@ -2080,9 +2120,20 @@ def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list
             if not shared:
                 continue
             extras = len((a_kw | c_kw) - shared)
+            # Captain's ruling, 2026-07-10: P/T modifier mismatch, a
+            # secondary cascade term -- a missing "gets X/Y" clause on
+            # either side is a definitive +0/+0 (the oracle text says
+            # nothing about a stat bonus, a known fact), not treated as
+            # neutral/unknown.
+            a_power, a_toughness = a_fact["pt_mod"] or (0, 0)
+            c_power, c_toughness = c_fact["pt_mod"] or (0, 0)
+            pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
             matches.append({
                 "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
-                "penalty": GRANT_KEYWORD_MISMATCH_PENALTY * extras,
+                "penalty": (
+                    GRANT_KEYWORD_MISMATCH_PENALTY * extras
+                    + GRANT_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
+                ),
             })
     return matches
 
@@ -2335,8 +2386,19 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             granted_kw_penalty_value = best_grant["penalty"]
             shared_desc = "/".join(sorted(best_grant["shared_keywords"]))
             fragment = f"granted-keyword kinship: {shared_desc}"
+
+            def pt_display(pt_mod):
+                power, toughness = pt_mod or (0, 0)
+                return f"{power:+d}/{toughness:+d}"
+
+            a_pt = granted_kw_anchor_fact["pt_mod"]
+            c_pt = granted_kw_candidate_fact["pt_mod"]
+            pt_note = ""
+            if a_pt is not None or c_pt is not None:
+                pt_note = f", {pt_display(a_pt)} vs {pt_display(c_pt)}"
             evidence_core = (
-                f"granted-keyword kinship: {shared_desc} (mismatch penalty={best_grant['penalty']:.2f})"
+                f"granted-keyword kinship: {shared_desc}{pt_note} "
+                f"(mismatch penalty={best_grant['penalty']:.2f})"
             )
             note = ""
 
@@ -4522,9 +4584,26 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
         d = row.get("_mv_delta")
         return abs(d) if d is not None else float("inf")
 
+    # Captain's ruling, 2026-07-10: mechanism="keyword" (Mechanism 1, an
+    # exact NAMED keyword match) must ALWAYS sort above mechanism="reminder"
+    # (Mechanism 2, reminder-injected text) -- a guaranteed categorical
+    # sort key, not a scalar rank bonus, so the ordering can never be
+    # undone by future DF/corpus drift the way a bonus-sized-for-today's-
+    # data silently could. Scoped narrowly to keyword-vs-reminder only, per
+    # ruling -- "text"/"mana"/"keyword_grant" rows are UNCHANGED, still
+    # competing purely on rank score among themselves and against reminder
+    # rows exactly as before (confirmed live: Hanweir Garrison, reminder,
+    # was outranking Zurgo Stormrender, keyword, in Zurgo's Tier 2).
+    def keyword_over_reminder_priority(row):
+        return 0 if row.get("_mechanism") == "keyword" else 1
+
     tiers[0].sort(key=lambda r: r["name"])
-    tiers[1].sort(key=lambda r: (-r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"]))
-    tiers[2].sort(key=lambda r: (-r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"]))
+    tiers[1].sort(key=lambda r: (
+        keyword_over_reminder_priority(r), -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
+    ))
+    tiers[2].sort(key=lambda r: (
+        keyword_over_reminder_priority(r), -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
+    ))
     tiers[3].sort(key=lambda r: (-r["_score"], r["name"]))
 
     return tiers, disqualified
@@ -4900,6 +4979,28 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain), 2026-07-10 -- Entry #7, mechanism sort priority + P/T modifier "
+        f"(live-reviewing Zurgo's Tier 2 table):** (1) mechanism=\"keyword\" (Mechanism 1, an exact "
+        f"NAMED keyword match) now ALWAYS sorts above mechanism=\"reminder\" (Mechanism 2, "
+        f"reminder-injected text) within a tier -- a guaranteed categorical sort key `(mechanism-priority, "
+        f"-rank, ...)`, not a scalar rank bonus, so the ordering can never be undone by future DF/corpus "
+        f"drift. Scoped narrowly to keyword-vs-reminder, per ruling -- text/mana/keyword_grant rows are "
+        f"unaffected, still competing purely on rank score exactly as before. Confirmed live: Zurgo's "
+        f"Hanweir Garrison (reminder) was outranking Zurgo Stormrender (keyword); all 12 keyword rows now "
+        f"sort before any reminder row. (2) Entry #4's granted-keyword-SET kinship now also compares "
+        f"Equipment/Aura P/T stat modifiers (\"gets +N/+N\"), previously discarded entirely -- a missing "
+        f"clause is a definitive +0/+0 (the oracle text says nothing about a bonus, a known fact, not "
+        f"unparsed uncertainty), flat per-point penalty (GRANT_PT_MISMATCH_PENALTY_PER_POINT=0.15, "
+        f"first-pass default). Behemoth Sledge (+2/+2) vs Bronzeplate Boar (+3/+2), shared \"trample\": "
+        f"evidence now reads the P/T difference explicitly, penalty correctly includes both the "
+        f"unshared-keyword and P/T-distance terms. Unmasked one more relative-displacement effect: the "
+        f"P/T penalty made some keyword_grant matches less competitive, letting a second equip-reminder-"
+        f"boilerplate row back into Swiftfoot Boots' fixed top-10 window -- check_gb_swiftfoot_boots_gate's "
+        f"measured floor updated 1 -> 2, same discipline as Entry #6's other measured-not-guessed gate "
+        f"corrections."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -5118,7 +5219,16 @@ def check_ga_boros_charm_gate(ctx: dict) -> bool:
 # the condition was ever verified true. Updated to reflect measured reality,
 # same precedent as this session's other corpus-drift/bug-unmasking
 # corrections (Discreet Retreat, the flashback DF-drift gate below).
-GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 1
+#
+# 1 -> 2 (still same session, 2026-07-10): adding the granted-keyword-set
+# mechanism's P/T-modifier mismatch penalty (GRANT_PT_MISMATCH_PENALTY_PER_
+# POINT) made some keyword_grant matches with large stat-bonus differences
+# rank lower than before -- a real, wanted refinement -- which let a second
+# equip-reminder-boilerplate row (Cobbled Wings, alongside Ring of Evos
+# Isle) back into the fixed top-10 window purely by relative displacement,
+# not a new bug. Same measured-not-guessed update discipline as the change
+# just above.
+GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 2
 
 
 def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
