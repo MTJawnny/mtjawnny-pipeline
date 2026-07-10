@@ -239,13 +239,24 @@ BAND_WEIGHTS = {"full": 1.0, "discounted": 0.5, "rescue": 0.15}
 PROVENANCE_DISCOUNT_WEIGHT = 0.05
 
 # Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-pip
-# kinship cascade. R6: same mana-ability SHAPE (source_class + repeatable)
-# sharing >=1 produced pip (or, for the pure-colorless family, ANY
-# comparable production) qualifies Tier 2 -- zero overlap falls through
-# to T3 tags (Option B). These constants govern RANK ONLY among already-
-# qualified matches (R5's cascade); they never gate qualification.
-# Amount first, then color-set exactness, then widening, then riders.
+# kinship cascade. R6: ANY two mana-producing abilities sharing >=1
+# produced pip (or, for the pure-colorless family, ANY comparable
+# production) qualify Tier 2 -- zero overlap falls through to T3 tags
+# (Option B). Captain ruling widened this: mana-ability SHAPE
+# (source_class + repeatable) is NOT a qualification gate -- "open the
+# gate, allow other weights to surface the best matches" -- it is one of
+# these RANK-ONLY cascade terms below, same as everything else here; none
+# of them ever gate qualification. R5's own cascade order is "amount
+# first, then type" -- amount is weighted heaviest by design (see
+# MANA_SHAPE_MISMATCH_PENALTY < MANA_AMOUNT_PENALTY_WEIGHT below), then
+# color-set exactness, then widening, then riders.
 MANA_AMOUNT_PENALTY_WEIGHT = 0.3
+# Shape (source_class/repeatable) mismatch -- R5's "type" axis, secondary
+# to amount by design: deliberately SMALLER than one unit of amount
+# penalty, so an exact-amount cross-shape match (Dark Ritual's one-shot
+# {B}{B}{B} vs Bog Witch's repeatable {B}{B}{B}) still outranks a same-
+# shape match that's even one mana off.
+MANA_SHAPE_MISMATCH_PENALTY = 0.2
 # EXTRA colors (candidate makes colors the anchor doesn't need) cost less
 # than MISSING colors (candidate can't cover something the anchor makes) --
 # R5: "entirely WRONG colors cost more than extra."
@@ -264,6 +275,51 @@ MANA_RIDER_PENALTY = 0.15
 # a typical Tier 2 text-fragment idf term -- with the cascade penalty
 # above as the sole rank differentiator among mana-kinship matches.
 MANA_KINSHIP_BASE_RANK = 5.0
+
+# Entry #4 (Captain's ruling, 2026-07-10) -- Equipment/Aura granted-keyword-
+# SET kinship. Subject-phrase-anchored, deliberately scoped to what was
+# actually corpus-measured (equip/enchant idiom only -- "creatures you
+# control have..." anthem phrasing was discussed but never measured this
+# session, left for a future pass rather than guessed at). Verb variants
+# (has/have/gains, optional "gets ... and" stat-buff prefix) per the
+# entry's own step 1 instruction.
+GRANT_CLAUSE_RE = re.compile(
+    r"^(?:equipped|enchanted) creature (?:gets? [^.]*? and )?(?:has|have|gains) (.+?)\.?$"
+)
+# Conditional grants (Champion's Helm's "as long as ... legendary", a
+# per-creature-type set) are EXCLUDED from the fact entirely, not extracted
+# and discounted -- the entry's own open question, resolved here: reusing
+# the existing condition_penalty machinery would be a no-op for this
+# mechanism (it fires off compute_fact_penalties/locate_fragment_context
+# against a real paragraph substring, which this mechanism's synthetic
+# fragment text never is, same as mana kinship) -- building a bespoke
+# discount wasn't asked for and isn't cheap, so simple exclusion. In
+# practice this marker rarely fires directly: Champion's Helm's actual
+# phrasing ("As long as equipped creature is legendary, it has hexproof.")
+# already fails GRANT_CLAUSE_RE's leading anchor, and Multiclass Baldric's
+# per-creature-type "lifelink if you control a Cleric, ..." shape already
+# fails the keyword-vocabulary exact-match check below -- both verified
+# directly against real oracle text. Kept as an explicit, documented
+# backstop for a differently-phrased conditional that might otherwise slip
+# through.
+CONDITIONAL_GRANT_MARKERS = ("as long as", "so long as", "for each")
+# Design (measured corpus shape, POKE-PUNCH-LIST.md Entry #4): size 1-2
+# granted-keyword sets (236 of 658+1295 Equipment/Aura cards) are precise
+# enough for exact-set-overlap kinship to mean something; size >=3 is
+# already covered by the existing `keyword-soup` Tagger tag (27 cards,
+# live in Tier 3 today) -- no new mechanism needed there.
+GRANT_SIZE_CEILING = 2
+# Mirrors MANA_EXTRA_COLOR_PENALTY's shape -- a flat per-stray-keyword cost
+# (keywords present on one side of the match but not the other), no
+# missing/extra asymmetry the way mana amount has a natural "more/less"
+# direction (a granted keyword set has no such directionality).
+GRANT_KEYWORD_MISMATCH_PENALTY = 0.3
+# Independent tuning knob from mana kinship's base rank, even though the
+# initial value matches it -- same "flat baseline, no natural corpus-DF
+# analog" reasoning as MANA_KINSHIP_BASE_RANK's own comment, deliberately
+# NOT coupled to that constant so the two mechanisms can be recalibrated
+# separately later.
+GRANT_KINSHIP_BASE_RANK = 5.0
 
 INHERITED_TAG_DISCOUNT = 0.5
 TIER3_COVERAGE_THRESHOLD = 0.15
@@ -661,7 +717,14 @@ SELF_CHECK_PAIRS = [
     ("Sol Ring", "Palladium Myr", 1),
     ("Grand Abolisher", "Myrel, Shield of Argive", 1),
     ("Marisi, Breaker of the Coil", "Megatron, Tyrant // Megatron, Destructive Force", 1),
-    ("Preordain", "Deliberate", 2),
+    # RULED (Captain): Instant/Sorcery no longer count as disjoint for the
+    # tier-assignment demotion (types_disjoint_for_demotion()) -- this exact
+    # pair was the standing "flagged for Captain's ruling" open question
+    # since v2.3 ("a possible future carve-out... not implemented, pending
+    # Captain's ruling"). Byte-identical text, Sorcery vs Instant -- was 2,
+    # now 1. Tier 0 still correctly excluded (frame_signature requires
+    # matching type_line, which Instant vs Sorcery always fails).
+    ("Preordain", "Deliberate", 1),
 ]
 # No fixed expected tier -- the v2 change order asks to print the rules'
 # verdict with evidence, not assert one.
@@ -881,14 +944,39 @@ def is_keyword_only_paragraph(normalized_paragraph: str, keywords: list) -> bool
     """Prefix match: every comma-separated fragment must start with one of the
     card's own keywords (case-insensitive) -- OR (v2.9 erratum 2) the whole
     line is a "<Keyword> <param>, where <param> is <clause>." construction
-    (where_x_is_param). See KNOWN_LIMITATIONS for what's still unhandled."""
+    (where_x_is_param). See KNOWN_LIMITATIONS for what's still unhandled.
+
+    BUG FIX (found auditing Entry #4, 2026-07-10): the prefix check must be
+    WORD-BOUNDARY safe (frag == kw or frag.startswith(kw + " ")), not a raw
+    substring prefix -- `parse_keyword_instances()` already gets this right
+    (same convention, same docstring's "prefix-match" language) but this
+    sibling function didn't, and the gap was silent because it only ever
+    ADDED false qualifications rather than crashing. Confirmed directly:
+    Swiftfoot Boots's own keyword is "Equip"; a raw `frag.startswith("equip")`
+    check matches "equipped creature has hexproof and haste." (its OWN
+    grant-clause paragraph, unrelated to the "Equip {1}" cost line) because
+    "equipped" starts with "equip" as a bare substring -- wrongly excluding
+    the ENTIRE grant clause from matchable_paragraphs, before Mechanism 1,
+    ordinary text matching, OR Entry #4's new granted-keyword mechanism
+    could ever see it. This is exactly why Entry #4's own motivating case
+    (Swiftfoot Boots vs Lightning Greaves) surfaced the bug: both grant
+    clauses are single-fragment (no comma, "X and Y" only), so both were
+    silently eaten; a comma-bearing multi-keyword grant (Helm of Kaldra:
+    "first strike, trample, and haste") accidentally survived because not
+    every comma-fragment starts with "equip". Purely corrective -- can only
+    ever ADD paragraphs back into matchable_paragraphs that a real keyword
+    ability never actually claimed, never remove one a genuine keyword line
+    legitimately excluded."""
     if not normalized_paragraph or not keywords:
         return False
     lowered_keywords = [k.lower() for k in keywords]
     fragments = [frag.strip() for frag in normalized_paragraph.split(",") if frag.strip()]
     if not fragments:
         return False
-    if all(any(frag.startswith(kw) for kw in lowered_keywords) for frag in fragments):
+    if all(
+        any(frag == kw or frag.startswith(kw + " ") for kw in lowered_keywords)
+        for frag in fragments
+    ):
         return True
     return where_x_is_param(normalized_paragraph, keywords) is not None
 
@@ -1314,10 +1402,43 @@ def build_keyword_index(card_docs: dict) -> dict:
     return dict(index)
 
 
+def build_mana_pip_index(card_docs: dict) -> dict:
+    """Pool-widening fix (Captain's ruling, 2026-07-10): mana pip letter
+    (lowercase 'w'/'u'/'b'/'r'/'g', or the sentinel 'colorless') ->
+    set(oracle_id), sourced from each card's own parsed mana_facts.
+
+    Confirmed corpus bug this closes: gather_candidate_pool() had NO
+    seeding path of its own for mana kinship -- a candidate was only ever
+    found if it ALSO happened to share text/tag/keyword overlap with the
+    anchor, which is unrelated to whether its mana production actually
+    matches. Direct case: Priest of Gix ("When this creature enters, add
+    {B}{B}{B}.", source_class=triggered_etb) shares ZERO Tagger tags, zero
+    text, zero keywords with Dark Ritual ("Add {B}{B}{B}.",
+    source_class=spell_effect) -- an EXACT amount+color match -- and was
+    therefore invisible to mana_pip_kinship_match() despite qualifying by
+    every rule R6 already ratified. Bog Witch was only ever discovered for
+    the same anchor by ACCIDENT, via unrelated shared tags
+    (adds-multiple-mana, cycle, ramp) -- not because of its mana fact.
+
+    No DF-floor gate here, unlike build_keyword_index(): R6 already rules
+    "ANY shared pip qualifies Tier 2... no natural corpus-DF analog exists
+    for a mana shape" -- there is no "evergreen, can never qualify" case to
+    prune the way there is for keywords, so every mana-producing card is a
+    legitimate pool candidate by construction."""
+    index = defaultdict(set)
+    for oracle_id, doc in card_docs.items():
+        for fact in doc.get("mana_facts", ()):
+            for color in fact["colors"]:
+                index[color].add(oracle_id)
+            if fact["colorless_amount"] > 0:
+                index["colorless"].add(oracle_id)
+    return dict(index)
+
+
 def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: dict,
                            clause_index: dict, clause_df: dict, ngram_index: dict,
                            ngram_df: dict, tag_index: dict, keyword_index: dict, keyword_df: dict,
-                           args: argparse.Namespace) -> set:
+                           mana_index: dict, args: argparse.Namespace) -> set:
     pool = set()
     for face in anchor_doc["faces"]:
         for p in face["matchable_paragraphs"]:
@@ -1341,6 +1462,17 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
         kw = inst["keyword"]
         if 0 < keyword_df.get(kw, 0) <= args.ngram_df_floor:
             pool.update(keyword_index.get(kw, ()))
+    # Pool-widening fix (Captain's ruling, 2026-07-10): mana kinship has no
+    # seeding path of its own otherwise -- see build_mana_pip_index()'s
+    # docstring for the confirmed Priest-of-Gix/Dark-Ritual case this
+    # closes. Unlike the keyword block above, no DF-floor gate: R6 already
+    # rules any shared pip qualifies, so every mana-producing card sharing
+    # a pip with the anchor is a legitimate candidate.
+    for fact in anchor_doc.get("mana_facts", ()):
+        for color in fact["colors"]:
+            pool.update(mana_index.get(color, ()))
+        if fact["colorless_amount"] > 0:
+            pool.update(mana_index.get("colorless", ()))
     pool.discard(anchor_doc["oracle_id"])
     return pool
 
@@ -1440,14 +1572,40 @@ def trace_df_drift(fragment: str, ngram_min_len: int, legacy_ngram_index: dict, 
     return {"own_df_changed": True, "culprits": sorted(culprits)}
 
 
-def find_shared_fragment(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
-                          ngram_min_len: int, ngram_floor: int, exclude: frozenset = frozenset()):
-    """Longest qualifying (>=ngram_min_len tokens, DF<=floor) shared fragment
-    across all anchor/candidate paragraph pairs (any-face). Returns
-    (fragment_text, df, length) or None. `exclude` (v2.9): normalized
-    paragraph texts to skip entirely on either side -- the no-double-count
-    suppression for a keyword that already qualified this pair via
-    Mechanism 1 (keyword kinship)."""
+def fragment_run_weight(run_index: int) -> float:
+    """Cumulative fragment scoring rank weight by run position (Captain's
+    ruling, 2026-07-10, CUMULATIVE-FRAGMENT-SCORING-BUILD-HANDOFF.md):
+    diminishing returns for the 2nd/3rd run, then a FLOOR at 0.25 (not a
+    continued decay to near-zero) so a candidate with many qualifying runs
+    doesn't have its 4th+ run's contribution vanish. run_index is 0-based
+    (0 = the primary/longest run, which this function is never actually
+    called for -- its weight is always 1.0, baked into compute_rank's
+    existing raw term unchanged). Explicitly floored, not monotonically
+    decaying forever -- flagged as provisional, may move to a 0.5 floor if
+    corpus impact says so (same session note)."""
+    if run_index == 1:
+        return 0.5
+    return 0.25
+
+
+def find_shared_fragments(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
+                           ngram_min_len: int, ngram_floor: int, exclude: frozenset = frozenset()):
+    """Cumulative fragment scoring (2026-07-10 ruling): returns ALL
+    qualifying (>=ngram_min_len tokens, DF<=floor) non-overlapping shared
+    runs within the SINGLE best-matching anchor/candidate paragraph pair
+    (never across different paragraph pairs -- keeps compute_fact_penalties
+    correct without change, since every run shares the same paragraph
+    context). Returns a list of (fragment_text, df, length) tuples, longest
+    first, empty list if nothing qualifies. Unbounded (Captain's ruling) --
+    stops only when no further run clears ngram_min_len/floor.
+
+    Mechanics: find the global-best pair exactly as the old single-run
+    find_shared_fragment() did, then mask that run's token span on both
+    sides with unique per-position sentinel tokens (so a masked span can
+    never accidentally re-match) and repeat longest_common_run() on the
+    SAME pair only. `exclude` (v2.9, unchanged): normalized paragraph texts
+    to skip entirely on either side -- the no-double-count suppression for
+    a keyword that already qualified this pair via Mechanism 1."""
     candidates = []
     for af in anchor_doc["faces"]:
         for a_idx, a_tokens in enumerate(af["paragraph_tokens"]):
@@ -1464,11 +1622,42 @@ def find_shared_fragment(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
                     df = ngram_df_estimate(frag_tokens, ngram_df, ngram_min_len)
                     if df is None or df > ngram_floor:
                         continue
-                    candidates.append((length, df, " ".join(frag_tokens)))
+                    candidates.append((length, df, " ".join(frag_tokens), a_tokens, c_tokens, end_a))
     if not candidates:
-        return None
-    length, df, text = max(candidates, key=lambda c: (c[0], -c[1], c[2]))
-    return text, df, length
+        return []
+    length, df, text, a_tokens, c_tokens, end_a = max(candidates, key=lambda c: (c[0], -c[1], c[2]))
+    runs = [(text, df, length)]
+
+    cur_a, cur_c, cur_end_a, cur_length = a_tokens, c_tokens, end_a, length
+    while True:
+        matched = cur_a[cur_end_a - cur_length:cur_end_a]
+        start_c = None
+        for i in range(len(cur_c) - cur_length + 1):
+            if cur_c[i:i + cur_length] == matched:
+                start_c = i
+                break
+        run_tag = len(runs)
+        cur_a = (
+            cur_a[:cur_end_a - cur_length]
+            + [f"__MASK_A_{run_tag}_{j}__" for j in range(cur_length)]
+            + cur_a[cur_end_a:]
+        )
+        if start_c is not None:
+            cur_c = (
+                cur_c[:start_c]
+                + [f"__MASK_B_{run_tag}_{j}__" for j in range(cur_length)]
+                + cur_c[start_c + cur_length:]
+            )
+        next_length, next_end_a = longest_common_run(cur_a, cur_c)
+        if next_length < ngram_min_len:
+            break
+        next_frag_tokens = cur_a[next_end_a - next_length:next_end_a]
+        next_df = ngram_df_estimate(next_frag_tokens, ngram_df, ngram_min_len)
+        if next_df is None or next_df > ngram_floor:
+            break
+        runs.append((" ".join(next_frag_tokens), next_df, next_length))
+        cur_end_a, cur_length = next_end_a, next_length
+    return runs
 
 
 # ---------------------------------------------------------------------------
@@ -1483,6 +1672,28 @@ def type_bucket(type_line: str) -> frozenset:
             if word in MAJOR_TYPES:
                 types.add(word)
     return frozenset(types)
+
+
+# Captain ruling: Instant and Sorcery do not count as disjoint for the
+# TIER-ASSIGNMENT demotion below -- both are one-shot, nonpermanent spell
+# types, unlike e.g. Artifact vs Creature. Scoped to assign_tier()'s
+# demotion check ONLY: compute_affinity()'s type_match bonus and the
+# report's "type bucket" fact column (type_line_bucket_match()) still use
+# plain type_bucket() unchanged, since those are separate questions (rank
+# affinity, display) this ruling was never asked to touch. Tier 0 already
+# requires an exact frame_signature match (mana_cost + type_line + power/
+# toughness), which Instant vs Sorcery always fails regardless of this
+# exemption -- so it can only ever move a match between Tier 1 and Tier 2,
+# never grant Tier 0.
+INSTANT_SORCERY_EXEMPT = frozenset({"Instant", "Sorcery"})
+
+
+def types_disjoint_for_demotion(anchor_types: frozenset, candidate_types: frozenset) -> bool:
+    if not anchor_types or not candidate_types:
+        return False
+    if anchor_types <= INSTANT_SORCERY_EXEMPT and candidate_types <= INSTANT_SORCERY_EXEMPT:
+        return False
+    return not (anchor_types & candidate_types)
 
 
 def creature_subtypes(type_line: str) -> frozenset:
@@ -1680,15 +1891,26 @@ def keyword_kinship_match(anchor_doc: dict, candidate_doc: dict, keyword_df: dic
 
 
 def mana_cascade_penalty(a_fact: dict, c_fact: dict) -> float:
-    """R5 cascade, rank ONLY (never qualification). Amount closeness first
-    (each ability's OWN total, per activation); then color-set exactness;
-    then the candidate's own production breadth (widening) for non-exact
-    matches; then a flat rider penalty. Mixed (color+colorless) outputs:
-    the LARGER component leads (whichever of colored_pip_count/
-    colorless_amount is bigger drives the color-set/amount comparison);
-    a true 50/50 mixed ability gets no special rule here -- the other
-    terms (amount, widening, rider) still differentiate it, per R5."""
+    """R5 cascade, rank ONLY (never qualification -- Captain ruling: "open
+    the gate, allow other weights to surface the best matches"). Amount
+    closeness leads (R5: "amount first, then type") -- weighted heavier
+    than every other term, including shape, so an EXACT-amount cross-shape
+    match (e.g. Dark Ritual's one-shot {B}{B}{B} vs Bog Witch's repeatable
+    {B}{B}{B}) outranks a same-shape match that's even one mana off.
+    Source-class/repeatable ("type" and "one-shot vs repeatable", both R5
+    facts) is a SECONDARY term -- same shape is a mild tiebreaker, not a
+    qualification requirement, the same shared-slot precedent as a
+    different keyword param. Then color-set exactness; then the
+    candidate's own production breadth (widening) for non-exact matches;
+    then a flat rider penalty. Mixed (color+colorless) outputs: the LARGER
+    component leads (whichever of colored_pip_count/colorless_amount is
+    bigger drives the color-set/amount comparison); a true 50/50 mixed
+    ability gets no special rule here -- the other terms (amount, shape,
+    widening, rider) still differentiate it, per R5."""
     penalty = MANA_AMOUNT_PENALTY_WEIGHT * abs(a_fact["amount"] - c_fact["amount"])
+
+    if a_fact["source_class"] != c_fact["source_class"] or a_fact["repeatable"] != c_fact["repeatable"]:
+        penalty += MANA_SHAPE_MISMATCH_PENALTY
 
     a_colors, c_colors = a_fact["colors"], c_fact["colors"]
     if a_colors or c_colors:
@@ -1706,27 +1928,144 @@ def mana_cascade_penalty(a_fact: dict, c_fact: dict) -> float:
     return penalty
 
 
+# ---------------------------------------------------------------------------
+# Entry #4 (Captain's ruling, 2026-07-10) -- Equipment/Aura granted-keyword-
+# SET kinship, PARALLEL to text/keyword/mana matching, same shared-slot
+# precedent as mana kinship (R6): ANY shared granted keyword qualifies
+# Tier 2, ranked by how many stray (non-shared) keywords sit on either
+# side. Fixes Swiftfoot Boots ("hexproof and haste") <-> Lightning Greaves
+# ("haste and shroud") -- same sentence shape, real shared "haste", but
+# longest_common_run() only finds the 3-token "equipped creature has"
+# prefix (keyword order flips), below the 5-token floor, and Mechanism 1
+# (keyword kinship) never sees the clause at all (no comma, "and"-joined).
+# ---------------------------------------------------------------------------
+
+KEYWORD_NAME_SHAPE_RE = re.compile(r"^[a-z][a-z '-]{1,25}$")
+
+
+def build_keyword_vocabulary(cards: dict) -> frozenset:
+    """Canonical set of every keyword-ability NAME that appears anywhere in
+    the corpus' own Scryfall `keywords` field (lowercased) -- reused to
+    validate a granted-keyword-clause extraction, same one-corpus-one-truth
+    rationale as the rest of this engine (no hand-curated keyword list).
+    Scryfall's `keywords` field is broader than static grantable keyword
+    abilities (flying, trample, hexproof...) -- it also carries ability
+    words (grandeur, boast) and Universes Beyond flavor/joke strings
+    ("for auld lang syne", "10,000 needles") that could never legitimately
+    appear in an "Equipped/Enchanted creature has X" idiom. A light,
+    STRUCTURAL filter (letters/spaces/hyphens only, <=3 words) drops the
+    obvious non-keyword-shaped noise -- confirmed directly: 72 of 845 raw
+    entries fail this shape check, all genuinely non-keyword flavor text.
+    Does not attempt to also separate real ability words (cascade, storm)
+    from static grantable keywords by MEANING, only by shape -- low
+    practical risk (no real card phrases a grant clause as "has cascade"),
+    not worth a hand-curated allowlist the rest of this codebase avoids."""
+    names = set()
+    for card in cards.values():
+        for kw in (card.get("keywords") or []):
+            lowered = kw.lower()
+            if KEYWORD_NAME_SHAPE_RE.match(lowered) and len(lowered.split()) <= 3:
+                names.add(lowered)
+    return frozenset(names)
+
+
+def extract_granted_keyword_clause(paragraph: str, keyword_vocabulary: frozenset):
+    """Parses an already-normalized (lowercased, reminder-stripped)
+    matchable paragraph for the Equipment/Aura "confers keywords" idiom.
+    Returns a frozenset of granted keyword names, or None if the paragraph
+    doesn't match the idiom, is conditional (excluded outright -- see
+    CONDITIONAL_GRANT_MARKERS' comment for why), or contains ANY clause
+    fragment that isn't an exact known keyword name -- the corpus-measured
+    "false-positive idiom match" category (84 cards, e.g. Compulsory Rest's
+    `Enchanted creature has "{2}, Sacrifice this creature: ..."`, a granted
+    ACTIVATED ABILITY in quotes, not a keyword list) -- all-or-nothing, no
+    partial credit for a clause that's part real keywords, part noise."""
+    if not paragraph:
+        return None
+    if any(marker in paragraph for marker in CONDITIONAL_GRANT_MARKERS):
+        return None
+    m = GRANT_CLAUSE_RE.match(paragraph)
+    if not m:
+        return None
+    clause = m.group(1).rstrip(".")
+    pieces = [p.strip() for p in re.split(r",\s*(?:and\s+)?|\s+and\s+", clause) if p.strip()]
+    if not pieces:
+        return None
+    keywords = frozenset(pieces)
+    if not keywords <= keyword_vocabulary:
+        return None
+    return keywords
+
+
+def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> list:
+    """Per-card granted-keyword facts, one per qualifying paragraph across
+    all faces -- mirrors mana_facts' shape (a list, even though in practice
+    an Equipment/Aura card carries at most one). Called as a post-
+    processing pass over already-built card_docs (mirrors build_mana_pip_index's
+    call-after-card_docs pattern), not baked into build_card_doc itself,
+    since it needs the corpus-wide keyword vocabulary which can only be
+    known once every card's own `keywords` field has been seen."""
+    facts = []
+    for face in doc["faces"]:
+        for paragraph in face["matchable_paragraphs"]:
+            keywords = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
+            if keywords is not None:
+                facts.append({"keywords": keywords, "paragraph": paragraph})
+    return facts
+
+
+def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
+    """Scoped to GRANT_SIZE_CEILING (2) on both sides -- 3+-keyword grants
+    are the corpus-measured 'keyword-soup' territory (Captain's own read:
+    "it starts finding other cards that have keywords"), already covered
+    by the existing Tagger tag, not this mechanism. ZERO shared keywords =
+    NOT Tier 2 via this path (falls through to Tier 3 tags, same Option B
+    precedent as mana kinship)."""
+    matches = []
+    for a_fact in anchor_doc.get("granted_keyword_facts", []):
+        a_kw = a_fact["keywords"]
+        if not (1 <= len(a_kw) <= GRANT_SIZE_CEILING):
+            continue
+        for c_fact in candidate_doc.get("granted_keyword_facts", []):
+            c_kw = c_fact["keywords"]
+            if not (1 <= len(c_kw) <= GRANT_SIZE_CEILING):
+                continue
+            shared = a_kw & c_kw
+            if not shared:
+                continue
+            extras = len((a_kw | c_kw) - shared)
+            matches.append({
+                "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
+                "penalty": GRANT_KEYWORD_MISMATCH_PENALTY * extras,
+            })
+    return matches
+
+
 def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
-    """R6 (Phase 4, ratified): same mana-ability shape (source_class +
-    repeatable) sharing >=1 produced pip qualifies Tier 2 -- the same
-    shared-slot precedent as keyword kinship. Purely colorless abilities
-    on both sides qualify too (R6's "comparable amounts" path -- there's
-    no color to share, so any colorless<->colorless pair of the same shape
-    counts, ranked by amount closeness via the cascade). ZERO overlap =
-    NOT T2 via this path (falls through to T3 tags, Option B). Returns ALL
-    qualifying (anchor_fact, candidate_fact) pairs with each one's cascade
-    penalty; assign_tier picks the best (lowest-penalty) match. Runs in
-    PARALLEL with literal-text matching (R4) -- never called unless the
-    text path already failed to find a better tier, so the measured guild-
-    pair regression (same-pair literal-text sources collapsing under a
-    hypothetical pip-normalization REPLACEMENT gate) cannot occur here by
-    construction: this path only ever ADDS a candidate that text matching
-    missed entirely."""
+    """R6 (Phase 4, ratified; gate widened by Captain ruling): ANY two
+    mana-producing abilities sharing >=1 produced pip qualify Tier 2 --
+    shape (source_class/repeatable) is NOT a qualification requirement,
+    only a cascade-rank term (mana_cascade_penalty(), "amount first, then
+    type"). This closes a real gap the original shape-gated version had:
+    Dark Ritual (one-shot spell_effect, {B}{B}{B}) and Bog Witch
+    (repeatable activated_tap, {B}{B}{B}) produce EXACTLY the same mana
+    and share no viable text fragment (the core is 2-3 tokens, below the
+    5-token floor) -- under the old shape gate neither mana kinship nor
+    text matching could ever connect them. Purely colorless abilities on
+    both sides qualify too (R6's "comparable amounts" path -- there's no
+    color to share, ranked by amount closeness via the cascade). ZERO
+    overlap = NOT T2 via this path (falls through to T3 tags, Option B).
+    Returns ALL qualifying (anchor_fact, candidate_fact) pairs with each
+    one's cascade penalty; assign_tier picks the best (lowest-penalty)
+    match. Runs in PARALLEL with literal-text matching (R4) -- never
+    called unless the text path already failed to find a better tier, so
+    the measured guild-pair regression (same-pair literal-text sources
+    collapsing under a hypothetical pip-normalization REPLACEMENT gate)
+    cannot occur here by construction: this path only ever ADDS a
+    candidate that text matching missed entirely."""
     matches = []
     for a_fact in anchor_doc.get("mana_facts", []):
         for c_fact in candidate_doc.get("mana_facts", []):
-            if a_fact["source_class"] != c_fact["source_class"] or a_fact["repeatable"] != c_fact["repeatable"]:
-                continue
             a_colors, c_colors = a_fact["colors"], c_fact["colors"]
             if not a_colors and not c_colors:
                 if a_fact["colorless_amount"] <= 0 or c_fact["colorless_amount"] <= 0:
@@ -1745,14 +2084,27 @@ def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
 
 def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_df: dict,
                  paragraph_index: dict, args: argparse.Namespace):
-    """Returns None if there's no verbatim overlap AND no keyword/mana
-    kinship (a Tier 3 candidate), else a dict: {"tier": int, "fragment":
-    str|None, "fragment_df": int|None, "fragment_df_exact": bool,
+    """Returns None if there's no verbatim overlap AND no keyword/mana/
+    granted-keyword kinship (a Tier 3 candidate), else a dict: {"tier": int,
+    "fragment": str|None, "fragment_df": int|None, "fragment_df_exact": bool,
     "evidence": str (display-formatted, notes included), "mechanism":
-    "text"|"reminder"|"keyword"|"mana", "keyword": str|None, "anchor_param":
-    str|None, "candidate_param": str|None, "commonality_weight": float,
-    "commonality_band": str|None, "anchor_mana_fact": dict|None,
-    "candidate_mana_fact": dict|None, "mana_cascade_penalty": float|None}.
+    "text"|"reminder"|"keyword"|"mana"|"keyword_grant", "keyword": str|None,
+    "anchor_param": str|None, "candidate_param": str|None,
+    "commonality_weight": float, "commonality_band": str|None,
+    "anchor_mana_fact": dict|None, "candidate_mana_fact": dict|None,
+    "mana_cascade_penalty": float|None, "anchor_granted_keyword_fact":
+    dict|None, "candidate_granted_keyword_fact": dict|None,
+    "granted_keyword_penalty": float|None, "extra_fragments": list[dict]}.
+    The last three are populated ONLY for mechanism == "keyword_grant"
+    (Entry #4, Captain's ruling 2026-07-10) -- same both-sides-carry shape
+    as Phase 4's mana facts. `extra_fragments` (cumulative fragment
+    scoring, 2026-07-10 ruling) is populated ONLY for a Tier 2 text/reminder
+    match that has a second+ qualifying run in the same paragraph pair as
+    the primary `fragment` -- each entry is {"text", "df", "df_exact",
+    "length", "commonality_weight", "commonality_band", "run_weight"}, else
+    []. `fragment`/`fragment_df` keep their original single-primary-run
+    meaning unchanged; every downstream consumer that compares `fragment`
+    against an exact string (gate checks) is unaffected by this field.
     `fragment`/`fragment_df` are populated for tiers 1/2 (used for v2.1
     rank scoring); Tier 0 leaves them None (sorts by
     name). The keyword/anchor_param/candidate_param trio is populated ONLY
@@ -1800,6 +2152,7 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
     mechanism = "text"
     commonality_weight = 1.0
     commonality_band = None
+    extra_fragments = []
 
     # Phase 5 fix (CO-A's original design, corrected from Phase 3's first
     # pass): a T1 paragraph match in the RESCUE band (the explicitly
@@ -1839,12 +2192,24 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         # Phase 3 (ratified, R3): the hard NGRAM_DF_FLOOR ceiling is replaced
         # by T2_RESCUE_CEILING (172) so the Lane 1c six can qualify, buried --
         # banding (full/discounted/rescue) happens below, same as Tier 1.
-        frag = find_shared_fragment(
+        # Cumulative fragment scoring (2026-07-10 ruling): find_shared_fragments
+        # returns ALL qualifying non-overlapping runs within this same best
+        # pair, not just the longest. runs[0] (the primary/longest) keeps
+        # `fragment`/`fragment_df`/`fragment_df_exact` meaning EXACTLY what
+        # they meant before this change -- every exact-string-equality gate
+        # check (BOROS_CHARM_HEADER_TEXT, SWIFTFOOT_EQUIP_TEXT,
+        # FAITHLESS_FLASHBACK_TEXT, MYREL_BETTER_FRAGMENT, etc.) keeps
+        # comparing against the same single primary string, unaffected by
+        # whether extra runs exist. runs[1:] are new: each gets its own
+        # DF/band/weight (a common 2nd run can't cheaply inflate rank) and
+        # is surfaced ONLY via the new `extra_fragments` list + evidence
+        # text -- nothing else about the primary run's shape changes.
+        runs = find_shared_fragments(
             anchor_doc, candidate_doc, ngram_df, args.ngram_min_len, T2_RESCUE_CEILING,
             exclude=exclude_paragraphs,
         )
-        if frag:
-            text, df, length = frag
+        if runs:
+            text, df, length = runs[0]
             base = 2
             fragment = text
             fragment_df = df
@@ -1855,6 +2220,19 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             both_injected = fragment_both_sides_injected(text, anchor_doc, candidate_doc)
             commonality_weight = PROVENANCE_DISCOUNT_WEIGHT if both_injected else BAND_WEIGHTS[band]
             commonality_band = band
+
+            for r_index, (r_text, r_df, r_length) in enumerate(runs[1:], start=1):
+                r_df_exact = (r_length == args.ngram_min_len)
+                r_marker = "=" if r_df_exact else "≈"
+                r_band = band_for_df(r_df, T2_FULL_WEIGHT_CEILING, T2_DISCOUNT_CEILING, T2_RESCUE_CEILING)
+                r_both_injected = fragment_both_sides_injected(r_text, anchor_doc, candidate_doc)
+                r_weight = PROVENANCE_DISCOUNT_WEIGHT if r_both_injected else BAND_WEIGHTS[r_band]
+                extra_fragments.append({
+                    "text": r_text, "df": r_df, "df_exact": r_df_exact, "length": r_length,
+                    "commonality_weight": r_weight, "commonality_band": r_band,
+                    "run_weight": fragment_run_weight(r_index),
+                })
+                evidence_core += f" + {format_evidence_text(r_text)} (DF{r_marker}{r_df})"
 
     kinship_keyword = None
     kinship_anchor_param = None
@@ -1891,6 +2269,31 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             mechanism = "reminder"
             note += f" [reminder: {reminder_kw}]"
 
+    # Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET kinship,
+    # PARALLEL to text/keyword matching -- same "only fires when nothing
+    # else qualified this pair" gating as mana kinship below, checked FIRST
+    # (deterministic tie-break: a shared functional grant is a closer,
+    # more specific similarity signal than incidental mana overlap, in the
+    # rare case both could apply to the same pair).
+    granted_kw_anchor_fact = None
+    granted_kw_candidate_fact = None
+    granted_kw_penalty_value = None
+    if base is None:
+        grant_matches = granted_keyword_kinship_match(anchor_doc, candidate_doc)
+        best_grant = min(grant_matches, key=lambda m: m["penalty"]) if grant_matches else None
+        if best_grant is not None:
+            base = 2
+            mechanism = "keyword_grant"
+            granted_kw_anchor_fact = best_grant["anchor_fact"]
+            granted_kw_candidate_fact = best_grant["candidate_fact"]
+            granted_kw_penalty_value = best_grant["penalty"]
+            shared_desc = "/".join(sorted(best_grant["shared_keywords"]))
+            fragment = f"granted-keyword kinship: {shared_desc}"
+            evidence_core = (
+                f"granted-keyword kinship: {shared_desc} (mismatch penalty={best_grant['penalty']:.2f})"
+            )
+            note = ""
+
     # Phase 4 (ratified, R4/R6): mana-pip kinship, PARALLEL to text/keyword
     # matching -- only ever fires when nothing else qualified this pair at
     # all (base is still None). R6: mana kinship is Tier 2 only, never
@@ -1921,7 +2324,7 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
 
     anchor_types = type_bucket(anchor_doc["type_line"])
     candidate_types = type_bucket(candidate_doc["type_line"])
-    if anchor_types and candidate_types and not (anchor_types & candidate_types):
+    if types_disjoint_for_demotion(anchor_types, candidate_types):
         demoted_from = base
         base = min(base + 1, 2)
         if base != demoted_from:
@@ -1947,6 +2350,13 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         "anchor_mana_fact": mana_anchor_fact,
         "candidate_mana_fact": mana_candidate_fact,
         "mana_cascade_penalty": mana_cascade_penalty_value,
+        "extra_fragments": extra_fragments,
+        # Entry #4 (Captain's ruling, 2026-07-10): both sides' granted-
+        # keyword facts, None unless mechanism == "keyword_grant" -- same
+        # both-sides-carry precedent as Phase 2c/Phase 4.
+        "anchor_granted_keyword_fact": granted_kw_anchor_fact,
+        "candidate_granted_keyword_fact": granted_kw_candidate_fact,
+        "granted_keyword_penalty": granted_kw_penalty_value,
     }
 
 
@@ -2302,7 +2712,7 @@ def compute_rank(fragment: str, fragment_idf: float, tag_score: float, ci_step: 
                   mv_delta_val, fact_penalties: dict, affinity: dict, ngram_min_len: int,
                   tag_score_weight: float, ci_penalty: float, mv_penalty: float, scope_penalty: float,
                   duration_penalty: float, exception_penalty: float, polarity_penalty: float,
-                  condition_penalty: float) -> dict:
+                  condition_penalty: float, extra_fragment_terms: tuple = ()) -> dict:
     """v2.5 (rank formula): rank = idf(fragment) * sqrt(len(fragment)/NGRAM_MIN_LEN)
     + weight*tag_score - ci_penalty*ci_step - mv_penalty*abs(mv_delta)
     - scope_penalty*scope_mismatch - duration_penalty*duration_mismatch
@@ -2317,9 +2727,22 @@ def compute_rank(fragment: str, fragment_idf: float, tag_score: float, ci_step: 
     baked in upstream). Returns the full breakdown dict; "raw" is the
     pre-penalty, pre-affinity score (idf+tag terms only), used to display
     the breakdown and to evaluate the mono-color proximity / sanity-
-    ordering gates."""
+    ordering gates.
+
+    Cumulative fragment scoring (2026-07-10 ruling): `extra_fragment_terms`
+    is an already-fully-weighted list of additional runs' idf*sqrt(len)
+    contributions (position-based diminishing weight * that run's own
+    commonality-band weight, computed by the caller the same way the
+    primary run's weighting already happens upstream of this function) --
+    summed flatly into `raw`. Empty tuple (the default, and every row
+    unaffected by this feature) makes this byte-identical to the pre-
+    cumulative-scoring formula."""
     length = len(fragment.split())
-    raw = fragment_idf * math.sqrt(length / ngram_min_len) + tag_score_weight * tag_score
+    raw = (
+        fragment_idf * math.sqrt(length / ngram_min_len)
+        + sum(extra_fragment_terms)
+        + tag_score_weight * tag_score
+    )
     ci_term = ci_penalty * ci_step
     mv_term = mv_penalty * mv_asymmetric_distance(mv_delta_val)
     scope_term = scope_penalty if fact_penalties["scope_mismatch"] else 0.0
@@ -3002,6 +3425,22 @@ MANA_ONLY_FAMILY = {
     "Gwenna, Eyes of Gaea", "Slobad, Iron Goblin", "Castle Garenbrig",
     "Crucible of the Spirit Dragon", "Eldrazi Temple", "Hargilde, Kindly Runechanter",
     "Power Depot", "Lukka, Bound to Ruin",
+    # Added auditing Entry #4 (Captain's ruling, 2026-07-10): a real
+    # pre-existing bug in is_keyword_only_paragraph() (raw substring prefix
+    # match, not word-boundary safe -- "enchanted" starts with the card's
+    # own "Enchant" keyword as a bare substring) was wrongly excluding
+    # Discreet Retreat's ENTIRE ability paragraph from matchable_paragraphs.
+    # Fixed as part of Entry #4's implementation (needed for its own
+    # motivating case, Swiftfoot Boots/Lightning Greaves, same bug class).
+    # Discreet Retreat's newly-visible text ("spend this mana only to cast
+    # outlaw spells or activate abilities of outlaw sources") shares Grand
+    # Abolisher's own defining fragment and is thematically identical to
+    # this family -- same "previously hidden by a tokenizer/parser bug, now
+    # correctly surfaced and correctly disqualified" pattern already
+    # documented above for Angel of Jubilation/Yasharn, Implacable Earth.
+    # Tier 2 count unaffected (54, unchanged) -- corroboration removes it
+    # outright, same as the other 16.
+    "Discreet Retreat",
 }
 
 
@@ -3641,6 +4080,13 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                     or (r["_mv_delta"] < 0 and MV_CHEAPER_MULT != 1.0)
                 )
             })
+            # Cumulative fragment scoring (2026-07-10 ruling): same sibling
+            # principle -- a row that itself gained no extra run can still
+            # shift position because ANOTHER row in the tier got boosted by
+            # one, named here so that's traced, not a bare mystery.
+            sibling_cumulative_names = sorted({
+                r["name"] for r in full_rows if r.get("_extra_fragments")
+            })
 
             unexplained = []
             for name in set(exited) | set(moved):
@@ -3657,10 +4103,17 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                     (row_mv_delta > 0 and MV_PRICIER_MULT != 1.0)
                     or (row_mv_delta < 0 and MV_CHEAPER_MULT != 1.0)
                 )
+                # Cumulative fragment scoring (2026-07-10 ruling): a row with
+                # a non-empty _extra_fragments list gets rank contribution
+                # from a second+ shared run -- a NAMED, ruling-driven cause
+                # of movement, same status as the keyword/reminder mechanism
+                # carve-out above, not a DF-drift mystery to trace.
+                cumulative_scoring_fired = bool(row) and bool(row.get("_extra_fragments"))
                 term_fired = bool(row) and (
                     row.get("_polarity_term", 0) > 0 or row.get("_condition_term", 0) > 0
-                    or row.get("_affinity_term", 0) > 0 or mechanism in ("keyword", "reminder")
-                    or mv_asymmetry_fired
+                    or row.get("_affinity_term", 0) > 0
+                    or mechanism in ("keyword", "reminder", "keyword_grant")
+                    or mv_asymmetry_fired or cumulative_scoring_fired
                 )
                 own_drift = drift_by_name.get(name, {"own_df_changed": False, "culprits": []})
                 own_traced = own_drift["own_df_changed"] and bool(own_drift["culprits"])
@@ -3668,8 +4121,15 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                 sibling_mv_traced = (
                     not term_fired and not own_traced and not sibling_traced and bool(sibling_mv_names)
                 )
-                fired = term_fired or own_traced or sibling_traced or sibling_mv_traced
+                sibling_cumulative_traced = (
+                    not term_fired and not own_traced and not sibling_traced and not sibling_mv_traced
+                    and bool(sibling_cumulative_names)
+                )
+                fired = term_fired or own_traced or sibling_traced or sibling_mv_traced or sibling_cumulative_traced
                 detail = f"mechanism={mechanism}"
+                if cumulative_scoring_fired:
+                    n_extra = len(row.get("_extra_fragments") or [])
+                    detail += f", cumulative fragment scoring ({n_extra} extra run(s))"
                 if mv_asymmetry_fired:
                     detail += f", MV asymmetry (MVΔ={row_mv_delta:+g})"
                 if own_traced:
@@ -3678,6 +4138,11 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                     detail += f", sibling DF drift: {'; '.join(sibling_culprits)}"
                 elif sibling_mv_traced:
                     detail += f", sibling MV asymmetry: {', '.join(sibling_mv_names[:5])}{'...' if len(sibling_mv_names) > 5 else ''}"
+                elif sibling_cumulative_traced:
+                    detail += (
+                        f", sibling cumulative fragment scoring: "
+                        f"{', '.join(sibling_cumulative_names[:5])}{'...' if len(sibling_cumulative_names) > 5 else ''}"
+                    )
                 print(
                     f"    {name}: polarity_term={row.get('_polarity_term', 0) if row else 'n/a'}, "
                     f"condition_term={row.get('_condition_term', 0) if row else 'n/a'}, "
@@ -3894,6 +4359,14 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                     frag_idf = MANA_KINSHIP_BASE_RANK - result["mana_cascade_penalty"]
                     frag_df = None
                     rank_fragment = " ".join(["x"] * args.ngram_min_len)
+                elif result["mechanism"] == "keyword_grant":
+                    # Entry #4 (Captain's ruling, 2026-07-10): same length-
+                    # neutral-dummy shape as mana kinship above -- a flat
+                    # baseline minus the mismatch penalty is the entire rank
+                    # signal, no natural corpus-DF analog for a keyword SET.
+                    frag_idf = GRANT_KINSHIP_BASE_RANK - result["granted_keyword_penalty"]
+                    frag_df = None
+                    rank_fragment = " ".join(["x"] * args.ngram_min_len)
                 else:
                     frag_idf, frag_df = compute_fragment_idf(
                         result["fragment"], result["fragment_df"], result["fragment_df_exact"],
@@ -3922,11 +4395,37 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                 ci_step, ci_colors_added = ci_relation_step_value(
                     set(anchor_doc["color_identity"]), set(candidate_doc["color_identity"]), facts["ci_relation"],
                 )
+                # Cumulative fragment scoring (2026-07-10 ruling): each extra
+                # run gets its OWN idf/band-weight (same blend as the primary
+                # run's frag_idf *= effective_weight above -- restored_fraction
+                # is fragment-independent, reused as-is), then a position-based
+                # diminishing run_weight (fragment_run_weight: 1.0 primary,
+                # 0.5 2nd run, 0.25 3rd+ -- a floor, not continued decay) so
+                # several weak extra runs can never outweigh one strong primary
+                # run. Empty for every row unaffected by this feature (the
+                # overwhelming majority), leaving compute_rank byte-identical.
+                extra_fragment_terms = []
+                extra_fragments_export = []
+                for extra in result["extra_fragments"]:
+                    extra_idf, extra_df = compute_fragment_idf(
+                        extra["text"], extra["df"], extra["df_exact"],
+                        ngram_df, args.ngram_min_len, paragraph_index, n_total_cards,
+                    )
+                    extra_effective_weight = extra["commonality_weight"] + (
+                        1.0 - extra["commonality_weight"]
+                    ) * restored_fraction
+                    extra_idf *= extra_effective_weight
+                    extra_term = extra["run_weight"] * extra_idf * math.sqrt(extra["length"] / args.ngram_min_len)
+                    extra_fragment_terms.append(extra_term)
+                    extra_fragments_export.append({
+                        "text": extra["text"], "df": extra_df, "df_exact": extra["df_exact"],
+                        "length": extra["length"], "run_weight": extra["run_weight"],
+                    })
                 breakdown = compute_rank(
                     rank_fragment, frag_idf, tag_score, ci_step, candidate_mv_delta,
                     fact_penalties, affinity, args.ngram_min_len, args.tag_score_weight, args.ci_penalty,
                     args.mv_penalty, args.scope_penalty, args.duration_penalty, args.exception_penalty,
-                    args.polarity_penalty, args.condition_penalty,
+                    args.polarity_penalty, args.condition_penalty, tuple(extra_fragment_terms),
                 )
                 row["_rank"] = breakdown["final"]
                 row["_raw_score"] = breakdown["raw"]
@@ -3949,6 +4448,7 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                 row["_commonality_band"] = result["commonality_band"]
                 row["_commonality_weight"] = result["commonality_weight"]
                 row["_effective_weight"] = effective_weight
+                row["_extra_fragments"] = extra_fragments_export
                 row["rank_display"] = (
                     f"{breakdown['final']:.2f} ({breakdown['raw']:.2f} - "
                     f"{breakdown['ci_term']:.2f} - {breakdown['mv_term']:.2f} - "
@@ -4222,6 +4722,109 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain): Instant/Sorcery are no longer disjoint for the tier-assignment demotion.** "
+        f"This closes the open question flagged since v2.3 (Preordain -> Deliberate's own report section "
+        f"used to ask it explicitly). Both are one-shot, nonpermanent spell types -- unlike e.g. Artifact "
+        f"vs Creature -- so a byte-identical (or fragment-shared) match between an Instant and a Sorcery "
+        f"now stays at its earned tier instead of being bumped down one (min tier 2). Scoped narrowly: "
+        f"see types_disjoint_for_demotion() -- compute_affinity()'s type_match rank bonus and the "
+        f"report's own \"type bucket\" fact column are UNCHANGED (still plain type_bucket() equality), "
+        f"since neither was part of this ruling. Tier 0 is unaffected either way -- frame_signature "
+        f"requires an exact type_line match, which Instant vs Sorcery always fails. Examples: Vampiric "
+        f"Tutor <-> Imperial Seal <-> Cruel Tutor (byte-identical text) now land at Tier 1, not Tier 2."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain): mana-pip kinship's shape requirement (source_class + repeatable) is no "
+        f"longer a qualification gate.** \"Open the gate, allow other weights to surface the best "
+        f"matches.\" Closes a real gap: Dark Ritual (one-shot spell_effect, {{B}}{{B}}{{B}}) and Bog "
+        f"Witch (repeatable activated_tap, {{B}}{{B}}{{B}}) produce EXACTLY the same mana but share no "
+        f"viable text fragment (the core is 2-3 tokens, below the {args.ngram_min_len}-token floor) -- "
+        f"under the old shape-gated version neither mana kinship nor text matching could ever connect "
+        f"them. Shape mismatch is now a cascade-rank term instead (MANA_SHAPE_MISMATCH_PENALTY="
+        f"{MANA_SHAPE_MISMATCH_PENALTY}), deliberately lighter than one unit of amount difference "
+        f"(MANA_AMOUNT_PENALTY_WEIGHT={MANA_AMOUNT_PENALTY_WEIGHT}) so amount stays dominant, per R5's "
+        f"own cascade order (\"amount first, then type\") -- an exact-amount cross-shape match still "
+        f"outranks a same-shape match that's even one mana off. See mana_pip_kinship_match()/"
+        f"mana_cascade_penalty()."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain), 2026-07-10 -- cumulative fragment scoring:** find_shared_fragment() "
+        f"(now find_shared_fragments()) no longer credits only the single globally-longest shared run "
+        f"per anchor/candidate paragraph pair -- it now finds ALL qualifying non-overlapping runs "
+        f"within that SAME best-matching pair (never across different pairs). Rank combination: the "
+        f"primary/longest run keeps its existing weight (1.0, unchanged formula); each additional run "
+        f"gets a position-based diminishing weight -- 2nd run=0.5, 3rd+=0.25 (a FLOOR, not continued "
+        f"decay, so a candidate with many qualifying runs doesn't have its tail contribution vanish) -- "
+        f"see fragment_run_weight(). Runs below NGRAM_MIN_LEN ({args.ngram_min_len} tokens) are "
+        f"explicitly OUT OF SCOPE, deferred to backlog (a separate, deeper NGRAM_MIN_LEN question, not "
+        f"resolved by this change). Motivating case: Delney, Streetwise Lookout vs Roaming Throne share "
+        f"a 5-token prefix run AND a 4-token suffix run -- the 4-token run stays uncredited (below the "
+        f"floor), but the general pattern (two real shared runs around a differing middle clause) is "
+        f"corpus-measured: 41 of 1,259 live text/reminder-mechanism Tier 2 pairs (3.3%) have a "
+        f"qualifying second run, concentrated in three anchors (Delney 80%, Sakura-Tribe Elder 12%, "
+        f"Zurgo, Thunder's Decree 7%, zero elsewhere in the calibration panel). Corpus-wide reorder "
+        f"impact measured directly (old vs new formula, same code path, full Tier 2 list not just the "
+        f"displayed cutoff): Delney 214/282 rows reordered (75.9%, max shift 74 positions), Zurgo "
+        f"35/88 (39.8%, max shift 28), Sakura-Tribe Elder 42/204 (20.6%, max shift 21) -- substantial "
+        f"internal movement, but no candidate crosses into/out of the displayed top-{report_cap} window "
+        f"for any of the three, and no Tier changes anywhere. compute_fact_penalties() required no "
+        f"changes (same-paragraph-pair scoping keeps context identical across all runs). See "
+        f"POKE-PUNCH-LIST.md Entry #5 for the full audit, including a corrected re-measurement that "
+        f"found the original impact estimate had the wrong DF ceiling and didn't respect the engine's "
+        f"own no-double-count paragraph exclusion."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain), 2026-07-10 -- Entry #4, granted-keyword-SET kinship "
+        f"(Equipment/Aura 'confers keywords' idiom), PARALLEL to text/keyword/mana matching:** a new "
+        f"`granted_keyword_set` fact (regex-extracted from 'Equipped/Enchanted creature has/have/gains "
+        f"...' clauses, validated against the corpus' own Scryfall `keywords` vocabulary, all-or-nothing "
+        f"-- any non-keyword clause fragment voids the whole extraction) feeds a new Tier 2 mechanism, "
+        f"same shared-slot shape as mana kinship (R6): ANY shared granted keyword qualifies, ranked by "
+        f"stray (non-shared) keyword count (GRANT_KEYWORD_MISMATCH_PENALTY per stray keyword). Scoped to "
+        f"size 1-2 keyword grants ({GRANT_SIZE_CEILING} ceiling) -- 3+-keyword grants are the "
+        f"corpus-measured 'keyword-soup' territory, already covered by that existing Tagger tag, no new "
+        f"mechanism needed there. Conditional grants (Champion's Helm's 'as long as ... legendary', "
+        f"Multiclass Baldric's per-creature-type set) are excluded from the fact entirely, not extracted "
+        f"and discounted -- verified directly against both named cards' real oracle text that this "
+        f"resolves correctly by construction (one fails the regex's leading anchor, the other fails the "
+        f"keyword-exact-match check), not by the CONDITIONAL_GRANT_MARKERS backstop. Fixes the entry's "
+        f"own motivating case: Swiftfoot Boots ('hexproof and haste') <-> Lightning Greaves ('haste and "
+        f"shroud') -- same sentence shape, real shared 'haste', but longest_common_run() only found the "
+        f"3-token 'equipped creature has' prefix (keyword order flips, below the 5-token floor) and "
+        f"Mechanism 1 never saw the clause (no comma, 'and'-joined). Corpus-wide: 372 cards carry a "
+        f"qualifying size-1/2 granted-keyword fact, producing 9,059 pairwise Tier 2 kinship links -- a "
+        f"real, shared-slot-scale impact (same category as mana kinship's own wide reach), invisible in "
+        f"this 9-card calibration panel since none of these anchors are Equipment/Aura cards; verified "
+        f"directly and live instead via Swiftfoot Boots (34 new keyword_grant Tier 2 rows, Lightning "
+        f"Greaves confirmed among them, live through the actual /api/anchor endpoint)."
+    )
+    lines.append("")
+    lines.append(
+        f"**BUG FIX (found auditing Entry #4, not itself part of the ruling above):** "
+        f"is_keyword_only_paragraph()'s keyword-prefix check was a raw substring match, not "
+        f"word-boundary safe -- 'equipped'/'enchanted' silently prefix-matched an Equipment/Aura card's "
+        f"own 'Equip'/'Enchant' keyword, wrongly excluding its ENTIRE grant-clause paragraph from "
+        f"matchable_paragraphs before ANY mechanism (ordinary text matching, Mechanism 1, or this "
+        f"entry's own new mechanism) could see it -- this is exactly why the bug surfaced auditing this "
+        f"entry: Boots/Greaves' single-fragment 'X and Y' grants (no comma) were silently eaten, while "
+        f"comma-bearing multi-keyword grants (Helm of Kaldra) accidentally survived. FIXED to match the "
+        f"sibling function parse_keyword_instances()'s already-correct word-boundary convention "
+        f"(`frag == kw or frag.startswith(kw + \" \")`). Purely corrective -- confirmed by construction "
+        f"it can only ever ADD paragraphs back, never remove a legitimate exclusion. One corpus-wide gate "
+        f"collision found and resolved: Discreet Retreat's 'spend this mana only to cast outlaw spells "
+        f"or activate abilities of outlaw sources' (same bug, its own 'Enchant' keyword) was previously "
+        f"invisible to Grand Abolisher's Tier 2 corroboration gate; now correctly surfaces (shares "
+        f"Abolisher's own defining fragment) and correctly self-disqualifies via the existing v2.6 "
+        f"amendment 1 mechanism -- added to MANA_ONLY_FAMILY, same as the Angel of Jubilation/Yasharn "
+        f"precedent already documented at that gate. Tier 2 counts elsewhere shifted by single digits "
+        f"(Myrel +1, Sol Ring +2, Delney +6) from other previously-hidden paragraphs becoming searchable "
+        f"corpus-wide -- confirmed additive only, no gate regressions, full suite green."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -4325,23 +4928,19 @@ def append_footer(lines: list, anchor_name: str, tiers: dict, self_check_info: d
             for row in tiers[t]:
                 if row["name"] == "Deliberate":
                     deliberate_hit = (t, row)
-        lines.append("## Flagged for Captain's ruling")
+        lines.append("## Ruled by Captain")
         lines.append("")
         if deliberate_hit:
             t, row = deliberate_hit
             rank_note = f", rank={row['rank_display']}" if "rank_display" in row else ""
-            fp = row.get("_fact_penalties", {})
             lines.append(
-                f"- Preordain -> Deliberate lands at **Tier {t}** ({row['evidence']}{rank_note}) under "
-                f"the disjoint-type rule: Sorcery and Instant share no type-bucket member. This is "
-                f"what the rules say. A possible future carve-out is treating Instant and Sorcery as "
-                f"one bucket for demotion purposes — **not implemented**, pending Captain's ruling. "
-                f"v2.3 note: with the fuller penalty breakdown now visible (CI/MV/scope/duration/"
-                f"exception), Deliberate carries no CI penalty (same CI as Preordain), only a "
-                f"{MV_PENALTY}*|MVΔ| penalty, and its scope/duration/exception facts against "
-                f"Preordain are shown in the rank column above — Captain can now judge directly from "
-                f"the full breakdown whether the tier-2 demotion still meaningfully hurts its "
-                f"position or whether the carve-out remains unnecessary."
+                f"- Preordain -> Deliberate lands at **Tier {t}** ({row['evidence']}{rank_note}). "
+                f"RULED (Captain): Instant and Sorcery no longer count as disjoint for the tier-"
+                f"assignment demotion (types_disjoint_for_demotion()) -- both are one-shot, "
+                f"nonpermanent spell types, unlike e.g. Artifact vs Creature. Was Tier 2 under the "
+                f"old flat disjoint-type rule (the v2.3-era open question this section used to flag); "
+                f"the carve-out is now implemented. Tier 0 is unaffected -- frame_signature still "
+                f"requires an exact type_line match, which Instant vs Sorcery always fails."
             )
         lines.append("")
 
@@ -4366,7 +4965,8 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
 
     pool = gather_candidate_pool(
         anchor_doc, anchor_tags, ctx["paragraph_index"], ctx["clause_index"], ctx["clause_df"],
-        ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"], args,
+        ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"],
+        ctx["mana_index"], args,
     )
     if anchor_card["oracle_id"] in ctx["turn_scoped_matches"]:
         pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_card["oracle_id"]})
@@ -4610,13 +5210,14 @@ def check_gj_ignoble_hierarch_gate(ctx: dict) -> bool:
 
 
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
-                    clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df,
+                    clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
                     turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
     return dict(
         cards=cards, card_docs=card_docs, name_index=name_index, card_tags=card_tags,
         card_tags_t3=card_tags_t3, paragraph_index=paragraph_index, clause_index=clause_index,
         clause_df=clause_df, ngram_index=ngram_index, ngram_df=ngram_df, tag_index=tag_index,
-        keyword_index=keyword_index, keyword_df=keyword_df, turn_scoped_matches=turn_scoped_matches,
+        keyword_index=keyword_index, keyword_df=keyword_df, mana_index=mana_index,
+        turn_scoped_matches=turn_scoped_matches,
         idf=idf, idf_t3=idf_t3, n_total_cards=n_total_cards, args=args,
     )
 
@@ -4662,6 +5263,13 @@ def main() -> None:
     card_docs = {oracle_id: build_card_doc(card) for oracle_id, card in cards.items()}
     n_total_cards = len(cards)
 
+    # ---- Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET facts --
+    # post-processing pass (needs the corpus-wide keyword vocabulary, which can
+    # only be known once every card's own `keywords` field has been seen) ----
+    keyword_vocabulary = build_keyword_vocabulary(cards)
+    for doc in card_docs.values():
+        doc["granted_keyword_facts"] = build_granted_keyword_facts(doc, keyword_vocabulary)
+
     print("building paragraph/clause/n-gram/tag indexes...")
     paragraph_index, clause_index, clause_df, ngram_index, ngram_df = build_indexes(card_docs, args.ngram_min_len)
     tag_index = build_tag_index(card_tags)
@@ -4681,6 +5289,10 @@ def main() -> None:
     keyword_df = compute_keyword_df(card_docs)
     keyword_index = build_keyword_index(card_docs)
     print_keyword_stats(keyword_df, args.ngram_df_floor)
+
+    # ---- Pool-widening fix (Captain's ruling, 2026-07-10): mana kinship's own
+    # candidate-pool seeding -- see build_mana_pip_index()'s docstring ----
+    mana_index = build_mana_pip_index(card_docs)
 
     name_index = build_name_index(cards)
 
@@ -4707,7 +5319,7 @@ def main() -> None:
 
         pool = gather_candidate_pool(
             anchor_doc, anchor_tags, paragraph_index, clause_index, clause_df,
-            ngram_index, ngram_df, tag_index, keyword_index, keyword_df, args,
+            ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index, args,
         )
         # v2.6 amendment 2: a candidate can ONLY score >0 on rule:turn-scoped
         # if the ANCHOR itself carries the tag (anchor-directional coverage).
@@ -4925,7 +5537,7 @@ def main() -> None:
     # ---- Phase 5 (RULING-MANIFEST-2026-07-09.md): new outcome-form gates G-A..G-J ----
     gate_ctx = build_gate_ctx(
         cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
-        clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df,
+        clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
         turn_scoped_matches, idf, idf_t3, n_total_cards, args,
     )
     ga_passed = check_ga_boros_charm_gate(gate_ctx)

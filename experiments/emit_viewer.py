@@ -158,10 +158,18 @@ def build_anchor_display(card: dict, legal_commander) -> dict:
     }
 
 
+def is_land_doc(doc: dict) -> bool:
+    """Candidate's OWN type line, not the anchor-relative type_bucket
+    comparison column -- a lands/nonland filter needs to know what the
+    candidate actually IS, independent of how it compares to the anchor."""
+    return "Land" in te.type_bucket(doc["type_line"])
+
+
 def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_oracle_id: dict) -> dict:
     oracle_id = row.get("oracle_id")
     candidate_doc = card_docs.get(oracle_id)
     keywords = te.keyword_overlap(anchor_doc, candidate_doc) if candidate_doc is not None else []
+    is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
     breakdown = None
     if "_rank" in row:
         breakdown = {
@@ -177,6 +185,7 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "fragment": row.get("fragment"),
         "fragment_df": row.get("_fragment_df"),
         "fragment_df_exact": row.get("_fragment_df_exact"),
+        "extra_fragments": row.get("_extra_fragments") or [],
         "evidence": row.get("evidence"),
         "mv_delta": row.get("_mv_delta"),
         "ci_relation": row["facts"]["ci_relation"],
@@ -190,7 +199,10 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "candidate_param": row.get("_candidate_param"),
         "anchor_mana_fact": json_safe_mana_fact(row.get("_anchor_mana_fact")),
         "candidate_mana_fact": json_safe_mana_fact(row.get("_candidate_mana_fact")),
+        "commonality_band": row.get("_commonality_band"),
+        "commonality_weight": row.get("_commonality_weight"),
         "legal_commander": legality_by_oracle_id.get(oracle_id),
+        "is_land": is_land,
     }
 
 
@@ -210,6 +222,7 @@ def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, legalit
     oracle_id = row.get("oracle_id")
     candidate_doc = card_docs.get(oracle_id)
     mv_delta = te.mv_delta(anchor_doc, candidate_doc) if candidate_doc is not None else None
+    is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
     return {
         "name": row["name"],
         "oracle_id": oracle_id,
@@ -225,6 +238,7 @@ def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, legalit
         "ci_relation": row["facts"]["ci_relation"],
         "type_bucket": row["facts"]["type_bucket"],
         "legal_commander": legality_by_oracle_id.get(oracle_id),
+        "is_land": is_land,
     }
 
 
@@ -236,7 +250,8 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
     start = time.perf_counter()
     pool = te.gather_candidate_pool(
         anchor_doc, anchor_tags, ctx.paragraph_index, ctx.clause_index, ctx.clause_df,
-        ctx.ngram_index, ctx.ngram_df, ctx.tag_index, ctx.keyword_index, ctx.keyword_df, ctx.args,
+        ctx.ngram_index, ctx.ngram_df, ctx.tag_index, ctx.keyword_index, ctx.keyword_df,
+        ctx.mana_index, ctx.args,
     )
     # v2.6 amendment 2: widen the pool for turn-scoped Tier 3 discovery,
     # exactly mirroring tier_engine.py's own main() -- otherwise a candidate
@@ -362,6 +377,12 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     tag_index = te.build_tag_index(card_tags)
     keyword_df = te.compute_keyword_df(card_docs)
     keyword_index = te.build_keyword_index(card_docs)
+    mana_index = te.build_mana_pip_index(card_docs)
+    # Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET facts,
+    # same post-processing pattern as tier_engine.py's own main().
+    keyword_vocabulary = te.build_keyword_vocabulary(cards)
+    for doc in card_docs.values():
+        doc["granted_keyword_facts"] = te.build_granted_keyword_facts(doc, keyword_vocabulary)
     idf, _tag_card_count, _n_tagged = te.compute_tag_stats(card_tags)
 
     turn_scoped_matches, turn_scoped_idf = te.run_turn_scoped_derivation(card_docs, n_total_cards)
@@ -370,6 +391,7 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     return SimpleNamespace(
         conn=conn, cards=cards, card_docs=card_docs, card_tags=card_tags, card_tags_t3=card_tags_t3,
         idf=idf, idf_t3=idf_t3, tag_index=tag_index, keyword_index=keyword_index, keyword_df=keyword_df,
+        mana_index=mana_index,
         turn_scoped_matches=turn_scoped_matches, paragraph_index=paragraph_index, clause_index=clause_index,
         clause_df=clause_df, ngram_index=ngram_index, ngram_df=ngram_df, n_total_cards=n_total_cards,
         args=args, legality_by_oracle_id=legality_by_oracle_id,

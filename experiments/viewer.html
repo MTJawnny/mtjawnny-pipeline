@@ -76,6 +76,29 @@
   .badge-illegal { color: var(--illegal); border-color: var(--illegal); }
   .badge-unknown { color: var(--text-muted); border-color: var(--border); }
 
+  /* v2.10: mechanism + commonality-band badges */
+  .badge-mech-text { color: var(--text-muted); border-color: var(--border); }
+  .badge-mech-reminder { color: #7fa0c9; border-color: #7fa0c9; }
+  .badge-mech-keyword { color: #8a9a6b; border-color: #8a9a6b; }
+  .badge-mech-mana { color: #c99a4a; border-color: #c99a4a; }
+  .badge-band-full { color: var(--legal); border-color: var(--legal); }
+  .badge-band-discounted { color: var(--accent); border-color: var(--accent); }
+  .badge-band-rescue { color: var(--illegal); border-color: var(--illegal); }
+  td.mech-cell { white-space: nowrap; }
+
+  .mana-fact-compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;
+  }
+  .mana-fact-side {
+    background: var(--bg); border: 1px solid var(--border); padding: 6px 8px;
+    font-family: var(--mono); font-size: 11px; line-height: 1.6;
+  }
+  .mana-fact-side .side-label {
+    font-family: var(--sans); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.03em; color: var(--text-muted); display: block; margin-bottom: 4px;
+  }
+  .mana-fact-side .mf-row span.k { color: var(--text-muted); }
+
   .tier-section {
     background: var(--panel); border: 1px solid var(--border);
     margin-bottom: 16px;
@@ -151,6 +174,24 @@
       <input type="checkbox" id="legal-toggle" checked>
       <label for="legal-toggle" style="margin:0;color:var(--text);">Commander-legal only</label>
     </div>
+    <div>
+      <label for="mechanism-select">Mechanism</label>
+      <select id="mechanism-select">
+        <option value="">all</option>
+        <option value="text">text</option>
+        <option value="reminder">reminder</option>
+        <option value="keyword">keyword</option>
+        <option value="mana">mana</option>
+      </select>
+    </div>
+    <div>
+      <label for="land-select">Card type</label>
+      <select id="land-select">
+        <option value="">all</option>
+        <option value="nonland">nonland only</option>
+        <option value="land">land only</option>
+      </select>
+    </div>
     <div id="status"></div>
   </div>
 
@@ -172,7 +213,20 @@
     ["dur", "dur"], ["exc", "exc"], ["pol", "pol"], ["cond", "cond"], ["aff", "aff"]
   ];
 
-  var state = { index: null, currentSlug: null, legalOnly: true };
+  var state = { index: null, currentSlug: null, legalOnly: true, mechanismFilter: "", landFilter: "" };
+
+  var MECHANISM_LABELS = { text: "text", reminder: "reminder", keyword: "keyword", mana: "mana" };
+
+  function mechanismBadge(mech) {
+    if (!mech) return "";
+    var label = MECHANISM_LABELS[mech] || mech;
+    return '<span class="badge badge-mech-' + escapeHtml(mech) + '">' + escapeHtml(label) + '</span>';
+  }
+
+  function bandBadge(band) {
+    if (!band) return "";
+    return '<span class="badge badge-band-' + escapeHtml(band) + '">' + escapeHtml(band) + '</span>';
+  }
 
   function escapeHtml(s) {
     if (s === null || s === undefined) return "";
@@ -386,10 +440,12 @@
 
     var table = document.createElement("table");
     var hasRank = tierData.rows.some(function (r) { return r.rank_score !== null; });
+    var colCount = hasRank ? 8 : 7;
     table.innerHTML =
       '<thead><tr>' +
         '<th class="pos">#</th><th>Name</th>' +
         (hasRank ? '<th class="num">Rank</th>' : '') +
+        '<th>Mechanism</th>' +
         '<th class="num">MVΔ</th><th>CI relation</th><th>Type bucket</th><th>Legal</th>' +
       '</tr></thead>';
     var tbody = document.createElement("tbody");
@@ -398,10 +454,13 @@
       var tr = document.createElement("tr");
       tr.className = "row";
       tr.dataset.legal = row.legal_commander === true ? "1" : (row.legal_commander === false ? "0" : "u");
+      tr.dataset.mechanism = row.mechanism || "";
+      tr.dataset.land = row.is_land === true ? "1" : (row.is_land === false ? "0" : "u");
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
         '<td class="name">' + escapeHtml(row.name) + '</td>' +
         (hasRank ? '<td class="num">' + fmtNum(row.rank_score) + '</td>' : '') +
+        '<td class="mech-cell">' + mechanismBadge(row.mechanism) + ' ' + bandBadge(row.commonality_band) + '</td>' +
         '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
         '<td>' + escapeHtml(row.ci_relation) + '</td>' +
         '<td>' + escapeHtml(row.type_bucket) + '</td>' +
@@ -410,9 +469,11 @@
       var detailTr = document.createElement("tr");
       detailTr.className = "detail-row";
       detailTr.dataset.legal = tr.dataset.legal;
+      detailTr.dataset.mechanism = tr.dataset.mechanism;
+      detailTr.dataset.land = tr.dataset.land;
       detailTr.style.display = "none";
       var detailTd = document.createElement("td");
-      detailTd.colSpan = hasRank ? 7 : 6;
+      detailTd.colSpan = colCount;
       detailTd.innerHTML = renderDetail(row);
       detailTr.appendChild(detailTd);
 
@@ -429,8 +490,45 @@
     return section;
   }
 
+  var MANA_FACT_FIELDS = [
+    ["colors", "colors"], ["colorless_amount", "colorless"], ["amount", "amount"],
+    ["source_class", "class"], ["repeatable", "repeatable"], ["any_color", "any color"],
+    ["ci_restricted", "CI-restricted"], ["is_hybrid", "hybrid"], ["mixed", "mixed"],
+    ["has_rider", "rider"], ["widening", "widening"],
+  ];
+
+  function fmtManaFactValue(v) {
+    if (v === null || v === undefined) return "—";
+    if (Array.isArray(v)) return v.length ? v.join("").toUpperCase() : "(colorless)";
+    if (v === true) return "yes";
+    if (v === false) return "no";
+    return String(v);
+  }
+
+  function renderManaFactSide(fact, label) {
+    if (!fact) return '<div class="mana-fact-side"><span class="side-label">' + escapeHtml(label) + '</span>—</div>';
+    var html = '<div class="mana-fact-side"><span class="side-label">' + escapeHtml(label) + '</span>';
+    MANA_FACT_FIELDS.forEach(function (pair) {
+      html += '<div class="mf-row"><span class="k">' + pair[1] + ':</span> ' + escapeHtml(fmtManaFactValue(fact[pair[0]])) + '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
   function renderDetail(row) {
     var html = "";
+    var headerBits = [];
+    if (row.mechanism) headerBits.push(mechanismBadge(row.mechanism));
+    if (row.commonality_band) {
+      headerBits.push(bandBadge(row.commonality_band));
+      if (row.commonality_weight !== null && row.commonality_weight !== undefined) {
+        headerBits.push('<span style="color:var(--text-muted);font-size:11px;">weight=' + fmtNum(row.commonality_weight, 2) + '</span>');
+      }
+    }
+    if (headerBits.length) {
+      html += '<div style="margin-bottom:8px;">' + headerBits.join(" ") + '</div>';
+    }
+
     if (row.breakdown) {
       html += '<div class="breakdown-grid">';
       BREAKDOWN_LABELS.forEach(function (pair) {
@@ -440,11 +538,35 @@
     } else {
       html += '<div style="color:var(--text-muted);font-size:12px;margin-bottom:6px;">No rank formula for this tier (full-text/frame equality).</div>';
     }
+
+    if (row.mechanism === "keyword") {
+      html += '<div class="fragment-box">keyword: ' + escapeHtml(row.keyword || "") +
+        '  ·  anchor param: ' + escapeHtml(row.anchor_param === null || row.anchor_param === undefined ? "(none)" : row.anchor_param) +
+        '  vs  candidate param: ' + escapeHtml(row.candidate_param === null || row.candidate_param === undefined ? "(none)" : row.candidate_param) +
+        '</div>';
+    } else if (row.mechanism === "mana") {
+      html += '<div class="mana-fact-compare">' +
+        renderManaFactSide(row.anchor_mana_fact, "anchor") +
+        renderManaFactSide(row.candidate_mana_fact, "candidate") +
+        '</div>';
+    }
+
     if (row.fragment) {
       var dfLabel = row.fragment_df === null || row.fragment_df === undefined
         ? ""
         : (" (DF" + (row.fragment_df_exact ? "=" : "≈") + row.fragment_df + ")");
-      html += '<div class="fragment-box">' + escapeHtml(row.fragment) + dfLabel + '</div>';
+      var fragText = escapeHtml(row.fragment) + dfLabel;
+      // Cumulative fragment scoring (2026-07-10 ruling): extra qualifying
+      // runs beyond the primary, same paragraph pair, each with its own DF.
+      if (row.extra_fragments && row.extra_fragments.length) {
+        row.extra_fragments.forEach(function (ef) {
+          var efDfLabel = ef.df === null || ef.df === undefined
+            ? ""
+            : (" (DF" + (ef.df_exact ? "=" : "≈") + ef.df + ")");
+          fragText += " + " + escapeHtml(ef.text) + efDfLabel;
+        });
+      }
+      html += '<div class="fragment-box">' + fragText + '</div>';
     } else if (row.evidence) {
       html += '<div class="fragment-box">' + escapeHtml(row.evidence) + '</div>';
     }
@@ -513,6 +635,7 @@
       var tr = document.createElement("tr");
       tr.className = "row";
       tr.dataset.legal = row.legal_commander === true ? "1" : (row.legal_commander === false ? "0" : "u");
+      tr.dataset.land = row.is_land === true ? "1" : (row.is_land === false ? "0" : "u");
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
         '<td class="name">' + escapeHtml(row.name) + '</td>' +
@@ -525,6 +648,7 @@
       var detailTr = document.createElement("tr");
       detailTr.className = "detail-row";
       detailTr.dataset.legal = tr.dataset.legal;
+      detailTr.dataset.land = tr.dataset.land;
       detailTr.style.display = "none";
       var detailTd = document.createElement("td");
       detailTd.colSpan = 7;
@@ -559,12 +683,18 @@
 
   function applyFilter() {
     var legalOnly = state.legalOnly;
+    var mechFilter = state.mechanismFilter;
+    var landFilter = state.landFilter;
     document.querySelectorAll(".tier-section").forEach(function (section) {
       var rows = section.querySelectorAll("tr.row");
       var shown = 0, hidden = 0;
       rows.forEach(function (tr) {
         var isLegal = tr.dataset.legal === "1";
-        var visible = !legalOnly || isLegal;
+        var mechMatches = !mechFilter || tr.dataset.mechanism === mechFilter;
+        var landMatches = !landFilter ||
+          (landFilter === "land" && tr.dataset.land === "1") ||
+          (landFilter === "nonland" && tr.dataset.land === "0");
+        var visible = (!legalOnly || isLegal) && mechMatches && landMatches;
         tr.classList.toggle("hidden-row", !visible);
         var detail = tr.nextElementSibling;
         if (detail && detail.classList.contains("detail-row")) {
@@ -583,8 +713,16 @@
   document.getElementById("anchor-select").addEventListener("change", function (e) {
     loadAnchor(e.target.value);
   });
+  document.getElementById("mechanism-select").addEventListener("change", function (e) {
+    state.mechanismFilter = e.target.value;
+    applyFilter();
+  });
   document.getElementById("legal-toggle").addEventListener("change", function (e) {
     state.legalOnly = e.target.checked;
+    applyFilter();
+  });
+  document.getElementById("land-select").addEventListener("change", function (e) {
+    state.landFilter = e.target.value;
     applyFilter();
   });
   wireSearch();
