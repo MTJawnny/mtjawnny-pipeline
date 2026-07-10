@@ -185,8 +185,21 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "type_match": row.get("_type_match"),
         "shared_subtypes": row.get("_shared_subtypes"),
         "mechanism": row.get("_mechanism"),
+        "keyword": row.get("_keyword"),
+        "anchor_param": row.get("_anchor_param"),
+        "candidate_param": row.get("_candidate_param"),
+        "anchor_mana_fact": json_safe_mana_fact(row.get("_anchor_mana_fact")),
+        "candidate_mana_fact": json_safe_mana_fact(row.get("_candidate_mana_fact")),
         "legal_commander": legality_by_oracle_id.get(oracle_id),
     }
+
+
+def json_safe_mana_fact(fact: dict):
+    """Phase 4: mana_fact dicts carry a frozenset (colors), not directly
+    JSON-serializable -- sorted list instead, order-independent per R5."""
+    if fact is None:
+        return None
+    return {**fact, "colors": sorted(fact["colors"])}
 
 
 def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_oracle_id: dict) -> dict:

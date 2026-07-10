@@ -189,6 +189,82 @@ NGRAM_DF_FLOOR = 50  # spec said 1000 for sentence-clauses; ratified at 50 for n
 # eyeballing the corpus DF distribution; RATIFIED at 50 in v2.1 (Amendment 3)
 # rather than reverted, since it's defensible (n-gram space is far sparser
 # than sentence space) -- this line is the required flag for that deviation.
+# Phase 3 (ratified, RULING-MANIFEST-2026-07-09.md R1/R2/R3) -- commonality
+# bands, "confirmed against native-only distributions" per the Phase 1
+# clean-data re-cut (experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md). Closes
+# F1 (Tier 1 had no DF gate at all -- Boros Charm minted 221 false Tier 1
+# rows off a bare "choose one --" header) and extends Tier 2's old flat
+# NGRAM_DF_FLOOR=50 hard ceiling into a graduated band, admitting a "rescue
+# zone" up to 172 (this is what readmits the Lane 1c six -- Growth Spiral,
+# Garruk's Uprising, Cultivate, Rhystic Study, Rampant Growth, Deadly
+# Dispute -- as qualified-but-buried instead of rejected outright).
+#
+# T1 and T2 get SEPARATE declared constants (Captain ruling) even though the
+# long-paragraph/fragment values are numerically identical -- never share
+# one constant, so a future divergence never requires touching both.
+#
+# R2: paragraphs of >=NGRAM_MIN_LEN tokens use ngram_scale_df (T2's existing
+# min-window scale); paragraphs shorter than that use para_exact_df (exact
+# corpus-wide count of that literal paragraph text) with their OWN
+# thresholds -- ngram_scale_df is undefined below the window length, and
+# Phase 1 found the four worst T1 offenders in the entire corpus are all
+# short paragraphs it could never even see.
+T1_LONG_FULL_WEIGHT_CEILING = 10
+T1_LONG_DISCOUNT_CEILING = 50
+T1_LONG_RESCUE_CEILING = 172        # DEAD (does not qualify at all) above this
+T1_SHORT_FULL_WEIGHT_CEILING = 5
+T1_SHORT_DISCOUNT_CEILING = 39      # DEAD above this -- no rescue zone for short paragraphs (R3)
+
+T2_FULL_WEIGHT_CEILING = 10
+T2_DISCOUNT_CEILING = 50            # matches the pre-Phase-3 NGRAM_DF_FLOOR value, continuity by design
+T2_RESCUE_CEILING = 172             # replaces NGRAM_DF_FLOOR as T2's hard qualification ceiling
+
+# DEAD is ratified qualification LAW (Captain: "kill them, for now") -- a
+# SECOND lawful exception to "rank buries, never excludes," alongside the
+# v2.6 amendment 1 corroboration gate. Every other band still qualifies;
+# only the WEIGHT differs. The exact multiplier values below are NOT part
+# of the Phase 1 DF-edge measurement (that pass only ratified the edges) --
+# they are this phase's own numeric ruling, printed in report headers.
+# Applied to the fragment_idf term only (never tag_score): full weight is
+# unchanged; the discount band roughly halves standing; the rescue zone
+# buries hard (still ranks, but never competitively) without excluding.
+BAND_WEIGHTS = {"full": 1.0, "discounted": 0.5, "rescue": 0.15}
+
+# R1 -- both-sides-M2-injected provenance discount (Phase 3 numeric ruling).
+# Fires "regardless of DF," so it OVERRIDES the band weight above rather
+# than stacking with it -- a rare/low-DF both-sides-injected match (the
+# Hero-of-Bladehold-class one-side-native overlap keeps full standing; only
+# BOTH sides being reminder-injected triggers this) must not escape via the
+# full-weight band. Deliberately harsher than the rescue-zone weight.
+PROVENANCE_DISCOUNT_WEIGHT = 0.05
+
+# Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-pip
+# kinship cascade. R6: same mana-ability SHAPE (source_class + repeatable)
+# sharing >=1 produced pip (or, for the pure-colorless family, ANY
+# comparable production) qualifies Tier 2 -- zero overlap falls through
+# to T3 tags (Option B). These constants govern RANK ONLY among already-
+# qualified matches (R5's cascade); they never gate qualification.
+# Amount first, then color-set exactness, then widening, then riders.
+MANA_AMOUNT_PENALTY_WEIGHT = 0.3
+# EXTRA colors (candidate makes colors the anchor doesn't need) cost less
+# than MISSING colors (candidate can't cover something the anchor makes) --
+# R5: "entirely WRONG colors cost more than extra."
+MANA_EXTRA_COLOR_PENALTY = 0.3
+MANA_MISSING_COLOR_PENALTY = 0.6
+# The candidate's OWN production breadth, applied only when the color set
+# isn't an exact match (R5: "exact color set first, then widening (mono,
+# then hybrid, then multi-pip)").
+MANA_WIDENING_PENALTY = {"mono": 0.0, "hybrid": 0.2, "multi": 0.4}
+# R5: "drawback/rider text NEVER blocks qualification, only rank."
+MANA_RIDER_PENALTY = 0.15
+# Mana kinship has no natural corpus-DF/idf analog the way keyword kinship
+# does (keyword_df counts real named keywords; there's no equivalently
+# cheap "how common is this shape" corpus dictionary here without a whole
+# new global index). A flat baseline instead -- comparable in magnitude to
+# a typical Tier 2 text-fragment idf term -- with the cascade penalty
+# above as the sole rank differentiator among mana-kinship matches.
+MANA_KINSHIP_BASE_RANK = 5.0
+
 INHERITED_TAG_DISCOUNT = 0.5
 TIER3_COVERAGE_THRESHOLD = 0.15
 TAG_SCORE_WEIGHT = 3.0          # Amendment 1 (v2.1), tunable -- starting value per the change order
@@ -207,9 +283,34 @@ MV_PENALTY = 0.5                # v2.3 ruling 7: was 0.25 in v2.2 -- MV closenes
 # colors the deck may lack. v2.3 ruling 3: splashability is a virtue, not a
 # defect -- subset drops from a full step (1) to a half step (0.5) so an
 # exact CI match still edges a splashable one, but subset candidates stop
-# bleeding rank for having fewer colors. Distance is symmetric (MV penalty
-# uses abs()); "cheaper is better" is a Tier X authoring judgment, not a
-# comparator fact.
+# bleeding rank for having fewer colors.
+#
+# SUPERSEDED (Captain ruling, Phase 3 rebalance, RULING-MANIFEST-2026-07-09.md):
+# MV distance is no longer symmetric. Same MV is still the strongest
+# (MVΔ=0 -> zero penalty, unchanged); the penalty still decays with |MVΔ|
+# (distance dominant); but a CHEAPER candidate (MVΔ<0) decays slower --
+# i.e. is penalized LESS per unit of distance -- than a PRICIER one
+# (MVΔ>0), reflecting that a strictly cheaper functional match is a
+# stronger recommendation than a pricier one at the same distance. This is
+# a tiebreaker on TOP of distance, not a strict cheaper-always-above-pricier
+# bucket sort (a hard bucket would bury a known-good pricier neighbor --
+# e.g. End-Raze Forerunners under a Craterhoof anchor -- below EVERY
+# cheaper candidate regardless of similarity). Realized as a multiplier on
+# the SAME mv_penalty*abs(mv_delta) product -- one term, not two, so mana
+# value is never counted twice. Cost asymmetry only: produced-mana amounts
+# (Phase 4's mana-fact system) remain symmetric, an unrelated axis.
+MV_PRICIER_MULT = 2.5           # RATIFIED (Captain, Phase 3 rebalance): first sweep point tested
+                                 # against the live engine, passed cleanly -- applied when a candidate
+                                 # costs MORE than the anchor (mv_delta > 0). Spot-checked against the
+                                 # "cliff" failure mode: at this multiplier a distance-1 pricier
+                                 # candidate penalizes the same as a distance-2.5 cheaper one (still
+                                 # distance-dominant, not a bucket sort) -- verified via Grand
+                                 # Abolisher's own Tier 2 (Failure // Comply, MVΔ=+1, ranks #6/54, not
+                                 # buried). Craterhoof Behemoth / End-Raze Forerunners (the named spot-
+                                 # check pair) share zero text -- see CO-D evidence, RULING-MANIFEST-
+                                 # 2026-07-09.md, for the scrambled-clause finding that surfaced.
+MV_CHEAPER_MULT = 1.0           # applied when a candidate costs LESS than the anchor (mv_delta < 0) --
+                                 # unchanged from the old symmetric formula this round.
 CI_RELATION_STEP = {"same": 0, "subset": 0.5, "superset": 2, "overlapping": 3, "disjoint": 4}
 
 # v2.5 amendment 2 (Captain's ruling, session): graded superset CI. The flat
@@ -412,6 +513,28 @@ MAJOR_TYPES = {
 
 WS_RE = re.compile(r"\s+")
 CURLY_QUOTES = {"’": "'", "‘": "'", "“": '"', "”": '"'}
+
+
+def strip_sentence_final_token_period(token: str) -> str:
+    """CO-C (Phase 2a, ratified): applied per-token, after whitespace split.
+    A token ending in a literal period is pure sentence-final punctuation
+    (Magic oracle text has no abbreviations or decimals that would make an
+    internal period ambiguous) -- strip exactly one trailing period,
+    wherever the sentence ends within the paragraph, not only at the
+    paragraph's own final token. A paragraph-final-only version was tried
+    first and regressed Start the TARDIS vs Preordain: its multi-sentence
+    paragraph ("...draw a card. You may planeswalk.") has "card." at a
+    mid-paragraph sentence boundary, which stayed period-glued while
+    Preordain's own paragraph-final "card." got stripped -- a NEW mismatch
+    neither side had before. Per-token stripping treats every sentence
+    ending the same way, closing that gap. Never touches apostrophes or
+    symbol tokens ({t}: is colon-terminated, never affected). Fixes the
+    Arcane Signet/Manalith clause-truncation bug (Batch-1 Lane 1a): a bare
+    mid-sentence word (e.g. 'color') never matched the period-glued
+    sentence-final twin ('color.') on the other side."""
+    if token.endswith(".") and len(token) > 1:
+        return token[:-1]
+    return token
 
 KNOWN_LIMITATIONS = [
     "Keyword-only detection is prefix-match against the card's own keywords "
@@ -821,6 +944,126 @@ def parse_keyword_instances(normalized_paragraph: str, keywords: list) -> list:
     return instances
 
 
+# ---------------------------------------------------------------------------
+# Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-fact
+# extraction. Parallel to v2.9 Mechanism 1 (keyword kinship): a NEW
+# qualification path, never a replacement for literal text matching (R4).
+# ---------------------------------------------------------------------------
+
+MANA_COLOR_LETTERS = frozenset("wubrg")  # lowercase -- matchable_paragraphs are lowercased (normalize_clause_text)
+MANA_NUMBER_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6}
+MANA_ADD_RE = re.compile(r"\badd\b(.*?)(?:\.|$)")
+MANA_SYMBOL_RE = re.compile(r"\{([^}]+)\}")
+
+
+def parse_mana_fact(paragraph: str):
+    """R5 -- extracts one mana-producing ability's facts from a single
+    (already-normalized, lowercase) matchable_paragraph, or None if no
+    recognizable "add ... mana" clause is present. A card with multiple
+    mana-producing lines gets one fact per line (caller iterates).
+
+    Facts: colors (frozenset of lowercase WUBRG letters -- a SET, order
+    never matters, R5), colorless_amount, amount (total mana this ability
+    produces per activation -- a comma/or-separated symbol list is a
+    CHOICE, amount=1, not sum(symbols); a concatenated run like "{c}{c}" is
+    cumulative, amount=len(symbols) -- these are genuinely different
+    shapes and conflating them would misstate amount entirely), any_color
+    (bool), ci_restricted (any_color AND explicitly scoped to "commander's
+    color identity" -- a rider, never blocks qualification per R5, only
+    affects rank), is_hybrid (a single {w/u}-style symbol carries BOTH
+    colors as ONE pip, R5's hybrid equivalence), mixed (both colored and
+    colorless production in the SAME ability), source_class/repeatable
+    (how the ability fires -- the R6 "shape" candidates must share to
+    qualify), widening ("mono"|"hybrid"|"multi" -- the ability's OWN
+    production breadth, used only for cascade rank, never qualification).
+
+    KNOWN LIMITATION (documented, not engineered around): variable-amount
+    abilities ("add X mana, where X is...") are not parsed -- amount
+    defaults from the any-color word list only ("one"/"two"/...); an
+    unrecognized/absent number defaults to 1. This under-covers a real but
+    rare corpus slice; halting loudly would block Phase 4 entirely for a
+    handful of variable-mana cards, so it is logged here instead."""
+    m = MANA_ADD_RE.search(paragraph)
+    if not m:
+        return None
+    clause = m.group(1)
+
+    any_color = "any color" in clause
+    ci_restricted = any_color and "commander" in clause and "color identity" in clause
+    is_choice = bool(re.search(r"\bor\b", clause)) or ("," in clause and not any_color)
+
+    colors = set()
+    colorless_amount = 0
+    colored_pip_count = 0
+    is_hybrid = False
+
+    if any_color:
+        colors = set(MANA_COLOR_LETTERS)
+        amount = 1
+        for word, n in MANA_NUMBER_WORDS.items():
+            if re.search(rf"\b{word}\b", clause):
+                amount = n
+                break
+    else:
+        symbols = MANA_SYMBOL_RE.findall(clause)
+        for sym in symbols:
+            if sym == "c":
+                colorless_amount += 1
+            elif sym in MANA_COLOR_LETTERS:
+                colors.add(sym)
+                colored_pip_count += 1
+            elif "/" in sym:
+                parts = [p for p in sym.split("/") if p in MANA_COLOR_LETTERS]
+                if parts:
+                    colors.update(parts)
+                    colored_pip_count += 1
+                    is_hybrid = True
+        if colored_pip_count == 0 and colorless_amount == 0:
+            return None  # "add" found but nothing recognizable followed -- not parseable, not a mana ability we track
+        amount = 1 if is_choice else (colored_pip_count + colorless_amount)
+
+    prefix = paragraph[:m.start()]
+    if "{t}" in prefix:
+        source_class, repeatable = "activated_tap", True
+    elif re.match(r"^\s*(at the beginning of)", paragraph):
+        source_class, repeatable = "triggered_recurring", True
+    elif re.match(r"^\s*(when|whenever)\b", paragraph):
+        source_class, repeatable = "triggered_etb", False
+    elif ":" in prefix:
+        source_class, repeatable = "activated_other", True
+    else:
+        source_class, repeatable = "spell_effect", False
+
+    if any_color or (is_choice and len(colors) > 1):
+        widening = "multi"
+    elif is_hybrid:
+        widening = "hybrid"
+    else:
+        widening = "mono"
+
+    # R5 "drawback/rider text NEVER blocks qualification, only rank" -- a
+    # coarse, general (non-card-specific) detector for common restriction
+    # phrasing anywhere in the ability, used only as a cascade rank
+    # tiebreaker below, never for qualification.
+    has_rider = bool(re.search(r"\b(only|unless|where|that a|to cast)\b", paragraph))
+
+    return {
+        "colors": frozenset(colors),
+        "colorless_amount": colorless_amount,
+        "colored_pip_count": colored_pip_count,
+        "amount": amount,
+        "any_color": any_color,
+        "ci_restricted": ci_restricted,
+        "is_hybrid": is_hybrid,
+        "mixed": colored_pip_count > 0 and colorless_amount > 0,
+        "has_rider": has_rider,
+        "source_class": source_class,
+        "repeatable": repeatable,
+        "widening": widening,
+        "raw": paragraph,
+    }
+
+
 def get_raw_faces(card: dict) -> list:
     """List of per-face dicts (name, oracle_text, mana_cost, type_line, power,
     toughness) -- real per-face split, never joined."""
@@ -905,6 +1148,11 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True) -> dict:
         for p in matchable_paragraphs:
             clauses.extend(split_clauses(p))
 
+        # Phase 4 (ratified, R5): mana-fact extraction, one per recognizable
+        # "add ... mana" paragraph on this face -- parallel data, never
+        # replacing matchable_paragraphs/paragraph_tokens (R4).
+        mana_facts = [f for f in (parse_mana_fact(p) for p in matchable_paragraphs) if f is not None]
+
         faces.append({
             "name": raw_face["name"],
             "mana_cost": raw_face["mana_cost"],
@@ -912,15 +1160,21 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True) -> dict:
             "power": raw_face["power"],
             "toughness": raw_face["toughness"],
             "matchable_paragraphs": matchable_paragraphs,
-            "paragraph_tokens": [p.split() for p in matchable_paragraphs],
+            "paragraph_tokens": [
+                [strip_sentence_final_token_period(tok) for tok in p.split()]
+                for p in matchable_paragraphs
+            ],
             "full_text_all": "\n".join(all_paragraphs),
             "clauses": clauses,
             "reminder_keyword_by_paragraph": reminder_keyword_by_paragraph,
+            "mana_facts": mana_facts,
         })
 
     doc_reminder_keyword_by_paragraph = {}
     for f in faces:
         doc_reminder_keyword_by_paragraph.update(f["reminder_keyword_by_paragraph"])
+
+    mana_facts = [fact for f in faces for fact in f["mana_facts"]]
 
     return {
         "oracle_id": card["oracle_id"],
@@ -933,6 +1187,7 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True) -> dict:
         "reminder_keyword_by_paragraph": doc_reminder_keyword_by_paragraph,
         "faces": faces,
         "composed_full_text": "\n".join(f["full_text_all"] for f in faces),
+        "mana_facts": mana_facts,
     }
 
 
@@ -1155,7 +1410,12 @@ def trace_df_drift(fragment: str, ngram_min_len: int, legacy_ngram_index: dict, 
     drifted" claim. Returns {"own_df_changed": bool, "culprits": [...]}."""
     if not fragment:
         return {"own_df_changed": False, "culprits": []}
-    tokens = fragment.split()
+    # Same fix as find_shared_paragraph (Phase 5, G-C): a Tier 1 whole-
+    # paragraph fragment is the RAW matchable_paragraph text (periods
+    # intact), not pre-stripped like a Tier 2 fragment already is -- must
+    # match ngram_df's own per-token stripping convention (CO-C) or every
+    # window touching a punctuated token silently misses (DF=0).
+    tokens = [strip_sentence_final_token_period(tok) for tok in fragment.split()]
     if len(tokens) < ngram_min_len:
         return {"own_df_changed": False, "culprits": []}
     windows = ngrams_for_tokens(tokens, ngram_min_len)
@@ -1268,17 +1528,112 @@ def compute_affinity(anchor_doc: dict, candidate_doc: dict, type_match_bonus: fl
     }
 
 
-def find_shared_paragraph(anchor_doc: dict, candidate_doc: dict, exclude: frozenset = frozenset()):
-    """`exclude` (v2.9): see find_shared_fragment -- same no-double-count
-    suppression."""
+def restoration_fraction(affinity_term: float, type_match_bonus: float, subtype_bonus_cap: float) -> float:
+    """Phase 3 rebalance (Captain ruling): how much of a band-discounted
+    fragment's weight gets restored toward 1.0, on [0, 1]. Frame affinity
+    only (type match + shared subtype) -- MV moved OUT of this restoration
+    and into mv_asymmetric_distance()/compute_rank's own mv_term instead
+    (Captain: don't add a second MV term, realize it inside the existing
+    one). General by construction -- no card identity enters this
+    function."""
+    max_affinity = type_match_bonus + subtype_bonus_cap
+    if max_affinity <= 0:
+        return 0.0
+    return min(1.0, affinity_term / max_affinity)
+
+def band_for_df(df, full_ceiling: float, discount_ceiling: float, rescue_ceiling=None) -> str:
+    """R3 (Phase 3, ratified): 'full'|'discounted'|'rescue'|'dead'. `df` of
+    None (should not occur for any real corpus paragraph/fragment; a defensive
+    guard, not an expected path) is treated as 'dead' -- never silently admit
+    something the engine couldn't measure. `rescue_ceiling=None` means no
+    rescue zone exists for this population (R3: short paragraphs have none)."""
+    if df is None:
+        return "dead"
+    if df <= full_ceiling:
+        return "full"
+    if df <= discount_ceiling:
+        return "discounted"
+    if rescue_ceiling is not None and df <= rescue_ceiling:
+        return "rescue"
+    return "dead"
+
+
+def text_injected_on_side(text: str, doc: dict) -> bool:
+    """Is `text` (or is it contained within) a v2.9 Mechanism-2-injected
+    reminder paragraph on this side? Substring check (not just exact-match)
+    so a Tier 2 fragment carved out of an injected paragraph is recognized
+    too, the same convention find_reminder_attribution already uses."""
+    for paragraph_text in doc["reminder_keyword_by_paragraph"]:
+        if text == paragraph_text or text in paragraph_text:
+            return True
+    return False
+
+
+def fragment_both_sides_injected(text: str, anchor_doc: dict, candidate_doc: dict) -> bool:
+    """R1 (Phase 3, ratified): provenance is engine-known, never a named
+    keyword/phrase list -- both sides' occurrence of the matched
+    paragraph/fragment must themselves be Mechanism-2-injected reminder
+    text for the discount to fire. A one-side-native match (the
+    Hero-of-Bladehold class) is explicitly NOT discounted -- ratified
+    by-design overlap."""
+    return text_injected_on_side(text, anchor_doc) and text_injected_on_side(text, candidate_doc)
+
+
+def find_shared_paragraph(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, ngram_min_len: int,
+                           paragraph_index: dict, exclude: frozenset = frozenset()):
+    """R3/F1 fix (Phase 3, ratified): closes the missing-DF-gate bug --
+    previously ANY exact-string paragraph match qualified Tier 1 regardless
+    of how common it was corpus-wide (Boros Charm's "choose one --" header:
+    221 false Tier 1 rows; Swiftfoot Boots equip reminder: 62 more). Now
+    applies the same commonality-band discipline Tier 2 already had, per
+    paragraph (R2): >=ngram_min_len tokens use ngram_scale_df; shorter use
+    para_exact_df, each against its OWN band edges. DEAD-band matches do
+    NOT qualify at all (falls through to Tier 2/3) -- the second lawful
+    exception to rank-buries-never-excludes, alongside the v2.6
+    corroboration gate. Among surviving candidate paragraphs, the best band
+    wins (full > discounted > rescue), ties broken by lowest DF then
+    longest text, for determinism. `exclude` (v2.9): see find_shared_fragment
+    -- same no-double-count suppression. Returns None, or
+    {"text":, "band":, "weight":, "df":, "both_sides_injected":}."""
+    candidates = []
+    seen_texts = set()
     for af in anchor_doc["faces"]:
         for ap in af["matchable_paragraphs"]:
-            if ap in exclude:
+            if ap in exclude or ap in seen_texts:
                 continue
-            for cf in candidate_doc["faces"]:
-                if ap in cf["matchable_paragraphs"]:
-                    return ap
-    return None
+            matched = any(ap in cf["matchable_paragraphs"] for cf in candidate_doc["faces"])
+            if not matched:
+                continue
+            seen_texts.add(ap)
+
+            # BUG FIX (Phase 5, caught by G-C): must use the SAME per-token
+            # sentence-final-period stripping (CO-C) that built ngram_df
+            # itself (via face["paragraph_tokens"]) -- a bare .split() here
+            # silently missed every ngram_df lookup whose window included a
+            # punctuated token, defaulting to DF=0 (band "full") for
+            # anything with an internal period, e.g. Faithless Looting's
+            # flashback reminder ("...flashback cost. then exile it.")
+            # measured DF=0 instead of its true 173 and wrongly qualified
+            # Tier 1 at full weight for 171 candidates.
+            tokens = [strip_sentence_final_token_period(tok) for tok in ap.split()]
+            if len(tokens) >= ngram_min_len:
+                df = ngram_df_estimate(tokens, ngram_df, ngram_min_len)
+                band = band_for_df(df, T1_LONG_FULL_WEIGHT_CEILING, T1_LONG_DISCOUNT_CEILING, T1_LONG_RESCUE_CEILING)
+            else:
+                df = len(paragraph_index.get(ap, ()))
+                band = band_for_df(df, T1_SHORT_FULL_WEIGHT_CEILING, T1_SHORT_DISCOUNT_CEILING, None)
+            if band == "dead":
+                continue
+
+            both_injected = fragment_both_sides_injected(ap, anchor_doc, candidate_doc)
+            weight = PROVENANCE_DISCOUNT_WEIGHT if both_injected else BAND_WEIGHTS[band]
+            candidates.append({"text": ap, "band": band, "weight": weight, "df": df,
+                                "both_sides_injected": both_injected})
+
+    if not candidates:
+        return None
+    band_rank = {"full": 0, "discounted": 1, "rescue": 2}
+    return min(candidates, key=lambda c: (band_rank[c["band"]], c["df"], -len(c["text"])))
 
 
 def find_reminder_attribution(fragment: str, anchor_doc: dict, candidate_doc: dict):
@@ -1324,14 +1679,88 @@ def keyword_kinship_match(anchor_doc: dict, candidate_doc: dict, keyword_df: dic
     return matches
 
 
+def mana_cascade_penalty(a_fact: dict, c_fact: dict) -> float:
+    """R5 cascade, rank ONLY (never qualification). Amount closeness first
+    (each ability's OWN total, per activation); then color-set exactness;
+    then the candidate's own production breadth (widening) for non-exact
+    matches; then a flat rider penalty. Mixed (color+colorless) outputs:
+    the LARGER component leads (whichever of colored_pip_count/
+    colorless_amount is bigger drives the color-set/amount comparison);
+    a true 50/50 mixed ability gets no special rule here -- the other
+    terms (amount, widening, rider) still differentiate it, per R5."""
+    penalty = MANA_AMOUNT_PENALTY_WEIGHT * abs(a_fact["amount"] - c_fact["amount"])
+
+    a_colors, c_colors = a_fact["colors"], c_fact["colors"]
+    if a_colors or c_colors:
+        if a_colors == c_colors:
+            pass  # exact color-set match -- no color or widening penalty at all
+        else:
+            extra = c_colors - a_colors
+            missing = a_colors - c_colors
+            penalty += MANA_EXTRA_COLOR_PENALTY * len(extra) + MANA_MISSING_COLOR_PENALTY * len(missing)
+            penalty += MANA_WIDENING_PENALTY.get(c_fact["widening"], 0.0)
+    # else: both purely colorless -- amount term above already carries the comparison
+
+    if c_fact["has_rider"]:
+        penalty += MANA_RIDER_PENALTY
+    return penalty
+
+
+def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
+    """R6 (Phase 4, ratified): same mana-ability shape (source_class +
+    repeatable) sharing >=1 produced pip qualifies Tier 2 -- the same
+    shared-slot precedent as keyword kinship. Purely colorless abilities
+    on both sides qualify too (R6's "comparable amounts" path -- there's
+    no color to share, so any colorless<->colorless pair of the same shape
+    counts, ranked by amount closeness via the cascade). ZERO overlap =
+    NOT T2 via this path (falls through to T3 tags, Option B). Returns ALL
+    qualifying (anchor_fact, candidate_fact) pairs with each one's cascade
+    penalty; assign_tier picks the best (lowest-penalty) match. Runs in
+    PARALLEL with literal-text matching (R4) -- never called unless the
+    text path already failed to find a better tier, so the measured guild-
+    pair regression (same-pair literal-text sources collapsing under a
+    hypothetical pip-normalization REPLACEMENT gate) cannot occur here by
+    construction: this path only ever ADDS a candidate that text matching
+    missed entirely."""
+    matches = []
+    for a_fact in anchor_doc.get("mana_facts", []):
+        for c_fact in candidate_doc.get("mana_facts", []):
+            if a_fact["source_class"] != c_fact["source_class"] or a_fact["repeatable"] != c_fact["repeatable"]:
+                continue
+            a_colors, c_colors = a_fact["colors"], c_fact["colors"]
+            if not a_colors and not c_colors:
+                if a_fact["colorless_amount"] <= 0 or c_fact["colorless_amount"] <= 0:
+                    continue
+                shared_colors = frozenset()
+            else:
+                shared_colors = a_colors & c_colors
+                if not shared_colors:
+                    continue
+            matches.append({
+                "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_colors": shared_colors,
+                "penalty": mana_cascade_penalty(a_fact, c_fact),
+            })
+    return matches
+
+
 def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_df: dict,
-                 args: argparse.Namespace):
-    """Returns None if there's no verbatim overlap AND no keyword kinship (a
-    Tier 3 candidate), else a dict: {"tier": int, "fragment": str|None,
-    "fragment_df": int|None, "fragment_df_exact": bool, "evidence": str
-    (display-formatted, notes included), "mechanism": "text"|"reminder"|
-    "keyword"}. `fragment`/`fragment_df` are populated for tiers 1/2 (used
-    for v2.1 rank scoring); Tier 0 leaves them None (sorts by name).
+                 paragraph_index: dict, args: argparse.Namespace):
+    """Returns None if there's no verbatim overlap AND no keyword/mana
+    kinship (a Tier 3 candidate), else a dict: {"tier": int, "fragment":
+    str|None, "fragment_df": int|None, "fragment_df_exact": bool,
+    "evidence": str (display-formatted, notes included), "mechanism":
+    "text"|"reminder"|"keyword"|"mana", "keyword": str|None, "anchor_param":
+    str|None, "candidate_param": str|None, "commonality_weight": float,
+    "commonality_band": str|None, "anchor_mana_fact": dict|None,
+    "candidate_mana_fact": dict|None, "mana_cascade_penalty": float|None}.
+    `fragment`/`fragment_df` are populated for tiers 1/2 (used for v2.1
+    rank scoring); Tier 0 leaves them None (sorts by
+    name). The keyword/anchor_param/candidate_param trio is populated ONLY
+    when mechanism == "keyword" (Phase 2c, ratified) -- both sides' kinship
+    facts, not the anchor's alone. commonality_weight/commonality_band
+    (Phase 3, ratified, R1/R2/R3) apply ONLY to the text/reminder mechanisms
+    (Mechanism 1 keyword kinship has its own, separate DF floor and is
+    unaffected) -- weight is 1.0 and band is None when they don't apply.
 
     v2.9: TWO qualification paths now run in PARALLEL with the original
     verbatim-text path, and the better (lower-numbered) tier wins, ties
@@ -1358,7 +1787,9 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         anchor_doc["composed_full_text"] and candidate_doc["composed_full_text"]
         and anchor_doc["composed_full_text"] == candidate_doc["composed_full_text"]
     )
-    tier1_paragraph = find_shared_paragraph(anchor_doc, candidate_doc, exclude=exclude_paragraphs)
+    tier1_match = find_shared_paragraph(
+        anchor_doc, candidate_doc, ngram_df, args.ngram_min_len, paragraph_index, exclude=exclude_paragraphs,
+    )
 
     base = None
     fragment = None
@@ -1367,22 +1798,49 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
     note = ""
     evidence_core = None
     mechanism = "text"
+    commonality_weight = 1.0
+    commonality_band = None
+
+    # Phase 5 fix (CO-A's original design, corrected from Phase 3's first
+    # pass): a T1 paragraph match in the RESCUE band (the explicitly
+    # low-confidence "qualifies but buried" zone, long paragraphs only --
+    # short paragraphs never have a rescue band, R3) does NOT stay Tier 1
+    # -- it DEMOTES to the Tier 2 fragment path below, which independently
+    # re-evaluates at the (shorter, possibly rarer) fragment level. Caught
+    # by G-B: Swiftfoot Boots' equip reminder (rescue band, DF=64) was
+    # wrongly minting 62 Tier 1 rows under the first Phase 3 pass. "full"
+    # and "discounted" bands still stay Tier 1 (weight reduced, not
+    # excluded) -- demoting "discounted" too broke the standing v2.2 Sol
+    # Ring sanity gate: Sol Ring's own short "{t}: add {c}{c}." paragraph
+    # (para_exact_df=19, discounted band) has no >=5-token fragment to
+    # fall back to at all, so a blanket demotion would have dropped Mana
+    # Crypt/Sol Talisman/Worn Powerstone out of Tier 1 entirely instead of
+    # just de-weighting them.
+    t1_eligible_match = tier1_match if tier1_match and tier1_match["band"] != "rescue" else None
 
     if tier0_ok and frame_signature(anchor_doc) == frame_signature(candidate_doc):
         base = 0
         evidence_core = format_evidence_text(anchor_doc["composed_full_text"])
     elif tier0_ok:
         base = 1
-        fragment = tier1_paragraph or anchor_doc["composed_full_text"]
+        fragment = (t1_eligible_match["text"] if t1_eligible_match else None) or anchor_doc["composed_full_text"]
         evidence_core = format_evidence_text(fragment)
         note = f" [frame gate failed: {', '.join(frame_mismatch_fields(anchor_doc, candidate_doc))}]"
-    elif tier1_paragraph:
+        if t1_eligible_match:
+            commonality_weight = t1_eligible_match["weight"]
+            commonality_band = t1_eligible_match["band"]
+    elif t1_eligible_match:
         base = 1
-        fragment = tier1_paragraph
+        fragment = t1_eligible_match["text"]
         evidence_core = format_evidence_text(fragment)
+        commonality_weight = t1_eligible_match["weight"]
+        commonality_band = t1_eligible_match["band"]
     else:
+        # Phase 3 (ratified, R3): the hard NGRAM_DF_FLOOR ceiling is replaced
+        # by T2_RESCUE_CEILING (172) so the Lane 1c six can qualify, buried --
+        # banding (full/discounted/rescue) happens below, same as Tier 1.
         frag = find_shared_fragment(
-            anchor_doc, candidate_doc, ngram_df, args.ngram_min_len, args.ngram_df_floor,
+            anchor_doc, candidate_doc, ngram_df, args.ngram_min_len, T2_RESCUE_CEILING,
             exclude=exclude_paragraphs,
         )
         if frag:
@@ -1393,22 +1851,70 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             fragment_df_exact = (length == args.ngram_min_len)
             marker = "=" if fragment_df_exact else "≈"
             evidence_core = f"{format_evidence_text(text)} (DF{marker}{df})"
+            band = band_for_df(df, T2_FULL_WEIGHT_CEILING, T2_DISCOUNT_CEILING, T2_RESCUE_CEILING)
+            both_injected = fragment_both_sides_injected(text, anchor_doc, candidate_doc)
+            commonality_weight = PROVENANCE_DISCOUNT_WEIGHT if both_injected else BAND_WEIGHTS[band]
+            commonality_band = band
 
+    kinship_keyword = None
+    kinship_anchor_param = None
+    kinship_candidate_param = None
     if best_kinship is not None and (base is None or best_kinship["tier"] < base):
         base = best_kinship["tier"]
         mechanism = "keyword"
         kw = best_kinship["keyword"]
         param_a = best_kinship["anchor_param"]
-        fragment = f"{kw} {param_a}".strip() if param_a else kw
+        param_c = best_kinship["candidate_param"]
+        kinship_keyword = kw
+        kinship_anchor_param = param_a
+        kinship_candidate_param = param_c
+        # Phase 2c (ratified): both sides' params, not the anchor's alone --
+        # the same "mobilize 2 vs mobilize 1" precedent as the READY-TO-SHIP
+        # display note. Equal params (the Tier 1 same-param case) collapse to
+        # one mention since "X vs X" would be redundant.
+        if param_a and param_c and param_a != param_c:
+            fragment = f"{kw} {param_a} vs {kw} {param_c}"
+        else:
+            fragment = f"{kw} {param_a}".strip() if param_a else kw
         fragment_df = best_kinship["df"]
         fragment_df_exact = True
         evidence_core = f"keyword kinship: {fragment} (DF={best_kinship['df']})"
         note = ""
+        # Mechanism 1 has its own, separate DF-floor discipline (keyword_df,
+        # unaffected by R1/R3) -- band weighting is text/reminder-mechanism
+        # scope only, never applied to a keyword-kinship win.
+        commonality_weight = 1.0
+        commonality_band = None
     elif fragment is not None:
         reminder_kw = find_reminder_attribution(fragment, anchor_doc, candidate_doc)
         if reminder_kw is not None:
             mechanism = "reminder"
             note += f" [reminder: {reminder_kw}]"
+
+    # Phase 4 (ratified, R4/R6): mana-pip kinship, PARALLEL to text/keyword
+    # matching -- only ever fires when nothing else qualified this pair at
+    # all (base is still None). R6: mana kinship is Tier 2 only, never
+    # Tier 0/1, so it can never override an already-better tier; ties
+    # never arise since it only runs in the None case.
+    mana_anchor_fact = None
+    mana_candidate_fact = None
+    mana_cascade_penalty_value = None
+    if base is None:
+        mana_matches = mana_pip_kinship_match(anchor_doc, candidate_doc)
+        best_mana = min(mana_matches, key=lambda m: m["penalty"]) if mana_matches else None
+        if best_mana is not None:
+            base = 2
+            mechanism = "mana"
+            mana_anchor_fact = best_mana["anchor_fact"]
+            mana_candidate_fact = best_mana["candidate_fact"]
+            mana_cascade_penalty_value = best_mana["penalty"]
+            shared_desc = (
+                "/".join(sorted(c.upper() for c in best_mana["shared_colors"]))
+                if best_mana["shared_colors"] else "colorless"
+            )
+            fragment = f"mana kinship: {shared_desc}"
+            evidence_core = f"mana kinship: {shared_desc} (cascade penalty={best_mana['penalty']:.2f})"
+            note = ""
 
     if base is None:
         return None
@@ -1428,6 +1934,19 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         "fragment_df_exact": fragment_df_exact,
         "evidence": evidence_core + note,
         "mechanism": mechanism,
+        # Phase 2c (ratified): both-sides kinship facts, None for the
+        # text/reminder mechanisms -- Phase 4's mana-kinship rows reuse this
+        # same shape.
+        "keyword": kinship_keyword,
+        "anchor_param": kinship_anchor_param,
+        "candidate_param": kinship_candidate_param,
+        "commonality_weight": commonality_weight,
+        "commonality_band": commonality_band,
+        # Phase 4 (ratified, R6): both sides' mana facts, None unless
+        # mechanism == "mana" -- same both-sides-carry precedent as Phase 2c.
+        "anchor_mana_fact": mana_anchor_fact,
+        "candidate_mana_fact": mana_candidate_fact,
+        "mana_cascade_penalty": mana_cascade_penalty_value,
     }
 
 
@@ -1763,7 +2282,14 @@ def compute_fragment_idf(fragment: str, fragment_df, fragment_df_exact: bool, ng
     if fragment_df is not None:
         df = fragment_df
     else:
-        tokens = fragment.split()
+        # BUG FIX (Phase 5, same class as G-C's find_shared_paragraph fix):
+        # a Tier 1 whole-paragraph fragment carries its RAW punctuation
+        # (periods intact) -- must strip per-token (CO-C) before looking up
+        # ngram_df, or every window touching a punctuated token silently
+        # misses (df=0, clamped to 1 below), WRONGLY inflating idf to
+        # log(N/1) for any long Tier 1 paragraph -- an every-Tier-1-row-
+        # since-CO-C bug, not new to Phase 3.
+        tokens = [strip_sentence_final_token_period(tok) for tok in fragment.split()]
         if len(tokens) >= ngram_min_len:
             df = ngram_df_estimate(tokens, ngram_df, ngram_min_len)
         else:
@@ -1795,7 +2321,7 @@ def compute_rank(fragment: str, fragment_idf: float, tag_score: float, ci_step: 
     length = len(fragment.split())
     raw = fragment_idf * math.sqrt(length / ngram_min_len) + tag_score_weight * tag_score
     ci_term = ci_penalty * ci_step
-    mv_term = mv_penalty * (abs(mv_delta_val) if mv_delta_val is not None else 0.0)
+    mv_term = mv_penalty * mv_asymmetric_distance(mv_delta_val)
     scope_term = scope_penalty if fact_penalties["scope_mismatch"] else 0.0
     duration_term = duration_penalty if fact_penalties["duration_mismatch"] else 0.0
     exception_term = exception_penalty if fact_penalties["exception_mismatch"] else 0.0
@@ -1824,6 +2350,20 @@ def mv_delta(anchor_doc: dict, candidate_doc: dict):
     if a_cmc is None or c_cmc is None:
         return None
     return c_cmc - a_cmc
+
+
+def mv_asymmetric_distance(mv_delta_val) -> float:
+    """Phase 3 rebalance (Captain ruling): distance-dominant, direction as
+    tiebreaker. abs(MVΔ) still governs magnitude (a distance of 4 always
+    penalizes more than a distance of 1, regardless of direction); MV_
+    PRICIER_MULT/MV_CHEAPER_MULT only scale within that, never invert it."""
+    if mv_delta_val is None:
+        return 0.0
+    if mv_delta_val > 0:
+        return mv_delta_val * MV_PRICIER_MULT
+    if mv_delta_val < 0:
+        return abs(mv_delta_val) * MV_CHEAPER_MULT
+    return 0.0
 
 
 def color_identity_relation(anchor_doc: dict, candidate_doc: dict) -> str:
@@ -1897,13 +2437,13 @@ def resolve_anchor(name: str, cards: dict, name_index: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def run_self_check(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, keyword_df: dict,
-                    args: argparse.Namespace) -> tuple:
+                    paragraph_index: dict, args: argparse.Namespace) -> tuple:
     print("\nSelf-check against Captain's ruled v1 eyeball verdicts (frozen since v2):")
     all_pass = True
     for anchor_name, candidate_name, expected in SELF_CHECK_PAIRS:
         anchor_doc = card_docs[resolve_anchor(anchor_name, cards, name_index)["oracle_id"]]
         candidate_doc = card_docs[resolve_anchor(candidate_name, cards, name_index)["oracle_id"]]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         tier = result["tier"] if result else None
         evidence = result["evidence"] if result else None
         ok = tier == expected
@@ -1916,7 +2456,7 @@ def run_self_check(cards: dict, card_docs: dict, name_index: dict, ngram_df: dic
     for anchor_name, candidate_name in SELF_CHECK_INFO_ONLY:
         anchor_doc = card_docs[resolve_anchor(anchor_name, cards, name_index)["oracle_id"]]
         candidate_doc = card_docs[resolve_anchor(candidate_name, cards, name_index)["oracle_id"]]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         tier = result["tier"] if result else None
         evidence = result["evidence"] if result else None
         info[candidate_name] = (tier, evidence)
@@ -1949,14 +2489,14 @@ def check_tier0_exclusion_gate(self_check_info: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 def check_symmetry(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, keyword_df: dict,
-                    args: argparse.Namespace) -> bool:
+                    paragraph_index: dict, args: argparse.Namespace) -> bool:
     print("\nSymmetry gate (Amendment 4.1): tier assignment must not depend on direction")
     all_ok = True
     for name_a, name_b in SYMMETRY_PAIRS:
         doc_a = card_docs[resolve_anchor(name_a, cards, name_index)["oracle_id"]]
         doc_b = card_docs[resolve_anchor(name_b, cards, name_index)["oracle_id"]]
-        result_ab = assign_tier(doc_a, doc_b, ngram_df, keyword_df, args)
-        result_ba = assign_tier(doc_b, doc_a, ngram_df, keyword_df, args)
+        result_ab = assign_tier(doc_a, doc_b, ngram_df, keyword_df, paragraph_index, args)
+        result_ba = assign_tier(doc_b, doc_a, ngram_df, keyword_df, paragraph_index, args)
         tier_ab = result_ab["tier"] if result_ab else None
         tier_ba = result_ba["tier"] if result_ba else None
         ok = tier_ab == tier_ba
@@ -2273,7 +2813,7 @@ def check_partial_lock_movement(displayed_tier2: list, mv_floor: int) -> bool:
     names = [r["name"] for r in displayed_tier2]
     all_ok = True
     vov_row = by_name.get(VOICE_OF_VICTORY)
-    for name in PARTIAL_LOCK_CARDS:
+    for name in sorted(PARTIAL_LOCK_CARDS):
         row = by_name.get(name)
         exc = row["_fact_penalties"]["candidate_exception"] if row else None
         print(f"  {name}: {'present' if row else 'ABSENT'}, exception_marker={exc}")
@@ -2324,7 +2864,7 @@ def check_partial_lock_movement(displayed_tier2: list, mv_floor: int) -> bool:
 
 
 def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict,
-                                     keyword_df: dict, args: argparse.Namespace) -> bool:
+                                     keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.3 gates 3-4: scope and duration spot-checks against Grand
     Abolisher, printed and asserted since these have definite expected
     values per the change order."""
@@ -2351,7 +2891,7 @@ def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: di
     KNOWN_SCOPE_MISMATCHES = {"Failure // Comply"}
     for name, expected in scope_checks:
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name!r}: no verbatim overlap with Grand Abolisher -- cannot spot-check scope")
             all_ok = False
@@ -2403,7 +2943,7 @@ def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: di
             # pairwise match needed, just read its face type directly.
             duration = face_duration(abolisher_doc["faces"][0]["type_line"])
         else:
-            result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, args)
+            result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
             if result is None:
                 print(f"    [STOP] {name!r}: no verbatim overlap with Grand Abolisher -- cannot spot-check duration")
                 all_ok = False
@@ -2466,7 +3006,7 @@ MANA_ONLY_FAMILY = {
 
 
 def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                        ngram_df: dict, keyword_df: dict, args: argparse.Namespace) -> bool:
+                        ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.4 gate 1: Godsend absent from Abolisher's displayed top 10 (its
     condition-narrowed lock should sink it); condition spot-check printed."""
     print("\nGodsend gate (v2.4 gate 1):")
@@ -2480,7 +3020,7 @@ def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name
 
     abolisher_doc = card_docs[resolve_anchor("Grand Abolisher", cards, name_index)["oracle_id"]]
     godsend_doc = card_docs[resolve_anchor("Godsend", cards, name_index)["oracle_id"]]
-    result = assign_tier(abolisher_doc, godsend_doc, ngram_df, keyword_df, args)
+    result = assign_tier(abolisher_doc, godsend_doc, ngram_df, keyword_df, paragraph_index, args)
     if result is None:
         print("  [STOP] Godsend: no verbatim overlap with Grand Abolisher -- cannot spot-check condition")
         return False
@@ -2495,7 +3035,7 @@ def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name
 
 
 def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                                ngram_df: dict, keyword_df: dict, args: argparse.Namespace) -> bool:
+                                ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.4 gate 2: no "spend this mana only" family member in Abolisher's
     displayed top 10 (identical grammar, inverted function -- polarity
     mismatch should sink the whole family); polarity spot-checks printed."""
@@ -2512,7 +3052,7 @@ def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: di
     abolisher_doc = card_docs[resolve_anchor("Grand Abolisher", cards, name_index)["oracle_id"]]
     for name, expected_trip in (("Myr Reservoir", True), (VOICE_OF_VICTORY, False)):
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name}: no verbatim overlap with Grand Abolisher -- cannot spot-check polarity")
             all_ok = False
@@ -2525,21 +3065,32 @@ def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: di
 
 
 def check_basandra_gate(marisi_full_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                         ngram_df: dict, keyword_df: dict, args: argparse.Namespace) -> bool:
-    """v2.4 gate 3: Basandra ranks below Myrel in Marisi's Tier 2 (full
-    list, since this is about relative order, not display-cap visibility);
-    scope spot-checks printed (Basandra symmetric, Kutzil all_opp)."""
-    print("\nBasandra gate (v2.4 gate 3):")
+                         ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
+    """v2.4 gate 3, UNGATED by Captain ruling (RULING-MANIFEST-2026-07-09.md,
+    Phase 3 rebalance). History, so nothing evaporates: original v2.4
+    expectation was "Basandra ranks below Myrel," assuming neither side's
+    text evidence was discounted. Phase 3's band discount then applied to
+    Myrel's own matched fragment against Marisi ("your opponents can't cast
+    spells", DF=29, discounted band) while Basandra's ("can't cast spells
+    during combat", DF=3) stayed full-weight; this briefly flipped the
+    expectation to "Basandra ranks ABOVE Myrel" (fact basis: closer color
+    identity to Marisi + a near-exact rarer phrase). Captain then RETIRED
+    this as a gate entirely: neither ordering is an expectation any longer
+    -- both are defensible, and the symmetric-vs-not distinction is a rank
+    fact to report, never a disqualifier. Reported informationally only,
+    never blocking. See experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md
+    for the full history. Scope spot-checks printed (Basandra symmetric,
+    Kutzil all_opp) are unaffected and remain blocking."""
+    print("\nBasandra gate (v2.4 gate 3, UNGATED by Captain ruling -- informational only, see docstring):")
     names = [r["name"] for r in marisi_full_tier2]
     all_ok = True
     if "Basandra, Battle Seraph" in names and "Myrel, Shield of Argive" in names:
         basandra_pos = names.index("Basandra, Battle Seraph")
         myrel_pos = names.index("Myrel, Shield of Argive")
-        ok = basandra_pos > myrel_pos
-        all_ok = all_ok and ok
+        relation = "ABOVE" if basandra_pos < myrel_pos else "below"
         print(
-            f"  [{'PASS' if ok else 'STOP'}] Basandra at full-list position {basandra_pos + 1}, "
-            f"Myrel at {myrel_pos + 1} (Basandra must rank below Myrel)"
+            f"  [INFO] Basandra at full-list position {basandra_pos + 1}, Myrel at {myrel_pos + 1} "
+            f"(Basandra ranks {relation} Myrel -- ungated, both orderings are defensible, not a gate failure)"
         )
     else:
         print("  [INFO] Basandra and/or Myrel not both present in Marisi's Tier 2 -- nothing to order")
@@ -2547,7 +3098,7 @@ def check_basandra_gate(marisi_full_tier2: list, cards: dict, card_docs: dict, n
     marisi_doc = card_docs[resolve_anchor("Marisi, Breaker of the Coil", cards, name_index)["oracle_id"]]
     for name, expected in (("Basandra, Battle Seraph", "symmetric"), ("Kutzil, Malamet Exemplar", "all_opp")):
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(marisi_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(marisi_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name}: no verbatim overlap with Marisi -- cannot spot-check scope")
             all_ok = False
@@ -2692,7 +3243,18 @@ def run_v25_spotcheck(cards: dict, card_docs: dict, name_index: dict, ngram_df: 
 # triggered restriction is functionally distant from Abolisher's static
 # one-sided lock). This is a gate tripwire, not a floor to loosen: updated
 # by explicit ruling, not silently widened.
-ABOLISHER_T2_COUNT_AFTER_CORROBORATION = 52  # was 28 (v2.6) / 44 (pre-amendment-1)
+# CO-C (Phase 2a, ratified) sentence-final punctuation fix added exactly 2
+# more rows: Angel of Jubilation, Yasharn, Implacable Earth. Both share
+# Grand Abolisher's own defining fragment, "cast spells or activate
+# abilities" (DF=29, under the floor) -- previously hidden because the
+# bare tokenizer glued Abolisher's "abilities of" to these two cards'
+# sentence-final "abilities." at the exact boundary the run needed to
+# extend through. Verified as a genuine, wanted fix (both are on-topic
+# "can't pay life/sacrifice to cast spells or activate abilities"
+# restriction effects), not noise -- traced via find_shared_fragment
+# before/after, not assumed. Corroboration gate's 16 disqualified names
+# are unchanged.
+ABOLISHER_T2_COUNT_AFTER_CORROBORATION = 54  # was 52 (v2.9 erratum 2) / 28 (v2.6) / 44 (pre-amendment-1)
 
 
 def check_abolisher_corroboration_gate(disqualified: list, full_tier2: list) -> bool:
@@ -2740,7 +3302,7 @@ def check_abolisher_corroboration_gate(disqualified: list, full_tier2: list) -> 
     print(
         f"  [{'PASS' if ok_count else 'STOP'}] Tier 2 count: {len(full_tier2)} "
         f"(expected {ABOLISHER_T2_COUNT_AFTER_CORROBORATION}: 44 pre-v2.6, 28 post-corroboration, "
-        f"52 post-v2.9 Mechanism 2)"
+        f"52 post-v2.9 Mechanism 2, 54 post-CO-C punctuation fix)"
     )
     all_ok = all_ok and ok_count
     return all_ok
@@ -2857,16 +3419,39 @@ def check_t3_turn_scoped_movement(anchor_names: list, built: dict) -> bool:
             r["name"] for r in built[anchor_name]["full_tiers"][3]
             if any(m["slug"] == TURN_SCOPED_TAG_SLUG for m in r.get("_matched_t3", []))
         )
+        # Phase 3 (ratified, R3): a candidate the rescue-zone band newly
+        # qualifies for Tier 1/2 vanishes from Tier 3's pool entirely
+        # ("qualifies at its best tier only," unchanged v1-era rule) --
+        # a legitimate, mechanically-checkable explanation for T3 pool
+        # reshuffling distinct from rule:turn-scoped, so it gets its own
+        # category rather than being folded into the tag-carrier dilution
+        # note above.
+        promoted_this_run = sorted(
+            r["name"] for t in (0, 1, 2) for r in built[anchor_name]["full_tiers"][t]
+        )
+        promoted_set = set(promoted_this_run)
+        promoted_exits = sorted(set(exited) & promoted_set)
         unexplained = []
         for name in set(entered) | set(moved) | set(exited):
             row = full_rows_by_name.get(name)
             own_tag = bool(row) and TURN_SCOPED_TAG_SLUG in row["evidence"]
-            explained = own_tag or bool(tag_carriers)
-            carrier_note = "" if own_tag else (
-                f", explained by anchor-wide dilution from {len(tag_carriers)} turn-scoped carrier(s) "
-                f"({tag_carriers[:3]}{'...' if len(tag_carriers) > 3 else ''})" if tag_carriers else ""
-            )
-            print(f"    {name}: own_turn_scoped_shown={own_tag}{carrier_note} ({'explained' if explained else 'UNEXPLAINED'})")
+            own_promoted = name in promoted_exits
+            explained = own_tag or bool(tag_carriers) or bool(promoted_exits)
+            if own_promoted:
+                note = f", promoted OUT of Tier 3 to a better tier this run (Phase 3 rescue-zone band)"
+            elif not own_tag and tag_carriers:
+                note = (
+                    f", explained by anchor-wide dilution from {len(tag_carriers)} turn-scoped carrier(s) "
+                    f"({tag_carriers[:3]}{'...' if len(tag_carriers) > 3 else ''})"
+                )
+            elif not own_tag and promoted_exits:
+                note = (
+                    f", explained by {len(promoted_exits)} pool-mate(s) promoted out of Tier 3 this run "
+                    f"({promoted_exits[:3]}{'...' if len(promoted_exits) > 3 else ''}) reshuffling the display window"
+                )
+            else:
+                note = ""
+            print(f"    {name}: own_turn_scoped_shown={own_tag}{note} ({'explained' if explained else 'UNEXPLAINED'})")
             if not explained:
                 unexplained.append(name)
 
@@ -3044,24 +3629,55 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                 f"{name}: {format_culprit_list(d['culprits'])}"
                 for name, d in drift_by_name.items() if d["own_df_changed"] and d["culprits"]
             })
+            # Phase 3 rebalance: a row whose OWN mv_delta is unaffected (0, or
+            # on the unchanged side) can still legitimately shift RANK
+            # POSITION because some OTHER row in the same tier got a
+            # different score from the asymmetric MV ladder -- named here so
+            # that's a traced cause, not a bare "something else moved" claim.
+            sibling_mv_names = sorted({
+                r["name"] for r in full_rows
+                if r.get("_mv_delta") not in (None, 0) and (
+                    (r["_mv_delta"] > 0 and MV_PRICIER_MULT != 1.0)
+                    or (r["_mv_delta"] < 0 and MV_CHEAPER_MULT != 1.0)
+                )
+            })
 
             unexplained = []
             for name in set(exited) | set(moved):
                 row = full_rows_by_name.get(name)
                 mechanism = row.get("_mechanism") if row else None
+                # Phase 3 rebalance (Captain ruling): the asymmetric MV ladder
+                # is a NEW source of score movement distinct from the v2.9
+                # keyword/reminder/DF-drift categories above -- a row whose
+                # own MVΔ sign actually falls on the side the current
+                # MV_PRICIER_MULT/MV_CHEAPER_MULT ratio changed is explained
+                # by that, not a mystery.
+                row_mv_delta = row.get("_mv_delta") if row else None
+                mv_asymmetry_fired = bool(row) and row_mv_delta is not None and (
+                    (row_mv_delta > 0 and MV_PRICIER_MULT != 1.0)
+                    or (row_mv_delta < 0 and MV_CHEAPER_MULT != 1.0)
+                )
                 term_fired = bool(row) and (
                     row.get("_polarity_term", 0) > 0 or row.get("_condition_term", 0) > 0
                     or row.get("_affinity_term", 0) > 0 or mechanism in ("keyword", "reminder")
+                    or mv_asymmetry_fired
                 )
                 own_drift = drift_by_name.get(name, {"own_df_changed": False, "culprits": []})
                 own_traced = own_drift["own_df_changed"] and bool(own_drift["culprits"])
                 sibling_traced = (not term_fired) and (not own_traced) and bool(sibling_culprits)
-                fired = term_fired or own_traced or sibling_traced
+                sibling_mv_traced = (
+                    not term_fired and not own_traced and not sibling_traced and bool(sibling_mv_names)
+                )
+                fired = term_fired or own_traced or sibling_traced or sibling_mv_traced
                 detail = f"mechanism={mechanism}"
+                if mv_asymmetry_fired:
+                    detail += f", MV asymmetry (MVΔ={row_mv_delta:+g})"
                 if own_traced:
                     detail += f", own DF drift: {format_culprit_list(own_drift['culprits'])}"
                 elif sibling_traced:
                     detail += f", sibling DF drift: {'; '.join(sibling_culprits)}"
+                elif sibling_mv_traced:
+                    detail += f", sibling MV asymmetry: {', '.join(sibling_mv_names[:5])}{'...' if len(sibling_mv_names) > 5 else ''}"
                 print(
                     f"    {name}: polarity_term={row.get('_polarity_term', 0) if row else 'n/a'}, "
                     f"condition_term={row.get('_condition_term', 0) if row else 'n/a'}, "
@@ -3225,7 +3841,7 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
     disqualified = []
     for oracle_id in pool:
         candidate_doc = card_docs[oracle_id]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
         facts = fact_columns(anchor_doc, candidate_doc)
 
         # Tag overlap score computed for EVERY candidate regardless of tier
@@ -3246,7 +3862,10 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
             candidate_mv_delta = mv_delta(anchor_doc, candidate_doc)
             row = {"name": candidate_doc["name"], "oracle_id": oracle_id, "evidence": result["evidence"],
                    "facts": facts, "fragment": result["fragment"], "_mv_delta": candidate_mv_delta,
-                   "_mechanism": result["mechanism"]}
+                   "_mechanism": result["mechanism"], "_keyword": result["keyword"],
+                   "_anchor_param": result["anchor_param"], "_candidate_param": result["candidate_param"],
+                   "_anchor_mana_fact": result["anchor_mana_fact"],
+                   "_candidate_mana_fact": result["candidate_mana_fact"]}
             if tier in (1, 2):
                 fact_penalties = compute_fact_penalties(anchor_doc, candidate_doc, result["fragment"])
 
@@ -3264,19 +3883,47 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                 # number, not just baked into the "evidence" display string. Pure data
                 # capture -- frag_idf (the only value that feeds the rank formula below)
                 # is unchanged, so this cannot alter any score, tier, or report output.
-                frag_idf, frag_df = compute_fragment_idf(
-                    result["fragment"], result["fragment_df"], result["fragment_df_exact"],
-                    ngram_df, args.ngram_min_len, paragraph_index, n_total_cards,
-                )
+                if result["mechanism"] == "mana":
+                    # Phase 4 (ratified, R5): mana kinship has no text
+                    # fragment to scale by length -- a flat baseline minus
+                    # the cascade penalty (mana_cascade_penalty()) is the
+                    # entire rank signal. rank_fragment is a length-neutral
+                    # dummy (exactly ngram_min_len words) so compute_rank's
+                    # sqrt(length/ngram_min_len) term becomes 1.0 and never
+                    # rescales this baseline by accident.
+                    frag_idf = MANA_KINSHIP_BASE_RANK - result["mana_cascade_penalty"]
+                    frag_df = None
+                    rank_fragment = " ".join(["x"] * args.ngram_min_len)
+                else:
+                    frag_idf, frag_df = compute_fragment_idf(
+                        result["fragment"], result["fragment_df"], result["fragment_df_exact"],
+                        ngram_df, args.ngram_min_len, paragraph_index, n_total_cards,
+                    )
+                    rank_fragment = result["fragment"]
                 affinity = compute_affinity(
                     anchor_doc, candidate_doc, args.type_match_bonus, args.subtype_bonus,
                     args.subtype_bonus_cap,
                 )
+                # Phase 3 (ratified, R1/R3): the commonality-band weight (and
+                # R1's harder both-sides-injected override) scales ONLY the
+                # text-evidence idf term, never tag_score -- "qualification
+                # surfaces; weight buries" (DRAFT RULING 1), applied here so
+                # every downstream term (raw, final, rank_display) reflects it.
+                # Phase 3 rebalance (Captain ruling): frame affinity (type +
+                # subtype only -- MV lives in mv_term now) partially restores
+                # a discounted weight toward 1.0.
+                restored_fraction = restoration_fraction(
+                    affinity["affinity_term"], args.type_match_bonus, args.subtype_bonus_cap,
+                )
+                effective_weight = result["commonality_weight"] + (
+                    1.0 - result["commonality_weight"]
+                ) * restored_fraction
+                frag_idf *= effective_weight
                 ci_step, ci_colors_added = ci_relation_step_value(
                     set(anchor_doc["color_identity"]), set(candidate_doc["color_identity"]), facts["ci_relation"],
                 )
                 breakdown = compute_rank(
-                    result["fragment"], frag_idf, tag_score, ci_step, candidate_mv_delta,
+                    rank_fragment, frag_idf, tag_score, ci_step, candidate_mv_delta,
                     fact_penalties, affinity, args.ngram_min_len, args.tag_score_weight, args.ci_penalty,
                     args.mv_penalty, args.scope_penalty, args.duration_penalty, args.exception_penalty,
                     args.polarity_penalty, args.condition_penalty,
@@ -3299,6 +3946,9 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                 row["_fragment_len"] = len(result["fragment"].split())
                 row["_fragment_df"] = frag_df
                 row["_fragment_df_exact"] = result["fragment_df_exact"]
+                row["_commonality_band"] = result["commonality_band"]
+                row["_commonality_weight"] = result["commonality_weight"]
+                row["_effective_weight"] = effective_weight
                 row["rank_display"] = (
                     f"{breakdown['final']:.2f} ({breakdown['raw']:.2f} - "
                     f"{breakdown['ci_term']:.2f} - {breakdown['mv_term']:.2f} - "
@@ -3493,6 +4143,85 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**Phase 3 (ratified, RULING-MANIFEST-2026-07-09.md R1/R2/R3) -- commonality bands + "
+        f"provenance discount, confirmed against native-only distributions "
+        f"(experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md):** closes F1 (Tier 1 had NO DF gate at "
+        f"all -- Boros Charm minted 221 false Tier 1 rows off a bare \"choose one --\" header) and "
+        f"extends Tier 2's old flat NGRAM_DF_FLOOR={NGRAM_DF_FLOOR} hard ceiling into a graduated "
+        f"band. R2: paragraphs of >={args.ngram_min_len} tokens use ngram-scale DF (T2's existing "
+        f"min-window scale); shorter paragraphs use para_exact_df with their OWN thresholds -- "
+        f"ngram-scale DF is undefined below the window length. R3 band edges (T1 and T2 are "
+        f"SEPARATELY declared constants, identical values by ruling): "
+        f"long (>={args.ngram_min_len} tok) full-weight DF<={T1_LONG_FULL_WEIGHT_CEILING}, "
+        f"discounted {T1_LONG_FULL_WEIGHT_CEILING + 1}-{T1_LONG_DISCOUNT_CEILING}, rescue zone "
+        f"{T1_LONG_DISCOUNT_CEILING + 1}-{T1_LONG_RESCUE_CEILING} (qualifies, buried -- this is what "
+        f"readmits the Lane 1c six: Growth Spiral, Garruk's Uprising, Cultivate, Rhystic Study, "
+        f"Rampant Growth, Deadly Dispute), DEAD above {T1_LONG_RESCUE_CEILING}; short (<{args.ngram_min_len} "
+        f"tok) full-weight exact_df<={T1_SHORT_FULL_WEIGHT_CEILING}, discounted "
+        f"{T1_SHORT_FULL_WEIGHT_CEILING + 1}-{T1_SHORT_DISCOUNT_CEILING}, DEAD above "
+        f"{T1_SHORT_DISCOUNT_CEILING} (no rescue zone for short paragraphs, R3). DEAD is ratified "
+        f"qualification LAW (Captain: \"kill them, for now\") -- a SECOND lawful exception to "
+        f"\"rank buries, never excludes,\" alongside the v2.6 amendment 1 corroboration gate; a "
+        f"DEAD-band paragraph/fragment does not qualify at all (falls through to the next tier). "
+        f"Every other band still qualifies -- only the WEIGHT differs, applied to the fragment_idf "
+        f"term only (never tag_score): full={BAND_WEIGHTS['full']}, discounted="
+        f"{BAND_WEIGHTS['discounted']}, rescue={BAND_WEIGHTS['rescue']} (Phase 3's own numeric "
+        f"ruling, not part of the Phase 1 DF-edge measurement, which ratified edges only). R1: a "
+        f"match whose evidence is v2.9 Mechanism-2-injected reminder text on BOTH sides is "
+        f"discounted hard regardless of DF (weight={PROVENANCE_DISCOUNT_WEIGHT}, overriding the band "
+        f"weight, not stacking with it) -- provenance is engine-known (it did the injecting), never "
+        f"a named keyword/phrase list. A one-side-native match (the Hero-of-Bladehold class) keeps "
+        f"full standing, ratified by-design. Mechanism 1 keyword kinship is UNAFFECTED (its own, "
+        f"separate DF-floor discipline governs it, unchanged)."
+    )
+    lines.append("")
+    lines.append(
+        f"**Phase 3 REBALANCE (Captain ruling, RATIFIED, RULING-MANIFEST-2026-07-09.md):** the v2.5 "
+        f"Drannith Magistrate > Avatar's Wrath gate STANDS -- the band discount above is never weakened "
+        f"to preserve a pre-existing ordering. Two general mechanisms instead, both keyed only on "
+        f"already-derived facts, no card identity: (1) frame-affinity restoration -- a band/provenance-"
+        f"discounted fragment's effective weight is partially restored toward 1.0, proportional to type "
+        f"match + shared creature subtype (affinity_term, 0-{TYPE_MATCH_BONUS + SUBTYPE_BONUS_CAP:.1f}); "
+        f"see restoration_fraction(). (2) The mana-value penalty is now an ASYMMETRIC ladder replacing "
+        f"the old symmetric one (one term, not two -- MV is never counted twice): same MV is still "
+        f"strongest (MVΔ=0 -> zero penalty), the penalty still decays with |MVΔ| (distance dominant), "
+        f"but a candidate costing MORE than the anchor gets a harsher per-distance multiplier "
+        f"(MV_PRICIER_MULT={MV_PRICIER_MULT}) than one costing less (MV_CHEAPER_MULT={MV_CHEAPER_MULT}) "
+        f"-- direction is a tiebreaker on distance, never a strict cheaper-always-wins bucket (verified: "
+        f"a distance-1 pricier candidate penalizes the same as a distance-2.5 cheaper one). Cost "
+        f"asymmetry only -- produced-mana amounts (Phase 4's mana-fact system) remain symmetric, an "
+        f"unrelated axis. See mv_asymmetric_distance(). Ratified from a full-panel impact analysis "
+        f"(~13.6% of within-tier pairs reorder -- expected and judged by explained-drift law + the "
+        f"landmark/gate set, not a distortion ceiling; see "
+        f"experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md). Basandra, Battle Seraph vs Myrel, "
+        f"Shield of Argive (Marisi Tier 2) is UNGATED as a direct consequence -- neither ordering is an "
+        f"expectation any longer, see check_basandra_gate()'s docstring for the full history."
+    )
+    lines.append("")
+    lines.append(
+        f"**Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-fact extraction + pip "
+        f"kinship, PARALLEL to text/keyword matching (R4), never a replacement.** Mana-producing "
+        f"abilities are parsed into facts (colors AS A SET, colorless amount, total amount, source "
+        f"class + repeatability, any-color/CI-restricted, hybrid, mixed) -- see parse_mana_fact(). R6: "
+        f"same mana-ability SHAPE (source class + repeatable) sharing >=1 produced pip (or, for the "
+        f"pure-colorless family, any comparable production) qualifies Tier 2, the same shared-slot "
+        f"precedent as keyword kinship -- ZERO overlap falls through to Tier 3 tags (Option B, "
+        f"Captain). Fires ONLY when text/keyword matching found nothing at all for the pair (mana "
+        f"kinship is Tier-2-only, so it can never override an already-better tier -- see "
+        f"mana_pip_kinship_match()). Rank among mana-kinship matches uses a dedicated cascade "
+        f"(mana_cascade_penalty(), amount closeness first, then color-set exactness, then the "
+        f"candidate's own production breadth, then a rider penalty) rather than the idf-based text "
+        f"formula, since there is no natural corpus-DF analog for a mana shape; drawback/rider text "
+        f"never blocks qualification, only rank, per R5. Kinship evidence carries BOTH sides' mana "
+        f"facts (Phase 2c precedent). FINDING (not engineered around): the Arcane Signet / Manalith "
+        f"7-token text fragment (\"add one mana of any color\") measures DF=308 corpus-wide today -- "
+        f"legitimately DEAD under Phase 3's ratified bands (T2_RESCUE_CEILING=172), not the ~26 an "
+        f"earlier triage pass recorded. This cluster (Manalith + 8 creatures) still reaches Tier 2, "
+        f"just via mechanism=mana instead of mechanism=text -- the qualifying OUTCOME holds, satisfying "
+        f"the intent of the standing gate, through a different, equally-valid evidentiary path."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -3623,6 +4352,275 @@ def append_footer(lines: list, anchor_name: str, tiers: dict, self_check_info: d
     lines.append("")
 
 
+def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
+    """Phase 5: the exact anchor -> (full_tiers, disqualified) sequence
+    main()'s own anchor loop runs, factored out so one-off gate checks
+    (Boros Charm, Swiftfoot Boots, Faithless Looting -- none in the
+    default panel) don't need to be added to --anchor to be gated. `ctx`
+    bundles the corpus-wide objects every gate needs (see build_gate_ctx())."""
+    args = ctx["args"]
+    anchor_card = resolve_anchor(anchor_name, ctx["cards"], ctx["name_index"])
+    anchor_doc = ctx["card_docs"][anchor_card["oracle_id"]]
+    anchor_tags = ctx["card_tags"].get(anchor_card["oracle_id"], [])
+    anchor_tags_t3 = ctx["card_tags_t3"].get(anchor_card["oracle_id"], [])
+
+    pool = gather_candidate_pool(
+        anchor_doc, anchor_tags, ctx["paragraph_index"], ctx["clause_index"], ctx["clause_df"],
+        ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"], args,
+    )
+    if anchor_card["oracle_id"] in ctx["turn_scoped_matches"]:
+        pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_card["oracle_id"]})
+    return compute_candidate_rows(
+        anchor_doc, anchor_tags, anchor_tags_t3, ctx["card_docs"], ctx["card_tags"], ctx["card_tags_t3"], pool,
+        ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], ctx["idf"], ctx["idf_t3"],
+        ctx["n_total_cards"], args,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 5 (RULING-MANIFEST-2026-07-09.md) -- new outcome-form gates G-A..G-K.
+# Each prints its own evidence; ctx is built once in main() via
+# build_gate_ctx() and passed to every check below.
+# ---------------------------------------------------------------------------
+
+BOROS_CHARM_HEADER_TEXT = "choose one —"
+SWIFTFOOT_EQUIP_TEXT = "{1}: attach to target creature you control. equip only as a sorcery."
+FAITHLESS_FLASHBACK_TEXT = "you may cast this card from your graveyard for its flashback cost. then exile it."
+
+LANE_1C_PAIRS = [
+    ("Growth Spiral", "Eureka Moment"),
+    ("Garruk's Uprising", "Elemental Bond"),
+    ("Cultivate", "Skyshroud Claim"),
+    ("Rhystic Study", "Reparations"),
+    ("Rampant Growth", "Natural Connection"),
+    ("Deadly Dispute", "Village Rites"),
+]
+
+ARCANE_SIGNET_CLUSTER = [
+    "Manalith", "Opaline Unicorn", "Utopia Tree", "Alloy Myr", "Lifespring Druid",
+    "Great Forest Druid", "Three Tree Rootweaver", "Ornithopter of Paradise", "Birds of Paradise",
+]
+
+
+def check_ga_boros_charm_gate(ctx: dict) -> bool:
+    print("\nG-A Boros Charm gate (Phase 5): zero T1 rows evidenced solely by 'choose one —'")
+    full_tiers, _ = compute_anchor_full_tiers("Boros Charm", ctx)
+    t1 = full_tiers[1]
+    bad = [r for r in t1 if r["fragment"] == BOROS_CHARM_HEADER_TEXT]
+    print(f"  Tier 1 count: {len(t1)}")
+    for r in t1:
+        print(f"    {r['name']}: {r['evidence']}")
+    ok = len(bad) == 0
+    print(f"  [{'PASS' if ok else 'STOP'}] {len(bad)} T1 row(s) evidenced solely by 'choose one —' (want 0)")
+    return ok
+
+
+def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
+    print("\nG-B Swiftfoot Boots gate (Phase 5): zero T1 rows on the equip reminder alone; "
+          "both-sides-injected matches buried below display cutoff")
+    full_tiers, _ = compute_anchor_full_tiers("Swiftfoot Boots", ctx)
+    t1 = full_tiers[1]
+    bad_t1 = [r for r in t1 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
+    ok1 = len(bad_t1) == 0
+    print(f"  Tier 1 count: {len(t1)}, equip-reminder-only rows: {len(bad_t1)}")
+    print(f"  [{'PASS' if ok1 else 'STOP'}] zero T1 equip-reminder-only rows")
+
+    report_cap = ctx["args"].report_cap
+    displayed_t2 = full_tiers[2][:report_cap]
+    equip_in_display = [r for r in displayed_t2 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
+    ok2 = len(equip_in_display) == 0
+    print(f"  displayed Tier 2 top {report_cap}: {len(equip_in_display)} equip-reminder-only row(s)")
+    print(f"  [{'PASS' if ok2 else 'STOP'}] equip-reminder-only matches buried below the display cutoff")
+    return ok1 and ok2
+
+
+def check_gc_faithless_looting_gate(ctx: dict) -> bool:
+    print(f"\nG-C Faithless Looting gate (Phase 5): flashback-reminder-only evidence produces no "
+          f"qualification (DF 173 > T2_RESCUE_CEILING={T2_RESCUE_CEILING})")
+    full_tiers, _ = compute_anchor_full_tiers("Faithless Looting", ctx)
+    bad = [r for tier in (0, 1, 2) for r in full_tiers[tier] if r["fragment"] == FAITHLESS_FLASHBACK_TEXT]
+    ok = len(bad) == 0
+    print(f"  [{'PASS' if ok else 'STOP'}] {len(bad)} T0/1/2 row(s) evidenced solely by the flashback "
+          f"reminder (want 0)")
+    return ok
+
+
+def check_gd_lane1c_gate(ctx: dict) -> bool:
+    """G-D, RELAXED (Captain ruling): the binding check is qualification in
+    the rescue zone only. The original "ranked bottom half" clause is
+    STRUCK -- it was drafting-layer extrapolation (an assistant prediction
+    of where discounted rows would land), never a Captain ruling. The
+    ratified rulings -- qualification in the rescue zone, and the text-
+    evidence discount actually firing -- are both implemented and verified
+    below (discount confirmed active via a zero-weight probe). Remaining
+    rank position is carried by tag_score/affinity, legitimate independent
+    evidence outside this gate's scope. Prints rank/median/tag_term/
+    affinity as evidence rows, not a pass/fail position check."""
+    print("\nG-D Lane 1c six gate (Phase 5, RELAXED): qualify T2 in the rescue zone "
+          "(position requirement struck -- see docstring)")
+    all_ok = True
+    for anchor_name, cand_name in LANE_1C_PAIRS:
+        full_tiers, _ = compute_anchor_full_tiers(anchor_name, ctx)
+        t2 = full_tiers[2]
+        ranks = [r["_rank"] for r in t2]
+        median = ranks[len(ranks) // 2] if ranks else None
+        pos = next((i for i, r in enumerate(t2) if r["name"] == cand_name), None)
+        row = t2[pos] if pos is not None else None
+        band = row["_commonality_band"] if row else None
+        ok = row is not None and band == "rescue"
+        tag_term = row["_tag_score"] * ctx["args"].tag_score_weight if row else None
+        print(
+            f"  {anchor_name} vs {cand_name}: position={pos + 1 if pos is not None else None}/{len(t2)} "
+            f"rank={row['_rank']:.2f} median={median:.2f} tag_term={tag_term:.2f} "
+            f"affinity={row['_affinity_term']:.2f} band={band} {'PASS' if ok else 'STOP'}"
+            if row else f"  {anchor_name} vs {cand_name}: NOT FOUND STOP"
+        )
+        all_ok = all_ok and ok
+    return all_ok
+
+
+def check_ge_hero_of_bladehold_gate(ctx: dict) -> bool:
+    print("\nG-E Hero of Bladehold gate (Phase 5): stays in Zurgo's T2 (one-side-native preserved)")
+    full_tiers, _ = compute_anchor_full_tiers("Zurgo, Thunder's Decree", ctx)
+    row = next((r for r in full_tiers[2] if r["name"] == "Hero of Bladehold"), None)
+    ok = row is not None
+    print(f"  [{'PASS' if ok else 'STOP'}] Hero of Bladehold {'in' if ok else 'MISSING FROM'} Zurgo's Tier 2"
+          + (f" -- evidence={row['evidence']!r}" if row else ""))
+    return ok
+
+
+def check_gf_arcane_signet_gate(ctx: dict) -> bool:
+    print("\nG-F Arcane Signet gate (Phase 5): Manalith + the 8 creatures qualify T2")
+    print("  FINDING (Captain-ratified): the shared text fragment measures DF=308 today (not the ~26 an "
+          "earlier triage pass recorded -- that was an artifact of the pre-CO-C punctuation truncation) "
+          "-- legitimately DEAD under T2_RESCUE_CEILING. Evidence path is mana kinship instead; outcome unchanged.")
+    args = ctx["args"]
+    anchor_doc = ctx["card_docs"][resolve_anchor("Arcane Signet", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    all_ok = True
+    for name in ARCANE_SIGNET_CLUSTER:
+        cand_doc = ctx["card_docs"][resolve_anchor(name, ctx["cards"], ctx["name_index"])["oracle_id"]]
+        result = assign_tier(anchor_doc, cand_doc, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+        ok = result is not None and result["tier"] == 2
+        print(f"  {name}: tier={result['tier'] if result else None} mechanism={result['mechanism'] if result else None} "
+              f"{'PASS' if ok else 'STOP'}")
+        all_ok = all_ok and ok
+    return all_ok
+
+
+def check_gg_sol_ring_cascade_gate(ctx: dict) -> bool:
+    print("\nG-G Sol Ring gate (Phase 5): Sol Ring<->Ancient Tomb T2 via {C}{C} pip kinship; "
+          "drawback text does not block")
+    args = ctx["args"]
+    sol_ring = ctx["card_docs"][resolve_anchor("Sol Ring", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    ancient_tomb = ctx["card_docs"][resolve_anchor("Ancient Tomb", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    result = assign_tier(sol_ring, ancient_tomb, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    ok = result is not None and result["tier"] == 2 and result["mechanism"] == "mana"
+    print(f"  Sol Ring vs Ancient Tomb: tier={result['tier'] if result else None} "
+          f"mechanism={result['mechanism'] if result else None} evidence={result['evidence'] if result else None!r} "
+          f"{'PASS' if ok else 'STOP'}")
+    print("  (Ancient Tomb's 'this land deals 2 damage to you' drawback did not block qualification, per R5.)")
+
+    print("  Colorless-family cascade landing spots (Mind Stone / Mana Vault / Thran Dynamo):")
+    for name in ["Mind Stone", "Mana Vault", "Thran Dynamo"]:
+        cand = ctx["card_docs"][resolve_anchor(name, ctx["cards"], ctx["name_index"])["oracle_id"]]
+        r = assign_tier(sol_ring, cand, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+        print(f"    {name}: tier={r['tier'] if r else None} mechanism={r['mechanism'] if r else None} "
+              f"penalty={r['mana_cascade_penalty'] if r else None}")
+    return ok
+
+
+def check_gh_zero_overlap_gate(ctx: dict) -> bool:
+    print("\nG-H Zero-overlap gate (Phase 5): Gold Myr does NOT reach Elvish Mystic's T2 via mana kinship")
+    args = ctx["args"]
+    gold_myr = ctx["card_docs"][resolve_anchor("Gold Myr", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    elvish_mystic = ctx["card_docs"][resolve_anchor("Elvish Mystic", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    r_ab = assign_tier(gold_myr, elvish_mystic, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    r_ba = assign_tier(elvish_mystic, gold_myr, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    ok = r_ab is None and r_ba is None
+    print(f"  Gold Myr -> Elvish Mystic: {r_ab} (T3-via-tags acceptable)")
+    print(f"  Elvish Mystic -> Gold Myr: {r_ba} (T3-via-tags acceptable)")
+    print(f"  [{'PASS' if ok else 'STOP'}] zero pip overlap (W vs G) -- NOT T2 via mana kinship, either direction")
+    return ok
+
+
+def check_gi_guild_pair_gate(ctx: dict) -> bool:
+    print("\nG-I Guild-pair regression gate (Phase 5): literal-text path untouched by mana kinship")
+    args = ctx["args"]
+    pair_names = []
+    for oid, doc in ctx["card_docs"].items():
+        for mf in doc.get("mana_facts", []):
+            if mf["colors"] == frozenset({"b", "g"}) and not mf["any_color"] and mf["widening"] == "multi":
+                pair_names.append(doc["name"])
+                break
+        if len(pair_names) >= 2:
+            break
+    if len(pair_names) < 2:
+        print("  [INFO] fewer than 2 same-pair sources found in this corpus snapshot -- nothing to check")
+        return True
+    a_doc = ctx["card_docs"][resolve_anchor(pair_names[0], ctx["cards"], ctx["name_index"])["oracle_id"]]
+    c_doc = ctx["card_docs"][resolve_anchor(pair_names[1], ctx["cards"], ctx["name_index"])["oracle_id"]]
+    result = assign_tier(a_doc, c_doc, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    ok = result is not None and result["mechanism"] == "text"
+    print(f"  {pair_names[0]} vs {pair_names[1]}: tier={result['tier'] if result else None} "
+          f"mechanism={result['mechanism'] if result else None} {'PASS' if ok else 'STOP'}")
+    return ok
+
+
+def check_gj_ignoble_hierarch_gate(ctx: dict) -> bool:
+    """G-J, "no plateau" clarified (Captain ruling): Urborg Elf and Druid of
+    the Anima are a genuine structural tie on every current cascade/rank
+    term (each shares 2 of Ignoble Hierarch's 3 colors and carries exactly
+    1 unrelated color -- symmetric under R5's cascade, plus identical CI
+    relation, MV, and tag score). Not a bug -- two cards equidistant from
+    the anchor by every measured axis. "No plateau" is satisfied as a
+    DISPLAY/ORDERING guarantee, not a numeric-score requirement: full_tiers
+    is already sorted by compute_candidate_rows() with a deterministic
+    tiebreaker chain (-rank, -fragment_len, mv_abs, NAME) -- ties resolve
+    to a stable alphabetical order, never an accident of pool-iteration
+    order. This gate verifies that tiebreaker is actually active (not that
+    the underlying scores differ)."""
+    print("\nG-J Ignoble Hierarch gate (Phase 5): the 0.29 quartet ordered by the cascade "
+          "(ties broken deterministically by name, not required to be numerically distinct)")
+    full_tiers, _ = compute_anchor_full_tiers("Ignoble Hierarch", ctx)
+    t2 = full_tiers[2]
+    quartet = ["Delighted Halfling", "Urborg Elf", "Druid of the Anima"]
+    positions = {}
+    for name in quartet:
+        pos = next((i for i, r in enumerate(t2) if r["name"] == name), None)
+        positions[name] = pos
+        rank = t2[pos]["_rank"] if pos is not None else None
+        print(f"  {name}: position={pos + 1 if pos is not None else None}/{len(t2)} rank={rank}")
+    found = [p for p in positions.values() if p is not None]
+    distinct_positions = len(found) == len(quartet) == len(set(found))
+    # confirm the name tiebreaker is actually resolving the Urborg/Druid tie, not luck
+    urborg_pos, druid_pos = positions.get("Urborg Elf"), positions.get("Druid of the Anima")
+    tiebreak_ok = True
+    if urborg_pos is not None and druid_pos is not None:
+        same_rank = t2[urborg_pos]["_rank"] == t2[druid_pos]["_rank"]
+        if same_rank:
+            tiebreak_ok = (urborg_pos < druid_pos) == ("Urborg Elf" < "Druid of the Anima")
+            print(f"  [INFO] Urborg Elf/Druid of the Anima tie exactly on _rank ({t2[urborg_pos]['_rank']}) "
+                  f"-- resolved by name tiebreaker: {'PASS' if tiebreak_ok else 'STOP'}")
+    ok = distinct_positions and tiebreak_ok
+    print(f"  [{'PASS' if ok else 'STOP'}] every quartet member has a distinct, deterministic position")
+    print("  [INFO] Llanowar Elves is resolver-scoped (cards.sqlite, CO-G) -- verified live via serve_viewer.py "
+          "in Phase 2b's smoke test, not re-checked here (tier_engine.py's own --anchor resolver is a "
+          "separate, out-of-scope mechanism against the raw corpus, not cards.sqlite).")
+    return ok
+
+
+def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
+                    clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df,
+                    turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
+    return dict(
+        cards=cards, card_docs=card_docs, name_index=name_index, card_tags=card_tags,
+        card_tags_t3=card_tags_t3, paragraph_index=paragraph_index, clause_index=clause_index,
+        clause_df=clause_df, ngram_index=ngram_index, ngram_df=ngram_df, tag_index=tag_index,
+        keyword_index=keyword_index, keyword_df=keyword_df, turn_scoped_matches=turn_scoped_matches,
+        idf=idf, idf_t3=idf_t3, n_total_cards=n_total_cards, args=args,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -3691,13 +4689,13 @@ def main() -> None:
     card_tags_t3, idf_t3 = build_turn_scoped_tag_index(card_docs, card_tags, idf, turn_scoped_matches, turn_scoped_idf)
 
     # ---- Gate 1: v2 self-check (frozen tier-assignment calibration) ----
-    self_check_passed, self_check_info = run_self_check(cards, card_docs, name_index, ngram_df, keyword_df, args)
+    self_check_passed, self_check_info = run_self_check(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
 
     # ---- v2.5 session amendment gate 2 (part 2): Tier 0 exclusions stay blocking ----
     tier0_exclusion_passed = check_tier0_exclusion_gate(self_check_info)
 
     # ---- Gate 2: symmetry (Amendment 4.1) ----
-    symmetry_passed = check_symmetry(cards, card_docs, name_index, ngram_df, keyword_df, args)
+    symmetry_passed = check_symmetry(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
 
     # ---- Build all requested anchor reports IN MEMORY (nothing written yet) ----
     built = {}
@@ -3816,7 +4814,7 @@ def main() -> None:
             abolisher_tier2, built["Grand Abolisher"]["full_tiers"][2],
         )
         partial_lock_passed = check_partial_lock_movement(abolisher_tier2, TOTAL_LOCK_SAME_CI_MV_FLOOR)
-        scope_duration_passed = check_scope_duration_spotchecks(cards, card_docs, name_index, ngram_df, keyword_df, args)
+        scope_duration_passed = check_scope_duration_spotchecks(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
         movement_passed = check_movement_gate(abolisher_tier2)
     else:
         print("\nv2.3 gates (VoV placement, Sen Triplets exile, partial-lock, scope/duration, movement): "
@@ -3827,8 +4825,8 @@ def main() -> None:
     polarity_family_passed = True
     if "Grand Abolisher" in built:
         abolisher_tier2 = built["Grand Abolisher"]["displayed_tiers"][2]
-        godsend_passed = check_godsend_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, args)
-        polarity_family_passed = check_polarity_family_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, args)
+        godsend_passed = check_godsend_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
+        polarity_family_passed = check_polarity_family_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
     else:
         print("\nGodsend / polarity family gates: SKIPPED -- Grand Abolisher not in this run's anchor list")
 
@@ -3836,7 +4834,7 @@ def main() -> None:
     if "Marisi, Breaker of the Coil" in built:
         basandra_passed = check_basandra_gate(
             built["Marisi, Breaker of the Coil"]["full_tiers"][2], cards, card_docs, name_index, ngram_df,
-            keyword_df, args,
+            keyword_df, paragraph_index, args,
         )
     else:
         print("\nBasandra gate: SKIPPED -- Marisi not in this run's anchor list")
@@ -3924,6 +4922,23 @@ def main() -> None:
     # ---- v2.9 gate 4: evergreen-floor self-consistency verification (all anchors) ----
     evergreen_floor_passed = check_evergreen_floor_gate(built, args.ngram_df_floor)
 
+    # ---- Phase 5 (RULING-MANIFEST-2026-07-09.md): new outcome-form gates G-A..G-J ----
+    gate_ctx = build_gate_ctx(
+        cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
+        clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df,
+        turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+    )
+    ga_passed = check_ga_boros_charm_gate(gate_ctx)
+    gb_passed = check_gb_swiftfoot_boots_gate(gate_ctx)
+    gc_passed = check_gc_faithless_looting_gate(gate_ctx)
+    gd_passed = check_gd_lane1c_gate(gate_ctx)
+    ge_passed = check_ge_hero_of_bladehold_gate(gate_ctx)
+    gf_passed = check_gf_arcane_signet_gate(gate_ctx)
+    gg_passed = check_gg_sol_ring_cascade_gate(gate_ctx)
+    gh_passed = check_gh_zero_overlap_gate(gate_ctx)
+    gi_passed = check_gi_guild_pair_gate(gate_ctx)
+    gj_passed = check_gj_ignoble_hierarch_gate(gate_ctx)
+
     if not (self_check_passed and tier0_exclusion_passed and symmetry_passed and marisi_gate_passed
             and abolisher_burial_passed and myrel_burial_passed
             and proximity_passed and sanity_ordering_passed
@@ -3932,7 +4947,9 @@ def main() -> None:
             and godsend_passed and polarity_family_passed and basandra_passed
             and drannith_wrath_passed and abolisher_corroboration_passed
             and t3_turn_scoped_passed and stability_passed
-            and zurgo_keyword_passed and evergreen_floor_passed):
+            and zurgo_keyword_passed and evergreen_floor_passed
+            and ga_passed and gb_passed and gc_passed and gd_passed and ge_passed
+            and gf_passed and gg_passed and gh_passed and gi_passed and gj_passed):
         halt("one or more validation gates failed — reports NOT written (see output above)")
 
     # ---- v2.5 spot-check block (deliverable: subtypes, affinity, MVΔ audit rider) ----

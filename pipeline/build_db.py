@@ -40,8 +40,24 @@ FIXED_FIELDS = {
     "colors", "color_identity", "keywords", "power", "toughness", "loyalty",
     "produced_mana", "rarity", "set", "collector_number", "released_at",
     "edhrec_rank", "game_changer", "scryfall_uri", "legalities", "prices",
-    "is_dfc", "has_root_image", "card_faces",
+    "is_dfc", "has_root_image", "card_faces", "layout",
 }
+
+# CO-G (Phase 2b, ratified) / PHASE-3-COMPLETION.md spec: 216 names map to
+# multiple oracle_ids, mostly tokens (e.g. "Elemental" x31) plus emblems,
+# art series, vanguards, schemes, and planes -- none of these are real
+# gameplay cards, so they should never compete with a real card for a name
+# in the resolver's match space. Excluded at build time (never inserted
+# into `cards`/`cards_fts` at all) rather than filtered per-query, so every
+# search path (viewer LIKE search, exact-name anchor lookup) gets the fix
+# for free. Verified against data/raw/oracle-cards.jsonl.gz directly: this
+# resolves Llanowar Elves (real card vs. a `token` printing under the same
+# name) and all but 16 of the 216 collisions -- the remaining 16 are
+# genuine same-name distinct real records (mostly Un-set silver-border
+# jokes, e.g. "Everythingamajig", plus a handful of real-card/joke-card
+# name clashes like "Red Herring") that are NOT a layout problem and
+# correctly continue to halt loudly as a real ambiguity.
+EXCLUDED_LAYOUTS = {"token", "emblem", "art_series", "vanguard", "scheme", "planar"}
 
 
 def halt(message: str) -> None:
@@ -107,6 +123,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
             toughness           TEXT,
             loyalty             TEXT,
             produced_mana       TEXT,
+            layout              TEXT,
             rarity              TEXT,
             "set"               TEXT,
             collector_number    TEXT,
@@ -155,7 +172,12 @@ def create_schema(conn: sqlite3.Connection) -> None:
 def insert_cards(conn: sqlite3.Connection, cards: list) -> None:
     rows = []
     fts_rows = []
+    excluded_count = 0
     for card in cards:
+        if card.get("layout") in EXCLUDED_LAYOUTS:
+            excluded_count += 1
+            continue
+
         legalities = card.get("legalities") or {}
         prices = card.get("prices") or {}
         tag_fields = {k: v for k, v in card.items() if k not in FIXED_FIELDS}
@@ -174,6 +196,7 @@ def insert_cards(conn: sqlite3.Connection, cards: list) -> None:
             card.get("toughness"),
             card.get("loyalty"),
             json.dumps(card.get("produced_mana")) if card.get("produced_mana") is not None else None,
+            card.get("layout"),
             card.get("rarity"),
             card.get("set"),
             card.get("collector_number"),
@@ -197,10 +220,10 @@ def insert_cards(conn: sqlite3.Connection, cards: list) -> None:
         INSERT INTO cards (
             oracle_id, name, mana_cost, cmc, type_line, oracle_text,
             colors, color_identity, keywords, power, toughness, loyalty,
-            produced_mana, rarity, "set", collector_number, released_at,
+            produced_mana, layout, rarity, "set", collector_number, released_at,
             edhrec_rank, game_changer, scryfall_uri, legalities_commander,
             price_usd, is_dfc, has_root_image, card_faces, tags
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         rows,
     )
@@ -208,7 +231,10 @@ def insert_cards(conn: sqlite3.Connection, cards: list) -> None:
         "INSERT INTO cards_fts (oracle_id, name, type_line, oracle_text) VALUES (?,?,?,?)",
         fts_rows,
     )
-    print(f"inserted {len(rows):,} cards ({len(fts_rows):,} into cards_fts)")
+    print(
+        f"inserted {len(rows):,} cards ({len(fts_rows):,} into cards_fts) -- "
+        f"excluded {excluded_count:,} non-gameplay-layout records ({sorted(EXCLUDED_LAYOUTS)})"
+    )
 
 
 def insert_neighbors(conn: sqlite3.Connection) -> None:

@@ -29,7 +29,7 @@ KEPT_FIELDS = [
     "oracle_id", "name", "mana_cost", "cmc", "type_line", "oracle_text",
     "colors", "color_identity", "keywords", "power", "toughness", "loyalty",
     "produced_mana", "rarity", "set", "collector_number", "released_at",
-    "edhrec_rank", "game_changer", "scryfall_uri",
+    "edhrec_rank", "game_changer", "scryfall_uri", "layout",
 ]
 
 
