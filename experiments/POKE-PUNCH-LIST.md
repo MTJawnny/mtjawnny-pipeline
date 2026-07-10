@@ -932,3 +932,77 @@ export field), `experiments/viewer.html` (detail-row rendering).
 **Not yet done** (standard ritual, remaining): snapshot creation, report
 header note on the record (never silent about a scoring change) —
 in progress, see session log.
+
+---
+
+## Entry #6 — Reminder-injected fragment vs. raw paragraph text comparison bug (found live-querying Swiftfoot Boots)
+
+**Found and fixed, 2026-07-10** (Captain live-reviewing Swiftfoot Boots'
+viewer output, noticed equip-cost boilerplate cluttering its Tier 2 list;
+asked whether to disable the rescue band for Equipment/Aura/anthem types).
+
+### What's wrong
+
+`text_injected_on_side()` and `find_reminder_attribution()` both compared a
+`find_shared_fragment(s)`-reconstructed fragment (every token's trailing
+period already stripped, CO-C convention) against the RAW injected-
+reminder paragraph text (periods intact). Across an internal sentence
+boundary within a multi-sentence paragraph (e.g. Swiftfoot Boots' Equip
+reminder: `"{1}: Attach to target creature you control. Equip only as a
+sorcery."` — two sentences, one paragraph), the reconstructed fragment can
+never equal or substring-match the raw text, since the internal period is
+a literal character the reconstruction never carries. This silently
+disabled `fragment_both_sides_injected()`'s hard discount
+(`PROVENANCE_DISCOUNT_WEIGHT`) for exactly the case it exists to catch.
+
+Same bug, third location: two NAMED gate constants (`SWIFTFOOT_EQUIP_TEXT`,
+`FAITHLESS_FLASHBACK_TEXT`) used raw, period-bearing text for exact-
+equality checks against `row["fragment"]` — which also never carries
+periods — so both checks were structurally unable to ever fire, regardless
+of real state.
+
+### Fix
+
+Shared normalization helper (`normalize_paragraph_for_fragment_comparison()`)
+applied in both functions; both gate constants redefined in already-
+normalized form.
+
+### Two gates this unmasked (were trivial always-PASS, not verified)
+
+- **check_gb_swiftfoot_boots_gate**: even with the discount now correctly
+  firing, 1 equip-reminder-boilerplate row (Ring of Evos Isle) still sits
+  in Swiftfoot Boots' displayed Tier 2 top 10 — a confirmed, measured hard
+  floor from Phase 3's frame-affinity restoration (any same-type match
+  restores `effective_weight` toward 1.0 independent of the provenance
+  discount: at `PROVENANCE_DISCOUNT_WEIGHT=0.0`, `effective_weight` still
+  floors at `restored_fraction=0.375` for an Equipment-vs-Equipment pair).
+  **Ruling (Captain): lower the constant as far as it actually helps, update
+  the gate to reflect measured reality.** `PROVENANCE_DISCOUNT_WEIGHT`
+  lowered `0.05 -> 0.01` (real benefit for different-type both-sides-
+  injected matches, negligible further benefit for same-type ones — the
+  floor dominates); gate's expected count updated `0 -> 1`.
+- **check_gc_faithless_looting_gate**: the flashback reminder's corpus DF
+  has drifted `173 -> 172` since the gate was written (ordinary corpus
+  growth, unrelated to this session) — exactly at `T2_RESCUE_CEILING`'s
+  inclusive boundary, so 171 rows now legitimately rescue-band-qualify
+  under the already-ratified DF-banding rule. **Ruling (Captain): let it
+  through, update the gate** — same "corpus reality moved, the gate's stale
+  expectation gets updated, not the scoring" precedent as Discreet Retreat
+  (Entry #4's `MANA_ONLY_FAMILY` addition). Gate's expected count updated
+  `0 -> 171`.
+
+### Verification
+
+Full gate suite 73/73 green, Zurgo/Delney (not in default panel) verified
+separately, determinism confirmed twice, viewer cache regenerated and
+confirmed live — Swiftfoot Boots' Tier 2 top 10 now shows 9 genuine
+matches (mostly the new `keyword_grant` mechanism from Entry #4) and 1
+residual boilerplate row, down from the original clutter.
+
+### Files touched
+
+`experiments/tier_engine.py` only: `normalize_paragraph_for_fragment_comparison()`
+(new, shared), `text_injected_on_side()`, `find_reminder_attribution()`,
+`SWIFTFOOT_EQUIP_TEXT`/`FAITHLESS_FLASHBACK_TEXT` constants,
+`PROVENANCE_DISCOUNT_WEIGHT`, `check_gb_swiftfoot_boots_gate()`,
+`check_gc_faithless_looting_gate()`, report header note.

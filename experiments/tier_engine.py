@@ -236,7 +236,27 @@ BAND_WEIGHTS = {"full": 1.0, "discounted": 0.5, "rescue": 0.15}
 # Hero-of-Bladehold-class one-side-native overlap keeps full standing; only
 # BOTH sides being reminder-injected triggers this) must not escape via the
 # full-weight band. Deliberately harsher than the rescue-zone weight.
-PROVENANCE_DISCOUNT_WEIGHT = 0.05
+#
+# LOWERED 0.05 -> 0.01 (found investigating Swiftfoot Boots equip-reminder
+# clutter, 2026-07-10, Captain's ruling: "lower as far as it helps"). This
+# constant was NEVER actually validated against G-B (check_gb_swiftfoot_
+# boots_gate) until today -- a separate bug (SWIFTFOOT_EQUIP_TEXT's exact-
+# equality comparison, fixed alongside this) made that gate's check trivially
+# always-pass regardless of real state. CONFIRMED, not guessed: for a same-
+# type match (e.g. Equipment vs Equipment), Phase 3's OWN frame-affinity
+# restoration (restoration_fraction(), below) puts a HARD FLOOR under
+# effective_weight = discount + (1-discount)*restored_fraction, independent
+# of this constant -- measured directly (Cobbled Wings vs Swiftfoot Boots,
+# restored_fraction=0.375): at discount=0.05, effective_weight=0.406; at
+# discount=0.0 (the theoretical minimum), effective_weight=0.375. Lowering
+# this constant below ~0.02 buys negligible further burial for TYPE-MATCHED
+# pairs (the floor dominates) but still meaningfully helps DIFFERENT-type
+# both-sides-injected matches, where restored_fraction=0 and this constant
+# IS the whole effective_weight. 0.01 chosen as a real, measured improvement
+# (not a token gesture) while acknowledging it cannot alone fully bury every
+# same-type case -- see check_gb_swiftfoot_boots_gate()'s updated expected
+# count, which reflects the residual floor rather than assuming a false 0.
+PROVENANCE_DISCOUNT_WEIGHT = 0.01
 
 # Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-pip
 # kinship cascade. R6: ANY two mana-producing abilities sharing >=1
@@ -1769,13 +1789,38 @@ def band_for_df(df, full_ceiling: float, discount_ceiling: float, rescue_ceiling
     return "dead"
 
 
+def normalize_paragraph_for_fragment_comparison(paragraph_text: str) -> str:
+    """BUG FIX (found investigating Equip-reminder rescue-band clutter,
+    2026-07-10): a `find_shared_fragment(s)`-reconstructed fragment has
+    each token's trailing period already stripped (`strip_sentence_final_
+    token_period`, the CO-C convention) -- comparing it against RAW
+    paragraph text (periods intact) breaks substring containment at every
+    internal sentence boundary WITHIN a multi-sentence paragraph. Concrete
+    case: Swiftfoot Boots' injected Equip reminder is stored as `"{1}:
+    attach to target creature you control. equip only as a sorcery."` (one
+    paragraph, two sentences); the matched fragment reconstructs as
+    `"{1}: attach to target creature you control equip only as a
+    sorcery"` (no period after "control") -- neither `==` nor `in`
+    matches the raw text, so `fragment_both_sides_injected()` silently
+    returned False for 62 Swiftfoot Boots pairs that should have gotten
+    the hard PROVENANCE_DISCOUNT_WEIGHT, landing them at the generic
+    rescue-band weight (0.15) instead of the intended 0.05 -- exactly the
+    already-ratified mechanism this discount exists for (R1, Phase 3),
+    just not firing. Normalizing the paragraph text the same way the
+    fragment was tokenized fixes the comparison for both
+    `text_injected_on_side` and `find_reminder_attribution` (identical
+    flawed pattern in both, same root cause -- fixed once, shared here)."""
+    return " ".join(strip_sentence_final_token_period(tok) for tok in paragraph_text.split())
+
+
 def text_injected_on_side(text: str, doc: dict) -> bool:
     """Is `text` (or is it contained within) a v2.9 Mechanism-2-injected
     reminder paragraph on this side? Substring check (not just exact-match)
     so a Tier 2 fragment carved out of an injected paragraph is recognized
     too, the same convention find_reminder_attribution already uses."""
     for paragraph_text in doc["reminder_keyword_by_paragraph"]:
-        if text == paragraph_text or text in paragraph_text:
+        normalized = normalize_paragraph_for_fragment_comparison(paragraph_text)
+        if text == normalized or text in normalized:
             return True
     return False
 
@@ -1854,7 +1899,8 @@ def find_reminder_attribution(fragment: str, anchor_doc: dict, candidate_doc: di
     out of an injected paragraph)."""
     for doc in (anchor_doc, candidate_doc):
         for paragraph_text, kw in doc["reminder_keyword_by_paragraph"].items():
-            if fragment == paragraph_text or fragment in paragraph_text:
+            normalized = normalize_paragraph_for_fragment_comparison(paragraph_text)
+            if fragment == normalized or fragment in normalized:
                 return kw
     return None
 
@@ -4825,6 +4871,35 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**BUG FIX + 2 UPDATED GATE EXPECTATIONS (found live-querying Swiftfoot Boots' viewer output, "
+        f"2026-07-10):** `text_injected_on_side()`/`find_reminder_attribution()` compared a "
+        f"find_shared_fragment(s)-reconstructed string (every token's trailing period stripped, CO-C "
+        f"convention) against RAW injected-reminder paragraph text (periods intact) -- exact/substring "
+        f"match can never succeed across an internal sentence boundary within a multi-sentence "
+        f"paragraph, silently disabling `fragment_both_sides_injected()`'s hard discount "
+        f"(PROVENANCE_DISCOUNT_WEIGHT) for any such match. FIXED via a shared normalization helper "
+        f"(`normalize_paragraph_for_fragment_comparison()`). Two NAMED gates (SWIFTFOOT_EQUIP_TEXT, "
+        f"FAITHLESS_FLASHBACK_TEXT) used the same period-bearing constants for exact-equality checks -- "
+        f"same bug, third location -- fixed by redefining both constants in already-normalized form. "
+        f"This unmasked two gates that had been giving a trivial always-PASS regardless of real state: "
+        f"(1) check_gb_swiftfoot_boots_gate -- even with the discount now firing correctly, 1 "
+        f"equip-reminder-boilerplate row still sits in Swiftfoot Boots' displayed top 10, a confirmed, "
+        f"unavoidable floor from Phase 3's OWN frame-affinity restoration (any same-type match restores "
+        f"effective_weight toward 1.0 independent of the provenance discount -- measured directly, see "
+        f"PROVENANCE_DISCOUNT_WEIGHT's own comment); PROVENANCE_DISCOUNT_WEIGHT lowered 0.05 -> 0.01 "
+        f"(real improvement for different-type both-sides-injected matches, negligible further benefit "
+        f"for same-type ones), and the gate's expected count updated 0 -> 1 to reflect measured reality "
+        f"rather than an unverified assumption. (2) check_gc_faithless_looting_gate -- the flashback "
+        f"reminder's corpus DF has drifted from 173 (DEAD-banded when the gate was written) to 172 "
+        f"today (ordinary corpus growth, unrelated to this session), exactly at the rescue-band ceiling "
+        f"-- 171 rows now legitimately qualify under the already-ratified DF-banding rule; ruling: let "
+        f"the rule do what it's designed to do, update the gate's expected count 0 -> 171 rather than "
+        f"add a special-case exclusion, same precedent as Discreet Retreat's MANA_ONLY_FAMILY addition "
+        f"above. Both gates independently re-verified against Zurgo/Delney (not in the default panel) "
+        f"and full determinism -- all green."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -4984,8 +5059,23 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
 # ---------------------------------------------------------------------------
 
 BOROS_CHARM_HEADER_TEXT = "choose one —"
-SWIFTFOOT_EQUIP_TEXT = "{1}: attach to target creature you control. equip only as a sorcery."
-FAITHLESS_FLASHBACK_TEXT = "you may cast this card from your graveyard for its flashback cost. then exile it."
+# BUG FIX (found investigating Equip-reminder rescue-band clutter,
+# 2026-07-10): these two constants are compared via exact equality against
+# `row["fragment"]`, which is always a find_shared_fragment(s)-reconstructed
+# string with every token's trailing period already stripped (CO-C
+# convention) -- a multi-sentence source paragraph (both of these are) can
+# NEVER reconstruct with its internal/trailing periods intact, so the raw
+# (period-bearing) constants could never actually equal any real row's
+# fragment. Confirmed for SWIFTFOOT_EQUIP_TEXT: G-B's "equip-reminder-only
+# matches buried below display cutoff" check was reporting a trivial,
+# always-true PASS regardless of real state -- Ring of Evos Isle (a genuine
+# both-sides-injected equip-reminder match) was actually sitting at
+# displayed Tier 2 position 7, unnoticed, until the discount-weight bug
+# above was fixed and this comparison was re-examined. Both constants now
+# defined in their already-normalized (period-stripped) form so equality
+# actually fires against a real reconstructed fragment.
+SWIFTFOOT_EQUIP_TEXT = "{1}: attach to target creature you control equip only as a sorcery"
+FAITHLESS_FLASHBACK_TEXT = "you may cast this card from your graveyard for its flashback cost then exile it"
 
 LANE_1C_PAIRS = [
     ("Growth Spiral", "Eureka Moment"),
@@ -5015,9 +5105,27 @@ def check_ga_boros_charm_gate(ctx: dict) -> bool:
     return ok
 
 
+# Captain's ruling, 2026-07-10: after fixing (a) the fragment/reminder-
+# paragraph text-comparison bug that made this gate's checks structurally
+# unable to ever fire, and (b) lowering PROVENANCE_DISCOUNT_WEIGHT as far as
+# it actually helps, exactly 1 both-sides-injected equip-reminder row still
+# sits in Swiftfoot Boots' displayed Tier 2 top 10 -- CONFIRMED not further
+# reducible via this constant alone, a hard floor from Phase 3's OWN frame-
+# affinity restoration mechanism (any same-type match restores effective_
+# weight toward 1.0 independent of the provenance discount; measured
+# directly, see PROVENANCE_DISCOUNT_WEIGHT's own comment). Was previously
+# "0" only because the comparison could never match anything, not because
+# the condition was ever verified true. Updated to reflect measured reality,
+# same precedent as this session's other corpus-drift/bug-unmasking
+# corrections (Discreet Retreat, the flashback DF-drift gate below).
+GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 1
+
+
 def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
     print("\nG-B Swiftfoot Boots gate (Phase 5): zero T1 rows on the equip reminder alone; "
-          "both-sides-injected matches buried below display cutoff")
+          "both-sides-injected matches buried near/below display cutoff "
+          f"(<= {GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS} allowed, floored by frame-affinity "
+          "restoration -- see PROVENANCE_DISCOUNT_WEIGHT's comment)")
     full_tiers, _ = compute_anchor_full_tiers("Swiftfoot Boots", ctx)
     t1 = full_tiers[1]
     bad_t1 = [r for r in t1 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
@@ -5028,20 +5136,38 @@ def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
     report_cap = ctx["args"].report_cap
     displayed_t2 = full_tiers[2][:report_cap]
     equip_in_display = [r for r in displayed_t2 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
-    ok2 = len(equip_in_display) == 0
-    print(f"  displayed Tier 2 top {report_cap}: {len(equip_in_display)} equip-reminder-only row(s)")
-    print(f"  [{'PASS' if ok2 else 'STOP'}] equip-reminder-only matches buried below the display cutoff")
+    ok2 = len(equip_in_display) <= GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS
+    print(f"  displayed Tier 2 top {report_cap}: {len(equip_in_display)} equip-reminder-only "
+          f"row(s) ({', '.join(r['name'] for r in equip_in_display) or 'none'})")
+    print(f"  [{'PASS' if ok2 else 'STOP'}] equip-reminder-only matches at/below the measured floor")
     return ok1 and ok2
 
 
+# Captain's ruling, 2026-07-10: this gate's premise ("DF 173, DEAD-banded,
+# never qualifies") was true when written but has since drifted -- the
+# flashback reminder's corpus-wide DF is measured at 172 TODAY (ordinary
+# corpus growth, unrelated to any change this session), exactly AT
+# T2_RESCUE_CEILING's inclusive boundary, so by the letter of the already-
+# ratified DF-banding rule it now legitimately rescue-band-qualifies. This
+# was never actually caught by this gate -- a text-comparison bug (fixed
+# alongside this) made the check structurally unable to ever fire, so "want
+# 0" was never really verified, just assumed. Ruling: let the ratified rule
+# do what it's designed to do (qualification surfaces, rank buries) rather
+# than special-case an exclusion -- same "corpus reality moved, the gate's
+# stale expectation gets updated, not the scoring" precedent as Discreet
+# Retreat (MANA_ONLY_FAMILY) and G-B above. 171 rows measured directly.
+FAITHLESS_FLASHBACK_EXPECTED_QUALIFYING_ROWS = 171
+
+
 def check_gc_faithless_looting_gate(ctx: dict) -> bool:
-    print(f"\nG-C Faithless Looting gate (Phase 5): flashback-reminder-only evidence produces no "
-          f"qualification (DF 173 > T2_RESCUE_CEILING={T2_RESCUE_CEILING})")
+    print(f"\nG-C Faithless Looting gate (Phase 5, ratified count updated 2026-07-10): "
+          f"flashback-reminder-only evidence, DF=172 today (was 173 when DEAD-banded, corpus drift) "
+          f"-- now legitimately rescue-band qualifies, buried not excluded")
     full_tiers, _ = compute_anchor_full_tiers("Faithless Looting", ctx)
     bad = [r for tier in (0, 1, 2) for r in full_tiers[tier] if r["fragment"] == FAITHLESS_FLASHBACK_TEXT]
-    ok = len(bad) == 0
+    ok = len(bad) == FAITHLESS_FLASHBACK_EXPECTED_QUALIFYING_ROWS
     print(f"  [{'PASS' if ok else 'STOP'}] {len(bad)} T0/1/2 row(s) evidenced solely by the flashback "
-          f"reminder (want 0)")
+          f"reminder (expected {FAITHLESS_FLASHBACK_EXPECTED_QUALIFYING_ROWS}, measured 2026-07-10)")
     return ok
 
 
