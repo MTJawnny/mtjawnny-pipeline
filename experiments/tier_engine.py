@@ -2367,6 +2367,30 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             mechanism = "reminder"
             note += f" [reminder: {reminder_kw}]"
 
+    def format_grant_evidence(best_grant: dict) -> tuple:
+        """Shared by both call sites below -- builds (fragment, evidence)
+        for a keyword_grant win. Not a method; a closure is fine here since
+        neither call site needs it past this function."""
+        anchor_fact = best_grant["anchor_fact"]
+        candidate_fact = best_grant["candidate_fact"]
+        shared_desc = "/".join(sorted(best_grant["shared_keywords"]))
+        grant_fragment = f"granted-keyword kinship: {shared_desc}"
+
+        def pt_display(pt_mod):
+            power, toughness = pt_mod or (0, 0)
+            return f"{power:+d}/{toughness:+d}"
+
+        a_pt = anchor_fact["pt_mod"]
+        c_pt = candidate_fact["pt_mod"]
+        pt_note = ""
+        if a_pt is not None or c_pt is not None:
+            pt_note = f", {pt_display(a_pt)} vs {pt_display(c_pt)}"
+        grant_evidence = (
+            f"granted-keyword kinship: {shared_desc}{pt_note} "
+            f"(mismatch penalty={best_grant['penalty']:.2f})"
+        )
+        return grant_fragment, grant_evidence
+
     # Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET kinship,
     # PARALLEL to text/keyword matching -- same "only fires when nothing
     # else qualified this pair" gating as mana kinship below, checked FIRST
@@ -2393,23 +2417,60 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             granted_kw_candidate_fact = best_grant["candidate_fact"]
             granted_kw_penalty_value = best_grant["penalty"]
             granted_kw_pt_distance = best_grant["pt_distance"]
-            shared_desc = "/".join(sorted(best_grant["shared_keywords"]))
-            fragment = f"granted-keyword kinship: {shared_desc}"
-
-            def pt_display(pt_mod):
-                power, toughness = pt_mod or (0, 0)
-                return f"{power:+d}/{toughness:+d}"
-
-            a_pt = granted_kw_anchor_fact["pt_mod"]
-            c_pt = granted_kw_candidate_fact["pt_mod"]
-            pt_note = ""
-            if a_pt is not None or c_pt is not None:
-                pt_note = f", {pt_display(a_pt)} vs {pt_display(c_pt)}"
-            evidence_core = (
-                f"granted-keyword kinship: {shared_desc}{pt_note} "
-                f"(mismatch penalty={best_grant['penalty']:.2f})"
-            )
+            fragment, evidence_core = format_grant_evidence(best_grant)
             note = ""
+    elif base == 2 and mechanism in ("text", "reminder"):
+        # base == 2 specifically (not just "not None"): Tier 0/1 matches
+        # (base 0/1) must never be reconsidered by a Tier 2 mechanism, and
+        # a Tier 0 match in particular never sets `fragment` at all (stays
+        # at its None initial value) -- checking `base is None`'s negation
+        # alone let this branch wrongly fire for Tier 0 rows and crash on
+        # fragment_both_sides_injected(None, ...) (caught by the corpus-
+        # wide re-measurement below, fixed before shipping).
+        #
+        # Fable 5's Option C (ratified, 2026-07-10, REMINDER-TEXT-
+        # QUALIFICATION-CASCADE-ISSUE.md): the text/reminder path already
+        # claimed this pair (base is not None) -- but if its ENTIRE winning
+        # evidence (the primary fragment AND every cumulative-scoring extra
+        # run, Entry #5) is both-sides-M2-injected boilerplate (the SAME
+        # PROVENANCE_DISCOUNT_WEIGHT=0.01-near-worthless category Entry #6
+        # already discounts hard), a genuinely qualifying keyword_grant
+        # match is categorically stronger evidence and should win outright
+        # -- not a scalar comparison (the engine has already ruled
+        # boilerplate is near-worthless; inventing a DF-vs-grant-penalty
+        # metric to reconfirm that would be pointless). If even ONE run is
+        # genuine non-boilerplate text, this does NOT fire -- confirmed by
+        # corpus measurement that genuine text matches (e.g. Behemoth
+        # Sledge vs Unflinching Courage, DF~2) vastly outnumber pure-
+        # boilerplate shadowing (587 vs 71 pairs) and must keep winning.
+        all_runs_boilerplate = fragment_both_sides_injected(fragment, anchor_doc, candidate_doc) and all(
+            fragment_both_sides_injected(extra["text"], anchor_doc, candidate_doc)
+            for extra in extra_fragments
+        )
+        if all_runs_boilerplate:
+            grant_matches = granted_keyword_kinship_match(anchor_doc, candidate_doc)
+            best_grant = (
+                min(grant_matches, key=lambda m: (m["pt_distance"], m["penalty"])) if grant_matches else None
+            )
+            if best_grant is not None:
+                displaced_evidence = evidence_core
+                mechanism = "keyword_grant"
+                granted_kw_anchor_fact = best_grant["anchor_fact"]
+                granted_kw_candidate_fact = best_grant["candidate_fact"]
+                granted_kw_penalty_value = best_grant["penalty"]
+                granted_kw_pt_distance = best_grant["pt_distance"]
+                fragment, grant_evidence = format_grant_evidence(best_grant)
+                # Fold in Option D's evidence idea (Fable 5): don't just
+                # silently swap the winner -- show what was displaced, so
+                # the report/viewer stays maximally informative rather than
+                # erasing the boilerplate match's own DF entirely.
+                evidence_core = f"{grant_evidence} [also matched: {displaced_evidence}]"
+                note = ""
+                commonality_weight = 1.0
+                commonality_band = None
+                fragment_df = None
+                fragment_df_exact = False
+                extra_fragments = []
 
     # Phase 4 (ratified, R4/R6): mana-pip kinship, PARALLEL to text/keyword
     # matching -- only ever fires when nothing else qualified this pair at
@@ -5059,6 +5120,35 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain, per Fable 5's ratification recommendation), 2026-07-10 -- the qualification-"
+        f"cascade shadowing fix (Option C):** `assign_tier()`'s cascade was 'first mechanism to find "
+        f"anything wins' -- text/reminder matching ran before keyword_grant and unconditionally claimed "
+        f"any pair it found ANYTHING for, permanently preventing keyword_grant from even being checked, "
+        f"even when the text/reminder match was purely near-universal boilerplate (e.g. every {{1}}-cost "
+        f"Equipment's identical Equip reminder) and a genuine, specific shared-keyword match existed "
+        f"underneath it. Full investigation and options: "
+        f"REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md (mtjawnny.github.io/docs). Fix, exactly as Fable 5 "
+        f"recommended: a NEW check after the existing keyword_grant/mana cascade -- if the text/reminder "
+        f"path's ENTIRE winning evidence (primary fragment AND every cumulative-scoring extra run, Entry "
+        f"#5) is both-sides-M2-injected boilerplate (the same near-worthless PROVENANCE_DISCOUNT_WEIGHT="
+        f"0.01 category Entry #6 already discounts hard), a genuinely qualifying keyword_grant match wins "
+        f"outright -- categorically, not by scalar comparison (the engine has already ruled boilerplate is "
+        f"near-worthless; a DF-vs-grant-penalty metric would be pointless). The displaced boilerplate match "
+        f"is kept, not erased -- appended to the evidence string as '[also matched: ...]'. Scoped tight: if "
+        f"even ONE run in the winning match is genuine non-boilerplate text, this does NOT fire. "
+        f"Corpus-measured before ratifying, not guessed: of 9,059 pairs corpus-wide that qualify via "
+        f"granted_keyword_kinship_match(), 587 are correctly claimed today by genuinely strong text "
+        f"matches (e.g. Behemoth Sledge vs Unflinching Courage, DF~2, a near-verbatim match) that MUST "
+        f"keep winning -- confirmed unchanged, byte-for-byte, after this fix. Only 71 were pure-boilerplate "
+        f"shadowed; all 71 now correctly resolve to keyword_grant. A real implementation bug was caught "
+        f"during this same verification pass (not shipped): the new check's guard initially fired for "
+        f"Tier 0 matches too (which never set `fragment`, crashing on the boilerplate check) -- fixed by "
+        f"requiring `base == 2` explicitly, not just 'not None'. check_gb_swiftfoot_boots_gate's measured "
+        f"floor moved a FOURTH time this session, but downward for the first time -- `4 -> 3`, a genuine "
+        f"reduction in boilerplate clutter (Ring of Valkas correctly relabeled), not relative displacement."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -5301,7 +5391,17 @@ def check_ga_boros_charm_gate(ctx: dict) -> bool:
 # job (zero T1 rows, Tier 2 not literally dominated by boilerplate) still
 # holds. A future redesign (e.g. a percentage/ratio check instead of an
 # exact count) might be more stable long-term -- flagged, not built here.
-GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 4
+#
+# 4 -> 3 (still same session, 2026-07-10, Fable 5's Option C ratified):
+# unlike the three moves above, this one is a genuine IMPROVEMENT, not
+# relative displacement -- Ring of Valkas (previously equip-reminder-only)
+# now correctly resolves to mechanism=keyword_grant instead, since its
+# winning match was PURE both-sides-injected boilerplate and a genuine
+# shared "haste" grant existed underneath it. See
+# REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md for the full cascade fix.
+# Tightened to match, per this session's own "keep the floor at measured
+# reality" discipline.
+GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 3
 
 
 def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:

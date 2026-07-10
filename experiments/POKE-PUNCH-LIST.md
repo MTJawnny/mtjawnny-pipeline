@@ -1118,3 +1118,106 @@ improvements elsewhere, expected to keep moving as ranking gets sharper — a
 future redesign (ratio/percentage check instead of an exact count) might be
 more stable long-term, not built here. Zurgo/Delney and determinism
 reverified, viewer regenerated and confirmed live.
+
+---
+
+## Entry #8 — Qualification-cascade shadowing: reminder-text boilerplate blocking real keyword_grant matches
+
+**Investigated, ratified (per Fable 5's recommendation), and implemented,
+2026-07-10.** Full investigation doc:
+`~/Projects/mtjawnny.github.io/docs/REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`
+(includes the full session history, exact code citations, corpus
+measurements, four sketched options, and Fable 5's full written
+recommendation — not fully reproduced here).
+
+### What's wrong
+
+`assign_tier()`'s qualification cascade is "first mechanism to find
+anything wins": text/reminder matching (step 3) runs before keyword_grant
+(step 5, Entry #4), gated `if base is None:` — meaning if text/reminder
+finds ANYTHING at Tier 2, however weak, keyword_grant never even runs for
+that pair. Confirmed with real cards: Crystal Slipper, Ring of Valkas,
+Skateboard, Boots of Speed, and Strider Harness all genuinely share
+"haste" with Swiftfoot Boots via a clean `Equipped creature has haste`
+clause — but all five also happen to have Equip cost `{1}` (same as
+Boots), so their generic Equip-reminder boilerplate text-matches first and
+claims the pair before keyword_grant is checked. Not a viewer bug — the
+viewer renders exactly what `assign_tier()` computes; verified directly by
+calling it standalone, matching the live server byte-for-byte.
+
+Traced and ruled OUT as the same issue: mana kinship's identical `if base
+is None:` gating is a DELIBERATE, already-ratified design (R6, Phase 4 —
+mana kinship is meant to be the broadest, weakest, last-resort net,
+losing to anything more specific is correct). keyword_grant inherited the
+same code SHAPE from mana's precedent, but nobody ever explicitly ruled
+that gating was right for keyword_grant specifically — it was copied, not
+decided. Also checked and clean: Mechanism 1 (keyword_kinship) shows zero
+shadowing anywhere in the calibration panel today.
+
+### Corpus measurement (before ratifying, not guessed)
+
+Of 9,059 pairs corpus-wide that qualify via `granted_keyword_kinship_match()`:
+- **587 pairs** are correctly claimed today by genuinely strong, specific
+  text matches (e.g. Behemoth Sledge vs Unflinching Courage, DF≈2, a
+  near-verbatim "gets +2/+2 and has trample and lifelink" match) — these
+  MUST keep winning; a blanket cascade-reorder (Option A) would have
+  wrongly preempted every one of them.
+- **71 pairs** are shadowed by PURE both-sides-injected boilerplate with
+  nothing else backing the text/reminder win — these are the real bug.
+
+This measurement is what separated the four sketched options and is why
+Fable 5's Option C (narrow, categorical, boilerplate-specific) was
+recommended over Option A (blanket reorder) or Option B (run everything,
+pick the best by a new cross-mechanism metric).
+
+### Fix (Option C, as recommended)
+
+New check after the existing keyword_grant/mana blocks: if the text/
+reminder path already claimed the pair (`base == 2`, `mechanism in
+("text", "reminder")`) AND its entire winning evidence — the primary
+fragment AND every cumulative-scoring extra run (Entry #5) — is both-
+sides-M2-injected boilerplate (`fragment_both_sides_injected()`, already
+built for Entry #6's discount logic) AND a genuine `granted_keyword_
+kinship_match()` also qualifies, keyword_grant wins outright.
+**Categorical, not a scalar comparison** — the engine has already ruled
+`PROVENANCE_DISCOUNT_WEIGHT=0.01`-weighted boilerplate near-worthless;
+inventing a DF-vs-grant-penalty cross-mechanism metric to reconfirm that
+would be pointless. If even ONE run in the winning match is genuine
+non-boilerplate text, this does not fire — the 587-pair population is
+untouched by construction. Folds in Option D's evidence idea: the
+displaced boilerplate match is kept, not erased, appended to the
+evidence string as `[also matched: ...]`.
+
+### A real bug caught during verification (not shipped)
+
+The new check's first draft used `elif mechanism in ("text", "reminder"):`
+chained off the wrong `if` — it fired even for Tier 0 matches (which never
+set `fragment` at all, leaving it at its `None` initial value), crashing
+on `fragment_both_sides_injected(None, ...)` during the corpus-wide
+re-measurement pass. Fixed by requiring `base == 2` explicitly, not just
+"whatever elif branch this happens to be." Caught by the verification
+ritual doing its job, not by luck.
+
+### Verification
+
+Full gate suite 73/73 green. Corpus-wide re-measurement after the fix: 0
+pairs still shadowed by pure boilerplate (was 71), all 587 genuine-text
+matches confirmed byte-for-byte unchanged. `check_gb_swiftfoot_boots_gate`'s
+measured floor moved a FOURTH time this session but DOWNWARD for the
+first time (`4 → 3`) — a genuine reduction in clutter, not relative
+displacement (Ring of Valkas correctly relabeled to `keyword_grant`).
+Zurgo/Delney (not in default panel) verified separately, determinism
+confirmed twice, viewer cache regenerated and confirmed live via the
+actual `/api/anchor` endpoint (all five motivating cards — Crystal
+Slipper, Ring of Valkas, Boots of Speed, Skateboard, Strider Harness —
+now show `mechanism=keyword_grant` with the boilerplate preserved as a
+note).
+
+### Files touched
+
+`experiments/tier_engine.py` only: `assign_tier()` (new post-cascade
+check, `format_grant_evidence()` extracted as a shared helper to avoid
+duplicating the evidence-building code), `GB_SWIFTFOOT_MAX_DISPLAYED_
+EQUIP_REMINDER_ROWS` (4 → 3), report header note. Companion doc (separate
+repo, not committed by this session): `REMINDER-TEXT-QUALIFICATION-
+CASCADE-ISSUE.md`.
