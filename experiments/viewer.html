@@ -81,6 +81,8 @@
   .badge-mech-reminder { color: #7fa0c9; border-color: #7fa0c9; }
   .badge-mech-keyword { color: #8a9a6b; border-color: #8a9a6b; }
   .badge-mech-mana { color: #c99a4a; border-color: #c99a4a; }
+  .badge-mech-keyword_grant { color: #a688c9; border-color: #a688c9; }
+  .badge-mech-sentence { color: #6bafa0; border-color: #6bafa0; }
   .badge-band-full { color: var(--legal); border-color: var(--legal); }
   .badge-band-discounted { color: var(--accent); border-color: var(--accent); }
   .badge-band-rescue { color: var(--illegal); border-color: var(--illegal); }
@@ -182,6 +184,8 @@
         <option value="reminder">reminder</option>
         <option value="keyword">keyword</option>
         <option value="mana">mana</option>
+        <option value="keyword_grant">keyword grant</option>
+        <option value="sentence">sentence</option>
       </select>
     </div>
     <div>
@@ -215,7 +219,10 @@
 
   var state = { index: null, currentSlug: null, legalOnly: true, mechanismFilter: "", landFilter: "" };
 
-  var MECHANISM_LABELS = { text: "text", reminder: "reminder", keyword: "keyword", mana: "mana" };
+  var MECHANISM_LABELS = {
+    text: "text", reminder: "reminder", keyword: "keyword", mana: "mana",
+    keyword_grant: "keyword grant", sentence: "sentence",
+  };
 
   function mechanismBadge(mech) {
     if (!mech) return "";
