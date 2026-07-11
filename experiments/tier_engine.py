@@ -364,6 +364,28 @@ GRANT_PT_MISMATCH_PENALTY_PER_POINT = 0.15
 # separately later.
 GRANT_KINSHIP_BASE_RANK = 5.0
 
+# Equip-cost delta term (Fable 5's recommendation, EQUIPMENT-REMINDER-AND-
+# WEIGHTING-DELIBERATION.md Section 4a/Q1, 2026-07-10, ratified): Entry #4's
+# granted_keyword_kinship_match() had no signal at all for Equip-activation-
+# cost closeness -- two Equipment granting the identical keyword set (e.g.
+# both "haste, +0/+0") for a {1} Equip cost and a {5} Equip cost scored
+# equally close kin. Only the card's own CASTING cost (mv_delta, a
+# completely different number) entered the shared rank formula. Rejected
+# alternative (a type-gated kill-switch disabling reminder-text Tier 2
+# qualification for Equipment): the residual boilerplate rows in Swiftfoot
+# Boots' own Tier 2 list are honest, defensible weak matches with nothing
+# better available (verified: Ring of Xathrid/Cobbled Wings/Ring of Evos
+# Isle share no real keyword grant with Boots at all) -- "rank buries,
+# never excludes" is working as intended there; this is a targeted
+# additive fix for the actual gap, not a broad mechanism change.
+EQUIP_COST_RE = re.compile(r"\bEquip(?:\s+[A-Za-z]+)?\s+((?:\{[^}]+\})+)(?=[\s.(]|$)")
+# Flat per-point cost, same shape as GRANT_PT_MISMATCH_PENALTY_PER_POINT --
+# an equip-cost swing in either direction is an equally real difference,
+# no missing/extra asymmetry the way mana amount has one. First-pass
+# default, not corpus-tuned, open to recalibration like every other
+# GRANT_*_PENALTY constant in this block.
+GRANT_EQUIP_COST_PENALTY_PER_POINT = 0.15
+
 INHERITED_TAG_DISCOUNT = 0.5
 TIER3_COVERAGE_THRESHOLD = 0.15
 TAG_SCORE_WEIGHT = 3.0          # Amendment 1 (v2.1), tunable -- starting value per the change order
@@ -634,6 +656,25 @@ def strip_sentence_final_token_period(token: str) -> str:
     if token.endswith(".") and len(token) > 1:
         return token[:-1]
     return token
+
+
+def sentence_boundary_indices(paragraph_text: str) -> frozenset:
+    """Sentence-boundary trim rule (Fable 5's recommendation, EQUIPMENT-
+    REMINDER-AND-WEIGHTING-DELIBERATION.md, 2026-07-10): 0-based token
+    indices i (into `paragraph_text.split()`, the SAME raw split
+    `paragraph_tokens` is built from before CO-C's per-token period strip)
+    where the raw token at i ends with a literal sentence-final period --
+    i.e. a sentence ends immediately after token i. Same "no abbreviations,
+    no ambiguous internal periods" assumption strip_sentence_final_token_period
+    already relies on. Used by find_shared_fragments() to detect when a
+    matched run spans two of a paragraph's own sentences by coincidence
+    (see that function's docstring) rather than reflecting one fluent
+    clause."""
+    return frozenset(
+        i for i, tok in enumerate(paragraph_text.split())
+        if tok.endswith(".") and len(tok) > 1
+    )
+
 
 KNOWN_LIMITATIONS = [
     "Keyword-only detection is prefix-match against the card's own keywords "
@@ -1284,6 +1325,13 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True) -> dict:
         # replacing matchable_paragraphs/paragraph_tokens (R4).
         mana_facts = [f for f in (parse_mana_fact(p) for p in matchable_paragraphs) if f is not None]
 
+        # Equip-cost delta term (Fable 5's recommendation, 2026-07-10):
+        # parsed from `substituted` (RAW case, pre-lowercasing) since
+        # EQUIP_COST_RE's "Equip" match is case-sensitive -- see that
+        # function's own docstring for why. None if this face has no Equip
+        # line at all, or a non-mana-symbol cost (e.g. a sacrifice cost).
+        equip_cost_value = parse_equip_cost_value(substituted)
+
         faces.append({
             "name": raw_face["name"],
             "mana_cost": raw_face["mana_cost"],
@@ -1295,10 +1343,29 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True) -> dict:
                 [strip_sentence_final_token_period(tok) for tok in p.split()]
                 for p in matchable_paragraphs
             ],
+            # Reminder-injected paragraphs (v2.9 Mechanism 2) are exempt from
+            # boundary detection -- caught measuring this fix's own corpus
+            # impact (Faithless Looting's flashback gate: 171 -> 0 rows).
+            # A keyword's reminder text (e.g. Flashback's "...for its
+            # flashback cost. Then exile it.") is Scryfall's own fixed,
+            # single-author explanation of ONE ability, always printed as
+            # this same two-sentence pair on every card with that keyword --
+            # not two independently-written native clauses that happen to
+            # collide. Trimming it discarded "then exile it" and pushed the
+            # remaining prefix's DF from 172 (rescue band) to 178 (DEAD),
+            # converting a correctly-buried match into an incorrectly-excluded
+            # one -- the opposite of what the trim rule exists to do. Native
+            # paragraphs (not in reminder_keyword_by_paragraph) still get
+            # full boundary detection; this exemption is reminder-scoped only.
+            "paragraph_sentence_ends": [
+                frozenset() if p in reminder_keyword_by_paragraph else sentence_boundary_indices(p)
+                for p in matchable_paragraphs
+            ],
             "full_text_all": "\n".join(all_paragraphs),
             "clauses": clauses,
             "reminder_keyword_by_paragraph": reminder_keyword_by_paragraph,
             "mana_facts": mana_facts,
+            "equip_cost_value": equip_cost_value,
         })
 
     doc_reminder_keyword_by_paragraph = {}
@@ -1525,14 +1592,20 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
 # ---------------------------------------------------------------------------
 
 def longest_common_run(tokens_a: list, tokens_b: list) -> tuple:
-    """Longest common contiguous run of tokens. Returns (length, end_index_a)
-    where the run is tokens_a[end_index_a - length : end_index_a]."""
+    """Longest common contiguous run of tokens. Returns
+    (length, end_index_a, end_index_b) where the run is
+    tokens_a[end_index_a - length : end_index_a] ==
+    tokens_b[end_index_b - length : end_index_b]. `end_index_b` (added for
+    the sentence-boundary trim rule, 2026-07-10 -- see
+    find_shared_fragments) was previously re-derived downstream via a
+    separate substring scan; the DP already has it for free."""
     n, m = len(tokens_a), len(tokens_b)
     if n == 0 or m == 0:
-        return 0, 0
+        return 0, 0, 0
     prev_row = [0] * (m + 1)
     best_len = 0
     best_end_a = 0
+    best_end_b = 0
     for i in range(1, n + 1):
         curr_row = [0] * (m + 1)
         token_a = tokens_a[i - 1]
@@ -1542,8 +1615,9 @@ def longest_common_run(tokens_a: list, tokens_b: list) -> tuple:
                 if curr_row[j] > best_len:
                     best_len = curr_row[j]
                     best_end_a = i
+                    best_end_b = j
         prev_row = curr_row
-    return best_len, best_end_a
+    return best_len, best_end_a, best_end_b
 
 
 def ngram_df_estimate(tokens: list, ngram_df: dict, ngram_min_len: int):
@@ -1615,6 +1689,72 @@ def trace_df_drift(fragment: str, ngram_min_len: int, legacy_ngram_index: dict, 
     return {"own_df_changed": True, "culprits": sorted(culprits)}
 
 
+def find_shared_sentence(anchor_doc: dict, candidate_doc: dict, clause_df: dict,
+                          ngram_min_len: int, rescue_ceiling: int, exclude: frozenset = frozenset()):
+    """Short whole-sentence identity Tier 2 path (Fable 5's recommendation,
+    EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md Section 4c, 2026-07-10,
+    ratified by Captain): find_shared_fragments() can never qualify a
+    matched clause shorter than ngram_min_len tokens, by construction --
+    e.g. "Exile target nonland permanent" is a complete, defining 4-word
+    ability, one word short of the 5-token floor, and structurally
+    invisible to that path no matter how rare it is corpus-wide. This is
+    the same KIND of evidence as Tier 1's whole-paragraph exact match
+    (find_shared_paragraph), one structural level down: an exact, byte-
+    identical SENTENCE (not a whole paragraph, not an arbitrary token
+    run) shared by both cards. Deliberately scoped to sentences UNDER
+    ngram_min_len only -- a sentence that long or longer is already
+    reachable via find_shared_fragments (as a >=5-token run, possibly with
+    cumulative multi-run credit), so this path only adds coverage for
+    clauses the n-gram path can never see, never duplicates it.
+
+    Reuses clause_index/clause_df (already built corpus-wide by
+    build_indexes() from every face's `clauses` field, via split_clauses()
+    -- previously only a fast candidate-pool pre-filter, per that
+    function's own docstring) rather than a new index; this is an EXACT
+    corpus-wide count of the literal sentence text, the same "para_exact_df"
+    convention Tier 1 already uses for short paragraphs (R2, Phase 3), not
+    a windowed approximation. Same full/discounted/rescue/dead banding as
+    the text/reminder path, same rescue_ceiling (T2_RESCUE_CEILING).
+    `exclude` (mirrors find_shared_paragraph/find_shared_fragments): normalized
+    paragraph texts to skip entirely on either side -- the no-double-count
+    suppression for a keyword already claimed by Mechanism 1.
+
+    Returns None or (text, df) for the best (lowest-DF, then longest, then
+    alphabetical for determinism) qualifying shared sentence -- single best
+    only, no cumulative multi-sentence credit (a v1 scope choice, not
+    corpus-measured to be worth the added complexity yet)."""
+    anchor_sentences = set()
+    for af in anchor_doc["faces"]:
+        for p in af["matchable_paragraphs"]:
+            if p in exclude:
+                continue
+            for c in split_clauses(p):
+                if len(c.split()) < ngram_min_len:
+                    anchor_sentences.add(c)
+    if not anchor_sentences:
+        return None
+    candidate_sentences = set()
+    for cf in candidate_doc["faces"]:
+        for p in cf["matchable_paragraphs"]:
+            if p in exclude:
+                continue
+            candidate_sentences.update(split_clauses(p))
+    shared = anchor_sentences & candidate_sentences
+    if not shared:
+        return None
+    best_text, best_df, best_key = None, None, None
+    for text in shared:
+        df = clause_df.get(text, 1)
+        if df > rescue_ceiling:
+            continue
+        key = (df, -len(text.split()), text)
+        if best_key is None or key < best_key:
+            best_key, best_text, best_df = key, text, df
+    if best_text is None:
+        return None
+    return best_text, best_df
+
+
 def fragment_run_weight(run_index: int) -> float:
     """Cumulative fragment scoring rank weight by run position (Captain's
     ruling, 2026-07-10, CUMULATIVE-FRAGMENT-SCORING-BUILD-HANDOFF.md):
@@ -1629,6 +1769,41 @@ def fragment_run_weight(run_index: int) -> float:
     if run_index == 1:
         return 0.5
     return 0.25
+
+
+def trim_run_for_sentence_boundary(a_start: int, c_start: int, length: int,
+                                    anchor_ends: frozenset, candidate_ends: frozenset,
+                                    ngram_min_len: int) -> int:
+    """Sentence-boundary trim rule (Fable 5's recommendation, EQUIPMENT-
+    REMINDER-AND-WEIGHTING-DELIBERATION.md, 2026-07-10, ratified by
+    Captain): a matched run that spans a sentence boundary -- on EITHER
+    side, the anchor's own paragraph structure or the candidate's -- is a
+    coincidence (two unrelated sentences that happen to abut with matching
+    words at the seam, e.g. Growth Spiral's "...draw a card." + "You may
+    put a land..." colliding with Nahiri's Lithoforming's "...draw a
+    card." + "You may play X additional lands...") UNLESS what follows the
+    boundary is itself a substantial (>=ngram_min_len token) continuation,
+    which is real corroborating evidence a bare 1-2 token overlap isn't.
+    Finds the LEFTMOST boundary within the run's interior (relative
+    offsets 0..length-2 -- the run's own final token can never "cross"
+    anything, nothing follows it within the run) at either side's own
+    original token positions (a_start+k / c_start+k -- the run is the same
+    literal words on both sides, so a relative offset means the same word
+    either way, but each side's OWN sentence structure is checked
+    independently, since identical words can sit in different sentence
+    positions on each card). Returns the resulting length: unchanged if no
+    boundary forces a trim (the overwhelming majority of runs -- most
+    shared text doesn't cross a sentence at all), else the leftmost
+    qualifying boundary's prefix length (which may itself fall below
+    ngram_min_len -- callers must re-check the floor, same as any other
+    qualification path)."""
+    for k in range(length - 1):
+        if (a_start + k) in anchor_ends or (c_start + k) in candidate_ends:
+            tail_length = length - (k + 1)
+            if tail_length >= ngram_min_len:
+                return length  # long continuation past the seam -- corroborated, not a coincidence
+            return k + 1  # short/no continuation -- only the leading segment survives
+    return length
 
 
 def find_shared_fragments(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
@@ -1648,30 +1823,56 @@ def find_shared_fragments(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
     never accidentally re-match) and repeat longest_common_run() on the
     SAME pair only. `exclude` (v2.9, unchanged): normalized paragraph texts
     to skip entirely on either side -- the no-double-count suppression for
-    a keyword that already qualified this pair via Mechanism 1."""
+    a keyword that already qualified this pair via Mechanism 1.
+
+    Sentence-boundary trim rule (2026-07-10, Fable 5's recommendation,
+    ratified): every candidate run -- both the initial best-pair selection
+    and every subsequent masked-and-repeated run -- is passed through
+    trim_run_for_sentence_boundary() before its length/DF are evaluated
+    against the floor. A run's ORIGINAL (untrimmed) span is still what
+    gets masked out before searching for the next run -- the discarded
+    tail was never going to qualify as evidence on its own (that's WHY it
+    was discarded), no information is lost by removing it from further
+    consideration too, and this avoids the next iteration wastefully
+    rediscovering the identical sub-floor tail."""
     candidates = []
     for af in anchor_doc["faces"]:
         for a_idx, a_tokens in enumerate(af["paragraph_tokens"]):
             if af["matchable_paragraphs"][a_idx] in exclude:
                 continue
+            anchor_ends = af["paragraph_sentence_ends"][a_idx]
             for cf in candidate_doc["faces"]:
                 for c_idx, c_tokens in enumerate(cf["paragraph_tokens"]):
                     if cf["matchable_paragraphs"][c_idx] in exclude:
                         continue
-                    length, end_a = longest_common_run(a_tokens, c_tokens)
+                    candidate_ends = cf["paragraph_sentence_ends"][c_idx]
+                    length, end_a, end_b = longest_common_run(a_tokens, c_tokens)
                     if length < ngram_min_len:
                         continue
-                    frag_tokens = a_tokens[end_a - length:end_a]
+                    a_start, c_start = end_a - length, end_b - length
+                    trimmed_length = trim_run_for_sentence_boundary(
+                        a_start, c_start, length, anchor_ends, candidate_ends, ngram_min_len,
+                    )
+                    if trimmed_length < ngram_min_len:
+                        continue
+                    frag_tokens = a_tokens[a_start:a_start + trimmed_length]
                     df = ngram_df_estimate(frag_tokens, ngram_df, ngram_min_len)
                     if df is None or df > ngram_floor:
                         continue
-                    candidates.append((length, df, " ".join(frag_tokens), a_tokens, c_tokens, end_a))
+                    candidates.append((
+                        trimmed_length, df, " ".join(frag_tokens),
+                        a_tokens, c_tokens, end_a, length, anchor_ends, candidate_ends,
+                    ))
     if not candidates:
         return []
-    length, df, text, a_tokens, c_tokens, end_a = max(candidates, key=lambda c: (c[0], -c[1], c[2]))
+    (length, df, text, a_tokens, c_tokens, end_a,
+     orig_length, anchor_ends, candidate_ends) = max(candidates, key=lambda c: (c[0], -c[1], c[2]))
     runs = [(text, df, length)]
 
-    cur_a, cur_c, cur_end_a, cur_length = a_tokens, c_tokens, end_a, length
+    # Masking uses the ORIGINAL (pre-trim) span -- orig_length, not the
+    # trimmed `length` just reported as evidence -- per this function's
+    # own docstring on why the discarded tail is masked too.
+    cur_a, cur_c, cur_end_a, cur_length = a_tokens, c_tokens, end_a, orig_length
     while True:
         matched = cur_a[cur_end_a - cur_length:cur_end_a]
         start_c = None
@@ -1691,14 +1892,20 @@ def find_shared_fragments(anchor_doc: dict, candidate_doc: dict, ngram_df: dict,
                 + [f"__MASK_B_{run_tag}_{j}__" for j in range(cur_length)]
                 + cur_c[start_c + cur_length:]
             )
-        next_length, next_end_a = longest_common_run(cur_a, cur_c)
+        next_length, next_end_a, next_end_b = longest_common_run(cur_a, cur_c)
         if next_length < ngram_min_len:
             break
-        next_frag_tokens = cur_a[next_end_a - next_length:next_end_a]
+        next_a_start, next_c_start = next_end_a - next_length, next_end_b - next_length
+        next_trimmed_length = trim_run_for_sentence_boundary(
+            next_a_start, next_c_start, next_length, anchor_ends, candidate_ends, ngram_min_len,
+        )
+        if next_trimmed_length < ngram_min_len:
+            break
+        next_frag_tokens = cur_a[next_a_start:next_a_start + next_trimmed_length]
         next_df = ngram_df_estimate(next_frag_tokens, ngram_df, ngram_min_len)
         if next_df is None or next_df > ngram_floor:
             break
-        runs.append((" ".join(next_frag_tokens), next_df, next_length))
+        runs.append((" ".join(next_frag_tokens), next_df, next_trimmed_length))
         cur_end_a, cur_length = next_end_a, next_length
     return runs
 
@@ -2050,6 +2257,42 @@ def parse_pt_modifier(text):
     return int(m.group(1)), int(m.group(2))
 
 
+def mana_symbols_numeric_value(cost_str: str) -> float:
+    """Sums a bracketed mana-symbol cost string ("{2}{W}" -> 3.0) for
+    RELATIVE-distance comparison purposes only, not rules-accurate mana
+    value -- a purely-numeric symbol ("{2}") adds its number; any symbol
+    containing a digit (hybrid, e.g. "{2/W}") adds the largest digit found
+    (its minimum-payable numeric weight); any other symbol (a plain color
+    or hybrid color-color pip) adds 1. Equip costs in the corpus are
+    overwhelmingly plain generic numbers; this simple heuristic is not
+    exercised on anything more exotic today, per EQUIP_COST_RE's own scope
+    (see its comment)."""
+    total = 0.0
+    for sym in re.findall(r"\{([^}]+)\}", cost_str):
+        if sym.isdigit():
+            total += int(sym)
+            continue
+        digits = re.findall(r"\d+", sym)
+        total += max(int(d) for d in digits) if digits else 1.0
+    return total
+
+
+def parse_equip_cost_value(face_text: str):
+    """Extracts this face's Equip cost as a numeric value for relative-
+    distance comparison (see mana_symbols_numeric_value), or None if this
+    face has no Equip keyword line, or its cost isn't a plain mana-symbol
+    cost EQUIP_COST_RE recognizes (e.g. "Equip—Sacrifice a creature", a
+    non-mana cost -- left unparsed, not guessed at, same "uncertainty is
+    not evidence of difference" convention as duration's own unknown
+    case). Case-sensitive match against the RAW (pre-lowercasing) face
+    text -- "Equip" only ever appears capitalized as a real keyword line,
+    never inside ordinary sentence prose."""
+    m = EQUIP_COST_RE.search(face_text)
+    if not m:
+        return None
+    return mana_symbols_numeric_value(m.group(1))
+
+
 def extract_granted_keyword_clause(paragraph: str, keyword_vocabulary: frozenset):
     """Parses an already-normalized (lowercased, reminder-stripped)
     matchable paragraph for the Equipment/Aura "confers keywords" idiom.
@@ -2096,7 +2339,15 @@ def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> lis
             extracted = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
             if extracted is not None:
                 keywords, pt_mod = extracted
-                facts.append({"keywords": keywords, "pt_mod": pt_mod, "paragraph": paragraph})
+                facts.append({
+                    "keywords": keywords, "pt_mod": pt_mod, "paragraph": paragraph,
+                    # Equip-cost delta term (Fable 5's recommendation,
+                    # 2026-07-10): carried from the SAME face the grant
+                    # clause itself came from -- an Equipment's own Equip
+                    # cost, not its casting cost (mv_delta, a different
+                    # axis already covered elsewhere in the rank formula).
+                    "equip_cost_value": face["equip_cost_value"],
+                })
     return facts
 
 
@@ -2128,12 +2379,23 @@ def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list
             a_power, a_toughness = a_fact["pt_mod"] or (0, 0)
             c_power, c_toughness = c_fact["pt_mod"] or (0, 0)
             pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
+            # Equip-cost delta term (Fable 5's recommendation, 2026-07-10):
+            # unlike the P/T-mod convention above, a MISSING/unparseable
+            # equip cost on either side (None -- no Equip line at all, or a
+            # non-mana-symbol cost like "Sacrifice a creature") is genuinely
+            # UNKNOWN, not a definitive value -- contributes zero penalty,
+            # same "uncertainty is not evidence of difference" convention
+            # duration/scope/exception already use elsewhere in this file.
+            a_equip = a_fact["equip_cost_value"]
+            c_equip = c_fact["equip_cost_value"]
+            equip_cost_distance = abs(a_equip - c_equip) if a_equip is not None and c_equip is not None else 0.0
             matches.append({
                 "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
-                "pt_distance": pt_distance,
+                "pt_distance": pt_distance, "equip_cost_distance": equip_cost_distance,
                 "penalty": (
                     GRANT_KEYWORD_MISMATCH_PENALTY * extras
                     + GRANT_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
+                    + GRANT_EQUIP_COST_PENALTY_PER_POINT * equip_cost_distance
                 ),
             })
     return matches
@@ -2180,13 +2442,13 @@ def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
     return matches
 
 
-def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_df: dict,
+def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df: dict, keyword_df: dict,
                  paragraph_index: dict, args: argparse.Namespace):
     """Returns None if there's no verbatim overlap AND no keyword/mana/
     granted-keyword kinship (a Tier 3 candidate), else a dict: {"tier": int,
     "fragment": str|None, "fragment_df": int|None, "fragment_df_exact": bool,
     "evidence": str (display-formatted, notes included), "mechanism":
-    "text"|"reminder"|"keyword"|"mana"|"keyword_grant", "keyword": str|None,
+    "text"|"reminder"|"sentence"|"keyword"|"mana"|"keyword_grant", "keyword": str|None,
     "anchor_param": str|None, "candidate_param": str|None,
     "commonality_weight": float, "commonality_band": str|None,
     "anchor_mana_fact": dict|None, "candidate_mana_fact": dict|None,
@@ -2362,6 +2624,10 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         commonality_weight = 1.0
         commonality_band = None
     elif fragment is not None:
+        # The short whole-sentence path (last in the cascade, after
+        # keyword_grant/mana) runs AFTER this block and sets its own
+        # "sentence" mechanism label directly -- never relabeled to
+        # "reminder" here, since it hasn't fired yet at this point.
         reminder_kw = find_reminder_attribution(fragment, anchor_doc, candidate_doc)
         if reminder_kw is not None:
             mechanism = "reminder"
@@ -2385,8 +2651,17 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
         pt_note = ""
         if a_pt is not None or c_pt is not None:
             pt_note = f", {pt_display(a_pt)} vs {pt_display(c_pt)}"
+        # Equip-cost delta term (Fable 5's recommendation, 2026-07-10):
+        # shown only when BOTH sides parsed a numeric equip cost -- same
+        # "don't display what wasn't compared" convention as the P/T note
+        # above, which only appears when at least one side HAS a pt_mod.
+        equip_note = ""
+        a_equip = anchor_fact["equip_cost_value"]
+        c_equip = candidate_fact["equip_cost_value"]
+        if a_equip is not None and c_equip is not None:
+            equip_note = f", equip {a_equip:g} vs equip {c_equip:g}"
         grant_evidence = (
-            f"granted-keyword kinship: {shared_desc}{pt_note} "
+            f"granted-keyword kinship: {shared_desc}{pt_note}{equip_note} "
             f"(mismatch penalty={best_grant['penalty']:.2f})"
         )
         return grant_fragment, grant_evidence
@@ -2420,6 +2695,10 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             fragment, evidence_core = format_grant_evidence(best_grant)
             note = ""
     elif base == 2 and mechanism in ("text", "reminder"):
+        # mechanism can only be "text"/"reminder" here, never "sentence" --
+        # the short-sentence path (below, gated `if base is None`) runs
+        # AFTER this block in the cascade (last-resort, after keyword_grant
+        # and mana both), so it cannot have set `mechanism` yet at this point.
         # base == 2 specifically (not just "not None"): Tier 0/1 matches
         # (base 0/1) must never be reconsidered by a Tier 2 mechanism, and
         # a Tier 0 match in particular never sets `fragment` at all (stays
@@ -2495,6 +2774,46 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, keyword_d
             )
             fragment = f"mana kinship: {shared_desc}"
             evidence_core = f"mana kinship: {shared_desc} (cascade penalty={best_mana['penalty']:.2f})"
+            note = ""
+
+    # Short whole-sentence identity path (Fable 5's recommendation,
+    # EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md Section 4c,
+    # 2026-07-10, ratified): find_shared_fragments() can never qualify a
+    # matched clause shorter than NGRAM_MIN_LEN tokens -- see
+    # find_shared_sentence()'s own docstring. Placed LAST in the cascade,
+    # after keyword_grant and mana kinship both -- caught corpus-measuring
+    # this path's own impact before shipping: an earlier draft placed it
+    # right where the text/reminder path leaves `base` at None, which let
+    # it claim Sol Ring vs Ancient Tomb's pair (both share the exact short
+    # sentence "{t}: add {c}{c}") BEFORE mana kinship's own specialized,
+    # richer cascade (amount/color/shape comparison, R5/R6) ever got a
+    # chance -- failing check_gg_sol_ring_cascade_gate (expected
+    # mechanism=mana, got mechanism=sentence). Mana kinship and
+    # keyword_grant are purpose-built, richer mechanisms for their own
+    # domains (mana abilities; Equipment/Aura keyword grants); the
+    # sentence path is a generic catch-all with no domain-specific
+    # cascade of its own, so it belongs at the END of the "only fires if
+    # nothing else found anything" chain, not competing with them for
+    # position. Its own motivating cases (Anguished Unmaking, Inevitable
+    # Defeat vs Utter End/Vanish into Eternity) have no mana facts and no
+    # granted-keyword facts at all, so this reordering costs them nothing.
+    if base is None:
+        sentence_match = find_shared_sentence(
+            anchor_doc, candidate_doc, clause_df, args.ngram_min_len, T2_RESCUE_CEILING,
+            exclude=exclude_paragraphs,
+        )
+        if sentence_match is not None:
+            text, df = sentence_match
+            base = 2
+            fragment = text
+            fragment_df = df
+            fragment_df_exact = True  # clause_df is an EXACT corpus-wide count, never a windowed approximation
+            mechanism = "sentence"
+            evidence_core = f"{format_evidence_text(text)} (DF={df})"
+            band = band_for_df(df, T2_FULL_WEIGHT_CEILING, T2_DISCOUNT_CEILING, T2_RESCUE_CEILING)
+            both_injected = fragment_both_sides_injected(text, anchor_doc, candidate_doc)
+            commonality_weight = PROVENANCE_DISCOUNT_WEIGHT if both_injected else BAND_WEIGHTS[band]
+            commonality_band = band
             note = ""
 
     if base is None:
@@ -2719,10 +3038,43 @@ def build_turn_scoped_tag_index(card_docs: dict, card_tags: dict, base_idf: dict
 def locate_fragment_context(doc: dict, fragment: str) -> tuple:
     """Returns (paragraph, face_type_line) for the first face/paragraph
     containing `fragment` as an exact match (Tier 1) or substring (Tier 2).
-    Always findable -- fragment was derived from this doc's own paragraphs."""
+
+    BUG FIX (found by Fable 5 reviewing EQUIPMENT-REMINDER-AND-WEIGHTING-
+    DELIBERATION.md, 2026-07-10): comparison is now against a period-
+    normalized reconstruction of each paragraph
+    (normalize_paragraph_for_fragment_comparison -- the same CO-C
+    per-token period-stripping convention `fragment` itself was already
+    built under), not the raw paragraph. The old raw comparison broke
+    across any internal sentence boundary within a multi-sentence
+    paragraph -- same bug class Entry #6 already fixed for
+    fragment_both_sides_injected()/text_injected_on_side(), just a missed
+    call site here. Measured impact: 87/484 (18%) of Tier 2 text/reminder
+    rows across the 6 default calibration anchors previously returned
+    (None, None) here, silently disabling ALL FIVE downstream fact
+    penalties (scope/duration/exception/polarity/condition) for those
+    rows -- not a partial miss, a total one, since every caller
+    (compute_fact_penalties) treats "unknown" as "never penalize."
+    The RAW paragraph (periods intact) is still what's returned -- every
+    downstream consumer (extract_scope, has_exception_marker,
+    locate_fragment_sentence, has_condition_marker) needs real punctuation
+    for its own regexes; only the MATCH comparison changes.
+
+    `fragment` itself is normalized too, not just `p` -- caught measuring
+    this fix's own corpus impact before shipping it (8 Sol-Ring-pool
+    regressions in the first draft): a Tier-1-whole-paragraph match
+    DEMOTED to Tier 2 (types_disjoint_for_demotion, e.g. Sol Ring vs
+    Arid Archway/City of Traitors) sets `fragment` to the RAW paragraph
+    text, period intact (see assign_tier's t1_eligible_match branch) --
+    NOT the token-reconstructed, always-period-stripped form ordinary
+    n-gram-run fragments have. Normalizing only `p` broke that case
+    (`"{t}: add {c}{c}."` vs the normalized `"{t}: add {c}{c}"` no longer
+    matched). Normalizing both sides is idempotent for the ordinary
+    already-stripped case and fixes the demoted-paragraph case too."""
+    normalized_fragment = normalize_paragraph_for_fragment_comparison(fragment)
     for face in doc["faces"]:
         for p in face["matchable_paragraphs"]:
-            if fragment == p or fragment in p:
+            normalized = normalize_paragraph_for_fragment_comparison(p)
+            if normalized_fragment == normalized or normalized_fragment in normalized:
                 return p, face["type_line"]
     return None, None
 
@@ -3038,14 +3390,14 @@ def resolve_anchor(name: str, cards: dict, name_index: dict) -> dict:
 # Self-check (v2 calibration gate, re-verified unchanged in v2.1)
 # ---------------------------------------------------------------------------
 
-def run_self_check(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, keyword_df: dict,
+def run_self_check(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, clause_df: dict, keyword_df: dict,
                     paragraph_index: dict, args: argparse.Namespace) -> tuple:
     print("\nSelf-check against Captain's ruled v1 eyeball verdicts (frozen since v2):")
     all_pass = True
     for anchor_name, candidate_name, expected in SELF_CHECK_PAIRS:
         anchor_doc = card_docs[resolve_anchor(anchor_name, cards, name_index)["oracle_id"]]
         candidate_doc = card_docs[resolve_anchor(candidate_name, cards, name_index)["oracle_id"]]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         tier = result["tier"] if result else None
         evidence = result["evidence"] if result else None
         ok = tier == expected
@@ -3058,7 +3410,7 @@ def run_self_check(cards: dict, card_docs: dict, name_index: dict, ngram_df: dic
     for anchor_name, candidate_name in SELF_CHECK_INFO_ONLY:
         anchor_doc = card_docs[resolve_anchor(anchor_name, cards, name_index)["oracle_id"]]
         candidate_doc = card_docs[resolve_anchor(candidate_name, cards, name_index)["oracle_id"]]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         tier = result["tier"] if result else None
         evidence = result["evidence"] if result else None
         info[candidate_name] = (tier, evidence)
@@ -3090,15 +3442,15 @@ def check_tier0_exclusion_gate(self_check_info: dict) -> bool:
 # Amendment 4 (v2.1) -- new validation gates
 # ---------------------------------------------------------------------------
 
-def check_symmetry(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, keyword_df: dict,
+def check_symmetry(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict, clause_df: dict, keyword_df: dict,
                     paragraph_index: dict, args: argparse.Namespace) -> bool:
     print("\nSymmetry gate (Amendment 4.1): tier assignment must not depend on direction")
     all_ok = True
     for name_a, name_b in SYMMETRY_PAIRS:
         doc_a = card_docs[resolve_anchor(name_a, cards, name_index)["oracle_id"]]
         doc_b = card_docs[resolve_anchor(name_b, cards, name_index)["oracle_id"]]
-        result_ab = assign_tier(doc_a, doc_b, ngram_df, keyword_df, paragraph_index, args)
-        result_ba = assign_tier(doc_b, doc_a, ngram_df, keyword_df, paragraph_index, args)
+        result_ab = assign_tier(doc_a, doc_b, ngram_df, clause_df, keyword_df, paragraph_index, args)
+        result_ba = assign_tier(doc_b, doc_a, ngram_df, clause_df, keyword_df, paragraph_index, args)
         tier_ab = result_ab["tier"] if result_ab else None
         tier_ba = result_ba["tier"] if result_ba else None
         ok = tier_ab == tier_ba
@@ -3466,7 +3818,8 @@ def check_partial_lock_movement(displayed_tier2: list, mv_floor: int) -> bool:
 
 
 def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: dict, ngram_df: dict,
-                                     keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
+                                     clause_df: dict, keyword_df: dict, paragraph_index: dict,
+                                     args: argparse.Namespace) -> bool:
     """v2.3 gates 3-4: scope and duration spot-checks against Grand
     Abolisher, printed and asserted since these have definite expected
     values per the change order."""
@@ -3493,7 +3846,7 @@ def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: di
     KNOWN_SCOPE_MISMATCHES = {"Failure // Comply"}
     for name, expected in scope_checks:
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name!r}: no verbatim overlap with Grand Abolisher -- cannot spot-check scope")
             all_ok = False
@@ -3545,7 +3898,7 @@ def check_scope_duration_spotchecks(cards: dict, card_docs: dict, name_index: di
             # pairwise match needed, just read its face type directly.
             duration = face_duration(abolisher_doc["faces"][0]["type_line"])
         else:
-            result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+            result = assign_tier(abolisher_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
             if result is None:
                 print(f"    [STOP] {name!r}: no verbatim overlap with Grand Abolisher -- cannot spot-check duration")
                 all_ok = False
@@ -3624,7 +3977,7 @@ MANA_ONLY_FAMILY = {
 
 
 def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                        ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
+                        ngram_df: dict, clause_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.4 gate 1: Godsend absent from Abolisher's displayed top 10 (its
     condition-narrowed lock should sink it); condition spot-check printed."""
     print("\nGodsend gate (v2.4 gate 1):")
@@ -3638,7 +3991,7 @@ def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name
 
     abolisher_doc = card_docs[resolve_anchor("Grand Abolisher", cards, name_index)["oracle_id"]]
     godsend_doc = card_docs[resolve_anchor("Godsend", cards, name_index)["oracle_id"]]
-    result = assign_tier(abolisher_doc, godsend_doc, ngram_df, keyword_df, paragraph_index, args)
+    result = assign_tier(abolisher_doc, godsend_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
     if result is None:
         print("  [STOP] Godsend: no verbatim overlap with Grand Abolisher -- cannot spot-check condition")
         return False
@@ -3653,7 +4006,7 @@ def check_godsend_gate(displayed_tier2: list, cards: dict, card_docs: dict, name
 
 
 def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                                ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
+                                ngram_df: dict, clause_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.4 gate 2: no "spend this mana only" family member in Abolisher's
     displayed top 10 (identical grammar, inverted function -- polarity
     mismatch should sink the whole family); polarity spot-checks printed."""
@@ -3670,7 +4023,7 @@ def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: di
     abolisher_doc = card_docs[resolve_anchor("Grand Abolisher", cards, name_index)["oracle_id"]]
     for name, expected_trip in (("Myr Reservoir", True), (VOICE_OF_VICTORY, False)):
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(abolisher_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name}: no verbatim overlap with Grand Abolisher -- cannot spot-check polarity")
             all_ok = False
@@ -3683,7 +4036,7 @@ def check_polarity_family_gate(displayed_tier2: list, cards: dict, card_docs: di
 
 
 def check_basandra_gate(marisi_full_tier2: list, cards: dict, card_docs: dict, name_index: dict,
-                         ngram_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
+                         ngram_df: dict, clause_df: dict, keyword_df: dict, paragraph_index: dict, args: argparse.Namespace) -> bool:
     """v2.4 gate 3, UNGATED by Captain ruling (RULING-MANIFEST-2026-07-09.md,
     Phase 3 rebalance). History, so nothing evaporates: original v2.4
     expectation was "Basandra ranks below Myrel," assuming neither side's
@@ -3716,7 +4069,7 @@ def check_basandra_gate(marisi_full_tier2: list, cards: dict, card_docs: dict, n
     marisi_doc = card_docs[resolve_anchor("Marisi, Breaker of the Coil", cards, name_index)["oracle_id"]]
     for name, expected in (("Basandra, Battle Seraph", "symmetric"), ("Kutzil, Malamet Exemplar", "all_opp")):
         candidate_doc = card_docs[resolve_anchor(name, cards, name_index)["oracle_id"]]
-        result = assign_tier(marisi_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(marisi_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         if result is None:
             print(f"  [STOP] {name}: no verbatim overlap with Marisi -- cannot spot-check scope")
             all_ok = False
@@ -4112,7 +4465,7 @@ def check_zurgo_keyword_gate(full_tier1: list, full_tier2: list, report_cap: int
         by_mechanism[row.get("_mechanism", "text")].append((tier, row))
 
     print(f"  [PASS] {ZURGO} gained {len(rows)} Tier 1/2 row(s):")
-    for mechanism in ("keyword", "reminder", "text"):
+    for mechanism in ("keyword", "reminder", "sentence", "text"):
         mrows = by_mechanism.get(mechanism, [])
         if not mrows:
             continue
@@ -4291,7 +4644,7 @@ def check_stability_gate(anchor_names: list, built: dict, ngram_min_len: int, le
                 term_fired = bool(row) and (
                     row.get("_polarity_term", 0) > 0 or row.get("_condition_term", 0) > 0
                     or row.get("_affinity_term", 0) > 0
-                    or mechanism in ("keyword", "reminder", "keyword_grant")
+                    or mechanism in ("keyword", "reminder", "keyword_grant", "sentence")
                     or mv_asymmetry_fired or cumulative_scoring_fired
                 )
                 own_drift = drift_by_name.get(name, {"own_df_changed": False, "culprits": []})
@@ -4472,7 +4825,7 @@ def render_table(rows: list, evidence_header: str, extra_column: str = None, ext
 
 
 def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: list, card_docs: dict,
-                            card_tags: dict, card_tags_t3: dict, pool: set, ngram_df: dict, keyword_df: dict,
+                            card_tags: dict, card_tags_t3: dict, pool: set, ngram_df: dict, clause_df: dict, keyword_df: dict,
                             paragraph_index: dict, idf: dict, idf_t3: dict, n_total_cards: int,
                             args: argparse.Namespace) -> tuple:
     """Builds tiers[0..3], each a list of rows, SORTED (rank/score/name) but
@@ -4485,7 +4838,7 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
     disqualified = []
     for oracle_id in pool:
         candidate_doc = card_docs[oracle_id]
-        result = assign_tier(anchor_doc, candidate_doc, ngram_df, keyword_df, paragraph_index, args)
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
         facts = fact_columns(anchor_doc, candidate_doc)
 
         # Tag overlap score computed for EVERY candidate regardless of tier
@@ -5149,6 +5502,152 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain, per Fable 5's independent review), 2026-07-10 -- "
+        f"locate_fragment_context() boundary-crossing bug fix.** Full investigation: "
+        f"EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md (mtjawnny.github.io/docs) -- Captain asked "
+        f"Fable 5 to take a step back and review the whole engine's weighting, starting from the "
+        f"Swiftfoot Boots reminder-text clustering problem; Fable 5 independently verified the doc's own "
+        f"numbers and found this bug live, unprompted, while doing so. `locate_fragment_context()` "
+        f"compared a period-stripped fragment (the CO-C tokenization convention) against RAW, "
+        f"period-intact paragraph text -- the exact same bug class Entry #6 already fixed for "
+        f"`fragment_both_sides_injected()`/`text_injected_on_side()`, just a missed call site. Any Tier 2 "
+        f"fragment spanning an internal sentence boundary within a multi-sentence paragraph returned "
+        f"`(None, None)` here, which `compute_fact_penalties()` reads as \"unknown\" -- silently disabling "
+        f"ALL FIVE fact penalties (scope/duration/exception/polarity/condition) for that row, not just one. "
+        f"Measured across the 6-anchor default panel plus Zurgo/Delney/Swiftfoot Boots/Craterhoof/Growth "
+        f"Spiral/the Anguished Unmaking cluster: 86 of 904 Tier 2 text/reminder rows (9.5%) affected, zero "
+        f"false positives either direction. Concrete verified case: Growth Spiral vs. Gretchen Titchwillow "
+        f"(a creature) previously showed zero duration penalty despite being exactly the one_shot-vs-"
+        f"ongoing mismatch `DURATION_PENALTY` exists to catch; now correctly pays it (`dur=1.0`), confirmed "
+        f"live via `/api/anchor`. Fix: apply `normalize_paragraph_for_fragment_comparison()` to BOTH sides "
+        f"of the comparison, not just the paragraph -- an earlier draft normalized only the paragraph and "
+        f"broke 8 Sol-Ring-pool rows whose `fragment` is itself the RAW, period-intact whole-paragraph text "
+        f"(Entry #5's already-documented Tier-1-demoted-to-Tier-2 case, e.g. Sol Ring vs. Arid Archway) -- "
+        f"caught by this fix's own corpus measurement before it shipped, not by luck. Full gate suite "
+        f"73/73 green (default panel) plus 36/36 (Zurgo/Delney), determinism confirmed twice, viewer cache "
+        f"regenerated and reconfirmed live. First of three changes recommended by this review -- see the "
+        f"deliberation doc for the other two (a sentence-boundary trim rule and a short-whole-sentence "
+        f"Tier 2 path), not yet implemented as of this note."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain, per Fable 5's recommendation), 2026-07-10 -- sentence-boundary trim rule "
+        f"(second of three changes from EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md).** "
+        f"`find_shared_fragments()` found the longest common TOKEN run regardless of whether it crossed an "
+        f"internal sentence boundary within a paragraph -- a run that happens to straddle the seam between "
+        f"two UNRELATED sentences (e.g. Growth Spiral's \"Draw a card.\" + \"You may put a land...\" "
+        f"colliding with Nahiri's Lithoforming's unrelated \"...draw a card.\" + \"You may play X additional "
+        f"lands...\") reads as rare (low DF) purely because that specific seam-crossing token sequence is "
+        f"uncommon, not because the underlying abilities are actually similar -- the opposite of what low DF "
+        f"is supposed to signal. Fix (`trim_run_for_sentence_boundary()`): a run crossing a sentence "
+        f"boundary on EITHER side only survives whole if its continuation past that boundary is itself "
+        f">= NGRAM_MIN_LEN(5) tokens (real corroborating evidence, not a bare 1-2 token coincidence); "
+        f"otherwise it's truncated to the leading segment, discarded entirely if that's also sub-floor. "
+        f"Exempts reminder-injected paragraphs (v2.9 Mechanism 2) entirely -- caught during this fix's own "
+        f"corpus measurement: Faithless Looting's flashback reminder (\"...for its flashback cost. Then "
+        f"exile it.\") is ONE keyword's fixed, single-author, always-co-occurring two-sentence explanation, "
+        f"not two independently-written native clauses that happen to collide; trimming it dropped the "
+        f"gate's measured population from 171 to 0 (the shortened prefix's DF rose from 172, rescue band, to "
+        f"178, DEAD -- converting a correctly-buried match into an incorrectly-excluded one, backwards from "
+        f"the rule's intent). Corpus-measured before ratifying: across a 17-anchor sample (default panel + "
+        f"Zurgo/Delney + this review's own case-study anchors), 803 anchor/candidate pairs had a qualifying "
+        f"run either before or after this fix -- 778 completely unaffected (no boundary in the run at all, "
+        f"the overwhelming majority), 25 lost their qualification entirely, 0 were trimmed-but-still-"
+        f"qualifying in this sample. All 25 losses verified as the exact false-positive class this fix "
+        f"targets: Growth Spiral's \"draw a card you may\"-class collisions (7 pairs) and the Anguished "
+        f"Unmaking/Inevitable Defeat \"exile target nonland permanent [you/its]\"-class collisions (18 "
+        f"pairs, where the shared clause is itself only 4 tokens -- one short of NGRAM_MIN_LEN -- and only "
+        f"reached 5 tokens by accidentally borrowing the next sentence's first word). These 25 pairs now "
+        f"fall through to Tier 3 (or no match) unless the third change from this review (a short-whole-"
+        f"sentence Tier 2 path, not yet implemented as of this note) readmits the ones with real shared "
+        f"content on honest evidence instead. Full gate suite 73/73 green (default panel) plus 36/36 "
+        f"(Zurgo/Delney), determinism confirmed twice, viewer cache regenerated and reconfirmed live."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain, per Fable 5's recommendation), 2026-07-10 -- short whole-sentence identity "
+        f"Tier 2 path (third and final change from EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md).** "
+        f"find_shared_fragments() can never qualify a matched clause shorter than NGRAM_MIN_LEN(5) tokens, "
+        f"by construction -- \"Exile target nonland permanent\" is a complete, defining 4-word ability, one "
+        f"word short of the floor, structurally invisible to that path no matter how rare it is corpus-wide. "
+        f"Confirmed directly: Utter End and Vanish into Eternity reached Tier 1 on this exact clause only by "
+        f"the LUCK of it sitting alone in its own paragraph on both cards; Anguished Unmaking and Inevitable "
+        f"Defeat have the identical clause but a life-total rider glued onto the SAME paragraph (no line "
+        f"break), denying them the whole-paragraph shortcut -- leaving them stuck at Tier 3, unable to reach "
+        f"each other on their own defining ability, purely as a Scryfall oracle-text FORMATTING accident, "
+        f"not a real functional difference. New mechanism (`find_shared_sentence()`): an exact, byte-"
+        f"identical SENTENCE (not a whole paragraph, not an arbitrary token run) shared by both cards, "
+        f"scoped to sentences under NGRAM_MIN_LEN only (longer ones are already reachable via the n-gram "
+        f"path). Reuses `clause_index`/`clause_df` -- already built corpus-wide by `build_indexes()` from "
+        f"every face's `clauses` field, previously only a fast candidate-pool pre-filter (per "
+        f"`split_clauses()`'s own docstring) -- rather than a new index; this is an EXACT corpus-wide "
+        f"sentence count, the same `para_exact_df` convention Tier 1 already uses for short paragraphs (R2, "
+        f"Phase 3), not a windowed approximation. Same full/discounted/rescue/dead banding as the text/"
+        f"reminder path, same T2_RESCUE_CEILING. Measured: \"exile target nonland permanent\" has sentence-"
+        f"DF=17 (lands in the discounted band), confirmed live -- Anguished Unmaking and Inevitable Defeat "
+        f"now correctly reach each other at Tier 2, `mechanism=\"sentence\"`, evidence `exile target nonland "
+        f"permanent (DF=17)`. Placed LAST in the cascade (after keyword_grant and mana kinship both, same "
+        f"\"only fires if nothing else found anything\" gating) -- a real implementation bug caught during "
+        f"this fix's own corpus measurement, not shipped: an earlier draft placed it right where text/"
+        f"reminder leaves `base` at None, which let it claim Sol Ring vs Ancient Tomb's pair (both share the "
+        f"exact short sentence \"{{t}}: add {{c}}{{c}}\") BEFORE mana kinship's own specialized, richer "
+        f"amount/color/shape cascade (R5/R6) ever got a chance, failing check_gg_sol_ring_cascade_gate "
+        f"(expected mechanism=mana, got mechanism=sentence) -- fixed by moving the new path to the true end "
+        f"of the cascade, since it has no domain-specific richness of its own the way mana/keyword_grant do "
+        f"and shouldn't compete with them for position, only catch what neither of them (nor text/reminder) "
+        f"found. Corpus-measured across the same 17-anchor sample as the trim rule: 66 new `mechanism="
+        f"\"sentence\"` rows, entirely concentrated in the motivating cluster (Anguished Unmaking 22, "
+        f"Inevitable Defeat 16, Utter End 14, Vanish into Eternity 14) plus a handful of genuine \"you lose "
+        f"3 life\" (DF=7) matches on unrelated life-loss cards -- zero rows fired anywhere else in the "
+        f"sample, including all 6 default-panel anchors, Zurgo, Delney, Swiftfoot Boots, Craterhoof, Growth "
+        f"Spiral, and Faithless Looting. Full gate suite 73/73 green (default panel) plus 36/36 (Zurgo/"
+        f"Delney), determinism confirmed twice, viewer cache regenerated and reconfirmed live via `/api/"
+        f"anchor` (Anguished Unmaking's own Tier 2 list now shows all three siblings). This completes all "
+        f"three changes recommended by Fable 5's review of the equipment-reminder-text and broader-"
+        f"weighting question; the review's fourth item (an equip-cost-delta rank term for `keyword_grant`) "
+        f"is implemented next, same session -- see the following note."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain, per Fable 5's recommendation), 2026-07-10 -- equip-cost delta term for "
+        f"`keyword_grant` (fourth and final change from EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md, "
+        f"the direct fix for Section 4/Q1's Equipment-clustering question).** "
+        f"`granted_keyword_kinship_match()` had no signal at all for Equip-ACTIVATION-cost closeness -- "
+        f"only the card's own CASTING cost (`mv_delta`, a completely different number) entered the shared "
+        f"rank formula, so two Equipment granting the identical keyword set for a `{{1}}` Equip cost and a "
+        f"`{{5}}` Equip cost scored equally close kin. Rejected the flagged fallback (disable reminder-text "
+        f"Tier 2 qualification for Equipment specifically, add Equip cost as a new bucketing signal): "
+        f"verified directly that Swiftfoot Boots' 3 residual displayed boilerplate rows (Ring of Xathrid, "
+        f"Cobbled Wings, Ring of Evos Isle) share no real keyword grant with Boots at all -- Xathrid grants "
+        f"neither hexproof nor haste, Cobbled Wings grants flying not haste/hexproof, Ring of Evos Isle "
+        f"grants hexproof via a differently-shaped ACTIVATED (not static) ability -- honest, defensible weak "
+        f"matches with nothing better available, \"rank buries, never excludes\" working as intended, not a "
+        f"bug to chase. Also found a real error in this session's own briefing doc while implementing: "
+        f"Cloak of the Bat and Fleetfeather Sandals (tied at score 6.267) were cited as proof of equip-cost "
+        f"blindness, but both are actually `Equip {{2}}` granting the identical keyword set -- functionally "
+        f"identical cards, correctly tied; caught by Fable 5's own independent verification before "
+        f"implementation. Fix: `EQUIP_COST_RE`/`parse_equip_cost_value()` extract each Equipment's Equip "
+        f"cost as a numeric value (a relative-distance heuristic, not rules-accurate mana value -- see "
+        f"`mana_symbols_numeric_value()`'s own comment) from the RAW oracle text, carried on each "
+        f"`granted_keyword_facts` entry alongside its existing P/T-modifier field; a missing/unparseable "
+        f"cost (an Aura with no Equip line, or a non-mana cost like \"Equip—Sacrifice a creature\") is "
+        f"genuinely UNKNOWN, not a definitive value, and contributes zero penalty -- same convention as "
+        f"duration/scope/exception's own \"uncertainty is not evidence of difference\" rule, deliberately "
+        f"NOT the P/T-modifier convention (there, a missing clause IS a known, definitive +0/+0). New flat "
+        f"per-point term `GRANT_EQUIP_COST_PENALTY_PER_POINT=0.15`, same scale and same first-pass-default "
+        f"reasoning as the existing P/T-mismatch term. Corpus-measured before ratifying: 372 qualifying "
+        f"grant facts corpus-wide, 151 with a parsed numeric equip cost (the remaining 221 are Auras or "
+        f"non-mana-cost Equipment, correctly None/unpenalized), values ranging 0-7 and clustering at 1-4 -- "
+        f"comparable in scale to the existing P/T term, no re-tuning signal from the distribution. Verified "
+        f"live: Lightning Greaves (`Equip {{0}}`) vs Swiftfoot Boots (`Equip {{1}}`) now shows `equip 1 vs "
+        f"equip 0` in its evidence string with penalty correctly raised 0.60 -> 0.75; Swiftfoot Boots' "
+        f"displayed Tier 2 top 10 unaffected (still 3 boilerplate rows, unchanged, per "
+        f"check_gb_swiftfoot_boots_gate). Full gate suite 73/73 green (default panel) plus 36/36 (Zurgo/"
+        f"Delney), determinism confirmed twice, viewer cache regenerated and reconfirmed live. This "
+        f"completes all four changes recommended by Fable 5's review, same session."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -5296,7 +5795,7 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
         pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_card["oracle_id"]})
     return compute_candidate_rows(
         anchor_doc, anchor_tags, anchor_tags_t3, ctx["card_docs"], ctx["card_tags"], ctx["card_tags_t3"], pool,
-        ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], ctx["idf"], ctx["idf_t3"],
+        ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], ctx["idf"], ctx["idf_t3"],
         ctx["n_total_cards"], args,
     )
 
@@ -5508,7 +6007,7 @@ def check_gf_arcane_signet_gate(ctx: dict) -> bool:
     all_ok = True
     for name in ARCANE_SIGNET_CLUSTER:
         cand_doc = ctx["card_docs"][resolve_anchor(name, ctx["cards"], ctx["name_index"])["oracle_id"]]
-        result = assign_tier(anchor_doc, cand_doc, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+        result = assign_tier(anchor_doc, cand_doc, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
         ok = result is not None and result["tier"] == 2
         print(f"  {name}: tier={result['tier'] if result else None} mechanism={result['mechanism'] if result else None} "
               f"{'PASS' if ok else 'STOP'}")
@@ -5522,7 +6021,7 @@ def check_gg_sol_ring_cascade_gate(ctx: dict) -> bool:
     args = ctx["args"]
     sol_ring = ctx["card_docs"][resolve_anchor("Sol Ring", ctx["cards"], ctx["name_index"])["oracle_id"]]
     ancient_tomb = ctx["card_docs"][resolve_anchor("Ancient Tomb", ctx["cards"], ctx["name_index"])["oracle_id"]]
-    result = assign_tier(sol_ring, ancient_tomb, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    result = assign_tier(sol_ring, ancient_tomb, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
     ok = result is not None and result["tier"] == 2 and result["mechanism"] == "mana"
     print(f"  Sol Ring vs Ancient Tomb: tier={result['tier'] if result else None} "
           f"mechanism={result['mechanism'] if result else None} evidence={result['evidence'] if result else None!r} "
@@ -5532,7 +6031,7 @@ def check_gg_sol_ring_cascade_gate(ctx: dict) -> bool:
     print("  Colorless-family cascade landing spots (Mind Stone / Mana Vault / Thran Dynamo):")
     for name in ["Mind Stone", "Mana Vault", "Thran Dynamo"]:
         cand = ctx["card_docs"][resolve_anchor(name, ctx["cards"], ctx["name_index"])["oracle_id"]]
-        r = assign_tier(sol_ring, cand, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+        r = assign_tier(sol_ring, cand, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
         print(f"    {name}: tier={r['tier'] if r else None} mechanism={r['mechanism'] if r else None} "
               f"penalty={r['mana_cascade_penalty'] if r else None}")
     return ok
@@ -5543,8 +6042,8 @@ def check_gh_zero_overlap_gate(ctx: dict) -> bool:
     args = ctx["args"]
     gold_myr = ctx["card_docs"][resolve_anchor("Gold Myr", ctx["cards"], ctx["name_index"])["oracle_id"]]
     elvish_mystic = ctx["card_docs"][resolve_anchor("Elvish Mystic", ctx["cards"], ctx["name_index"])["oracle_id"]]
-    r_ab = assign_tier(gold_myr, elvish_mystic, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
-    r_ba = assign_tier(elvish_mystic, gold_myr, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    r_ab = assign_tier(gold_myr, elvish_mystic, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    r_ba = assign_tier(elvish_mystic, gold_myr, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
     ok = r_ab is None and r_ba is None
     print(f"  Gold Myr -> Elvish Mystic: {r_ab} (T3-via-tags acceptable)")
     print(f"  Elvish Mystic -> Gold Myr: {r_ba} (T3-via-tags acceptable)")
@@ -5568,7 +6067,7 @@ def check_gi_guild_pair_gate(ctx: dict) -> bool:
         return True
     a_doc = ctx["card_docs"][resolve_anchor(pair_names[0], ctx["cards"], ctx["name_index"])["oracle_id"]]
     c_doc = ctx["card_docs"][resolve_anchor(pair_names[1], ctx["cards"], ctx["name_index"])["oracle_id"]]
-    result = assign_tier(a_doc, c_doc, ctx["ngram_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    result = assign_tier(a_doc, c_doc, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
     ok = result is not None and result["mechanism"] == "text"
     print(f"  {pair_names[0]} vs {pair_names[1]}: tier={result['tier'] if result else None} "
           f"mechanism={result['mechanism'] if result else None} {'PASS' if ok else 'STOP'}")
@@ -5710,13 +6209,13 @@ def main() -> None:
     card_tags_t3, idf_t3 = build_turn_scoped_tag_index(card_docs, card_tags, idf, turn_scoped_matches, turn_scoped_idf)
 
     # ---- Gate 1: v2 self-check (frozen tier-assignment calibration) ----
-    self_check_passed, self_check_info = run_self_check(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
+    self_check_passed, self_check_info = run_self_check(cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
 
     # ---- v2.5 session amendment gate 2 (part 2): Tier 0 exclusions stay blocking ----
     tier0_exclusion_passed = check_tier0_exclusion_gate(self_check_info)
 
     # ---- Gate 2: symmetry (Amendment 4.1) ----
-    symmetry_passed = check_symmetry(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
+    symmetry_passed = check_symmetry(cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
 
     # ---- Build all requested anchor reports IN MEMORY (nothing written yet) ----
     built = {}
@@ -5740,7 +6239,7 @@ def main() -> None:
             pool = pool | (set(turn_scoped_matches) - {anchor_card["oracle_id"]})
         full_tiers, disqualified = compute_candidate_rows(
             anchor_doc, anchor_tags, anchor_tags_t3, card_docs, card_tags, card_tags_t3, pool,
-            ngram_df, keyword_df, paragraph_index, idf, idf_t3, n_total_cards, args,
+            ngram_df, clause_df, keyword_df, paragraph_index, idf, idf_t3, n_total_cards, args,
         )
         report_body, counts, displayed_tiers, full_list_files = render_anchor_report(
             anchor_name, card_docs, card_tags, len(pool), full_tiers, args.report_cap, args,
@@ -5835,7 +6334,7 @@ def main() -> None:
             abolisher_tier2, built["Grand Abolisher"]["full_tiers"][2],
         )
         partial_lock_passed = check_partial_lock_movement(abolisher_tier2, TOTAL_LOCK_SAME_CI_MV_FLOOR)
-        scope_duration_passed = check_scope_duration_spotchecks(cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
+        scope_duration_passed = check_scope_duration_spotchecks(cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
         movement_passed = check_movement_gate(abolisher_tier2)
     else:
         print("\nv2.3 gates (VoV placement, Sen Triplets exile, partial-lock, scope/duration, movement): "
@@ -5846,8 +6345,8 @@ def main() -> None:
     polarity_family_passed = True
     if "Grand Abolisher" in built:
         abolisher_tier2 = built["Grand Abolisher"]["displayed_tiers"][2]
-        godsend_passed = check_godsend_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
-        polarity_family_passed = check_polarity_family_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, keyword_df, paragraph_index, args)
+        godsend_passed = check_godsend_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
+        polarity_family_passed = check_polarity_family_gate(abolisher_tier2, cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
     else:
         print("\nGodsend / polarity family gates: SKIPPED -- Grand Abolisher not in this run's anchor list")
 
@@ -5855,7 +6354,7 @@ def main() -> None:
     if "Marisi, Breaker of the Coil" in built:
         basandra_passed = check_basandra_gate(
             built["Marisi, Breaker of the Coil"]["full_tiers"][2], cards, card_docs, name_index, ngram_df,
-            keyword_df, paragraph_index, args,
+            clause_df, keyword_df, paragraph_index, args,
         )
     else:
         print("\nBasandra gate: SKIPPED -- Marisi not in this run's anchor list")

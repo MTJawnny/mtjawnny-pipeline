@@ -1221,3 +1221,222 @@ duplicating the evidence-building code), `GB_SWIFTFOOT_MAX_DISPLAYED_
 EQUIP_REMINDER_ROWS` (4 → 3), report header note. Companion doc (separate
 repo, not committed by this session): `REMINDER-TEXT-QUALIFICATION-
 CASCADE-ISSUE.md`.
+
+---
+
+## Entry #9 — Fable 5's engine-wide weighting review: four changes (locate_fragment_context bug, sentence-boundary trim, short-whole-sentence Tier 2 path, equip-cost delta term)
+
+**Investigated, ratified (per Fable 5's recommendation), and implemented,
+2026-07-10 (new session, on top of `4759b99`).** Full investigation doc:
+`~/Projects/mtjawnny.github.io/docs/EQUIPMENT-REMINDER-AND-WEIGHTING-
+DELIBERATION.md` (Captain's request: take a step back from the Swiftfoot
+Boots reminder-text fight across multiple prior sessions, collect
+comprehensive engine context, hand it to Fable 5 to think about the whole
+engine and determine whether a real lever was missing before reaching for
+a blunt kill-switch — "turn off reminder text for Equipment specifically."
+Three other card clusters Captain named directly (Craterhoof vs. End-Raze
+Forerunners; Anguished Unmaking/Inevitable Defeat/Utter End/Vanish into
+Eternity; Nahiri's Lithoforming/Lessons from Life under a Growth Spiral
+anchor) were investigated alongside Equipment as part of the same
+"check how other cards are weighted too" ask.
+
+### Fable 5's core finding
+
+"The engine has no concept of the sentence." Its only matching units are
+the whole paragraph (Tier 1, no length floor) and the ≥5-token verbatim
+run (Tier 2, `NGRAM_MIN_LEN`). Three of four case studies in the
+deliberation doc trace to that one gap; the fourth (Equipment) turned out
+to be *already correctly working* except for one real, narrow, additive
+omission. Recommended sequence, each measured before the next: (1) fix a
+live bug the review's own verification turned up, (2) a sentence-boundary
+trim rule + (3) a short-whole-sentence Tier 2 path together (one removes
+accident-admitted pairs, the other readmits the legitimate ones on honest
+evidence), (4) an equip-cost delta term. Explicitly rejected: coverage/
+length-normalized scoring (would punish cards for having more text,
+crushing already-correct matches) and the Equipment kill-switch (the
+residual "clutter" is honest, defensible weak-match burial, not a bug).
+
+### Change 1 — `locate_fragment_context()` boundary-crossing bug (found by Fable 5, not asked for)
+
+Same bug class Entry #6 already fixed for `fragment_both_sides_injected()`
+— compared a period-stripped fragment against RAW paragraph text, which
+can't match across an internal sentence boundary. Any Tier 2 row whose
+fragment crossed a boundary silently got `(None, None)` here, which
+`compute_fact_penalties()` reads as "unknown" — disabling ALL FIVE fact
+penalties (scope/duration/exception/polarity/condition), not just one.
+Measured: 87/484 (18%) of Tier 2 text/reminder rows across the doc's own
+6 anchors affected; concrete case, Growth Spiral vs. Gretchen Titchwillow
+(a creature) showed zero duration penalty despite being exactly the
+one_shot-vs-ongoing mismatch `DURATION_PENALTY` exists to catch.
+
+**Fix:** normalize BOTH sides of the comparison (not just the paragraph)
+via the existing `normalize_paragraph_for_fragment_comparison()`. An
+earlier draft normalized only the paragraph and broke 8 Sol-Ring-pool
+rows whose `fragment` is itself RAW, period-intact whole-paragraph text
+(Entry #5's already-documented Tier-1-demoted-to-Tier-2 case) — caught by
+this fix's own corpus measurement (86/904 fixed, 0 regressions) before it
+shipped, not by luck.
+
+**Verification:** full gate suite 73/73 (default panel) + 36/36 (Zurgo/
+Delney), determinism ×2, viewer regenerated and reconfirmed live (Growth
+Spiral vs. Gretchen Titchwillow now correctly pays `dur=1.0`).
+
+### Change 2 — sentence-boundary trim rule
+
+A matched token run that happens to straddle two UNRELATED sentences
+(e.g. Growth Spiral's "Draw a card." + "You may put a land..." colliding
+with Nahiri's Lithoforming's unrelated "...draw a card." + "You may play
+X additional lands...") reads as rare (low DF) purely because that exact
+seam-crossing sequence is uncommon, not because the underlying abilities
+are similar. New `trim_run_for_sentence_boundary()`: a run crossing a
+sentence boundary (on either side) survives whole only if its
+continuation past that boundary is itself ≥`NGRAM_MIN_LEN` tokens (real
+corroboration); otherwise truncated to the leading segment, discarded if
+that's also sub-floor. New per-paragraph `paragraph_sentence_ends` field
+(via `sentence_boundary_indices()`) marks which token positions are
+sentence-final in the RAW (pre-CO-C-stripped) text.
+
+**Exempts reminder-injected paragraphs entirely** — caught measuring this
+fix's own impact: Faithless Looting's flashback reminder ("...for its
+flashback cost. Then exile it.") is Scryfall's own fixed, single-author,
+always-co-occurring two-sentence explanation of ONE keyword, not two
+independently-written clauses that happen to collide; trimming it dropped
+`check_gc_faithless_looting_gate`'s population from 171 to 0 (the
+shortened prefix's DF rose 172→178, rescue band → DEAD) — backwards from
+the rule's intent. Fixed by treating any paragraph in
+`reminder_keyword_by_paragraph` as having zero internal boundaries.
+
+**Corpus-measured** (17-anchor sample: default panel + Zurgo/Delney +
+this review's case-study anchors): 803 pairs had a qualifying run either
+before or after; 778 unaffected, 25 lost their qualification entirely
+(all verified as the exact false-positive class this fix targets — 7
+Growth Spiral "draw a card you may"-class, 18 Anguished
+Unmaking/Inevitable Defeat "exile target nonland permanent
+[you/its]"-class), 0 trimmed-but-still-qualifying in this sample.
+
+**Verification:** full gate suite 73/73 + 36/36, determinism ×2, viewer
+regenerated and reconfirmed live.
+
+### Change 3 — short whole-sentence identity Tier 2 path
+
+`find_shared_fragments()` can never qualify a clause shorter than
+`NGRAM_MIN_LEN` (5) tokens, by construction. "Exile target nonland
+permanent" is a complete, defining 4-word ability — one word short.
+Confirmed directly: Utter End and Vanish into Eternity reach Tier 1 on
+this exact clause ONLY because it happens to sit alone in its own
+paragraph on both cards; Anguished Unmaking and Inevitable Defeat have
+the identical clause with a life-total rider glued onto the SAME
+paragraph (no line break), losing the whole-paragraph shortcut and
+leaving them stuck at Tier 3 — a Scryfall text-formatting accident, not a
+real functional difference.
+
+**New mechanism** (`find_shared_sentence()`, `mechanism="sentence"`): an
+exact, byte-identical SENTENCE shared by both cards, scoped to sentences
+under `NGRAM_MIN_LEN` only (longer ones stay on the n-gram path, never
+duplicated). Reuses `clause_index`/`clause_df` — already built
+corpus-wide by `build_indexes()`, previously only a fast candidate-pool
+pre-filter — as an EXACT sentence-level DF count, same `para_exact_df`
+convention Tier 1 already uses for short paragraphs. Same full/
+discounted/rescue/dead banding as text/reminder, same `T2_RESCUE_CEILING`.
+Measured: "exile target nonland permanent" has sentence-DF=17 (discounted
+band).
+
+**Placed LAST in the cascade** (after keyword_grant and mana kinship,
+same "only fires if nothing else found anything" gating) — a real
+implementation bug caught during this fix's own corpus measurement, not
+shipped: an earlier draft placed it right where text/reminder leaves
+`base` at None, which let it claim Sol Ring vs. Ancient Tomb's pair (both
+share the exact short sentence "{t}: add {c}{c}") BEFORE mana kinship's
+own specialized amount/color/shape cascade (R5/R6) ever ran, failing
+`check_gg_sol_ring_cascade_gate` (expected `mechanism=mana`, got
+`mechanism=sentence`). Fixed by moving it to the true end of the cascade
+— it has no domain-specific richness of its own the way mana/keyword_grant
+do, so it shouldn't compete with them for position.
+
+**Threading note:** `clause_df` had to be threaded as a new parameter
+through `assign_tier()` and ~9 calling functions (`run_self_check`,
+`check_symmetry`, `check_scope_duration_spotchecks`,
+`check_godsend_gate`, `check_polarity_family_gate`,
+`check_basandra_gate`, `compute_candidate_rows`, plus the `ctx`-based
+gate functions and `emit_viewer.py`'s own `compute_candidate_rows` call)
+— `ctx["clause_df"]`/`ctx.clause_df` were already populated (clause_df
+was already corpus-wide-computed for the pre-existing candidate-pool
+pre-filter), so no new corpus-wide computation, just wiring.
+
+**Corpus-measured** (same 17-anchor sample): 66 new `mechanism="sentence"`
+rows, entirely concentrated in the motivating cluster (Anguished Unmaking
+22, Inevitable Defeat 16, Utter End 14, Vanish into Eternity 14) plus a
+handful of genuine "you lose 3 life" (DF=7) matches on unrelated
+life-loss cards — zero rows fired anywhere else in the sample, including
+all 6 default-panel anchors.
+
+**Verification:** full gate suite 73/73 + 36/36, determinism ×2, viewer
+regenerated and reconfirmed live (Anguished Unmaking's Tier 2 list now
+shows all three siblings at `mechanism=sentence`).
+
+### Change 4 — equip-cost delta term for `keyword_grant`
+
+`granted_keyword_kinship_match()` had no signal for Equip-ACTIVATION-cost
+closeness — only the card's own CASTING cost (`mv_delta`, a different
+axis) entered the shared rank formula, so two Equipment granting the
+identical keyword set for `{1}` and `{5}` Equip costs scored equally
+close kin. **Rejected the flagged fallback** (disable reminder-text Tier
+2 qualification for Equipment): verified directly that Swiftfoot Boots'
+3 residual displayed boilerplate rows (Ring of Xathrid, Cobbled Wings,
+Ring of Evos Isle) share no real keyword grant with Boots at all — honest,
+defensible weak matches, "rank buries, never excludes" working as
+intended, not a bug to chase.
+
+**Doc erratum caught during implementation:** the deliberation doc cited
+Cloak of the Bat/Fleetfeather Sandals (tied at 6.267) as proof of
+equip-cost blindness — both are actually `Equip {2}` granting the
+identical keyword set, functionally identical cards, correctly tied.
+Caught by Fable 5's own independent verification before implementation.
+
+**Fix:** `EQUIP_COST_RE`/`parse_equip_cost_value()` extract each
+Equipment's Equip cost as a numeric value (relative-distance heuristic
+via `mana_symbols_numeric_value()`, not rules-accurate mana value) from
+RAW oracle text, carried on each `granted_keyword_facts` entry alongside
+the existing P/T-modifier field. A missing/unparseable cost (an Aura, or
+a non-mana cost like "Equip—Sacrifice a creature") is genuinely UNKNOWN,
+contributes zero penalty — the opposite convention from the P/T-modifier
+field (there, a missing clause IS a definitive +0/+0). New flat per-point
+term `GRANT_EQUIP_COST_PENALTY_PER_POINT=0.15`, same scale as the
+existing P/T-mismatch term.
+
+**Corpus-measured:** 372 qualifying grant facts, 151 with a parsed
+numeric equip cost (221 Auras/non-mana-cost Equipment correctly
+None/unpenalized), values ranging 0-7, clustering 1-4 — comparable scale
+to the P/T term, no re-tuning signal from the distribution.
+
+**Verification:** live, Lightning Greaves (`Equip {0}`) vs. Swiftfoot
+Boots (`Equip {1}`) now shows `equip 1 vs equip 0` with penalty raised
+0.60→0.75; Boots' displayed Tier 2 top 10 unaffected (still 3 boilerplate
+rows, unchanged). Full gate suite 73/73 + 36/36, determinism ×2, viewer
+regenerated and reconfirmed live.
+
+### Files touched
+
+`experiments/tier_engine.py`: `locate_fragment_context()` (both-sides
+normalization), `sentence_boundary_indices()` (new), `paragraph_
+sentence_ends` (new face field), `longest_common_run()` (now also returns
+`end_b`), `trim_run_for_sentence_boundary()` (new),
+`find_shared_fragments()` (trim integration), `find_shared_sentence()`
+(new), `assign_tier()` (new last-cascade-step sentence path, `clause_df`
+threaded through), `EQUIP_COST_RE`, `GRANT_EQUIP_COST_PENALTY_PER_POINT`,
+`mana_symbols_numeric_value()`, `parse_equip_cost_value()` (new),
+`equip_cost_value` (new face field), `build_granted_keyword_facts()`
+(equip cost carried per-fact), `granted_keyword_kinship_match()` (equip
+term), `format_grant_evidence()` (equip note in evidence string),
+`run_self_check`/`check_symmetry`/`check_scope_duration_spotchecks`/
+`check_godsend_gate`/`check_polarity_family_gate`/`check_basandra_gate`/
+`compute_candidate_rows` (all threaded `clause_df`), four report header
+notes (one per change). `experiments/emit_viewer.py`: `compute_candidate_
+rows()` call updated for the new `clause_df` parameter. Companion doc
+(separate repo, not committed by this session):
+`EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md`.
+
+**Not yet done:** all four changes are snapshotted individually
+(`locate-fragment-context-fix-v1`, `sentence-boundary-trim-rule-v1`,
+`short-sentence-tier2-path-v1`, `equip-cost-delta-term-v1`) but not yet
+committed to git — Captain's explicit ask required first, per house rule.

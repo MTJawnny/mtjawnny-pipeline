@@ -261,7 +261,7 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
         pool = pool | (set(ctx.turn_scoped_matches) - {oracle_id})
     full_tiers, _disqualified = te.compute_candidate_rows(
         anchor_doc, anchor_tags, anchor_tags_t3, ctx.card_docs, ctx.card_tags, ctx.card_tags_t3, pool,
-        ctx.ngram_df, ctx.keyword_df, ctx.paragraph_index, ctx.idf, ctx.idf_t3, ctx.n_total_cards, ctx.args,
+        ctx.ngram_df, ctx.clause_df, ctx.keyword_df, ctx.paragraph_index, ctx.idf, ctx.idf_t3, ctx.n_total_cards, ctx.args,
     )
     elapsed = time.perf_counter() - start
 
