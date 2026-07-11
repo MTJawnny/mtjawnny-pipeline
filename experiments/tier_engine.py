@@ -258,6 +258,48 @@ BAND_WEIGHTS = {"full": 1.0, "discounted": 0.5, "rescue": 0.15}
 # count, which reflects the residual floor rather than assuming a false 0.
 PROVENANCE_DISCOUNT_WEIGHT = 0.01
 
+# Second-class phrase bucket (Captain's ruling, 2026-07-10, stepping back
+# from a same-session first draft that fully excluded the Equip-cost
+# reminder from matchability -- "rather than completely exclude... don't
+# remove, bucket-kneecap it hard enough where it assuredly appears near
+# the bottom"). Ruling 6 ("qualification stays maximal, rank buries,
+# never excludes") already governs everything else in this file; this
+# extends it with a HOUSE-CURATED phrase list for evidence Captain judges
+# to be real-but-uninteresting -- generic cost/rules mechanics or minor
+# side-effect riders that shouldn't compete on equal footing with a
+# genuinely distinguishing shared fragment, but that a human should still
+# be able to find if they go looking (unlike the DEAD DF band, which
+# excludes outright). A row whose ENTIRE winning evidence matches this
+# list is a HARD categorical demotion -- see second_class_priority() in
+# compute_anchor_full_tiers(), same guarantee-not-nudge shape as
+# keyword_over_reminder_priority()/pt_exactness_priority(), sorted
+# strictly below every non-second-class row in its tier regardless of
+# score. Deliberately a short, explicit, house-curated list (like
+# SCOPE_PATTERNS/EXCEPTION_PATTERNS/CONDITION_MARKERS above), not an
+# automatically-derived one -- Captain decides what counts as
+# "uninteresting," the engine doesn't infer it. Matched against the
+# fragment as compute_rank() already sees it (CO-C period-stripped,
+# lowercased) via .fullmatch(), so no anchors/trailing periods needed in
+# the patterns themselves. Add more phrases here as Captain flags them --
+# this file's own comment is the changelog, not a separate doc.
+SECOND_CLASS_PHRASE_PATTERNS = (
+    # Equip-cost mechanics boilerplate (the Swiftfoot Boots motivating
+    # case) -- "{N}: attach to target creature you control equip only as
+    # a sorcery", any equip cost. Real, shared, genuinely uninteresting.
+    re.compile(r"\{[^}]+\}: attach to target creature you control equip only as a sorcery"),
+    # "You lose N life" -- a minor rider clause (e.g. Anguished Unmaking's
+    # second sentence) that's real evidence but shouldn't outrank a card's
+    # actual defining ability. Reaches Tier 2 only via the short-sentence
+    # path (Entry #9) -- 4 tokens, below NGRAM_MIN_LEN.
+    re.compile(r"you lose \d+ life"),
+)
+
+
+def is_second_class_phrase(text: str) -> bool:
+    if not text:
+        return False
+    return any(p.fullmatch(text) for p in SECOND_CLASS_PHRASE_PATTERNS)
+
 # Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-pip
 # kinship cascade. R6: ANY two mana-producing abilities sharing >=1
 # produced pip (or, for the pure-colorless family, ANY comparable
@@ -1545,10 +1587,42 @@ def build_mana_pip_index(card_docs: dict) -> dict:
     return dict(index)
 
 
+def build_granted_keyword_index(card_docs: dict) -> dict:
+    """Pool-widening fix, same shape as build_mana_pip_index() above (found
+    and fixed 2026-07-10, same session as the Equip-reminder obliteration):
+    granted keyword name -> set(oracle_id), sourced from each card's own
+    parsed granted_keyword_facts (size 1-2 only, GRANT_SIZE_CEILING --
+    matches granted_keyword_kinship_match()'s own qualification scope, so
+    the pool never carries a candidate that couldn't possibly qualify).
+
+    Confirmed corpus bug this closes: gather_candidate_pool() had NO
+    seeding path of its own for keyword_grant, discovered while verifying
+    the Equip-reminder-injection removal above -- Swiftfoot Boots' pool
+    collapsed from dozens of candidates to 2 once its Equip-reminder text
+    (previously the DOMINANT, if accidental, seed for every cheap
+    Equipment sharing that boilerplate) was excluded from
+    matchable_paragraphs. Lightning Greaves -- Entry #4's own motivating
+    case -- vanished from the pool entirely even though assign_tier()
+    still correctly resolves it to keyword_grant when called directly:
+    it was only ever being DISCOVERED via the boilerplate text overlap
+    this session set out to kill, never via a seeding path of its own.
+    Same class of gap as the mana-kinship one Captain already ruled on
+    this session ("Priest of Gix / Dark Ritual") -- inherited, not
+    decided, same fix shape."""
+    index = defaultdict(set)
+    for oracle_id, doc in card_docs.items():
+        for fact in doc.get("granted_keyword_facts", ()):
+            if not (1 <= len(fact["keywords"]) <= GRANT_SIZE_CEILING):
+                continue
+            for kw in fact["keywords"]:
+                index[kw].add(oracle_id)
+    return dict(index)
+
+
 def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: dict,
                            clause_index: dict, clause_df: dict, ngram_index: dict,
                            ngram_df: dict, tag_index: dict, keyword_index: dict, keyword_df: dict,
-                           mana_index: dict, args: argparse.Namespace) -> set:
+                           mana_index: dict, granted_keyword_index: dict, args: argparse.Namespace) -> set:
     pool = set()
     for face in anchor_doc["faces"]:
         for p in face["matchable_paragraphs"]:
@@ -1583,6 +1657,19 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
             pool.update(mana_index.get(color, ()))
         if fact["colorless_amount"] > 0:
             pool.update(mana_index.get("colorless", ()))
+    # Pool-widening fix (found + fixed 2026-07-10, same session as the
+    # Equip-reminder obliteration): keyword_grant had no seeding path of
+    # its own either -- see build_granted_keyword_index()'s docstring for
+    # the confirmed Lightning-Greaves-vanishes-from-Boots'-pool case this
+    # closes. Same "no DF-floor gate" reasoning as mana kinship just above:
+    # granted_keyword_kinship_match() already rules ANY shared keyword
+    # (within GRANT_SIZE_CEILING) qualifies, no evergreen-style "can never
+    # qualify" case to prune.
+    for fact in anchor_doc.get("granted_keyword_facts", ()):
+        if not (1 <= len(fact["keywords"]) <= GRANT_SIZE_CEILING):
+            continue
+        for kw in fact["keywords"]:
+            pool.update(granted_keyword_index.get(kw, ()))
     pool.discard(anchor_doc["oracle_id"])
     return pool
 
@@ -5019,6 +5106,35 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
     # competing purely on rank score among themselves and against reminder
     # rows exactly as before (confirmed live: Hanweir Garrison, reminder,
     # was outranking Zurgo Stormrender, keyword, in Zurgo's Tier 2).
+    # Second-class phrase bucket (Captain's ruling, 2026-07-10) -- see
+    # SECOND_CLASS_PHRASE_PATTERNS's own comment for the full rationale.
+    # A row's entire winning evidence -- the primary fragment AND every
+    # cumulative-scoring extra run (Entry #5) -- must match the house-
+    # curated phrase list for the demotion to fire; if even ONE run is
+    # genuine non-listed text, the row stays in the normal competitive
+    # pool (same "all runs must agree" discipline as Entry #8's boilerplate
+    # override check). Scoped to the mechanisms whose evidence is a
+    # literal matchable string (text/reminder/sentence) -- keyword_grant's
+    # synthetic "granted-keyword kinship: ..." string and mana's "mana
+    # kinship: ..." string can never match a phrase pattern by
+    # construction, so scoping is a clarity choice, not a correctness one.
+    # Placed FIRST in the sort tuple, ahead of keyword_over_reminder_
+    # priority/pt_exactness_priority below -- Captain's own framing
+    # ("assuredly appears near the bottom") means this demotion must
+    # dominate every other consideration, not just compete within its own
+    # mechanism the way pt_exactness_priority scopes itself.
+    def second_class_priority(row):
+        mechanism = row.get("_mechanism")
+        if mechanism not in ("text", "reminder", "sentence"):
+            return 0
+        fragment = row.get("fragment")
+        if not fragment or not is_second_class_phrase(fragment):
+            return 0
+        for extra in row.get("_extra_fragments") or []:
+            if not is_second_class_phrase(extra.get("text", "")):
+                return 0
+        return 1
+
     def keyword_over_reminder_priority(row):
         return 0 if row.get("_mechanism") == "keyword" else 1
 
@@ -5048,11 +5164,11 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
 
     tiers[0].sort(key=lambda r: r["name"])
     tiers[1].sort(key=lambda r: (
-        keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        second_class_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
         -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[2].sort(key=lambda r: (
-        keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        second_class_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
         -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[3].sort(key=lambda r: (-r["_score"], r["name"]))
@@ -5648,6 +5764,54 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
     )
     lines.append("")
     lines.append(
+        f"**RULED (Captain), 2026-07-10, new session -- second-class phrase bucket (superseding a "
+        f"same-session first draft), plus a pool-seeding bug it uncovered.** After the equip-cost delta "
+        f"term above, the Equip-cost reminder boilerplate still \"overwhelmingly survived\" in Swiftfoot "
+        f"Boots' displayed Tier 2 top 10. First draft: exclude the Equip reminder from Mechanism 2 "
+        f"injection entirely (obliterate it, never matchable again). Captain's follow-up ruling stepped "
+        f"back from that: \"rather than completely exclude... don't remove, bucket-kneecap it hard enough "
+        f"where it assuredly appears near the bottom\" -- explicitly in the spirit of ruling 6 "
+        f"(\"qualification stays maximal, rank buries, never excludes\"), extended with a house-curated "
+        f"phrase list rather than a DF-band or exclusion mechanism. Mechanism 2 injection is restored "
+        f"unchanged (the Equip reminder is matchable again, exactly as before this note); "
+        f"`SECOND_CLASS_PHRASE_PATTERNS` is a short, explicit, Captain-curated regex list (same style as "
+        f"`SCOPE_PATTERNS`/`EXCEPTION_PATTERNS`/`CONDITION_MARKERS`) -- currently the Equip-cost reminder "
+        f"and \"you lose N life\" (a minor rider clause, e.g. Anguished Unmaking's second sentence, real "
+        f"evidence but shouldn't outrank a card's actual defining ability). A row whose ENTIRE winning "
+        f"evidence (primary fragment AND every cumulative-scoring extra run) matches the list gets a hard "
+        f"categorical demotion via `second_class_priority()`, sorted strictly below every non-listed row "
+        f"in its tier regardless of score -- same guarantee-not-nudge shape as `keyword_over_reminder_"
+        f"priority()`/`pt_exactness_priority()`, placed FIRST in the sort tuple so it dominates both. "
+        f"`check_gb_swiftfoot_boots_gate` rewritten to verify the demotion structurally (absent from the "
+        f"display window AND present, not excluded, strictly after every non-second-class row in the full "
+        f"list) rather than tracking an exact display-window count. Verified live: Swiftfoot Boots' full "
+        f"Tier 2 list is back to 99 rows (57 second-class, 42 genuine), displayed top 10 is 100% genuine "
+        f"(Bilbo's Ring / Lightning Greaves / Cloak of the Bat / Fleetfeather Sandals / My Precious / Ring "
+        f"of Valkas / Unicycle / Brilliant Wings / A-Cori-Steel Cutter / Dragon Breath); Anguished "
+        f"Unmaking's real siblings (Utter End, Inevitable Defeat, Vanish into Eternity) rank at the top of "
+        f"its list, its five \"you lose 3 life\" coincidences demoted to the very bottom. "
+        f"\n\n"
+        f"**A real bug caught verifying the first (obliteration) draft, still true and still fixed here:** "
+        f"`gather_candidate_pool()` had NO seeding path of its own for `keyword_grant` -- the same class "
+        f"of gap already found and fixed this session for mana kinship (`build_mana_pip_index()`, the "
+        f"Priest of Gix/Dark Ritual case), just never noticed for keyword_grant because Equipment's own "
+        f"Equip-reminder boilerplate text overlap was ACCIDENTALLY doing double duty as its pool-seeding "
+        f"path the whole time (Entry #4 through this note). Confirmed directly while testing the "
+        f"obliteration draft: excluding the Equip reminder collapsed Swiftfoot Boots' candidate pool from "
+        f"dozens of cards to 2 -- Lightning Greaves, Entry #4's own motivating case, vanished from the "
+        f"pool entirely even though `assign_tier()` still correctly resolves it to `keyword_grant` when "
+        f"called directly on the pair; it was never being DISCOVERED via any seeding path of its own. This "
+        f"bug is independent of which demotion strategy the boilerplate itself gets, so the fix stands "
+        f"regardless of the pivot above: `build_granted_keyword_index()` (granted keyword name -> "
+        f"`set(oracle_id)`, scoped to `GRANT_SIZE_CEILING`, no DF-floor gate -- same \"any shared keyword "
+        f"qualifies, no evergreen-style prune case\" reasoning as mana kinship's own index), wired into "
+        f"`gather_candidate_pool()` as a new seeding block. Confirmed purely additive elsewhere (Mask of "
+        f"Avacyn, an Aura, unaffected at 17 Tier 2 rows). Full gate suite 73/73 green (default panel) plus "
+        f"37/37 (Zurgo/Delney -- one row added to check_gb_swiftfoot_boots_gate's own PASS count, not a "
+        f"new gate), determinism confirmed twice, viewer cache regenerated and reconfirmed live."
+    )
+    lines.append("")
+    lines.append(
         f"Corpus: {len(card_docs):,} cards, {len(card_tags):,} tagged. "
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
@@ -5789,7 +5953,7 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
     pool = gather_candidate_pool(
         anchor_doc, anchor_tags, ctx["paragraph_index"], ctx["clause_index"], ctx["clause_df"],
         ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"],
-        ctx["mana_index"], args,
+        ctx["mana_index"], ctx["granted_keyword_index"], args,
     )
     if anchor_card["oracle_id"] in ctx["turn_scoped_matches"]:
         pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_card["oracle_id"]})
@@ -5900,14 +6064,27 @@ def check_ga_boros_charm_gate(ctx: dict) -> bool:
 # REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md for the full cascade fix.
 # Tightened to match, per this session's own "keep the floor at measured
 # reality" discipline.
-GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS = 3
-
-
+#
+# 3 -> N/A, SUPERSEDED (new session, 2026-07-10). A same-session first
+# draft retired this constant entirely after excluding the Equip
+# reminder from matchability outright ("obliterate it"). Captain then
+# stepped back from that: "rather than completely exclude... don't
+# remove, bucket-kneecap it hard enough where it assuredly appears near
+# the bottom." The Equip reminder is matchable again (Mechanism 2
+# injection restored, unchanged from pre-obliteration behavior) but is
+# now one of SECOND_CLASS_PHRASE_PATTERNS -- see that constant's own
+# comment and second_class_priority() in compute_anchor_full_tiers() for
+# the categorical demotion mechanism. This exact-count constant is
+# retired for good (not un-retired) -- the gate below checks the
+# DEMOTION GUARANTEE structurally (absent from display AND present, but
+# sorted after every non-second-class row, in the full list) rather than
+# tracking a display-window count that would otherwise need to move a
+# sixth time.
 def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
-    print("\nG-B Swiftfoot Boots gate (Phase 5): zero T1 rows on the equip reminder alone; "
-          "both-sides-injected matches buried near/below display cutoff "
-          f"(<= {GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS} allowed, floored by frame-affinity "
-          "restoration -- see PROVENANCE_DISCOUNT_WEIGHT's comment)")
+    print("\nG-B Swiftfoot Boots gate (Phase 5, SECOND-CLASS BUCKET 2026-07-10): equip-reminder rows "
+          "stay fully qualified -- ruling 6, never excluded -- but are guaranteed to sort below every "
+          "non-second-class row in Tier 2, categorically. Checks both halves: absent from the display "
+          "window, present (not excluded) and demoted in the full list")
     full_tiers, _ = compute_anchor_full_tiers("Swiftfoot Boots", ctx)
     t1 = full_tiers[1]
     bad_t1 = [r for r in t1 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
@@ -5916,13 +6093,23 @@ def check_gb_swiftfoot_boots_gate(ctx: dict) -> bool:
     print(f"  [{'PASS' if ok1 else 'STOP'}] zero T1 equip-reminder-only rows")
 
     report_cap = ctx["args"].report_cap
-    displayed_t2 = full_tiers[2][:report_cap]
+    full_t2 = full_tiers[2]
+    displayed_t2 = full_t2[:report_cap]
     equip_in_display = [r for r in displayed_t2 if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
-    ok2 = len(equip_in_display) <= GB_SWIFTFOOT_MAX_DISPLAYED_EQUIP_REMINDER_ROWS
+    ok2 = len(equip_in_display) == 0
     print(f"  displayed Tier 2 top {report_cap}: {len(equip_in_display)} equip-reminder-only "
           f"row(s) ({', '.join(r['name'] for r in equip_in_display) or 'none'})")
-    print(f"  [{'PASS' if ok2 else 'STOP'}] equip-reminder-only matches at/below the measured floor")
-    return ok1 and ok2
+    print(f"  [{'PASS' if ok2 else 'STOP'}] equip-reminder-only matches absent from the display window")
+
+    equip_positions = [i for i, r in enumerate(full_t2) if r["fragment"] == SWIFTFOOT_EQUIP_TEXT]
+    non_second_class_count = len(full_t2) - len(equip_positions)
+    ok3 = len(equip_positions) > 0 and all(p >= non_second_class_count for p in equip_positions)
+    print(f"  full Tier 2 list ({len(full_t2)} rows): {len(equip_positions)} equip-reminder row(s) "
+          f"present -- qualified, never excluded -- all sorted after all {non_second_class_count} "
+          f"non-second-class rows: {ok3}")
+    print(f"  [{'PASS' if ok3 else 'STOP'}] second-class demotion verified structurally (present + "
+          f"strictly last), not inferred from a display-window count alone")
+    return ok1 and ok2 and ok3
 
 
 # Captain's ruling, 2026-07-10: this gate's premise ("DF 173, DEAD-banded,
@@ -6119,12 +6306,13 @@ def check_gj_ignoble_hierarch_gate(ctx: dict) -> bool:
 
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
                     clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
-                    turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
+                    granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
     return dict(
         cards=cards, card_docs=card_docs, name_index=name_index, card_tags=card_tags,
         card_tags_t3=card_tags_t3, paragraph_index=paragraph_index, clause_index=clause_index,
         clause_df=clause_df, ngram_index=ngram_index, ngram_df=ngram_df, tag_index=tag_index,
         keyword_index=keyword_index, keyword_df=keyword_df, mana_index=mana_index,
+        granted_keyword_index=granted_keyword_index,
         turn_scoped_matches=turn_scoped_matches,
         idf=idf, idf_t3=idf_t3, n_total_cards=n_total_cards, args=args,
     )
@@ -6201,6 +6389,9 @@ def main() -> None:
     # ---- Pool-widening fix (Captain's ruling, 2026-07-10): mana kinship's own
     # candidate-pool seeding -- see build_mana_pip_index()'s docstring ----
     mana_index = build_mana_pip_index(card_docs)
+    # ---- Pool-widening fix (found + fixed 2026-07-10, same session): keyword_grant's
+    # own candidate-pool seeding -- see build_granted_keyword_index()'s docstring ----
+    granted_keyword_index = build_granted_keyword_index(card_docs)
 
     name_index = build_name_index(cards)
 
@@ -6227,7 +6418,8 @@ def main() -> None:
 
         pool = gather_candidate_pool(
             anchor_doc, anchor_tags, paragraph_index, clause_index, clause_df,
-            ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index, args,
+            ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
+            granted_keyword_index, args,
         )
         # v2.6 amendment 2: a candidate can ONLY score >0 on rule:turn-scoped
         # if the ANCHOR itself carries the tag (anchor-directional coverage).
@@ -6446,7 +6638,7 @@ def main() -> None:
     gate_ctx = build_gate_ctx(
         cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
         clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
-        turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+        granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
     )
     ga_passed = check_ga_boros_charm_gate(gate_ctx)
     gb_passed = check_gb_swiftfoot_boots_gate(gate_ctx)

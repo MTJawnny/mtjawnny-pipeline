@@ -251,7 +251,7 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
     pool = te.gather_candidate_pool(
         anchor_doc, anchor_tags, ctx.paragraph_index, ctx.clause_index, ctx.clause_df,
         ctx.ngram_index, ctx.ngram_df, ctx.tag_index, ctx.keyword_index, ctx.keyword_df,
-        ctx.mana_index, ctx.args,
+        ctx.mana_index, ctx.granted_keyword_index, ctx.args,
     )
     # v2.6 amendment 2: widen the pool for turn-scoped Tier 3 discovery,
     # exactly mirroring tier_engine.py's own main() -- otherwise a candidate
@@ -383,6 +383,10 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     keyword_vocabulary = te.build_keyword_vocabulary(cards)
     for doc in card_docs.values():
         doc["granted_keyword_facts"] = te.build_granted_keyword_facts(doc, keyword_vocabulary)
+    # Pool-widening fix (found + fixed 2026-07-10, same session as the Equip-
+    # reminder obliteration) -- must run AFTER granted_keyword_facts is
+    # attached above, same dependency mana_index has none of.
+    granted_keyword_index = te.build_granted_keyword_index(card_docs)
     idf, _tag_card_count, _n_tagged = te.compute_tag_stats(card_tags)
 
     turn_scoped_matches, turn_scoped_idf = te.run_turn_scoped_derivation(card_docs, n_total_cards)
@@ -391,7 +395,7 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     return SimpleNamespace(
         conn=conn, cards=cards, card_docs=card_docs, card_tags=card_tags, card_tags_t3=card_tags_t3,
         idf=idf, idf_t3=idf_t3, tag_index=tag_index, keyword_index=keyword_index, keyword_df=keyword_df,
-        mana_index=mana_index,
+        mana_index=mana_index, granted_keyword_index=granted_keyword_index,
         turn_scoped_matches=turn_scoped_matches, paragraph_index=paragraph_index, clause_index=clause_index,
         clause_df=clause_df, ngram_index=ngram_index, ngram_df=ngram_df, n_total_cards=n_total_cards,
         args=args, legality_by_oracle_id=legality_by_oracle_id,

@@ -1436,7 +1436,120 @@ rows()` call updated for the new `clause_df` parameter. Companion doc
 (separate repo, not committed by this session):
 `EQUIPMENT-REMINDER-AND-WEIGHTING-DELIBERATION.md`.
 
-**Not yet done:** all four changes are snapshotted individually
-(`locate-fragment-context-fix-v1`, `sentence-boundary-trim-rule-v1`,
-`short-sentence-tier2-path-v1`, `equip-cost-delta-term-v1`) but not yet
-committed to git — Captain's explicit ask required first, per house rule.
+**Committed and pushed** (Captain's explicit ask, same session): commit
+`f50d6ec` (the four changes above) and `c65f04d` (wiring `keyword_grant`/
+`sentence` into `viewer.html`'s mechanism filter + badge colors, a
+display-only follow-up, no engine/scoring change). Both on `main` ==
+`origin/main` as of this note.
+
+---
+
+## Entry #10 — Second-class phrase bucket (superseding a same-session obliteration draft) + a keyword_grant pool-seeding bug it uncovered
+
+**Ruled and implemented, 2026-07-10, new session on top of `c65f04d`.**
+Captain's own words, after reviewing Entry #9's equip-cost delta term
+live: "equip reminder text still overwhelmingly survived. obliterate
+it." First draft did exactly that (excluded the Equip reminder from
+Mechanism 2 injection entirely, see the superseded write-up below).
+Captain then stepped back from it: **"rather than completely exclude...
+let's create a second class bucket for sentences and word groups I want
+to personally demote... don't remove. bucket kneecap it hard enough
+where it assuredly appears near the bottom."** Explicitly framed as
+staying in the spirit of ruling 6 ("qualification stays maximal, rank
+buries, never excludes") rather than adding a second, narrower exclusion
+mechanism alongside the DEAD DF band.
+
+### The final design
+
+`SECOND_CLASS_PHRASE_PATTERNS`: a short, explicit, Captain-curated tuple
+of compiled regexes (same style/precedent as `SCOPE_PATTERNS`/
+`EXCEPTION_PATTERNS`/`CONDITION_MARKERS`) — currently the Equip-cost
+reminder boilerplate and `"you lose \d+ life"` (Captain's own named
+example — a minor rider clause, e.g. Anguished Unmaking's second
+sentence, real evidence but shouldn't outrank a card's actual defining
+ability). `is_second_class_phrase(text)` checks a fragment against the
+list via `.fullmatch()` (matched against the fragment as `compute_rank()`
+already sees it — CO-C period-stripped, lowercased).
+
+`second_class_priority(row)`, a new function in
+`compute_anchor_full_tiers()`: a row's ENTIRE winning evidence — the
+primary fragment AND every cumulative-scoring extra run (Entry #5) —
+must match the list for the demotion to fire; if even ONE run is genuine
+non-listed text, the row stays in the normal competitive pool (same
+"all runs must agree" discipline as Entry #8's boilerplate-override
+check). Scoped to `mechanism in ("text", "reminder", "sentence")` — the
+only mechanisms whose evidence is a literal matchable string.
+Categorical, not a scalar penalty (same guarantee-not-nudge shape as
+`keyword_over_reminder_priority()`/`pt_exactness_priority()`), placed
+FIRST in both Tier 1 and Tier 2's sort tuples so it dominates every
+other consideration, per Captain's own "assuredly near the bottom"
+framing.
+
+Mechanism 2 injection is restored to its pre-obliteration behavior
+(unconditional) — the Equip reminder is matchable again, everywhere.
+
+`check_gb_swiftfoot_boots_gate` rewritten a third time this session: no
+longer tracks an exact display-window count (which moved 0→1→2→4→3
+across five earlier precision fixes, then briefly "retired" to a hard 0
+under the obliteration draft) — now verifies the demotion GUARANTEE
+structurally: (a) zero equip-reminder rows in the displayed top 10, (b)
+equip-reminder rows still PRESENT (not excluded) in the full Tier 2
+list, (c) every one of their positions is strictly after every
+non-second-class row's position. All three must hold.
+
+### A real bug caught verifying the obliteration draft, still true and still fixed here
+
+`gather_candidate_pool()` had **no seeding path of its own for
+`keyword_grant`** — the same class of gap already found and fixed this
+session for mana kinship (`build_mana_pip_index()`, the Priest of
+Gix/Dark Ritual case), just never noticed for `keyword_grant` because
+Equipment's own Equip-reminder boilerplate text overlap was
+ACCIDENTALLY doing double duty as its pool-seeding path this entire
+time, since Entry #4. Confirmed directly while testing the obliteration
+draft: excluding the Equip reminder collapsed Swiftfoot Boots' candidate
+pool from dozens of cards to **2** — Lightning Greaves, Entry #4's own
+motivating case, vanished from the pool entirely even though
+`assign_tier()` still correctly resolves it to `keyword_grant` when
+called directly on the pair. It was never being DISCOVERED via any
+seeding path of its own. This bug is independent of which demotion
+strategy the boilerplate itself gets, so the fix stands regardless of
+the pivot: `build_granted_keyword_index()` (granted keyword name ->
+`set(oracle_id)`, scoped to `GRANT_SIZE_CEILING`, no DF-floor gate —
+same "any shared keyword qualifies, no evergreen-style prune case"
+reasoning as mana kinship's own index), wired into
+`gather_candidate_pool()` as a new seeding block.
+
+### Verification
+
+Swiftfoot Boots' full Tier 2 list is back to 99 rows (57 second-class,
+demoted; 42 genuine). Displayed Tier 2 top 10, confirmed live via
+`/api/anchor`: Bilbo's Ring / Lightning Greaves / Cloak of the Bat /
+Fleetfeather Sandals / My Precious / Ring of Valkas / Unicycle /
+Brilliant Wings / A-Cori-Steel Cutter / Dragon Breath — 100% genuine,
+zero second-class rows visible. Anguished Unmaking's real siblings
+(Utter End, Inevitable Defeat, Vanish into Eternity) rank at the top of
+its own list; its five "you lose 3 life" coincidences (Ulcerate, Black
+Market Connections, Grim Servant, Hostile Negotiations, The Cruelty of
+Gix) sort to the very bottom, present but never excluded. Confirmed the
+pool-seeding fix is purely additive elsewhere (Mask of Avacyn, an Aura,
+unaffected at 17 Tier 2 rows). Full gate suite 73/73 → 74/74 (one
+additional assertion line inside `check_gb_swiftfoot_boots_gate`, not a
+new gate) green (default panel) plus 37/37 (Zurgo/Delney), determinism
+confirmed twice, viewer cache regenerated and reconfirmed live.
+
+### Files touched
+
+`experiments/tier_engine.py`: `SECOND_CLASS_PHRASE_PATTERNS` +
+`is_second_class_phrase()` (new), `second_class_priority()` (new, inside
+`compute_anchor_full_tiers()`), both Tier 1/2 sort keys (new leading
+priority dimension), `check_gb_swiftfoot_boots_gate()` (rewritten to a
+structural check), `build_granted_keyword_index()` (new),
+`gather_candidate_pool()` (new `granted_keyword_index` param + seeding
+block), `build_gate_ctx()` (new `granted_keyword_index` key), `main()`
+(builds and threads the new index), report header note (rewritten to
+describe the final design, superseding the obliteration draft's note).
+`experiments/emit_viewer.py`: `gather_candidate_pool()` call + context
+`SimpleNamespace` updated for the new `granted_keyword_index` parameter.
+
+**Not yet committed** — Captain's explicit ask required first, per house
+rule.
