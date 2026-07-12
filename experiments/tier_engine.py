@@ -434,17 +434,32 @@ def promoted_phrase_shared(anchor_doc: dict, candidate_doc: dict) -> bool:
 # (source_class + repeatable) is NOT a qualification gate -- "open the
 # gate, allow other weights to surface the best matches" -- it is one of
 # these RANK-ONLY cascade terms below, same as everything else here; none
-# of them ever gate qualification. R5's own cascade order is "amount
-# first, then type" -- amount is weighted heaviest by design (see
-# MANA_SHAPE_MISMATCH_PENALTY < MANA_AMOUNT_PENALTY_WEIGHT below), then
-# color-set exactness, then widening, then riders.
+# of them ever gate qualification.
+#
+# R5's original cascade order was "amount first, then type" (amount
+# weighted heaviest, shape a lighter secondary tiebreaker). Captain's
+# ruling, 2026-07-12, PARTIALLY reverses this: "the way it gives the mana
+# is also important... Thran Dynamo should beat a card that gives {C}{C}
+# if that card ISN'T an activated ability, even though Thran is one mana
+# further off." See MANA_SHAPE_MISMATCH_PENALTY below -- now heavier than
+# ONE unit of amount difference (so a same-shape match one mana off beats
+# an exact-amount cross-shape match), but still lighter than TWO (so
+# amount still dominates once the gap widens past that). Corpus-measured
+# before shipping (Sol Ring's own colorless-family cascade): only 4 real
+# cards sit in the "exact amount, mismatched shape" bucket this reorders
+# below the far larger (491-card) "one mana off, same shape" bucket --
+# Ashnod's Altar/Krark-Clan Ironworks (activated_other), Conduit of Storms
+# (triggered_etb), Everythingamajig (activated_other) -- a contained,
+# well-targeted change, not a wholesale reordering.
 MANA_AMOUNT_PENALTY_WEIGHT = 0.3
-# Shape (source_class/repeatable) mismatch -- R5's "type" axis, secondary
-# to amount by design: deliberately SMALLER than one unit of amount
-# penalty, so an exact-amount cross-shape match (Dark Ritual's one-shot
-# {B}{B}{B} vs Bog Witch's repeatable {B}{B}{B}) still outranks a same-
-# shape match that's even one mana off.
-MANA_SHAPE_MISMATCH_PENALTY = 0.2
+# Shape (source_class/repeatable) mismatch -- R5's "type" axis. Captain's
+# ruling, 2026-07-12 (see the block comment above): now deliberately
+# LARGER than one unit of amount penalty (0.3) but smaller than two
+# (0.6) -- delivery mechanism (activated tap vs ETB trigger vs upkeep
+# trigger vs one-shot spell effect, etc.) now outweighs a one-mana amount
+# gap, but amount still wins once the gap reaches two or more. Was 0.2
+# (amount-dominant-always) before this ruling.
+MANA_SHAPE_MISMATCH_PENALTY = 0.4
 # EXTRA colors (candidate makes colors the anchor doesn't need) cost less
 # than MISSING colors (candidate can't cover something the anchor makes) --
 # R5: "entirely WRONG colors cost more than extra."
@@ -2772,20 +2787,28 @@ def keyword_kinship_match(anchor_doc: dict, candidate_doc: dict, keyword_df: dic
 def mana_cascade_penalty(a_fact: dict, c_fact: dict) -> float:
     """R5 cascade, rank ONLY (never qualification -- Captain ruling: "open
     the gate, allow other weights to surface the best matches"). Amount
-    closeness leads (R5: "amount first, then type") -- weighted heavier
-    than every other term, including shape, so an EXACT-amount cross-shape
-    match (e.g. Dark Ritual's one-shot {B}{B}{B} vs Bog Witch's repeatable
-    {B}{B}{B}) outranks a same-shape match that's even one mana off.
-    Source-class/repeatable ("type" and "one-shot vs repeatable", both R5
-    facts) is a SECONDARY term -- same shape is a mild tiebreaker, not a
-    qualification requirement, the same shared-slot precedent as a
-    different keyword param. Then color-set exactness; then the
-    candidate's own production breadth (widening) for non-exact matches;
-    then a flat rider penalty. Mixed (color+colorless) outputs: the LARGER
-    component leads (whichever of colored_pip_count/colorless_amount is
-    bigger drives the color-set/amount comparison); a true 50/50 mixed
-    ability gets no special rule here -- the other terms (amount, shape,
-    widening, rider) still differentiate it, per R5."""
+    closeness and shape (source_class/repeatable -- HOW the mana is
+    delivered: activated tap vs ETB/upkeep trigger vs one-shot spell
+    effect, etc.) trade off within a SMALL amount gap (Captain's ruling,
+    2026-07-12, partially reversing R5's original "amount always leads"):
+    a same-shape match one mana off now outranks an exact-amount
+    cross-shape match (e.g. Thran Dynamo's activated-tap {C}{C}{C} beats a
+    hypothetical ETB-triggered {C}{C} effect against Sol Ring's activated-
+    tap {C}{C}), but amount still dominates once the gap reaches two or
+    more (MANA_SHAPE_MISMATCH_PENALTY sits strictly between one and two
+    units of MANA_AMOUNT_PENALTY_WEIGHT -- see that constant's own
+    comment). Source-class/repeatable is still not a QUALIFICATION
+    requirement -- same shared-slot precedent as a different keyword
+    param, e.g. Dark Ritual's one-shot {B}{B}{B} and Bog Witch's
+    repeatable {B}{B}{B} still qualify each other at Tier 2 either way,
+    this only changes which of several qualifying candidates ranks
+    higher. Then color-set exactness; then the candidate's own production
+    breadth (widening) for non-exact matches; then a flat rider penalty.
+    Mixed (color+colorless) outputs: the LARGER component leads (whichever
+    of colored_pip_count/colorless_amount is bigger drives the color-set/
+    amount comparison); a true 50/50 mixed ability gets no special rule
+    here -- the other terms (amount, shape, widening, rider) still
+    differentiate it, per R5."""
     penalty = MANA_AMOUNT_PENALTY_WEIGHT * abs(a_fact["amount"] - c_fact["amount"])
 
     if a_fact["source_class"] != c_fact["source_class"] or a_fact["repeatable"] != c_fact["repeatable"]:
@@ -3134,8 +3157,9 @@ def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
     """R6 (Phase 4, ratified; gate widened by Captain ruling): ANY two
     mana-producing abilities sharing >=1 produced pip qualify Tier 2 --
     shape (source_class/repeatable) is NOT a qualification requirement,
-    only a cascade-rank term (mana_cascade_penalty(), "amount first, then
-    type"). This closes a real gap the original shape-gated version had:
+    only a cascade-rank term (mana_cascade_penalty() -- see its own
+    docstring for the 2026-07-12 amount/shape reweighting). This closes a
+    real gap the original shape-gated version had:
     Dark Ritual (one-shot spell_effect, {B}{B}{B}) and Bog Witch
     (repeatable activated_tap, {B}{B}{B}) produce EXACTLY the same mana
     and share no viable text fragment (the core is 2-3 tokens, below the
@@ -6324,11 +6348,26 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
         f"viable text fragment (the core is 2-3 tokens, below the {args.ngram_min_len}-token floor) -- "
         f"under the old shape-gated version neither mana kinship nor text matching could ever connect "
         f"them. Shape mismatch is now a cascade-rank term instead (MANA_SHAPE_MISMATCH_PENALTY="
-        f"{MANA_SHAPE_MISMATCH_PENALTY}), deliberately lighter than one unit of amount difference "
-        f"(MANA_AMOUNT_PENALTY_WEIGHT={MANA_AMOUNT_PENALTY_WEIGHT}) so amount stays dominant, per R5's "
-        f"own cascade order (\"amount first, then type\") -- an exact-amount cross-shape match still "
-        f"outranks a same-shape match that's even one mana off. See mana_pip_kinship_match()/"
-        f"mana_cascade_penalty()."
+        f"{MANA_SHAPE_MISMATCH_PENALTY}) rather than a qualification requirement -- both still qualify "
+        f"Tier 2 either way. See mana_pip_kinship_match()/mana_cascade_penalty(); the amount-vs-shape "
+        f"RANK priority between them has changed since this ruling first shipped -- see the next entry."
+    )
+    lines.append("")
+    lines.append(
+        f"**RULED (Captain), 2026-07-12 -- delivery-mechanism weight raised above a one-mana amount "
+        f"gap.** Reverses part of R5's original \"amount first, then type\" cascade order (the ruling "
+        f"directly above, which set MANA_SHAPE_MISMATCH_PENALTY deliberately LIGHTER than one unit of "
+        f"MANA_AMOUNT_PENALTY_WEIGHT so amount always dominated). Captain: \"the way it gives the mana "
+        f"is also important... Thran Dynamo should beat a card that gives {{C}}{{C}} if that card isn't "
+        f"an activated ability, even though Thran is one mana further off.\" MANA_SHAPE_MISMATCH_PENALTY "
+        f"raised from 0.2 to {MANA_SHAPE_MISMATCH_PENALTY} -- now strictly between one and two units of "
+        f"MANA_AMOUNT_PENALTY_WEIGHT ({MANA_AMOUNT_PENALTY_WEIGHT}), so a same-shape match one mana off "
+        f"(Thran Dynamo's activated-tap {{C}}{{C}}{{C}} vs Sol Ring's activated-tap {{C}}{{C}}) now beats "
+        f"an exact-amount cross-shape match, but amount still dominates once the gap reaches two or "
+        f"more. Corpus-measured against Sol Ring's own colorless-family cascade before shipping: only 4 "
+        f"real cards (Ashnod's Altar, Krark-Clan Ironworks, Conduit of Storms, Everythingamajig -- all "
+        f"non-activated-tap, exact-amount matches) move behind the far larger same-shape-one-off bucket "
+        f"(491 cards) as a result -- a contained, targeted reweighting, not a wholesale reordering."
     )
     lines.append("")
     lines.append(
