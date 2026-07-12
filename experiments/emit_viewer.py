@@ -176,6 +176,7 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
             "raw": row["_raw_score"], "ci": row["_ci_term"], "mv": row["_mv_term"],
             "scope": row["_scope_term"], "dur": row["_duration_term"], "exc": row["_exception_term"],
             "pol": row["_polarity_term"], "cond": row["_condition_term"], "aff": row["_affinity_term"],
+            "promo": row["_promoted_term"],
         }
     return {
         "name": row["name"],
