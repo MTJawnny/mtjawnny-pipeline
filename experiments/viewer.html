@@ -83,7 +83,6 @@
   .badge-mech-mana { color: #c99a4a; border-color: #c99a4a; }
   .badge-mech-keyword_grant { color: #a688c9; border-color: #a688c9; }
   .badge-mech-sentence { color: #6bafa0; border-color: #6bafa0; }
-  .badge-mech-team_pump { color: #c97a7a; border-color: #c97a7a; }
   .badge-band-full { color: var(--legal); border-color: var(--legal); }
   .badge-band-discounted { color: var(--accent); border-color: var(--accent); }
   .badge-band-rescue { color: var(--illegal); border-color: var(--illegal); }
@@ -188,7 +187,6 @@
         <option value="mana">mana</option>
         <option value="keyword_grant">keyword grant</option>
         <option value="sentence">sentence</option>
-        <option value="team_pump">team pump</option>
       </select>
     </div>
     <div>
@@ -224,7 +222,7 @@
 
   var MECHANISM_LABELS = {
     text: "text", reminder: "reminder", keyword: "keyword", mana: "mana",
-    keyword_grant: "keyword grant", sentence: "sentence", team_pump: "team pump",
+    keyword_grant: "keyword grant", sentence: "sentence",
   };
 
   function mechanismBadge(mech) {
@@ -238,10 +236,12 @@
     return '<span class="badge badge-band-' + escapeHtml(band) + '">' + escapeHtml(band) + '</span>';
   }
 
-  // First-class phrase bucket (2026-07-11): a promoted row is sorted to
-  // the top of its tier categorically (see promoted_priority() in
-  // tier_engine.py) -- this badge is the only VISIBLE marker of that,
-  // display-only like the corroboration line below it.
+  // First-class phrase bucket (2026-07-11, revised same day to a scalar
+  // bonus): a promoted row gets a flat +PROMOTED_PHRASE_BONUS to its rank
+  // in tier_engine.py's compute_rank() (visible as its own "promo" column
+  // in the breakdown grid below) -- NOT a categorical sort-to-top rule.
+  // This badge is just a visible marker that the bonus applied, same
+  // display-only spirit as the corroboration line below it.
   function promotedBadge(promoted) {
     if (!promoted) return "";
     return '<span class="badge badge-promoted">promoted</span>';

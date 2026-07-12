@@ -509,78 +509,85 @@ EQUIP_COST_RE = re.compile(r"\bEquip(?:\s+[A-Za-z]+)?\s+((?:\{[^}]+\})+)(?=[\s.(
 # GRANT_*_PENALTY constant in this block.
 GRANT_EQUIP_COST_PENALTY_PER_POINT = 0.15
 
-# Team-pump/anthem-effect kinship (Captain's ruling, 2026-07-11) -- PARALLEL
-# to the Equipment/Aura granted-keyword-SET mechanism above (Entry #4), same
-# "a shared keyword is meaningful kinship signal" rationale, extended to the
-# OTHER granted-keyword idiom Entry #4's own comment flagged and
-# deliberately deferred rather than guessed at: "'creatures you control
-# have...' anthem phrasing was discussed but never measured this session,
-# left for a future pass." Motivating case: Craterhoof Behemoth ("creatures
-# you control gain trample and get +X/+X until end of turn, where X is the
-# number of creatures you control") and End-Raze Forerunners ("other
-# creatures you control get +2/+2 and gain vigilance and trample until end
-# of turn") are the same functional effect (ETB team pump, shared "trample"
-# grant) but never share a >=5-token verbatim run (clause order flips,
-# fixed vs variable magnitude, "other" vs no qualifier) and never share a
-# whole sentence either -- End-Raze sat at Tier 3 (tag-overlap only, rank
-# #4/1710) despite being a real, deck-relevant sibling; not a rule:-tag fix
-# (Entry #3's deferred, differently-shaped backlog item) since Captain
-# asked for this to reach Tier 2 on its own structural merits, the same way
-# Entry #4 reaches Tier 2 for Equipment grants. Corpus-measured (2026-07-11)
-# before shipping: 426 distinct cards carry a "[other] creatures you
-# control get(s)/gain(s)/has/have ..." team-pump/anthem clause in either
-# verb order; requiring >=1 shared granted keyword (GRANT_SIZE_CEILING=2,
-# reused directly -- "3+-keyword grants are keyword-soup, already Tagger-
-# covered") connects 60 cards to Craterhoof alone, the large majority
-# already sitting in its own Tier 3 tag-overlap list today (Earthshaker
-# Giant, Decimator of the Provinces, Kamahl Heart of Krosa, Nylea God of
-# the Hunt, Garruk's Uprising, Overrun) -- this promotes cards the tag
-# system had already flagged as kin to the tier their shared mechanic
-# actually earns, it doesn't invent kinship from nothing. See
-# extract_team_pump_clause()/team_pump_kinship_match().
-TEAM_PUMP_KEYWORD_MISMATCH_PENALTY = 0.3   # mirrors GRANT_KEYWORD_MISMATCH_PENALTY, own tuning knob
-TEAM_PUMP_PT_MISMATCH_PENALTY_PER_POINT = 0.15  # mirrors GRANT_PT_MISMATCH_PENALTY_PER_POINT
-# Two axes Entry #4 never needed (an Equipment/Aura grant has no "other" vs
-# "all" scope choice, and no meaningful duration axis -- a static "has X"
-# is always ongoing): scope ("other creatures you control" vs "creatures
-# you control") and duration ("until end of turn" temporary pump vs a
-# permanent static anthem). Both flat mismatch terms, rank-only per ruling
-# 6 -- Craterhoof (scope=all) vs End-Raze (scope=other) pays this once and
-# still qualifies comfortably.
-TEAM_PUMP_SCOPE_MISMATCH_PENALTY = 0.2
-TEAM_PUMP_DURATION_MISMATCH_PENALTY = 0.2
+# Granted-keyword-set kinship, GENERALIZED to a second subject phrase
+# (Captain's ruling, 2026-07-12) -- this session shipped a standalone
+# "team_pump" mechanism for mass-pump effects (Craterhoof Behemoth <->
+# End-Raze Forerunners), structurally a near-duplicate of Entry #4's own
+# mechanism above with its own parallel cascade/constants. Captain reversed
+# course: "remove the team pump mechanism and figure out a way to do it
+# within the system naturally... conceptually I don't even like it [as a
+# separate mechanism]." Entry #4's OWN comment had already anticipated
+# exactly this: "'creatures you control have...' anthem phrasing was
+# discussed but never measured this session, left for a future pass" --
+# this IS that pass, folded into the SAME mechanism rather than a sibling
+# one. extract_granted_keyword_clause() now recognizes TWO subject
+# templates: "equipped/enchanted creature" (unchanged regex/logic, GRANT_
+# CLAUSE_RE below, ALWAYS produces scope="single", duration_eot=False --
+# so two Equipment/Aura facts matching against each other pay zero cost on
+# either of the two new terms below, preserving the exact pre-existing
+# rank formula for every already-gated Equipment case) and "[other]
+# creatures you control get(s)/gain(s)/has/have ..." (the constants
+# immediately below, both clause orders, optional "until end of turn"
+# duration and variable "+X/+X, where X is <clause>" magnitude). One fact
+# shape, one cascade, one pool-seeding index -- a mass-pump match is now a
+# real granted_keyword_kinship_match() result, which means it automatically
+# inherits everything Entry #4 already earned for Equipment: the Option C
+# boilerplate-shadowing rescue, the categorical "exact P/T beats near"
+# sort priority, and build_granted_keyword_index()'s pool seeding (closing
+# a real gap the standalone team_pump mechanism never got: 16 Furnace-
+# Oriflamme-anchored pairs were invisible to gather_candidate_pool()
+# before this unification, found only by luck via unrelated tags).
+# Corpus-measured (2026-07-11, unchanged by the unification): 426 distinct
+# cards carry the mass-pump idiom in either verb order; requiring >=1
+# shared granted keyword (GRANT_SIZE_CEILING, reused directly -- same
+# "3+-keyword grants are keyword-soup, already Tagger-covered" reasoning)
+# connects 60 cards to Craterhoof alone.
+#
+# Two axes Equipment/Aura never needed (a static "has X" grant has no
+# "other" vs "all" scope choice and no duration axis -- always ongoing):
+# scope ("other creatures you control" vs "creatures you control" vs the
+# Equipment-only "single") and duration ("until end of turn" vs
+# permanent). Flat mismatch terms, rank-only per ruling 6 -- Craterhoof
+# (scope=all) vs End-Raze (scope=other) pays this once and still qualifies
+# comfortably. Reused GRANT_KEYWORD_MISMATCH_PENALTY/GRANT_PT_MISMATCH_
+# PENALTY_PER_POINT directly for the keyword/PT terms (one rate, not a
+# parallel bespoke one per mechanism) -- only the two genuinely NEW axes
+# get their own constants.
+GRANT_SCOPE_MISMATCH_PENALTY = 0.2
+GRANT_DURATION_MISMATCH_PENALTY = 0.2
 # Magnitude comparison has THREE shapes, not two: literal-vs-literal (a
-# real point distance, same per-point cost as the mismatch term above),
-# variable-vs-variable (Craterhoof-class "+X/+X, where X is <clause>" --
-# same clause text is essentially the same effect, different clause text
-# is still "scales with board state" kinship, a lighter penalty than a
-# real numeric gap), and literal-vs-variable (genuinely not comparable --
-# a flat penalty, distinct from both, since treating an unbounded X as
-# "very far" from a fixed number would be guessing at a distance that
-# doesn't exist).
-TEAM_PUMP_VARIABLE_DEFINITION_MISMATCH_PENALTY = 0.15
-TEAM_PUMP_PT_TYPE_MISMATCH_PENALTY = 0.3
-# Independent tuning knob, same "not coupled to GRANT_KINSHIP_BASE_RANK/
-# MANA_KINSHIP_BASE_RANK, recalibrated separately later" reasoning as
-# those two constants' own comments.
-TEAM_PUMP_KINSHIP_BASE_RANK = 5.0
+# real point distance, uses GRANT_PT_MISMATCH_PENALTY_PER_POINT directly,
+# unchanged from Entry #4), variable-vs-variable (Craterhoof-class
+# "+X/+X, where X is <clause>" -- same clause text is essentially the same
+# effect (treated as an exact 0-point match), different clause text is
+# still "scales with board state" kinship, a LIGHTER point-equivalent than
+# a real numeric gap), and literal-vs-variable (genuinely not comparable --
+# a flat point-equivalent distinct from both, since treating an unbounded
+# X as "very far" from a fixed number would be guessing at a distance that
+# doesn't exist). Both expressed in the SAME "points" unit
+# GRANT_PT_MISMATCH_PENALTY_PER_POINT already scales, not a separate rate.
+GRANT_VARIABLE_MISMATCH_POINTS = 1.0
+GRANT_MIXED_PT_MISMATCH_POINTS = 2.0
 
 # A bulleted modal-choice line ("• Other creatures you control get...") or
 # a planeswalker loyalty-cost line ("+1: Creatures you control get...")
-# puts real characters before the subject phrase that TEAM_PUMP_SUBJECT_RE's
-# own left-boundary anchor (start of string, or right after ", "/". ") does
-# not cover -- stripped first so the subject search always starts clean.
-TEAM_PUMP_LEADING_JUNK_RE = re.compile(r"^(?:•\s*|[+\-−]?\d+:\s*)+")
-# Subject-phrase anchor: matches at the very start of the (already
-# junk-stripped) paragraph, or right after a clause boundary (", "/". ") so
-# a trigger-clause prefix like "when this creature enters, " doesn't block
-# the match -- re.search, not re.match, since the subject phrase is rarely
-# the first word. Deliberately narrow to exactly "[other] creatures you
-# control" (the two forms Craterhoof/End-Raze actually use, both corpus-
-# measured above) -- broader subject phrasing ("creatures you control and
-# planeswalkers you control", "each creature you control") left unhandled
-# rather than guessed at.
-TEAM_PUMP_SUBJECT_RE = re.compile(r"(?:^|(?<=, )|(?<=\. ))(other )?creatures you control (.+)$")
+# puts real characters before the subject phrase that GRANT_MASS_SUBJECT_
+# RE's own left-boundary anchor (start of string, or right after ", "/
+# ". ") does not cover -- stripped first so the subject search always
+# starts clean.
+GRANT_MASS_LEADING_JUNK_RE = re.compile(r"^(?:•\s*|[+\-−]?\d+:\s*)+")
+# Subject-phrase anchor for the mass-pump idiom: matches at the very start
+# of the (already junk-stripped) paragraph, or right after a clause
+# boundary (", "/". ") so a trigger-clause prefix like "when this creature
+# enters, " doesn't block the match -- re.search, not re.match, since the
+# subject phrase is rarely the first word. Deliberately narrow to exactly
+# "[other] creatures you control" (the two forms Craterhoof/End-Raze
+# actually use, both corpus-measured above) -- broader subject phrasing
+# ("creatures you control and planeswalkers you control", "each creature
+# you control") left unhandled rather than guessed at. The equipped/
+# enchanted-creature subject (GRANT_CLAUSE_RE) is tried FIRST and is
+# unaffected by any of this -- see extract_granted_keyword_clause().
+GRANT_MASS_SUBJECT_RE = re.compile(r"(?:^|(?<=, )|(?<=\. ))(other )?creatures you control (.+)$")
 # Two verb orders, both real (Craterhoof: keyword-then-PT; End-Raze:
 # PT-then-keyword) -- tried in sequence rather than one combined regex,
 # same "small, explicit, sequential pattern attempts" style as
@@ -588,16 +595,16 @@ TEAM_PUMP_SUBJECT_RE = re.compile(r"(?:^|(?<=, )|(?<=\. ))(other )?creatures you
 # The PT group accepts digits OR a single x/y variable letter (either
 # case) so both "+2/+2" and "+x/+x" reach the same capture; parse_pt_
 # modifier()/the variable-shape check below do the actual classification.
-TEAM_PUMP_PT_FIRST_RE = re.compile(
+GRANT_MASS_PT_FIRST_RE = re.compile(
     r"^gets? ([+\-]?[xXyY0-9]+/[+\-]?[xXyY0-9]+) and (?:has|have|gains?|gain) (.+)$"
 )
-TEAM_PUMP_KW_FIRST_RE = re.compile(
+GRANT_MASS_KW_FIRST_RE = re.compile(
     r"^(?:has|have|gains?|gain) (.+?) and gets? ([+\-]?[xXyY0-9]+/[+\-]?[xXyY0-9]+)$"
 )
-TEAM_PUMP_PT_ONLY_RE = re.compile(r"^gets? ([+\-]?[xXyY0-9]+/[+\-]?[xXyY0-9]+)$")
-TEAM_PUMP_KW_ONLY_RE = re.compile(r"^(?:has|have|gains?|gain) (.+)$")
-TEAM_PUMP_VARIABLE_PT_RE = re.compile(r"^[+-]?[xy]/[+-]?[xy]$")
-TEAM_PUMP_WHERE_RE = re.compile(r",\s*where [a-zA-Z] is (.+)$")
+GRANT_MASS_PT_ONLY_RE = re.compile(r"^gets? ([+\-]?[xXyY0-9]+/[+\-]?[xXyY0-9]+)$")
+GRANT_MASS_KW_ONLY_RE = re.compile(r"^(?:has|have|gains?|gain) (.+)$")
+GRANT_MASS_VARIABLE_PT_RE = re.compile(r"^[+-]?[xy]/[+-]?[xy]$")
+GRANT_MASS_WHERE_RE = re.compile(r",\s*where [a-zA-Z] is (.+)$")
 
 INHERITED_TAG_DISCOUNT = 0.5
 TIER3_COVERAGE_THRESHOLD = 0.15
@@ -1198,9 +1205,28 @@ def normalize_type_line_for_frame(type_line: str) -> str:
 
 
 def split_clauses(paragraph: str) -> list:
-    """Sentence-level split within a normalized paragraph. Kept only to
-    feed clause-df.json.gz (fast pre-filter); no longer the Tier 2 qualifier."""
-    return [c.strip() for c in paragraph.split(".") if c.strip()]
+    """Sentence-level split within a normalized paragraph. Originally kept
+    only to feed clause-df.json.gz (a fast candidate-pool pre-filter); now
+    ALSO the direct source for find_shared_sentence()'s short-clause Tier 2
+    path and find_clause_corroboration()'s secondary-evidence scan.
+
+    BUG FIX (Fable 5's engine-wide audit, 2026-07-12 -- New Finding N1): a
+    naive split on "." breaks INSIDE quoted granted-ability text (e.g.
+    `...has "{t}: add {g}."` -- the period before the closing quote ends
+    the split, leaving a trailing "clause" of just a bare `"` character).
+    1,264 cards corpus-wide carry that exact artifact (plus a handful of
+    other punctuation-only splits -- stray `]`/`*`/checkbox glyphs).
+    Every OTHER consumer was accidentally protected from this (DF for a
+    punctuation-only "clause" is in the hundreds-to-thousands, past every
+    existing qualification ceiling), but find_clause_corroboration() has
+    no DF ceiling at all (deliberately, see its own docstring), so a bare
+    `"` was surfacing as live "also seen" evidence in shipped reports
+    (e.g. Zurgo, Thunder's Decree's Tier 2 list). Filtering here, not just
+    at the corroboration call site, fixes it for every current and future
+    consumer of this function at once -- a punctuation-only fragment was
+    never a legitimate matchable unit for ANYONE, not a corroboration-
+    specific concern."""
+    return [c.strip() for c in paragraph.split(".") if c.strip() and re.search(r"[a-z0-9]", c)]
 
 
 def where_x_is_param(normalized_paragraph: str, keywords: list):
@@ -1263,15 +1289,60 @@ def is_keyword_only_paragraph(normalized_paragraph: str, keywords: list) -> bool
     every comma-fragment starts with "equip". Purely corrective -- can only
     ever ADD paragraphs back into matchable_paragraphs that a real keyword
     ability never actually claimed, never remove one a genuine keyword line
-    legitimately excluded."""
+    legitimately excluded.
+
+    BUG FIX (Fable 5's engine-wide audit, 2026-07-12 -- Finding 2, the
+    "em dash" sub-class): the SAME word-boundary-safe prefix check above
+    still wrongly qualifies a multi-word ABILITY WORD introducing its own
+    unique effect sentence via em dash -- "domain — enchanted creature
+    gets +1/+1 for each basic land type among lands you control." starts
+    with "domain " (the em dash satisfies the trailing-space boundary),
+    so the ENTIRE effect sentence was being excluded from matchable_
+    paragraphs, not just the label. Corpus-measured before shipping: 474
+    fragments across 471 cards (Threshold, Delirium, Domain, Morbid,
+    Boast, Celebration, Converge, and dozens of Universes Beyond flavor
+    words too common to be caught by strip_bespoke_ability_label()'s own
+    DF floor). A genuine keyword-only fragment (bare "Flying", "Mobilize
+    2", "Ward {2}", "Protection from white") NEVER has an em dash
+    immediately after the keyword name by construction -- an em dash
+    specifically marks "ability word introducing unique printed text,"
+    which is definitionally not a bare keyword+param line -- so this
+    exclusion cannot remove a legitimate classification, only correct a
+    wrong one. A SECOND sub-class Fable 5 found (action-verb keyword
+    names -- Suspect, Mill, Regenerate, Manifest -- coinciding with their
+    OWN ability's first word, e.g. "suspect up to one target creature.")
+    is a REAL but NOT cleanly fixable gap: re-measured directly before
+    deciding not to touch it here -- of 793 fragments whose remainder
+    looks superficially similar, the overwhelming majority (protection
+    from X: 208, enchant TYPE: 164, affinity for X: 77, splice: 32,
+    kicker COST: 19, hexproof from X: 9, and more) are genuinely
+    legitimate multi-word keyword params, not sentence leakage -- no
+    structural signal (word count, trailing period, comma count) cleanly
+    separates the ~15-20 real verb-collision bugs from the ~770 correct
+    classifications in that set. Left as a documented, deferred
+    limitation rather than a hand-curated keyword exception list (which
+    this file avoids elsewhere for exactly this kind of ambiguity) --
+    revisit only with a real per-keyword grammatical signal, not a guess."""
     if not normalized_paragraph or not keywords:
         return False
     lowered_keywords = [k.lower() for k in keywords]
     fragments = [frag.strip() for frag in normalized_paragraph.split(",") if frag.strip()]
     if not fragments:
         return False
+
+    def _fragment_matches_bare_keyword(frag: str, kw: str) -> bool:
+        if frag == kw:
+            return True
+        if not frag.startswith(kw + " "):
+            return False
+        # An em dash right after the keyword name means this is an
+        # ability-word idiom introducing its own unique sentence, not a
+        # bare "<keyword> <param>" line -- see this function's own
+        # docstring (Fable 5's audit, Finding 2).
+        return not frag[len(kw):].lstrip().startswith("—")
+
     if all(
-        any(frag == kw or frag.startswith(kw + " ") for kw in lowered_keywords)
+        any(_fragment_matches_bare_keyword(frag, kw) for kw in lowered_keywords)
         for frag in fragments
     ):
         return True
@@ -1866,13 +1937,19 @@ def build_granted_keyword_index(card_docs: dict) -> dict:
     this session set out to kill, never via a seeding path of its own.
     Same class of gap as the mana-kinship one Captain already ruled on
     this session ("Priest of Gix / Dark Ritual") -- inherited, not
-    decided, same fix shape."""
+    decided, same fix shape. Since the 2026-07-12 generalization (see
+    extract_granted_keyword_clause()), `granted_keyword_facts` now also
+    holds mass-pump-shaped facts (formerly the standalone team_pump
+    mechanism, which never had a pool-seeding index of its own) -- this
+    index closes that gap too, for free, since it's keyed purely on
+    `keywords`, unaware of which subject-phrase shape a fact came from."""
     index = defaultdict(set)
     for oracle_id, doc in card_docs.items():
         for fact in doc.get("granted_keyword_facts", ()):
-            if not (1 <= len(fact["keywords"]) <= GRANT_SIZE_CEILING):
+            kw_set = fact["keywords"] or frozenset()
+            if not (1 <= len(kw_set) <= GRANT_SIZE_CEILING):
                 continue
-            for kw in fact["keywords"]:
+            for kw in kw_set:
                 index[kw].add(oracle_id)
     return dict(index)
 
@@ -1948,9 +2025,10 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
     # (within GRANT_SIZE_CEILING) qualifies, no evergreen-style "can never
     # qualify" case to prune.
     for fact in anchor_doc.get("granted_keyword_facts", ()):
-        if not (1 <= len(fact["keywords"]) <= GRANT_SIZE_CEILING):
+        kw_set = fact["keywords"] or frozenset()
+        if not (1 <= len(kw_set) <= GRANT_SIZE_CEILING):
             continue
-        for kw in fact["keywords"]:
+        for kw in kw_set:
             pool.update(granted_keyword_index.get(kw, ()))
     # Pool-widening fix (Captain's ruling, 2026-07-12): vanilla_creature_
     # match has no seeding path of its own either -- see
@@ -2157,7 +2235,20 @@ def find_clause_corroboration(anchor_doc: dict, candidate_doc: dict, clause_df: 
     assign_tier()'s call site, which this function itself does not enforce.
     Sorted by DF ascending (rarest first), then alphabetically for
     determinism; capping is the caller's job (CORROBORATION_MAX_SHOWN_PER_
-    KIND). Returns a list of (text, df) tuples, empty if nothing shared."""
+    KIND). Returns a list of (text, df) tuples, empty if nothing shared.
+
+    Provenance-filtered (Fable 5's engine-wide audit, 2026-07-12 -- New
+    Finding N4): a clause that's v2.9 Mechanism-2-injected reminder text
+    on BOTH sides is excluded from corroboration entirely, same
+    "near-worthless" judgment R1/PROVENANCE_DISCOUNT_WEIGHT/Option C
+    already make everywhere else a match's provenance is checked in this
+    file -- corroboration is meant to surface a REAL secondary connection,
+    not a coincidental collision of two unrelated keywords' identical,
+    engine-injected reminder boilerplate. No live instance of this was
+    found in the default panel (short reminder clauses under
+    ngram_min_len tokens are rare), but the gap is real and cheap to
+    close -- left unfiltered would have been an inconsistency, not a
+    deliberate design choice."""
     anchor_sentences = set()
     for af in anchor_doc["faces"]:
         for p in af["matchable_paragraphs"]:
@@ -2175,6 +2266,9 @@ def find_clause_corroboration(anchor_doc: dict, candidate_doc: dict, clause_df: 
                 continue
             candidate_sentences.update(split_clauses(p))
     shared = anchor_sentences & candidate_sentences
+    if not shared:
+        return []
+    shared = {text for text in shared if not fragment_both_sides_injected(text, anchor_doc, candidate_doc)}
     if not shared:
         return []
     result = [(text, clause_df.get(text, 1)) for text in shared]
@@ -2722,173 +2816,95 @@ def parse_equip_cost_value(face_text: str):
 
 def extract_granted_keyword_clause(paragraph: str, keyword_vocabulary: frozenset):
     """Parses an already-normalized (lowercased, reminder-stripped)
-    matchable paragraph for the Equipment/Aura "confers keywords" idiom.
-    Returns (keywords, pt_mod) -- keywords a frozenset of granted keyword
-    names, pt_mod a (power_delta, toughness_delta) int tuple or None if no
-    "gets +N/+N" clause is present -- or None (not a tuple) if the
-    paragraph doesn't match the idiom at all, is conditional (excluded
-    outright -- see CONDITIONAL_GRANT_MARKERS' comment for why), or
-    contains ANY clause fragment that isn't an exact known keyword name --
-    the corpus-measured "false-positive idiom match" category (84 cards,
-    e.g. Compulsory Rest's `Enchanted creature has "{2}, Sacrifice this
-    creature: ..."`, a granted ACTIVATED ABILITY in quotes, not a keyword
-    list) -- all-or-nothing, no partial credit for a clause that's part
-    real keywords, part noise."""
+    matchable paragraph for the "grants a keyword set (and optionally a
+    P/T buff) to some scope of creature(s)" idiom -- GENERALIZED
+    (Captain's ruling, 2026-07-12) to two real subject-phrase templates,
+    tried in sequence:
+
+    1. Equipment/Aura: "Equipped/Enchanted creature gets +N/+N and
+       has/have/gains KEYWORDS." (GRANT_CLAUSE_RE, unchanged since Entry
+       #4) -- ALWAYS scope="single", duration_eot=False, PT-then-keyword
+       order only (the only order this idiom is ever printed in). Tried
+       FIRST; if it matches, the mass-pump branch below never runs.
+    2. Mass-pump/anthem: "[other] creatures you control get(s)/gain(s)/
+       has/have KEYWORDS[, where <letter> is <clause>][, until end of
+       turn]." (GRANT_MASS_* constants) -- scope="all"|"other", either
+       clause order, optional variable magnitude and "until end of turn"
+       duration. Formerly a separate team_pump mechanism; folded in here
+       (Entry #4's own comment already anticipated this exact extension:
+       "'creatures you control have...' anthem phrasing was discussed but
+       never measured this session, left for a future pass").
+
+    Both branches converge on ONE fact shape, so a single cascade
+    (granted_keyword_kinship_match()) and a single pool-seeding index
+    (build_granted_keyword_index()) serve both -- a mass-pump match is now
+    a real keyword_grant result, automatically inheriting Option C's
+    boilerplate-shadowing rescue and pt_exactness_priority's categorical
+    "exact beats near" sort guarantee, neither of which the standalone
+    team_pump mechanism ever had.
+
+    Conditional grants (CONDITIONAL_GRANT_MARKERS) are excluded from
+    either shape, same reasoning both times -- see that constant's own
+    comment. All-or-nothing keyword validation against keyword_vocabulary,
+    same convention both shapes (the corpus-measured "false-positive idiom
+    match" category from Entry #4's own audit, e.g. Compulsory Rest's
+    `Enchanted creature has "{2}, Sacrifice this creature: ..."`, a
+    granted ACTIVATED ABILITY in quotes, not a keyword list -- no partial
+    credit for a clause that's part real keywords, part noise).
+
+    Returns a fact dict or None: {"keywords": frozenset|None, "pt_mod":
+    (power,toughness)|"variable"|None, "variable_definition": str|None,
+    "scope": "single"|"all"|"other", "duration_eot": bool, "paragraph":
+    str}. None if neither shape matches, or matches but has nothing to key
+    kinship off of (no PT clause AND no valid keyword clause)."""
     if not paragraph:
         return None
     if any(marker in paragraph for marker in CONDITIONAL_GRANT_MARKERS):
         return None
+
     m = GRANT_CLAUSE_RE.match(paragraph)
-    if not m:
-        return None
-    pt_mod = parse_pt_modifier(m.group(1))
-    clause = m.group(2).rstrip(".")
-    pieces = [p.strip() for p in re.split(r",\s*(?:and\s+)?|\s+and\s+", clause) if p.strip()]
-    if not pieces:
-        return None
-    keywords = frozenset(pieces)
-    if not keywords <= keyword_vocabulary:
-        return None
-    return keywords, pt_mod
-
-
-def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> list:
-    """Per-card granted-keyword facts, one per qualifying paragraph across
-    all faces -- mirrors mana_facts' shape (a list, even though in practice
-    an Equipment/Aura card carries at most one). Called as a post-
-    processing pass over already-built card_docs (mirrors build_mana_pip_index's
-    call-after-card_docs pattern), not baked into build_card_doc itself,
-    since it needs the corpus-wide keyword vocabulary which can only be
-    known once every card's own `keywords` field has been seen."""
-    facts = []
-    for face in doc["faces"]:
-        for paragraph in face["matchable_paragraphs"]:
-            extracted = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
-            if extracted is not None:
-                keywords, pt_mod = extracted
-                facts.append({
-                    "keywords": keywords, "pt_mod": pt_mod, "paragraph": paragraph,
-                    # Equip-cost delta term (Fable 5's recommendation,
-                    # 2026-07-10): carried from the SAME face the grant
-                    # clause itself came from -- an Equipment's own Equip
-                    # cost, not its casting cost (mv_delta, a different
-                    # axis already covered elsewhere in the rank formula).
-                    "equip_cost_value": face["equip_cost_value"],
-                })
-    return facts
-
-
-def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
-    """Scoped to GRANT_SIZE_CEILING (2) on both sides -- 3+-keyword grants
-    are the corpus-measured 'keyword-soup' territory (Captain's own read:
-    "it starts finding other cards that have keywords"), already covered
-    by the existing Tagger tag, not this mechanism. ZERO shared keywords =
-    NOT Tier 2 via this path (falls through to Tier 3 tags, same Option B
-    precedent as mana kinship)."""
-    matches = []
-    for a_fact in anchor_doc.get("granted_keyword_facts", []):
-        a_kw = a_fact["keywords"]
-        if not (1 <= len(a_kw) <= GRANT_SIZE_CEILING):
-            continue
-        for c_fact in candidate_doc.get("granted_keyword_facts", []):
-            c_kw = c_fact["keywords"]
-            if not (1 <= len(c_kw) <= GRANT_SIZE_CEILING):
-                continue
-            shared = a_kw & c_kw
-            if not shared:
-                continue
-            extras = len((a_kw | c_kw) - shared)
-            # Captain's ruling, 2026-07-10: P/T modifier mismatch, a
-            # secondary cascade term -- a missing "gets X/Y" clause on
-            # either side is a definitive +0/+0 (the oracle text says
-            # nothing about a stat bonus, a known fact), not treated as
-            # neutral/unknown.
-            a_power, a_toughness = a_fact["pt_mod"] or (0, 0)
-            c_power, c_toughness = c_fact["pt_mod"] or (0, 0)
-            pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
-            # Equip-cost delta term (Fable 5's recommendation, 2026-07-10):
-            # unlike the P/T-mod convention above, a MISSING/unparseable
-            # equip cost on either side (None -- no Equip line at all, or a
-            # non-mana-symbol cost like "Sacrifice a creature") is genuinely
-            # UNKNOWN, not a definitive value -- contributes zero penalty,
-            # same "uncertainty is not evidence of difference" convention
-            # duration/scope/exception already use elsewhere in this file.
-            a_equip = a_fact["equip_cost_value"]
-            c_equip = c_fact["equip_cost_value"]
-            equip_cost_distance = abs(a_equip - c_equip) if a_equip is not None and c_equip is not None else 0.0
-            matches.append({
-                "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
-                "pt_distance": pt_distance, "equip_cost_distance": equip_cost_distance,
-                "penalty": (
-                    GRANT_KEYWORD_MISMATCH_PENALTY * extras
-                    + GRANT_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
-                    + GRANT_EQUIP_COST_PENALTY_PER_POINT * equip_cost_distance
-                ),
-            })
-    return matches
-
-
-# ---------------------------------------------------------------------------
-# Team-pump/anthem-effect kinship (Captain's ruling, 2026-07-11) -- see the
-# TEAM_PUMP_* constants block above for full motivation/measurement.
-# ---------------------------------------------------------------------------
-
-
-def extract_team_pump_clause(paragraph: str, keyword_vocabulary: frozenset):
-    """Parses an already-normalized matchable paragraph for the "[other]
-    creatures you control get(s)/gain(s)/has/have ..." mass-pump idiom.
-    Returns a fact dict or None if the paragraph doesn't match the idiom at
-    all, is conditional (CONDITIONAL_GRANT_MARKERS -- same exclusion Entry
-    #4 uses, same reasoning), or its keyword clause contains ANY fragment
-    that isn't an exact known keyword name (all-or-nothing, same convention
-    as extract_granted_keyword_clause -- a clause that's part real keywords,
-    part granted-ability-in-quotes noise gets no partial credit).
-
-    Fact shape: {"scope": "all"|"other", "pt_mod": (power,toughness)|
-    "variable"|None, "variable_definition": str|None, "keywords":
-    frozenset|None, "duration_eot": bool, "paragraph": str}. Returns None if
-    NEITHER a PT clause nor a keyword clause was found (nothing to key
-    kinship off of)."""
-    if not paragraph:
-        return None
-    stripped = TEAM_PUMP_LEADING_JUNK_RE.sub("", paragraph)
-    m = TEAM_PUMP_SUBJECT_RE.search(stripped)
-    if not m:
-        return None
-    if any(marker in stripped[:m.start()] for marker in CONDITIONAL_GRANT_MARKERS):
-        return None
-    other = bool(m.group(1))
-    rest = m.group(2).rstrip(".")
-    duration_eot = " until end of turn" in rest
-    rest = rest.replace(" until end of turn", "")
-    variable_definition = None
-    wm = TEAM_PUMP_WHERE_RE.search(rest)
-    if wm:
-        variable_definition = wm.group(1).strip()
-        rest = rest[:wm.start()]
-    rest = rest.strip()
-
-    pt_text = kw_text = None
-    for regex, order in (
-        (TEAM_PUMP_PT_FIRST_RE, "pt_kw"),
-        (TEAM_PUMP_KW_FIRST_RE, "kw_pt"),
-        (TEAM_PUMP_PT_ONLY_RE, "pt"),
-        (TEAM_PUMP_KW_ONLY_RE, "kw"),
-    ):
-        mm = regex.match(rest)
-        if not mm:
-            continue
-        if order == "pt_kw":
-            pt_text, kw_text = mm.group(1), mm.group(2)
-        elif order == "kw_pt":
-            kw_text, pt_text = mm.group(1), mm.group(2)
-        elif order == "pt":
-            pt_text = mm.group(1)
-        else:
-            kw_text = mm.group(1)
-        break
+    if m:
+        pt_text, kw_text = m.group(1), m.group(2).rstrip(".")
+        scope, duration_eot, variable_definition = "single", False, None
     else:
-        return None
+        stripped = GRANT_MASS_LEADING_JUNK_RE.sub("", paragraph)
+        sm = GRANT_MASS_SUBJECT_RE.search(stripped)
+        if not sm:
+            return None
+        if any(marker in stripped[:sm.start()] for marker in CONDITIONAL_GRANT_MARKERS):
+            return None
+        scope = "other" if sm.group(1) else "all"
+        rest = sm.group(2).rstrip(".")
+        duration_eot = " until end of turn" in rest
+        rest = rest.replace(" until end of turn", "")
+        variable_definition = None
+        wm = GRANT_MASS_WHERE_RE.search(rest)
+        if wm:
+            variable_definition = wm.group(1).strip()
+            rest = rest[:wm.start()]
+        rest = rest.strip()
+
+        pt_text = kw_text = None
+        for regex, order in (
+            (GRANT_MASS_PT_FIRST_RE, "pt_kw"),
+            (GRANT_MASS_KW_FIRST_RE, "kw_pt"),
+            (GRANT_MASS_PT_ONLY_RE, "pt"),
+            (GRANT_MASS_KW_ONLY_RE, "kw"),
+        ):
+            mm = regex.match(rest)
+            if not mm:
+                continue
+            if order == "pt_kw":
+                pt_text, kw_text = mm.group(1), mm.group(2)
+            elif order == "kw_pt":
+                kw_text, pt_text = mm.group(1), mm.group(2)
+            elif order == "pt":
+                pt_text = mm.group(1)
+            else:
+                kw_text = mm.group(1)
+            break
+        else:
+            return None
 
     keywords = None
     if kw_text:
@@ -2904,7 +2920,7 @@ def extract_team_pump_clause(paragraph: str, keyword_vocabulary: frozenset):
         literal = parse_pt_modifier(pt_text)
         if literal is not None:
             pt_mod = literal
-        elif TEAM_PUMP_VARIABLE_PT_RE.match(pt_text.lower()):
+        elif GRANT_MASS_VARIABLE_PT_RE.match(pt_text.lower()):
             pt_mod = "variable"
         # else: unparseable shape (e.g. a mismatched "+x/+y") -- left
         # unparsed, not guessed at.
@@ -2913,88 +2929,121 @@ def extract_team_pump_clause(paragraph: str, keyword_vocabulary: frozenset):
         return None
 
     return {
-        "scope": "other" if other else "all",
-        "pt_mod": pt_mod,
-        "variable_definition": variable_definition,
-        "keywords": keywords,
-        "duration_eot": duration_eot,
-        "paragraph": paragraph,
+        "keywords": keywords, "pt_mod": pt_mod, "variable_definition": variable_definition,
+        "scope": scope, "duration_eot": duration_eot, "paragraph": paragraph,
     }
 
 
-def build_team_pump_facts(doc: dict, keyword_vocabulary: frozenset) -> list:
-    """Per-card team-pump facts, mirrors build_granted_keyword_facts' shape
-    exactly -- a post-processing pass over already-built card_docs, needs
-    the corpus-wide keyword vocabulary."""
+def build_granted_keyword_facts(doc: dict, keyword_vocabulary: frozenset) -> list:
+    """Per-card granted-keyword facts, one per qualifying paragraph across
+    all faces -- mirrors mana_facts' shape (a list, even though in practice
+    a single card rarely carries more than one or two). Called as a post-
+    processing pass over already-built card_docs (mirrors build_mana_pip_index's
+    call-after-card_docs pattern), not baked into build_card_doc itself,
+    since it needs the corpus-wide keyword vocabulary which can only be
+    known once every card's own `keywords` field has been seen."""
     facts = []
     for face in doc["faces"]:
         for paragraph in face["matchable_paragraphs"]:
-            extracted = extract_team_pump_clause(paragraph, keyword_vocabulary)
-            if extracted is not None:
-                facts.append(extracted)
+            fact = extract_granted_keyword_clause(paragraph, keyword_vocabulary)
+            if fact is not None:
+                # Equip-cost delta term (Fable 5's recommendation,
+                # 2026-07-10): carried from the SAME face the grant
+                # clause itself came from -- an Equipment's own Equip
+                # cost, not its casting cost (mv_delta, a different axis
+                # already covered elsewhere in the rank formula). Always
+                # None for a mass-pump fact (no card has both an Equip
+                # line and a "creatures you control" grant on the same
+                # face), no special-casing needed.
+                fact["equip_cost_value"] = face["equip_cost_value"]
+                facts.append(fact)
     return facts
 
 
-def team_pump_cascade_penalty(a_fact: dict, c_fact: dict) -> float:
-    """Rank-only cascade (never qualification -- ruling 6), same additive-
-    penalty shape as granted_keyword_kinship_match()'s inline sum. Keyword-
-    set mismatch leads (same weight as Entry #4's GRANT_KEYWORD_MISMATCH_
-    PENALTY, since >=1 shared keyword is already the qualification bar --
-    see team_pump_kinship_match()); then scope, then duration; then
-    magnitude, whose SHAPE (literal/literal, variable/variable, or mixed)
-    picks which of the three magnitude penalty constants applies."""
-    a_kw = a_fact["keywords"] or frozenset()
-    c_kw = c_fact["keywords"] or frozenset()
-    extras = len((a_kw | c_kw) - (a_kw & c_kw))
-    penalty = TEAM_PUMP_KEYWORD_MISMATCH_PENALTY * extras
+def granted_keyword_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
+    """Scoped to GRANT_SIZE_CEILING (2) on both sides -- 3+-keyword grants
+    are the corpus-measured 'keyword-soup' territory (Captain's own read:
+    "it starts finding other cards that have keywords"), already covered
+    by the existing Tagger tag, not this mechanism. ZERO shared keywords =
+    NOT Tier 2 via this path (falls through to Tier 3 tags, same Option B
+    precedent as mana kinship). `keywords` can be None (a PT-only fact,
+    e.g. a plain anthem with no keyword grant) -- treated as empty, so
+    such a fact can never actually produce a match here (nothing to share),
+    but doesn't crash; it's a valid fact, just not a kinship signal this
+    mechanism can use.
 
-    if a_fact["scope"] != c_fact["scope"]:
-        penalty += TEAM_PUMP_SCOPE_MISMATCH_PENALTY
-    if a_fact["duration_eot"] != c_fact["duration_eot"]:
-        penalty += TEAM_PUMP_DURATION_MISMATCH_PENALTY
-
-    a_pt, c_pt = a_fact["pt_mod"], c_fact["pt_mod"]
-    if a_pt == "variable" and c_pt == "variable":
-        if a_fact["variable_definition"] != c_fact["variable_definition"]:
-            penalty += TEAM_PUMP_VARIABLE_DEFINITION_MISMATCH_PENALTY
-    elif a_pt == "variable" or c_pt == "variable":
-        penalty += TEAM_PUMP_PT_TYPE_MISMATCH_PENALTY
-    else:
-        # Missing "gets X/Y" clause (None) is a definitive +0/+0, same
-        # "known fact, not uncertainty" convention as GRANT_PT_MISMATCH_
-        # PENALTY_PER_POINT's own docstring.
-        a_power, a_toughness = a_pt or (0, 0)
-        c_power, c_toughness = c_pt or (0, 0)
-        pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
-        penalty += TEAM_PUMP_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
-
-    return penalty
-
-
-def team_pump_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
-    """Same shared-slot precedent as granted_keyword_kinship_match() (Entry
-    #4) and mana_pip_kinship_match() (Phase 4) -- ANY shared granted
-    keyword qualifies Tier 2, ranked by team_pump_cascade_penalty(). Scoped
-    to GRANT_SIZE_CEILING (2) on both sides, same "3+ is keyword-soup,
-    already Tagger-covered" reasoning as Entry #4, reused directly rather
-    than re-derived. ZERO shared keywords = NOT Tier 2 via this path (falls
-    through to Tier 3 tags, same Option B precedent as every other kinship
-    mechanism in this file)."""
+    Scope/duration mismatch (Captain's ruling, 2026-07-12, folding the
+    former team_pump mechanism in here): flat terms, ZERO cost when both
+    facts are the Equipment/Aura shape (scope always "single", duration_
+    eot always False there) -- the pre-existing Equipment-vs-Equipment
+    rank formula is therefore byte-identical to before this generalization.
+    PT distance now has three shapes: literal/literal (unchanged, real
+    point distance), variable/variable (0 if same defining clause, else
+    GRANT_VARIABLE_MISMATCH_POINTS), or mixed (GRANT_MIXED_PT_MISMATCH_
+    POINTS, not directly comparable) -- Equipment facts are never
+    "variable" (GRANT_CLAUSE_RE's PT capture only matches literal digits),
+    so this three-way branch also collapses to the original literal-only
+    behavior for the Equipment case."""
     matches = []
-    for a_fact in anchor_doc.get("team_pump_facts", []):
-        a_kw = a_fact["keywords"]
-        if not a_kw or not (1 <= len(a_kw) <= GRANT_SIZE_CEILING):
+    for a_fact in anchor_doc.get("granted_keyword_facts", []):
+        a_kw = a_fact["keywords"] or frozenset()
+        if not (1 <= len(a_kw) <= GRANT_SIZE_CEILING):
             continue
-        for c_fact in candidate_doc.get("team_pump_facts", []):
-            c_kw = c_fact["keywords"]
-            if not c_kw or not (1 <= len(c_kw) <= GRANT_SIZE_CEILING):
+        for c_fact in candidate_doc.get("granted_keyword_facts", []):
+            c_kw = c_fact["keywords"] or frozenset()
+            if not (1 <= len(c_kw) <= GRANT_SIZE_CEILING):
                 continue
             shared = a_kw & c_kw
             if not shared:
                 continue
+            extras = len((a_kw | c_kw) - shared)
+
+            # Captain's ruling, 2026-07-10: P/T modifier mismatch, a
+            # secondary cascade term -- a missing "gets X/Y" clause on
+            # either side is a definitive +0/+0 (the oracle text
+            # genuinely says nothing about a stat bonus, a known fact),
+            # not treated as neutral/unknown. Extended 2026-07-12 for the
+            # variable-magnitude case (see docstring above).
+            a_pt, c_pt = a_fact["pt_mod"], c_fact["pt_mod"]
+            if a_pt == "variable" and c_pt == "variable":
+                pt_distance = (
+                    0.0 if a_fact["variable_definition"] == c_fact["variable_definition"]
+                    else GRANT_VARIABLE_MISMATCH_POINTS
+                )
+            elif a_pt == "variable" or c_pt == "variable":
+                pt_distance = GRANT_MIXED_PT_MISMATCH_POINTS
+            else:
+                a_power, a_toughness = a_pt or (0, 0)
+                c_power, c_toughness = c_pt or (0, 0)
+                pt_distance = abs(a_power - c_power) + abs(a_toughness - c_toughness)
+
+            # Equip-cost delta term (Fable 5's recommendation, 2026-07-10):
+            # unlike the P/T-mod convention above, a MISSING/unparseable
+            # equip cost on either side (None -- no Equip line at all, or a
+            # non-mana-symbol cost like "Sacrifice a creature," or simply
+            # not the Equipment shape at all) is genuinely UNKNOWN, not a
+            # definitive value -- contributes zero penalty, same
+            # "uncertainty is not evidence of difference" convention
+            # duration/scope/exception already use elsewhere in this file.
+            a_equip = a_fact["equip_cost_value"]
+            c_equip = c_fact["equip_cost_value"]
+            equip_cost_distance = abs(a_equip - c_equip) if a_equip is not None and c_equip is not None else 0.0
+
+            scope_penalty_term = GRANT_SCOPE_MISMATCH_PENALTY if a_fact["scope"] != c_fact["scope"] else 0.0
+            duration_penalty_term = (
+                GRANT_DURATION_MISMATCH_PENALTY if a_fact["duration_eot"] != c_fact["duration_eot"] else 0.0
+            )
+
             matches.append({
                 "anchor_fact": a_fact, "candidate_fact": c_fact, "shared_keywords": shared,
-                "penalty": team_pump_cascade_penalty(a_fact, c_fact),
+                "pt_distance": pt_distance, "equip_cost_distance": equip_cost_distance,
+                "penalty": (
+                    GRANT_KEYWORD_MISMATCH_PENALTY * extras
+                    + GRANT_PT_MISMATCH_PENALTY_PER_POINT * pt_distance
+                    + GRANT_EQUIP_COST_PENALTY_PER_POINT * equip_cost_distance
+                    + scope_penalty_term
+                    + duration_penalty_term
+                ),
             })
     return matches
 
@@ -3043,11 +3092,11 @@ def mana_pip_kinship_match(anchor_doc: dict, candidate_doc: dict) -> list:
 def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df: dict, keyword_df: dict,
                  paragraph_index: dict, args: argparse.Namespace):
     """Returns None if there's no verbatim overlap AND no keyword/mana/
-    granted-keyword/team-pump kinship (a Tier 3 candidate), else a dict:
+    granted-keyword kinship (a Tier 3 candidate), else a dict:
     {"tier": int,
     "fragment": str|None, "fragment_df": int|None, "fragment_df_exact": bool,
     "evidence": str (display-formatted, notes included), "mechanism":
-    "text"|"reminder"|"sentence"|"keyword"|"mana"|"keyword_grant"|"team_pump",
+    "text"|"reminder"|"sentence"|"keyword"|"mana"|"keyword_grant",
     "keyword": str|None,
     "anchor_param": str|None, "candidate_param": str|None,
     "commonality_weight": float, "commonality_band": str|None,
@@ -3277,6 +3326,12 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         grant_fragment = f"granted-keyword kinship: {shared_desc}"
 
         def pt_display(pt_mod):
+            # 2026-07-12: pt_mod can now be the sentinel "variable" (a
+            # mass-pump "+X/+X" grant) in addition to a literal tuple or
+            # None -- unpacking "variable" as if it were a 2-tuple would
+            # raise (it's an 8-character string), so it needs its own case.
+            if pt_mod == "variable":
+                return "+x/+x"
             power, toughness = pt_mod or (0, 0)
             return f"{power:+d}/{toughness:+d}"
 
@@ -3294,8 +3349,21 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         c_equip = candidate_fact["equip_cost_value"]
         if a_equip is not None and c_equip is not None:
             equip_note = f", equip {a_equip:g} vs equip {c_equip:g}"
+        # Scope/duration (2026-07-12, the mass-pump generalization): only
+        # shown when at least one side isn't the plain single-target-
+        # permanent Equipment/Aura shape -- keeps existing Equipment
+        # evidence strings byte-identical to before this change, only the
+        # mass-pump (or a cross-shape) case gets the extra context.
+        scope_note = ""
+        if anchor_fact["scope"] != "single" or candidate_fact["scope"] != "single":
+            scope_note = f", scope {anchor_fact['scope']} vs {candidate_fact['scope']}"
+        duration_note = ""
+        if anchor_fact["duration_eot"] or candidate_fact["duration_eot"]:
+            a_dur = "eot" if anchor_fact["duration_eot"] else "permanent"
+            c_dur = "eot" if candidate_fact["duration_eot"] else "permanent"
+            duration_note = f", duration {a_dur} vs {c_dur}"
         grant_evidence = (
-            f"granted-keyword kinship: {shared_desc}{pt_note}{equip_note} "
+            f"granted-keyword kinship: {shared_desc}{pt_note}{equip_note}{scope_note}{duration_note} "
             f"(mismatch penalty={best_grant['penalty']:.2f})"
         )
         return grant_fragment, grant_evidence
@@ -3385,30 +3453,6 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
                 fragment_df_exact = False
                 extra_fragments = []
 
-    # Team-pump/anthem kinship (Captain's ruling, 2026-07-11): PARALLEL to
-    # text/keyword/keyword_grant matching, same "only fires when nothing
-    # else qualified this pair" gating as mana kinship below -- checked
-    # BEFORE mana kinship (deterministic tie-break: an extracted structured
-    # team-pump fact is a more specific, domain-matched signal than
-    # incidental mana overlap, same ordering rationale that already puts
-    # keyword_grant ahead of mana above).
-    team_pump_anchor_fact = None
-    team_pump_candidate_fact = None
-    team_pump_penalty_value = None
-    if base is None:
-        pump_matches = team_pump_kinship_match(anchor_doc, candidate_doc)
-        best_pump = min(pump_matches, key=lambda m: m["penalty"]) if pump_matches else None
-        if best_pump is not None:
-            base = 2
-            mechanism = "team_pump"
-            team_pump_anchor_fact = best_pump["anchor_fact"]
-            team_pump_candidate_fact = best_pump["candidate_fact"]
-            team_pump_penalty_value = best_pump["penalty"]
-            shared_desc = "/".join(sorted(best_pump["shared_keywords"]))
-            fragment = f"team-pump kinship: {shared_desc}"
-            evidence_core = f"team-pump kinship: {shared_desc} (cascade penalty={best_pump['penalty']:.2f})"
-            note = ""
-
     # Phase 4 (ratified, R4/R6): mana-pip kinship, PARALLEL to text/keyword
     # matching -- only ever fires when nothing else qualified this pair at
     # all (base is still None). R6: mana kinship is Tier 2 only, never
@@ -3495,9 +3539,9 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
     # but the sentence mechanism's own primary win can be as short as the
     # fragment itself, so a pair whose ONLY connection is already a
     # sub-floor clause does not additionally unlock corroboration on top
-    # of it. Structured kinship mechanisms (keyword/mana/keyword_grant/
-    # team_pump) have no natural word count -- each already carries its
-    # own independent DF/rarity discipline, so they're treated as
+    # of it. Structured kinship mechanisms (keyword/mana/keyword_grant)
+    # have no natural word count -- each already carries its own
+    # independent DF/rarity discipline, so they're treated as
     # unconditionally "specific enough."
     corroboration = []
     if base in (1, 2):
@@ -3583,12 +3627,6 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         "candidate_granted_keyword_fact": granted_kw_candidate_fact,
         "granted_keyword_penalty": granted_kw_penalty_value,
         "granted_keyword_pt_distance": granted_kw_pt_distance,
-        # Team-pump/anthem kinship (2026-07-11): both sides' facts, None
-        # unless mechanism == "team_pump" -- same both-sides-carry
-        # precedent as Phase 2c/Phase 4/Entry #4.
-        "anchor_team_pump_fact": team_pump_anchor_fact,
-        "candidate_team_pump_fact": team_pump_candidate_fact,
-        "team_pump_penalty": team_pump_penalty_value,
     }
 
 
@@ -5671,20 +5709,14 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                     frag_df = None
                     rank_fragment = " ".join(["x"] * args.ngram_min_len)
                 elif result["mechanism"] == "keyword_grant":
-                    # Entry #4 (Captain's ruling, 2026-07-10): same length-
-                    # neutral-dummy shape as mana kinship above -- a flat
-                    # baseline minus the mismatch penalty is the entire rank
-                    # signal, no natural corpus-DF analog for a keyword SET.
+                    # Entry #4 (Captain's ruling, 2026-07-10), extended
+                    # 2026-07-12 to also cover the former team_pump's
+                    # mass-pump-shaped facts (same mechanism now): same
+                    # length-neutral-dummy shape as mana kinship above -- a
+                    # flat baseline minus the mismatch penalty is the
+                    # entire rank signal, no natural corpus-DF analog for a
+                    # granted-keyword SET.
                     frag_idf = GRANT_KINSHIP_BASE_RANK - result["granted_keyword_penalty"]
-                    frag_df = None
-                    rank_fragment = " ".join(["x"] * args.ngram_min_len)
-                elif result["mechanism"] == "team_pump":
-                    # Team-pump/anthem kinship (2026-07-11): same length-
-                    # neutral-dummy shape as mana/keyword_grant kinship
-                    # above -- a flat baseline minus the cascade penalty is
-                    # the entire rank signal, no natural corpus-DF analog
-                    # for a team-pump keyword SET either.
-                    frag_idf = TEAM_PUMP_KINSHIP_BASE_RANK - result["team_pump_penalty"]
                     frag_df = None
                     rank_fragment = " ".join(["x"] * args.ngram_min_len)
                 else:
@@ -7009,22 +7041,26 @@ def check_gj_ignoble_hierarch_gate(ctx: dict) -> bool:
 
 
 def check_gk_craterhoof_endraze_gate(ctx: dict) -> bool:
-    """G-K, team-pump/anthem kinship (Captain's ruling, 2026-07-11): the
-    motivating case for team_pump_kinship_match() -- Craterhoof Behemoth
-    ("creatures you control gain trample and get +X/+X until end of turn,
-    where X is the number of creatures you control") and End-Raze
-    Forerunners ("other creatures you control get +2/+2 and gain
-    vigilance and trample until end of turn") share no >=5-token verbatim
-    run and no whole sentence, so before this mechanism shipped End-Raze
-    sat at Tier 3 (tag-overlap only). Verifies BOTH directions qualify
-    Tier 2 via mechanism=team_pump on the shared "trample" grant, and that
-    the wider cluster this mechanism was measured against (60 cards
-    corpus-wide sharing >=1 granted keyword with Craterhoof, see the
-    TEAM_PUMP_* constants block) still contains genuinely on-topic
-    siblings already flagged by Tier 3's own tag system before this
-    session (Overrun, Kamahl Heart of Krosa) -- not just the named pair."""
-    print("\nG-K Craterhoof/End-Raze team-pump kinship gate (2026-07-11): End-Raze Forerunners "
-          "reaches Craterhoof Behemoth's Tier 2 via a shared \"trample\" team-pump grant, both directions")
+    """G-K, granted-keyword-set kinship's mass-pump generalization
+    (Captain's ruling, 2026-07-12, folding the former standalone team_pump
+    mechanism into Entry #4's own granted_keyword_kinship_match()): the
+    motivating case -- Craterhoof Behemoth ("creatures you control gain
+    trample and get +X/+X until end of turn, where X is the number of
+    creatures you control") and End-Raze Forerunners ("other creatures you
+    control get +2/+2 and gain vigilance and trample until end of turn")
+    share no >=5-token verbatim run and no whole sentence, so before this
+    generalization End-Raze sat at Tier 3 (tag-overlap only). Verifies
+    BOTH directions qualify Tier 2 via mechanism=keyword_grant (NOT a
+    separate "team_pump" mechanism string -- the whole point of the
+    2026-07-12 unification) on the shared "trample" grant, and that the
+    wider cluster (60 cards corpus-wide sharing >=1 granted keyword with
+    Craterhoof, see extract_granted_keyword_clause()'s own comment) still
+    contains genuinely on-topic siblings already flagged by Tier 3's own
+    tag system before any of this shipped (Overrun, Kamahl Heart of
+    Krosa) -- not just the named pair."""
+    print("\nG-K Craterhoof/End-Raze granted-keyword kinship gate (2026-07-12): End-Raze Forerunners "
+          "reaches Craterhoof Behemoth's Tier 2 via a shared \"trample\" grant, both directions, "
+          "as a plain keyword_grant match (no separate team_pump mechanism)")
     ok = True
     full_tiers, _ = compute_anchor_full_tiers("Craterhoof Behemoth", ctx)
     t2 = full_tiers[2]
@@ -7032,32 +7068,40 @@ def check_gk_craterhoof_endraze_gate(ctx: dict) -> bool:
     if row is None:
         print("  [STOP] End-Raze Forerunners not present in Craterhoof Behemoth's Tier 2 at all")
         ok = False
-    elif row["_mechanism"] != "team_pump":
+    elif row["_mechanism"] != "keyword_grant":
         print(f"  [STOP] End-Raze Forerunners qualifies Tier 2 but via mechanism={row['_mechanism']!r}, "
-              f"expected team_pump")
+              f"expected keyword_grant")
         ok = False
     else:
-        print(f"  [PASS] End-Raze Forerunners: Tier 2 via team_pump, evidence={row['evidence']!r}")
+        print(f"  [PASS] End-Raze Forerunners: Tier 2 via keyword_grant, evidence={row['evidence']!r}")
 
     full_tiers_rev, _ = compute_anchor_full_tiers("End-Raze Forerunners", ctx)
     t2_rev = full_tiers_rev[2]
     row_rev = next((r for r in t2_rev if r["name"] == "Craterhoof Behemoth"), None)
-    if row_rev is None or row_rev["_mechanism"] != "team_pump":
+    if row_rev is None or row_rev["_mechanism"] != "keyword_grant":
         print(f"  [STOP] reverse direction (End-Raze -> Craterhoof) did not qualify Tier 2 via "
-              f"team_pump: {row_rev['_mechanism'] if row_rev else None}")
+              f"keyword_grant: {row_rev['_mechanism'] if row_rev else None}")
         ok = False
     else:
-        print("  [PASS] reverse direction (End-Raze -> Craterhoof) also qualifies Tier 2 via team_pump")
+        print("  [PASS] reverse direction (End-Raze -> Craterhoof) also qualifies Tier 2 via keyword_grant")
 
-    other_names = {r["name"] for r in t2 if r["_mechanism"] == "team_pump"}
+    # Craterhoof's own granted-keyword facts include a real Equipment/Aura-
+    # style match too (if any exists in its pool) alongside the mass-pump
+    # ones -- filtering to rows whose evidence names "trample" keeps this
+    # check scoped to the actual motivating cluster, not every keyword_
+    # grant row regardless of shared keyword.
+    other_names = {
+        r["name"] for r in t2
+        if r["_mechanism"] == "keyword_grant" and "trample" in (r.get("evidence") or "")
+    }
     expected_present = {"Overrun", "Kamahl, Heart of Krosa"}
     missing = expected_present - other_names
     if missing:
-        print(f"  [STOP] expected on-topic team_pump siblings missing from Craterhoof's Tier 2: {sorted(missing)}")
+        print(f"  [STOP] expected on-topic mass-pump siblings missing from Craterhoof's Tier 2: {sorted(missing)}")
         ok = False
     else:
-        print(f"  [PASS] wider cluster present: {len(other_names)} cards reach Tier 2 via team_pump "
-              f"(includes {sorted(expected_present)})")
+        print(f"  [PASS] wider cluster present: {len(other_names)} cards reach Tier 2 via a shared "
+              f"\"trample\" keyword_grant (includes {sorted(expected_present)})")
     return ok
 
 
@@ -7231,13 +7275,12 @@ def main() -> None:
 
     # ---- Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET facts --
     # post-processing pass (needs the corpus-wide keyword vocabulary, which can
-    # only be known once every card's own `keywords` field has been seen) ----
+    # only be known once every card's own `keywords` field has been seen).
+    # 2026-07-12: this now ALSO covers the former team_pump mechanism's
+    # mass-pump facts -- see extract_granted_keyword_clause()'s own comment. ----
     keyword_vocabulary = build_keyword_vocabulary(cards)
     for doc in card_docs.values():
         doc["granted_keyword_facts"] = build_granted_keyword_facts(doc, keyword_vocabulary)
-        # Team-pump/anthem kinship (Captain's ruling, 2026-07-11): same
-        # post-processing shape, same corpus-wide keyword vocabulary.
-        doc["team_pump_facts"] = build_team_pump_facts(doc, keyword_vocabulary)
 
     print("building paragraph/clause/n-gram/tag indexes...")
     paragraph_index, clause_index, clause_df, ngram_index, ngram_df = build_indexes(card_docs, args.ngram_min_len)

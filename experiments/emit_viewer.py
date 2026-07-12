@@ -389,14 +389,11 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     keyword_index = te.build_keyword_index(card_docs)
     mana_index = te.build_mana_pip_index(card_docs)
     # Entry #4 (Captain's ruling, 2026-07-10): granted-keyword-SET facts,
-    # same post-processing pattern as tier_engine.py's own main().
+    # same post-processing pattern as tier_engine.py's own main(). 2026-07-12:
+    # this now also covers the former team_pump mechanism's mass-pump facts.
     keyword_vocabulary = te.build_keyword_vocabulary(cards)
     for doc in card_docs.values():
         doc["granted_keyword_facts"] = te.build_granted_keyword_facts(doc, keyword_vocabulary)
-        # Team-pump/anthem kinship (2026-07-11): same post-processing
-        # pattern, same keyword_vocabulary -- see tier_engine.py's own
-        # main() for the full rationale.
-        doc["team_pump_facts"] = te.build_team_pump_facts(doc, keyword_vocabulary)
     # Pool-widening fix (found + fixed 2026-07-10, same session as the Equip-
     # reminder obliteration) -- must run AFTER granted_keyword_facts is
     # attached above, same dependency mana_index has none of.
