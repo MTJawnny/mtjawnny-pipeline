@@ -323,6 +323,51 @@ SECOND_CLASS_PHRASE_PATTERNS = (
     re.compile(r"you lose \d+ life"),
 )
 
+# Reminder-KEYWORD second-class bucket (Captain's ruling, 2026-07-12,
+# revised same day from an initial text-pattern draft): a keyword whose
+# ENTIRE reminder body Captain judges to be generic Comprehensive-Rules
+# boilerplate, not a genuine textual signal, gets its every reminder-
+# sourced match demoted -- keyed on the KEYWORD NAME itself, not on
+# hand-derived fragment text. This is deliberately NOT a text-pattern
+# list like SECOND_CLASS_PHRASE_PATTERNS above: reminder text for a given
+# keyword is fixed and known (it's engine-injected, see build_card_doc's
+# v2.9 Mechanism 2), so "demote this keyword's reminder" is a one-line
+# addition here, not a corpus-measurement exercise to find and quote the
+# exact substring that happens to win against some particular anchor.
+#
+# Split Second motivating case: its reminder ("As long as this spell is
+# on the stack, players can't cast spells or activate abilities that
+# aren't mana abilities.") shares generic "can't cast spells or activate
+# abilities" phrasing with Grand Abolisher's own, UNRELATED "during your
+# turn" hatebear lock -- a coincidental wording overlap between two
+# functionally distant mechanics (stack-timing vs turn-scoped), not a
+# real signal.
+#
+# Checked ONLY when mechanism == "reminder" -- i.e. the row's own
+# `reminder_keyword` field must equal one of these names (see assign_
+# tier()'s `reminder_keyword_source`) -- which is a PROVENANCE check, not
+# a text-pattern one, so it can never fire for a card's own NATIVE
+# printed text. This is exactly the collision a first-draft text-pattern
+# version of this same fix hit and had to correct: Sen Triplets and
+# Myrel, Shield of Argive both independently produce the IDENTICAL
+# fragment text ("can't cast spells or activate abilities") against
+# Grand Abolisher via mechanism="text" (genuine, on-topic hatebear
+# restrictions, not reminder boilerplate) -- text alone cannot tell those
+# apart from Split Second's coincidence, only provenance can, and
+# provenance is exactly what this bucket checks.
+#
+# Deliberately does NOT catch every mechanism="reminder" match
+# categorically (Captain's own correction, same session): the Hero of
+# Bladehold <-> Zurgo, Thunder's Decree match is ALSO mechanism=
+# "reminder" (via Zurgo's own injected Mobilize reminder) but was
+# explicitly ratified in an earlier session as a genuine, wanted overlap
+# -- "a real verbatim overlap, not word-order-chasing." Only keywords
+# named here are affected; Mobilize (and every other keyword) is
+# unaffected unless explicitly added.
+SECOND_CLASS_REMINDER_KEYWORDS = frozenset({
+    "split second",
+})
+
 
 def is_second_class_phrase(text: str) -> bool:
     if not text:
@@ -486,6 +531,21 @@ GRANT_PT_MISMATCH_PENALTY_PER_POINT = 0.15
 # NOT coupled to that constant so the two mechanisms can be recalibrated
 # separately later.
 GRANT_KINSHIP_BASE_RANK = 5.0
+
+# Vanilla-creature frame-mismatch kinship (Captain's ruling, 2026-07-12):
+# a blank creature IS its frame, so a blank Grizzly Bears IS to a blank
+# Scaled Wurm what two IDENTICAL (empty) texts would be to each other --
+# they still qualify as kin, just a weaker one once the frame itself
+# differs (same shape as tier0_ok's own "text matches, frame doesn't"
+# Tier 1 fallback a few lines above assign_tier's cascade). No natural
+# corpus-DF analog either (there's no text at all to measure), so this is
+# a third independent flat-baseline constant in the same lineage as
+# MANA_KINSHIP_BASE_RANK/GRANT_KINSHIP_BASE_RANK above -- mv_delta/
+# color-identity/type-affinity (already-generic rank terms, unconditional
+# for every mechanism) are what actually separate a same-frame-cost sibling
+# from a wildly-off one; this constant only sets the shared starting point
+# they all get pulled up/down from.
+VANILLA_CREATURE_BASE_RANK = 5.0
 
 # Equip-cost delta term (Fable 5's recommendation, EQUIPMENT-REMINDER-AND-
 # WEIGHTING-DELIBERATION.md Section 4a/Q1, 2026-07-10, ratified): Entry #4's
@@ -1968,7 +2028,17 @@ def build_vanilla_creature_index(card_docs: dict) -> dict:
     called directly). frame_signature() tuple -> set(oracle_id), keyed only
     for cards that are BOTH textless (empty composed_full_text) AND
     creatures -- the same two conditions vanilla_creature_match checks, so
-    the index can never seed a candidate that couldn't actually qualify."""
+    the index can never seed a candidate that couldn't actually qualify.
+
+    Same-day extension (frame-MISMATCH kinship, assign_tier's new
+    vanilla_creature elif): a blank creature's candidate pool now needs
+    EVERY OTHER blank creature, not just its own frame bucket -- Scaled
+    Wurm ({7}{G} 7/6) is a legitimate (if distant) Tier 1 kin of Grizzly
+    Bears now, same as Runeclaw Bear is, and would never surface without
+    also widening the pool, not just assign_tier() itself (the same class
+    of gap this index was built to close in the first place). Callers
+    union every value in this dict when the anchor itself is a blank
+    creature -- see gather_candidate_pool()."""
     index = defaultdict(set)
     for oracle_id, doc in card_docs.items():
         if doc["composed_full_text"] or "Creature" not in type_bucket(doc["type_line"]):
@@ -2038,8 +2108,20 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
     # textful anchor's frame_signature would never match a blank card's
     # anyway, since frame_signature says nothing about text -- this is
     # purely a lookup key, not a new qualification path).
+    #
+    # Same-day extension: pull EVERY blank creature in the corpus, not just
+    # the anchor's own frame bucket -- assign_tier's new vanilla_creature
+    # elif (frame MISMATCH kinship, Tier 1) means a blank creature is a
+    # legitimate candidate for ANY other blank creature now, not only ones
+    # sharing its exact frame. Restricting this seed to frame_signature(
+    # anchor_doc) would silently reproduce the exact "assign_tier resolves
+    # it correctly, gather_candidate_pool never offers it the chance" gap
+    # this index was built to close in the first place, just one mismatch
+    # level up. The corpus-wide vanilla-creature population is small (low
+    # hundreds), so unioning every bucket here is cheap.
     if vanilla_creature_index and not anchor_doc["composed_full_text"] and "Creature" in type_bucket(anchor_doc["type_line"]):
-        pool.update(vanilla_creature_index.get(frame_signature(anchor_doc), ()))
+        for oracle_ids in vanilla_creature_index.values():
+            pool.update(oracle_ids)
     pool.discard(anchor_doc["oracle_id"])
     return pool
 
@@ -3096,7 +3178,8 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
     {"tier": int,
     "fragment": str|None, "fragment_df": int|None, "fragment_df_exact": bool,
     "evidence": str (display-formatted, notes included), "mechanism":
-    "text"|"reminder"|"sentence"|"keyword"|"mana"|"keyword_grant",
+    "text"|"reminder"|"sentence"|"keyword"|"mana"|"keyword_grant"|
+    "vanilla_creature",
     "keyword": str|None,
     "anchor_param": str|None, "candidate_param": str|None,
     "commonality_weight": float, "commonality_band": str|None,
@@ -3193,6 +3276,14 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
     commonality_weight = 1.0
     commonality_band = None
     extra_fragments = []
+    # Reminder-keyword provenance (Captain's ruling, 2026-07-12): which
+    # keyword's injected reminder body the winning evidence came from,
+    # None unless mechanism == "reminder" -- exposed as its own field
+    # (not just embedded in the "[reminder: ...]" note string) so a
+    # SECOND_CLASS_REMINDER_KEYWORDS-style demotion can key off the
+    # keyword NAME directly, without deriving/hand-writing the exact
+    # matched fragment text for each keyword Captain wants demoted.
+    reminder_keyword_source = None
 
     # Phase 5 fix (CO-A's original design, corrected from Phase 3's first
     # pass): a T1 paragraph match in the RESCUE band (the explicitly
@@ -3225,6 +3316,33 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         if t1_eligible_match:
             commonality_weight = t1_eligible_match["weight"]
             commonality_band = t1_eligible_match["band"]
+    elif vanilla_creature_match and "Creature" in type_bucket(candidate_doc["type_line"]):
+        # Vanilla-creature frame MISMATCH (Captain's ruling, 2026-07-12,
+        # generalizing Entry #12): the same "identical text, different
+        # frame -> Tier 1, buried by rank" shape as the tier0_ok elif just
+        # above, for the empty-text case tier0_ok itself can never satisfy
+        # (composed_full_text is falsy on both sides here, so tier0_ok is
+        # False by construction). A blank creature IS its frame in its
+        # entirety -- two that DON'T share one are still both "no text
+        # at all," the truest possible verbatim match, just a weaker kin
+        # once cost/type/P-T diverge. Deliberately never demoted further
+        # than Tier 1 regardless of how far the frame drifts (Scaled Wurm
+        # vs Grizzly Bears included) -- same precedent as tier0_ok's own
+        # fallback, which doesn't scale its tier by mismatch severity
+        # either; mv_term/ci_step/affinity (all unconditional, generic
+        # rank terms already) are what separate a near-frame sibling from
+        # a distant one, not the tier itself. Candidate-side "Creature"
+        # check is required here (vanilla_creature_match only checks the
+        # ANCHOR side, since the Tier 0 `if` above relies on frame_signature
+        # equality to guarantee both sides agree -- that guarantee doesn't
+        # hold once frames are allowed to differ).
+        base = 1
+        mechanism = "vanilla_creature"
+        fragment = "vanilla creature — no oracle text"
+        evidence_core = (
+            f"{fragment} (frame mismatch: "
+            f"{', '.join(frame_mismatch_fields(anchor_doc, candidate_doc))})"
+        )
     elif t1_eligible_match:
         base = 1
         fragment = t1_eligible_match["text"]
@@ -3314,6 +3432,7 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         reminder_kw = find_reminder_attribution(fragment, anchor_doc, candidate_doc)
         if reminder_kw is not None:
             mechanism = "reminder"
+            reminder_keyword_source = reminder_kw
             note += f" [reminder: {reminder_kw}]"
 
     def format_grant_evidence(best_grant: dict) -> tuple:
@@ -3627,6 +3746,9 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         "candidate_granted_keyword_fact": granted_kw_candidate_fact,
         "granted_keyword_penalty": granted_kw_penalty_value,
         "granted_keyword_pt_distance": granted_kw_pt_distance,
+        # Reminder-keyword provenance (2026-07-12): None unless mechanism
+        # == "reminder" -- see reminder_keyword_source's own comment above.
+        "reminder_keyword": reminder_keyword_source,
     }
 
 
@@ -5675,6 +5797,7 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                    "_anchor_mana_fact": result["anchor_mana_fact"],
                    "_candidate_mana_fact": result["candidate_mana_fact"],
                    "_granted_keyword_pt_distance": result["granted_keyword_pt_distance"],
+                   "_reminder_keyword": result["reminder_keyword"],
                    "_corroboration": result["corroboration"],
                    # First-class phrase bucket (2026-07-11): checked against
                    # full card text, not the winning fragment -- see
@@ -5717,6 +5840,20 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                     # entire rank signal, no natural corpus-DF analog for a
                     # granted-keyword SET.
                     frag_idf = GRANT_KINSHIP_BASE_RANK - result["granted_keyword_penalty"]
+                    frag_df = None
+                    rank_fragment = " ".join(["x"] * args.ngram_min_len)
+                elif result["mechanism"] == "vanilla_creature":
+                    # Vanilla-creature frame mismatch (Captain's ruling,
+                    # 2026-07-12): same length-neutral-dummy shape as mana/
+                    # keyword_grant above -- no text at all to derive an idf
+                    # from, and no mismatch-specific penalty term either (the
+                    # generic, unconditional rank terms below -- mv_term,
+                    # ci_step, affinity -- already carry mana-cost/color/type
+                    # distance for every mechanism; inventing a redundant
+                    # frame-distance penalty on top wasn't corpus-measured,
+                    # so this stays a flat baseline like the other two until
+                    # a real ranking gap is found).
+                    frag_idf = VANILLA_CREATURE_BASE_RANK
                     frag_df = None
                     rank_fragment = " ".join(["x"] * args.ngram_min_len)
                 else:
@@ -5858,12 +5995,30 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
     # ("assuredly appears near the bottom") means this demotion must
     # dominate every other consideration, not just compete within its own
     # mechanism the way pt_exactness_priority scopes itself.
+    #
+    # Reminder-KEYWORD bucket (Captain's ruling, 2026-07-12) -- see
+    # SECOND_CLASS_REMINDER_KEYWORDS' own comment for the full rationale
+    # and the measured Sen Triplets/Myrel collision a first-draft text-
+    # pattern version of this same fix had to correct. Checked via
+    # row-level PROVENANCE (`_reminder_keyword`, set only when mechanism
+    # == "reminder" -- see assign_tier()'s `reminder_keyword_source`),
+    # never via text matching, so it can never fire against a card's own
+    # native printed text. Scoped to the PRIMARY fragment only -- a
+    # cumulative-scoring extra run (Entry #5) has no per-run reminder-
+    # keyword attribution of its own, so it still falls back to the plain
+    # text-pattern check below, same "all runs must agree" discipline as
+    # before.
     def second_class_priority(row):
         mechanism = row.get("_mechanism")
         if mechanism not in ("text", "reminder", "sentence"):
             return 0
         fragment = row.get("fragment")
-        if not fragment or not is_second_class_phrase(fragment):
+        if not fragment:
+            return 0
+        primary_is_second_class = is_second_class_phrase(fragment) or (
+            mechanism == "reminder" and row.get("_reminder_keyword") in SECOND_CLASS_REMINDER_KEYWORDS
+        )
+        if not primary_is_second_class:
             return 0
         for extra in row.get("_extra_fragments") or []:
             if not is_second_class_phrase(extra.get("text", "")):
@@ -7150,20 +7305,33 @@ def check_gl_promoted_phrase_gate(ctx: dict) -> bool:
 
 
 def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
-    """G-M, vanilla-creature Tier 0 (Captain's ruling, 2026-07-12): a
-    blank creature IS its frame, so two that share one (same mana cost,
-    type line, power, toughness) are functional reprints of each other
-    even though neither has any oracle text to compare -- treated through
-    the SAME engine rules as any other card, not a bolted-on special case:
-    a frame match is Tier 0, a frame mismatch falls through to whatever
-    else (if anything) already connects them, same as textful cards.
+    """G-M, vanilla-creature Tier 0/1 (Captain's ruling, 2026-07-12; frame-
+    MISMATCH kinship extension same day): a blank creature IS its frame, so
+    two that share one (same mana cost, type line, power, toughness) are
+    functional reprints of each other even though neither has any oracle
+    text to compare -- treated through the SAME engine rules as any other
+    card, not a bolted-on special case: a frame match is Tier 0, exactly
+    like tier0_ok's own full-text-equality path.
+
+    Same-day extension: a frame MISMATCH between two blank creatures no
+    longer falls through to "no text-mechanism match at all" -- it's the
+    SAME "identical text (here, identical NO text), different frame"
+    shape as tier0_ok's own elif fallback a few lines up in assign_tier's
+    cascade, so it resolves the same way: Tier 1, mechanism
+    "vanilla_creature", buried by rank (mv_delta/color/type affinity, all
+    already-generic terms) rather than excluded. This gate now checks
+    BOTH halves: Tier 0 strictness (frame_signature governs it, unrelaxed)
+    and the new Tier 1 fallback (nothing that's a blank creature falls out
+    of the report entirely anymore).
 
     Checked via the FULL anchor pipeline (compute_anchor_full_tiers, which
     exercises gather_candidate_pool), not direct assign_tier() calls --
     assign_tier() alone was never broken; build_vanilla_creature_index()
     was ADDED because gather_candidate_pool() had no seeding path for this
     case at all (the same recurring gap as mana kinship/keyword_grant
-    before it). Confirmed corpus bug this closes: Grizzly Bears' full
+    before it, widened again same day to pool ALL blank creatures, not
+    just the anchor's own frame bucket -- see that index's own
+    docstring). Confirmed corpus bug this closes: Grizzly Bears' full
     Tier 0 list held exactly 1 match (Balduvian Bears, found only by
     accident via a shared Tagger tag) before the index existed, despite
     Runeclaw Bear/Forest Bear/Bear Cub sharing the IDENTICAL blank {1}{G}
@@ -7171,14 +7339,17 @@ def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
     Tier 0 when called directly.
 
     Also verifies the strict side: Cylian Elf (blank, {1}{G} 2/2, but
-    "Creature -- Elf" not "Creature -- Bear") must NOT appear -- proves
-    frame_signature's exact type_line match still governs, this isn't a
-    blanket "same cost and stats" relaxation. And Scaled Wurm (blank,
-    {7}{G} 7/6, unrelated frame) must not connect at all."""
-    print("\nG-M Vanilla-creature Tier 0 gate (2026-07-12): blank creatures with matching frame are "
-          "functional reprints, discoverable through the full anchor pipeline, not just direct assign_tier()")
+    "Creature -- Elf" not "Creature -- Bear") must NOT reach Tier 0 --
+    proves frame_signature's exact type_line match still governs Tier 0,
+    this isn't a blanket "same cost and stats" relaxation. Cylian Elf AND
+    Scaled Wurm (blank, {7}{G} 7/6, unrelated frame) must BOTH now appear
+    in Tier 1 instead (the new fallback), mechanism "vanilla_creature"."""
+    print("\nG-M Vanilla-creature Tier 0/1 gate (2026-07-12): blank creatures with matching frame are "
+          "functional reprints (Tier 0), mismatched-frame ones are still kin, buried by rank (Tier 1), "
+          "both discoverable through the full anchor pipeline, not just direct assign_tier()")
     full_tiers, _ = compute_anchor_full_tiers("Grizzly Bears", ctx)
     t0_names = {r["name"] for r in full_tiers[0]}
+    t1_by_name = {r["name"]: r for r in full_tiers[1]}
     ok = True
 
     expected = {"Runeclaw Bear", "Forest Bear", "Bear Cub", "Balduvian Bears"}
@@ -7197,6 +7368,22 @@ def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
         print("  [PASS] Cylian Elf (same cost/stats, different creature type) and Scaled Wurm "
               "(unrelated frame) correctly absent from Tier 0")
 
+    still_missing = {"Cylian Elf", "Scaled Wurm"} - set(t1_by_name)
+    if still_missing:
+        print(f"  [STOP] frame-mismatched blank creature(s) missing from Tier 1 entirely: {sorted(still_missing)}")
+        ok = False
+    else:
+        wrong_mechanism = {
+            name: r["_mechanism"] for name, r in t1_by_name.items()
+            if name in ("Cylian Elf", "Scaled Wurm") and r["_mechanism"] != "vanilla_creature"
+        }
+        if wrong_mechanism:
+            print(f"  [STOP] frame-mismatched blank creature(s) reached Tier 1 via the wrong mechanism: {wrong_mechanism}")
+            ok = False
+        else:
+            print("  [PASS] Cylian Elf and Scaled Wurm both present in Tier 1, mechanism=vanilla_creature "
+                  "(frame mismatch, buried by rank rather than excluded)")
+
     args = ctx["args"]
     grizzly = ctx["card_docs"][resolve_anchor("Grizzly Bears", ctx["cards"], ctx["name_index"])["oracle_id"]]
     runeclaw = ctx["card_docs"][resolve_anchor("Runeclaw Bear", ctx["cards"], ctx["name_index"])["oracle_id"]]
@@ -7204,6 +7391,13 @@ def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
     symmetric_ok = bool(r_ba) and r_ba["tier"] == 0
     ok = ok and symmetric_ok
     print(f"  [{'PASS' if symmetric_ok else 'STOP'}] Runeclaw Bear -> Grizzly Bears also Tier 0 (symmetric)")
+
+    scaled_wurm = ctx["card_docs"][resolve_anchor("Scaled Wurm", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    r_sw = assign_tier(scaled_wurm, grizzly, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    symmetric_mismatch_ok = bool(r_sw) and r_sw["tier"] == 1 and r_sw["mechanism"] == "vanilla_creature"
+    ok = ok and symmetric_mismatch_ok
+    print(f"  [{'PASS' if symmetric_mismatch_ok else 'STOP'}] Scaled Wurm -> Grizzly Bears also Tier 1/"
+          f"vanilla_creature (symmetric)")
     return ok
 
 
