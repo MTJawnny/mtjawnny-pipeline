@@ -187,6 +187,7 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "fragment_df_exact": row.get("_fragment_df_exact"),
         "extra_fragments": row.get("_extra_fragments") or [],
         "corroboration": row.get("_corroboration") or [],
+        "promoted": bool(row.get("_promoted")),
         "evidence": row.get("evidence"),
         "mv_delta": row.get("_mv_delta"),
         "ci_relation": row["facts"]["ci_relation"],

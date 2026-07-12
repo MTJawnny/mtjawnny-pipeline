@@ -329,6 +329,51 @@ def is_second_class_phrase(text: str) -> bool:
         return False
     return any(p.fullmatch(text) for p in SECOND_CLASS_PHRASE_PATTERNS)
 
+
+# First-class phrase bucket (Captain's ruling, 2026-07-11) -- the mirror
+# image of the second-class bucket above: a HOUSE-CURATED phrase list for
+# text Captain judges to be a real, deck-relevant SIGNAL worth surfacing
+# higher, not just a "which mechanism won" reranking. Deliberately checked
+# DIFFERENTLY from second-class, not identically: second-class only fires
+# when a row's ENTIRE winning evidence IS the listed phrase (a strict
+# .fullmatch() against the fragment that already won the pair's ONE tier
+# slot) -- but a promotable phrase like "power 2 or less" is typically a
+# short (<NGRAM_MIN_LEN token) sub-clause embedded differently inside many
+# different surrounding sentences card to card ("target creature with
+# power 2 or less", "each creature with power 2 or less can't block", ...)
+# -- it essentially NEVER becomes the literal winning fragment text under
+# the existing n-gram/clause-exact matching (measured: 122 cards contain
+# this phrase somewhere corpus-wide, but it's a floating sub-phrase, not
+# its own clause or a consistently-templated >=5-token run). Checking only
+# already-won evidence the way second-class does would make this bucket a
+# near-total no-op for its own motivating case. Instead: matched via
+# .search() against each side's FULL composed text (any ability, not just
+# the one that won the pair's tier) -- same "qualification stays maximal,
+# rank buries, never excludes" discipline (ruling 6) as everything else in
+# this file: a promoted-phrase match NEVER independently qualifies a tier
+# on its own, it only re-ranks a pair that ALREADY qualified Tier 1/2 some
+# other way, exactly as narrow a scope as the second-class bucket's own
+# "rank buries" side, just pointed up instead of down. See
+# promoted_phrase_shared() and promoted_priority() in compute_candidate_
+# rows(). Add more phrases here as Captain flags them -- this file's own
+# comment is the changelog, not a separate doc.
+PROMOTED_PHRASE_PATTERNS = (
+    re.compile(r"power 2 or less"),
+)
+
+
+def promoted_phrase_shared(anchor_doc: dict, candidate_doc: dict) -> bool:
+    """True if the SAME PROMOTED_PHRASE_PATTERNS entry appears anywhere in
+    BOTH anchor's and candidate's full composed text -- deliberately NOT
+    scoped to the pair's winning fragment (see PROMOTED_PHRASE_PATTERNS'
+    own comment for why); "both sides genuinely care about this axis" is
+    the bar, not "this is why they matched." Never called for qualification
+    -- only as a rank-priority input for a pair that already qualified."""
+    anchor_text = anchor_doc.get("composed_full_text") or ""
+    candidate_text = candidate_doc.get("composed_full_text") or ""
+    return any(p.search(anchor_text) and p.search(candidate_text) for p in PROMOTED_PHRASE_PATTERNS)
+
+
 # Phase 4 (ratified, RULING-MANIFEST-2026-07-09.md R5/R6) -- mana-pip
 # kinship cascade. R6: ANY two mana-producing abilities sharing >=1
 # produced pip (or, for the pure-colorless family, ANY comparable
@@ -5517,7 +5562,11 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                    "_anchor_mana_fact": result["anchor_mana_fact"],
                    "_candidate_mana_fact": result["candidate_mana_fact"],
                    "_granted_keyword_pt_distance": result["granted_keyword_pt_distance"],
-                   "_corroboration": result["corroboration"]}
+                   "_corroboration": result["corroboration"],
+                   # First-class phrase bucket (2026-07-11): checked against
+                   # full card text, not the winning fragment -- see
+                   # promoted_phrase_shared()'s own docstring for why.
+                   "_promoted": promoted_phrase_shared(anchor_doc, candidate_doc)}
             if tier in (1, 2):
                 fact_penalties = compute_fact_penalties(anchor_doc, candidate_doc, result["fragment"])
 
@@ -5711,6 +5760,21 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
                 return 0
         return 1
 
+    # First-class phrase bucket (Captain's ruling, 2026-07-11): the mirror
+    # of second_class_priority above, pointed up instead of down -- a
+    # promoted row sorts STRICTLY ABOVE the normal pool (-1 < 0), same
+    # categorical guarantee-not-nudge shape, never blended into `_rank` as
+    # a scalar bonus. Checked SECOND in the tuple, right after second_class_
+    # priority: a row whose ENTIRE winning evidence is second-class
+    # boilerplate stays demoted regardless of whether it also happens to
+    # share a promoted phrase elsewhere on the card (second_class_priority's
+    # own value of 1 always sorts after ANY promoted_priority value, by
+    # tuple-comparison construction) -- promotion never rescues a row whose
+    # actual qualifying reason is uninteresting, it only reorders the
+    # otherwise-normal pool.
+    def promoted_priority(row):
+        return -1 if row.get("_promoted") else 0
+
     def keyword_over_reminder_priority(row):
         return 0 if row.get("_mechanism") == "keyword" else 1
 
@@ -5740,11 +5804,11 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
 
     tiers[0].sort(key=lambda r: r["name"])
     tiers[1].sort(key=lambda r: (
-        second_class_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        second_class_priority(r), promoted_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
         -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[2].sort(key=lambda r: (
-        second_class_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
+        second_class_priority(r), promoted_priority(r), keyword_over_reminder_priority(r), pt_exactness_priority(r),
         -r["_rank"], -r["_fragment_len"], mv_abs_key(r), r["name"],
     ))
     tiers[3].sort(key=lambda r: (-r["_score"], r["name"]))
@@ -6933,6 +6997,50 @@ def check_gk_craterhoof_endraze_gate(ctx: dict) -> bool:
     return ok
 
 
+def check_gl_promoted_phrase_gate(ctx: dict) -> bool:
+    """G-L, first-class phrase bucket (Captain's ruling, 2026-07-11): the
+    "power 2 or less" motivating case. Reveillark ("return up to two
+    target creature cards with power 2 or less from your graveyard to the
+    battlefield") already reaches dozens of similar reanimation effects at
+    Tier 2 through ordinary text matching -- this gate verifies the
+    promotion bucket is actually doing categorical work, not just
+    agreeing with what rank already produced: confirms (a) the top row is
+    promoted, and (b) a real number of promoted rows have a RAW _rank
+    below the best non-promoted row's rank (i.e. would have sorted lower
+    without the categorical override -- proof this isn't a no-op)."""
+    print("\nG-L Promoted-phrase gate (2026-07-11): \"power 2 or less\" promotes matching Reveillark "
+          "siblings to the top of Tier 2, overriding raw rank where needed")
+    full_tiers, _ = compute_anchor_full_tiers("Reveillark", ctx)
+    t2 = full_tiers[2]
+    ok = True
+    if not t2:
+        print("  [STOP] Reveillark's Tier 2 is empty")
+        return False
+    if not t2[0].get("_promoted"):
+        print(f"  [STOP] top Tier 2 row ({t2[0]['name']}) is not promoted")
+        ok = False
+    else:
+        print(f"  [PASS] top Tier 2 row is promoted: {t2[0]['name']}")
+    non_promoted = [r for r in t2 if not r.get("_promoted")]
+    promoted = [r for r in t2 if r.get("_promoted")]
+    if not promoted or not non_promoted:
+        print(f"  [STOP] expected both promoted and non-promoted rows in Tier 2 (promoted={len(promoted)}, "
+              f"non_promoted={len(non_promoted)})")
+        ok = False
+    else:
+        best_non_promoted_rank = non_promoted[0]["_rank"]
+        overridden = sum(1 for r in promoted if r["_rank"] < best_non_promoted_rank)
+        if overridden == 0:
+            print("  [STOP] no promoted row has a lower raw rank than the best non-promoted row -- "
+                  "promotion cannot be distinguished from ordinary rank ordering (not proven to work)")
+            ok = False
+        else:
+            print(f"  [PASS] {overridden}/{len(promoted)} promoted rows would have sorted below "
+                  f"{non_promoted[0]['name']} (rank={best_non_promoted_rank:.2f}) on raw rank alone -- "
+                  f"categorical override confirmed active, not coincidental")
+    return ok
+
+
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
                     clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
                     granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
@@ -7292,6 +7400,7 @@ def main() -> None:
     gi_passed = check_gi_guild_pair_gate(gate_ctx)
     gj_passed = check_gj_ignoble_hierarch_gate(gate_ctx)
     gk_passed = check_gk_craterhoof_endraze_gate(gate_ctx)
+    gl_passed = check_gl_promoted_phrase_gate(gate_ctx)
 
     if not (self_check_passed and tier0_exclusion_passed and symmetry_passed and marisi_gate_passed
             and abolisher_burial_passed and myrel_burial_passed
@@ -7304,7 +7413,7 @@ def main() -> None:
             and zurgo_keyword_passed and evergreen_floor_passed
             and ga_passed and gb_passed and gc_passed and gd_passed and ge_passed
             and gf_passed and gg_passed and gh_passed and gi_passed and gj_passed
-            and gk_passed):
+            and gk_passed and gl_passed):
         halt("one or more validation gates failed — reports NOT written (see output above)")
 
     # ---- v2.5 spot-check block (deliverable: subtypes, affinity, MVΔ audit rider) ----

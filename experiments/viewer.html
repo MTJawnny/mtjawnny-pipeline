@@ -87,6 +87,7 @@
   .badge-band-full { color: var(--legal); border-color: var(--legal); }
   .badge-band-discounted { color: var(--accent); border-color: var(--accent); }
   .badge-band-rescue { color: var(--illegal); border-color: var(--illegal); }
+  .badge-promoted { color: #d4af37; border-color: #d4af37; font-weight: 600; }
   td.mech-cell { white-space: nowrap; }
 
   .mana-fact-compare {
@@ -235,6 +236,15 @@
   function bandBadge(band) {
     if (!band) return "";
     return '<span class="badge badge-band-' + escapeHtml(band) + '">' + escapeHtml(band) + '</span>';
+  }
+
+  // First-class phrase bucket (2026-07-11): a promoted row is sorted to
+  // the top of its tier categorically (see promoted_priority() in
+  // tier_engine.py) -- this badge is the only VISIBLE marker of that,
+  // display-only like the corroboration line below it.
+  function promotedBadge(promoted) {
+    if (!promoted) return "";
+    return '<span class="badge badge-promoted">promoted</span>';
   }
 
   function escapeHtml(s) {
@@ -469,7 +479,7 @@
         '<td class="pos">' + (i + 1) + '</td>' +
         '<td class="name">' + escapeHtml(row.name) + '</td>' +
         (hasRank ? '<td class="num">' + fmtNum(row.rank_score) + '</td>' : '') +
-        '<td class="mech-cell">' + mechanismBadge(row.mechanism) + ' ' + bandBadge(row.commonality_band) + '</td>' +
+        '<td class="mech-cell">' + mechanismBadge(row.mechanism) + ' ' + bandBadge(row.commonality_band) + ' ' + promotedBadge(row.promoted) + '</td>' +
         '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
         '<td>' + escapeHtml(row.ci_relation) + '</td>' +
         '<td>' + escapeHtml(row.type_bucket) + '</td>' +
@@ -528,6 +538,7 @@
     var html = "";
     var headerBits = [];
     if (row.mechanism) headerBits.push(mechanismBadge(row.mechanism));
+    if (row.promoted) headerBits.push(promotedBadge(row.promoted));
     if (row.commonality_band) {
       headerBits.push(bandBadge(row.commonality_band));
       if (row.commonality_weight !== null && row.commonality_weight !== undefined) {
