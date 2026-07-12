@@ -1877,10 +1877,34 @@ def build_granted_keyword_index(card_docs: dict) -> dict:
     return dict(index)
 
 
+def build_vanilla_creature_index(card_docs: dict) -> dict:
+    """Pool-widening fix (Captain's ruling, 2026-07-12), same shape and same
+    RECURRING gap as build_mana_pip_index()/build_granted_keyword_index()
+    above: vanilla_creature_match (assign_tier(), see its own comment) has
+    no seeding path of its own either. A blank creature has NO matchable
+    text, keywords, mana facts, or granted-keyword facts -- the only thing
+    that could ever put it in another blank creature's candidate pool is a
+    SHARED TAGGER TAG, which is incidental (Balduvian Bears reached Grizzly
+    Bears' pool this way; Runeclaw Bear, Forest Bear, Bear Cub, and others
+    sharing the identical {1}{G} 2/2 blank frame did not, despite
+    assign_tier() correctly resolving every one of them to Tier 0 when
+    called directly). frame_signature() tuple -> set(oracle_id), keyed only
+    for cards that are BOTH textless (empty composed_full_text) AND
+    creatures -- the same two conditions vanilla_creature_match checks, so
+    the index can never seed a candidate that couldn't actually qualify."""
+    index = defaultdict(set)
+    for oracle_id, doc in card_docs.items():
+        if doc["composed_full_text"] or "Creature" not in type_bucket(doc["type_line"]):
+            continue
+        index[frame_signature(doc)].add(oracle_id)
+    return dict(index)
+
+
 def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: dict,
                            clause_index: dict, clause_df: dict, ngram_index: dict,
                            ngram_df: dict, tag_index: dict, keyword_index: dict, keyword_df: dict,
-                           mana_index: dict, granted_keyword_index: dict, args: argparse.Namespace) -> set:
+                           mana_index: dict, granted_keyword_index: dict, args: argparse.Namespace,
+                           vanilla_creature_index: dict = None) -> set:
     pool = set()
     for face in anchor_doc["faces"]:
         for p in face["matchable_paragraphs"]:
@@ -1928,6 +1952,16 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
             continue
         for kw in fact["keywords"]:
             pool.update(granted_keyword_index.get(kw, ()))
+    # Pool-widening fix (Captain's ruling, 2026-07-12): vanilla_creature_
+    # match has no seeding path of its own either -- see
+    # build_vanilla_creature_index()'s docstring for the confirmed
+    # Grizzly-Bears-only-finds-Balduvian-Bears-by-accident case this
+    # closes. Only fires when the anchor is ITSELF a blank creature (a
+    # textful anchor's frame_signature would never match a blank card's
+    # anyway, since frame_signature says nothing about text -- this is
+    # purely a lookup key, not a new qualification path).
+    if vanilla_creature_index and not anchor_doc["composed_full_text"] and "Creature" in type_bucket(anchor_doc["type_line"]):
+        pool.update(vanilla_creature_index.get(frame_signature(anchor_doc), ()))
     pool.discard(anchor_doc["oracle_id"])
     return pool
 
@@ -3071,6 +3105,31 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
         anchor_doc["composed_full_text"] and candidate_doc["composed_full_text"]
         and anchor_doc["composed_full_text"] == candidate_doc["composed_full_text"]
     )
+    # Vanilla-creature Tier 0 (Captain's ruling, 2026-07-12): tier0_ok above
+    # requires BOTH sides' composed_full_text to be truthy, so two creatures
+    # with NO oracle text at all (a blank "2/2 for {1}{G}" bear) can never
+    # satisfy it, however identical their frame -- "no text" was being read
+    # as "nothing to compare," not as "the same nothing." A blank creature
+    # IS its frame in its entirety; two that share one ARE functional
+    # reprints of each other, the truest form of Tier 0. Deliberately a
+    # SEPARATE flag, not a relaxation of tier0_ok itself: tier0_ok also
+    # feeds the `elif tier0_ok: base = 1` fallback below for a text match
+    # whose FRAME differs -- if two-blank-sides alone satisfied that flag,
+    # every vanilla creature in the corpus would mint a false Tier 1 match
+    # against every other one regardless of cost/stats (blank == blank is
+    # trivially true for ANY two blank cards). vanilla_creature_match is
+    # therefore ONLY ever checked alongside frame_signature equality (the
+    # `if` immediately below), never on its own -- a frame MISMATCH between
+    # two blank creatures falls through to no text-mechanism match at all,
+    # same as today. Scoped to "Creature" per Captain's own wording, not
+    # generalized to every blank permanent type -- frame_signature's own
+    # type_line equality already means BOTH sides are creatures once this
+    # AND that agree, so checking only the anchor side is sufficient.
+    vanilla_creature_match = (
+        not anchor_doc["composed_full_text"]
+        and not candidate_doc["composed_full_text"]
+        and "Creature" in type_bucket(anchor_doc["type_line"])
+    )
     tier1_match = find_shared_paragraph(
         anchor_doc, candidate_doc, ngram_df, args.ngram_min_len, paragraph_index, exclude=exclude_paragraphs,
     )
@@ -3103,9 +3162,12 @@ def assign_tier(anchor_doc: dict, candidate_doc: dict, ngram_df: dict, clause_df
     # just de-weighting them.
     t1_eligible_match = tier1_match if tier1_match and tier1_match["band"] != "rescue" else None
 
-    if tier0_ok and frame_signature(anchor_doc) == frame_signature(candidate_doc):
+    if (tier0_ok or vanilla_creature_match) and frame_signature(anchor_doc) == frame_signature(candidate_doc):
         base = 0
-        evidence_core = format_evidence_text(anchor_doc["composed_full_text"])
+        evidence_core = (
+            format_evidence_text(anchor_doc["composed_full_text"]) if tier0_ok
+            else "(vanilla creature — no oracle text, frame match only)"
+        )
     elif tier0_ok:
         base = 1
         fragment = (t1_eligible_match["text"] if t1_eligible_match else None) or anchor_doc["composed_full_text"]
@@ -6595,6 +6657,7 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
         anchor_doc, anchor_tags, ctx["paragraph_index"], ctx["clause_index"], ctx["clause_df"],
         ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"],
         ctx["mana_index"], ctx["granted_keyword_index"], args,
+        vanilla_creature_index=ctx["vanilla_creature_index"],
     )
     if anchor_card["oracle_id"] in ctx["turn_scoped_matches"]:
         pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_card["oracle_id"]})
@@ -7042,9 +7105,68 @@ def check_gl_promoted_phrase_gate(ctx: dict) -> bool:
     return ok
 
 
+def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
+    """G-M, vanilla-creature Tier 0 (Captain's ruling, 2026-07-12): a
+    blank creature IS its frame, so two that share one (same mana cost,
+    type line, power, toughness) are functional reprints of each other
+    even though neither has any oracle text to compare -- treated through
+    the SAME engine rules as any other card, not a bolted-on special case:
+    a frame match is Tier 0, a frame mismatch falls through to whatever
+    else (if anything) already connects them, same as textful cards.
+
+    Checked via the FULL anchor pipeline (compute_anchor_full_tiers, which
+    exercises gather_candidate_pool), not direct assign_tier() calls --
+    assign_tier() alone was never broken; build_vanilla_creature_index()
+    was ADDED because gather_candidate_pool() had no seeding path for this
+    case at all (the same recurring gap as mana kinship/keyword_grant
+    before it). Confirmed corpus bug this closes: Grizzly Bears' full
+    Tier 0 list held exactly 1 match (Balduvian Bears, found only by
+    accident via a shared Tagger tag) before the index existed, despite
+    Runeclaw Bear/Forest Bear/Bear Cub sharing the IDENTICAL blank {1}{G}
+    2/2 frame and assign_tier() already resolving every one of them to
+    Tier 0 when called directly.
+
+    Also verifies the strict side: Cylian Elf (blank, {1}{G} 2/2, but
+    "Creature -- Elf" not "Creature -- Bear") must NOT appear -- proves
+    frame_signature's exact type_line match still governs, this isn't a
+    blanket "same cost and stats" relaxation. And Scaled Wurm (blank,
+    {7}{G} 7/6, unrelated frame) must not connect at all."""
+    print("\nG-M Vanilla-creature Tier 0 gate (2026-07-12): blank creatures with matching frame are "
+          "functional reprints, discoverable through the full anchor pipeline, not just direct assign_tier()")
+    full_tiers, _ = compute_anchor_full_tiers("Grizzly Bears", ctx)
+    t0_names = {r["name"] for r in full_tiers[0]}
+    ok = True
+
+    expected = {"Runeclaw Bear", "Forest Bear", "Bear Cub", "Balduvian Bears"}
+    missing = expected - t0_names
+    if missing:
+        print(f"  [STOP] expected blank {{1}}{{G}} 2/2 siblings missing from Grizzly Bears' Tier 0: {sorted(missing)}")
+        ok = False
+    else:
+        print(f"  [PASS] all {len(expected)} expected blank-frame siblings present in Tier 0: {sorted(expected)}")
+
+    unexpected = {"Cylian Elf", "Scaled Wurm"} & t0_names
+    if unexpected:
+        print(f"  [STOP] frame-mismatched blank creature(s) wrongly reached Tier 0: {sorted(unexpected)}")
+        ok = False
+    else:
+        print("  [PASS] Cylian Elf (same cost/stats, different creature type) and Scaled Wurm "
+              "(unrelated frame) correctly absent from Tier 0")
+
+    args = ctx["args"]
+    grizzly = ctx["card_docs"][resolve_anchor("Grizzly Bears", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    runeclaw = ctx["card_docs"][resolve_anchor("Runeclaw Bear", ctx["cards"], ctx["name_index"])["oracle_id"]]
+    r_ba = assign_tier(runeclaw, grizzly, ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args)
+    symmetric_ok = bool(r_ba) and r_ba["tier"] == 0
+    ok = ok and symmetric_ok
+    print(f"  [{'PASS' if symmetric_ok else 'STOP'}] Runeclaw Bear -> Grizzly Bears also Tier 0 (symmetric)")
+    return ok
+
+
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
                     clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
-                    granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args) -> dict:
+                    granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+                    vanilla_creature_index) -> dict:
     return dict(
         cards=cards, card_docs=card_docs, name_index=name_index, card_tags=card_tags,
         card_tags_t3=card_tags_t3, paragraph_index=paragraph_index, clause_index=clause_index,
@@ -7053,6 +7175,7 @@ def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragr
         granted_keyword_index=granted_keyword_index,
         turn_scoped_matches=turn_scoped_matches,
         idf=idf, idf_t3=idf_t3, n_total_cards=n_total_cards, args=args,
+        vanilla_creature_index=vanilla_creature_index,
     )
 
 
@@ -7142,6 +7265,9 @@ def main() -> None:
     # ---- Pool-widening fix (found + fixed 2026-07-10, same session): keyword_grant's
     # own candidate-pool seeding -- see build_granted_keyword_index()'s docstring ----
     granted_keyword_index = build_granted_keyword_index(card_docs)
+    # ---- Pool-widening fix (Captain's ruling, 2026-07-12): vanilla-creature
+    # Tier 0's own candidate-pool seeding -- see build_vanilla_creature_index()'s docstring ----
+    vanilla_creature_index = build_vanilla_creature_index(card_docs)
 
     name_index = build_name_index(cards)
 
@@ -7170,6 +7296,7 @@ def main() -> None:
             anchor_doc, anchor_tags, paragraph_index, clause_index, clause_df,
             ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
             granted_keyword_index, args,
+            vanilla_creature_index=vanilla_creature_index,
         )
         # v2.6 amendment 2: a candidate can ONLY score >0 on rule:turn-scoped
         # if the ANCHOR itself carries the tag (anchor-directional coverage).
@@ -7389,6 +7516,7 @@ def main() -> None:
         cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
         clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
         granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+        vanilla_creature_index,
     )
     ga_passed = check_ga_boros_charm_gate(gate_ctx)
     gb_passed = check_gb_swiftfoot_boots_gate(gate_ctx)
@@ -7402,6 +7530,7 @@ def main() -> None:
     gj_passed = check_gj_ignoble_hierarch_gate(gate_ctx)
     gk_passed = check_gk_craterhoof_endraze_gate(gate_ctx)
     gl_passed = check_gl_promoted_phrase_gate(gate_ctx)
+    gm_passed = check_gm_vanilla_creature_gate(gate_ctx)
 
     if not (self_check_passed and tier0_exclusion_passed and symmetry_passed and marisi_gate_passed
             and abolisher_burial_passed and myrel_burial_passed
@@ -7414,7 +7543,7 @@ def main() -> None:
             and zurgo_keyword_passed and evergreen_floor_passed
             and ga_passed and gb_passed and gc_passed and gd_passed and ge_passed
             and gf_passed and gg_passed and gh_passed and gi_passed and gj_passed
-            and gk_passed and gl_passed):
+            and gk_passed and gl_passed and gm_passed):
         halt("one or more validation gates failed — reports NOT written (see output above)")
 
     # ---- v2.5 spot-check block (deliverable: subtypes, affinity, MVΔ audit rider) ----
