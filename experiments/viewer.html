@@ -83,6 +83,7 @@
   .badge-mech-mana { color: #c99a4a; border-color: #c99a4a; }
   .badge-mech-keyword_grant { color: #a688c9; border-color: #a688c9; }
   .badge-mech-sentence { color: #6bafa0; border-color: #6bafa0; }
+  .badge-mech-team_pump { color: #c97a7a; border-color: #c97a7a; }
   .badge-band-full { color: var(--legal); border-color: var(--legal); }
   .badge-band-discounted { color: var(--accent); border-color: var(--accent); }
   .badge-band-rescue { color: var(--illegal); border-color: var(--illegal); }
@@ -186,6 +187,7 @@
         <option value="mana">mana</option>
         <option value="keyword_grant">keyword grant</option>
         <option value="sentence">sentence</option>
+        <option value="team_pump">team pump</option>
       </select>
     </div>
     <div>
@@ -221,7 +223,7 @@
 
   var MECHANISM_LABELS = {
     text: "text", reminder: "reminder", keyword: "keyword", mana: "mana",
-    keyword_grant: "keyword grant", sentence: "sentence",
+    keyword_grant: "keyword grant", sentence: "sentence", team_pump: "team pump",
   };
 
   function mechanismBadge(mech) {
@@ -576,6 +578,21 @@
       html += '<div class="fragment-box">' + fragText + '</div>';
     } else if (row.evidence) {
       html += '<div class="fragment-box">' + escapeHtml(row.evidence) + '</div>';
+    }
+    // Secondary corroboration (2026-07-11): display-only, never a rank
+    // input -- shown separately and visually de-emphasized so it reads as
+    // "also seen" rather than part of the scored match. Two kinds: a
+    // shared short clause (below the n-gram floor, any DF band), or a
+    // shared keyword beyond the one already used as primary evidence.
+    if (row.corroboration && row.corroboration.length) {
+      var corrText = row.corroboration.map(function (c) {
+        if (c.kind === "keyword") {
+          var param = c.anchor_param ? (" " + c.anchor_param) : "";
+          return escapeHtml(c.keyword + param) + " (DF=" + c.df + ")";
+        }
+        return escapeHtml(c.text) + " (DF=" + c.df + ")";
+      }).join("; ");
+      html += '<div style="color:var(--text-muted);font-size:11px;margin-top:4px;">also seen: ' + corrText + '</div>';
     }
     var extras = [];
     if (row.type_match !== null && row.type_match !== undefined) extras.push("type_match=" + row.type_match);

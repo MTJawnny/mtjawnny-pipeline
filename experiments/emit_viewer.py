@@ -186,6 +186,7 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "fragment_df": row.get("_fragment_df"),
         "fragment_df_exact": row.get("_fragment_df_exact"),
         "extra_fragments": row.get("_extra_fragments") or [],
+        "corroboration": row.get("_corroboration") or [],
         "evidence": row.get("evidence"),
         "mv_delta": row.get("_mv_delta"),
         "ci_relation": row["facts"]["ci_relation"],
@@ -370,7 +371,13 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     print(f"  {len(cards):,} cards, tags for {len(card_tags):,}")
 
     print("normalizing corpus + building indexes (identical to tier_engine.py's own)...")
-    card_docs = {oracle_id: te.build_card_doc(c) for oracle_id, c in cards.items()}
+    # Bootstrap keyword DF from raw records BEFORE build_card_doc (2026-07-11):
+    # strip_bespoke_ability_label() needs this to run inside build_card_doc
+    # itself -- same ordering tier_engine.py's own main() uses, see
+    # compute_keyword_df_from_cards()'s docstring for why this can't just be
+    # compute_keyword_df(card_docs) reordered.
+    raw_keyword_df = te.compute_keyword_df_from_cards(cards)
+    card_docs = {oracle_id: te.build_card_doc(c, keyword_df=raw_keyword_df) for oracle_id, c in cards.items()}
     n_total_cards = len(cards)
     args = build_score_args()
     paragraph_index, clause_index, clause_df, ngram_index, ngram_df = te.build_indexes(card_docs, args.ngram_min_len)
@@ -383,6 +390,10 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     keyword_vocabulary = te.build_keyword_vocabulary(cards)
     for doc in card_docs.values():
         doc["granted_keyword_facts"] = te.build_granted_keyword_facts(doc, keyword_vocabulary)
+        # Team-pump/anthem kinship (2026-07-11): same post-processing
+        # pattern, same keyword_vocabulary -- see tier_engine.py's own
+        # main() for the full rationale.
+        doc["team_pump_facts"] = te.build_team_pump_facts(doc, keyword_vocabulary)
     # Pool-widening fix (found + fixed 2026-07-10, same session as the Equip-
     # reminder obliteration) -- must run AFTER granted_keyword_facts is
     # attached above, same dependency mana_index has none of.
