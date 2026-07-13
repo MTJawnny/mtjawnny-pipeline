@@ -58,6 +58,7 @@ import shutil
 import sqlite3
 import sys
 import time
+from collections import defaultdict
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -278,12 +279,31 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
 
     anchor_block = build_anchor_display(ctx.cards[oracle_id], ctx.legality_by_oracle_id.get(oracle_id))
     slug = te.filename_slug(name)
+    # Per-face lookup (2026-07-13): this whole-card export IS "weigh both
+    # faces" for a multi-faced card -- always was, silently, before this
+    # feature existed. face_context is null for an ordinary single-faced
+    # card (the overwhelming majority), non-null here only to give the
+    # viewer's flip/weigh-both UI something to render; the tiers/rows
+    # above are completely unchanged either way. Gated on FACE_SPLIT_
+    # LAYOUTS (defined below), not just "more than one face" -- a
+    # `card_faces`-bearing non-gameplay layout (art_series, etc.) has no
+    # per-face entry in face_ctx at all, so offering a "view single face"
+    # button for it would 404.
+    face_names = [f["name"] for f in anchor_doc["faces"]]
+    face_context = None
+    if len(face_names) > 1 and ctx.cards[oracle_id].get("layout") in FACE_SPLIT_LAYOUTS:
+        face_context = {
+            "mode": "weigh_both", "is_multiface": True,
+            "combined_name": name, "face_name": None, "face_index": None,
+            "all_face_names": face_names,
+        }
     data = {
         "anchor": anchor_block,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "corpus_cards": ctx.n_total_cards,
         "runtime_seconds": round(elapsed, 3),
         "tiers": tiers_export,
+        "face_context": face_context,
     }
     out_path = out_dir / f"{slug}.json"
     out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -293,6 +313,338 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
 
     return {
         "name": name, "slug": slug, "file": out_path.name,
+        "tier_counts": {t: tiers_export[t]["count"] for t in tiers_export},
+        "runtime_seconds": round(elapsed, 3),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Per-face lookup (2026-07-13) -- viewer-only, on-demand from serve_viewer.py.
+#
+# A multi-faced card (transform/modal_dfc/split/adventure/flip) gets a
+# per-face pseudo-doc PER FACE (te.build_face_scoped_doc()) instead of one
+# doc joining both -- so searching just "Delver of Secrets" scores ONLY
+# that face's own text, a flip button re-queries the sibling face, and a
+# "weigh both" mode falls back to today's existing whole-card export_anchor()
+# path, unchanged. Meld halves need none of this -- they're already
+# separate single-faced records, each with its own oracle_id.
+#
+# Deliberately does NOT touch build_indexes()/gather_candidate_pool()'s own
+# batch-pipeline invocation, tier_engine.py's gate suite, or the normal
+# export_anchor() path above -- this builds a SEPARATE face-scoped corpus
+# view (face_card_docs + its own paragraph/clause/ngram/keyword/mana/
+# granted-keyword/vanilla-creature indexes) at server startup, then calls
+# the SAME gather_candidate_pool()/compute_candidate_rows() functions
+# UNMODIFIED against that view -- no second scoring implementation.
+#
+# Tier 3 (tag overlap) is intentionally NOT built for this view -- Tagger
+# tags are a whole-card concept with no face-scoped meaning, so face mode
+# only ever returns Tiers 0-2. This has one consequence beyond just "no
+# Tier 3 section" (flagged in review, Fable 5's Finding N6): passing empty
+# tags/idf into compute_candidate_rows() means tag_score is always 0.0 for
+# every face-mode candidate, which makes tier2_corroboration_disqualified()
+# (tier_engine.py) -- `polarity_mismatch AND tag_score == 0.0` -- disqualify
+# EVERY polarity-mismatched Tier 2 row outright in face mode, where the
+# whole-card view might have rescued some of them via real tag overlap.
+# This changes Tier 2 MEMBERSHIP, not just Tier 3's absence -- a documented
+# consequence of the no-tags scoping choice above, not a separate bug.
+# ---------------------------------------------------------------------------
+
+# Only these Scryfall `layout` values are "one card, two independently-
+# castable/functional halves" in the sense Captain asked for -- found live,
+# not assumed: a first draft split EVERY card with a `card_faces` array,
+# which also covers art_series (a decorative double-sided ART card, same
+# name printed on both faces for card-back art -- "Delver of Secrets //
+# Delver of Secrets" collided with the real transform card's OWN "Delver
+# of Secrets" face name, 404ing the very first card anyone would test this
+# with) and double_faced_token -- neither of which is "two cards on one
+# card," just another non-playable Scryfall object shape that happens to
+# carry the same JSON field. Meld doesn't need an entry here -- meld
+# halves are already separate single-faced records (their own oracle_id
+# each), not `card_faces`-shaped at all.
+#
+# 2026-07-13 self-audit (before handing this off to Fable 5): a full scan
+# of every `layout` value that actually carries `card_faces` in the corpus
+# turned up "prepare" (Tarkir: Dragonstorm's mechanic -- "Adventurous
+# Eater // Have a Bite," a creature with a bonus spell attached) missing
+# from the first draft of this set -- structurally identical to
+# "adventure" (a creature face + an independent spell face), just a
+# differently-named Scryfall layout for a newer set. Added below; this was
+# a real gap, not a hypothetical -- confirmed via the same corpus-scan
+# methodology as build_vanilla_creature_index()'s own history of caught
+# pool-seeding gaps elsewhere in this file's lineage.
+FACE_SPLIT_LAYOUTS = frozenset({"transform", "modal_dfc", "split", "adventure", "flip", "prepare"})
+
+# Recommended by Fable 5's review, 2026-07-13: the OTHER `card_faces`-
+# bearing layouts confirmed live in the corpus today, deliberately NOT
+# face-split (see FACE_SPLIT_LAYOUTS's own comment for why). Any
+# `card_faces`-bearing layout in NEITHER set halts loudly at startup
+# instead of silently keeping its one combined doc -- converts "a human
+# has to notice a new layout is missing" (how the `prepare` gap above was
+# actually caught) into a guaranteed stop the day Scryfall ships one.
+KNOWN_NON_GAMEPLAY_CARD_FACES_LAYOUTS = frozenset({"art_series", "double_faced_token"})
+
+
+def build_face_scoped_context(ctx: SimpleNamespace) -> SimpleNamespace:
+    """Builds face_card_docs (every single-faced card's EXISTING doc,
+    unchanged, plus TWO+ per-face pseudo-docs for every multi-faced card
+    whose layout is in FACE_SPLIT_LAYOUTS, replacing its one combined doc)
+    and fresh indexes over that view, once at server startup. A
+    `card_faces`-bearing card OUTSIDE that layout set (art_series, etc.)
+    keeps its single combined doc, unsplit -- same as any single-faced
+    card here, unaffected by (and invisible to) the face-name resolution
+    below. Also builds face_name_index (normalized individual face name ->
+    [(real_oracle_id, face_index), ...], same ambiguity-list shape as
+    te.build_name_index() so a rare cross-card face-name collision 404s
+    instead of guessing) and face_meta (face_key -> sibling/combined-name
+    bookkeeping for the viewer's flip/weigh-both UI)."""
+    unknown_layouts = {
+        (oid, ctx.cards[oid].get("layout")) for oid, doc in ctx.card_docs.items()
+        if len(doc["faces"]) > 1
+        and ctx.cards[oid].get("layout") not in (FACE_SPLIT_LAYOUTS | KNOWN_NON_GAMEPLAY_CARD_FACES_LAYOUTS)
+    }
+    if unknown_layouts:
+        sample = sorted({layout for _, layout in unknown_layouts})
+        te.halt(
+            f"build_face_scoped_context: {len(unknown_layouts)} card(s) carry `card_faces` under layout(s) "
+            f"{sample} -- neither a known gameplay dual-part layout (FACE_SPLIT_LAYOUTS) nor a known non-"
+            f"gameplay one (KNOWN_NON_GAMEPLAY_CARD_FACES_LAYOUTS). Add it to whichever set it actually is "
+            f"before proceeding -- never guess which bucket a new Scryfall layout belongs in."
+        )
+
+    keyword_vocabulary = te.build_keyword_vocabulary(ctx.cards)
+    face_card_docs = {}
+    face_name_index = defaultdict(list)
+    face_meta = {}
+
+    for oracle_id, doc in ctx.card_docs.items():
+        n_faces = len(doc["faces"])
+        layout = ctx.cards[oracle_id].get("layout")
+        if n_faces <= 1 or layout not in FACE_SPLIT_LAYOUTS:
+            face_card_docs[oracle_id] = doc
+            continue
+        all_names = [f["name"] for f in doc["faces"]]
+        # Bug found in review (Fable 5, 2026-07-13): a transform/flip card's
+        # BACK face isn't independently cast at its own cost -- CR 712.8/
+        # 707.9 -- its mana VALUE is the front face's, always (you can't
+        # cast "just the back half" at a different price the way you
+        # genuinely can for split/adventure/modal_dfc/prepare, where each
+        # face IS its own real, independently-castable spell). Left as a
+        # bare mana_cost_to_cmc("") for these two layouts, EVERY transform/
+        # flip back face silently ranked at mv=0 -- confirmed live example:
+        # Nighteyes the Desecrator (real in-game mv 4) was showing mv_delta
+        # +5 against a 4-mana card it's actually mv-even with. Only these
+        # two layouts get the override; split/adventure/modal_dfc/prepare
+        # keep each face's own genuinely-independent parsed cost unchanged.
+        front_face_cmc = None
+        for i in range(n_faces):
+            face_doc = te.build_face_scoped_doc(doc, i, keyword_vocabulary)
+            if i == 0:
+                front_face_cmc = face_doc["cmc"]
+            elif layout in ("transform", "flip"):
+                face_doc["cmc"] = front_face_cmc
+            face_key = face_doc["oracle_id"]
+            face_card_docs[face_key] = face_doc
+            face_name_index[te.normalize_name(all_names[i])].append((oracle_id, i))
+            # "sibling" (singular) was dropped here (both self-audit
+            # Finding B and Fable 5's independent review flagged it as
+            # dead API surface -- viewer.html renders one button per
+            # entry in all_face_names instead, which already covers 3+
+            # face cards where "the" sibling is an ill-defined concept
+            # anyway) -- all_face_names is the only face-listing the UI
+            # actually reads.
+            face_meta[face_key] = {
+                "face_name": all_names[i],
+                "face_index": i,
+                "combined_name": doc["name"],
+                "all_face_names": all_names,
+                # Bug found in review (Fable 5, N1): every OTHER face of
+                # THIS SAME card, by synthetic key -- export_face_anchor()
+                # excludes these from its own candidate pool (see there),
+                # so a card's own back face can no longer show up as a
+                # "similar card" in its own front face's results (live
+                # counterexample that motivated this: Legion's Landing's
+                # own Tier 2 contained Adanto, the First Fort -- its own
+                # back face -- at position 2 of 42, before this fix).
+                "all_sibling_keys": [f'{oracle_id}::{j}' for j in range(n_faces) if j != i],
+            }
+
+    args = ctx.args
+    face_paragraph_index, face_clause_index, face_clause_df, face_ngram_index, face_ngram_df = te.build_indexes(
+        face_card_docs, args.ngram_min_len,
+    )
+    # Bug found in review (Fable 5, 2026-07-13): keyword DF is a corpus-wide
+    # RARITY statistic -- how many distinct real CARDS carry a keyword --
+    # and must not depend on which view (whole-card vs face-scoped) is
+    # asking. Recomputing it over face_card_docs double-counted every
+    # FACE_SPLIT_LAYOUTS card's own keywords (each contributes 2+ pool
+    # entries instead of 1), measurably inflating DF for any keyword shared
+    # by enough split/adventure/etc. cards -- confirmed live: aftermath
+    # 27->54, daybound 37->73, disturb 32->64, nightbound 36->72, four of
+    # which crossed NGRAM_DF_FLOOR=50 and would have silently DISQUALIFIED
+    # from Mechanism-1 keyword kinship (and lost their pool-seeding path)
+    # in face mode ONLY, never in the whole-card view. Reusing ctx's own
+    # already-correct keyword_df fixes this at the root -- no card is
+    # double-counted, and any keyword's rarity classification is now
+    # identical whether reached via a whole card or one of its faces.
+    face_keyword_df = ctx.keyword_df
+    face_keyword_index = te.build_keyword_index(face_card_docs)
+    face_mana_index = te.build_mana_pip_index(face_card_docs)
+    face_granted_keyword_index = te.build_granted_keyword_index(face_card_docs)
+    face_vanilla_creature_index = te.build_vanilla_creature_index(face_card_docs)
+
+    return SimpleNamespace(
+        face_card_docs=face_card_docs, face_name_index=dict(face_name_index), face_meta=face_meta,
+        face_paragraph_index=face_paragraph_index, face_clause_index=face_clause_index,
+        face_clause_df=face_clause_df, face_ngram_index=face_ngram_index, face_ngram_df=face_ngram_df,
+        face_keyword_df=face_keyword_df, face_keyword_index=face_keyword_index,
+        face_mana_index=face_mana_index, face_granted_keyword_index=face_granted_keyword_index,
+        face_vanilla_creature_index=face_vanilla_creature_index,
+    )
+
+
+def build_face_anchor_display(card: dict, face_index: int, legal_commander) -> dict:
+    """Mirrors build_anchor_display() above, scoped to one face's own raw
+    (non-normalized) mana_cost/type_line/oracle_text -- color_identity
+    stays the whole-card value (see build_face_scoped_doc()'s own comment
+    on why that's correct, not a simplification)."""
+    face = card["card_faces"][face_index]
+    return {
+        "name": face.get("name") or card["name"],
+        "oracle_id": card["oracle_id"],
+        "mana_cost": face.get("mana_cost") or "",
+        "type_line": face.get("type_line") or "",
+        "oracle_text": face.get("oracle_text") or "",
+        "color_identity": card.get("color_identity") or [],
+        "subtypes": sorted(te.creature_subtypes(face.get("type_line") or "")),
+        "legal_commander": legal_commander,
+    }
+
+
+def build_face_row_export(row: dict, anchor_doc: dict, face_card_docs: dict, legality_by_oracle_id: dict) -> dict:
+    """Mirrors build_row_export() above -- the only difference is the
+    face-key vs real-oracle-id split: `row["oracle_id"]` here is a
+    candidate's synthetic face key (e.g. "<real-id>::1") whenever the
+    candidate matched via one specific face of a multi-faced card, since
+    that's what the face-scoped pool/indexes are keyed by (see
+    te.build_face_scoped_doc()'s own docstring) -- legality/display need
+    the REAL Scryfall oracle_id instead, recovered from the candidate
+    doc's own `real_oracle_id` field (absent, so falling back to the row's
+    own oracle_id unchanged, for an ordinary single-faced candidate)."""
+    face_key = row.get("oracle_id")
+    candidate_doc = face_card_docs.get(face_key)
+    real_oracle_id = candidate_doc.get("real_oracle_id", face_key) if candidate_doc is not None else face_key
+    is_face_match = candidate_doc is not None and candidate_doc.get("face_index") is not None
+    keywords = te.keyword_overlap(anchor_doc, candidate_doc) if candidate_doc is not None else []
+    is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
+    breakdown = None
+    if "_rank" in row:
+        breakdown = {
+            "raw": row["_raw_score"], "ci": row["_ci_term"], "mv": row["_mv_term"],
+            "scope": row["_scope_term"], "dur": row["_duration_term"], "exc": row["_exception_term"],
+            "pol": row["_polarity_term"], "cond": row["_condition_term"], "aff": row["_affinity_term"],
+            "promo": row["_promoted_term"],
+        }
+    return {
+        "name": row["name"],
+        "oracle_id": real_oracle_id,
+        # Present (non-null) only when this candidate matched via ONE face
+        # of a multi-faced card -- the viewer uses this to annotate the row
+        # ("Insectile Aberration (via Delver of Secrets // Insectile
+        # Aberration)") instead of showing a bare face name with no context.
+        "via_combined_name": candidate_doc.get("combined_name") if is_face_match else None,
+        "rank_score": row.get("_rank"),
+        "breakdown": breakdown,
+        "fragment": row.get("fragment"),
+        "fragment_df": row.get("_fragment_df"),
+        "fragment_df_exact": row.get("_fragment_df_exact"),
+        "extra_fragments": row.get("_extra_fragments") or [],
+        "corroboration": row.get("_corroboration") or [],
+        "promoted": bool(row.get("_promoted")),
+        "evidence": row.get("evidence"),
+        "mv_delta": row.get("_mv_delta"),
+        "ci_relation": row["facts"]["ci_relation"],
+        "type_bucket": row["facts"]["type_bucket"],
+        "keyword_overlap": keywords,
+        "type_match": row.get("_type_match"),
+        "shared_subtypes": row.get("_shared_subtypes"),
+        "mechanism": row.get("_mechanism"),
+        "keyword": row.get("_keyword"),
+        "anchor_param": row.get("_anchor_param"),
+        "candidate_param": row.get("_candidate_param"),
+        "anchor_mana_fact": json_safe_mana_fact(row.get("_anchor_mana_fact")),
+        "candidate_mana_fact": json_safe_mana_fact(row.get("_candidate_mana_fact")),
+        "commonality_band": row.get("_commonality_band"),
+        "commonality_weight": row.get("_commonality_weight"),
+        "legal_commander": legality_by_oracle_id.get(real_oracle_id),
+        "is_land": is_land,
+    }
+
+
+def export_face_anchor(combined_name: str, oracle_id: str, face_index: int,
+                        ctx: SimpleNamespace, face_ctx: SimpleNamespace, out_dir: Path) -> dict:
+    """Face-scoped sibling of export_anchor() above -- Tiers 0-2 only (see
+    this section's own header comment for why Tier 3 is out of scope),
+    calling gather_candidate_pool()/compute_candidate_rows() UNMODIFIED
+    against face_ctx's own face-scoped corpus view instead of ctx's
+    whole-card one. Cached filename is the combined card's own slug plus a
+    face suffix, so it can never collide with export_anchor()'s own cache
+    entry for the same card's whole-card ("weigh both") export."""
+    face_key = f"{oracle_id}::{face_index}"
+    anchor_doc = face_ctx.face_card_docs[face_key]
+
+    start = time.perf_counter()
+    pool = te.gather_candidate_pool(
+        anchor_doc, [], face_ctx.face_paragraph_index, face_ctx.face_clause_index, face_ctx.face_clause_df,
+        face_ctx.face_ngram_index, face_ctx.face_ngram_df, {}, face_ctx.face_keyword_index, face_ctx.face_keyword_df,
+        face_ctx.face_mana_index, face_ctx.face_granted_keyword_index, ctx.args,
+        vanilla_creature_index=face_ctx.face_vanilla_creature_index,
+    )
+    # Bug found in review (Fable 5, N1): gather_candidate_pool()'s own
+    # pool.discard(anchor_doc["oracle_id"]) only ever removes THIS face's
+    # own synthetic key -- a sibling face of the SAME card is a completely
+    # separate pool entry with no exclusion anywhere, so it could freely
+    # appear as a "similar card" in its own sibling's results (confirmed
+    # live: Adanto, the First Fort at position 2/42 in Legion's Landing's
+    # own Tier 2, before this fix). A card's own other face(s) aren't a
+    # different card to compare against -- see face_meta's own
+    # "all_sibling_keys" (built in build_face_scoped_context()).
+    pool -= set(face_ctx.face_meta[face_key]["all_sibling_keys"])
+    full_tiers, _disqualified = te.compute_candidate_rows(
+        anchor_doc, [], [], face_ctx.face_card_docs, {}, {}, pool,
+        face_ctx.face_ngram_df, face_ctx.face_clause_df, face_ctx.face_keyword_df, face_ctx.face_paragraph_index,
+        {}, {}, len(face_ctx.face_card_docs), ctx.args,
+    )
+    elapsed = time.perf_counter() - start
+
+    tiers_export = {}
+    for t in (0, 1, 2):
+        rows = [build_face_row_export(r, anchor_doc, face_ctx.face_card_docs, ctx.legality_by_oracle_id) for r in full_tiers[t]]
+        tiers_export[str(t)] = {"count": len(rows), "rows": rows}
+
+    anchor_block = build_face_anchor_display(ctx.cards[oracle_id], face_index, ctx.legality_by_oracle_id.get(oracle_id))
+    meta = face_ctx.face_meta[face_key]
+    slug = f"{te.filename_slug(combined_name)}--face{face_index}"
+    data = {
+        "anchor": anchor_block,
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "corpus_cards": len(face_ctx.face_card_docs),
+        "runtime_seconds": round(elapsed, 3),
+        "tiers": tiers_export,
+        "face_context": {
+            "mode": "face",
+            "is_multiface": True,
+            "combined_name": combined_name,
+            "face_name": meta["face_name"],
+            "face_index": face_index,
+            "all_face_names": meta["all_face_names"],
+        },
+    }
+    out_path = out_dir / f"{slug}.json"
+    out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    return {
+        "name": combined_name, "slug": slug, "file": out_path.name,
         "tier_counts": {t: tiers_export[t]["count"] for t in tiers_export},
         "runtime_seconds": round(elapsed, 3),
     }

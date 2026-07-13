@@ -1836,6 +1836,130 @@ def frame_mismatch_fields(anchor_doc: dict, candidate_doc: dict) -> list:
     return mismatches
 
 
+def mana_cost_to_cmc(mana_cost: str) -> float:
+    """Viewer-only (2026-07-13, per-face lookup feature): lightweight per-
+    FACE mana-VALUE parse. Scryfall's own per-card `cmc` field is a whole-
+    card number, ambiguous for a face-scoped pseudo-doc (a split/adventure
+    face can have a wholly different cost from its sibling -- Fire // Ice,
+    Bonecrusher Giant // Stomp) -- reuses MANA_SYMBOL_RE (already used to
+    tokenize "add" ability clauses elsewhere in this file) to tokenize the
+    FACE's own mana_cost string directly instead. Generic numbers add their
+    value; X/Y/Z add 0 (Scryfall's own convention for an unresolved
+    variable); any other symbol (a color, hybrid, Phyrexian, or {C}) adds
+    1 -- matches Scryfall's own cmc computation for the common shapes
+    relevant to mv_delta ranking here. Not used by build_card_doc() or any
+    batch-pipeline path -- card-level cmc there still comes from Scryfall's
+    own field, unchanged."""
+    if not mana_cost:
+        return 0.0
+    total = 0.0
+    for sym in MANA_SYMBOL_RE.findall(mana_cost):
+        if sym.isdigit():
+            total += int(sym)
+        elif sym.upper() in ("X", "Y", "Z"):
+            total += 0.0
+        else:
+            total += 1.0
+    return total
+
+
+def build_face_scoped_doc(doc: dict, face_index: int, keyword_vocabulary: frozenset) -> dict:
+    """Viewer-only (2026-07-13, per-face lookup feature): a per-FACE
+    pseudo-doc for a multi-faced card (transform/modal_dfc/split/
+    adventure/flip), scoped to exactly ONE of build_card_doc()'s own
+    already-built `faces` entries instead of joining all of them --
+    everything face-scoped text/mana-fact matching needs (mana_facts,
+    matchable_paragraphs, clauses, frame_signature) already lives on that
+    one face dict untouched, so no scoring logic is duplicated here (same
+    "no second scoring implementation" discipline emit_viewer.py's own
+    docstring names). NOT called by build_card_doc() or the batch
+    pipeline -- purely additive, invoked on demand by the viewer's own
+    face-scoped corpus view (see emit_viewer.build_face_scoped_context()).
+
+    `oracle_id` on the returned doc is a SYNTHETIC face key
+    ("<real-oracle-id>::<face-index>"), not the real Scryfall oracle_id --
+    required so gather_candidate_pool()'s `pool.discard(anchor_doc[
+    "oracle_id"])` (unmodified, a generic function reused as-is here)
+    correctly excludes THIS FACE's own key from its own candidate pool.
+    CORRECTION (Fable 5's review, 2026-07-13): this does NOT, by itself,
+    exclude a card's OTHER face(s) -- those are separate pool entries
+    under their OWN synthetic keys, invisible to this one `.discard()`
+    call (confirmed live: Adanto, the First Fort -- Legion's Landing's own
+    back face -- appeared at position 2/42 in Legion's Landing's own
+    Tier 2 before this was caught). That exclusion is handled one level up,
+    in emit_viewer.export_face_anchor(), via face_meta's own
+    "all_sibling_keys" list. `real_oracle_id` carries the true Scryfall id
+    for legality/display lookups; `combined_name` carries the parent
+    card's own slash-form name for the viewer's flip/weigh-both UI.
+
+    keyword_instances (Mechanism 1, keyword kinship) is the one field
+    build_card_doc() doesn't keep in a face-scoped-friendly shape -- it's
+    derived from EVERY raw paragraph on a face (including keyword-only
+    ones later excluded from matchable_paragraphs), which the face dict
+    only keeps joined as `full_text_all`. Splitting that back on "\\n"
+    recovers the exact same per-paragraph strings (full_text_all IS
+    "\\n".join(all_paragraphs) in build_card_doc()), so this replays
+    build_card_doc()'s own keyword-instance derivation exactly -- via the
+    same is_keyword_only_paragraph()/parse_keyword_instances() calls,
+    scoped to this one face -- rather than a second implementation.
+
+    The returned doc's OWN `keywords` field is narrowed to just the
+    keyword names this face's own keyword_instances actually carry (still
+    original Scryfall casing, just filtered) -- NOT the same as the full
+    `keywords` local variable below, which stays the whole card's list
+    because is_keyword_only_paragraph()/parse_keyword_instances() need the
+    full vocabulary to correctly classify THIS face's own lines (a keyword
+    named in the card's vocabulary but never printed on this face simply
+    never matches any of this face's own paragraphs, so passing the full
+    list here causes no false positives). Bug found in review (Fable 5):
+    an EARLIER draft copied the whole card's `keywords` onto both face
+    docs unfiltered, which (1) inflated compute_keyword_df() (fixed at its
+    own call site, see build_face_scoped_context()'s comment -- that
+    fix alone would have been sufficient for qualification correctness)
+    and (2) leaked a sibling face's keywords into keyword_overlap()'s
+    DISPLAY column (e.g. Delver of Secrets' own front face showing
+    "Flying" as a shared keyword, which is only ever printed on its OWN
+    back face, Insectile Aberration) -- fixed here since keyword_overlap()
+    reads directly off each doc's own `keywords` field."""
+    face = doc["faces"][face_index]
+    keywords = doc["keywords"]
+
+    keyword_instances = []
+    for norm in face["full_text_all"].split("\n"):
+        if norm and is_keyword_only_paragraph(norm, keywords):
+            keyword_instances.extend(parse_keyword_instances(norm, keywords))
+    face_keyword_names = {inst["keyword"] for inst in keyword_instances}
+    face_own_keywords = [kw for kw in keywords if kw.lower() in face_keyword_names]
+
+    face_key = f'{doc["oracle_id"]}::{face_index}'
+    face_doc = {
+        "oracle_id": face_key,
+        "real_oracle_id": doc["oracle_id"],
+        "face_index": face_index,
+        "combined_name": doc["name"],
+        "name": face["name"],
+        "type_line": face["type_line"],
+        "cmc": mana_cost_to_cmc(face["mana_cost"]),
+        # Color identity is a WHOLE-CARD concept in real Magic rules (fixed
+        # for the card as printed, from symbols/color indicators on EITHER
+        # face) -- not split per face, so this stays the parent doc's own
+        # value on both of a card's face-scoped pseudo-docs, unchanged.
+        "color_identity": doc["color_identity"],
+        "keywords": face_own_keywords,
+        "keyword_instances": keyword_instances,
+        "reminder_keyword_by_paragraph": face["reminder_keyword_by_paragraph"],
+        "faces": [face],
+        "composed_full_text": face["full_text_all"],
+        "mana_facts": face["mana_facts"],
+    }
+    # Entry #4's granted-keyword-SET facts (mirrors build_granted_keyword_
+    # facts()'s own "post-processing pass over an already-built doc" shape,
+    # unmodified) -- correctly scoped to just this face since face_doc
+    # above only ever has ONE entry in its own "faces" list.
+    face_doc["granted_keyword_facts"] = build_granted_keyword_facts(face_doc, keyword_vocabulary)
+    return face_doc
+
+
 # ---------------------------------------------------------------------------
 # Corpus-wide indexes (the flood killer + candidate-pool efficiency)
 # ---------------------------------------------------------------------------

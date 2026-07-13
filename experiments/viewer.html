@@ -157,6 +157,21 @@
     margin: 2px 4px 2px 0;
   }
   .tag-chip.inherited { color: var(--text-muted); }
+
+  /* Per-face lookup (2026-07-13): DFC/split/adventure/flip face-mode banner + row annotation */
+  .face-banner {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    background: var(--panel-alt); border: 1px solid var(--border);
+    padding: 8px 14px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted);
+  }
+  .face-banner .face-banner-label { color: var(--text); }
+  .face-btn {
+    background: var(--panel); color: var(--accent-strong); border: 1px solid var(--accent);
+    padding: 3px 10px; font-family: var(--sans); font-size: 12px; cursor: pointer;
+  }
+  .face-btn:hover { background: var(--accent); color: var(--panel); }
+  .face-btn.active { background: var(--accent-strong); color: var(--panel); border-color: var(--accent-strong); cursor: default; }
+  .via-face-note { color: var(--text-muted); font-size: 11px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -200,6 +215,7 @@
     <div id="status"></div>
   </div>
 
+  <div id="face-banner" class="face-banner" style="display:none;"></div>
   <div id="anchor-block" class="anchor-block" style="display:none;"></div>
   <div id="tiers"></div>
 
@@ -332,11 +348,16 @@
     box.style.display = "";
   }
 
-  function selectSearchResult(name) {
-    document.getElementById("search-results").style.display = "none";
-    document.getElementById("card-search").value = "";
+  // Per-face lookup (2026-07-13): shared fetch path for a plain search-box
+  // lookup AND the face-banner's flip/weigh-both/view-single-face buttons --
+  // mode/faceIndex are optional (undefined means "let the server decide,"
+  // same default resolution serve_viewer.py's resolve_query() documents).
+  function fetchAnchorByName(name, mode, faceIndex) {
+    var url = "api/anchor?name=" + encodeURIComponent(name);
+    if (mode) url += "&mode=" + encodeURIComponent(mode);
+    if (faceIndex !== undefined && faceIndex !== null) url += "&face=" + encodeURIComponent(faceIndex);
     setStatus("computing " + name + "…");
-    fetch("api/anchor?name=" + encodeURIComponent(name))
+    return fetch(url)
       .then(function (r) {
         if (!r.ok) {
           return r.json().then(function (e) { throw new Error(e.error || ("HTTP " + r.status)); });
@@ -349,8 +370,14 @@
         return refreshIndexAndSelect(data.anchor.name);
       })
       .catch(function (err) {
-        setStatus("search failed: " + err.message);
+        setStatus("lookup failed: " + err.message);
       });
+  }
+
+  function selectSearchResult(name) {
+    document.getElementById("search-results").style.display = "none";
+    document.getElementById("card-search").value = "";
+    fetchAnchorByName(name);
   }
 
   function wireSearch() {
@@ -382,10 +409,16 @@
     input.addEventListener("keydown", function (e) {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      var items = box.querySelectorAll(".result-item");
-      if (items.length === 1) {
-        selectSearchResult(items[0].textContent);
-      } else if (e.target.value.trim()) {
+      // Per-face lookup (2026-07-13): always resolve exactly what was
+      // typed, never substitute the sole autocomplete suggestion's
+      // (necessarily longer, combined) name -- a bare DFC face name is
+      // always a strict prefix/substring of its own combined name, so a
+      // "single suggestion? use it" shortcut would silently upgrade every
+      // exact face-name query (e.g. "Ulvenwald Captive") into a weigh-both
+      // lookup for the whole card, defeating the point of typing the face
+      // name at all. Click a dropdown ITEM (below) if you want its exact
+      // (combined) name instead.
+      if (e.target.value.trim()) {
         selectSearchResult(e.target.value.trim());
       }
     });
@@ -414,8 +447,42 @@
       });
   }
 
+  // Per-face lookup (2026-07-13): data.face_context is null for an
+  // ordinary single-faced card (the overwhelming majority) -- banner
+  // stays hidden. Non-null for any multi-faced card in FACE_SPLIT_LAYOUTS,
+  // whether the CURRENT view is "weigh both" (today's existing whole-card
+  // behavior) or scoped to one face -- lets you jump between all three
+  // views for the same card without retyping a name.
+  function renderFaceBanner(faceContext) {
+    var banner = document.getElementById("face-banner");
+    if (!faceContext) {
+      banner.style.display = "none";
+      banner.innerHTML = "";
+      return;
+    }
+    banner.style.display = "";
+    var html = faceContext.mode === "weigh_both"
+      ? '<span class="face-banner-label">Weighing BOTH faces of ' + escapeHtml(faceContext.combined_name) + '</span>'
+      : '<span class="face-banner-label">Showing just "' + escapeHtml(faceContext.face_name) + '" (one face of ' + escapeHtml(faceContext.combined_name) + ')</span>';
+    faceContext.all_face_names.forEach(function (faceName, i) {
+      var isCurrent = faceContext.mode === "face" && faceContext.face_index === i;
+      html += ' <button type="button" class="face-btn' + (isCurrent ? " active" : "") + '" data-face-index="' + i + '">View: ' + escapeHtml(faceName) + '</button>';
+    });
+    html += ' <button type="button" class="face-btn' + (faceContext.mode === "weigh_both" ? " active" : "") + '" data-weighboth="1">Weigh both faces</button>';
+    banner.innerHTML = html;
+
+    var combinedName = faceContext.combined_name;
+    banner.querySelectorAll(".face-btn[data-face-index]").forEach(function (btn) {
+      var i = Number(btn.dataset.faceIndex);
+      btn.addEventListener("click", function () { fetchAnchorByName(combinedName, "face", i); });
+    });
+    var weighBtn = banner.querySelector(".face-btn[data-weighboth]");
+    weighBtn.addEventListener("click", function () { fetchAnchorByName(combinedName, "weighboth"); });
+  }
+
   function renderAnchor(data) {
     var a = data.anchor;
+    renderFaceBanner(data.face_context);
     var block = document.getElementById("anchor-block");
     block.style.display = "";
     block.innerHTML =
@@ -477,7 +544,9 @@
       tr.dataset.land = row.is_land === true ? "1" : (row.is_land === false ? "0" : "u");
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
-        '<td class="name">' + escapeHtml(row.name) + '</td>' +
+        '<td class="name">' + escapeHtml(row.name) +
+          (row.via_combined_name ? '<br><span class="via-face-note">via ' + escapeHtml(row.via_combined_name) + '</span>' : "") +
+        '</td>' +
         (hasRank ? '<td class="num">' + fmtNum(row.rank_score) + '</td>' : '') +
         '<td class="mech-cell">' + mechanismBadge(row.mechanism) + ' ' + bandBadge(row.commonality_band) + ' ' + promotedBadge(row.promoted) + '</td>' +
         '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
