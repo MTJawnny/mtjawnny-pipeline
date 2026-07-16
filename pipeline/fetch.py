@@ -7,9 +7,9 @@ tonight's proof run against the 2026-07-03 backfill snapshot). Both modes
 leave the same artifact paths under data/raw/ so downstream code (trim_merge.py)
 has one input contract regardless of which mode produced it.
 
-JSONL is mandatory: Scryfall's pre-2026-07-20 bulk format is retiring and no
-code path in this repo may consume it, even temporarily. All bulk data is
-followed via jsonl_download_uri only.
+JSONL is mandatory: no code path in this repo may consume Scryfall's legacy
+bulk-data format, even temporarily. All bulk data is followed via
+jsonl_download_uri only.
 """
 import argparse
 import gzip

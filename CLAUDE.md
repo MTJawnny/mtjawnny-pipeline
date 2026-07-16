@@ -13,8 +13,8 @@ contract does not travel here. This file is this repo's own contract.
 
 - **JSONL only.** All Scryfall bulk consumption goes through
   `jsonl_download_uri`, streamed line-by-line, never loading the whole file
-  into memory. The pre-July-2026 bulk format is dead (retires
-  2026-07-20); never write a code path for it, even temporarily.
+  into memory. The legacy bulk format is dead; never write a code path for
+  it, even temporarily.
 - **No card data in git, ever.** This repo holds code + `tags/` + `recipes/`
   only. `.gitignore` enforces it (`data/`, `*.jsonl`, `*.jsonl.gz`,
   `*.parquet`, `*.sqlite`) — never weaken it.

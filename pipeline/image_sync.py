@@ -2,6 +2,10 @@
 """Weekly incremental image sync: diff bulk data against /data/image-manifest.json,
 fetch only new/changed oracle_id PNGs, upload with the immutable flag (plan 2.4).
 
+Every synced PNG also gets a derived WebP thumbnail (gallery/index use only, e.g.
+mtjawnny.com/cards/) uploaded alongside it under cards/webp/, same filename stem.
+--backfill-thumbnails catches PNGs that were synced before this existed.
+
 Download/upload core ported from ~/Projects/phase2-backfill/phase2_backfill.py
 (the one-time Phase 2 backfill) — same throttle, retry, and PNG-magic-check
 logic, resumable via the same "bucket + manifest are the truth" pattern.
@@ -31,7 +35,10 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from io import BytesIO
 from pathlib import Path
+
+from PIL import Image
 
 USER_AGENT = "MTJawnnyPipeline/1.0 (mtjawnny.com)"
 RAW_PATH = Path("data/raw/oracle-cards.jsonl.gz")
@@ -39,10 +46,12 @@ RAW_PATH = Path("data/raw/oracle-cards.jsonl.gz")
 RCLONE_REMOTE = os.environ.get("RCLONE_REMOTE", "r2:")
 BUCKET = f"{RCLONE_REMOTE}mtjawnny"
 IMAGE_REMOTE_DIR = f"{BUCKET}/cards/png"
+THUMB_REMOTE_DIR = f"{BUCKET}/cards/webp"
 MANIFEST_REMOTE = f"{BUCKET}/data/image-manifest.json"
 
 MANIFEST_LOCAL = Path("data/artifacts/image-manifest.json")
 BATCH_DIR = Path("data/artifacts/.image_sync_batch")
+BATCH_DIR_THUMB = Path("data/artifacts/.image_sync_batch_thumb")
 
 IMMUTABLE_HEADER = "cache-control=public, max-age=31536000, immutable"
 MUTABLE_HEADER = "cache-control=public, max-age=300"
@@ -56,6 +65,21 @@ MAX_RETRIES = 5
 LARGE_SYNC_THRESHOLD = 500
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+
+THUMB_WIDTH = 600
+WEBP_QUALITY = 82
+
+
+def make_thumbnail(png_bytes: bytes) -> bytes:
+    """Resize to THUMB_WIDTH wide (proportional height), encode as WebP."""
+    with Image.open(BytesIO(png_bytes)) as img:
+        img = img.convert("RGB")
+        ratio = THUMB_WIDTH / img.width
+        target_size = (THUMB_WIDTH, round(img.height * ratio))
+        img = img.resize(target_size, Image.LANCZOS)
+        out = BytesIO()
+        img.save(out, format="WEBP", quality=WEBP_QUALITY)
+        return out.getvalue()
 
 
 def halt(message: str) -> None:
@@ -165,8 +189,8 @@ def fetch_manifest() -> dict:
         halt(f"{MANIFEST_REMOTE} exists but is not valid JSON: {e}")
 
 
-def fetch_bucket_filenames() -> set:
-    result = subprocess.run(["rclone", "lsf", IMAGE_REMOTE_DIR], capture_output=True, text=True)
+def fetch_remote_filenames(remote_dir: str) -> set:
+    result = subprocess.run(["rclone", "lsf", remote_dir], capture_output=True, text=True)
     if result.returncode != 0:
         return set()
     return {line.strip() for line in result.stdout.splitlines() if line.strip()}
@@ -194,12 +218,14 @@ def diff_targets(current: dict, manifest: dict, bucket_files: set) -> tuple:
     return to_fetch, to_seed
 
 
-def download_one(filename: str, url: str, dest_dir: Path) -> tuple:
+def download_one(filename: str, url: str, dest_dir: Path, thumb_dir: Path) -> tuple:
     try:
         data = http_get(url)
         if not data.startswith(PNG_MAGIC):
             return filename, False, "not a PNG (bad magic bytes / truncated)"
         (dest_dir / filename).write_bytes(data)
+        thumb_name = filename[:-len(".png")] + ".webp"
+        (thumb_dir / thumb_name).write_bytes(make_thumbnail(data))
         return filename, True, None
     except Exception as e:
         return filename, False, str(e)
@@ -228,11 +254,14 @@ def do_sync(to_fetch: list, to_seed: list, manifest: dict) -> None:
         if BATCH_DIR.exists():
             shutil.rmtree(BATCH_DIR)
         BATCH_DIR.mkdir(parents=True, exist_ok=True)
+        if BATCH_DIR_THUMB.exists():
+            shutil.rmtree(BATCH_DIR_THUMB)
+        BATCH_DIR_THUMB.mkdir(parents=True, exist_ok=True)
 
         ok_items = []
         with ThreadPoolExecutor(max_workers=WORKERS) as pool:
             futures = {
-                pool.submit(download_one, filename, url, BATCH_DIR): (oid, filename, url)
+                pool.submit(download_one, filename, url, BATCH_DIR, BATCH_DIR_THUMB): (oid, filename, url)
                 for oid, filename, url in batch
             }
             for fut in as_completed(futures):
@@ -248,10 +277,15 @@ def do_sync(to_fetch: list, to_seed: list, manifest: dict) -> None:
                 ["copy", str(BATCH_DIR), IMAGE_REMOTE_DIR, "-M", "--metadata-set", IMMUTABLE_HEADER],
                 "batch image upload",
             )
+            rclone_run(
+                ["copy", str(BATCH_DIR_THUMB), THUMB_REMOTE_DIR, "-M", "--metadata-set", IMMUTABLE_HEADER],
+                "batch thumbnail upload",
+            )
             for oid, filename, url in ok_items:
                 synced_files.setdefault(oid, {})[filename] = url
 
         shutil.rmtree(BATCH_DIR, ignore_errors=True)
+        shutil.rmtree(BATCH_DIR_THUMB, ignore_errors=True)
         done_n = min(batch_start + BATCH_SIZE, total)
         elapsed = time.monotonic() - start
         rate = done_n / elapsed if elapsed > 0 else 0
@@ -271,6 +305,87 @@ def do_sync(to_fetch: list, to_seed: list, manifest: dict) -> None:
     print(f"synced {synced_count} file(s), rewrote {MANIFEST_REMOTE}")
 
 
+def oracle_id_of(png_filename: str) -> str:
+    stem = png_filename[:-len(".png")]
+    if stem.endswith("-front") or stem.endswith("-back"):
+        stem = stem.rsplit("-", 1)[0]
+    return stem
+
+
+def backfill_thumbnails(only_oracle_ids: set = None) -> None:
+    """Catch PNGs already in R2 (synced before thumbnails existed, or seeded without
+    a download) that don't yet have a matching WebP. Pulls the PNG back from R2
+    (not Scryfall — it's already canonical) rather than the bulk-data URL, so this
+    needs no bulk-data fetch and works standalone.
+
+    only_oracle_ids, if given, restricts the sweep to those oracle_ids instead of
+    the whole bucket — the bucket backs more than just mtjawnny.com's card pages
+    (e.g. the Magic Thesaurus corpus), and most of it has no thumbnail consumer."""
+    import shutil
+
+    png_files = fetch_remote_filenames(IMAGE_REMOTE_DIR)
+    print(f"R2 bucket: {len(png_files):,} PNGs under cards/png/")
+    if only_oracle_ids:
+        png_files = {f for f in png_files if oracle_id_of(f) in only_oracle_ids}
+        print(f"restricted to {len(only_oracle_ids):,} requested oracle_id(s): {len(png_files):,} matching PNG file(s)")
+
+    webp_files = fetch_remote_filenames(THUMB_REMOTE_DIR)
+    have_stems = {f[:-len(".webp")] for f in webp_files if f.endswith(".webp")}
+
+    missing = sorted(f for f in png_files if f.endswith(".png") and f[:-len(".png")] not in have_stems)
+    print(f"{len(missing):,} PNG(s) missing a WebP thumbnail")
+    if not missing:
+        print("nothing to backfill")
+        return
+
+    total = len(missing)
+    start = time.monotonic()
+
+    for batch_start in range(0, total, BATCH_SIZE):
+        batch = missing[batch_start:batch_start + BATCH_SIZE]
+
+        for d in (BATCH_DIR, BATCH_DIR_THUMB):
+            if d.exists():
+                shutil.rmtree(d)
+            d.mkdir(parents=True, exist_ok=True)
+
+        list_file = BATCH_DIR.parent / ".backfill_files.txt"
+        list_file.write_text("\n".join(batch))
+        rclone_run(
+            ["copy", IMAGE_REMOTE_DIR, str(BATCH_DIR), "--files-from", str(list_file)],
+            "backfill PNG download from R2",
+        )
+        list_file.unlink(missing_ok=True)
+
+        ok = 0
+        for filename in batch:
+            png_path = BATCH_DIR / filename
+            if not png_path.exists():
+                print(f"  MISSING after R2 copy: {filename}", file=sys.stderr)
+                continue
+            try:
+                thumb_name = filename[:-len(".png")] + ".webp"
+                (BATCH_DIR_THUMB / thumb_name).write_bytes(make_thumbnail(png_path.read_bytes()))
+                ok += 1
+            except Exception as e:
+                print(f"  FAILED thumbnail {filename}: {e}", file=sys.stderr)
+
+        if ok:
+            rclone_run(
+                ["copy", str(BATCH_DIR_THUMB), THUMB_REMOTE_DIR, "-M", "--metadata-set", IMMUTABLE_HEADER],
+                "backfill thumbnail upload",
+            )
+
+        shutil.rmtree(BATCH_DIR, ignore_errors=True)
+        shutil.rmtree(BATCH_DIR_THUMB, ignore_errors=True)
+        done_n = min(batch_start + BATCH_SIZE, total)
+        elapsed = time.monotonic() - start
+        rate = done_n / elapsed if elapsed > 0 else 0
+        print(f"  batch done: {done_n}/{total} backfilled, {rate:.1f} img/s")
+
+    print(f"backfill complete: {total:,} thumbnail(s) generated")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -280,7 +395,22 @@ def main() -> None:
         "--force", action="store_true",
         help=f"allow a real sync of >= {LARGE_SYNC_THRESHOLD} files without confirmation",
     )
+    parser.add_argument(
+        "--backfill-thumbnails", action="store_true",
+        help="generate WebP thumbnails for any PNG in R2 that doesn't have one yet, then exit "
+             "(no bulk-data fetch needed)",
+    )
+    parser.add_argument(
+        "--only-oracle-ids", default=None,
+        help="comma-separated oracle_ids to restrict --backfill-thumbnails to, instead of "
+             "sweeping the whole bucket",
+    )
     args = parser.parse_args()
+
+    if args.backfill_thumbnails:
+        only_ids = set(args.only_oracle_ids.split(",")) if args.only_oracle_ids else None
+        backfill_thumbnails(only_oracle_ids=only_ids)
+        return
 
     current = load_current_targets()
     print(f"current bulk: {len(current):,} kept cards with usable images")
@@ -288,7 +418,7 @@ def main() -> None:
     manifest = fetch_manifest()
     print(f"manifest: {len(manifest):,} oracle_ids tracked")
 
-    bucket_files = fetch_bucket_filenames()
+    bucket_files = fetch_remote_filenames(IMAGE_REMOTE_DIR)
     print(f"R2 bucket: {len(bucket_files):,} objects under cards/png/")
 
     to_fetch, to_seed = diff_targets(current, manifest, bucket_files)
