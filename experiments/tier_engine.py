@@ -56,6 +56,24 @@ tag-overlap computation ONLY (see run_turn_scoped_derivation(),
 build_turn_scoped_tag_index()) -- deliberately NOT fed into Tier 1/2's rank
 tag_score term this round (deferred, see KNOWN_LIMITATIONS).
 
+T3-BUILDOUT-PLAYBOOK.md Step 3 (DERIVED-TAG-LAYER-SPEC.md, "Lesson 2"):
+amendment 2's ORIGINAL mechanism above merged rule:turn-scoped straight into
+the anchor's Tagger tag set (card_tags_t3/idf_t3), which grows the anchor's
+own total-weight denominator in tier3_score() -- diluting every OTHER
+candidate's coverage score too, even ones that never mention a turn at all.
+Retired: rule:turn-scoped now lives in its own rule:-namespace-only index
+(same card_tags_t3/idf_t3 names, kept for call-site continuity with
+emit_viewer.py, but now containing ONLY rule:-tags, never merged with base
+Tagger tags) and Tier 3's score is the additive form Lesson 2 specifies:
+score = tagger_coverage + DERIVED_WEIGHT * derived_agreement, where
+tagger_coverage is the existing, completely untouched tier3_score(anchor_tags,
+candidate_tags, idf, ...) and derived_agreement is that same anchor-
+directional-coverage formula computed over the rule:-only index. Property:
+a candidate that shares no rule:-tag with the anchor gets derived_agreement
+== 0.0 and its score is EXACTLY its pre-turn-scoped tagger_coverage -- no
+dilution, ever. DERIVED_WEIGHT = 0.5, ratified by Captain 2026-07-17. See
+DERIVED_WEIGHT's own definition below for the ratification rationale.
+
 Standalone experiment: reads data/raw/oracle-cards.jsonl.gz and
 experiments/out/card-tags.json.gz (run invert_tags.py first). No R2 reads
 or writes, nothing wired into trim_merge/CI.
@@ -684,6 +702,40 @@ GRANT_MASS_WHERE_RE = re.compile(r",\s*where [a-zA-Z] is (.+)$")
 INHERITED_TAG_DISCOUNT = 0.5
 TIER3_COVERAGE_THRESHOLD = 0.15
 TAG_SCORE_WEIGHT = 3.0          # Amendment 1 (v2.1), tunable -- starting value per the change order
+# T3-BUILDOUT-PLAYBOOK.md Step 3 (DERIVED-TAG-LAYER-SPEC.md "Lesson 2"),
+# ratified by Captain 2026-07-17: Tier 3 score = tagger_coverage +
+# DERIVED_WEIGHT * derived_agreement. derived_agreement is a 0-1
+# anchor-directional coverage ratio (same convention as tagger_coverage,
+# via tier3_score()), so DERIVED_WEIGHT=0.5 lets a candidate that fully
+# shares the anchor's only rule:-tag (derived_agreement=1.0) alone clear
+# TIER3_COVERAGE_THRESHOLD=0.15 by a wide margin -- untagged cards become
+# T3-reachable through the derived term alone, per the spec -- while
+# staying below 1.0 so it can never outweigh genuine Tagger corroboration.
+DERIVED_WEIGHT = 0.5
+# Lesson 3 (DERIVED-TAG-LAYER-SPEC.md), ratified by Captain 2026-07-17,
+# same session as DERIVED_WEIGHT: a naive read of Lesson 2 lets ANY single
+# shared rule:-tag act as a full-strength (derived_agreement=1.0) sole
+# qualifier, indistinguishable from genuine rare-evidence agreement --
+# measured live, rule:turn-scoped (DF=731) alone flooded Grand Abolisher's
+# Tier 3 68->814 rows, 657 of them sharing NOTHING else with the anchor
+# (Legion Warboss, Vivi Ornitier, Cosmic Spider-Man -- unrelated abilities
+# that merely also happen to say "on your turn" somewhere). Root cause: a
+# derived tag shared by hundreds of cards is common evidence, not
+# identifying evidence -- the engine's own standing idiom elsewhere
+# (T2_RESCUE_CEILING) already says "evidence shared by more than ~172
+# cards doesn't stand alone." Ruling: apply the identical principle here,
+# as its own named constant (never a second 172 literal, same discipline
+# D2 already established for T2_RESCUE_CEILING). The derived term ALWAYS
+# contributes to rank/score, unconditionally (see compute_candidate_rows) --
+# this constant gates QUALIFICATION only, per derived_solo_qualifies():
+# a candidate whose tagger_coverage alone doesn't clear TIER3_COVERAGE_
+# THRESHOLD may still qualify via the derived term's contribution, but only
+# if at least one shared rule:-tag has corpus DF <= this ceiling. A
+# candidate that already qualifies via tagger_coverage is completely
+# unaffected either way -- nothing is ever excluded that qualified before,
+# this only closes the "one common tag alone" loophole. Not CLI-overridable
+# (same convention as T2_RESCUE_CEILING); printed in report headers.
+DERIVED_QUALIFY_DF_CEILING = 172
 REPORT_CAP = 10                 # Amendment 3 (v2.2): down from 40 -- matches the intended site UI default
 
 # Amendment 1 (v2.2) -- fact-distance penalties, applied only to Tier 1/2
@@ -3982,6 +4034,23 @@ def tier3_score(anchor_tags: list, candidate_tags: list, idf: dict, inherited_di
     return matched_weight / total_anchor_weight, matched
 
 
+def derived_solo_qualifies(matched_derived: list, df_derived: dict) -> bool:
+    """Lesson 3 (DERIVED-TAG-LAYER-SPEC.md), ratified 2026-07-17: the
+    derived term may be a candidate's SOLE Tier 3 qualifier (i.e. count
+    toward TIER3_COVERAGE_THRESHOLD when tagger_coverage alone doesn't
+    clear it) only when at least one of the shared rule:-tags in
+    `matched_derived` (tier3_score()'s own matched list, computed over the
+    rule:-namespace-only index) has corpus DF <= DERIVED_QUALIFY_DF_CEILING
+    -- common evidence corroborates an existing match but cannot, alone,
+    manufacture one. A candidate that already qualifies via tagger_coverage
+    is untouched by this either way; see compute_candidate_rows' and
+    _discovery_superset_exhaustive_qualifiers' call sites."""
+    return any(
+        df_derived.get(m["slug"], DERIVED_QUALIFY_DF_CEILING + 1) <= DERIVED_QUALIFY_DF_CEILING
+        for m in matched_derived
+    )
+
+
 def format_evidence_text(text: str, max_len: int = 180) -> str:
     text = text.replace("\n", " / ").replace("|", "\\|")
     if len(text) > max_len:
@@ -4099,27 +4168,36 @@ def run_turn_scoped_derivation(card_docs: dict, n_total_cards: int) -> tuple:
     return matches, idf
 
 
-def build_turn_scoped_tag_index(card_docs: dict, card_tags: dict, base_idf: dict,
-                                 turn_scoped_matches: dict, turn_scoped_idf: float) -> tuple:
-    """Tier-3-ONLY extended tag index: base card_tags/idf plus a synthetic
-    rule:turn-scoped entry on every matching card (including cards the
-    Tagger never tagged at all). base_idf's existing slugs are copied
-    UNCHANGED -- only the new slug's idf is added -- so this never perturbs
-    any other tag's weight or drifts Tier 3 scores for anchors that don't
-    touch turn-window text at all. Deliberately NOT merged into the base
-    card_tags/idf used for Tier 1/2 rank or the v2.6 amendment 1
-    corroboration check (see TIER-ENGINE-V2.6-CHANGE-ORDER.md amendment 2:
-    "Do NOT feed it into Tier 2's tag_score term this round")."""
-    card_tags_t3 = {}
-    for oracle_id in card_docs:
-        entries = list(card_tags.get(oracle_id, []))
-        if oracle_id in turn_scoped_matches:
-            entries = entries + [{"slug": TURN_SCOPED_TAG_SLUG, "direct": True, "weight": "engine"}]
-        if entries:
-            card_tags_t3[oracle_id] = entries
-    idf_t3 = dict(base_idf)
-    idf_t3[TURN_SCOPED_TAG_SLUG] = turn_scoped_idf
-    return card_tags_t3, idf_t3
+def build_turn_scoped_tag_index(turn_scoped_matches: dict, turn_scoped_idf: float) -> tuple:
+    """T3-BUILDOUT-PLAYBOOK.md Step 3 migration: this used to MERGE a
+    synthetic rule:turn-scoped entry into a copy of the base Tagger
+    card_tags/idf (see git history for the pre-Step-3 body) -- that merge
+    grew the anchor's own total-weight denominator in tier3_score(),
+    diluting every OTHER candidate's coverage score even when the candidate
+    shares nothing turn-related with the anchor at all. Retired per Lesson 2
+    of DERIVED-TAG-LAYER-SPEC.md: this now returns a rule:-NAMESPACE-ONLY
+    index -- only cards matching the turn-scoped regex get an entry, and
+    that entry is the ONLY thing in it (no Tagger tags at all). The
+    card_tags_t3/idf_t3 names are kept (not renamed to card_tags_derived/
+    idf_derived) purely for call-site continuity with emit_viewer.py and
+    tier_engine.py's own gate plumbing -- every caller feeds this pair into
+    tier3_score() ALONGSIDE (never merged with) the base card_tags/idf,
+    computing derived_agreement as a separate additive term. Step 5 grows
+    this SAME dict with more rule:-tag members as new derivations land; nothing
+    else about this function's shape changes when that happens.
+
+    Also returns df_t3 (slug -> corpus DF), Lesson 3's own addition: the
+    raw DF (not idf) each shared rule:-tag was measured at, needed by
+    derived_solo_qualifies() to enforce DERIVED_QUALIFY_DF_CEILING. Kept as
+    a genuine DF count (len(turn_scoped_matches)), not back-derived from
+    idf's log, so there's no floating-point round-trip risk."""
+    card_tags_t3 = {
+        oracle_id: [{"slug": TURN_SCOPED_TAG_SLUG, "direct": True, "weight": "engine"}]
+        for oracle_id in turn_scoped_matches
+    }
+    idf_t3 = {TURN_SCOPED_TAG_SLUG: turn_scoped_idf}
+    df_t3 = {TURN_SCOPED_TAG_SLUG: len(turn_scoped_matches)}
+    return card_tags_t3, idf_t3, df_t3
 
 
 # ---------------------------------------------------------------------------
@@ -5457,9 +5535,10 @@ def check_defense_grid_gate(displayed_tier3: list, full_tier3: list) -> dict:
         f"  [INFO] {DEFENSE_GRID!r} at full-list position {pos}. score={dg_row['_score']:.4f} vs "
         f"#{len(displayed_tier3)} cutoff score={cutoff_row['_score']:.4f} (gap={score_gap:.4f}); "
         f"{tie_cluster_size} row(s) tied at score={plateau_score:.4f} just below the cutoff, a plateau "
-        f"Defense Grid sits behind. Turn-scoped mechanism verified working (score rose from 0.17 "
-        f"pre-amendment 2); remaining gap is genuine tag-overlap distance from an unrelated cluster, "
-        f"not tuned further per ruling."
+        f"Defense Grid sits behind. Turn-scoped mechanism verified working (originally measured score "
+        f"rose from 0.17 pre-amendment 2 to ~0.24 under the now-retired merged-index mechanism; "
+        f"Step 3's additive term recomputes this fresh, see score above); remaining gap is genuine "
+        f"tag-overlap distance from an unrelated cluster, not tuned further per ruling."
     )
     print(f"  Boundary rows (#{len(displayed_tier3)}-{min(pos, len(displayed_tier3) + 20)}):")
     for i, row in enumerate(boundary_rows, start=len(displayed_tier3)):
@@ -5467,7 +5546,10 @@ def check_defense_grid_gate(displayed_tier3: list, full_tier3: list) -> dict:
     if pos > len(displayed_tier3) + 20:
         print(f"    ... ({pos - len(displayed_tier3) - 20} more rows omitted ...)")
         print(f"    #{pos} {dg_row['name']}: score={dg_row['_score']:.4f}, evidence={dg_row['evidence']}")
-    print(f"  {DEFENSE_GRID} full tag breakdown (anchor Grand Abolisher's own weight includes rule:turn-scoped):")
+    print(
+        f"  {DEFENSE_GRID} full tag breakdown (tagger-coverage entries plus rule:turn-scoped's "
+        f"DERIVED_WEIGHT-scaled contribution, merged for display -- see compute_candidate_rows):"
+    )
     for m in dg_row["_matched_t3"]:
         print(
             f"    {m['slug']}: idf={m['idf']:.2f}, anchor_direct={m['anchor_direct']}, "
@@ -5485,12 +5567,25 @@ def check_t3_turn_scoped_movement(anchor_names: list, built: dict) -> bool:
     in the displayed top-N (vs the report as it stood on disk before this
     run) must be traceable to rule:turn-scoped -- either the row carries the
     tag itself (shown in its own evidence/shared-tag column), or at least
-    one OTHER row in this anchor's Tier 3 does (the anchor-directional
-    coverage formula's denominator grows when the anchor itself gains a new
-    tag, uniformly diluting every candidate's score -- see
-    build_turn_scoped_tag_index -- so a non-carrier's position can still
-    shift purely from a carrier's promotion). Unexplained movement, with
-    neither condition true, STOPs."""
+    one OTHER row in this anchor's Tier 3 does. Unexplained movement, with
+    neither condition true, STOPs.
+
+    T3-BUILDOUT-PLAYBOOK.md Step 3 note: before the additive-term migration,
+    a carrier's presence anywhere in the anchor's Tier 3 pool explained
+    non-carrier movement via DILUTION -- the merged card_tags_t3 index grew
+    the anchor's own tier3_score() denominator whenever it gained the
+    turn-scoped tag, uniformly shrinking every OTHER candidate's coverage
+    score, so a non-carrier's rank could shift purely from a carrier
+    entering/leaving. Post-migration that specific mechanism is GONE by
+    construction (tag_score, the base Tagger-only term, never touches the
+    rule:-only index at all) -- but a carrier's own promotion (gaining
+    DERIVED_WEIGHT * derived_agreement on top of an unchanged tagger_
+    coverage) can still reshuffle the DISPLAYED top-N's cutoff and bump a
+    non-carrier out of the capped window even though that non-carrier's own
+    score didn't move -- same observable "carrier present -> non-carrier
+    movement explained" shape, different underlying cause. The check below
+    is unchanged; only this docstring and the printed notes were updated to
+    stop describing dilution that no longer happens."""
     print("\nTier 3 turn-scoped movement gate (v2.6 amendment 2, gate 5):")
     all_ok = True
     for anchor_name in anchor_names:
@@ -5542,7 +5637,8 @@ def check_t3_turn_scoped_movement(anchor_names: list, built: dict) -> bool:
                 note = f", promoted OUT of Tier 3 to a better tier this run (Phase 3 rescue-zone band)"
             elif not own_tag and tag_carriers:
                 note = (
-                    f", explained by anchor-wide dilution from {len(tag_carriers)} turn-scoped carrier(s) "
+                    f", explained by the displayed-window cutoff reshuffling around "
+                    f"{len(tag_carriers)} turn-scoped carrier(s)' own score change "
                     f"({tag_carriers[:3]}{'...' if len(tag_carriers) > 3 else ''})"
                 )
             elif not own_tag and promoted_exits:
@@ -5956,7 +6052,7 @@ def render_table(rows: list, evidence_header: str, extra_column: str = None, ext
 
 def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: list, card_docs: dict,
                             card_tags: dict, card_tags_t3: dict, pool: set, ngram_df: dict, clause_df: dict, keyword_df: dict,
-                            paragraph_index: dict, idf: dict, idf_t3: dict, n_total_cards: int,
+                            paragraph_index: dict, idf: dict, idf_t3: dict, df_t3: dict, n_total_cards: int,
                             args: argparse.Namespace) -> tuple:
     """Builds tiers[0..3], each a list of rows, SORTED (rank/score/name) but
     NOT yet capped -- callers decide capping and file-splitting. Also
@@ -5973,16 +6069,35 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
 
         # Tag overlap score computed for EVERY candidate regardless of tier
         # (Amendment 1, v2.1): it both ranks Tier 1/2 and qualifies Tier 3.
-        # v2.6 amendment 2: a SEPARATE, extended computation (tag_score_t3,
-        # via card_tags_t3/idf_t3 which add rule:turn-scoped) feeds ONLY
-        # Tier 3 qualification/scoring below -- the base tag_score here
-        # (Tagger tags only) still feeds Tier 1/2 rank AND the amendment 1
-        # corroboration check, unchanged, per the change order's explicit
-        # "do NOT feed it into Tier 2's tag_score term this round."
+        # tag_score (Tagger tags only, via base card_tags/idf) still feeds
+        # Tier 1/2 rank AND the amendment 1 corroboration check, unchanged,
+        # per the v2.6 change order's explicit "do NOT feed it into Tier 2's
+        # tag_score term."
+        #
+        # T3-BUILDOUT-PLAYBOOK.md Step 3 (DERIVED-TAG-LAYER-SPEC.md "Lesson
+        # 2", ratified 2026-07-17): Tier 3's own score is now the ADDITIVE
+        # form tagger_coverage + DERIVED_WEIGHT * derived_agreement, not a
+        # single fused coverage computation. tag_score above IS
+        # tagger_coverage (anchor-directional, Tagger-only, completely
+        # untouched by anything below). derived_agreement is that same
+        # tier3_score() formula computed over card_tags_t3/idf_t3 -- a
+        # rule:-namespace-ONLY index (today just rule:turn-scoped; Step 5
+        # grows it) -- so it's zero for any anchor/candidate pair that
+        # shares no rule:-tag, and never dilutes tag_score's own
+        # denominator the way merging the two indexes together used to
+        # (see build_turn_scoped_tag_index's docstring). matched_t3 is the
+        # display-evidence union of both signals, with the derived side's
+        # weights scaled by DERIVED_WEIGHT so what's shown matches what
+        # actually fed tag_score_t3 below.
         candidate_tags = card_tags.get(oracle_id, [])
         tag_score, matched = tier3_score(anchor_tags, candidate_tags, idf, args.inherited_discount)
         candidate_tags_t3 = card_tags_t3.get(oracle_id, [])
-        tag_score_t3, matched_t3 = tier3_score(anchor_tags_t3, candidate_tags_t3, idf_t3, args.inherited_discount)
+        derived_agreement, matched_derived = tier3_score(anchor_tags_t3, candidate_tags_t3, idf_t3, args.inherited_discount)
+        tag_score_t3 = tag_score + args.derived_weight * derived_agreement
+        matched_t3 = sorted(
+            matched + [{**m, "weight": m["weight"] * args.derived_weight} for m in matched_derived],
+            key=lambda m: (-m["weight"], m["slug"]),
+        )
 
         if result is not None:
             tier = result["tier"]
@@ -6150,7 +6265,16 @@ def compute_candidate_rows(anchor_doc: dict, anchor_tags: list, anchor_tags_t3: 
             tiers[tier].append(row)
             continue
 
-        if tag_score_t3 >= args.tier3_threshold:
+        # Lesson 3 (ratified 2026-07-17): tagger_coverage alone qualifying is
+        # untouched (as always); if it doesn't clear the threshold on its
+        # own, the derived term may only push the combined score over it
+        # when at least one shared rule:-tag is rare enough (DF <=
+        # DERIVED_QUALIFY_DF_CEILING) to be identifying rather than common
+        # evidence -- see derived_solo_qualifies()'s own docstring.
+        qualifies = tag_score >= args.tier3_threshold or (
+            tag_score_t3 >= args.tier3_threshold and derived_solo_qualifies(matched_derived, df_t3)
+        )
+        if qualifies:
             tiers[3].append({
                 "name": candidate_doc["name"],
                 "oracle_id": oracle_id,
@@ -6918,6 +7042,7 @@ def render_anchor_report(anchor_name: str, card_docs: dict, card_tags: dict, poo
         f"n-gram min length={args.ngram_min_len}, n-gram DF floor={args.ngram_df_floor}, "
         f"inherited-tag discount={args.inherited_discount}, Tier 3 coverage threshold="
         f"{args.tier3_threshold}, tag score weight={args.tag_score_weight}, "
+        f"derived weight={args.derived_weight}, derived-qualify DF ceiling={DERIVED_QUALIFY_DF_CEILING}, "
         f"CI penalty={args.ci_penalty}, MV penalty={args.mv_penalty}, "
         f"scope penalty={args.scope_penalty}, duration penalty={args.duration_penalty}, "
         f"exception penalty={args.exception_penalty}, polarity penalty={args.polarity_penalty}, "
@@ -7063,7 +7188,7 @@ def compute_anchor_full_tiers(anchor_name: str, ctx: dict) -> tuple:
     return compute_candidate_rows(
         anchor_doc, anchor_tags, anchor_tags_t3, ctx["card_docs"], ctx["card_tags"], ctx["card_tags_t3"], pool,
         ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], ctx["idf"], ctx["idf_t3"],
-        ctx["n_total_cards"], args,
+        ctx["df_t3"], ctx["n_total_cards"], args,
     )
 
 
@@ -7627,19 +7752,21 @@ DISCOVERY_SUPERSET_FACE_ANCHORS = [
 ]
 
 
-def _discovery_superset_exhaustive_qualifiers(anchor_doc, anchor_tags_t3, card_docs, card_tags_t3, idf_t3,
-                                               ngram_df, clause_df, keyword_df, paragraph_index, args,
-                                               check_tier3=True):
+def _discovery_superset_exhaustive_qualifiers(anchor_doc, anchor_tags, anchor_tags_t3, card_docs, card_tags,
+                                               card_tags_t3, idf, idf_t3, df_t3, ngram_df, clause_df, keyword_df,
+                                               paragraph_index, args, check_tier3=True):
     """Shared exhaustive-qualification core for check_gn_discovery_superset_
     gate below (whole-card AND face-scoped call sites): every OTHER card in
     `card_docs` is checked directly against assign_tier() (Tier 0-2) and,
-    when check_tier3, tier3_score() (Tier 3, tag-overlap only -- face mode
-    passes check_tier3=False since a face-scoped anchor carries no tags of
-    its own, so tier3_score would always return 0, exactly the same
-    Tier-0-2-only scope export_face_anchor() already gives face mode). No
-    pool involved -- this IS the "exhaustive" side of the superset check,
-    gather_candidate_pool()'s own pool is compared against this set by the
-    caller."""
+    when check_tier3, the SAME additive Tier 3 formula compute_candidate_
+    rows() uses (T3-BUILDOUT-PLAYBOOK.md Step 3: tag_score + DERIVED_WEIGHT
+    * derived_agreement, gated by Lesson 3's derived_solo_qualifies() when
+    tag_score alone doesn't clear the threshold) -- face mode passes
+    check_tier3=False since a face-scoped anchor carries no tags of its
+    own, so both terms would always be 0, exactly the same Tier-0-2-only
+    scope export_face_anchor() already gives face mode. No pool involved --
+    this IS the "exhaustive" side of the superset check, gather_candidate_
+    pool()'s own pool is compared against this set by the caller."""
     anchor_id = anchor_doc["oracle_id"]
     qualifying = set()
     for oid, candidate_doc in card_docs.items():
@@ -7650,9 +7777,15 @@ def _discovery_superset_exhaustive_qualifiers(anchor_doc, anchor_tags_t3, card_d
             qualifying.add(oid)
             continue
         if check_tier3:
+            candidate_tags = card_tags.get(oid, [])
+            tag_score, _matched = tier3_score(anchor_tags, candidate_tags, idf, args.inherited_discount)
             candidate_tags_t3 = card_tags_t3.get(oid, [])
-            tag_score_t3, _matched = tier3_score(anchor_tags_t3, candidate_tags_t3, idf_t3, args.inherited_discount)
-            if tag_score_t3 >= args.tier3_threshold:
+            derived_agreement, matched_derived = tier3_score(anchor_tags_t3, candidate_tags_t3, idf_t3, args.inherited_discount)
+            combined_score = tag_score + args.derived_weight * derived_agreement
+            qualifies = tag_score >= args.tier3_threshold or (
+                combined_score >= args.tier3_threshold and derived_solo_qualifies(matched_derived, df_t3)
+            )
+            if qualifies:
                 qualifying.add(oid)
     return qualifying
 
@@ -7718,9 +7851,9 @@ def check_gn_discovery_superset_gate(ctx: dict) -> bool:
             pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_id})
 
         qualifying = _discovery_superset_exhaustive_qualifiers(
-            anchor_doc, anchor_tags_t3, card_docs, ctx["card_tags_t3"], ctx["idf_t3"],
-            ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args,
-            check_tier3=True,
+            anchor_doc, anchor_tags, anchor_tags_t3, card_docs, ctx["card_tags"], ctx["card_tags_t3"],
+            ctx["idf"], ctx["idf_t3"], ctx["df_t3"], ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"],
+            ctx["paragraph_index"], args, check_tier3=True,
         )
 
         missing = qualifying - pool
@@ -7752,7 +7885,7 @@ def check_gn_discovery_superset_gate(ctx: dict) -> bool:
         pool -= set(face_ctx.face_meta[face_key]["all_sibling_keys"])
 
         qualifying = _discovery_superset_exhaustive_qualifiers(
-            anchor_doc, [], face_ctx.face_card_docs, {}, {},
+            anchor_doc, [], [], face_ctx.face_card_docs, {}, {}, {}, {}, {},
             face_ctx.face_ngram_df, face_ctx.face_clause_df, face_ctx.face_keyword_df,
             face_ctx.face_paragraph_index, args, check_tier3=False,
         )
@@ -7774,7 +7907,7 @@ def check_gn_discovery_superset_gate(ctx: dict) -> bool:
 
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
                     clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
-                    granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+                    granted_keyword_index, turn_scoped_matches, idf, idf_t3, df_t3, n_total_cards, args,
                     vanilla_creature_index) -> dict:
     return dict(
         cards=cards, card_docs=card_docs, name_index=name_index, card_tags=card_tags,
@@ -7783,7 +7916,7 @@ def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragr
         keyword_index=keyword_index, keyword_df=keyword_df, mana_index=mana_index,
         granted_keyword_index=granted_keyword_index,
         turn_scoped_matches=turn_scoped_matches,
-        idf=idf, idf_t3=idf_t3, n_total_cards=n_total_cards, args=args,
+        idf=idf, idf_t3=idf_t3, df_t3=df_t3, n_total_cards=n_total_cards, args=args,
         vanilla_creature_index=vanilla_creature_index,
     )
 
@@ -7804,6 +7937,7 @@ def main() -> None:
     parser.add_argument("--inherited-discount", type=float, default=INHERITED_TAG_DISCOUNT)
     parser.add_argument("--tier3-threshold", type=float, default=TIER3_COVERAGE_THRESHOLD)
     parser.add_argument("--tag-score-weight", type=float, default=TAG_SCORE_WEIGHT)
+    parser.add_argument("--derived-weight", type=float, default=DERIVED_WEIGHT)
     parser.add_argument("--ci-penalty", type=float, default=CI_PENALTY)
     parser.add_argument("--mv-penalty", type=float, default=MV_PENALTY)
     parser.add_argument("--scope-penalty", type=float, default=SCOPE_PENALTY)
@@ -7881,7 +8015,7 @@ def main() -> None:
 
     # ---- v2.6 amendment 2: derive rule:turn-scoped BEFORE any Tier 3 scoring ----
     turn_scoped_matches, turn_scoped_idf = run_turn_scoped_derivation(card_docs, n_total_cards)
-    card_tags_t3, idf_t3 = build_turn_scoped_tag_index(card_docs, card_tags, idf, turn_scoped_matches, turn_scoped_idf)
+    card_tags_t3, idf_t3, df_t3 = build_turn_scoped_tag_index(turn_scoped_matches, turn_scoped_idf)
 
     # ---- Gate 1: v2 self-check (frozen tier-assignment calibration) ----
     self_check_passed, self_check_info = run_self_check(cards, card_docs, name_index, ngram_df, clause_df, keyword_df, paragraph_index, args)
@@ -7916,7 +8050,7 @@ def main() -> None:
             pool = pool | (set(turn_scoped_matches) - {anchor_card["oracle_id"]})
         full_tiers, disqualified = compute_candidate_rows(
             anchor_doc, anchor_tags, anchor_tags_t3, card_docs, card_tags, card_tags_t3, pool,
-            ngram_df, clause_df, keyword_df, paragraph_index, idf, idf_t3, n_total_cards, args,
+            ngram_df, clause_df, keyword_df, paragraph_index, idf, idf_t3, df_t3, n_total_cards, args,
         )
         report_body, counts, displayed_tiers, full_list_files = render_anchor_report(
             anchor_name, card_docs, card_tags, len(pool), full_tiers, args.report_cap, args,
@@ -8123,7 +8257,7 @@ def main() -> None:
     gate_ctx = build_gate_ctx(
         cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
         clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
-        granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
+        granted_keyword_index, turn_scoped_matches, idf, idf_t3, df_t3, n_total_cards, args,
         vanilla_creature_index,
     )
     ga_passed = check_ga_boros_charm_gate(gate_ctx)

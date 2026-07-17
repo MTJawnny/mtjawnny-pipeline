@@ -87,6 +87,7 @@ def build_score_args() -> argparse.Namespace:
         clause_df_floor=te.CLAUSE_DF_FLOOR, ngram_min_len=te.NGRAM_MIN_LEN,
         ngram_df_floor=te.NGRAM_DF_FLOOR, inherited_discount=te.INHERITED_TAG_DISCOUNT,
         tier3_threshold=te.TIER3_COVERAGE_THRESHOLD, tag_score_weight=te.TAG_SCORE_WEIGHT,
+        derived_weight=te.DERIVED_WEIGHT,
         ci_penalty=te.CI_PENALTY, mv_penalty=te.MV_PENALTY, scope_penalty=te.SCOPE_PENALTY,
         duration_penalty=te.DURATION_PENALTY, exception_penalty=te.EXCEPTION_PENALTY,
         polarity_penalty=te.POLARITY_PENALTY, condition_penalty=te.CONDITION_PENALTY,
@@ -326,7 +327,8 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
         pool = pool | (set(ctx.turn_scoped_matches) - {oracle_id})
     full_tiers, _disqualified = te.compute_candidate_rows(
         anchor_doc, anchor_tags, anchor_tags_t3, ctx.card_docs, ctx.card_tags, ctx.card_tags_t3, pool,
-        ctx.ngram_df, ctx.clause_df, ctx.keyword_df, ctx.paragraph_index, ctx.idf, ctx.idf_t3, ctx.n_total_cards, ctx.args,
+        ctx.ngram_df, ctx.clause_df, ctx.keyword_df, ctx.paragraph_index, ctx.idf, ctx.idf_t3, ctx.df_t3,
+        ctx.n_total_cards, ctx.args,
     )
     elapsed = time.perf_counter() - start
 
@@ -687,7 +689,7 @@ def export_face_anchor(combined_name: str, oracle_id: str, face_index: int,
     full_tiers, _disqualified = te.compute_candidate_rows(
         anchor_doc, [], [], face_ctx.face_card_docs, {}, {}, pool,
         face_ctx.face_ngram_df, face_ctx.face_clause_df, face_ctx.face_keyword_df, face_ctx.face_paragraph_index,
-        {}, {}, len(face_ctx.face_card_docs), ctx.args,
+        {}, {}, {}, len(face_ctx.face_card_docs), ctx.args,
     )
     elapsed = time.perf_counter() - start
 
@@ -831,11 +833,11 @@ def load_export_context(cards_path: Path, card_tags_path: Path, cards_sqlite_pat
     idf, _tag_card_count, _n_tagged = te.compute_tag_stats(card_tags)
 
     turn_scoped_matches, turn_scoped_idf = te.run_turn_scoped_derivation(card_docs, n_total_cards)
-    card_tags_t3, idf_t3 = te.build_turn_scoped_tag_index(card_docs, card_tags, idf, turn_scoped_matches, turn_scoped_idf)
+    card_tags_t3, idf_t3, df_t3 = te.build_turn_scoped_tag_index(turn_scoped_matches, turn_scoped_idf)
 
     return SimpleNamespace(
         conn=conn, cards=cards, card_docs=card_docs, card_tags=card_tags, card_tags_t3=card_tags_t3,
-        idf=idf, idf_t3=idf_t3, tag_index=tag_index, keyword_index=keyword_index, keyword_df=keyword_df,
+        idf=idf, idf_t3=idf_t3, df_t3=df_t3, tag_index=tag_index, keyword_index=keyword_index, keyword_df=keyword_df,
         mana_index=mana_index, granted_keyword_index=granted_keyword_index,
         vanilla_creature_index=vanilla_creature_index,
         turn_scoped_matches=turn_scoped_matches, paragraph_index=paragraph_index, clause_index=clause_index,
