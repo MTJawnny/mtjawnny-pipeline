@@ -1213,10 +1213,34 @@ def self_name_candidates(name: str) -> set:
     return candidates
 
 
-def normalize_self_references(text: str, candidates: set) -> str:
+def normalize_self_references(text: str, candidates: set, keywords: list = None) -> str:
+    """N2 (2026-07-16, TIER-ENGINE-V3-PROPOSAL.md): when the card's own name
+    equals one of its keyword-action names (Regenerate, Suspect, Mill,
+    Manifest...), a blanket substitution eats the keyword verb itself --
+    the card Regenerate's "Regenerate target creature." became "~ target
+    creature.", unmatchable against every other card's genuine "regenerate
+    target creature." text (N1's own fix). Skip substitution for a specific
+    occurrence only when it's BOTH (a) one of the card's own keywords and
+    (b) in verb position -- sentence-initial, immediately followed by
+    "target" -- the same corpus-verified signal N1 uses to tell a keyword
+    ACTION sentence apart from a bare keyword-name mention. Narrow by
+    construction: a self-name mention used as a noun/subject elsewhere in
+    the text (e.g. "Whenever ~ deals combat damage...") is untouched by
+    this carve-out and still substitutes normally."""
+    lowered_keywords = {k.lower() for k in (keywords or ())}
     for candidate in sorted(candidates, key=len, reverse=True):
         pattern = r"\b" + re.escape(candidate) + r"\b"
-        text = re.sub(pattern, SELF_TOKEN, text)
+        is_keyword_action_name = candidate.lower() in lowered_keywords
+
+        def _sub(m, _text=text, _is_action=is_keyword_action_name):
+            if _is_action:
+                start = m.start()
+                sentence_initial = start == 0 or bool(re.search(r"[.\n]\s*$", _text[:start]))
+                if sentence_initial and re.match(r"target\b", _text[m.end():].lstrip()):
+                    return m.group(0)
+            return SELF_TOKEN
+
+        text = re.sub(pattern, _sub, text)
     return text
 
 
@@ -1410,11 +1434,27 @@ def is_keyword_only_paragraph(normalized_paragraph: str, keywords: list) -> bool
             return True
         if not frag.startswith(kw + " "):
             return False
+        rest = frag[len(kw):].lstrip()
         # An em dash right after the keyword name means this is an
         # ability-word idiom introducing its own unique sentence, not a
         # bare "<keyword> <param>" line -- see this function's own
         # docstring (Fable 5's audit, Finding 2).
-        return not frag[len(kw):].lstrip().startswith("—")
+        if rest.startswith("—"):
+            return False
+        # N1 (2026-07-16, TIER-ENGINE-V3-PROPOSAL.md): a keyword-name-
+        # leading fragment continuing with a literal "target" is a keyword
+        # ACTION used as a verb with an object (Regenerate target
+        # creature., Suspect target creature., Goad/Detain/Heist/Double
+        # target ...), not a bare "<keyword> <param>" ability line -- no
+        # legitimate keyword-ability parameter is ever spelled "target"
+        # (params are costs/types/qualities: Enchant creature, Ward {2},
+        # Protection from white, Kicker {1}{U}), so this is corpus-safe: a
+        # full corpus scan found 48 such fragments across 7 keywords
+        # (goad, regenerate, double, detain, heist, suspect, airbend),
+        # every one a genuine action sentence, zero false positives.
+        # Corrective only, like the em-dash check above: can only keep a
+        # paragraph that a real keyword-only line never actually claimed.
+        return re.match(r"target\b", rest) is None
 
     if all(
         any(_fragment_matches_bare_keyword(frag, kw) for kw in lowered_keywords)
@@ -1697,7 +1737,7 @@ def build_card_doc(card: dict, enable_v29_mechanisms: bool = True, keyword_df: d
     faces = []
     keyword_instances = []  # v2.9 Mechanism 1 -- flat across faces, card-level for kinship
     for raw_face in get_raw_faces(card):
-        substituted = normalize_self_references(raw_face["oracle_text"], candidates)
+        substituted = normalize_self_references(raw_face["oracle_text"], candidates, keywords)
         raw_paragraphs = [p for p in substituted.split("\n") if p.strip()]
 
         all_paragraphs = []        # keyword lines INCLUDED -- Tier 0 only
@@ -2200,7 +2240,16 @@ def gather_candidate_pool(anchor_doc: dict, anchor_tags: list, paragraph_index: 
                 pool.update(clause_index.get(c, ()))
         for tokens in face["paragraph_tokens"]:
             for ng in ngrams_for_tokens(tokens, args.ngram_min_len):
-                if ngram_df.get(ng, 0) <= args.ngram_df_floor:
+                # D2 (2026-07-16): seeded at T2_RESCUE_CEILING, not
+                # args.ngram_df_floor -- Phase 3 raised T2's qualification
+                # ceiling to T2_RESCUE_CEILING but this seeding comparison
+                # was never updated to match, so any pair whose only shared
+                # evidence sits in (ngram_df_floor, T2_RESCUE_CEILING] was
+                # never discovered (DISCOVERY-RECALL-AUDIT.md Finding 1).
+                # Keyword kinship's own floor below is intentionally
+                # unchanged -- its qualification gate is still
+                # args.ngram_df_floor, so its seed must match that, not this.
+                if ngram_df.get(ng, 0) <= T2_RESCUE_CEILING:
                     pool.update(ngram_index.get(ng, ()))
     for entry in anchor_tags:
         pool.update(tag_index.get(entry["slug"], ()))
@@ -7564,6 +7613,165 @@ def check_gm_vanilla_creature_gate(ctx: dict) -> bool:
     return ok
 
 
+# D1 (2026-07-16, TIER-ENGINE-V3-PROPOSAL.md / DISCOVERY-RECALL-AUDIT.md):
+# fixed panel for the discovery superset gate below, plus a seed for its 3
+# rotating anchors -- same "reproducible but not hand-picked every time"
+# discipline as check_stability_gate's own anchor sampling.
+DISCOVERY_SUPERSET_FIXED_PANEL = [
+    "Swiftfoot Boots", "Dark Ritual", "Grizzly Bears", "Grand Abolisher", "Helm of Kaldra", "Sol Ring",
+]
+DISCOVERY_SUPERSET_GATE_SEED = 20260716
+DISCOVERY_SUPERSET_FACE_ANCHORS = [
+    ("Bonecrusher Giant // Stomp", 1),               # Stomp, face1
+    ("Delver of Secrets // Insectile Aberration", 0),  # Delver of Secrets, face0
+]
+
+
+def _discovery_superset_exhaustive_qualifiers(anchor_doc, anchor_tags_t3, card_docs, card_tags_t3, idf_t3,
+                                               ngram_df, clause_df, keyword_df, paragraph_index, args,
+                                               check_tier3=True):
+    """Shared exhaustive-qualification core for check_gn_discovery_superset_
+    gate below (whole-card AND face-scoped call sites): every OTHER card in
+    `card_docs` is checked directly against assign_tier() (Tier 0-2) and,
+    when check_tier3, tier3_score() (Tier 3, tag-overlap only -- face mode
+    passes check_tier3=False since a face-scoped anchor carries no tags of
+    its own, so tier3_score would always return 0, exactly the same
+    Tier-0-2-only scope export_face_anchor() already gives face mode). No
+    pool involved -- this IS the "exhaustive" side of the superset check,
+    gather_candidate_pool()'s own pool is compared against this set by the
+    caller."""
+    anchor_id = anchor_doc["oracle_id"]
+    qualifying = set()
+    for oid, candidate_doc in card_docs.items():
+        if oid == anchor_id:
+            continue
+        result = assign_tier(anchor_doc, candidate_doc, ngram_df, clause_df, keyword_df, paragraph_index, args)
+        if result is not None:
+            qualifying.add(oid)
+            continue
+        if check_tier3:
+            candidate_tags_t3 = card_tags_t3.get(oid, [])
+            tag_score_t3, _matched = tier3_score(anchor_tags_t3, candidate_tags_t3, idf_t3, args.inherited_discount)
+            if tag_score_t3 >= args.tier3_threshold:
+                qualifying.add(oid)
+    return qualifying
+
+
+def check_gn_discovery_superset_gate(ctx: dict) -> bool:
+    """G-N, discovery superset invariant (D1, 2026-07-16): productizes
+    DISCOVERY-RECALL-AUDIT.md's one-off harness into a permanent gate.
+    Standing rule: for every qualification path, gather_candidate_pool()'s
+    pool must be a provable SUPERSET of every card assign_tier()/
+    tier3_score() would independently qualify against the anchor when
+    checked exhaustively (no pool). This is the class-level fix for a gap
+    that has now recurred four times (mana, keyword_grant, vanilla_
+    creature, and D2's n-gram seeding floor) -- any future mechanism whose
+    seeding index has a gap fails HERE, at merge time, instead of being
+    found by a one-off audit months later.
+
+    Fixed 6-card panel + 3 seeded-random rotating anchors (whole-card,
+    Tiers 0-3), plus 2 fixed face anchors (Stomp/Bonecrusher Giant face1,
+    Delver of Secrets face0 -- Tiers 0-2 only, matching export_face_anchor
+    ()'s own scope: a face-scoped anchor carries no tags, so Tier 3 can
+    never qualify in face mode by construction). Uses `ctx["card_docs"]`
+    (and, for face mode, `ctx["cards"]`/`ctx["keyword_df"]`) exactly as
+    built by this run's own main() -- the granted_keyword_facts post-
+    processing pass is therefore threaded through for free, closing the
+    exact trap DISCOVERY-RECALL-AUDIT.md's own harness self-caught (its
+    first exhaustive run omitted that pass and silently under-reported the
+    keyword_grant dimension until caught and corrected).
+
+    Face-scoped context reuses emit_viewer.build_face_scoped_context() via
+    a function-local import (Captain's ruling, 2026-07-16) rather than
+    duplicating FACE_SPLIT_LAYOUTS/face-splitting logic here a second time
+    -- tier_engine.py's gated report path stays unaware of viewer-export
+    specifics at MODULE scope (emit_viewer.py's own stated design), this
+    is the one gate-local exception, scoped to a single function body."""
+    print("\nG-N Discovery superset gate (D1): gather_candidate_pool() must be a superset "
+          "of exhaustive assign_tier()/tier3_score() qualification, for every anchor")
+    ok = True
+    args = ctx["args"]
+    cards = ctx["cards"]
+    card_docs = ctx["card_docs"]
+    name_index = ctx["name_index"]
+
+    all_names = sorted({c["name"] for c in cards.values()} - set(DISCOVERY_SUPERSET_FIXED_PANEL))
+    rng = random.Random(DISCOVERY_SUPERSET_GATE_SEED)
+    rotating = rng.sample(all_names, 3)
+    panel = DISCOVERY_SUPERSET_FIXED_PANEL + rotating
+    print(f"  panel: {DISCOVERY_SUPERSET_FIXED_PANEL} + rotating {rotating} (seed={DISCOVERY_SUPERSET_GATE_SEED})")
+
+    for anchor_name in panel:
+        anchor_card = resolve_anchor(anchor_name, cards, name_index)
+        anchor_id = anchor_card["oracle_id"]
+        anchor_doc = card_docs[anchor_id]
+        anchor_tags = ctx["card_tags"].get(anchor_id, [])
+        anchor_tags_t3 = ctx["card_tags_t3"].get(anchor_id, [])
+
+        pool = gather_candidate_pool(
+            anchor_doc, anchor_tags, ctx["paragraph_index"], ctx["clause_index"], ctx["clause_df"],
+            ctx["ngram_index"], ctx["ngram_df"], ctx["tag_index"], ctx["keyword_index"], ctx["keyword_df"],
+            ctx["mana_index"], ctx["granted_keyword_index"], args,
+            vanilla_creature_index=ctx["vanilla_creature_index"],
+        )
+        if anchor_id in ctx["turn_scoped_matches"]:
+            pool = pool | (set(ctx["turn_scoped_matches"]) - {anchor_id})
+
+        qualifying = _discovery_superset_exhaustive_qualifiers(
+            anchor_doc, anchor_tags_t3, card_docs, ctx["card_tags_t3"], ctx["idf_t3"],
+            ctx["ngram_df"], ctx["clause_df"], ctx["keyword_df"], ctx["paragraph_index"], args,
+            check_tier3=True,
+        )
+
+        missing = qualifying - pool
+        if missing:
+            sample = sorted(card_docs[m]["name"] for m in missing)[:10]
+            print(f"  [STOP] {anchor_name!r}: {len(missing)} qualifying candidate(s) missing from the pool "
+                  f"(sample of {min(10, len(missing))}): {sample}")
+            ok = False
+        else:
+            print(f"  [PASS] {anchor_name!r}: pool ({len(pool):,}) is a superset of exhaustive "
+                  f"qualification ({len(qualifying):,})")
+
+    import emit_viewer as ev
+    from types import SimpleNamespace
+    face_scope_ctx = SimpleNamespace(cards=cards, card_docs=card_docs, args=args, keyword_df=ctx["keyword_df"])
+    face_ctx = ev.build_face_scoped_context(face_scope_ctx)
+
+    for combined_name, face_index in DISCOVERY_SUPERSET_FACE_ANCHORS:
+        anchor_card = resolve_anchor(combined_name, cards, name_index)
+        face_key = f'{anchor_card["oracle_id"]}::{face_index}'
+        anchor_doc = face_ctx.face_card_docs[face_key]
+
+        pool = gather_candidate_pool(
+            anchor_doc, [], face_ctx.face_paragraph_index, face_ctx.face_clause_index, face_ctx.face_clause_df,
+            face_ctx.face_ngram_index, face_ctx.face_ngram_df, {}, face_ctx.face_keyword_index,
+            face_ctx.face_keyword_df, face_ctx.face_mana_index, face_ctx.face_granted_keyword_index, args,
+            vanilla_creature_index=face_ctx.face_vanilla_creature_index,
+        )
+        pool -= set(face_ctx.face_meta[face_key]["all_sibling_keys"])
+
+        qualifying = _discovery_superset_exhaustive_qualifiers(
+            anchor_doc, [], face_ctx.face_card_docs, {}, {},
+            face_ctx.face_ngram_df, face_ctx.face_clause_df, face_ctx.face_keyword_df,
+            face_ctx.face_paragraph_index, args, check_tier3=False,
+        )
+        qualifying -= set(face_ctx.face_meta[face_key]["all_sibling_keys"])
+
+        missing = qualifying - pool
+        face_label = f"{combined_name} (face{face_index}, {anchor_doc['name']!r})"
+        if missing:
+            sample = sorted(face_ctx.face_card_docs[m]["name"] for m in missing)[:10]
+            print(f"  [STOP] {face_label}: {len(missing)} qualifying candidate(s) missing from the face-"
+                  f"scoped pool (sample of {min(10, len(missing))}): {sample}")
+            ok = False
+        else:
+            print(f"  [PASS] {face_label}: face-scoped pool ({len(pool):,}) is a superset of exhaustive "
+                  f"Tier 0-2 qualification ({len(qualifying):,})")
+
+    return ok
+
+
 def build_gate_ctx(cards, card_docs, name_index, card_tags, card_tags_t3, paragraph_index, clause_index,
                     clause_df, ngram_index, ngram_df, tag_index, keyword_index, keyword_df, mana_index,
                     granted_keyword_index, turn_scoped_matches, idf, idf_t3, n_total_cards, args,
@@ -7931,6 +8139,7 @@ def main() -> None:
     gk_passed = check_gk_craterhoof_endraze_gate(gate_ctx)
     gl_passed = check_gl_promoted_phrase_gate(gate_ctx)
     gm_passed = check_gm_vanilla_creature_gate(gate_ctx)
+    gn_passed = check_gn_discovery_superset_gate(gate_ctx)
 
     if not (self_check_passed and tier0_exclusion_passed and symmetry_passed and marisi_gate_passed
             and abolisher_burial_passed and myrel_burial_passed
@@ -7943,7 +8152,7 @@ def main() -> None:
             and zurgo_keyword_passed and evergreen_floor_passed
             and ga_passed and gb_passed and gc_passed and gd_passed and ge_passed
             and gf_passed and gg_passed and gh_passed and gi_passed and gj_passed
-            and gk_passed and gl_passed and gm_passed):
+            and gk_passed and gl_passed and gm_passed and gn_passed):
         halt("one or more validation gates failed — reports NOT written (see output above)")
 
     # ---- v2.5 spot-check block (deliverable: subtypes, affinity, MVΔ audit rider) ----
