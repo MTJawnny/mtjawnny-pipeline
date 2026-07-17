@@ -172,6 +172,25 @@
   .face-btn:hover { background: var(--accent); color: var(--panel); }
   .face-btn.active { background: var(--accent-strong); color: var(--panel); border-color: var(--accent-strong); cursor: default; }
   .via-face-note { color: var(--text-muted); font-size: 11px; font-style: italic; }
+
+  /* Card-info viewer expansion (2026-07-14): row thumbnail + full card
+     detail (image/mana cost/type line/oracle text) so a fit judgment can be
+     made without leaving the page to check Scryfall. */
+  .row-thumb {
+    width: 34px; height: auto; vertical-align: middle; margin-right: 8px;
+    border-radius: 3px; display: inline-block; background: var(--panel-alt);
+  }
+  .anchor-block { display: flex; gap: 14px; }
+  .anchor-image img { width: 146px; height: auto; border-radius: 6px; display: block; }
+  .anchor-main { flex: 1; min-width: 0; }
+  .candidate-card-block {
+    display: flex; gap: 14px; margin-bottom: 10px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .candidate-card-block .candidate-image img { width: 146px; height: auto; border-radius: 6px; display: block; }
+  .candidate-card-block .candidate-main { flex: 1; min-width: 0; }
+  .candidate-meta { color: var(--text-muted); font-size: 12px; margin: 0 0 6px; }
+  .candidate-text { white-space: pre-wrap; font-size: 13px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -486,12 +505,15 @@
     var block = document.getElementById("anchor-block");
     block.style.display = "";
     block.innerHTML =
-      '<div class="anchor-name">' + escapeHtml(a.name) + " " + legalBadge(a.legal_commander) + '</div>' +
-      '<div class="anchor-meta">' + escapeHtml(a.mana_cost) + " · " + escapeHtml(a.type_line) +
-        " · CI: " + (a.color_identity.length ? escapeHtml(a.color_identity.join("")) : "colorless") +
-        (a.subtypes.length ? " · subtypes: " + escapeHtml(a.subtypes.join(", ")) : "") +
-      '</div>' +
-      '<div class="anchor-text">' + escapeHtml(a.oracle_text) + '</div>';
+      (a.image_url ? '<div class="anchor-image"><img src="' + escapeHtml(a.image_url) + '" alt="' + escapeHtml(a.name) + '" loading="lazy"></div>' : "") +
+      '<div class="anchor-main">' +
+        '<div class="anchor-name">' + escapeHtml(a.name) + " " + legalBadge(a.legal_commander) + '</div>' +
+        '<div class="anchor-meta">' + escapeHtml(a.mana_cost) + " · " + escapeHtml(a.type_line) +
+          " · CI: " + (a.color_identity.length ? escapeHtml(a.color_identity.join("")) : "colorless") +
+          (a.subtypes.length ? " · subtypes: " + escapeHtml(a.subtypes.join(", ")) : "") +
+        '</div>' +
+        '<div class="anchor-text">' + escapeHtml(a.oracle_text) + '</div>' +
+      '</div>';
 
     var tiersDiv = document.getElementById("tiers");
     tiersDiv.innerHTML = "";
@@ -544,7 +566,9 @@
       tr.dataset.land = row.is_land === true ? "1" : (row.is_land === false ? "0" : "u");
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
-        '<td class="name">' + escapeHtml(row.name) +
+        '<td class="name">' +
+          (row.candidate_image_small ? '<img class="row-thumb" src="' + escapeHtml(row.candidate_image_small) + '" alt="" loading="lazy">' : "") +
+          escapeHtml(row.name) +
           (row.via_combined_name ? '<br><span class="via-face-note">via ' + escapeHtml(row.via_combined_name) + '</span>' : "") +
         '</td>' +
         (hasRank ? '<td class="num">' + fmtNum(row.rank_score) + '</td>' : '') +
@@ -605,6 +629,15 @@
 
   function renderDetail(row) {
     var html = "";
+    if (row.candidate_oracle_text !== null && row.candidate_oracle_text !== undefined) {
+      html += '<div class="candidate-card-block">' +
+        (row.candidate_image_normal ? '<div class="candidate-image"><img src="' + escapeHtml(row.candidate_image_normal) + '" alt="' + escapeHtml(row.name) + '" loading="lazy"></div>' : "") +
+        '<div class="candidate-main">' +
+          '<div class="candidate-meta">' + escapeHtml(row.candidate_mana_cost || "") + " · " + escapeHtml(row.candidate_type_line || "") + '</div>' +
+          '<div class="candidate-text">' + escapeHtml(row.candidate_oracle_text) + '</div>' +
+        '</div>' +
+      '</div>';
+    }
     var headerBits = [];
     if (row.mechanism) headerBits.push(mechanismBadge(row.mechanism));
     if (row.promoted) headerBits.push(promotedBadge(row.promoted));
@@ -742,7 +775,10 @@
       tr.dataset.land = row.is_land === true ? "1" : (row.is_land === false ? "0" : "u");
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
-        '<td class="name">' + escapeHtml(row.name) + '</td>' +
+        '<td class="name">' +
+          (row.candidate_image_small ? '<img class="row-thumb" src="' + escapeHtml(row.candidate_image_small) + '" alt="" loading="lazy">' : "") +
+          escapeHtml(row.name) +
+        '</td>' +
         '<td class="num">' + fmtNum(row.score) + '</td>' +
         '<td class="num">' + (row.mv_delta === null || row.mv_delta === undefined ? "—" : (row.mv_delta >= 0 ? "+" : "") + row.mv_delta) + '</td>' +
         '<td>' + escapeHtml(row.ci_relation) + '</td>' +
@@ -772,10 +808,21 @@
   }
 
   function renderTier3Detail(row) {
-    if (!row.shared_tags || row.shared_tags.length === 0) {
-      return '<div style="color:var(--text-muted);font-size:12px;">no shared tags recorded</div>';
+    var html = "";
+    if (row.candidate_oracle_text !== null && row.candidate_oracle_text !== undefined) {
+      html += '<div class="candidate-card-block">' +
+        (row.candidate_image_normal ? '<div class="candidate-image"><img src="' + escapeHtml(row.candidate_image_normal) + '" alt="' + escapeHtml(row.name) + '" loading="lazy"></div>' : "") +
+        '<div class="candidate-main">' +
+          '<div class="candidate-meta">' + escapeHtml(row.candidate_mana_cost || "") + " · " + escapeHtml(row.candidate_type_line || "") + '</div>' +
+          '<div class="candidate-text">' + escapeHtml(row.candidate_oracle_text) + '</div>' +
+        '</div>' +
+      '</div>';
     }
-    var html = '<div>';
+    if (!row.shared_tags || row.shared_tags.length === 0) {
+      html += '<div style="color:var(--text-muted);font-size:12px;">no shared tags recorded</div>';
+      return html;
+    }
+    html += '<div>';
     row.shared_tags.forEach(function (t) {
       var directness = (t.anchor_direct && t.candidate_direct) ? "direct" : "inherited";
       html += '<span class="tag-chip' + (directness === "inherited" ? " inherited" : "") + '">' +

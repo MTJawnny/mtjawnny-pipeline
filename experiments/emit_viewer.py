@@ -133,12 +133,24 @@ def resolve_anchor_sqlite(name: str, conn: sqlite3.Connection):
     return rows[0][0]
 
 
-def build_anchor_display(card: dict, legal_commander) -> dict:
-    """Human-readable anchor block sourced from the RAW (non-normalized)
-    jsonl card dict -- tier_engine's own card_docs strip reminder text,
-    substitute the card's name with '~', and lowercase everything for
-    matching purposes, which is wrong for display."""
+def card_display_text(card: dict, face_index: int = None) -> dict:
+    """Human-readable mana_cost/type_line/oracle_text sourced from the RAW
+    (non-normalized) jsonl card dict -- tier_engine's own card_docs strip
+    reminder text, substitute the card's name with '~', and lowercase
+    everything for matching purposes, which is wrong for display. Factored
+    out of build_anchor_display() so candidate rows (2026-07-14 card-info
+    viewer expansion) get identical treatment instead of a second, drifting
+    implementation. face_index scopes to ONE face's own text (mirrors
+    build_face_anchor_display()'s pre-existing per-face slicing); None joins
+    every face with ' // ', the whole-card ("weigh both") view."""
     faces = card.get("card_faces")
+    if face_index is not None and faces:
+        face = faces[face_index]
+        return {
+            "mana_cost": face.get("mana_cost") or "",
+            "type_line": face.get("type_line") or "",
+            "oracle_text": face.get("oracle_text") or "",
+        }
     if faces:
         mana_cost = " // ".join(f.get("mana_cost") or "" for f in faces)
         type_line = card.get("type_line") or " // ".join(f.get("type_line") or "" for f in faces)
@@ -147,14 +159,42 @@ def build_anchor_display(card: dict, legal_commander) -> dict:
         mana_cost = card.get("mana_cost") or ""
         type_line = card.get("type_line") or ""
         oracle_text = card.get("oracle_text") or ""
+    return {"mana_cost": mana_cost, "type_line": type_line, "oracle_text": oracle_text}
+
+
+def card_image_url(card: dict, face_index: int = None, size: str = "normal") -> str:
+    """Scryfall-hosted image URL for a card or one of its faces -- viewer
+    DISPLAY convenience only (2026-07-14), never persisted or uploaded, no
+    relation to pipeline/image_sync.py's R2 pipeline. Honors the repo's DFC
+    rule (CLAUDE.md): a card is two-image if and only if
+    card_faces[0].image_uris exists -- never judged by card_faces presence
+    alone, since split/flip/adventure/prepare cards have faces but carry one
+    root-level image. Same gate pipeline/resolver.py's is_dfc() already
+    uses; not reused directly since that module also builds R2 URLs this
+    viewer has no business constructing."""
+    faces = card.get("card_faces") or []
+    is_two_image = bool(faces) and "image_uris" in faces[0]
+    if is_two_image:
+        idx = min(face_index, len(faces) - 1) if face_index is not None else 0
+        images = faces[idx].get("image_uris") or {}
+    else:
+        images = card.get("image_uris") or {}
+    return images.get(size) or images.get("normal") or images.get("small")
+
+
+def build_anchor_display(card: dict, legal_commander) -> dict:
+    """Human-readable anchor block sourced from the RAW (non-normalized)
+    jsonl card dict -- see card_display_text()'s docstring for why."""
+    display = card_display_text(card)
     return {
         "name": card["name"],
         "oracle_id": card["oracle_id"],
-        "mana_cost": mana_cost,
-        "type_line": type_line,
-        "oracle_text": oracle_text,
+        "mana_cost": display["mana_cost"],
+        "type_line": display["type_line"],
+        "oracle_text": display["oracle_text"],
+        "image_url": card_image_url(card),
         "color_identity": card.get("color_identity") or [],
-        "subtypes": sorted(te.creature_subtypes(type_line)),
+        "subtypes": sorted(te.creature_subtypes(display["type_line"])),
         "legal_commander": legal_commander,
     }
 
@@ -166,11 +206,18 @@ def is_land_doc(doc: dict) -> bool:
     return "Land" in te.type_bucket(doc["type_line"])
 
 
-def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_oracle_id: dict) -> dict:
+def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, cards: dict, legality_by_oracle_id: dict) -> dict:
     oracle_id = row.get("oracle_id")
     candidate_doc = card_docs.get(oracle_id)
     keywords = te.keyword_overlap(anchor_doc, candidate_doc) if candidate_doc is not None else []
     is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
+    # 2026-07-14 card-info viewer expansion: raw (non-normalized) display
+    # text + a Scryfall-hosted image, sourced from `cards` (te.load_cards()'s
+    # own raw jsonl dict) rather than `candidate_doc` -- card_docs entries are
+    # normalized/lowercased for matching, wrong for display (same reasoning
+    # build_anchor_display() already established).
+    candidate_card = cards.get(oracle_id)
+    candidate_display = card_display_text(candidate_card) if candidate_card is not None else None
     breakdown = None
     if "_rank" in row:
         breakdown = {
@@ -207,6 +254,11 @@ def build_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_o
         "commonality_weight": row.get("_commonality_weight"),
         "legal_commander": legality_by_oracle_id.get(oracle_id),
         "is_land": is_land,
+        "candidate_mana_cost": candidate_display["mana_cost"] if candidate_display else None,
+        "candidate_type_line": candidate_display["type_line"] if candidate_display else None,
+        "candidate_oracle_text": candidate_display["oracle_text"] if candidate_display else None,
+        "candidate_image_small": card_image_url(candidate_card, size="small") if candidate_card else None,
+        "candidate_image_normal": card_image_url(candidate_card, size="normal") if candidate_card else None,
     }
 
 
@@ -218,15 +270,18 @@ def json_safe_mana_fact(fact: dict):
     return {**fact, "colors": sorted(fact["colors"])}
 
 
-def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, legality_by_oracle_id: dict) -> dict:
+def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, cards: dict, legality_by_oracle_id: dict) -> dict:
     """v2.10: Tier 3 rows carry no rank breakdown (Tier 3 is tag-score-only,
     deliberately unpenalized -- a human-curation proposal queue) -- shape
     is name/score/shared_tags(idf+direct/inherited)/MVΔ/CI relation/type
-    bucket/legality, per the change order."""
+    bucket/legality, per the change order. 2026-07-14: same raw display
+    text + image addition as build_row_export() above."""
     oracle_id = row.get("oracle_id")
     candidate_doc = card_docs.get(oracle_id)
     mv_delta = te.mv_delta(anchor_doc, candidate_doc) if candidate_doc is not None else None
     is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
+    candidate_card = cards.get(oracle_id)
+    candidate_display = card_display_text(candidate_card) if candidate_card is not None else None
     return {
         "name": row["name"],
         "oracle_id": oracle_id,
@@ -243,6 +298,11 @@ def build_tier3_row_export(row: dict, anchor_doc: dict, card_docs: dict, legalit
         "type_bucket": row["facts"]["type_bucket"],
         "legal_commander": legality_by_oracle_id.get(oracle_id),
         "is_land": is_land,
+        "candidate_mana_cost": candidate_display["mana_cost"] if candidate_display else None,
+        "candidate_type_line": candidate_display["type_line"] if candidate_display else None,
+        "candidate_oracle_text": candidate_display["oracle_text"] if candidate_display else None,
+        "candidate_image_small": card_image_url(candidate_card, size="small") if candidate_card else None,
+        "candidate_image_normal": card_image_url(candidate_card, size="normal") if candidate_card else None,
     }
 
 
@@ -272,9 +332,9 @@ def export_anchor(name: str, oracle_id: str, ctx: SimpleNamespace, out_dir: Path
 
     tiers_export = {}
     for t in (0, 1, 2):
-        rows = [build_row_export(r, anchor_doc, ctx.card_docs, ctx.legality_by_oracle_id) for r in full_tiers[t]]
+        rows = [build_row_export(r, anchor_doc, ctx.card_docs, ctx.cards, ctx.legality_by_oracle_id) for r in full_tiers[t]]
         tiers_export[str(t)] = {"count": len(rows), "rows": rows}
-    tier3_rows = [build_tier3_row_export(r, anchor_doc, ctx.card_docs, ctx.legality_by_oracle_id) for r in full_tiers[3]]
+    tier3_rows = [build_tier3_row_export(r, anchor_doc, ctx.card_docs, ctx.cards, ctx.legality_by_oracle_id) for r in full_tiers[3]]
     tiers_export["3"] = {"count": len(tier3_rows), "rows": tier3_rows}
 
     anchor_block = build_anchor_display(ctx.cards[oracle_id], ctx.legality_by_oracle_id.get(oracle_id))
@@ -509,19 +569,21 @@ def build_face_anchor_display(card: dict, face_index: int, legal_commander) -> d
     stays the whole-card value (see build_face_scoped_doc()'s own comment
     on why that's correct, not a simplification)."""
     face = card["card_faces"][face_index]
+    display = card_display_text(card, face_index)
     return {
         "name": face.get("name") or card["name"],
         "oracle_id": card["oracle_id"],
-        "mana_cost": face.get("mana_cost") or "",
-        "type_line": face.get("type_line") or "",
-        "oracle_text": face.get("oracle_text") or "",
+        "mana_cost": display["mana_cost"],
+        "type_line": display["type_line"],
+        "oracle_text": display["oracle_text"],
+        "image_url": card_image_url(card, face_index),
         "color_identity": card.get("color_identity") or [],
-        "subtypes": sorted(te.creature_subtypes(face.get("type_line") or "")),
+        "subtypes": sorted(te.creature_subtypes(display["type_line"])),
         "legal_commander": legal_commander,
     }
 
 
-def build_face_row_export(row: dict, anchor_doc: dict, face_card_docs: dict, legality_by_oracle_id: dict) -> dict:
+def build_face_row_export(row: dict, anchor_doc: dict, face_card_docs: dict, cards: dict, legality_by_oracle_id: dict) -> dict:
     """Mirrors build_row_export() above -- the only difference is the
     face-key vs real-oracle-id split: `row["oracle_id"]` here is a
     candidate's synthetic face key (e.g. "<real-id>::1") whenever the
@@ -537,6 +599,13 @@ def build_face_row_export(row: dict, anchor_doc: dict, face_card_docs: dict, leg
     is_face_match = candidate_doc is not None and candidate_doc.get("face_index") is not None
     keywords = te.keyword_overlap(anchor_doc, candidate_doc) if candidate_doc is not None else []
     is_land = is_land_doc(candidate_doc) if candidate_doc is not None else None
+    # 2026-07-14 card-info viewer expansion: when this candidate matched via
+    # ONE specific face, show THAT face's own text/image (not the combined
+    # card's) -- same "via <combined name>" scoping the row annotation
+    # already establishes just above.
+    candidate_card = cards.get(real_oracle_id)
+    matched_face_index = candidate_doc.get("face_index") if is_face_match else None
+    candidate_display = card_display_text(candidate_card, matched_face_index) if candidate_card is not None else None
     breakdown = None
     if "_rank" in row:
         breakdown = {
@@ -578,6 +647,11 @@ def build_face_row_export(row: dict, anchor_doc: dict, face_card_docs: dict, leg
         "commonality_weight": row.get("_commonality_weight"),
         "legal_commander": legality_by_oracle_id.get(real_oracle_id),
         "is_land": is_land,
+        "candidate_mana_cost": candidate_display["mana_cost"] if candidate_display else None,
+        "candidate_type_line": candidate_display["type_line"] if candidate_display else None,
+        "candidate_oracle_text": candidate_display["oracle_text"] if candidate_display else None,
+        "candidate_image_small": card_image_url(candidate_card, matched_face_index, "small") if candidate_card else None,
+        "candidate_image_normal": card_image_url(candidate_card, matched_face_index, "normal") if candidate_card else None,
     }
 
 
@@ -619,7 +693,7 @@ def export_face_anchor(combined_name: str, oracle_id: str, face_index: int,
 
     tiers_export = {}
     for t in (0, 1, 2):
-        rows = [build_face_row_export(r, anchor_doc, face_ctx.face_card_docs, ctx.legality_by_oracle_id) for r in full_tiers[t]]
+        rows = [build_face_row_export(r, anchor_doc, face_ctx.face_card_docs, ctx.cards, ctx.legality_by_oracle_id) for r in full_tiers[t]]
         tiers_export[str(t)] = {"count": len(rows), "rows": rows}
 
     anchor_block = build_face_anchor_display(ctx.cards[oracle_id], face_index, ctx.legality_by_oracle_id.get(oracle_id))
