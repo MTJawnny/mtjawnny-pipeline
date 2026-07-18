@@ -35,8 +35,9 @@ annotations by design — skip steps 1–3 and start at step 4 (RECONCILE).
 4. RECONCILE: adapt to foundry_reconcile.py's schema (halt rather than
    lossy-map), run it -> codebook v0.$ARGUMENTS, diff report, both
    convergence metric families per the protocol.
-5. LEDGER: append any new ledger candidates to
-   docs/KEYWORD-LEDGER-CANDIDATES.md — same commit set as the codebook.
+5. LEDGER: append any new ledger candidates to THIS repo's
+   docs/KEYWORD-LEDGER-CANDIDATES.md (mtjawnny-pipeline/docs/ — NOT the
+   site repo's gitignored docs/) — same commit set as the codebook.
 6. ASSEMBLE batch N+1 per MASTER-HANDOFF §5 with §5.6 targeting:
    thin 2-member KEEPs, batch-flagged confirmation targets, unpromoted
    OTHER clusters, under-covered strata; DET stratified-random fill,
