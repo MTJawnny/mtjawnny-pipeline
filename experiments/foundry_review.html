@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Axis Foundry — Review Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #14161a;
+    --panel: #1c1f26;
+    --panel-2: #22262f;
+    --border: #333844;
+    --text: #d9dce2;
+    --text-dim: #8890a0;
+    --accent: #6ba8ff;
+    --good: #4caf7d;
+    --bad: #d9645f;
+    --warn: #d9a34f;
+    --mark: #5a4a1e;
+    --mark-text: #ffe9a8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+  }
+  button {
+    font-family: inherit; font-size: 12px; cursor: pointer;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 10px;
+  }
+  button:hover { border-color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  button.primary { background: var(--accent); color: #0c1420; border-color: var(--accent); font-weight: 600; }
+  button.danger { border-color: var(--bad); color: var(--bad); }
+  button.danger:hover { background: var(--bad); color: #fff; }
+  input[type=text], input[type=search], textarea, select {
+    font-family: inherit; font-size: 12px; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 44px; }
+  label { font-size: 11px; color: var(--text-dim); display: block; margin: 8px 0 3px; }
+  code, .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  #topbar {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  #topbar h1 { font-size: 14px; margin: 0; font-weight: 700; white-space: nowrap; }
+  #topbar .meta { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  #topbar .spacer { flex: 1; }
+  #autosave-indicator { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+
+  #main {
+    display: grid;
+    grid-template-columns: 300px 1fr 380px;
+    height: calc(100vh - 46px);
+  }
+  #main > div { overflow-y: auto; }
+  #axis-pane { background: var(--panel); border-right: 1px solid var(--border); padding: 10px; }
+  #center-pane { padding: 16px 20px; }
+  #inspector-pane { background: var(--panel); border-left: 1px solid var(--border); padding: 14px; }
+
+  #axis-filter { margin-bottom: 8px; }
+  .axis-row {
+    display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 5px;
+    cursor: pointer; margin-bottom: 2px; border: 1px solid transparent;
+  }
+  .axis-row:hover { background: var(--panel-2); }
+  .axis-row.selected { background: var(--panel-2); border-color: var(--accent); }
+  .axis-row .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--text-dim);
+  }
+  .axis-row .status-dot.decided { background: var(--good); }
+  .axis-row .slug { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .axis-row .count { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+  .badge {
+    font-size: 9px; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--border);
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.02em; flex-shrink: 0;
+  }
+  .badge.source-A∩B { border-color: var(--good); color: var(--good); }
+  .badge.source-B-only { border-color: var(--accent); color: var(--accent); }
+  .badge.source-A-only { border-color: var(--warn); color: var(--warn); }
+  .badge.source-CAPTAIN { border-color: #b98cff; color: #b98cff; }
+  .badge.source-OTHER { border-color: var(--text-dim); }
+  .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin: 14px 0 6px; }
+  .section-label:first-child { margin-top: 0; }
+
+  #other-row { border: 1px dashed var(--border); }
+
+  .empty-state { color: var(--text-dim); font-size: 13px; padding: 30px 0; text-align: center; }
+
+  #center-pane h2 { font-size: 18px; margin: 0 0 4px; font-family: monospace; }
+  .def-block { font-size: 13px; color: var(--text); margin: 8px 0; line-height: 1.5; }
+  .facts-row { display: flex; gap: 8px; margin: 6px 0 14px; flex-wrap: wrap; }
+  .fact { font-size: 11px; color: var(--text-dim); }
+
+  .decision-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
+  .verdict-btns { display: flex; gap: 6px; margin-bottom: 8px; }
+  .verdict-btns button.active { background: var(--accent); color: #0c1420; border-color: var(--accent); }
+  .verdict-btns button.active.v-kill { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .verdict-btns button.active.v-merge { background: var(--warn); border-color: var(--warn); color: #1a1400; }
+  .verdict-btns button.active.v-rename { background: #b98cff; border-color: #b98cff; color: #1a0f2e; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hidden { display: none !important; }
+
+  table.member-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  table.member-table th { text-align: left; font-size: 10px; text-transform: uppercase; color: var(--text-dim); padding: 4px 6px; border-bottom: 1px solid var(--border); }
+  table.member-table td { padding: 6px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: top; }
+  table.member-table tr.removed { opacity: 0.4; text-decoration: line-through; }
+  .card-link { color: var(--accent); cursor: pointer; background: none; border: none; padding: 0; font: inherit; text-decoration: underline; text-align: left; }
+  .card-link:hover { color: #fff; }
+  .quote-text { color: var(--text-dim); font-style: italic; }
+
+  .inspector-header { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .inspector-typeline { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+  .face-block { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; background: var(--panel-2); }
+  .face-header { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .oracle-text { font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; }
+  mark { background: var(--mark); color: var(--mark-text); border-radius: 2px; padding: 0 1px; }
+  .chip-row { display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0; }
+  .chip { font-size: 10px; padding: 1px 6px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); }
+
+  .tag-list-item { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 0; }
+  .tag-list-item .tag-name { flex: 1; }
+
+  .other-axes-list li { font-size: 12px; margin-bottom: 3px; }
+
+  #load-screen { max-width: 640px; margin: 60px auto; padding: 20px; }
+  #load-screen h2 { font-size: 16px; }
+  #load-screen .row { display: flex; gap: 8px; margin: 10px 0; align-items: center; }
+  #load-error { color: var(--bad); font-size: 12px; margin-top: 8px; white-space: pre-wrap; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Axis Foundry</h1>
+  <span class="meta" id="batch-meta">no batch loaded</span>
+  <div class="spacer"></div>
+  <span id="autosave-indicator"></span>
+  <button id="btn-open">Load batch…</button>
+  <button id="btn-export" class="primary" disabled>Export decisions</button>
+  <button id="btn-import" disabled>Import decisions</button>
+  <input type="file" id="file-batch" accept="application/json" style="display:none">
+  <input type="file" id="file-decisions" accept="application/json" style="display:none">
+</div>
+
+<div id="load-screen">
+  <h2>Load a review batch</h2>
+  <p style="color:var(--text-dim); font-size:12px;">
+    Serve this directory (<code class="mono">experiments/</code>) with
+    <code class="mono">python3 -m http.server 8000</code> and open
+    <code class="mono">http://127.0.0.1:8000/foundry_review.html</code> — or pass
+    <code class="mono">?batch=out/foundry/review/batch-1.json</code> in the URL.
+  </p>
+  <div class="row">
+    <input type="text" id="batch-path" placeholder="out/foundry/review/batch-1.json" value="out/foundry/review/batch-1.json">
+    <button id="btn-fetch" class="primary">Fetch</button>
+  </div>
+  <div class="row">
+    <span style="color:var(--text-dim); font-size:12px;">or</span>
+    <button id="btn-pick-file">Choose a batch-N.json file…</button>
+  </div>
+  <div id="load-error"></div>
+</div>
+
+<div id="main" class="hidden">
+  <div id="axis-pane">
+    <input type="search" id="axis-filter" placeholder="filter axes…">
+    <div class="section-label">Unclustered</div>
+    <div class="axis-row" id="other-row">
+      <span class="status-dot"></span>
+      <span class="slug">OTHER lane</span>
+      <span class="count" id="other-count">0</span>
+    </div>
+    <div class="section-label">Axes</div>
+    <div id="axis-list"></div>
+    <div class="section-label" id="captain-axes-label" style="display:none">Your proposed axes</div>
+    <div id="captain-axis-list"></div>
+  </div>
+
+  <div id="center-pane">
+    <div class="empty-state" id="center-empty">Select an axis on the left, or OTHER lane, to begin reviewing.</div>
+    <div id="center-content" class="hidden"></div>
+  </div>
+
+  <div id="inspector-pane">
+    <div class="empty-state" id="inspector-empty">Click any card name to inspect it here.</div>
+    <div id="inspector-content" class="hidden"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------------
+  var batchData = null;      // loaded batch-N.json (foundry-review/1)
+  var decisions = null;      // working decisions object (foundry-decisions/1)
+  var selectedAxisSlug = null;  // real axis slug | '__other__' | 'captain:<slug>'
+  var selectedCardId = null;
+
+  // ---------------------------------------------------------------------
+  // DOM helpers (DOM XSS law: textContent always, innerHTML never for
+  // data-derived strings; innerHTML used only for the tool's own static
+  // authored markup, never for anything from batchData/decisions).
+  // ---------------------------------------------------------------------
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) {
+        if (k === "class") e.className = attrs[k];
+        else if (k === "text") e.textContent = attrs[k];
+        else if (k.indexOf("on") === 0) e.addEventListener(k.slice(2), attrs[k]);
+        else e.setAttribute(k, attrs[k]);
+      });
+    }
+    (children || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  function cardLink(oracleId, quote) {
+    var name = (batchData.cards[oracleId] || {}).name || oracleId;
+    return el("button", {
+      class: "card-link",
+      text: name,
+      onclick: function () { selectCard(oracleId, quote || null); },
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Persistence
+  // ---------------------------------------------------------------------
+  function storageKey() { return "foundry-decisions-batch-" + batchData.batch; }
+
+  function freshDecisions() {
+    return { schema: "foundry-decisions/1", batch: batchData.batch, axes: {}, captain_axes: [], captain_card_tags: [] };
+  }
+
+  function initDecisions() {
+    var raw = null;
+    try { raw = localStorage.getItem(storageKey()); } catch (e) { /* ignore */ }
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.batch === batchData.batch) { decisions = parsed; return; }
+      } catch (e) { /* fall through */ }
+    }
+    decisions = freshDecisions();
+  }
+
+  function saveDecisions() {
+    try {
+      localStorage.setItem(storageKey(), JSON.stringify(decisions));
+      document.getElementById("autosave-indicator").textContent =
+        "autosaved " + new Date().toLocaleTimeString();
+    } catch (e) {
+      document.getElementById("autosave-indicator").textContent = "autosave failed: " + e.message;
+    }
+  }
+
+  function axisDecision(slug) {
+    if (!decisions.axes[slug]) {
+      decisions.axes[slug] = {
+        verdict: null, merge_into: null, new_slug: null,
+        definition_edit: null, scope_edit: null, note: "", removed_members: [],
+      };
+    }
+    return decisions.axes[slug];
+  }
+
+  // ---------------------------------------------------------------------
+  // Loading
+  // ---------------------------------------------------------------------
+  function validateBatch(data) {
+    if (data.schema !== "foundry-review/1") throw new Error("unexpected schema " + data.schema + ", expected foundry-review/1");
+    if (!Array.isArray(data.axes)) throw new Error("missing axes array");
+    if (!data.cards || typeof data.cards !== "object") throw new Error("missing cards object");
+  }
+
+  function loadBatch(data) {
+    validateBatch(data);
+    batchData = data;
+    initDecisions();
+    selectedAxisSlug = null;
+    selectedCardId = null;
+    document.getElementById("load-screen").classList.add("hidden");
+    document.getElementById("main").classList.remove("hidden");
+    document.getElementById("btn-export").disabled = false;
+    document.getElementById("btn-import").disabled = false;
+    document.getElementById("batch-meta").textContent =
+      "batch " + data.batch + " · codebook v" + data.codebook_version + " · " +
+      data.axes.length + " axes · " + Object.keys(data.cards).length + " cards";
+    renderAxisList();
+    renderCenterEmpty();
+    renderInspectorEmpty();
+  }
+
+  document.getElementById("btn-fetch").addEventListener("click", function () {
+    var path = document.getElementById("batch-path").value.trim();
+    var errEl = document.getElementById("load-error");
+    errEl.textContent = "";
+    fetch(path).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " fetching " + path);
+      return r.json();
+    }).then(loadBatch).catch(function (e) {
+      errEl.textContent = "fetch failed: " + e.message + "\n(if opened via file://, this is expected — use the file picker, or serve over http.server)";
+    });
+  });
+
+  document.getElementById("btn-pick-file").addEventListener("click", function () {
+    document.getElementById("file-batch").click();
+  });
+  document.getElementById("file-batch").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var errEl = document.getElementById("load-error");
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { loadBatch(JSON.parse(reader.result)); }
+      catch (err) { errEl.textContent = "failed to load: " + err.message; }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("btn-open").addEventListener("click", function () {
+    document.getElementById("main").classList.add("hidden");
+    document.getElementById("load-screen").classList.remove("hidden");
+  });
+
+  // auto-load ?batch= query param
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var qp = params.get("batch");
+    if (qp) {
+      document.getElementById("batch-path").value = qp;
+      document.getElementById("btn-fetch").click();
+    }
+  })();
+
+  // ---------------------------------------------------------------------
+  // Export / Import decisions
+  // ---------------------------------------------------------------------
+  document.getElementById("btn-export").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(decisions, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "batch-" + decisions.batch + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btn-import").addEventListener("click", function () {
+    document.getElementById("file-decisions").click();
+  });
+  document.getElementById("file-decisions").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(reader.result);
+        if (parsed.schema !== "foundry-decisions/1") throw new Error("wrong schema " + parsed.schema);
+        if (parsed.batch !== batchData.batch) {
+          if (!confirm("Imported decisions are for batch " + parsed.batch + ", currently viewing batch " + batchData.batch + ". Import anyway?")) return;
+        }
+        decisions = parsed;
+        saveDecisions();
+        renderAxisList();
+        renderCenterEmpty();
+      } catch (err) {
+        alert("import failed: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------------------------------------------------------------------
+  // Left pane — axis list
+  // ---------------------------------------------------------------------
+  function axisStatusDecided(slug) {
+    var d = decisions.axes[slug];
+    return !!(d && d.verdict);
+  }
+
+  function renderAxisList() {
+    document.getElementById("other-count").textContent = (batchData.other_lane || []).length;
+    document.getElementById("other-row").classList.toggle("selected", selectedAxisSlug === "__other__");
+
+    var filterVal = document.getElementById("axis-filter").value.trim().toLowerCase();
+    var sorted = batchData.axes.slice().sort(function (a, b) { return b.members.length - a.members.length; });
+
+    var listEl = document.getElementById("axis-list");
+    clear(listEl);
+    sorted.forEach(function (axis) {
+      if (filterVal && axis.slug.toLowerCase().indexOf(filterVal) === -1 &&
+          (axis.definition || "").toLowerCase().indexOf(filterVal) === -1) return;
+      var row = el("div", {
+        class: "axis-row" + (selectedAxisSlug === axis.slug ? " selected" : ""),
+        onclick: function () { selectAxis(axis.slug); },
+      }, [
+        el("span", { class: "status-dot" + (axisStatusDecided(axis.slug) ? " decided" : "") }),
+        el("span", { class: "slug", text: axis.slug }),
+        el("span", { class: "badge source-" + axis.source, text: axis.source }),
+        el("span", { class: "count", text: String(axis.members.length) }),
+      ]);
+      listEl.appendChild(row);
+    });
+
+    var capLabel = document.getElementById("captain-axes-label");
+    var capList = document.getElementById("captain-axis-list");
+    clear(capList);
+    var cAxes = decisions.captain_axes || [];
+    capLabel.style.display = cAxes.length ? "" : "none";
+    cAxes.forEach(function (ca) {
+      var slug = "captain:" + ca.slug;
+      var row = el("div", {
+        class: "axis-row" + (selectedAxisSlug === slug ? " selected" : ""),
+        onclick: function () { selectedAxisSlug = slug; renderAxisList(); renderCaptainAxisDetail(ca); },
+      }, [
+        el("span", { class: "status-dot decided" }),
+        el("span", { class: "slug", text: ca.slug }),
+        el("span", { class: "badge source-CAPTAIN", text: "CAPTAIN" }),
+        el("span", { class: "count", text: String((ca.seed_members || []).length) }),
+      ]);
+      capList.appendChild(row);
+    });
+  }
+
+  document.getElementById("axis-filter").addEventListener("input", renderAxisList);
+  document.getElementById("other-row").addEventListener("click", function () {
+    selectedAxisSlug = "__other__";
+    renderAxisList();
+    renderOtherLane();
+  });
+
+  // ---------------------------------------------------------------------
+  // Center pane
+  // ---------------------------------------------------------------------
+  function centerShow(contentBuilder) {
+    document.getElementById("center-empty").classList.add("hidden");
+    var content = document.getElementById("center-content");
+    content.classList.remove("hidden");
+    clear(content);
+    contentBuilder(content);
+  }
+
+  function renderCenterEmpty() {
+    document.getElementById("center-empty").classList.remove("hidden");
+    document.getElementById("center-content").classList.add("hidden");
+  }
+
+  function selectAxis(slug) {
+    selectedAxisSlug = slug;
+    renderAxisList();
+    var axis = batchData.axes.filter(function (a) { return a.slug === slug; })[0];
+    if (!axis) return;
+    centerShow(function (content) { renderAxisDetail(content, axis); });
+  }
+
+  function memberRow(axis, member, isRemoved) {
+    var tr = el("tr", { class: isRemoved ? "removed" : "" });
+    var nameTd = el("td", {}, [cardLink(member.oracle_id, member.quote)]);
+    var quoteTd = el("td", { class: "quote-text", text: member.quote });
+    var actionTd = el("td");
+    if (!isRemoved) {
+      actionTd.appendChild(el("button", {
+        text: "remove",
+        onclick: function () {
+          var reason = prompt("Reason for removing " + ((batchData.cards[member.oracle_id] || {}).name || member.oracle_id) + " from " + axis.slug + " (optional):", "");
+          if (reason === null) return; // cancelled
+          var d = axisDecision(axis.slug);
+          d.removed_members.push({ oracle_id: member.oracle_id, reason: reason });
+          saveDecisions();
+          selectAxis(axis.slug);
+        },
+      }));
+    } else {
+      var reason = (axisDecision(axis.slug).removed_members.filter(function (r) { return r.oracle_id === member.oracle_id; })[0] || {}).reason;
+      actionTd.appendChild(el("span", { class: "quote-text", text: "removed" + (reason ? ": " + reason : "") }));
+    }
+    tr.appendChild(nameTd);
+    tr.appendChild(quoteTd);
+    tr.appendChild(actionTd);
+    return tr;
+  }
+
+  function renderAxisDetail(content, axis) {
+    var d = axisDecision(axis.slug);
+    var removedIds = {};
+    d.removed_members.forEach(function (r) { removedIds[r.oracle_id] = true; });
+
+    content.appendChild(el("h2", { text: axis.slug }));
+    content.appendChild(el("div", { class: "facts-row" }, [
+      el("span", { class: "badge source-" + axis.source, text: axis.source }),
+      el("span", { class: "badge", text: axis.scope }),
+      el("span", { class: "fact", text: axis.parameterized ? "parameterized: yes" : "parameterized: no" }),
+      el("span", { class: "fact", text: axis.members.length + " members" }),
+    ]));
+    content.appendChild(el("div", { class: "def-block", text: axis.definition }));
+
+    // --- decision panel ---
+    var panel = el("div", { class: "decision-panel" });
+    panel.appendChild(el("label", { text: "Verdict" }));
+    var verdictBtns = el("div", { class: "verdict-btns" });
+    var VERDICTS = ["keep", "kill", "merge", "rename"];
+    VERDICTS.forEach(function (v) {
+      var btn = el("button", {
+        text: v.toUpperCase(),
+        class: d.verdict === v ? "active v-" + v : "",
+        onclick: function () {
+          d.verdict = (d.verdict === v) ? null : v;
+          saveDecisions();
+          selectAxis(axis.slug);
+        },
+      });
+      verdictBtns.appendChild(btn);
+    });
+    panel.appendChild(verdictBtns);
+
+    var mergeRow = el("div", { class: d.verdict === "merge" ? "" : "hidden" });
+    mergeRow.appendChild(el("label", { text: "Merge into" }));
+    var mergeSelect = el("select");
+    mergeSelect.appendChild(el("option", { value: "", text: "— choose axis —" }));
+    batchData.axes.forEach(function (a) {
+      if (a.slug === axis.slug) return;
+      var opt = el("option", { value: a.slug, text: a.slug });
+      if (d.merge_into === a.slug) opt.selected = true;
+      mergeSelect.appendChild(opt);
+    });
+    mergeSelect.addEventListener("change", function () { d.merge_into = mergeSelect.value || null; saveDecisions(); });
+    mergeRow.appendChild(mergeSelect);
+    panel.appendChild(mergeRow);
+
+    var renameRow = el("div", { class: d.verdict === "rename" ? "" : "hidden" });
+    renameRow.appendChild(el("label", { text: "New slug" }));
+    var renameInput = el("input", { type: "text", value: d.new_slug || "" });
+    renameInput.value = d.new_slug || "";
+    renameInput.addEventListener("input", function () { d.new_slug = renameInput.value || null; saveDecisions(); });
+    renameRow.appendChild(renameInput);
+    panel.appendChild(renameRow);
+
+    var fieldRow = el("div", { class: "field-row" });
+    var defCol = el("div");
+    defCol.appendChild(el("label", { text: "Edit definition (optional)" }));
+    var defInput = el("textarea");
+    defInput.value = d.definition_edit || "";
+    defInput.addEventListener("input", function () { d.definition_edit = defInput.value || null; saveDecisions(); });
+    defCol.appendChild(defInput);
+    var scopeCol = el("div");
+    scopeCol.appendChild(el("label", { text: "Edit scope (optional)" }));
+    var scopeInput = el("input", { type: "text" });
+    scopeInput.value = d.scope_edit || "";
+    scopeInput.addEventListener("input", function () { d.scope_edit = scopeInput.value || null; saveDecisions(); });
+    scopeCol.appendChild(scopeInput);
+    fieldRow.appendChild(defCol);
+    fieldRow.appendChild(scopeCol);
+    panel.appendChild(fieldRow);
+
+    panel.appendChild(el("label", { text: "Notes" }));
+    var noteInput = el("textarea");
+    noteInput.value = d.note || "";
+    noteInput.addEventListener("input", function () { d.note = noteInput.value; saveDecisions(); });
+    panel.appendChild(noteInput);
+
+    content.appendChild(panel);
+
+    // --- member list, never truncated ---
+    content.appendChild(el("div", { class: "section-label", text: "Members (" + axis.members.length + ")" }));
+    var table = el("table", { class: "member-table" }, [
+      el("thead", {}, [el("tr", {}, [el("th", { text: "card" }), el("th", { text: "evidence quote" }), el("th", { text: "" })])]),
+    ]);
+    var tbody = el("tbody");
+    axis.members.forEach(function (m) { tbody.appendChild(memberRow(axis, m, !!removedIds[m.oracle_id])); });
+    table.appendChild(tbody);
+    content.appendChild(table);
+  }
+
+  function renderOtherLane() {
+    centerShow(function (content) {
+      content.appendChild(el("h2", { text: "OTHER lane" }));
+      content.appendChild(el("div", { class: "def-block", text: "Single-card suggestions that didn't cluster into a candidate axis yet. Click a card to inspect, or propose a real axis from it in the right pane." }));
+      var rows = batchData.other_lane || [];
+      var table = el("table", { class: "member-table" }, [
+        el("thead", {}, [el("tr", {}, [el("th", { text: "card" }), el("th", { text: "label" }), el("th", { text: "definition" }), el("th", { text: "quote" })])]),
+      ]);
+      var tbody = el("tbody");
+      rows.forEach(function (r) {
+        tbody.appendChild(el("tr", {}, [
+          el("td", {}, [cardLink(r.oracle_id, r.quote)]),
+          el("td", { text: r.label }),
+          el("td", { text: r.definition }),
+          el("td", { class: "quote-text", text: r.quote }),
+        ]));
+      });
+      table.appendChild(tbody);
+      content.appendChild(table);
+    });
+  }
+
+  function renderCaptainAxisDetail(ca) {
+    centerShow(function (content) {
+      content.appendChild(el("h2", { text: ca.slug }));
+      content.appendChild(el("div", { class: "facts-row" }, [
+        el("span", { class: "badge source-CAPTAIN", text: "CAPTAIN" }),
+        el("span", { class: "badge", text: ca.scope }),
+      ]));
+      content.appendChild(el("div", { class: "def-block", text: ca.definition }));
+      content.appendChild(el("div", { class: "section-label", text: "Seed members (" + (ca.seed_members || []).length + ")" }));
+      var list = el("ul");
+      (ca.seed_members || []).forEach(function (oid) {
+        list.appendChild(el("li", {}, [cardLink(oid, null)]));
+      });
+      content.appendChild(list);
+      content.appendChild(el("button", {
+        class: "danger", text: "Delete this proposal",
+        onclick: function () {
+          if (!confirm("Delete proposed axis " + ca.slug + "?")) return;
+          decisions.captain_axes = decisions.captain_axes.filter(function (x) { return x.slug !== ca.slug; });
+          saveDecisions();
+          selectedAxisSlug = null;
+          renderAxisList();
+          renderCenterEmpty();
+        },
+      }));
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Right pane — card inspector
+  // ---------------------------------------------------------------------
+  function highlightInto(container, text, quote) {
+    if (!quote) { container.appendChild(document.createTextNode(text)); return false; }
+    var idx = text.toLowerCase().indexOf(quote.toLowerCase());
+    if (idx === -1) { container.appendChild(document.createTextNode(text)); return false; }
+    container.appendChild(document.createTextNode(text.slice(0, idx)));
+    container.appendChild(el("mark", { text: text.slice(idx, idx + quote.length) }));
+    container.appendChild(document.createTextNode(text.slice(idx + quote.length)));
+    return true;
+  }
+
+  function ptOrLoyalty(rec) {
+    if (rec.loyalty) return "Loyalty " + rec.loyalty;
+    if (rec.power != null || rec.toughness != null) return (rec.power == null ? "?" : rec.power) + "/" + (rec.toughness == null ? "?" : rec.toughness);
+    return null;
+  }
+
+  function otherAxesForCard(oracleId, excludeSlug) {
+    var found = [];
+    batchData.axes.forEach(function (a) {
+      if (a.slug === excludeSlug) return;
+      a.members.forEach(function (m) { if (m.oracle_id === oracleId) found.push({ slug: a.slug, quote: m.quote }); });
+    });
+    (batchData.other_lane || []).forEach(function (r) {
+      if (r.oracle_id === oracleId) found.push({ slug: "OTHER: " + r.label, quote: r.quote });
+    });
+    return found;
+  }
+
+  function selectCard(oracleId, quote) {
+    selectedCardId = oracleId;
+    var rec = batchData.cards[oracleId];
+    document.getElementById("inspector-empty").classList.add("hidden");
+    var content = document.getElementById("inspector-content");
+    content.classList.remove("hidden");
+    clear(content);
+    if (!rec) {
+      content.appendChild(el("div", { class: "empty-state", text: "no card record for " + oracleId }));
+      return;
+    }
+
+    content.appendChild(el("div", { class: "inspector-header", text: rec.name }));
+    content.appendChild(el("div", { class: "inspector-typeline", text: rec.type_line + (rec.mana_cost ? "  " + rec.mana_cost : "") }));
+    content.appendChild(el("div", { class: "chip-row" }, [
+      el("span", { class: "chip", text: (rec.color_identity || []).join("") || "C" }),
+      el("span", { class: "chip", text: rec.set ? rec.set.toUpperCase() : "" }),
+      el("span", { class: "chip", text: rec.rarity || "" }),
+      el("span", { class: "chip", text: rec.layout || "" }),
+      ptOrLoyalty(rec) ? el("span", { class: "chip", text: ptOrLoyalty(rec) }) : null,
+    ]));
+    if ((rec.keywords || []).length) {
+      content.appendChild(el("div", { class: "chip-row" }, rec.keywords.map(function (k) { return el("span", { class: "chip", text: k }); })));
+    }
+
+    var facesToShow = (rec.faces && rec.faces.length) ? rec.faces : [{
+      name: rec.name, mana_cost: rec.mana_cost, type_line: rec.type_line,
+      oracle_text: rec.oracle_text, power: rec.power, toughness: rec.toughness, loyalty: rec.loyalty,
+    }];
+    facesToShow.forEach(function (face) {
+      var block = el("div", { class: "face-block" });
+      block.appendChild(el("div", { class: "face-header" }, [
+        el("span", { text: face.name }),
+        el("span", { text: face.mana_cost || "" }),
+      ]));
+      block.appendChild(el("div", { class: "inspector-typeline", text: face.type_line }));
+      var textEl = el("div", { class: "oracle-text" });
+      highlightInto(textEl, face.oracle_text || "", quote);
+      block.appendChild(textEl);
+      var ptl = ptOrLoyalty(face);
+      if (ptl) block.appendChild(el("div", { class: "fact", text: ptl }));
+      content.appendChild(block);
+    });
+
+    if (quote) {
+      var foundAnywhere = facesToShow.some(function (f) { return (f.oracle_text || "").toLowerCase().indexOf(quote.toLowerCase()) !== -1; });
+      if (!foundAnywhere) {
+        content.appendChild(el("div", { class: "fact", text: "evidence quote (not matched verbatim in displayed text): “" + quote + "”" }));
+      }
+    }
+
+    // other axes this card is assigned in this batch
+    content.appendChild(el("div", { class: "section-label", text: "Other axes this batch" }));
+    var others = otherAxesForCard(oracleId, selectedAxisSlug);
+    if (!others.length) {
+      content.appendChild(el("div", { class: "fact", text: "none" }));
+    } else {
+      var list = el("ul", { class: "other-axes-list" });
+      others.forEach(function (o) {
+        list.appendChild(el("li", {}, [
+          el("button", { class: "card-link", text: o.slug, onclick: function () {
+            if (o.slug.indexOf("OTHER: ") === 0) { selectedAxisSlug = "__other__"; renderAxisList(); renderOtherLane(); }
+            else selectAxis(o.slug);
+          } }),
+        ]));
+      });
+      content.appendChild(list);
+    }
+
+    // Captain tag input
+    content.appendChild(el("div", { class: "section-label", text: "Captain tags" }));
+    var tagList = el("div");
+    function renderTagList() {
+      clear(tagList);
+      var mine = decisions.captain_card_tags.filter(function (t) { return t.oracle_id === oracleId; });
+      if (!mine.length) tagList.appendChild(el("div", { class: "fact", text: "none yet" }));
+      mine.forEach(function (t) {
+        tagList.appendChild(el("div", { class: "tag-list-item" }, [
+          el("span", { class: "tag-name", text: t.tag + (t.note ? " — " + t.note : "") }),
+          el("button", { text: "×", onclick: function () {
+            decisions.captain_card_tags = decisions.captain_card_tags.filter(function (x) { return x !== t; });
+            saveDecisions();
+            renderTagList();
+          } }),
+        ]));
+      });
+    }
+    renderTagList();
+    content.appendChild(tagList);
+
+    var tagInput = el("input", { type: "text", placeholder: "new tag…" });
+    var tagNote = el("input", { type: "text", placeholder: "note (optional)" });
+    var tagAddBtn = el("button", {
+      text: "Add tag",
+      onclick: function () {
+        var val = tagInput.value.trim();
+        if (!val) return;
+        decisions.captain_card_tags.push({ oracle_id: oracleId, tag: val, note: tagNote.value.trim() });
+        saveDecisions();
+        tagInput.value = ""; tagNote.value = "";
+        renderTagList();
+      },
+    });
+    content.appendChild(el("div", { class: "field-row" }, [tagInput, tagNote]));
+    content.appendChild(tagAddBtn);
+
+    // Propose new axis from this card
+    content.appendChild(el("div", { class: "section-label", text: "Propose new axis" }));
+    var proposeBtn = el("button", { class: "primary", text: "Propose new axis from this card" });
+    var proposeForm = el("div", { class: "hidden" });
+    var slugIn = el("input", { type: "text", placeholder: "rule:new-slug" });
+    var defIn = el("textarea");
+    defIn.placeholder = "one-line definition";
+    var scopeIn = el("input", { type: "text", placeholder: "actor-scope, e.g. your-stuff" });
+    var extraIn = el("input", { type: "text", placeholder: "extra oracle_ids, comma-separated (optional)" });
+    proposeForm.appendChild(el("label", { text: "Slug" })); proposeForm.appendChild(slugIn);
+    proposeForm.appendChild(el("label", { text: "Definition" })); proposeForm.appendChild(defIn);
+    proposeForm.appendChild(el("label", { text: "Scope" })); proposeForm.appendChild(scopeIn);
+    proposeForm.appendChild(el("label", { text: "Extra seed members" })); proposeForm.appendChild(extraIn);
+    var submitBtn = el("button", {
+      class: "primary", text: "Create axis",
+      onclick: function () {
+        var slug = slugIn.value.trim();
+        if (!slug) { alert("slug required"); return; }
+        if (decisions.captain_axes.some(function (a) { return a.slug === slug; })) { alert("that slug already exists among your proposed axes"); return; }
+        var extras = extraIn.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+        decisions.captain_axes.push({
+          slug: slug, definition: defIn.value.trim(), scope: scopeIn.value.trim(),
+          seed_members: [oracleId].concat(extras),
+        });
+        saveDecisions();
+        renderAxisList();
+        proposeForm.classList.add("hidden");
+        slugIn.value = ""; defIn.value = ""; scopeIn.value = ""; extraIn.value = "";
+      },
+    });
+    proposeForm.appendChild(submitBtn);
+    proposeBtn.addEventListener("click", function () { proposeForm.classList.toggle("hidden"); });
+    content.appendChild(proposeBtn);
+    content.appendChild(proposeForm);
+  }
+
+  function renderInspectorEmpty() {
+    document.getElementById("inspector-empty").classList.remove("hidden");
+    document.getElementById("inspector-content").classList.add("hidden");
+  }
+})();
+</script>
+</body>
+</html>
