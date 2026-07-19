@@ -13,11 +13,37 @@ sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import tier_engine as te  # noqa: E402
 
 FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" / "foundry"
+REVIEW_DIR = FOUNDRY_OUT_DIR / "review"
 
 
 def halt(message: str) -> None:
     print(f"STOP — {message}", file=sys.stderr)
     sys.exit(1)
+
+
+def batch_paths(batch_num: int) -> dict:
+    """Canonical per-batch output filenames for every foundry_*.py script.
+    Batch 1 kept its original unsuffixed filenames (already committed
+    before this convention existed); batch 2+ gets batch-numbered filenames
+    so no two batches' artifacts ever collide. Single source of truth --
+    foundry_stage1b.py, foundry_consolidate.py, and foundry_enrich.py all
+    import this instead of each defining their own copy."""
+    suffix = "" if batch_num == 1 else f"_batch{batch_num}"
+    bsuffix = "-1" if batch_num == 1 else f"-{batch_num}"  # review/ files use batch-N.json naming
+    return {
+        "assembled": FOUNDRY_OUT_DIR / f"batch{batch_num}_assembled.json",
+        "requests": FOUNDRY_OUT_DIR / f"stage1b_requests{suffix}.json",
+        "batch_record": FOUNDRY_OUT_DIR / f"stage1b_batch{suffix}.json",
+        "completion_note": FOUNDRY_OUT_DIR / f"stage1b_completion_note{suffix}.md",
+        "cost_estimate": FOUNDRY_OUT_DIR / f"stage1b_cost_estimate{suffix}.json",
+        "raw_results": FOUNDRY_OUT_DIR / f"stage1b_raw_results{suffix}.jsonl",
+        "consolidated": FOUNDRY_OUT_DIR / f"consolidated_batch{batch_num}.json",
+        "consolidate_clusters_raw": FOUNDRY_OUT_DIR / f"consolidate_clusters_raw{suffix}.json",
+        "review": REVIEW_DIR / f"batch{bsuffix}.json",
+        "enriched": REVIEW_DIR / f"batch{bsuffix}-enriched.json",
+        "enriched_stats": REVIEW_DIR / f"batch{bsuffix}-enriched-stats.json",
+        "digest": REVIEW_DIR / f"digest-batch-{batch_num}.md",
+    }
 
 
 def load_corpus():

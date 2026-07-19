@@ -75,3 +75,61 @@ cards + quotes, and any kinship note worth carrying into Phase B design.
   {3}.)"
 - **Note:** bare keyword + reminder text, Tagger-covered; no distinct
   kinship signal beyond the keyword itself.
+
+## Batch 2 (2026-07-19)
+
+### Kicker
+- **Killed axes:** `rule:kicked-conditional-etb-bonus`,
+  `rule:kicker-scales-effect`, `rule:kicker-scales-effect-magnitude` (3
+  free-lane candidates, all the same keyword)
+- **Representative cards:** All-Star Kicker — "Then if All-Star Kicker was
+  kicked, creatures your team controls get +1/+1 and gain haste..."; Shell
+  Shield — "If this spell was kicked, that creature also gains hexproof
+  until end of turn."; Burst Lightning — "If this spell was kicked, it
+  deals 4 damage instead."
+- **Note:** Kicker (optional additional cost, conditional payoff) is a
+  CR-defined keyword; the "if kicked" branching is the keyword's own
+  rules text, not a derived functional pattern. Three separately-worded
+  free-lane clusters collapsed to one ledger entry.
+
+### Venture into the Dungeon
+- **Killed axis:** `rule:venture-into-dungeon`
+- **Representative cards:** Undercity // The Initiative — "You can't enter
+  this dungeon unless you 'venture into Undercity.'"; Lost Mine of
+  Phandelver — "Cave Entrance — Scry 1. (Leads to: Goblin Lair, Mine
+  Tunnels)"
+- **Note:** Venture into the Dungeon is a CR-defined keyword action
+  (Adventures in the Forgotten Realms).
+
+### Daybound/Nightbound (werewolf transform)
+- **Killed axis:** `rule:werewolf-daybound-transform-trigger`
+- **Representative card:** Lambholt Pacifist // Lambholt Butcher — "At the
+  beginning of each upkeep, if no spells were cast last turn, transform
+  this creature." / "...if a player cast two or more spells last turn,
+  transform..."
+- **Note:** Daybound/Nightbound is a CR-defined keyword pair. Also flagged
+  as single-card evidence (both instances trace to the same card) —
+  doubly disqualified as a derived axis.
+
+### Saga-chapter-transform templating
+- **Killed axis:** `rule:saga-transform-into-creature`
+- **Representative cards:** The Legend of Kuruk // Avatar Kuruk, Azusa's
+  Many Journeys // Likeness of the Seeker — both: "Exile this Saga, then
+  return it to the battlefield transformed under your control."
+- **Note:** Standard Saga-template boilerplate for chapter-final
+  transformation, same standing as batch-1-killed
+  `rule:saga-chapter-progression` — a layout/template fact, not a
+  functional kinship signal.
+
+### Spellbook
+- **Killed axis:** `rule:draft-from-spellbook` (Q3, Captain-ratified
+  kill-and-ledger)
+- **Representative cards:** Key to the Archive — "When this artifact
+  enters, draft a card from this artifact's spellbook, then discard a
+  card..."; March Toward Perfection — "Draft a card from March Toward
+  Perfection's spellbook."
+- **Note:** "Spellbook" drafting is a defined, recurring game-rules
+  concept tied to specific cards (not a CR keyword with its own reminder
+  text, but functions the same way for ledger purposes per Captain's
+  ruling) — real mechanic, but the shared surface is the spellbook
+  mechanism itself, not a derived functional pattern.

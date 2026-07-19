@@ -13,15 +13,22 @@ exact existing slug) before free-labeling a novel one (lane="free") -- per
 TRIAGE-BATCH-1.md's batch-2 feedback and SUP-TRIAGE-PROTOCOL's standing
 "two-lane labeling... free-labeling of novel patterns explicitly encouraged."
 
-Two subcommands:
-  prepare  -- builds the per-card requests from batch<N>_assembled.json,
-              samples real token counts via the (free) count_tokens endpoint,
-              prints a full cost estimate against LIVE pricing, writes the
-              request bodies to disk, and HALTS for Captain's go-ahead.
-              Makes no batch-creating call.
-  submit   -- reads the prepared requests, submits the batch, records the
-              batch ID under experiments/out/foundry/, writes a completion
-              note. Only run after Captain's explicit go-ahead.
+Three subcommands:
+  prepare       -- builds the per-card requests from batch<N>_assembled.json,
+                   samples real token counts via the (free) count_tokens
+                   endpoint, prints a full cost estimate against LIVE
+                   pricing, writes the request bodies to disk, and HALTS
+                   for Captain's go-ahead. Makes no batch-creating call.
+  submit        -- reads the prepared requests, submits the batch, records
+                   the batch ID under experiments/out/foundry/, writes a
+                   completion note. Only run after Captain's explicit
+                   go-ahead.
+  fetch-results -- polls the recorded batch ID for processing_status, and
+                   once ended, streams the raw per-card JSONL results to
+                   disk (stage1b_raw_results[_batch<N>].jsonl) verbatim --
+                   the exact shape foundry_consolidate.py's
+                   load_raw_instances() reads. HALTS (not an error) if the
+                   batch hasn't ended yet.
 
 API key: read from env var MTJAWNNY_BATCH_KEY ONLY (never ANTHROPIC_API_KEY,
 which must stay unset so Claude Code stays on the subscription plan). The
@@ -30,7 +37,8 @@ written to any file, never logged.
 
 Run (from repo root):
   python3 experiments/foundry_stage1b.py prepare --batch 2
-  python3 experiments/foundry_stage1b.py submit --batch 2    # only after go-ahead
+  python3 experiments/foundry_stage1b.py submit --batch 2       # only after go-ahead
+  python3 experiments/foundry_stage1b.py fetch-results --batch 2
 """
 import sys
 import os
@@ -58,18 +66,7 @@ COUNT_TOKENS_SAMPLE_N = 25
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 
 
-def batch_paths(batch_num: int):
-    """Batch 1 kept its original unsuffixed filenames (already committed);
-    batch 2+ gets batch-numbered filenames so concurrent/future batches never
-    clobber each other's requests/records."""
-    suffix = "" if batch_num == 1 else f"_batch{batch_num}"
-    return {
-        "assembled": fc.FOUNDRY_OUT_DIR / f"batch{batch_num}_assembled.json",
-        "requests": fc.FOUNDRY_OUT_DIR / f"stage1b_requests{suffix}.json",
-        "batch_record": fc.FOUNDRY_OUT_DIR / f"stage1b_batch{suffix}.json",
-        "completion_note": fc.FOUNDRY_OUT_DIR / f"stage1b_completion_note{suffix}.md",
-        "cost_estimate": fc.FOUNDRY_OUT_DIR / f"stage1b_cost_estimate{suffix}.json",
-    }
+batch_paths = fc.batch_paths  # canonical per-batch filenames now live in foundry_common.py
 
 
 def load_codebook_reference() -> str:
@@ -225,6 +222,59 @@ def api_get(path: str) -> dict:
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")
         fc.halt(f"GET {path} -> HTTP {e.code}: {detail}")
+
+
+def api_get_raw_url(url: str) -> bytes:
+    """Same auth headers as api_get, but for a full URL (results_url is
+    absolute) and returns raw bytes rather than parsing as one JSON object --
+    the results endpoint is JSONL (one JSON object per line), not a single
+    JSON document."""
+    headers = {"x-api-key": api_key(), "anthropic-version": ANTHROPIC_VERSION}
+    req = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        fc.halt(f"GET {url} -> HTTP {e.code}: {detail}")
+
+
+# ---------------------------------------------------------------------------
+# fetch-results
+# ---------------------------------------------------------------------------
+
+def cmd_fetch_results(batch_num: int):
+    paths = batch_paths(batch_num)
+    batch_record_path, raw_results_path = paths["batch_record"], paths["raw_results"]
+    if not batch_record_path.exists():
+        fc.halt(f"{batch_record_path} not found -- run `submit --batch {batch_num}` first")
+    if raw_results_path.exists():
+        fc.halt(f"{raw_results_path} already exists -- refusing to overwrite. Delete it first if you intend to re-fetch.")
+
+    record = json.loads(batch_record_path.read_text())
+    batch_id = record["batch_id"]
+    print(f"checking status of batch {batch_id} (batch {batch_num})...")
+    status = api_get(f"/v1/messages/batches/{batch_id}")
+    processing_status = status["processing_status"]
+    counts = status.get("request_counts", {})
+    print(f"processing_status={processing_status} counts={counts}")
+
+    if processing_status != "ended":
+        fc.halt(f"batch {batch_id} has not ended yet (processing_status={processing_status!r}) -- "
+                f"try again later, do not poll in a loop from here")
+
+    results_url = status["results_url"]
+    print(f"fetching results from {results_url} ...")
+    raw = api_get_raw_url(results_url)
+    raw_results_path.write_bytes(raw)
+    n_lines = raw.decode("utf-8").count("\n")
+    print(f"wrote {raw_results_path} ({n_lines} lines, {len(raw):,} bytes)")
+
+    n_errored = counts.get("errored", 0) + counts.get("canceled", 0) + counts.get("expired", 0)
+    if n_errored:
+        print(f"NOTE: {n_errored} request(s) did not succeed (errored/canceled/expired) -- "
+              f"foundry_consolidate.py's load_raw_instances halts loudly if it encounters a "
+              f"non-succeeded result type, so this needs Captain's attention before consolidating.")
 
 
 # ---------------------------------------------------------------------------
@@ -423,12 +473,16 @@ def main():
     p_prepare.add_argument("--batch", type=int, required=True, help="batch number to prepare (reads batch<N>_assembled.json)")
     p_submit = sub.add_parser("submit", help="submit the prepared batch (only after go-ahead)")
     p_submit.add_argument("--batch", type=int, required=True, help="batch number to submit")
+    p_fetch = sub.add_parser("fetch-results", help="fetch raw results once the batch has ended")
+    p_fetch.add_argument("--batch", type=int, required=True, help="batch number to fetch results for")
     args = parser.parse_args()
 
     if args.command == "prepare":
         cmd_prepare(args.batch)
     elif args.command == "submit":
         cmd_submit(args.batch)
+    elif args.command == "fetch-results":
+        cmd_fetch_results(args.batch)
 
 
 if __name__ == "__main__":

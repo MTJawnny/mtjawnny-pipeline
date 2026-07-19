@@ -251,7 +251,7 @@ def build_token_groups(other_lane: list) -> list:
 # 5. DISCARD AUDIT
 # ---------------------------------------------------------------------------
 
-def build_discard_audit(cards: dict) -> list:
+def build_discard_audit(cards: dict, raw_results_path: Path) -> list:
     """Re-runs the Stage-1B evidence-quote-or-discard gate (foundry_
     consolidate.load_raw_instances) to recover the discarded instances, then
     checks each discarded quote against ALL faces of that card's oracle
@@ -259,7 +259,7 @@ def build_discard_audit(cards: dict) -> list:
     quote turns up on a face the gate's join should have already covered,
     that's a genuine face-scanning miss and gets reported LOUDLY. Nothing
     is re-admitted; this only reports."""
-    _, discarded = fcon.load_raw_instances(cards)
+    _, discarded, _ = fcon.load_raw_instances(cards, raw_results_path)
     audit = []
     for d in discarded:
         if d["reason"] != "quote not verbatim in oracle text":
@@ -353,12 +353,17 @@ def enrich(in_path: Path, out_path: Path) -> dict:
 
     # --- 5. DISCARD AUDIT ---
     print("[5] auditing Stage 1B evidence-gate discards...")
-    discard_audit = build_discard_audit(cards)
+    raw_results_path = fc.batch_paths(batch["batch"])["raw_results"]
+    discard_audit = build_discard_audit(cards, raw_results_path)
     batch["discard_audit"] = discard_audit
     face_scanning_misses = [a for a in discard_audit if a["face_scanning_miss"]]
     print(f"    {len(discard_audit)} discarded instance(s) audited, {len(face_scanning_misses)} face-scanning miss(es)")
     if face_scanning_misses:
-        print(f"    !!! LOUD: face-scanning miss(es) found: {face_scanning_misses}")
+        # Names/oracle_ids only -- never print raw quote/oracle text to console
+        # (transcript hygiene: avoid tripping content filters on out-of-context
+        # game text). Full detail (including quotes) is in the enriched JSON file.
+        summary = [(a["oracle_id"], a["name"], a["found_on_faces"]) for a in face_scanning_misses]
+        print(f"    !!! LOUD: face-scanning miss(es) found (oracle_id, name, faces): {summary}")
 
     stats = {
         "n_axes": len(batch["axes"]),
