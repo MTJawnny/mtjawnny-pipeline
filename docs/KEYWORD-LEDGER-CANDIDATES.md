@@ -133,3 +133,47 @@ cards + quotes, and any kinship note worth carrying into Phase B design.
   text, but functions the same way for ledger purposes per Captain's
   ruling) — real mechanic, but the shared surface is the spellbook
   mechanism itself, not a derived functional pattern.
+
+## Batch 3 (2026-07-19)
+
+### Regenerate
+- **Killed axis:** `rule:activated-regenerate-self`
+- **Representative cards:** Manor Skeleton, Cinderbones — "{1}{B}:
+  Regenerate this creature."
+- **Note (SUP, carried forward for schema pass):** Captain's ruling was
+  kill-and-restructure, not a plain kill — decompose into a future
+  `rule:activated-ability` (mechanism) / `rule:regenerate-self` (effect)
+  parent-child pair, with siblings `rule:regenerate-target`,
+  `rule:regenerate-controller-board`, `rule:regenerate-all` for
+  non-activated regeneration sources. Tracked in
+  `mtjawnny.github.io/docs/PARENT-TREE-CANDIDATES.md`; the Regenerate
+  *keyword* itself still belongs on this ledger regardless of how the
+  eventual parent scheme is built.
+
+### Energy
+- **Killed axis:** `rule:etb-grants-energy-counters` (Q2, Captain-ratified
+  kill-and-ledger)
+- **Representative cards:** Aether Inspector, Riparian Tiger — "When this
+  creature enters, you get {E}{E} (two energy counters)."
+- **Note:** Energy counters are a defined resource type with consistent
+  "You get {E}{E}" boilerplate, similar in shape to Kicker's cost
+  templating. Captain registered a 4-axis energy family for future
+  derivation instead of one catch-all tag (`rule:gives-energy-counters-
+  immediately`, `rule:gives-energy-counters-condition`,
+  `rule:energy-outlet-condition`, `rule:energy-outlet-infinite` — see
+  `experiments/out/foundry/decisions/batch-3.json`'s captain_authored_axes
+  and `experiments/out/foundry/codebook.json`, both already active).
+  Aether Inspector and Riparian Tiger themselves were reassigned to
+  `rule:energy-outlet-condition` (energy granted on an attack trigger, not
+  ETB as originally labeled, and not an infinite outlet).
+
+### Perpetual
+- **Killed axis:** `rule:perpetual-any-color-mana-cast` (Q3, Captain-
+  ratified kill-and-ledger)
+- **Representative cards:** Soul Servitude, Clone Crafter — "It
+  perpetually gains \"You may spend mana as though it were mana of any
+  color to cast this spell.\""
+- **Note:** "Perpetually" is an Alchemy/Arena-only duration mechanism
+  (Kamigawa: Neon Dynasty), not a CR keyword with reminder text the way
+  Kicker is, but consistent repeated boilerplate — same mechanism-adjacent
+  standing. Captain: "Alchemy is lame and sucks."

@@ -111,6 +111,7 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
     anomalies = []
     parse_failures = 0
     refusals = 0
+    non_succeeded = {}  # result-type -> count, for errored/canceled/expired rows
     codebook_hits = 0
 
     for line in raw_results_path.read_text(encoding="utf-8").splitlines():
@@ -118,8 +119,16 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
         oracle_id = row["custom_id"]
         result = row["result"]
         if result["type"] != "succeeded":
-            fc.halt(f"card {oracle_id}: batch result type {result['type']!r}, expected all rows to have "
-                     f"succeeded (verified live before this script ran) -- unexpected state, investigate")
+            # Non-succeeded rows (errored/canceled/expired) carry no message at
+            # all -- the request was never answered. Batch-3 hit a live
+            # "overloaded_error" (transient infra hiccup, not a content/data
+            # issue) on one card out of 1,200. Treated the same way as a
+            # model refusal: zero axes contributed, logged loudly, not a
+            # crash -- a single dropped card is not the "unexpected state"
+            # this halt exists to catch; a MASS failure still would be
+            # (see the loud percentage check below).
+            non_succeeded[result["type"]] = non_succeeded.get(result["type"], 0) + 1
+            continue
 
         message = result["message"]
         content = message.get("content") or []
@@ -179,6 +188,18 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
                 # intentional slugs -- a much cleaner clustering signal.
                 "tokens": normalize_tokens(label),
             })
+
+    n_rows = len(instances) + len(discarded) + refusals  # rows that got a message back (crude proxy, undercounts
+                                                           # cards contributing 0 instances with no discards either)
+    n_non_succeeded = sum(non_succeeded.values())
+    if n_non_succeeded:
+        total_rows = len(raw_results_path.read_text(encoding="utf-8").splitlines())
+        rate = n_non_succeeded / total_rows if total_rows else 0
+        print(f"non-succeeded batch rows: {n_non_succeeded}/{total_rows} ({rate:.1%}) -- {non_succeeded}")
+        if rate > 0.02:
+            fc.halt(f"{n_non_succeeded}/{total_rows} rows ({rate:.1%}) did not succeed -- this exceeds the "
+                     f"2% single-row-hiccup tolerance and looks like a systemic API/infra problem, not an "
+                     f"isolated transient error; investigate before consolidating")
 
     n_total = len(instances) + len(discarded) + refusals
     print(f"parsed {n_total} raw axis instance(s)/response(s) from {raw_results_path.name} "

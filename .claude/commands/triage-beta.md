@@ -38,6 +38,10 @@ contract. Requirements:
    oracle text before including it.
 6. Batch-feedback section: concrete SYNTH-prompt revisions for batch
    N+1 derived from this batch's failure patterns.
+6b. Parent flags: whenever a verdict or note implies a parent/hierarchy
+   relationship, APPEND it to docs/PARENT-TREE-CANDIDATES.md under
+   "Proposed parents" (one line, cite the batch) — never restructure
+   axes around it now; the schema pass ratifies parents.
 7. Verify: verdict count == axis count, no duplicates, every MERGE target
    named. Then STOP — print the file path and tell Captain to annotate
    per the protocol convention and run /triage-emit $ARGUMENTS when done.
