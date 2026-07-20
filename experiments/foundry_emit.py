@@ -81,7 +81,7 @@ def emit(consolidated_path: Path, out_path: Path) -> dict:
         fc.halt(f"{len(unknown)} oracle_id(s) referenced by the consolidated input are not in the corpus: "
                 f"{sorted(unknown)[:10]}{'...' if len(unknown) > 10 else ''}")
 
-    cards_out = {oid: fc.build_review_card_record(cards[oid]) for oid in oracle_ids}
+    cards_out = {oid: fc.build_review_card_record(cards[oid]) for oid in sorted(oracle_ids)}
 
     batch_json = {
         "schema": "foundry-review/1",
