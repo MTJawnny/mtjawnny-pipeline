@@ -45,7 +45,10 @@ each `Q<i>` a tight either/or ending `-> RULE: ______`, max 8;
 OTHER-lane promotions with named members; override sample: 30 rows,
 fixed seed = 20260718 + N, drawn from confident calls only, table of
 axis | verdict | sample member | quote; batch-feedback section for the
-next SYNTH prompt.
+next SYNTH prompt; **MEMBER ROSTER section (added batch-5, per batch-4
+punch list): every axis, full member card names only (no oracle text) —
+lets Captain audit membership directly instead of trusting the verdict
+logic alone.**
 
 **Decisions** (`experiments/out/foundry/decisions/batch-N.json`,
 schema sup-triage-decisions-v1): per-axis verdicts

@@ -25,6 +25,14 @@ contract. Requirements:
    KILL (engine granted_keyword redundancy, ratified Q1);
    judge at SYNTH granularity, parents/parameters are notes for the
    schema pass, not restructures.
+   **EXCEPTION (batch-4 D6, precedent reversal):** cost-shape riders
+   (additional-cost-*, alt-cost-*, activation-cost-shape candidates) are
+   NOT auto-KILL anymore -- the b2/b3 "cost-shape riders are not axes"
+   precedent is overturned; cost-side axes are legitimate wide-net axes.
+   Judge them the same as any other candidate on their own merits.
+   **STANDING RULE (batch-4 D4):** any `grants-temporary-<keyword>`
+   candidate (any keyword) folds into `rule:temporary-keyword-grant` on
+   sight -- do not raise it as a question or propose a fresh merge.
 2. Check each axis against the codebook: exact-duplicate of an existing
    ratified axis -> MERGE into it; contradiction -> QUESTION.
 3. QUESTIONS lane: genuine decisions only, tight either/ors with your
@@ -38,6 +46,9 @@ contract. Requirements:
    oracle text before including it.
 6. Batch-feedback section: concrete SYNTH-prompt revisions for batch
    N+1 derived from this batch's failure patterns.
+6a. MEMBER ROSTER section (batch-5 spec change, per batch-4 punch list):
+   every axis, full member card names only (no oracle text) — audit
+   membership directly, not just the verdict logic.
 6b. Parent flags: whenever a verdict or note implies a parent/hierarchy
    relationship, APPEND it to docs/PARENT-TREE-CANDIDATES.md under
    "Proposed parents" (one line, cite the batch) — never restructure

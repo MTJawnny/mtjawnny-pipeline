@@ -95,6 +95,16 @@ def _extract_faces(card: dict) -> list:
     return faces
 
 
+def full_oracle_text(card: dict) -> str:
+    """All-faces oracle text, newline-joined -- the root-level 'oracle_text'
+    field is empty for multi-face layouts (transform/modal_dfc/adventure/
+    prepare/etc.), so this always goes through te.get_raw_faces() (which
+    falls back to the root field itself for single-face cards) rather than
+    reading card['oracle_text'] directly. Mirrors foundry_enrich.py's own
+    full_oracle_text() -- same source, same join convention."""
+    return "\n".join(f["oracle_text"] for f in te.get_raw_faces(card) if f["oracle_text"])
+
+
 def build_review_card_record(card: dict) -> dict:
     """The exact 'cards' entry shape T3-AXIS-FOUNDRY-v3.md's batch-N.json
     schema wants, extended with the fields the review tool's card-inspector
@@ -105,7 +115,7 @@ def build_review_card_record(card: dict) -> dict:
         "name": card.get("name") or "",
         "mana_cost": card.get("mana_cost") or "",
         "type_line": card.get("type_line") or "",
-        "oracle_text": card.get("oracle_text") or "",
+        "oracle_text": full_oracle_text(card),
         "power": card.get("power"),
         "toughness": card.get("toughness"),
         "loyalty": card.get("loyalty"),

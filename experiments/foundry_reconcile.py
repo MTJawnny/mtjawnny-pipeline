@@ -76,7 +76,7 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
     axes_by_slug = {a["slug"]: a for a in batch["axes"]}
     decided_axes = decisions.get("axes", {})
 
-    counts = {"kept": 0, "killed": 0, "merged": 0, "renamed": 0, "undecided": 0}
+    counts = {"kept": 0, "killed": 0, "merged": 0, "renamed": 0, "deferred": 0, "undecided": 0}
     diff_lines = []
 
     # First pass: apply removed_members and stage each axis's resulting member set.
@@ -158,6 +158,25 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
             codebook["axes"][target] = tgt_entry
             diff_lines.append(f"- MERGE `{slug}` -> `{target}` ({len(members)} members carried over) — {note}")
 
+        elif verdict == "defer":
+            # Batch-4 D5: axis is recorded with its members but not offered to
+            # SYNTH as an active codebook slug (stage1b's load_codebook_reference
+            # filters status=="active" only) and not merged anywhere, pending a
+            # specific future Captain ruling. Distinct from "undecided": deferred
+            # axes DO get a codebook entry, so future SYNTH prompts don't
+            # re-propose the same free-lane candidate from scratch.
+            counts["deferred"] += 1
+            entry = codebook["axes"].get(slug, {
+                "definition": axis["definition"], "scope": axis["scope"], "source": axis["source"],
+                "parameterized": axis["parameterized"], "member_oracle_ids": [], "status": "active",
+                "merged_into": None, "history": [],
+            })
+            entry["status"] = "deferred"
+            entry["member_oracle_ids"] = sorted(set(entry["member_oracle_ids"]) | {m["oracle_id"] for m in members})
+            entry["history"].append({"batch": n, "action": "deferred", "note": note})
+            codebook["axes"][slug] = entry
+            diff_lines.append(f"- DEFER `{slug}` ({len(members)} members this batch, {len(entry['member_oracle_ids'])} total) — {note or '(no reason given)'}")
+
         elif verdict == "rename":
             new_slug = dec.get("new_slug")
             if not new_slug:
@@ -211,6 +230,25 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
         fc.write_json(TAGS_QUEUE_PATH, queue)
         diff_lines.append(f"- queued {len(captain_tags)} captain_card_tags to {TAGS_QUEUE_PATH} (not yet in tags/cards.yaml)")
 
+    # Cross-axis member additions -- a card ratified onto an axis it is NOT
+    # a batch-N member of in this batch's own review JSON (e.g. batch-4 D2's
+    # reassignment, D3's M8 mixed-target second tag). Distinct from the
+    # normal per-axis "keep" path, which only ever unions in a batch's own
+    # membership for that slug. Applied after every other pass so the target
+    # axis entry already exists with this batch's own members staged in.
+    member_additions = decisions.get("member_additions", [])
+    for add in member_additions:
+        slug = add["slug"]
+        oid = add["oracle_id"]
+        if slug not in codebook["axes"]:
+            fc.halt(f"member_addition targets axis {slug!r}, which does not exist in the codebook after this batch's other passes")
+        entry = codebook["axes"][slug]
+        if oid in entry["member_oracle_ids"]:
+            fc.halt(f"member_addition: oracle_id {oid} is already a member of {slug!r} — redundant addition, check the decisions file")
+        entry["member_oracle_ids"] = sorted(entry["member_oracle_ids"] + [oid])
+        entry["history"].append({"batch": n, "action": "member_added", "note": add.get("note", "")})
+        diff_lines.append(f"- MEMBER ADDED to `{slug}`: {add.get('name', oid)} — {add.get('note', '')}")
+
     # Convergence metrics.
     total_axis_members_this_batch = sum(len(a["members"]) for a in batch["axes"])
     other_lane_n = len(batch.get("other_lane", []))
@@ -237,7 +275,7 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
         f"# Batch {n} reconciliation diff — codebook v{codebook['version']}",
         "",
         f"Axes reviewed: {len(axes_by_slug)} | kept={counts['kept']} killed={counts['killed']} "
-        f"merged={counts['merged']} renamed={counts['renamed']} undecided={counts['undecided']}",
+        f"merged={counts['merged']} renamed={counts['renamed']} deferred={counts['deferred']} undecided={counts['undecided']}",
         f"Active axes in codebook after this batch: {active_axis_count}",
         "",
         f"## Convergence metrics (batch {n})",

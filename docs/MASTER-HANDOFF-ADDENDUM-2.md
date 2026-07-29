@@ -74,7 +74,34 @@ fixed: single-card clusters masquerading as 2-card families (distinct
 oracle_id count now enforced). Emit found+patched: reconcile was
 silently dropping ALL OTHER-lane promotions.
 
-**Batch 3** (1,200 cards, $12.34, submitted): review IN PROGRESS.
+**Batch 4** (1,200 cards, $12.34 submission; 166 axes triaged, 1,016 cards
+review-covered): codebook v0.3 -> v0.4, 203 active axes. Captain ratified
+via TRIAGE-BATCH-4.md section 10 (D1-D7). Override rate 4/165 confident
+calls (~2.4%) -- continuing the decline (b1 0% -> b2 6.9% -> b3 ~3.2% ->
+b4 ~2.4%), spot-check 0/30. Key rulings: activated-tap-target-creature kept
+with 9 member removals (activated-vs-triggered / cost-vs-effect conflation,
+new failure pattern -- SYNTH prompt patched); 4 merges (energy, hexproof,
+two exile-replacement candidates including Q1); M8 mixed-target addition
+(Breya -> both damage axes); **D5 introduces a new codebook status,
+`deferred`** (two pump-axis merges held pending more evidence, written to
+batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
+are-not-axes precedent** -- cost axes are legitimate wide-net axes now,
+additional-cost-sacrifice-permanent/-discard-a-card flip KILL->KEEP.
+Zero OTHER-lane promotions, zero keyword-ledger additions (no kills this
+batch). Batch 5 assembled (1,200 cards, thin/zero-member axis confirmation
+targeting) and Stage 1B prepared: cost estimate $17.90 intro / $26.85
+standard -- **the codebook-growth cost trend flagged in section 6/7#3 is
+accelerating** ($8.05 b2 -> $12.34 b3 -> $17.90 b4->b5 prep, all at ~1,200
+cards, purely from the embedded codebook growing 134 -> 203 active axes).
+STOPPED for Captain's go-ahead before submitting batch 5.
+
+**Batch 3** (1,200 cards, $12.34, submitted): review COMPLETE as of a prior
+session (codebook v0.3, batches_reconciled [1,2,3] were already the
+starting state when the batch-4 session below began) -- this paragraph was
+stale ("IN PROGRESS") in earlier revisions of this addendum; corrected
+here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
+(no section 10 needed -- batch 3 predates that requirement beyond batch
+1's seam).
 Captain's annotations so far: Q1 answered (stun-counter-lockdown
 RENAMED rule:stun-counter, kept separate from
 prevents-target-untap-next-step, both under new parent rule:lockdown);
@@ -103,6 +130,8 @@ pass.
 | No midflight renames | naming standardization is a FINAL AUDIT punch item; renames logged, not executed (exceptions only when Captain directs, e.g. stun-counter) |
 | Legality display-layer | reaffirmed: joke/Alchemy cards stay in corpus; they just get no axis when a family is joke-only |
 | Transcript hygiene | no raw card text to console in any foundry session |
+| Cost-shape precedent reversal (b4 D6) | OVERTURNS the b2/b3 "cost-shape riders are not axes" precedent. Cost-side axes (e.g. rule:additional-cost-sacrifice-permanent, rule:additional-cost-discard-a-card) are legitimate wide-net axes, not automatic kills. b2/b3-killed cost-shape axes (rule:sacrifice-creature-as-additional-cost, rule:sacrifice-as-additional-cost, rule:self-sacrifice-divided-damage) are punch-listed for possible resurrection at reconcile/schema pass, not auto-restored. Binds batch-5 beta onward — see docs/SUP-TRIAGE-PROTOCOL.md and .claude/commands/triage-beta.md, updated same commit set. |
+| Deferred verdict (b4 D5) | New codebook status alongside active/killed/merged/renamed: `deferred` — axis is recorded with its members but not offered to SYNTH as an active codebook slug and not merged, pending a specific future Captain ruling. First use: the two pump-axis merge candidates held in batch 4 (see experiments/out/foundry/review/batch-4-deferred-examples.md). |
 
 ## 5. The parent-tree layer (docs/PARENT-TREE-CANDIDATES.md)
 
@@ -135,20 +164,50 @@ one-liners) before the big pass.
 
 ## 7. Open punch list (supersedes original §7 where overlapping)
 
-1. Batch 3: Captain answers Q2/Q3 + confirms T1 stance later; build §10
-   directives; run /triage-emit 3.
-2. Batch 4 assembly targets follow from 3's feedback; override rate
-   trend is the needle (b1: 0%, b2: 6.9%, b3: TBD with "don't absorb,
-   expand" now binding on beta).
-3. Condense embedded codebook before full-corpus pass.
-4. Schema pass prep: keep PARENT-TREE-CANDIDATES.md appended by beta/emit
-   (directives already in both commands).
-5. Final naming audit (parents ruthless, children lenient).
-6. Kiki/Helm granted_keyword verification (b1 Q1 carve-out) still open.
-7. Original handoff items still live: family tree rulings vs
-   FAMILY-TREE-EVIDENCE.md; duplicate-oracle-rows trim; equivalence map;
-   GRANT_SIZE_CEILING/F1 at Phase B; playbook Steps 5–9 (viewer JSONs
-   still stale until Step 7).
+1. DONE (batch 4 session): Batch 3 ratified, §10-equivalent applied via
+   prose annotations, /triage-emit 3 run (codebook v0.3). Batch 4 fully
+   triaged, ratified via TRIAGE-BATCH-4.md section 10, /triage-emit 4 run
+   (codebook v0.4). Batch 5 assembled + Stage 1B prepared, cost estimate
+   $17.90 intro -- STOPPED for Captain's go-ahead before submitting.
+2. Override rate trend, updated: b1 0% -> b2 6.9% -> b3 ~3.2% -> b4 ~2.4%,
+   declining two batches running under "don't absorb, expand." Spec metric
+   (OTHER-lane rate) stays flat ~62-66% every batch -- expected/method-
+   inflated per protocol, not a signal.
+3. **Condense embedded codebook before full-corpus pass -- now urgent, not
+   just flagged.** Batch-5 prep priced at $17.90 (intro) at the same
+   ~1,200-card size that cost $8.05 (b2) and $12.34 (b3), purely from
+   codebook growth (134 -> 203 active axes). At this growth rate the
+   per-batch cost will exceed the full-corpus budget's headroom well
+   before convergence. Not actioned this session -- next session should
+   treat this as blocking, not background.
+4. D5 follow-up (NEW, batch 4): Captain rules on
+   rule:activated-pump-with-self-damage-cost and
+   rule:activated-self-toughness-pump (merge into
+   rule:mana-activated-pump-self, or keep standalone) using
+   experiments/out/foundry/review/batch-4-deferred-examples.md.
+5. D6 follow-up (NEW, batch 4): evaluate resurrecting the b2/b3-killed
+   cost-shape axes (rule:sacrifice-creature-as-additional-cost,
+   rule:sacrifice-as-additional-cost, rule:self-sacrifice-divided-damage)
+   now that the precedent is overturned -- not automatic, Captain must
+   call it.
+6. DET fix (batch 4): foundry_common.py's build_review_card_record() needed
+   an all-faces oracle_text fallback (21/1200 batch-4 cards affected in
+   review/batch-4.json). Found already correctly implemented but
+   uncommitted at the start of the batch-4 emit session -- committed as
+   part of it (benefits batch 5's Stage 1B prompts going forward; does not
+   retroactively fix review/batch-4.json itself). Captain flagged a
+   possible sanctioned oracle-text injection path for multi-face cards as
+   a further product requirement, beyond the DET fix -- still open.
+7. Schema pass prep: keep PARENT-TREE-CANDIDATES.md appended by beta/emit
+   (directives already in both commands) -- batch 4 added the
+   keyword-grant facet scheme, cost-shape facet scheme, and delivery-facet
+   note.
+8. Final naming audit (parents ruthless, children lenient).
+9. Kiki/Helm granted_keyword verification (b1 Q1 carve-out) still open.
+10. Original handoff items still live: family tree rulings vs
+    FAMILY-TREE-EVIDENCE.md; duplicate-oracle-rows trim; equivalence map;
+    GRANT_SIZE_CEILING/F1 at Phase B; playbook Steps 5–9 (viewer JSONs
+    still stale until Step 7).
 
 ## 8. Quick starts
 
