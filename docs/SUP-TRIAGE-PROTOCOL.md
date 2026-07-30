@@ -45,10 +45,15 @@ each `Q<i>` a tight either/or ending `-> RULE: ______`, max 8;
 OTHER-lane promotions with named members; override sample: 30 rows,
 fixed seed = 20260718 + N, drawn from confident calls only, table of
 axis | verdict | sample member | quote; batch-feedback section for the
-next SYNTH prompt; **MEMBER ROSTER section (added batch-5, per batch-4
-punch list): every axis, full member card names only (no oracle text) —
+next SYNTH prompt; **MEMBER ROSTER section (added batch-5 per batch-4
+punch list; made STRUCTURALLY MANDATORY batch-6 D6 after a batch shipped
+without it): every axis, full member card names only (no oracle text) —
 lets Captain audit membership directly instead of trusting the verdict
-logic alone.**
+logic alone. Generate it mechanically (re-derive from the digest in code,
+apply every section-1-3 correction as code) rather than by hand — this
+is what caught batch 6's own duplicate-member and stranded-member bugs.
+The emit step's state-check treats a missing roster as an incomplete
+artifact, not a skippable nicety.**
 
 **Decisions** (`experiments/out/foundry/decisions/batch-N.json`,
 schema sup-triage-decisions-v1): per-axis verdicts
@@ -84,6 +89,19 @@ punch_list, override_spotcheck record (seed, n, reversals, result).
   HALT LOUDLY on ambiguity; never lossy-map, never guess.
 - Every Batch API submission: cost estimate from CURRENT pricing docs +
   Captain go-ahead. Never remembered prices.
+- **Gate #0 (batch-6 D1): a card must be legal or restricted in at least
+  one Scryfall format to be a valid target anywhere in the foundry
+  pipeline** (DET pass, batch assembly, SYNTH, reconcile). Nowhere-legal
+  cards (playtest/CMB1/CMB2/MB2, Unknown Event promos, prototype/event
+  cards, bare token printings) are excluded outright, independent of the
+  corroboration gate. Use `foundry_common.gate_passes()` /
+  `load_corpus_gated()`; `load_corpus()` stays raw/unfiltered for
+  tier_engine.py's other, non-foundry consumers.
+- **Remove-and-rehome (batch-6 D5): every member_removal must state where
+  the card actually belongs** — an existing axis (member_addition), a
+  proposed captain-authored sibling, or an explicit "no home;
+  ledger-flagged" note in PARENT-TREE-CANDIDATES.md. Silently stranding a
+  removed card is a protocol violation.
 
 ## Convergence metrics (report both, every batch)
 

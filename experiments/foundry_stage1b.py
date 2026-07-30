@@ -110,7 +110,7 @@ For the given card, identify 1 to 5 distinct FUNCTIONAL axes its oracle text exp
 TWO-LANE LABELING (check codebook fit FIRST, every time):
 Below is the current codebook of ratified functional axes. For each pattern you find on this card:
 1. Check whether it genuinely matches one of these existing axes' DEFINITION (not just a superficial word overlap). Before assigning lane="codebook", re-read the axis's definition and confirm the quote's effect runs in the SAME DIRECTION as that definition -- a card that does the OPPOSITE of an axis (untaps instead of taps, is countered instead of counters, sets a maximum instead of removing one, destroys a different object class than the one named) is NOT a match even when it shares surface vocabulary with the axis name or definition (batch 3 found 12 exactly this-shaped mismatches: Counterbore filed under "can't be countered" because its own quote is "Counter target spell."; Mishra's Helix filed under "untaps target land" because it taps lands). Also confirm the ABILITY TYPE and OBJECT CLASS match, not just the verb: before assigning an axis whose definition says "activated ability," confirm the card's ability actually has a player-chosen activation cost (a "{{cost}}:" template) -- "Whenever X happens" and "When this enters" are triggered abilities, never activated ones, even when their effect taps or costs a resource. Confirm WHAT gets tapped/targeted/damaged matches the definition's object class (creature vs. artifact vs. land vs. any permanent), and don't confuse an activation cost's own effect on the SOURCE (e.g. "{{T}}:") with the ability's EFFECT on a TARGET (batch 4 found this pattern in 9 of `rule:activated-tap-target-creature`'s 16 members: ETB/attack/Saga triggers mistaken for activated abilities, a source-tap cost mistaken for a target-tap effect, and non-creature objects tapped). If the quote genuinely matches: lane="codebook", label=that axis's EXACT slug (copy it verbatim, including the "rule:" prefix).
-2. If it does not genuinely fit any existing axis: lane="free", label=your own new short kebab-case slug candidate (e.g. "restricts-opponent-cast"). Free-labeling novel patterns is explicitly encouraged -- do not force a card into a codebook slug that's a loose or partial match.
+2. If it does not genuinely fit any existing axis: lane="free", label=your own new short kebab-case slug candidate WITHOUT a "rule:" prefix (e.g. "restricts-opponent-cast", not "rule:restricts-opponent-cast"). Free-labeling novel patterns is explicitly encouraged -- do not force a card into a codebook slug that's a loose or partial match. The "rule:" prefix means "I am asserting this is an EXACT match to a slug in the CURRENT CODEBOOK block above" -- batch 6 found this violated twice: once as a near-miss invented slug for a real axis (adding "etb-" to a family that doesn't use that prefix), once by re-proposing two synonymous slugs for a pattern in the RECENTLY KILLED list, verbatim, despite the list being right above. If your candidate label is not letter-for-letter present in the CURRENT CODEBOOK block, it does not get the "rule:" prefix, full stop -- there is no partial-credit or "close enough" lane=codebook.
 
 === CURRENT CODEBOOK (active axes) ===
 {codebook_reference}
@@ -126,6 +126,8 @@ Evidence and quoting rules (do not violate these -- batch 1 measured real waste 
 - If an axis definition includes a restrictive qualifier (noncreature-only, creature-only, opponent-only, unconditional/conditional, etc.), the quote itself must establish that qualifier -- not just the general shape of the effect. Batch 5 found `rule:counters-noncreature-spell` members whose quotes were plain "Counter target spell." with no noncreature restriction anywhere in the card; matching on "this is a counterspell" alone is not enough.
 - Cost vs. effect: when a card's ability has a cost (before a ":") and an effect (after it), only classify against axes about what the cost DOES if the cost itself expresses it. "Pay life for an effect" axes need the life payment IN the cost clause; a card whose cost is mana and whose effect merely happens to cost the player life (e.g. "You lose 1 life" as part of the resolution) does not qualify as a life-payment axis just because "life" appears in its text.
 - Effect-suffix precision: an axis whose slug names a specific effect (e.g. -token, -counter, -draw) must have that literal effect in the quote. Don't file a "put a +1/+1 counter" effect under a "-token" axis or vice versa just because both are on a card that also creates value.
+- Scaled-by-X precision (batch 6): before matching a "scaled-by-creature-count" / "scaled-by-X-count" axis, confirm the counted noun phrase in the quote is actually creatures/permanents in play -- NOT counters accumulated on the source permanent itself. "Draw a card for each charge counter on this artifact" and "gain 1 life for each counter on this artifact" are charge-counter-scaling, not creature-count-scaling, even though both read as "count something and scale an effect." Likewise, "create X tokens" (X scales how MANY tokens are made) and "create a token, then put X counters on it" (X scales counters on ONE token) are different mechanics -- don't file one under an axis about the other.
+- Trigger-event precision (batch 6): the axis's named trigger must be the actual event that fires the ability, not a condition the ability separately checks. A card whose trigger is "at the beginning of each upkeep" with a condition of "if no spells were cast last turn" is an upkeep-trigger with a no-casting condition, NOT a cast-trigger -- even though "cast" appears in its text and the condition's polarity might match a cast-trigger axis's vibe. Re-read which clause is the trigger (fires the ability) versus the condition (gates whether the triggered ability does anything).
 
 What is NOT an axis (kills the patterns batch 1 had to prune by hand):
 - A bare printed keyword (Flying, Trample, Haste, Menace, Deathtouch, Lifelink, Vigilance, Ward, Convoke, Exploit, Delve, Affinity, Cascade, etc.) or its parenthetical reminder text is NEVER an axis on its own -- that signal is already owned by the engine's keyword/Tagger layer. Only emit an axis for a keyword-shaped effect when it is GRANTED to something else by a non-keyword mechanism worth its own pattern (e.g. a static ability handing haste to tokens) -- and even then, check the codebook first; several such grants were already ruled engine-redundant and killed (see rule:grants-* absence above -- if you don't see a grants-haste/grants-hexproof/etc axis listed, it's because it was deliberately killed, do not reinvent it).
@@ -369,15 +371,15 @@ def cmd_prepare(batch_num: int):
     avg_output = FLOOR_OUTPUT_TOKENS + ASSUMED_AVG_AXES_PER_CARD * TOKENS_PER_AXIS_ESTIMATE
     total_output_tokens = avg_output * len(requests_out)
 
-    # Live pricing (re-fetched fresh this session, 2026-07-18, from
-    # platform.claude.com/docs/en/about-claude/models/overview.md and
-    # .../pricing -- unchanged from batch 1's 2026-07-17 fetch, but re-checked
-    # rather than reused from memory per house rule): Claude Sonnet 5 =
-    # $3/$15 per MTok standard, INTRODUCTORY $2/$10 per MTok through
-    # 2026-08-31 (today is within that window). Message Batches API = 50%
-    # off whatever the effective per-token price is at billing time
-    # (confirmed live from the pricing page's Batch processing table:
-    # Sonnet 5 batch = $1/$5 intro, $1.50/$7.50 standard).
+    # Live pricing (re-fetched fresh this session, 2026-07-30, via WebFetch
+    # against platform.claude.com/docs/en/about-claude/pricing -- unchanged
+    # from batch 1's 2026-07-17/18 fetch, but re-checked rather than reused
+    # from memory per house rule, batch 6): Claude Sonnet 5 = $3/$15 per
+    # MTok standard, INTRODUCTORY $2/$10 per MTok through 2026-08-31 (today
+    # is within that window). Message Batches API = 50% off whatever the
+    # effective per-token price is at billing time (confirmed live from the
+    # pricing page's Batch processing table: Sonnet 5 batch = $1/$5 intro,
+    # $1.50/$7.50 standard).
     STANDARD_INPUT_PER_MTOK = 3.00
     STANDARD_OUTPUT_PER_MTOK = 15.00
     INTRO_INPUT_PER_MTOK = 2.00
@@ -393,7 +395,7 @@ def cmd_prepare(batch_num: int):
     standard_batch_cost = cost(total_input_tokens, total_output_tokens,
                                 STANDARD_INPUT_PER_MTOK * BATCH_DISCOUNT, STANDARD_OUTPUT_PER_MTOK * BATCH_DISCOUNT)
 
-    print(f"\n=== Stage 1B batch {batch_num} cost estimate ({MODEL}, Message Batches API, live pricing re-fetched 2026-07-18) ===")
+    print(f"\n=== Stage 1B batch {batch_num} cost estimate ({MODEL}, Message Batches API, live pricing re-fetched 2026-07-30) ===")
     print(f"requests: {len(requests_out)}")
     print(f"input tokens/request: avg={avg_input:.0f} (measured, n={len(sample_counts)} sample) -> total ~{total_input_tokens:,.0f}")
     print(f"output tokens/request: avg={avg_output:.0f} (ASSUMED: {ASSUMED_AVG_AXES_PER_CARD} axes/card x "
@@ -418,7 +420,7 @@ def cmd_prepare(batch_num: int):
         "output_tokens_total_assumed": total_output_tokens,
         "cost_usd_intro_batch": round(intro_batch_cost, 4),
         "cost_usd_standard_batch": round(standard_batch_cost, 4),
-        "pricing_fetched": "2026-07-18 from platform.claude.com/docs/en/about-claude/models/overview.md and .../pricing",
+        "pricing_fetched": "2026-07-30 via WebFetch against platform.claude.com/docs/en/about-claude/pricing (unchanged from the 2026-07-18 fetch, re-verified per house rule)",
     }
     fc.write_json(paths["cost_estimate"], estimate)
     print(f"\nwrote {paths['cost_estimate']}")

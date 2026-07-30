@@ -47,10 +47,39 @@ def batch_paths(batch_num: int) -> dict:
 
 
 def load_corpus():
-    """Returns (cards: {oracle_id: raw_card}, name_index: {normalized_name: [oracle_id,...]})."""
+    """Returns (cards: {oracle_id: raw_card}, name_index: {normalized_name: [oracle_id,...]}).
+    Unfiltered/raw -- shared with tier_engine.py's other, non-foundry consumers,
+    so this function's output must not change shape based on foundry-specific
+    rulings. Foundry pipeline stages should use load_corpus_gated() instead
+    (see Gate #0, batch-6 D1)."""
     cards = te.load_cards(te.CARDS_PATH)
     name_index = te.build_name_index(cards)
     return cards, name_index
+
+
+def gate_passes(card: dict) -> bool:
+    """Gate #0 (ratified batch-6 D1, 2026-07-30): a card is a valid target for
+    the T3 Axis Foundry pipeline -- the DET pass, batch assembly, SYNTH, and
+    reconcile -- iff it is legal or restricted in at least one Scryfall
+    'legalities' format. Nowhere-legal cards (playtest/CMB1/CMB2/MB2, Unknown
+    Event promos, prototype/event cards, bare token printings) fail outright.
+    This is dataset-level and independent of the corroboration gate; it does
+    not touch tier_engine.py's own load_cards()/CARDS_PATH consumers, which
+    are out of this ruling's scope (production tier scoring, not foundry)."""
+    legalities = card.get("legalities") or {}
+    return any(v in ("legal", "restricted") for v in legalities.values())
+
+
+def load_corpus_gated():
+    """Gate #0-filtered corpus for foundry pipeline stages. Returns
+    (cards, name_index, gated_out_count) -- cards/name_index contain only
+    gate-passing rows; name_index is rebuilt from the filtered set so
+    resolve_name() can never resolve a gated-out card by name. Raw
+    load_corpus() is untouched and still available for reference/debugging."""
+    cards, _ = load_corpus()
+    gated_cards = {oid: c for oid, c in cards.items() if gate_passes(c)}
+    gated_name_index = te.build_name_index(gated_cards)
+    return gated_cards, gated_name_index, len(cards) - len(gated_cards)
 
 
 def resolve_name(name: str, cards: dict, name_index: dict) -> str:

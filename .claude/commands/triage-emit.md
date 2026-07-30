@@ -25,13 +25,17 @@ annotations by design — skip steps 1–3 and start at step 4 (RECONCILE).
 
 1. PARSE annotations per the protocol convention. HALT LOUDLY on any
    entry that parses to zero or multiple verdicts, any MERGE without
-   INTO, any RENAME without TO, or any unfilled `-> RULE:` blank.
-   Untouched entries = ratified as proposed.
+   INTO, any RENAME without TO, or any unfilled `-> RULE:` blank, or a
+   missing MEMBER ROSTER section (batch-6 D6: structurally mandatory,
+   not skippable). Untouched entries = ratified as proposed.
 2. Record the override result: reversals / confident calls, plus
    refinements, into the decisions file's override_spotcheck block.
 3. EMIT experiments/out/foundry/decisions/batch-$ARGUMENTS.json
    (schema sup-triage-decisions-v1). Corpus-validate every
-   captain-authored example card (paper preferred); HALT on failures.
+   captain-authored example card (paper preferred) AND Gate #0
+   (`foundry_common.gate_passes()`) — HALT on failures of either; a card
+   that fails Gate #0 never enters the codebook regardless of how good
+   the pattern match is (batch-6 D1).
 4. RECONCILE: adapt to foundry_reconcile.py's schema (halt rather than
    lossy-map), run it -> codebook v0.$ARGUMENTS, diff report, both
    convergence metric families per the protocol.
@@ -46,7 +50,10 @@ annotations by design — skip steps 1–3 and start at step 4 (RECONCILE).
    thin 2-member KEEPs, batch-flagged confirmation targets, unpromoted
    OTHER clusters, under-covered strata; DET stratified-random fill,
    fixed seed, strata printed, deduped against ALL prior batch cards,
-   paper rows preferred. Corpus-validate every hand-picked name.
+   paper rows preferred. Corpus-validate every hand-picked name. Draw the
+   assembly pool from `foundry_common.load_corpus_gated()`, not
+   `load_corpus()` (batch-6 D1) — restate the gate-passing corpus total
+   and the gated-out count in the assembly output.
 7. SYNTH PROMPT: apply this batch's batch-feedback section + the standing
    revisions (oracle-text-only quoting; no bare-keyword/reminder axes;
    riders are not axes; two-lane labeling against the new codebook with

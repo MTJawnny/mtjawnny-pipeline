@@ -72,6 +72,7 @@ def token_group_line(group: dict, other_by_oid: dict) -> str:
 def find_anomalies(batch: dict) -> tuple:
     alchemy = []
     nonnormal = []
+    bad_prefix = []
     for axis in batch["axes"]:
         for m in axis["members"]:
             name = m["card"]["name"]
@@ -87,9 +88,20 @@ def find_anomalies(batch: dict) -> tuple:
             alchemy.append((name, "other_lane"))
         if layout != "normal":
             nonnormal.append((name, layout, "other_lane"))
+        # batch-6 D7: SYNTH occasionally free-labels a card with a "rule:"-prefixed
+        # slug that does NOT exist in the active codebook (either a near-miss
+        # invented name, or -- 3 batches running now -- the exact string of a
+        # KILLED axis despite the RECENTLY KILLED prompt block listing it
+        # verbatim). A genuine lane=free label never carries "rule:"; if one
+        # shows up in other_lane, the two-lane check silently failed upstream.
+        # This can't be fixed by prompt compliance alone (thinking is disabled
+        # on the SYNTH call), so it's caught here, deterministically, every batch.
+        if row["label"].startswith("rule:"):
+            bad_prefix.append((name, row["label"]))
     alchemy = sorted(set(alchemy))
     nonnormal = sorted(set(nonnormal))
-    return alchemy, nonnormal
+    bad_prefix = sorted(set(bad_prefix))
+    return alchemy, nonnormal, bad_prefix
 
 
 def build_digest(batch_num: int) -> Path:
@@ -98,7 +110,7 @@ def build_digest(batch_num: int) -> Path:
     stats = batch["enrichment_stats"]
 
     other_by_oid = {row["oracle_id"]: row for row in batch["other_lane"]}
-    alchemy, nonnormal = find_anomalies(batch)
+    alchemy, nonnormal, bad_prefix = find_anomalies(batch)
 
     n_grouped_other = len({m["oracle_id"] for g in batch["token_groups"] for m in g["members"]})
 
@@ -136,6 +148,7 @@ def build_digest(batch_num: int) -> Path:
         f"- token groups: {stats['n_token_groups']} (2+ rows sharing 2+ label tokens)",
         f"- Alchemy-flagged member rows: {len(alchemy)}",
         f"- non-normal-layout member rows: {len(nonnormal)}",
+        f"- OTHER-lane rows with an invalid 'rule:' prefix: {len(bad_prefix)}",
         "",
         "## Anomalies",
         "",
@@ -150,6 +163,16 @@ def build_digest(batch_num: int) -> Path:
     if nonnormal:
         for name, layout, where in nonnormal:
             lines.append(f"- {name} ({layout}) ({where})")
+    else:
+        lines.append("(none)")
+    lines += ["", f"### OTHER-lane rows with an invalid 'rule:' prefix -- {len(bad_prefix)}",
+              "(a genuine lane=free label never starts with \"rule:\" -- this means SYNTH free-labeled "
+              "with a slug it believed was a codebook match, but it isn't an active axis. Check first "
+              "whether it's a KILLED axis being re-proposed (recently-killed-appendix compliance "
+              "failure, batch-6 D7) vs. a near-miss invented slug (naming-discipline failure).)"]
+    if bad_prefix:
+        for name, label in bad_prefix:
+            lines.append(f"- {name}: {label}")
     else:
         lines.append("(none)")
 

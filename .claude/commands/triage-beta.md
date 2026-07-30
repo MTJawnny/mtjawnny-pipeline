@@ -46,16 +46,32 @@ contract. Requirements:
    oracle text before including it.
 6. Batch-feedback section: concrete SYNTH-prompt revisions for batch
    N+1 derived from this batch's failure patterns.
-6a. MEMBER ROSTER section (batch-5 spec change, per batch-4 punch list):
-   every axis, full member card names only (no oracle text) — audit
-   membership directly, not just the verdict logic.
+6a. MEMBER ROSTER section — STRUCTURALLY MANDATORY (batch-5 spec change per
+   batch-4 punch list; made mandatory batch-6 D6 after batch-6's first
+   draft shipped without it). Every axis, full member card names only (no
+   oracle text) — audit membership directly, not just the verdict logic.
+   Generate it mechanically (parse the digest / re-derive member lists in
+   code, apply every correction from sections 1-3 as code) rather than
+   re-typing lists by hand — batch 6 found this catches real duplicate/
+   stranded-member bugs the prose verdicts miss. The verification step
+   (7) below HALTS if this section is absent; do not treat it as optional
+   even when the batch feels routine.
 6b. Parent flags: whenever a verdict or note implies a parent/hierarchy
    relationship, APPEND it to docs/PARENT-TREE-CANDIDATES.md under
    "Proposed parents" (one line, cite the batch) — never restructure
    axes around it now; the schema pass ratifies parents.
+6c. STANDING RULE (batch-6 D5, remove-and-rehome): every member_removal
+   must answer "where does this card actually belong?" — an existing axis
+   (member_addition), a convention-consistent new sibling (propose as a
+   captain-authored candidate for Captain to rule on), or an explicit "no
+   home; ledger-flagged" entry in PARENT-TREE-CANDIDATES.md. Silent
+   stranding (removing a card from an axis and never saying where it
+   goes) is a protocol violation, not a shortcut.
 7. Verify: verdict count == axis count, no duplicates, every MERGE target
-   named. Then STOP — print the file path and tell Captain to annotate
-   per the protocol convention and run /triage-emit $ARGUMENTS when done.
+   named, MEMBER ROSTER section present and covering every axis (halt and
+   fix rather than skip if missing). Then STOP — print the file path and
+   tell Captain to annotate per the protocol convention and run
+   /triage-emit $ARGUMENTS when done.
 
 Do not commit. Do not emit decisions. Nothing you write is load-bearing
 until Captain ratifies.
