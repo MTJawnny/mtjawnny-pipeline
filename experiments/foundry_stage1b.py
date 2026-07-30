@@ -83,6 +83,26 @@ def load_codebook_reference() -> str:
     return "\n".join(lines)
 
 
+def load_recently_killed_reference() -> str:
+    """Killed-axis slugs as a bare list (no reasons, to control prompt-growth
+    cost per the already-flagged cost trend) -- batch 5 found 3 SYNTH
+    resurrections of batch-3-killed patterns under new free-lane labels
+    (aura-static-pump, equipment-static-pt-buff, damage-to-creature-or-planeswalker),
+    because the two-lane prompt only ever showed ACTIVE codebook slugs and
+    had no visibility into kill history. MERGED axes are deliberately
+    excluded here -- their concept already has a live home under the merge
+    target, which the active-codebook block above already covers; only
+    KILLED concepts have no active slug to be caught by lane=codebook, so
+    only killed slugs need this belt-and-suspenders list."""
+    if not CODEBOOK_PATH.exists():
+        return "(no codebook yet)"
+    cb = json.loads(CODEBOOK_PATH.read_text())
+    killed = sorted(slug for slug, a in cb["axes"].items() if a.get("status") == "killed")
+    if not killed:
+        return "(none yet)"
+    return ", ".join(killed)
+
+
 SYSTEM_PROMPT_TEMPLATE = """You are doing functional decomposition for a Magic: The Gathering card-similarity engine's Tier 3 layer -- the "same job, different words" signal.
 
 For the given card, identify 1 to 5 distinct FUNCTIONAL axes its oracle text expresses -- reusable mechanical patterns that OTHER cards, phrased completely differently, could also share (e.g. "restricts when opponents may cast spells", "doubles a triggered ability", "taxes an opponent's action unless they pay", "grants an ability to another permanent").
@@ -96,9 +116,16 @@ Below is the current codebook of ratified functional axes. For each pattern you 
 {codebook_reference}
 === END CODEBOOK ===
 
+=== RECENTLY KILLED (do not re-propose under a new free-lane label -- these patterns were already considered and rejected; if a card matches one of these, it is genuinely not an axis, full stop) ===
+{recently_killed_reference}
+=== END KILLED ===
+
 Evidence and quoting rules (do not violate these -- batch 1 measured real waste from violations):
 - Every axis MUST be grounded in a verbatim quote copied EXACTLY from the card's ORACLE TEXT ONLY -- never from the type line, mana cost, or card name. If the pattern isn't stated in the oracle text itself, do not emit the axis.
 - Do not paraphrase or summarize the quote; copy the exact substring. If you cannot quote it verbatim from oracle text, do not emit the axis.
+- If an axis definition includes a restrictive qualifier (noncreature-only, creature-only, opponent-only, unconditional/conditional, etc.), the quote itself must establish that qualifier -- not just the general shape of the effect. Batch 5 found `rule:counters-noncreature-spell` members whose quotes were plain "Counter target spell." with no noncreature restriction anywhere in the card; matching on "this is a counterspell" alone is not enough.
+- Cost vs. effect: when a card's ability has a cost (before a ":") and an effect (after it), only classify against axes about what the cost DOES if the cost itself expresses it. "Pay life for an effect" axes need the life payment IN the cost clause; a card whose cost is mana and whose effect merely happens to cost the player life (e.g. "You lose 1 life" as part of the resolution) does not qualify as a life-payment axis just because "life" appears in its text.
+- Effect-suffix precision: an axis whose slug names a specific effect (e.g. -token, -counter, -draw) must have that literal effect in the quote. Don't file a "put a +1/+1 counter" effect under a "-token" axis or vice versa just because both are on a card that also creates value.
 
 What is NOT an axis (kills the patterns batch 1 had to prune by hand):
 - A bare printed keyword (Flying, Trample, Haste, Menace, Deathtouch, Lifelink, Vigilance, Ward, Convoke, Exploit, Delve, Affinity, Cascade, etc.) or its parenthetical reminder text is NEVER an axis on its own -- that signal is already owned by the engine's keyword/Tagger layer. Only emit an axis for a keyword-shaped effect when it is GRANTED to something else by a non-keyword mechanism worth its own pattern (e.g. a static ability handing haste to tokens) -- and even then, check the codebook first; several such grants were already ruled engine-redundant and killed (see rule:grants-* absence above -- if you don't see a grants-haste/grants-hexproof/etc axis listed, it's because it was deliberately killed, do not reinvent it).
@@ -296,7 +323,10 @@ def cmd_prepare(batch_num: int):
     if unknown:
         fc.halt(f"{len(unknown)} assembled oracle_ids not found in corpus: {unknown[:5]}")
 
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(codebook_reference=load_codebook_reference())
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
+        codebook_reference=load_codebook_reference(),
+        recently_killed_reference=load_recently_killed_reference(),
+    )
     print(f"system prompt built ({'two-lane, codebook-aware' if batch_num > 1 else 'free-form (batch 1)'}, "
           f"{len(system_prompt)} chars)")
 

@@ -193,7 +193,7 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
                 "definition": dec.get("definition_edit") or axis["definition"],
                 "scope": dec.get("scope_edit") or axis["scope"],
                 "source": axis["source"], "parameterized": axis["parameterized"],
-                "member_oracle_ids": sorted({m["oracle_id"] for m in members}),
+                "member_oracle_ids": sorted(set(old_entry.get("member_oracle_ids", [])) | {m["oracle_id"] for m in members}),
                 "status": "active", "merged_into": None,
                 "history": [{"batch": n, "action": "created_via_rename", "note": f"renamed from {slug}"}],
             }
