@@ -102,6 +102,19 @@ punch_list, override_spotcheck record (seed, n, reversals, result).
   proposed captain-authored sibling, or an explicit "no home;
   ledger-flagged" note in PARENT-TREE-CANDIDATES.md. Silently stranding a
   removed card is a protocol violation.
+- **Naming grammar (batch-7 section 12, ratified `docs/CODEBOOK-NAMING-GRAMMAR.md`
+  v1.0): every axis slug — authored, grammar-instantiated, or renamed —
+  must validate against that document's slot grammar and closed
+  vocabularies.** Highlights binding on every batch from here forward: the
+  bare token "defender" is banned in slugs (use "defending-player," CR
+  506.2); the participle "countered" is banned as a counter-noun
+  (ambiguous with Counterspell); the activation-restriction family (§3) is
+  fully enumerated and DET-owned — SYNTH must not assign it. Grammar-
+  composable axis homes (§11) instantiate immediately on first
+  quote-verified member; ledger-flagging one instead is a protocol error
+  as of batch 7 (D7). `docs/CORPUS-PASS-PLAN.md`'s combined per-axis walk
+  (steps 2–5) uses this document as its kickoff and is not yet run —
+  until it runs, most of the codebook has not been validated against it.
 
 ## Convergence metrics (report both, every batch)
 

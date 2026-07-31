@@ -204,18 +204,40 @@ def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict
             fc.halt(f"axis {slug!r} has unrecognized verdict {verdict!r}")
 
     # Captain's own new axes -- HUMAN provenance, full weight, skip model pipeline entirely.
+    # A slug that already exists under killed/renamed status (D8, batch-7 slug-continuity
+    # revival) is REVIVED, not replaced: this UNIONS seed_members into the existing
+    # member_oracle_ids and APPENDS to history, preserving the prior definition/scope/
+    # history unless this batch's own definition/scope differ (in which case the batch's
+    # values win, same as any other edit). A prior version of this code path silently
+    # overwrote the whole entry -- including wiping pre-existing member_oracle_ids --
+    # discovered batch-7 (rule:death-trigger-draw-card lost its 7 legacy members before
+    # this fix); never repeat that regression.
     captain_axes = decisions.get("captain_axes", [])
     for ca in captain_axes:
         slug = ca["slug"]
-        if slug in codebook["axes"] and codebook["axes"][slug].get("status") not in ("killed", "renamed"):
+        existing = codebook["axes"].get(slug)
+        if existing is not None and existing.get("status") not in ("killed", "renamed"):
             fc.halt(f"captain_axes entry {slug!r} collides with an existing active codebook axis")
-        codebook["axes"][slug] = {
-            "definition": ca["definition"], "scope": ca["scope"], "source": "CAPTAIN",
-            "parameterized": False, "member_oracle_ids": sorted(set(ca.get("seed_members", []))),
-            "status": "active", "merged_into": None,
-            "history": [{"batch": n, "action": "created", "note": f"captain-review batch-{n}"}],
-        }
-        diff_lines.append(f"- CAPTAIN NEW AXIS `{slug}` ({len(ca.get('seed_members', []))} seed members)")
+        if existing is not None:
+            entry = existing
+            entry["definition"] = ca["definition"]
+            entry["scope"] = ca["scope"]
+            entry["member_oracle_ids"] = sorted(set(entry.get("member_oracle_ids", [])) | set(ca.get("seed_members", [])))
+            entry["status"] = "active"
+            entry["merged_into"] = None
+            entry.setdefault("history", []).append(
+                {"batch": n, "action": "revived", "note": f"captain-review batch-{n} (slug-continuity revival, was {existing.get('status', '?')!r} before this batch)"})
+            action_label = "CAPTAIN REVIVED AXIS"
+        else:
+            entry = {
+                "definition": ca["definition"], "scope": ca["scope"], "source": "CAPTAIN",
+                "parameterized": False, "member_oracle_ids": sorted(set(ca.get("seed_members", []))),
+                "status": "active", "merged_into": None,
+                "history": [{"batch": n, "action": "created", "note": f"captain-review batch-{n}"}],
+            }
+            action_label = "CAPTAIN NEW AXIS"
+        codebook["axes"][slug] = entry
+        diff_lines.append(f"- {action_label} `{slug}` ({len(ca.get('seed_members', []))} seed members, {len(entry['member_oracle_ids'])} total)")
 
     # Captain's own per-card tags -- queued for tags/cards.yaml, never auto-written there.
     captain_tags = decisions.get("captain_card_tags", [])

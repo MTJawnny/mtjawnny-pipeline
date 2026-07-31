@@ -1,0 +1,282 @@
+# CODEBOOK NAMING GRAMMAR v1.0 (RATIFIED 2026-07-30)
+
+Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
+recommendation; see section 13). Law: every axis slug —
+authored, grammar-instantiated, or renamed at the audit walk — must validate
+against this document. Versioned alongside the codebook. Every vocabulary claim
+below is anchored to the local `mtg-comprehensive-rules.md` (June 19, 2026);
+CR citations were verified against that file on 2026-07-30, not recalled.
+
+Design goals, in priority order:
+1. **No two slugs may describe the same mechanic** (the
+   scales-token-count-with-x / token-count-scales-with-x duplication class).
+2. **No slug may be readable as two different mechanics** (the
+   grants-trample-to-countered-creatures class).
+3. **Every closed mechanical family is enumerated in advance** so cards cannot
+   fall between siblings (the sorcery-speed vs during-combat class).
+4. **Slugs are machine-decomposable** so parents, facets, and DET patterns
+   derive from names without human interpretation.
+
+---
+
+## 1. The slot grammar
+
+Every axis slug is a hyphen-joined sequence of slots in this fixed order:
+
+```
+[DELIVERY]-[EFFECT]-[OBJECT]-[SCOPE]-[QUALIFIER...]
+```
+
+- **DELIVERY** — how the ability happens (ability class / trigger family).
+  OMITTED for spell abilities (CR 113.3a): an instant/sorcery's resolution
+  effect is the unmarked default. `burst-draw`, `targeted-destruction`,
+  `counters-target-spell` are spell-delivery slugs. Everything non-spell is
+  MARKED.
+- **EFFECT** — the standardized verb phrase (section 4).
+- **OBJECT** — what the effect acts on (section 5). Omitted when the effect
+  verb already binds it (`loot`, `scry`, `mill-self`).
+- **SCOPE** — ownership/breadth (section 6). Omitted when the axis's scope=
+  field carries it and no sibling differs only by scope; REQUIRED the moment a
+  scope-sibling exists (the Q1/Q2 lesson: scope moved into the name for
+  tap-or-untap because siblings differ there).
+- **QUALIFIER** — closed modifiers: `-conditional`, `-mass` (see 6),
+  `-scales-with-<stat>` (see 7), token/counter types (see 8), cost qualifiers
+  ("Free must be Free" — cost words in names are binding, ratified b2).
+
+Compounds remain the only authored thing (addendum-3 §3): one slug asserts one
+ability doing one thing. Multi-ability cards get multiple tags, never fused
+slugs (M8, generalized batch-6 D3).
+
+Formatting law: lowercase ASCII, hyphens only, no articles ("a", "the"), no
+plurals except where the mechanic is inherently plural (`-two-target-creatures`,
+mass effects), `plus1`/`minus1` for counter polarity (ratified), `x` for the
+variable.
+
+---
+
+## 2. DELIVERY slot — closed vocabulary (CR-anchored)
+
+| Slot value | Means | CR anchor |
+|---|---|---|
+| *(none)* | spell ability, applies on resolution | 113.3a |
+| `activated` | "[Cost]: [Effect]" | 113.3b |
+| `static` | written as a statement, continuously true | 113.3d |
+| `etb` | triggered, "when ~ enters" | 113.3c |
+| `dies` | triggered, graveyard from battlefield | 700.4 |
+| `leaves-battlefield-trigger` | triggered, any LTB (superset of dies; a card saying "leaves the battlefield" NEVER takes `dies`) — the `-trigger` suffix is kept to match the live axis family | 700.4 boundary |
+| `attack-trigger` | "whenever ~ attacks" | 113.3c |
+| `cast-trigger` | "when(ever) [someone] casts" — requires cast verbiage; never an ETB; the trigger EVENT must be the cast itself, not a condition about casting (b6 Village Ironsmith ruling) | 701.5a |
+| `combat-damage-to-player` | "deals combat damage to a player" | — |
+| `combat-damage-to-creature` | "deals combat damage to a creature" | — |
+| `upkeep-trigger` | "at the beginning of [whose] upkeep" | 113.3c |
+| `landfall` | the landfall ability word | 207.2c |
+| `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |
+| `replacement` | "instead" / "skip" / "enters with/as" shapes | 614.1a–c |
+| `delayed` | delayed triggered ability created on resolution | 603.7 |
+| `kicker` | kicked-conditional bonus | 601.2b |
+
+Rules:
+- DELIVERY is determined by ability STRUCTURE, never by effect words (batch-4
+  D1 / batch-7 feedback #1 codified). An Attraction's Visit/Prize are
+  triggered, not activated (b7 Pick-a-Beeble... b6 finding).
+- `dies` vs `leaves-battlefield` is a hard boundary both directions.
+- RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
+  CR 700.4 anchors every definition in the family. No `dies-` slugs.
+- `combat-damage-triggers-<effect>` normalizes to
+  `combat-damage-to-player-<effect>` / `-to-creature-<effect>` at the walk —
+  the b7 Guild Thief definition bug is exactly this slot being unmarked.
+
+## 3. Activation-restriction family — fully enumerated, DET-owned
+
+The batch 5–7 failure class (own-upkeep collapse, Kjeldoran during-combat).
+This family is CLOSED, exact-phrase, and moves entirely to Lane 1 (DET);
+SYNTH never assigns these again. Each row is a ratified DET pattern:
+
+| Printed phrase (anchored, both templating eras) | Slug |
+|---|---|
+| "Activate only as a sorcery" (CR 602.5d) | `activation-restricted-to-sorcery-speed` |
+| "Activate only as an instant" (CR 602.5e) | `activation-restricted-to-instant-speed` |
+| "Activate only during your turn" | `activation-restricted-only-during-your-turn` |
+| "Activate only during your upkeep" | `activation-restricted-to-own-upkeep` |
+| "Activate only during combat" | `activation-restricted-during-combat` |
+| "Activate only during an opponent's turn" | `activation-restricted-during-opponents-turn` |
+| "Activate only once each turn" (CR 602.5b) | `activation-restricted-once-each-turn` |
+| "Activate only if ..." (condition-gated) | `activation-condition-gated` (wide net; condition facet to ledger) |
+
+DET patterns must canonicalize "Activate this ability only ..." (older
+templating) to the modern phrase (Lesson-1 both-polarity discipline applied to
+templating eras). Compound restrictions ("only during combat and only if...")
+get EVERY applicable tag (M8 logic applied to restrictions).
+
+The same enumeration discipline applies at the walk to any other closed CR
+family the codebook touches: keyword classes (CR 702 first lines — already the
+keyword-bucket job), replacement shapes (614.1a/b/c), casting-timing families.
+
+## 4. EFFECT verbs — standardized forms
+
+One verb per mechanic, chosen once, used everywhere:
+
+- `destroy`, `exile`, `bounce` (return to hand), `tuck` (to library),
+  `sacrifice`, `discard`, `mill`, `draw`, `loot` (draw-then-discard),
+  `scry`, `surveil`, `proliferate`, `tutor` (search library), `reanimate`
+  (graveyard → battlefield), `regrowth` (graveyard → hand, ratified b5 vocab),
+  `create-token`, `pump` (+P/+T), `debuff` (−P/−T), `damage`, `gain-life`,
+  `lose-life`, `drain` (damage/loss + symmetric gain), `tap`, `untap`,
+  `tap-or-untap`, `transform`, `copy`, `counters` (verb — see section 8),
+  `grants-<keyword>`, `taxes` (cost increase), `cost-reduction`.
+- RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
+  (section 8) — the b5 D14 `create-token-<type>` standard generalizes.
+  All `creates-` slugs normalize at the walk.
+- "scroll" = instant-or-sorcery(+interrupt) card (ratified b5 vocab; glossary
+  entry required in the embedded codebook).
+
+## 5. OBJECT vocabulary
+
+`creature`, `artifact`, `enchantment`, `planeswalker`, `battle`, `land`,
+`permanent`, `nonland-permanent`, `spell`, `noncreature-spell`,
+`creature-spell`, `player`, `opponent`, `any-target` (damage only, = the CR
+"any target" shorthand), `card-in-graveyard` families
+(`creature-card-graveyard` etc.), token types (section 8).
+
+Per-object-class siblings are the law for every `targeted-<action>` family
+(M8 generalized, b6 D3): OR-shaped multi-class targets get every applicable
+class tag; the class lattice (`targeted-bounce-<class>`,
+`targeted-destruction-<class>`...) is a ratified grammar with virtual nodes.
+
+## 6. SCOPE vocabulary
+
+`self` (the source), `own` (yours), `opponent`, `any`, `each`/`mass-`
+(non-targeted, all-covered), `target` (ONLY when the word "target" appears in
+the ability per CR 601.2c — the b7 Unwind ruling: "untap up to three lands"
+without "target" may NOT sit in a `-target-` slug), `defending-player`
+(CR 506.2; the bare word "defender" is BANNED in slugs — it collides with the
+Defender keyword, Captain's b7 ruling generalized), `two-target` (fixed
+plurality), `-conditional` (an intervening-if or "unless" gate on the same
+ability; the gate must be quoted in evidence).
+
+## 7. Scaling standard
+
+One connective, one order, closed stat list — RATIFIED (D-3):
+**`<subject>-scales-with-<stat>`** (matches
+`x-scales-with-permanent-count` and the ledger's N-scales-with-N scheme;
+`-scaled-by-` is retired at the walk).
+
+Closed stat vocabulary (b6/b7 confusion pairs made explicit): `creature-count`,
+`hand-size`, `own-counters` (counters ON the source; the charge-counter class),
+`graveyard-count`, `graveyard-creature-count`, `land-count`, `land-type-count`,
+`permanent-count`, `attacker-count`, `legendary-creature-count`, `mana-value`,
+`life-gained`, `x`, `opponent-count`, `target-count` (the Hinata stat),
+`token-count`, `color-count`, `charge-counters` (alias of own-counters where
+the type matters).
+
+The two token axes under this standard (answers b7 line-84):
+- X scales HOW MANY tokens → `token-count-scales-with-x` (absorbs the
+  duplicate `scales-token-count-with-x` at the walk).
+- X scales counters ON one created token → `create-token-with-x-counters`.
+
+## 8. The counter/token disambiguation laws
+
+Hard rules, each anchored:
+1. **Noun sense (CR 122.1) is always TYPED:** `plus1-counter`, `minus1-counter`,
+   `charge-counter`, `stun-counter`, `loyalty-counter`, `<name>-counter`.
+   The bare noun "counter" never appears in a slug. Generic axes use
+   `-counters` only with a binding word (`etb-with-counters`,
+   `counter-removal-as-activation-cost` → walk-renames to typed or
+   `-counters-` forms as feasible).
+2. **Verb sense (CR 701.6) is always `counters-<object>`** (`counters-target-spell`,
+   `counters-noncreature-spell`). The participle "countered" is BANNED
+   (b7 grants-trample ruling generalized).
+3. **A counter is not a token and a token is not a counter (CR 122.1,
+   verbatim).** Any slug naming one must have evidence quoting that one —
+   the b7 Lat-Nam/Gnarlid effect-suffix check, now grammar law.
+4. Token types are their predefined names: `treasure`, `clue`, `food`,
+   `blood`, `gold`, `powerstone`, `mutagen`, `lander`, `creature` (with P/T
+   left to evidence), `mana-producing-artifact` (umbrella; excludes treasure,
+   which owns its own node — S5 semantics at schema pass).
+
+## 9. Cost-vs-effect law
+
+Anchors: CR 113.3b ("[Cost]: [Effect]") and CR 601.2b (additional costs).
+- `-cost-` / `-as-activation-cost` / `additional-cost-` slugs require the
+  action LEFT of the colon or inside an "as an additional cost" clause.
+- Life/sacrifice/discard occurring in resolution text NEVER satisfies a cost
+  slug (b6 Fleshless Gladiator, b7 Fountain of Youth/Pick-a-Beeble class).
+- "Free must be Free" (ratified b2) is a special case of this law.
+
+## 10. Slug validator (Lane-1 lint, wire into emit + SUP)
+
+A DET check every proposed slug must pass before entering the codebook or the
+grammar lane. Pseudo-spec for `validate_slug.py`:
+1. Charset: `^[a-z0-9]+(-[a-z0-9]+)*$`.
+2. Banned tokens: `defender`, `countered`, bare `counter` as final noun
+   without type, `free` unless the axis definition quotes a zero-cost,
+   `creates` (post-D-2), `scaled` (post-D-3), `token` immediately adjacent to
+   `counter` without the section-8 shapes.
+3. Every hyphen-token must appear in the closed vocabularies (sections 2,
+   4–8) or in the ratified glossary; unknown tokens → halt loudly (new
+   vocabulary is a Captain ratification, not a typo).
+4. Slot order check via greedy match against section 1.
+5. Synonym collision check: normalized slug (stem verbs, strip connectives,
+   sort scaling pairs) must be unique across the codebook — catches the
+   token-count duplication class mechanically.
+6. Restriction-family, counter-law, and cost-law special checks.
+Validator failures are never auto-fixed; they surface for ruling.
+
+## 11. Grammar instantiation mechanics (wiring, per CORPUS-PASS-PLAN §11.2)
+
+- Ratified grammars live in `docs/grammars.json`: stem + ordered facet slots +
+  closed per-slot vocab + CR anchor + instantiation examples.
+- A virtual node instantiates the moment one quote-verified member arrives —
+  no fresh ratification (the grammar was ratified). The b7 Brandywine Farmer
+  case is the model: `leaves-battlefield-create-token-food` should have
+  self-instantiated. SUP and emit both gain this behavior; SUP ledger-flagging
+  a grammar-composable home is now a protocol error.
+- SYNTH labeling: `lane=codebook-grammar` for grammar-composed slugs;
+  validator runs on every one; anything neither exact-codebook nor
+  grammar-valid stays `lane=free`.
+- Seeded grammar families (already ratified across b5–b7): create-token-<type>;
+  etb-create-token-<type>; leaves-battlefield-trigger-create-token-<type>;
+  targeted-<action>-<class>; activated-tap-or-untap-<scope>;
+  draw-second/cast-second prefix scheme; activation-restriction family (§3);
+  grants-<keyword> facet scheme (T1 tension still parked for schema pass —
+  grammar defines the NAMES, the b1-Q1 engine question stays open).
+
+## 12. Migration ledger (the walk's worklist — logged, executed AT the walk)
+
+Known non-conforming axes as of v0.7-pending (worked examples, not
+exhaustive; the walk validates all ~300):
+- `scales-token-count-with-x` → MERGE into `token-count-scales-with-x` (dup).
+- `creates-token-with-x-scaled-counters` → `create-token-with-x-counters`.
+- All `-scaled-by-` slugs → `-scales-with-` (D-3).
+- `combat-damage-triggers-loot/-discard/-treasure/-proliferate` →
+  `combat-damage-to-player-*` or `-to-creature-*` per member evidence.
+- `attack-trigger-damage-defender` → three-way split (b7 §12 pending).
+- `death-trigger-card-draw` → reuse original slug `death-trigger-draw-card`
+  (registry continuity) — then family-normalize per D-1.
+- `counter-removal-as-activation-cost` → keep (verb-adjacent but shielded by
+  `-removal-`); revisit under section-8 rule 1 at the walk.
+- `untaps-target-land`, `activated-untap-target-creature`,
+  `activated-untap-another-permanent`, `activated-tap-target-creature`,
+  tap-or-untap pair, mass-untap pair → normalize onto
+  `activated-(un)tap[-or-untap]-<scope>-<class>` lattice; consolidation flag
+  already ledgered (b6 D3).
+- `cannot-block-restriction` vs `cant-be-*`: pick `cant` (matches oracle
+  "can't") — walk item.
+- `compensates-controller-with-token`, `cheat-creature-into-play`,
+  `rhystic-tax`, `the-ring-tempts-you`: idiomatic job-names, EXEMPT as leaves
+  (jobs are parent/display vocabulary; grammar governs mechanism slugs) —
+  exemption list is Captain-ratified per slug at the walk.
+
+## 13. Ratification record (2026-07-30)
+
+All five decisions ratified per recommendation, Captain-explicit:
+- **D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
+- **D-2:** bare verb stems; `counters-` verb form retained (section 8).
+- **D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
+  retires at the walk.
+- **D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
+  banned from assigning that family.
+- **D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
+  mechanism (§12) ratified.
+Registry: log this document as a ratified ruling set; changes require the same
+explicit-reversal discipline as scoring constants (D6-style logging).
