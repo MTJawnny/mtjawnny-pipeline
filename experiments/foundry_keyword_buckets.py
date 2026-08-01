@@ -153,6 +153,29 @@ DECK_CONSTRUCTION_RE = re.compile(r"abilities that modify the rules for deck con
 AMBIGUOUS_CARD_RE = re.compile(
     r"together, they represent a static ability, a triggered ability, or an activated ability", re.I)
 
+# F1 fix (2026-07-31 walk ratification): a keyword whose class is split across
+# SEPARATE lettered subrules by card type (Ascend: 702.131a "on an instant or
+# sorcery spell represents a spell ability" / 702.131b "on a permanent
+# represents a static ability") is a genuine multi-class statement and must
+# classify as hybrid, not just whichever subrule happens to be scanned first.
+# The original code only ever inspected the single subrule where the FIRST
+# TYPE_MENTION_RE hit occurred (scan_window loop breaks on first match), so a
+# second, independently-declared class in a later subrule was silently
+# dropped. This is intentionally much stricter than TYPE_MENTION_RE (which
+# free-scans for "<class> ability/effect" anywhere in a subrule's preamble --
+# necessary to catch same-subrule compounds like Modular's "represents both a
+# static ability and a triggered ability", but far too loose to also gate a
+# cross-subrule merge: incidental mentions like Split Second 702.61b
+# ("Triggered abilities trigger and are put on the stack as normal...",
+# describing OTHER cards' triggered abilities, not Split Second's own class)
+# or Tribute 702.104b ("Objects with tribute have triggered abilities that
+# check...") would otherwise be misread as a second class declaration).
+# Verified empirically against all 194 CR 702 entries (2026-07-31): this
+# pattern fires on 2+ distinct classes for Ascend ONLY -- no other keyword's
+# extraction changes.
+TYPE_CONDITIONAL_CLASS_RE = re.compile(
+    r"\bon an? [^.]{0,60}?(?:represents|is) an? (static|triggered|activated|spell|replacement) abilit", re.I)
+
 
 def classify_entry(num: int, name: str, subrules: list) -> dict:
     cr_prefix = f"702.{num}"
@@ -227,8 +250,34 @@ def classify_entry(num: int, name: str, subrules: list) -> dict:
         result["class_cr_citation"] = f"{cr_prefix}{subrules[0][0]}" if subrules else cr_prefix
         return result
 
-    result["class_cr_citation"] = f"{cr_prefix}{class_letter}"
-    result["class_evidence"] = class_text
+    # F1 cross-subrule merge (see TYPE_CONDITIONAL_CLASS_RE comment above):
+    # only applies when the class found above is a single plain CR ability
+    # class -- ambiguous-card-dependent/special-action/rules-modifying/
+    # characteristic-defining/evasion/hybrid are already resolved and are
+    # never a type-conditional class split.
+    merged = False
+    if result["class"] in ("static", "triggered", "activated", "spell", "replacement"):
+        conditional_classes = []
+        conditional_letters = []
+        for letter, text in scan_window:
+            means_idx = text.find("” means")
+            preamble = text[:means_idx] if means_idx != -1 else text
+            for m in TYPE_CONDITIONAL_CLASS_RE.finditer(preamble):
+                v = m.group(1).lower()
+                if v not in conditional_classes:
+                    conditional_classes.append(v)
+                    conditional_letters.append(letter)
+        if len(conditional_classes) > 1:
+            merged = True
+            result["class"] = "hybrid"
+            result["hybrid_components"] = conditional_classes
+            result["class_cr_citation"] = "/".join(f"{cr_prefix}{l}" for l in conditional_letters)
+            result["class_evidence"] = " | ".join(
+                t for l, t in scan_window if l in conditional_letters)
+
+    if not merged:
+        result["class_cr_citation"] = f"{cr_prefix}{class_letter}"
+        result["class_evidence"] = class_text
     if result["class"] == "ambiguous-card-dependent":
         result["verify_or_drop"] = True
 
