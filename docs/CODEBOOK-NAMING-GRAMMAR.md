@@ -62,8 +62,7 @@ variable.
 | `activated` | "[Cost]: [Effect]" | 113.3b |
 | `static` | written as a statement, continuously true | 113.3d |
 | `etb` | triggered, "when ~ enters" | 113.3c |
-| `dies` | triggered, graveyard from battlefield | 700.4 |
-| `leaves-battlefield-trigger` | triggered, any LTB (superset of dies; a card saying "leaves the battlefield" NEVER takes `dies`) — the `-trigger` suffix is kept to match the live axis family | 700.4 boundary |
+| `leaves-battlefield-trigger` | triggered, any LTB (superset of death-trigger; a card saying "leaves the battlefield" NEVER takes `death-trigger`) — the `-trigger` suffix is kept to match the live axis family | 700.4 boundary |
 | `attack-trigger` | "whenever ~ attacks" | 113.3c |
 | `cast-trigger` | "when(ever) [someone] casts" — requires cast verbiage; never an ETB; the trigger EVENT must be the cast itself, not a condition about casting (b6 Village Ironsmith ruling) | 701.5a |
 | `combat-damage-to-player` | "deals combat damage to a player" | — |
@@ -74,6 +73,9 @@ variable.
 | `replacement` | "instead" / "skip" / "enters with/as" shapes | 614.1a–c |
 | `delayed` | delayed triggered ability created on resolution | 603.7 |
 | `kicker` | kicked-conditional bonus | 601.2b |
+| `death-trigger` | triggered, graveyard from battlefield | 700.4 |
+| `becomes-targeted-trigger` | triggered, "becomes the target of a spell or ability" (Ward's family; walk-ratification Q2, 2026-07-31) | 702.21a |
+| `blocks-or-becomes-blocked-trigger` | triggered, a blocking/being-blocked event (Bushido/Flanking/Rampage/Afflict shape; walk-ratification Q2, 2026-07-31) | 509 |
 
 Rules:
 - DELIVERY is determined by ability STRUCTURE, never by effect words (batch-4
@@ -129,6 +131,9 @@ One verb per mechanic, chosen once, used everywhere:
   All `creates-` slugs normalize at the walk.
 - "scroll" = instant-or-sorcery(+interrupt) card (ratified b5 vocab; glossary
   entry required in the embedded codebook).
+- "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
+  walk-ratification 2026-07-31 — `rule:cant-be-countered` renames to
+  `rule:spell-uncounterable`, replacing the banned `countered` participle).
 
 ## 5. OBJECT vocabulary
 
@@ -167,7 +172,9 @@ Closed stat vocabulary (b6/b7 confusion pairs made explicit): `creature-count`,
 `permanent-count`, `attacker-count`, `legendary-creature-count`, `mana-value`,
 `life-gained`, `x`, `opponent-count`, `target-count` (the Hinata stat),
 `token-count`, `color-count`, `charge-counters` (alias of own-counters where
-the type matters).
+the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+2026-07-31 — required by the draw-scales-with-opponent-tapped-creature-count
+D-3 rename target).
 
 The two token axes under this standard (answers b7 line-84):
 - X scales HOW MANY tokens → `token-count-scales-with-x` (absorbs the
@@ -266,6 +273,10 @@ exhaustive; the walk validates all ~300):
   `rhystic-tax`, `the-ring-tempts-you`: idiomatic job-names, EXEMPT as leaves
   (jobs are parent/display vocabulary; grammar governs mechanism slugs) —
   exemption list is Captain-ratified per slug at the walk.
+- **Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
+  ratified, joining the 4 above: `burst-draw`, `cantrip`, `modal`,
+  `drain-life`, `combat-trick-pump-own-creature`, `tribal-anthem-buff`,
+  `alternate-win-condition`.
 
 ## 13. Ratification record (2026-07-30)
 
@@ -280,3 +291,33 @@ All five decisions ratified per recommendation, Captain-explicit:
   mechanism (§12) ratified.
 Registry: log this document as a ratified ruling set; changes require the same
 explicit-reversal discipline as scoring constants (D6-style logging).
+
+## 14. Walk-ratification vocabulary batch (2026-07-31)
+
+Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+
+- **Q5 extended structural/descriptive vocabulary** (the ~40-most-common-token
+  proposal from `docs/CORPUS-PASS-WALK-RATIFICATION.md` §2.2.2, ratified as
+  EXACTLY the named list — the "and similar" backlog remainder is logged to
+  the final naming audit, not silently expanded here):
+  `creatures`, `other`, `on`, `from`, `library`, `triggers`, `ability`, `and`,
+  `by`, `prevents`, `unblockable`, `buff`, `tapped`, `restriction`, `top`,
+  `targets`, `doubles`, `energy`, `forces`, `controller`, `prevent`, `into`,
+  `growth`, `tribal`, `effect`, `choose`, `enters`, `cards`, `threshold`,
+  `recursion`. Explicitly EXCLUDED despite corpus frequency (each has its own
+  open reason, logged to the naming audit rather than silently passed):
+  `scaled` (banned, D-3), `a`/`the` (banned articles, §1), `targeted` (the
+  `targeted-<action>-<class>` grammar family needs a membership check first,
+  §2.5 of the walk doc), `lifegain` (synonym-collision candidate against the
+  ratified `gain-life` EFFECT verb, design goal #1), `attackers`, `of`,
+  `outlet`.
+- **F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
+  passes) but slugs containing it get a non-blocking VALIDATOR WARNING
+  ("grab-bag smell") rather than a silent clean pass — see
+  `validate_slug.py`'s `warnings` field.
+- **Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+  (tokens `cant`, `be`, `blocked`) for the new `cant-be-blocked-<restriction>`
+  grammar family (§2.4 of the execution handoff). The `countered` ban (§10.2)
+  is unaffected — `rule:cant-be-countered` renames to `rule:spell-uncounterable`
+  (Q4, §4 above) rather than sharing this stem.

@@ -54,6 +54,9 @@ DELIVERY_VOCAB = {
     "activated", "static", "etb", "death", "trigger", "leaves", "battlefield",
     "attack", "cast", "combat", "damage", "to", "player", "creature", "upkeep",
     "landfall", "loyalty", "replacement", "delayed", "kicker", "dies",
+    # Q2 (walk-ratification 2026-07-31): becomes-targeted-trigger,
+    # blocks-or-becomes-blocked-trigger added to the closed DELIVERY vocab.
+    "becomes", "targeted", "blocks", "blocked",
 }
 
 EFFECT_VOCAB = {
@@ -62,6 +65,9 @@ EFFECT_VOCAB = {
     "regrowth", "create", "token", "pump", "debuff", "damage", "gain", "life",
     "lose", "drain", "tap", "untap", "or", "transform", "copy", "counters",
     "grants", "taxes", "cost", "reduction",
+    # Q4 (walk-ratification 2026-07-31): cant-be-countered -> spell-uncounterable
+    # ("spell" is already in OBJECT_VOCAB).
+    "uncounterable",
 }
 
 OBJECT_VOCAB = {
@@ -105,10 +111,44 @@ EXEMPT_LEAF_SLUGS = {
     "rule:cheat-creature-into-play",
     "rule:rhystic-tax",
     "rule:the-ring-tempts-you",
+    # Q6 (walk-ratification 2026-07-31), CODEBOOK-NAMING-GRAMMAR.md sec.12/13.
+    "rule:burst-draw",
+    "rule:cantrip",
+    "rule:modal",
+    "rule:drain-life",
+    "rule:combat-trick-pump-own-creature",
+    "rule:tribal-anthem-buff",
+    "rule:alternate-win-condition",
 }
 
 # Ratified glossary (sec.4/sec.12): standing shorthand vocabulary.
 GLOSSARY_VOCAB = {"scroll", "regrowth"}
+
+# Q5 extended structural/descriptive vocabulary (walk-ratification 2026-07-31,
+# CODEBOOK-NAMING-GRAMMAR.md sec.14) -- the EXACT list Captain ratified from
+# CORPUS-PASS-WALK-RATIFICATION.md sec.2.2.2's proposal, not the full 179-token
+# frequency list. Deliberately excludes 'scaled' (banned, D-3), 'a'/'the'
+# (banned articles), 'targeted' (targeted-<action>-<class> grammar family
+# needs a membership check first), 'lifegain' (synonym-collision candidate
+# against the ratified gain-life EFFECT verb) -- those stay in the final
+# naming-audit backlog, not silently passed here.
+WALK_RATIFICATION_VOCAB_20260731 = {
+    "creatures", "other", "on", "from", "library", "triggers", "ability",
+    "and", "by", "prevents", "unblockable", "buff", "tapped", "restriction",
+    "top", "targets", "doubles", "energy", "forces", "controller", "prevent",
+    "into", "growth", "tribal", "effect", "choose", "enters", "cards",
+    "threshold", "recursion",
+}
+
+# Q8.5 (walk-ratification 2026-07-31): cant-be-blocked compound stem token,
+# ratified into vocabulary for the new cant-be-blocked-<restriction> grammar
+# family. Does not affect the 'countered' ban (sec.10.2) -- separate token.
+CANT_BE_BLOCKED_STEM_VOCAB = {"cant", "be", "blocked"}
+
+# F4 (walk-ratification 2026-07-31): tokens that are ratified vocabulary (so
+# they do NOT fail unknown_vocabulary) but still deserve a non-blocking
+# reviewer warning ("grab-bag smell") rather than a silent clean pass.
+SOFT_WARNING_TOKENS = {"and"}
 
 # "grants-<keyword>" (sec.4 EFFECT) and the keyword-grant facet scheme
 # (addendum-3 sec.7) parameterize on CR keyword names -- any of the 193
@@ -131,7 +171,8 @@ KEYWORD_VOCAB = _load_keyword_vocab()
 
 CLOSED_VOCAB = (DELIVERY_VOCAB | EFFECT_VOCAB | OBJECT_VOCAB | SCOPE_VOCAB
                 | SCALING_STAT_VOCAB | COUNTER_TOKEN_VOCAB | QUALIFIER_VOCAB
-                | RESTRICTION_VOCAB | GLOSSARY_VOCAB | KEYWORD_VOCAB)
+                | RESTRICTION_VOCAB | GLOSSARY_VOCAB | KEYWORD_VOCAB
+                | WALK_RATIFICATION_VOCAB_20260731 | CANT_BE_BLOCKED_STEM_VOCAB)
 
 # ---------------------------------------------------------------------------
 # sec.3 closed activation-restriction family -- exact enumeration
@@ -312,22 +353,38 @@ def _check_cost_law(bare: str, definition: str, failures: list):
         })
 
 
+def _check_soft_warnings(tokens: list, warnings: list):
+    """F4 (walk-ratification 2026-07-31): ratified-but-flagged tokens. NOT a
+    pass and NOT a failure -- surfaces for review without blocking ('and'-
+    slugs are a grab-bag smell worth a second look)."""
+    hit = sorted(set(tokens) & SOFT_WARNING_TOKENS)
+    for tok in hit:
+        warnings.append({
+            "check": "soft_vocab_warning",
+            "detail": f"'{tok}' is ratified vocabulary but flagged for review (sec.14 F4) -- "
+                       "'and'-slugs are a grab-bag smell; consider whether this should split into two axes",
+        })
+
+
 def validate_slug(slug: str, definition: str = None, all_slugs: list = None) -> dict:
     """slug must include the 'rule:' prefix. Returns
-    {"slug", "ok", "failures": [...], "unknown_tokens": [...]}."""
+    {"slug", "ok", "failures": [...], "warnings": [...], "unknown_tokens": [...]}.
+    'warnings' (F4) never affects 'ok' -- non-blocking, surfaced for review."""
     if not slug.startswith("rule:"):
         return {"slug": slug, "ok": False,
                 "failures": [{"check": "prefix", "detail": "slug must start with 'rule:'"}],
-                "unknown_tokens": []}
+                "warnings": [], "unknown_tokens": []}
     bare = slug[len("rule:"):]
     tokens = bare.split("-") if bare else []
     exempt = slug in EXEMPT_LEAF_SLUGS
     failures = []
+    warnings = []
 
     _check_charset(bare, failures)
     if CHARSET_RE.match(bare):  # only run token-level checks on a charset-valid slug
         _check_banned_tokens(bare, tokens, definition, failures)
         unknown = _check_closed_vocabulary(bare, tokens, exempt, failures)
+        _check_soft_warnings(tokens, warnings)
     else:
         unknown = []
     _check_restriction_family(bare, failures)
@@ -341,7 +398,7 @@ def validate_slug(slug: str, definition: str = None, all_slugs: list = None) -> 
             failures.append({"check": "synonym_collision", "detail": f"normalizes identically to {others}"})
 
     return {"slug": slug, "ok": len(failures) == 0, "exempt": exempt,
-            "failures": failures, "unknown_tokens": unknown}
+            "failures": failures, "warnings": warnings, "unknown_tokens": unknown}
 
 
 def main():
@@ -360,9 +417,13 @@ def main():
             r = validate_slug(slug, definition=defn, all_slugs=active_slugs)
             results.append(r)
         n_fail = sum(1 for r in results if not r["ok"])
-        print(f"validated {len(results)} active slugs: {len(results) - n_fail} clean, {n_fail} flagged")
+        n_warn_only = sum(1 for r in results if r["ok"] and r["warnings"])
+        n_clean = len(results) - n_fail - n_warn_only
+        print(f"validated {len(results)} active slugs: {n_clean} clean, {n_warn_only} warned (non-blocking), "
+              f"{n_fail} flagged")
         out_path = fc.FOUNDRY_OUT_DIR / "validate_slug_report.json"
-        fc.write_json(out_path, {"total": len(results), "flagged": n_fail, "results": results})
+        fc.write_json(out_path, {"total": len(results), "clean": n_clean, "warned": n_warn_only,
+                                  "flagged": n_fail, "results": results})
         print(f"wrote {out_path}")
     else:
         for slug in args:

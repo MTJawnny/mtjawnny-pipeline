@@ -2,7 +2,7 @@
   "schema": "codebook-grammars/1",
   "generated": "2026-07-30",
   "ruling_basis": "docs/CODEBOOK-NAMING-GRAMMAR.md sec.11 (grammar instantiation mechanics) / docs/CORPUS-PASS-PLAN.md sec.2 (lattice grammars)",
-  "note": "Ratified grammars from CODEBOOK-NAMING-GRAMMAR.md sec.11's seeded-family list (status=ratified, already binding across batches 5-7) plus any newly-drafted families surfaced by the combined per-axis walk (status=proposed -- NOT binding until Captain ratifies; SUP/emit must not treat a 'proposed' entry as license to use lane=codebook-grammar). A virtual node (an unpopulated facet combination) is never authored into codebook.json as an axis with zero members -- it instantiates the moment one quote-verified member arrives, per sec.11.",
+  "note": "Ratified grammars from CODEBOOK-NAMING-GRAMMAR.md sec.11's seeded-family list (status=ratified, already binding across batches 5-7) plus any newly-drafted families surfaced by the combined per-axis walk (status=proposed -- NOT binding until Captain ratifies; SUP/emit must not treat a 'proposed' entry as license to use lane=codebook-grammar). A virtual node (an unpopulated facet combination) is never authored into codebook.json as an axis with zero members -- it instantiates the moment one quote-verified member arrives, per sec.11. A \"rejected\" entry (walk-ratification 2026-07-31 added this status value) is a superseded draft kept for audit trail per G4/G5 -- never treat as usable, ratified or otherwise.",
   "grammars": {
     "create-token-<type>": {
       "status": "ratified",
@@ -13,16 +13,36 @@
       "facets": [
         {
           "slot": "type",
-          "closed_vocab": ["treasure", "clue", "food", "blood", "gold", "powerstone",
-                           "mutagen", "lander", "creature", "mana-producing-artifact",
-                           "with-x-counters"],
+          "closed_vocab": [
+            "treasure",
+            "clue",
+            "food",
+            "blood",
+            "gold",
+            "powerstone",
+            "mutagen",
+            "lander",
+            "creature",
+            "mana-producing-artifact",
+            "with-x-counters"
+          ],
           "note": "token types per CODEBOOK-NAMING-GRAMMAR.md sec.8.4; 'mana-producing-artifact' is the umbrella that excludes treasure (treasure owns its own node, S5 semantics at schema pass). 'with-x-counters' is the sec.7 scaling-counters-on-a-created-token shape, not a token type -- kept in this facet list because it composes onto the same stem."
         }
       ],
-      "instantiated_members": ["rule:create-token-creature", "rule:create-token-mana-producing-artifact",
-                                "rule:create-token-treasure", "rule:create-token-with-x-counters"],
-      "virtual_nodes_example": ["create-token-clue", "create-token-food", "create-token-blood",
-                                 "create-token-gold", "create-token-powerstone", "create-token-lander"]
+      "instantiated_members": [
+        "rule:create-token-creature",
+        "rule:create-token-mana-producing-artifact",
+        "rule:create-token-treasure",
+        "rule:create-token-with-x-counters"
+      ],
+      "virtual_nodes_example": [
+        "create-token-clue",
+        "create-token-food",
+        "create-token-blood",
+        "create-token-gold",
+        "create-token-powerstone",
+        "create-token-lander"
+      ]
     },
     "etb-create-token-<type>": {
       "status": "ratified",
@@ -31,10 +51,17 @@
       "delivery": "etb",
       "cr_anchor": "113.3c (etb trigger); 111 (Tokens)",
       "facets": [
-        {"slot": "type", "closed_vocab": "same as create-token-<type> facet, plus -conditional qualifier"}
+        {
+          "slot": "type",
+          "closed_vocab": "same as create-token-<type> facet, plus -conditional qualifier"
+        }
       ],
-      "instantiated_members": ["rule:etb-create-token-creature", "rule:etb-create-token-creature-conditional",
-                                "rule:etb-create-token-food", "rule:etb-create-token-mutagen"],
+      "instantiated_members": [
+        "rule:etb-create-token-creature",
+        "rule:etb-create-token-creature-conditional",
+        "rule:etb-create-token-food",
+        "rule:etb-create-token-mutagen"
+      ],
       "notes": "sec.7 agenda item: rule:etb-create-token's 46 pre-existing (batches 1-4) unclassified members are flagged for schema-pass sub-typing per TRIAGE-BATCH-5.md sec.10 D10 -- not resolved by this walk."
     },
     "leaves-battlefield-trigger-create-token-<type>": {
@@ -44,11 +71,16 @@
       "delivery": "leaves-battlefield-trigger",
       "cr_anchor": "700.4 boundary (any LTB, superset of dies); 111 (Tokens)",
       "facets": [
-        {"slot": "type", "closed_vocab": "same as create-token-<type> facet"}
+        {
+          "slot": "type",
+          "closed_vocab": "same as create-token-<type> facet"
+        }
       ],
-      "instantiated_members": ["rule:leaves-battlefield-trigger-create-token-creature",
-                                "rule:leaves-battlefield-trigger-create-token-food",
-                                "rule:leaves-battlefield-trigger-create-token-mutagen"],
+      "instantiated_members": [
+        "rule:leaves-battlefield-trigger-create-token-creature",
+        "rule:leaves-battlefield-trigger-create-token-food",
+        "rule:leaves-battlefield-trigger-create-token-mutagen"
+      ],
       "notes": "the b7 Brandywine Farmer case (CODEBOOK-NAMING-GRAMMAR.md sec.11) is the model virtual-node self-instantiation: leaves-battlefield-create-token-food should have self-instantiated on first quote-verified member without fresh ratification."
     },
     "targeted-<action>-<class>": {
@@ -58,15 +90,38 @@
       "delivery": null,
       "cr_anchor": "601.2c (the word 'target' governs targeting)",
       "facets": [
-        {"slot": "action", "closed_vocab": ["destruction", "bounce", "exile", "discard", "damage"],
-         "note": "EFFECT verbs from sec.4, restricted to the subset actually composed with a per-object-class target"},
-        {"slot": "class", "closed_vocab": ["creature", "player", "planeswalker", "battle"],
-         "note": "OBJECT vocab sec.5; OR-shaped multi-class targets get every applicable class tag (M8), never a combo tag"}
+        {
+          "slot": "action",
+          "closed_vocab": [
+            "destruction",
+            "bounce",
+            "exile",
+            "discard",
+            "damage"
+          ],
+          "note": "EFFECT verbs from sec.4, restricted to the subset actually composed with a per-object-class target"
+        },
+        {
+          "slot": "class",
+          "closed_vocab": [
+            "creature",
+            "player",
+            "planeswalker",
+            "battle"
+          ],
+          "note": "OBJECT vocab sec.5; OR-shaped multi-class targets get every applicable class tag (M8), never a combo tag"
+        }
       ],
-      "instantiated_members": ["rule:targeted-battle-damage", "rule:targeted-bounce-creature",
-                                "rule:targeted-creature-damage", "rule:targeted-destruction",
-                                "rule:targeted-discard", "rule:targeted-exile",
-                                "rule:targeted-planeswalker-damage", "rule:targeted-player-damage"],
+      "instantiated_members": [
+        "rule:targeted-battle-damage",
+        "rule:targeted-bounce-creature",
+        "rule:targeted-creature-damage",
+        "rule:targeted-destruction",
+        "rule:targeted-discard",
+        "rule:targeted-exile",
+        "rule:targeted-planeswalker-damage",
+        "rule:targeted-player-damage"
+      ],
       "notes": "rule:targeted-destruction and rule:targeted-exile and rule:targeted-discard are NOT yet class-suffixed in the live codebook (predate the lattice's <class> facet) -- flagged in the per-axis walk's rename set as candidates to bring into the lattice (e.g. targeted-destruction-creature) once member evidence is checked for a single dominant class; do not auto-rename, membership may span classes."
     },
     "activated-tap-or-untap-<scope>": {
@@ -76,13 +131,39 @@
       "delivery": "activated",
       "cr_anchor": "701.26 (Tap and Untap keyword actions)",
       "facets": [
-        {"slot": "action", "closed_vocab": ["tap", "untap", "tap-or-untap"]},
-        {"slot": "ownership", "closed_vocab": ["any", "own", "opponent"], "note": "sec.6 SCOPE vocab; omitted when scope=field alone carries it and no sibling differs"},
-        {"slot": "class", "closed_vocab": ["creature", "artifact", "permanent"]}
+        {
+          "slot": "action",
+          "closed_vocab": [
+            "tap",
+            "untap",
+            "tap-or-untap"
+          ]
+        },
+        {
+          "slot": "ownership",
+          "closed_vocab": [
+            "any",
+            "own",
+            "opponent"
+          ],
+          "note": "sec.6 SCOPE vocab; omitted when scope=field alone carries it and no sibling differs"
+        },
+        {
+          "slot": "class",
+          "closed_vocab": [
+            "creature",
+            "artifact",
+            "permanent"
+          ]
+        }
       ],
-      "instantiated_members": ["rule:activated-tap-or-untap-any-creature", "rule:activated-tap-or-untap-any-permanent",
-                                "rule:activated-tap-target-creature", "rule:activated-untap-another-permanent",
-                                "rule:activated-untap-target-creature"],
+      "instantiated_members": [
+        "rule:activated-tap-or-untap-any-creature",
+        "rule:activated-tap-or-untap-any-permanent",
+        "rule:activated-tap-target-creature",
+        "rule:activated-untap-another-permanent",
+        "rule:activated-untap-target-creature"
+      ],
       "notes": "CORPUS-PASS-PLAN.md sec.3 flags this exact family for consolidation onto 'activated-(un)tap[-or-untap]-<scope>-<class>' at the walk (migration ledger, CODEBOOK-NAMING-GRAMMAR.md sec.12) -- the 5 live members above are NOT yet lattice-conformant (untaps-target-land etc. named inconsistently); see the per-axis walk's rename set."
     },
     "draw-second-card-trigger-<qualifier>/cast-second-spell-trigger-<qualifier>": {
@@ -92,9 +173,15 @@
       "delivery": null,
       "cr_anchor": "120 (Life/Card Draw), 601 (Casting Spells) -- 'second' is a project-defined ordinal condition, not a CR term; qualifier facet is per-payoff",
       "facets": [
-        {"slot": "qualifier", "closed_vocab": "open (payoff-dependent, e.g. plus1-counter)", "note": "only one instantiated member so far -- facet vocab not yet closed, flagged for Captain in the ratification doc"}
+        {
+          "slot": "qualifier",
+          "closed_vocab": "open (payoff-dependent, e.g. plus1-counter)",
+          "note": "only one instantiated member so far -- facet vocab not yet closed, flagged for Captain in the ratification doc"
+        }
       ],
-      "instantiated_members": ["rule:draw-second-card-trigger-plus1-counter"],
+      "instantiated_members": [
+        "rule:draw-second-card-trigger-plus1-counter"
+      ],
       "notes": "thin family (n=1); walk proposes leaving open rather than closing prematurely per 'small n -- kill for fake, never for rare.'"
     },
     "activation-restricted-<condition>": {
@@ -105,12 +192,26 @@
       "cr_anchor": "602.5b-e",
       "closed_and_exhaustive": true,
       "facets": [
-        {"slot": "condition", "closed_vocab": ["to-sorcery-speed", "to-instant-speed", "only-during-your-turn",
-                                                "to-own-upkeep", "during-combat", "during-opponents-turn",
-                                                "once-each-turn", "condition-gated"]}
+        {
+          "slot": "condition",
+          "closed_vocab": [
+            "to-sorcery-speed",
+            "to-instant-speed",
+            "only-during-your-turn",
+            "to-own-upkeep",
+            "during-combat",
+            "during-opponents-turn",
+            "once-each-turn",
+            "condition-gated"
+          ]
+        }
       ],
-      "instantiated_members": ["rule:activation-restricted-during-combat", "rule:activation-restricted-only-during-your-turn",
-                                "rule:activation-restricted-to-own-upkeep", "rule:activation-restricted-to-sorcery-speed"],
+      "instantiated_members": [
+        "rule:activation-restricted-during-combat",
+        "rule:activation-restricted-only-during-your-turn",
+        "rule:activation-restricted-to-own-upkeep",
+        "rule:activation-restricted-to-sorcery-speed"
+      ],
       "notes": "CLOSED family, D-4: SYNTH is banned from assigning it (DET-owned, Lane 1). No virtual-node instantiation applies -- all 8 members are enumerated in advance; unpopulated ones (to-instant-speed, during-opponents-turn, once-each-turn, condition-gated) stay unauthored until DET finds a member, per the standard virtual-node rule, but the FACET LIST itself may never grow without a fresh Captain ruling (unlike the other grammars here)."
     },
     "grants-<keyword>": {
@@ -120,36 +221,111 @@
       "delivery": null,
       "cr_anchor": "702 (keyword name is the facet value)",
       "facets": [
-        {"slot": "keyword", "closed_vocab": "any CR-702 keyword name (see keyword-buckets.json)"},
-        {"slot": "duration", "closed_vocab": ["eot", "next-turn", "static-anthem", "counter"]},
-        {"slot": "scope", "closed_vocab": ["target", "up-to-n", "all-yours", "all"]},
-        {"slot": "delivery_trigger", "closed_vocab": "open (per-card)"}
+        {
+          "slot": "keyword",
+          "closed_vocab": "any CR-702 keyword name (see keyword-buckets.json)"
+        },
+        {
+          "slot": "duration",
+          "closed_vocab": [
+            "eot",
+            "next-turn",
+            "static-anthem",
+            "counter"
+          ]
+        },
+        {
+          "slot": "scope",
+          "closed_vocab": [
+            "target",
+            "up-to-n",
+            "all-yours",
+            "all"
+          ]
+        },
+        {
+          "slot": "delivery_trigger",
+          "closed_vocab": "open (per-card)"
+        }
       ],
-      "instantiated_members": ["rule:grants-controller-hexproof", "rule:grants-double-strike-target",
-                                "rule:grants-haste-to-created-tokens", "rule:grants-haste-to-your-creatures",
-                                "rule:grants-trample-to-creatures-with-counters", "rule:grants-trample-to-other-creatures",
-                                "rule:grants-unblockable", "rule:grants-unblockable-target",
-                                "rule:grants-ward-to-other-creatures", "rule:temporary-keyword-grant"],
-      "notes": "OPEN TENSION T1 (addendum-3 sec.7, addendum-2 sec.5): this facet scheme's keyword-identity leaves (e.g. grants-deathtouch-board) collide with the b1-Q1 ruling that pure keyword-grant axes are engine-redundant and were killed. The grammar defines the NAMES; whether these leaves are ever populated/scored is an open engine question reserved for schema pass. This walk does NOT resolve T1 -- it only records the facet scheme as ratified vocabulary, per addendum-3's explicit instruction not to silently resolve it."
+      "instantiated_members": [
+        "rule:grants-controller-hexproof",
+        "rule:grants-double-strike-target",
+        "rule:grants-haste-to-created-tokens",
+        "rule:grants-haste-to-your-creatures",
+        "rule:grants-trample-to-creatures-with-counters",
+        "rule:grants-trample-to-other-creatures",
+        "rule:grants-unblockable",
+        "rule:grants-unblockable-target",
+        "rule:grants-ward-to-other-creatures",
+        "rule:temporary-keyword-grant"
+      ],
+      "notes": "OPEN TENSION T1 (addendum-3 sec.7, addendum-2 sec.5): this facet scheme's keyword-identity leaves (e.g. grants-deathtouch-board) collide with the b1-Q1 ruling that pure keyword-grant axes are engine-redundant and were killed. The grammar defines the NAMES; whether these leaves are ever populated/scored is an open engine question reserved for schema pass. This walk does NOT resolve T1 -- it only records the facet scheme as ratified vocabulary, per addendum-3's explicit instruction not to silently resolve it. Q8.4 carve-out (walk-ratification 2026-07-31): the b1-Q1 exemption ('grants-unblockable exempt -- not a keyword') is extended explicitly to all three unblockable-grant axes (rule:activated-grants-self-unblockable, rule:grants-unblockable, rule:grants-unblockable-target) -- 'unblockable' is their sanctioned pseudo-keyword facet value. Minimal-churn: no facet leaves authored, no renames; their DEFINITIONS were rewritten to state facet readings (duration/scope/delivery read from member quotes) instead. T1 stays parked -- this carve-out covers 'unblockable' only, no real-keyword facet leaves get authored."
     },
     "<delivery>-unblockable-<scope>": {
-      "status": "proposed",
+      "status": "rejected",
       "ratified_in": null,
       "proposed_in": "CORPUS-PASS-PLAN.md step-3 combined per-axis walk, 2026-07-30",
       "stem": "unblockable",
       "delivery": "varies -- the facet itself",
       "cr_anchor": "509.1h (a creature can't be blocked); 702.111a (Menace, contrast case)",
       "facets": [
-        {"slot": "delivery", "closed_vocab": ["static", "activated", "targeted"],
-         "note": "static = printed 'this creature can't be blocked'; activated = a paid ability grants it; targeted = an instant/ability grants it to another creature"},
-        {"slot": "scope", "closed_vocab": ["self", "target"],
-         "note": "self = the source becomes unblockable; target = another creature is made unblockable"}
+        {
+          "slot": "delivery",
+          "closed_vocab": [
+            "static",
+            "activated",
+            "targeted"
+          ],
+          "note": "static = printed 'this creature can't be blocked'; activated = a paid ability grants it; targeted = an instant/ability grants it to another creature"
+        },
+        {
+          "slot": "scope",
+          "closed_vocab": [
+            "self",
+            "target"
+          ],
+          "note": "self = the source becomes unblockable; target = another creature is made unblockable"
+        }
       ],
-      "instantiated_members_current_names": ["rule:innate-unblockable (= static-unblockable-self)",
-                                              "rule:activated-grants-self-unblockable (= activated-unblockable-self)",
-                                              "rule:grants-unblockable (= activated-unblockable-target, per its own definition text)",
-                                              "rule:grants-unblockable-target (= static-or-triggered-unblockable-target -- delivery not yet disambiguated)"],
-      "notes": "PROPOSED, NOT RATIFIED. The walk found 4 live axes covering this space under inconsistent names (none lattice-conformant) with corpus hit-count patterns that overlap substantially (see ratification doc sec.2.4 -- grants-unblockable 407 hits, innate-unblockable 373 hits, measured against the SAME 'can't be blocked' phrase family). Before adopting this grammar, Captain must rule whether the 4 existing axes collapse onto these 4 lattice cells 1:1 or whether real semantic differences (e.g. duration, 'as though it had menace' variants) require additional facets. Do not auto-migrate members."
+      "instantiated_members_current_names": [
+        "rule:innate-unblockable (= static-unblockable-self)",
+        "rule:activated-grants-self-unblockable (= activated-unblockable-self)",
+        "rule:grants-unblockable (= activated-unblockable-target, per its own definition text)",
+        "rule:grants-unblockable-target (= static-or-triggered-unblockable-target -- delivery not yet disambiguated)"
+      ],
+      "notes": "PROPOSED, NOT RATIFIED. The walk found 4 live axes covering this space under inconsistent names (none lattice-conformant) with corpus hit-count patterns that overlap substantially (see ratification doc sec.2.4 -- grants-unblockable 407 hits, innate-unblockable 373 hits, measured against the SAME 'can't be blocked' phrase family). Before adopting this grammar, Captain must rule whether the 4 existing axes collapse onto these 4 lattice cells 1:1 or whether real semantic differences (e.g. duration, 'as though it had menace' variants) require additional facets. Do not auto-migrate members. SUPERSEDED 2026-07-31: see rejected_reason. The 4 axes named in instantiated_members_current_names do NOT collapse onto this lattice; see the grants-<keyword> entry's 'unblockable' pseudo-keyword carve-out and the new cant-be-blocked-<restriction> family instead.",
+      "rejected_in": "Q8.1, walk-ratification 2026-07-31 (docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.4)",
+      "rejected_reason": "The delivery slot conflated DELIVERY with SCOPE (CODEBOOK-NAMING-GRAMMAR.md sec.1/sec.6 violation): 'targeted' is a SCOPE concept (sec.6 -- present only when the word 'target' appears per CR 601.2c), not a DELIVERY value (sec.2 -- ability structure: static/activated/etb/etc). Superseded by the terminology-law redesign (Q8.2-Q8.4) and the new cant-be-blocked-<restriction> family (Q8.5) below. Record kept per G4/G5 -- not deleted."
+    },
+    "cant-be-blocked-<restriction>": {
+      "status": "ratified",
+      "ratified_in": "Q8.5, walk-ratification 2026-07-31 (docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.4)",
+      "stem": "cant-be-blocked",
+      "delivery": null,
+      "cr_anchor": "509.1h (a creature can't be blocked); 702.111a (Menace, contrast case -- keyword evasion owns its own layer, gets no rule: axis per Q8.6)",
+      "terminology_law": "'unblockable' is reserved for the ABSOLUTE form -- \"can't be blocked\" with no restriction rider. Any continuation with \"except by\", \"by creatures with\", \"unless\", or \"as long as\" makes it a BLOCKING RESTRICTION (this family), regardless of delivery. Duration is NOT a restriction: \"can't be blocked this turn\" is absolute unblockable with eot duration; \"can't be blocked as long as defending player controls an Island\" is a restriction (this family).",
+      "facets": [
+        {
+          "slot": "restriction",
+          "closed_vocab": [
+            "by-color",
+            "by-power",
+            "except-by-count",
+            "as-long-as-<state>"
+          ],
+          "note": "CLOSED, extensible only by Captain ratification (Q8.5). Non-keyword oracle text only -- keyword evasion (menace, skulk, fear, intimidate, shadow, horsemanship, landwalk, flying) gets NO rule: axes (Q8.6, b1 bare-keyword kills)."
+        }
+      ],
+      "instantiated_members": [
+        "rule:cant-be-blocked-by-color"
+      ],
+      "virtual_nodes_example": [
+        "cant-be-blocked-by-power",
+        "cant-be-blocked-except-by-count",
+        "cant-be-blocked-as-long-as-state"
+      ],
+      "notes": "Seeded by the pre-existing rule:cant-be-blocked-by-color (unchanged by this ruling). Ratifies the compound stem token 'cant-be-blocked' into the naming-grammar vocabulary (CODEBOOK-NAMING-GRAMMAR.md sec.14) -- 'blocked' has no counter-law ambiguity, the 'countered' ban (sec.10.2) is unaffected. FLAG for Captain (found during the Q8.4 quote-check migration, not auto-resolved): The Black Gate (rule:grants-unblockable-target member) reads \"Target creature can't be blocked by creatures that player controls this turn\" -- a genuine restriction rider per the terminology law above, so it does NOT belong in grants-unblockable-target's absolute scope, but it also does not fit any of the 4 closed restriction-vocab values here (not by-color, not by-power, not a numeric except-by-count, not an as-long-as-<state> condition -- it is a by-PLAYER restriction, a shape this ruling did not enumerate). Per G3 (no facet-leaf authoring without Captain ratification), this member was left in place on rule:grants-unblockable-target with an inline flag in that axis's rewritten definition rather than silently moved or force-fit into an existing restriction value -- genuine halt-loudly case, needs a Captain ruling on whether 'by-player' extends this closed vocab."
     }
   }
 }
