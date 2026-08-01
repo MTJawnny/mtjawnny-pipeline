@@ -281,6 +281,101 @@ def build_request(oracle_id: str, card: dict, system_prompt: str) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Packed-request variant (Captain directive, 2026-07-31 follow-on): the
+# $707 single-card-per-request estimate re-sends the ~20K-token codebook
+# block on EVERY one of 32,557 requests -- the architecture, not the pass
+# itself, is the cost driver. This variant packs N cards into one request
+# (default 20, configurable): the codebook/grammar/killed-list block is sent
+# ONCE per request instead of once per card, amortizing it across N cards.
+# ---------------------------------------------------------------------------
+
+DEFAULT_PACK_SIZE = 20
+
+PACKED_MODE_APPENDIX = """
+
+PACKED-REQUEST MODE: this request contains {n} DIFFERENT cards, numbered 1 to {n} below, each labeled with its oracle_id. Process each card COMPLETELY INDEPENDENTLY:
+- Apply the full three-lane labeling process (codebook / codebook-grammar / free) separately to each card, from scratch, using only that card's own oracle text as evidence.
+- Do NOT let one card's axes influence another's -- two cards that look similar still each get their own independent judgment call. Do NOT skip, merge, or deduplicate axes across cards just because they resemble an axis you already emitted for a different card in this same request.
+- Return your answer as a single JSON object whose top-level keys are EXACTLY the {n} oracle_ids given below (copy each oracle_id string verbatim as the key), each mapped to that card's own {{"axes": [...]}} object in the same shape as the single-card format (empty axes array if the card has zero reusable functional axes). Every one of the {n} oracle_ids below MUST appear as a key, even for a card with no axes."""
+
+
+def build_packed_output_schema(oracle_ids: list) -> dict:
+    """Dynamic per-pack JSON schema: one top-level property per oracle_id in
+    THIS pack (we know the exact key set at request-build time, so
+    additionalProperties=False is enforceable, same evidence-quote-or-
+    discard discipline as the single-card schema underneath each key)."""
+    axes_item_schema = OUTPUT_SCHEMA["schema"]["properties"]["axes"]
+    return {
+        "type": "json_schema",
+        "schema": {
+            "type": "object",
+            "properties": {
+                oid: {
+                    "type": "object",
+                    "properties": {"axes": axes_item_schema},
+                    "required": ["axes"],
+                    "additionalProperties": False,
+                }
+                for oid in oracle_ids
+            },
+            "required": list(oracle_ids),
+            "additionalProperties": False,
+        },
+    }
+
+
+def packed_card_block(idx: int, oracle_id: str, card: dict) -> str:
+    return f"=== Card {idx} (oracle_id: {oracle_id}) ===\n{card_user_content(card)}"
+
+
+def build_packed_system_prompt(pack_size: int) -> str:
+    """The shared prefix: identical for every pack in a run (doesn't depend
+    on which cards are in a given pack), which is exactly what makes it a
+    good prompt-caching candidate -- see build_packed_request()'s
+    cache_control placement."""
+    base = SYSTEM_PROMPT_TEMPLATE.format(
+        codebook_reference=load_codebook_reference(),
+        ratified_grammars_reference=load_ratified_grammars_reference(),
+        recently_killed_reference=load_recently_killed_reference(),
+    )
+    return base + PACKED_MODE_APPENDIX.format(n=pack_size)
+
+
+def build_packed_request(pack_id: str, oracle_ids: list, cards: dict, system_prompt: str) -> dict:
+    """system_prompt is the packed-mode prompt for len(oracle_ids); pass the
+    SAME string object across every pack in a run so it's byte-identical
+    (required for the cache_control breakpoint to actually hit on repeat).
+    cache_control sits on the system block: this is "uncounted upside" per
+    Captain's directive -- the request is STRUCTURED for it, but no pricing
+    in this session assumes or counts on a cache read discount, since
+    Batch API cross-request cache-hit behavior isn't independently verified
+    here."""
+    user_content = "\n\n".join(
+        packed_card_block(i, oid, cards[oid]) for i, oid in enumerate(oracle_ids, 1)
+    )
+    return {
+        "custom_id": pack_id,
+        "params": {
+            "model": MODEL,
+            "max_tokens": max(MAX_TOKENS, len(oracle_ids) * 700),
+            "thinking": {"type": "disabled"},
+            "system": [
+                {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}},
+            ],
+            "output_config": {"format": build_packed_output_schema(oracle_ids)},
+            "messages": [{"role": "user", "content": user_content}],
+        },
+    }
+
+
+def pack_oracle_ids(oracle_ids: list, pack_size: int) -> list:
+    """Deterministic, order-preserving chunking -- no shuffling (batch-8's
+    tail-position quality check needs a STABLE position-within-pack for
+    every card, so packing must not itself introduce randomness)."""
+    return [oracle_ids[i:i + pack_size] for i in range(0, len(oracle_ids), pack_size)]
+
+
 def api_key() -> str:
     key = os.environ.get(API_KEY_ENV_VAR)
     if not key:
