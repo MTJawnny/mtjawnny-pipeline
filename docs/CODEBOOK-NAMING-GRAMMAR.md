@@ -134,6 +134,10 @@ One verb per mechanic, chosen once, used everywhere:
 - "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
   walk-ratification 2026-07-31 — `rule:cant-be-countered` renames to
   `rule:spell-uncounterable`, replacing the banned `countered` participle).
+- "imposes" = verb, an ability forces a state onto something OTHER than its
+  own source (ratified 2026-07-31, B3/B4 follow-on — Captain-authored
+  `rule:imposes-enters-tapped`, the Root Maze class sibling of
+  `rule:enters-tapped`).
 
 ## 5. OBJECT vocabulary
 
@@ -320,4 +324,10 @@ F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
   (tokens `cant`, `be`, `blocked`) for the new `cant-be-blocked-<restriction>`
   grammar family (§2.4 of the execution handoff). The `countered` ban (§10.2)
   is unaffected — `rule:cant-be-countered` renames to `rule:spell-uncounterable`
-  (Q4, §4 above) rather than sharing this stem.
+  (Q4, §4 above) rather than sharing this stem. Closed restriction vocab:
+  `by-color`, `by-power`, `except-by-count`, `as-long-as-<state>`, and
+  **`by-controller`** (B1 ruling, 2026-07-31, post-execution follow-on —
+  names WHO may not block, not what the blocker is like; instantiated by
+  `rule:cant-be-blocked-by-controller`, seeded by The Black Gate, moved out
+  of `rule:grants-unblockable-target` per the terminology law's restriction-
+  rider rule).

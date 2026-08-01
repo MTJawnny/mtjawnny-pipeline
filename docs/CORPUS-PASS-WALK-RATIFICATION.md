@@ -288,6 +288,12 @@ uniform verdict without axis-specific content to add.
 
 **41/306 (13%) are DET-able**, all with a proposed pattern and a measured
 corpus hit-count against the Gate #0-filtered corpus (32,557 cards).
+> **B2 annotation (2026-07-31):** this "41" is wrong — the table below it
+> and the committed `foundry_det_patterns_probe.py` (verified against a
+> pre-ratification backup) only ever had 39 rows. **39 is authoritative.**
+> Not corrected in place (historical section, see this document's
+> RESOLUTION header); `docs/det-patterns-v1.json`'s arithmetic is computed
+> from the correct 39.
 **These are proposals — "sampled and RATIFIED by Captain like a scoring
 constant" per CORPUS-PASS-PLAN §1, not yet binding.**
 

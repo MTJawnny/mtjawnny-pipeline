@@ -303,7 +303,7 @@
       "ratified_in": "Q8.5, walk-ratification 2026-07-31 (docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.4)",
       "stem": "cant-be-blocked",
       "delivery": null,
-      "cr_anchor": "509.1h (a creature can't be blocked); 702.111a (Menace, contrast case -- keyword evasion owns its own layer, gets no rule: axis per Q8.6)",
+      "cr_anchor": "113.12 (a stated quality -- 'can't be blocked' -- is neither a granted ability nor a set characteristic; corrected 2026-07-31 follow-on, the original walk-session draft cited 509.1h, which is actually about blocked/unblocked status PERSISTING through combat, not the can't-be-blocked quality itself); 702.111a (Menace, contrast case -- keyword evasion owns its own layer, gets no rule: axis per Q8.6)",
       "terminology_law": "'unblockable' is reserved for the ABSOLUTE form -- \"can't be blocked\" with no restriction rider. Any continuation with \"except by\", \"by creatures with\", \"unless\", or \"as long as\" makes it a BLOCKING RESTRICTION (this family), regardless of delivery. Duration is NOT a restriction: \"can't be blocked this turn\" is absolute unblockable with eot duration; \"can't be blocked as long as defending player controls an Island\" is a restriction (this family).",
       "facets": [
         {
@@ -312,20 +312,22 @@
             "by-color",
             "by-power",
             "except-by-count",
-            "as-long-as-<state>"
+            "as-long-as-<state>",
+            "by-controller"
           ],
-          "note": "CLOSED, extensible only by Captain ratification (Q8.5). Non-keyword oracle text only -- keyword evasion (menace, skulk, fear, intimidate, shadow, horsemanship, landwalk, flying) gets NO rule: axes (Q8.6, b1 bare-keyword kills)."
+          "note": "CLOSED, extensible only by Captain ratification (Q8.5). Non-keyword oracle text only -- keyword evasion (menace, skulk, fear, intimidate, shadow, horsemanship, landwalk, flying) gets NO rule: axes (Q8.6, b1 bare-keyword kills). Extended 2026-07-31 (B1 ruling, post-execution follow-on): 'by-controller' added -- \"can't be blocked by creatures [a specific player] controls\" is a distinct shape from by-color/by-power (not about the blocker's characteristics) and from except-by-count (not a numeric threshold) -- it names WHO may not block, not WHAT they're like."
         }
       ],
       "instantiated_members": [
-        "rule:cant-be-blocked-by-color"
+        "rule:cant-be-blocked-by-color",
+        "rule:cant-be-blocked-by-controller"
       ],
       "virtual_nodes_example": [
         "cant-be-blocked-by-power",
         "cant-be-blocked-except-by-count",
         "cant-be-blocked-as-long-as-state"
       ],
-      "notes": "Seeded by the pre-existing rule:cant-be-blocked-by-color (unchanged by this ruling). Ratifies the compound stem token 'cant-be-blocked' into the naming-grammar vocabulary (CODEBOOK-NAMING-GRAMMAR.md sec.14) -- 'blocked' has no counter-law ambiguity, the 'countered' ban (sec.10.2) is unaffected. FLAG for Captain (found during the Q8.4 quote-check migration, not auto-resolved): The Black Gate (rule:grants-unblockable-target member) reads \"Target creature can't be blocked by creatures that player controls this turn\" -- a genuine restriction rider per the terminology law above, so it does NOT belong in grants-unblockable-target's absolute scope, but it also does not fit any of the 4 closed restriction-vocab values here (not by-color, not by-power, not a numeric except-by-count, not an as-long-as-<state> condition -- it is a by-PLAYER restriction, a shape this ruling did not enumerate). Per G3 (no facet-leaf authoring without Captain ratification), this member was left in place on rule:grants-unblockable-target with an inline flag in that axis's rewritten definition rather than silently moved or force-fit into an existing restriction value -- genuine halt-loudly case, needs a Captain ruling on whether 'by-player' extends this closed vocab."
+      "notes": "Seeded by the pre-existing rule:cant-be-blocked-by-color (unchanged by this ruling). Ratifies the compound stem token 'cant-be-blocked' into the naming-grammar vocabulary (CODEBOOK-NAMING-GRAMMAR.md sec.14) -- 'blocked' has no counter-law ambiguity, the 'countered' ban (sec.10.2) is unaffected. FLAG for Captain (found during the Q8.4 quote-check migration, not auto-resolved): The Black Gate (rule:grants-unblockable-target member) reads \"Target creature can't be blocked by creatures that player controls this turn\" -- a genuine restriction rider per the terminology law above, so it does NOT belong in grants-unblockable-target's absolute scope, but it also does not fit any of the 4 closed restriction-vocab values here (not by-color, not by-power, not a numeric except-by-count, not an as-long-as-<state> condition -- it is a by-PLAYER restriction, a shape this ruling did not enumerate). Per G3 (no facet-leaf authoring without Captain ratification), this member was left in place on rule:grants-unblockable-target with an inline flag in that axis's rewritten definition rather than silently moved or force-fit into an existing restriction value -- genuine halt-loudly case, needs a Captain ruling on whether 'by-player' extends this closed vocab. RESOLVED 2026-07-31 (B1 ruling): 'by-controller' added to the closed vocab specifically for this shape; The Black Gate moved to the new rule:cant-be-blocked-by-controller (quote-verified). Corpus-verified 2 total by-controller-shaped hits (Black Gate + Rikku, Resourceful Guardian, \"can't be blocked by creatures your opponents control\") -- Rikku was NOT added as a member (B1 only ordered Black Gate's move; Rikku is flagged as an additional corpus candidate for a future SUP/DET pass, not silently added)."
     }
   }
 }

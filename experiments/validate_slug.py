@@ -68,6 +68,9 @@ EFFECT_VOCAB = {
     # Q4 (walk-ratification 2026-07-31): cant-be-countered -> spell-uncounterable
     # ("spell" is already in OBJECT_VOCAB).
     "uncounterable",
+    # Captain-authored rule:imposes-enters-tapped (2026-07-31 follow-on, B3/B4):
+    # named directly by Captain, ratifying the token as part of naming the slug.
+    "imposes",
 }
 
 OBJECT_VOCAB = {
