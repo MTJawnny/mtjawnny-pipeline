@@ -1,6 +1,18 @@
 # CORPUS-PASS-PLAN steps 2–3 — combined walk ratification document
 
-Status: **PROPOSALS ONLY. Nothing in this document has been executed.**
+> ## RESOLUTION (2026-07-31)
+> Every open question and proposal in this document has been ruled on and
+> applied. The complete ruling set and execution record live in
+> `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` (Captain's rulings, section 2)
+> and its own execution — codebook.json is now v0.7 with 305 active axes (23
+> renames + 1 kill applied), `docs/grammars.json` and
+> `docs/CODEBOOK-NAMING-GRAMMAR.md` were updated (Q2/Q3/F3/Q5/F4/Q6/Q8/Q9),
+> and `docs/det-patterns-v1.json` holds the final 42 ratified DET patterns.
+> **Everything below this line is now HISTORICAL** — the proposal state as it
+> stood before ratification, kept for audit trail. Do not treat it as current
+> codebook/grammar/pattern state; read the execution handoff doc instead.
+
+Status (as of the original 2026-07-30 run): **PROPOSALS ONLY. Nothing in this document has been executed.**
 `codebook.json` is untouched by this session — no rename, merge, status
 change, or DET pattern has been applied to it. Everything below is input
 for Captain to ratify or reject, the same discipline as every prior

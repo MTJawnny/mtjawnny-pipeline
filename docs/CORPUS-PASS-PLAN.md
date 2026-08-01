@@ -69,9 +69,15 @@ with empty hypotheses:
   `rule:equipment-static-pt-buff` / `rule:equipment-grants-stat-buff` re-invention of a
   killed axis — see `docs/TRIAGE-BATCH-6.md` sections 4 and 15) by making the composition
   rule deterministic instead of relying on SYNTH recall against a bare keyword list.
-  **Not implemented yet** — this requires a `foundry_stage1b.py` prompt change and a
-  grammar-validation step in `foundry_consolidate.py`/`foundry_enrich.py`, neither built
-  in this session.
+  **WIRED 2026-07-31** (walk-ratification session, batch-7 D7): `foundry_stage1b.py`'s
+  system prompt now has a three-lane instruction with a ratified-grammar-families
+  reference block (excludes the activation-restriction family per D-4) and a
+  `lane=codebook-grammar` schema option; `foundry_consolidate.py` validates every
+  `lane=codebook-grammar` label through `validate_slug.py` (downgrades to `lane=free` on
+  failure, per CODEBOOK-NAMING-GRAMMAR.md sec.11) and rejects any activation-restriction-
+  family label outright under any lane (D-4). Not yet exercised against a real batch
+  (no batch has run since this landed) — first live use will be the first post-walk
+  SYNTH batch.
 - **Free parent derivation.** Emit can derive parents from grammar structure for free
   (stem = parent, facets = children), feeding the ratified derived-parents scheme
   (`mtjawnny.github.io/docs/PARENT-TREE-CANDIDATES.md`, S1-S7).
@@ -96,20 +102,35 @@ with empty hypotheses:
 2. Keyword-bucket extraction (already ratified in an earlier session, unchanged by this
    plan). **DET job run 2026-07-30** — `experiments/foundry_keyword_buckets.py` walked CR
    702 (194 keyword entries), CR-cited, verify-or-drop. Output:
-   `experiments/out/foundry/keyword-buckets.json` + report. Taxonomy corrections and open
-   questions logged in `docs/CORPUS-PASS-WALK-RATIFICATION.md` sec.1 — **pending Captain
-   ratification**, not yet integrated into SYNTH prompt or tag-tree (per ratified
-   sequencing, that's schema pass).
+   `experiments/out/foundry/keyword-buckets.json` + report. **RATIFIED 2026-07-31**
+   (walk-ratification session, `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md`): 9-bucket
+   taxonomy adopted, casting-modifier demoted to a facet flag, DELIVERY vocab extended
+   (becomes-targeted-trigger, blocks-or-becomes-blocked-trigger), F1 multi-class extraction
+   bug fixed (Ascend spell->hybrid). Not yet integrated into the SYNTH prompt or tag-tree
+   (still correctly deferred to schema pass, per ratified sequencing).
 3. COMBINED per-axis walk: naming audit + agent-legible definition rewrite + DET-ability
    classification + grammar drafting — one walk across all ~271 active axes (v0.6),
    four output columns per axis. **Walk run 2026-07-30** against v0.7 (306 active axes) —
    `experiments/foundry_axis_walk.py` + `experiments/validate_slug.py` +
-   `docs/grammars.json` + `experiments/foundry_det_patterns_probe.py`. Full proposal set
-   (rename list, DET-able axis list with corpus-measured hit-counts, grammar drafts, open
-   questions) in `docs/CORPUS-PASS-WALK-RATIFICATION.md` — **pending Captain ratification**;
-   codebook.json untouched.
+   `docs/grammars.json` + `experiments/foundry_det_patterns_probe.py`. **RATIFIED AND
+   APPLIED 2026-07-31** (walk-ratification session, see
+   `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` for the full ruling set and
+   `docs/CORPUS-PASS-WALK-RATIFICATION.md`'s RESOLUTION header): 23 renames applied to
+   codebook.json (19 structural + Q10's 4 combat-damage normalizations), 1 kill
+   (rule:kicker-conditional-bonus-effect, bare-keyword duplicate), the unblockable/evasion
+   family redesigned (Q8: `<delivery>-unblockable-<scope>` rejected, new
+   `cant-be-blocked-<restriction>` grammar ratified, 3 grant-axis definitions rewritten as
+   facet readings), naming-grammar vocabulary extended (~30 tokens + cant-be-blocked stem +
+   uncounterable), validate_slug.py wired into `foundry_stage1b.py`/`foundry_consolidate.py`
+   (D7). Codebook now v0.7, 305 active axes. DET pattern set finalized at 42 ratified
+   patterns (`docs/det-patterns-v1.json`) — the actual gate-passing full-corpus DET pass
+   (step 4 below) is still NOT run.
 4. DET rule authoring + ratification + full-corpus DET pass (gate-passing cards only).
-   **Not started.**
+   **Unblocked, pending Captain's explicit go-ahead** (2026-07-31) — the 42 ratified
+   patterns are in `docs/det-patterns-v1.json` with the standing 20-hit fixed-seed sample-
+   sheet condition (sec.2.5 of the execution handoff) still to run per-pattern before any
+   provenance write. No cost/spend and no pass execution happened this session (G7 scope
+   guard, walk-ratification session) — this step is the next actionable trigger.
 5. Codebook condensation (largely automatic once the DET strip from step 4 lands).
    **Not started.**
 6. SYNTH full-corpus pass — budget re-estimated post-gate/strip (batch-6's own per-batch
@@ -135,14 +156,14 @@ above) is load-bearing for lattice derivation, DET pattern-matching, and parent 
 alike — a definition an agent can't mechanically apply is a definition that can't support
 any of the three.
 
-## Status summary (as of 2026-07-30, batch-6 emit)
+## Status summary (as of 2026-07-31, walk-ratification session)
 
 | Step | Status |
 |---|---|
 | 1. Gate #0 | **Done** |
-| 2. Keyword-bucket extraction | **Walk done 2026-07-30, proposals pending ratification** |
-| 3. Combined per-axis walk | **Walk done 2026-07-30, proposals pending ratification** (see CORPUS-PASS-WALK-RATIFICATION.md) |
-| 4. DET authoring + full-corpus DET pass | Not started (blocked on step-3 DET pattern ratification) |
+| 2. Keyword-bucket extraction | **Ratified 2026-07-31** (9-bucket taxonomy, F1 fix applied); not yet integrated into SYNTH/tag-tree (schema pass) |
+| 3. Combined per-axis walk | **Ratified and applied 2026-07-31** (23 renames + 1 kill in codebook.json v0.7/305 active; see WALK-RATIFICATION-EXECUTION-HANDOFF.md and CORPUS-PASS-WALK-RATIFICATION.md's RESOLUTION header) |
+| 4. DET authoring + full-corpus DET pass | **Unblocked, pending Captain's explicit go-ahead** — 42 ratified patterns in docs/det-patterns-v1.json; pass itself not run (G7 scope guard) |
 | 5. Codebook condensation | Not started |
 | 6. SYNTH full-corpus pass | Not started (needs cost estimate + Captain trigger) |
 | 7. Schema pass | Not started |
