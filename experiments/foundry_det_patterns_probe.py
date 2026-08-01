@@ -81,11 +81,11 @@ PATTERNS = [
     ("rule:grants-unblockable-target", rf"target creature can'?t be blocked{RESTRICTION_GUARD}",
      "Q8.8 rebuild: added the restriction-continuation guard (see KNOWN RESIDUAL GAP note above re: The Black Gate)"),
     ("rule:grants-ward-to-other-creatures", r"other creatures you control have ward", "fixed phrase"),
-    ("rule:innate-unblockable", rf"this creature can'?t be blocked{RESTRICTION_GUARD}",
-     "Q8.8 rebuild: replaced the old partial '(?!except)' guard with the full 4-phrase restriction-continuation guard. KNOWN PRE-EXISTING GAP, not fixed here (out of Q8.8's restriction-boundary scope, discovered during this walk's member-coverage sweep): the subject anchor is hardcoded to literal 'this creature' and misses 5/11 current members that self-reference by pronoun ('It', 'Sygg', 'Willie Lumpkin', 'Ukkima') -- a different bug class (subject generality, not the restriction boundary), flagged for a future pass rather than silently expanded here."),
+    ("rule:innate-unblockable", rf"(?:this creature|{re.escape(fc.CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
+     "Q8.8 rebuild: replaced the old partial '(?!except)' guard with the full 4-phrase restriction-continuation guard. PREVIOUSLY a known gap (pronoun/proper-noun subject anchor missed 5/11 current members: 'It', 'Sygg', 'Willie Lumpkin', 'Ukkima') -- FIXED by the DET preprocessing standard v1 (CARDNAME canonicalization, 2026-07-31 follow-on): proper-noun self-references now canonicalize to the ~ token before matching. 'It' pronoun self-reference (Creeping Tar Pit) remains a separate, unaddressed gap -- pronoun coreference, not CARDNAME canonicalization."),
     ("rule:activated-grants-self-unblockable",
-     rf"(?:\{{[^}}]*\}}|\b(?:Sacrifice|Discard|Remove|Tap|Exile|Pay)\b[^.:\n]*)[^.]*:[^.]*this (?:creature|permanent) can'?t be blocked{RESTRICTION_GUARD}",
-     "activated-cost self-unblockable (F2 sweep: cost isn't always a mana/tap symbol -- 'Sacrifice X:', 'Discard a card:', 'Remove a counter:' etc. are equally valid activation costs; excludes loyalty-ability '−N:' costs by requiring one of these literal cost words, verified against the corpus not to pick up Vronos, Masked Inquisitor's quoted grant text. Q8.8 rebuild: added the restriction-continuation guard)"),
+     rf"(?:\{{[^}}]*\}}|\b(?:Sacrifice|Discard|Remove|Tap|Exile|Pay)\b[^.:\n]*)[^.]*:[^.]*(?:this (?:creature|permanent)|{re.escape(fc.CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
+     "activated-cost self-unblockable (F2 sweep: cost isn't always a mana/tap symbol -- 'Sacrifice X:', 'Discard a card:', 'Remove a counter:' etc. are equally valid activation costs; excludes loyalty-ability '−N:' costs by requiring one of these literal cost words, verified against the corpus not to pick up Vronos, Masked Inquisitor's quoted grant text. Q8.8 rebuild: added the restriction-continuation guard. DET preprocessing standard v1: CARDNAME token added as a subject alternative)"),
     # Q8.5 NEW ratified grammar cant-be-blocked-<restriction> (walk-ratification
     # 2026-07-31): closed vocab by-color/by-power/except-by-count/
     # as-long-as-<state>. "Non-keyword oracle text only" (Q8.5) -- each
@@ -101,6 +101,8 @@ PATTERNS = [
      "corpus-verified: excluding 'two' specifically excludes Menace's fixed reminder text (0/244 'two or more' hits lack the word 'menace' nearby -- 100% Menace-owned); 'three or more'/'six or more' etc. are genuine non-keyword variants (10 hits)"),
     ("rule:cant-be-blocked-as-long-as-state", r"can'?t be blocked as long as (?!defending player controls\b)[^.\n]*",
      "corpus-verified: excluding 'defending player controls' excludes Landwalk's fixed reminder-text shape (209 hits, all landwalk); remainder are genuine non-keyword state-conditions (18 hits: life total, graveyard count, attacking-alone, etc.)"),
+    ("rule:cant-be-blocked-by-controller", r"can'?t be blocked by creatures (?:that|who|your opponents?|[a-z' ]*player)[^.\n]*controls?",
+     "B1 ruling (2026-07-31, post-execution follow-on): new restriction-vocab value, names WHO may not block rather than what the blocker is like. Corpus-verified 2 hits: The Black Gate (quote-verified member, moved from rule:grants-unblockable-target) and Rikku, Resourceful Guardian (corpus candidate, NOT added as a member -- B1 only ordered Black Gate's move)"),
     ("rule:kicker-conditional-bonus-effect", None, "WITHDRAWN (Q9, walk-ratification 2026-07-31): rule:kicker-conditional-bonus-effect killed as a bare-keyword duplicate (b1/b2 precedent); its DET pattern is withdrawn from the ratified set, not measured."),
     ("rule:landfall-gain-life", r"landfall[^\n]*gain[^\n]*life|gain[^\n]*life[^\n]*landfall", "landfall ability word + gain-life effect in same paragraph (F2 sweep: paragraph-scoped not sentence-scoped, same fix class as landfall-produces-mana)"),
     ("rule:landfall-produces-mana",
@@ -155,12 +157,18 @@ def _classify_enters_tapped_subject(subj: str) -> str:
 
 def _enters_tapped_subject_split(oids_matching_base_pattern, texts, cards):
     """Returns (self_oids, imposed_rows) -- G2 subject check applied on top of
-    the base regex hit set (used for both enters-tapped variants)."""
+    the base regex hit set (used for both enters-tapped variants). `texts`
+    maps oid -> list of scan-texts (DET preprocessing standard v1); subjects
+    are pooled across every scan-text for the card. PER-CLAUSE, not per-card:
+    a card with both a self clause and an imposed clause (False Floor: "This
+    artifact enters tapped." + "Creatures enter tapped.") counts toward BOTH
+    self_oids and imposed_rows -- an imposed clause elsewhere on the card
+    must never suppress a genuine self hit."""
     self_oids = []
     imposed_rows = []
     for oid in oids_matching_base_pattern:
-        text = texts[oid]
-        subjects = [m.group(1).strip() for m in ENTERS_TAPPED_CLAUSE_RE.finditer(text)]
+        subjects = [m.group(1).strip() for text in texts[oid]
+                    for m in ENTERS_TAPPED_CLAUSE_RE.finditer(text)]
         if not subjects:
             # base pattern matched via the conditional-variant's reversed
             # "unless X, ~ enters tapped" branch, which the clause regex
@@ -170,11 +178,12 @@ def _enters_tapped_subject_split(oids_matching_base_pattern, texts, cards):
             # permanent enters tapped").
             self_oids.append(oid)
             continue
-        if any(_classify_enters_tapped_subject(s) == "imposed" for s in subjects):
+        classes = {_classify_enters_tapped_subject(s) for s in subjects}
+        if "self" in classes:
+            self_oids.append(oid)
+        if "imposed" in classes:
             imposed_rows.append({"oracle_id": oid, "name": cards[oid].get("name", ""),
                                   "subjects": subjects})
-        else:
-            self_oids.append(oid)
     return self_oids, imposed_rows
 
 
@@ -184,7 +193,12 @@ def main():
     cards, _, gated_out = fc.load_corpus_gated()
     print(f"corpus: {len(cards)} gate-passing cards ({gated_out} gated out)")
 
-    texts = {oid: fc.full_oracle_text(c) for oid, c in cards.items()}
+    # DET preprocessing standard v1 (walk-ratification 2026-07-31 follow-on,
+    # B3/B4): CARDNAME canonicalization + modal-mode bullet splitting, joining
+    # the existing polarity/templating-era/all-faces rules into one standing
+    # pipeline. texts[oid] is a LIST of scan-texts; a pattern hits the card
+    # if it matches ANY of them.
+    texts = {oid: fc.det_scan_texts(c) for oid, c in cards.items()}
 
     results = []
     imposed_on_others_report = None
@@ -199,7 +213,7 @@ def main():
             continue
 
         pat = re.compile(pattern_src, re.I)
-        hits = [oid for oid, text in texts.items() if text and pat.search(text)]
+        hits = [oid for oid, text_list in texts.items() if any(pat.search(t) for t in text_list)]
 
         if slug in ("rule:enters-tapped (unconditional)", "rule:enters-tapped-conditional"):
             self_hits, imposed_rows = _enters_tapped_subject_split(hits, texts, cards)
@@ -220,6 +234,28 @@ def main():
           f"excluded (candidate sibling axis rule:imposes-enters-tapped, NOT auto-tagged):")
     for row in imposed_on_others_report:
         print(f"    {row['name']} | subject={row['subjects']!r}")
+
+    # rule:imposes-enters-tapped (authored 2026-07-31, B3/B4 follow-on):
+    # reuses the enters-tapped base pattern + the G2 subject classifier
+    # (ENTERS_TAPPED_CLAUSE_RE + _classify_enters_tapped_subject) rather than
+    # a standalone regex -- its hit set IS the imposed_on_others_report
+    # computed above, by construction (not a separate measurement).
+    imposes_slug = "rule:imposes-enters-tapped"
+    imposes_pattern_doc = (
+        r"[same base pattern as rule:enters-tapped] + subject classified 'imposed' "
+        r"(bare plural class noun -- artifacts?/lands?/creatures?/permanents?/tokens?, "
+        r"optionally with 'you control'/'your opponents control'/'played by opponents' "
+        r"suffix, with NO self-reference word (this/it/that/the/CARDNAME) present)"
+    )
+    n_members = len(axes.get(imposes_slug, {}).get("member_oracle_ids", [])) if imposes_slug in axes else None
+    results.append({
+        "slug": imposes_slug, "pattern": imposes_pattern_doc,
+        "note": "Root Maze class sibling of rule:enters-tapped; seeded via the G2 guard's own exclusion list",
+        "corpus_hits": len(imposed_on_others_report), "current_codebook_n_members": n_members,
+        "sample_hit_names": sorted({row["name"] for row in imposed_on_others_report[:8]}),
+    })
+    print(f"{imposes_slug}: hits={len(imposed_on_others_report)}  n_members={n_members}  "
+          f"pattern={imposes_pattern_doc!r}")
 
     fc.write_json(OUT_PATH, {
         "corpus_size_gated": len(cards), "gated_out": gated_out,

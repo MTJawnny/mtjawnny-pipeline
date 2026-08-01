@@ -6,6 +6,7 @@ three times. Never imported by tier_engine.py itself.
 """
 import sys
 import json
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -134,6 +135,100 @@ def full_oracle_text(card: dict) -> str:
     return "\n".join(f["oracle_text"] for f in te.get_raw_faces(card) if f["oracle_text"])
 
 
+CARDNAME_TOKEN = "~"
+_MODAL_HEADER_RE = re.compile(r"choose (?:one|two|three|one or more|up to \w+)\b.*—\s*$", re.I)
+
+
+def _cardname_candidates(card: dict) -> list:
+    """All the proper-noun strings a card's own oracle text might use to
+    self-reference instead of 'this creature'/'this permanent' -- the FULL
+    printed name, and (for legendary-subtitle and multi-face names) the
+    short pre-comma/pre-'//' form actually used in ability text (Oracle
+    convention: 'Willie Lumpkin, Postman' is written on its own card as just
+    'Willie Lumpkin'). Sorted longest-first so a longer name's substring
+    (e.g. a short form that is itself a substring of another candidate)
+    never gets replaced first and corrupts a longer match."""
+    names = set()
+    for raw in [card.get("name")] + [f.get("name") for f in (card.get("card_faces") or [])]:
+        if not raw:
+            continue
+        for part in raw.split(" // "):
+            part = part.strip()
+            if not part:
+                continue
+            names.add(part)
+            if "," in part:
+                names.add(part.split(",")[0].strip())
+    return sorted((n for n in names if n), key=len, reverse=True)
+
+
+def canonicalize_self_reference(text: str, card: dict) -> str:
+    """DET preprocessing standard v1, part 1 (CARDNAME canonicalization,
+    ratified 2026-07-31 as a follow-on to the walk-ratification's B3/B4
+    blockers): a card's own printed NAME used as a self-reference (Sygg,
+    Willie Lumpkin, Ukkima, ...) doesn't match a DET pattern anchored on
+    'this creature'/'this permanent' -- replace every whole-word occurrence
+    of the card's own name (full printed name, and the short pre-comma/
+    pre-'//' form actually used in ability text) with the canonical token
+    CARDNAME_TOKEN ('~', the standard MTG-templating self-reference marker)
+    BEFORE pattern matching. Does not attempt pronoun resolution ('It' / 'He'
+    / 'She' self-reference is a different, harder problem -- out of scope
+    for this rule, a separate known gap)."""
+    for name in _cardname_candidates(card):
+        text = re.sub(r"\b" + re.escape(name) + r"\b", CARDNAME_TOKEN, text)
+    return text
+
+
+def expand_modal_bullets(text: str) -> list:
+    """DET preprocessing standard v1, part 2 (modal-mode splitting, ratified
+    2026-07-31): a modal spell's 'Choose one/two/... —' header followed by
+    '• ' bullet lines is one ability with several independently-scannable
+    MODES, not one continuous paragraph -- a paragraph-scoped DET pattern
+    (house style: same-clause proximity, not cross-ability) correctly does
+    NOT cross from the header into a bullet several lines down, so a pattern
+    anchored on the header ability word (e.g. 'landfall') never sees a
+    bullet's own effect text (e.g. '+1/+0'). Returns a list of SYNTHETIC
+    scan-texts, one per bullet, each formed as
+    '<header line>\\n<that bullet's line>' -- callers scan the original text
+    PLUS these additions (never a replacement -- non-modal text is
+    unaffected and still scanned once via the original)."""
+    lines = text.split("\n")
+    extra = []
+    i = 0
+    while i < len(lines):
+        if _MODAL_HEADER_RE.search(lines[i].strip()):
+            header = lines[i]
+            j = i + 1
+            bullets = []
+            while j < len(lines) and lines[j].lstrip().startswith("•"):
+                bullets.append(lines[j])
+                j += 1
+            for b in bullets:
+                # Space join, not newline: the whole point is to let a
+                # same-clause (paragraph-internal but newline-blocked)
+                # pattern see the header and its mode as one continuous
+                # unit -- a literal newline join would defeat this against
+                # every pattern using "[^\n]*" proximity (F2's own scoping
+                # fix).
+                extra.append(header + " " + b)
+            i = j
+        else:
+            i += 1
+    return extra
+
+
+def det_scan_texts(card: dict) -> list:
+    """DET preprocessing standard v1 (walk-ratification 2026-07-31 follow-on,
+    joining the existing polarity/templating-era/all-faces rules as a single
+    standing pipeline): returns the list of text variants a DET pattern
+    should be checked against for this card -- CARDNAME-canonicalized full
+    oracle text, plus one synthetic text per modal bullet (also
+    canonicalized). A pattern HITS the card if it matches ANY entry. Order:
+    [canonicalized full text, *canonicalized modal-bullet expansions]."""
+    canon = canonicalize_self_reference(full_oracle_text(card), card)
+    return [canon] + expand_modal_bullets(canon)
+
+
 def build_review_card_record(card: dict) -> dict:
     """The exact 'cards' entry shape T3-AXIS-FOUNDRY-v3.md's batch-N.json
     schema wants, extended with the fields the review tool's card-inspector
@@ -155,6 +250,37 @@ def build_review_card_record(card: dict) -> dict:
         "rarity": card.get("rarity") or "",
         "faces": _extract_faces(card),
     }
+
+
+_CONDENSE_EFFECT_RE = re.compile(r"EFFECT:\s*(.+?)(?:\s+FLAGGED\b|\s+Quote-checked\b|$)", re.S)
+
+
+def condense_definition_for_prompt(definition: str, max_chars: int = 220) -> str:
+    """Codebook condensation (CORPUS-PASS-PLAN.md step 5 / MASTER-HANDOFF.md
+    sec.7 item 8, actioned 2026-07-31): the SYNTH-embedded codebook
+    reference needs slug + a SHORT definition, not the full audit-trail
+    prose some definitions have accumulated (member-specific examples,
+    FLAGGED notes, DELIVERY/SCOPE/DURATION/EFFECT facet breakdowns from the
+    walk-ratification's Q8.4 rewrites). Does NOT mutate codebook.json's own
+    definition field -- this only shapes what load_codebook_reference()
+    shows SYNTH. Two-step: (1) if the definition uses the structured
+    facet-reading format, extract just the EFFECT clause (the part that
+    actually describes what the pattern matches; DELIVERY/SCOPE/DURATION and
+    any trailing FLAGGED/audit note are for codebook maintainers, not
+    SYNTH's coarse fit judgment); (2) hard-cap at max_chars, cutting on the
+    nearest sentence boundary when one exists in range, else a flagged
+    ellipsis truncation (never mid-word)."""
+    text = definition
+    m = _CONDENSE_EFFECT_RE.search(text)
+    if m:
+        text = m.group(1).strip()
+    if len(text) > max_chars:
+        m2 = re.match(r"(.{1,%d}?[.!?])\s" % max_chars, text)
+        if m2:
+            text = m2.group(1)
+        else:
+            text = text[:max_chars].rstrip() + "…"
+    return text
 
 
 def write_json(path: Path, data) -> None:
