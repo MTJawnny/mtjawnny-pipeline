@@ -69,11 +69,11 @@ CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 batch_paths = fc.batch_paths  # canonical per-batch filenames now live in foundry_common.py
 
 
-DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v1.json"
+DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
 
 
 def load_det_owned_slugs() -> set:
-    """Slugs with a ratified DET pattern (docs/det-patterns-v1.json) that
+    """Slugs with a ratified DET pattern (docs/det-patterns-v2.json) that
     also name a real active codebook axis (pre-filter-only pattern rows,
     e.g. the energy pre-filters, don't) -- these are DET-owned and get
     STRIPPED from the SYNTH-embedded codebook reference (CORPUS-PASS-

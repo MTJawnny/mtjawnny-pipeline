@@ -15,9 +15,24 @@ corpus-pass arc (not per-submission). Before **ANY** Batch API submission, in th
 
 1. Compute actual cumulative spend to date this arc (real, metered numbers from prior
    batches' `usage` fields — never a pre-submission estimate standing in for an actual).
-   Running total as of 2026-08-01: **batch 8 A/B ≈ $32.73** (real, both the original and
-   retry submissions combined, from `batch8_ab_raw_results.jsonl`'s own `usage` fields) —
-   update this line with each new submission's actual cost once known.
+   Running total as of 2026-08-01: **$32.88** — batch 8 A/B ≈ $32.73 (real, both the
+   original and retry submissions combined, from `batch8_ab_raw_results.jsonl`'s own
+   `usage` fields) + $0.15 (real, N=40 packed-schema pre-flight dry-run,
+   `experiments/out/foundry/preflight_n40_result.json`'s own `usage` field, one
+   synchronous non-batch `/v1/messages` call, task done before the full-corpus run-1
+   submission gate below) — update this line with each new submission's actual cost
+   once known.
+
+   **Full-corpus run 1 gate check, 2026-08-01** (pre-submission, per this rule):
+   cumulative actual to date = $32.88. Live-priced estimate for the N=40 packed
+   full-corpus submission (32,557 gate-passing cards, 814 packs), re-priced fresh via
+   WebFetch against platform.claude.com/docs/en/about-claude/pricing (Sonnet 5 intro
+   through 2026-08-31 confirmed unchanged: $2/$10 base in/out, 5m cache write
+   $2.50/MTok, cache read $0.20/MTok, Batch API 50% off, stacking) and batch 8's real
+   Arm C per-pack usage (same N=40 packed architecture, same codebook content, real
+   observed batch-level cache-read behavior — not assumed) scaled by pack count
+   (814/30): **$55.05 projected**. `projected_total = 32.88 + 55.05 = $87.93` ≤
+   $140.00 → **PASS, submission authorized to proceed** (headroom after: $52.07).
 2. Get a **live-priced estimate** for the submission about to happen — fresh
    `count_tokens` measurement (exact or sampled) against CURRENT pricing (re-fetched,
    never recalled/reused from a prior session's fetch even if it "should" be unchanged)
