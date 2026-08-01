@@ -73,6 +73,112 @@ def normalize_tokens(*texts: str) -> frozenset:
     return frozenset(out)
 
 
+# ---------------------------------------------------------------------------
+# Deterministic label canonicalization (Captain directive, 2026-08-01):
+# permanent reconcile-side infrastructure for scoring whether two
+# independently-generated labels (different SYNTH runs, or SYNTH free-lane
+# vs. a human-authored candidate) describe the SAME pattern, despite
+# surface wording differences the model reinvents every run (batch-8 A/B
+# found this dominates raw exact-match: "activated-mass-pump-and-opponent-
+# drain" vs. "activated-team-pump-and-opponent-life-loss" for the identical
+# card/judgment). Reuses the SAME grammar machinery validate_slug.py
+# already enforces going forward -- this does not invent a parallel
+# vocabulary, it applies the one already ratified.
+# ---------------------------------------------------------------------------
+
+# Ratified EFFECT-verb synonym collapsing (CODEBOOK-NAMING-GRAMMAR.md sec.4:
+# "One verb per mechanic, chosen once, used everywhere") plus D-1..D-3's
+# explicit retired-token replacements. Deliberately NOT a general free-text
+# thesaurus -- every entry here traces to an explicit ratified rule, not a
+# guess at what SYNTH might mean. Checked both pre- and post-stem.
+CANONICAL_SYNONYM_MAP = {
+    "creates": "create",              # D-2: bare verb stem
+    "scaled": "scales",               # D-3: -scaled-by- retired, -scales-with- is canonical
+    "dies": "death",                  # D-1: death-trigger is the family word, not dies
+    "return": "bounce", "returning": "bounce",  # sec.4: bounce = return to hand
+    "countered": "uncounterable",     # sec.10.2 ban + Q4: the only surviving vocabulary near this concept
+}
+
+# Slot buckets in CODEBOOK-NAMING-GRAMMAR.md sec.1 order
+# (DELIVERY-EFFECT-OBJECT-SCOPE-QUALIFIER) -- checked in this order, first
+# vocab a (stemmed, synonym-mapped) token matches wins. Tokens matching none
+# of these fall into "descriptor" (ratified but slot-agnostic vocabulary --
+# Q5 batch, glossary, keyword names) or "unclassified" (genuinely novel
+# free-lane vocabulary with no ratified home yet) -- both still included in
+# the canonical form (never dropped), just ordered last so they don't
+# spuriously break equality between two labels that agree on every
+# classified slot but differ in an unclassified tail token's position.
+def _slot_vocab_order():
+    return [
+        ("delivery", validate_slug.DELIVERY_VOCAB),
+        ("effect", validate_slug.EFFECT_VOCAB),
+        ("object", validate_slug.OBJECT_VOCAB),
+        ("scope", validate_slug.SCOPE_VOCAB),
+        ("qualifier", validate_slug.QUALIFIER_VOCAB | validate_slug.SCALING_STAT_VOCAB
+                       | validate_slug.COUNTER_TOKEN_VOCAB | validate_slug.RESTRICTION_VOCAB
+                       | validate_slug.CANT_BE_BLOCKED_STEM_VOCAB),
+        ("descriptor", validate_slug.WALK_RATIFICATION_VOCAB_20260731
+                        | validate_slug.GLOSSARY_VOCAB | validate_slug.KEYWORD_VOCAB),
+    ]
+
+
+def _stem(token: str) -> str:
+    for suf in STEM_SUFFIXES:
+        if token.endswith(suf) and len(token) - len(suf) >= 3:
+            return token[: -len(suf)]
+    return token
+
+
+def canonicalize_label(label: str) -> str:
+    """label may or may not carry the 'rule:' prefix. Pipeline: (1) D-2/D-3
+    connective normalization via validate_slug.normalize_for_collision
+    (catches creates-/scaled-by- as whole-connective substitutions before
+    tokenizing loses that context); (2) per-token stem + ratified-synonym
+    collapse (order: synonym, then stem, then synonym again in case
+    stemming exposes a mappable root -- e.g. 'returning' -> stem 'return'
+    -> synonym 'bounce'); (3) slot classification against validate_slug's
+    closed vocabularies + reordering into canonical slot order, so two
+    labels using the same concepts in a different word order collapse to
+    the same string. NOT guaranteed to produce a "correct" slug -- a
+    best-effort deterministic normal form for equality comparison between
+    two independently-generated labels, nothing more."""
+    bare = label[len("rule:"):] if label.startswith("rule:") else label
+    bare = validate_slug.normalize_for_collision(bare)
+    tokens = [t for t in bare.split("-") if t]
+
+    slot_order = _slot_vocab_order()
+    all_vocab = set()
+    for _, vocab in slot_order:
+        all_vocab |= vocab
+
+    buckets = {name: [] for name, _ in slot_order}
+    buckets["unclassified"] = []
+    for raw in tokens:
+        t = CANONICAL_SYNONYM_MAP.get(raw, raw)
+        # Closed vocabularies hold the CORRECT surface form (e.g. "mass",
+        # "creatures", "grants") -- check the token AS-IS against them
+        # before stemming, so stemming never corrupts an already-valid
+        # vocabulary word (e.g. "mass" -> stem "mas" is not in
+        # QUALIFIER_VOCAB and would wrongly fall to "unclassified"). Only
+        # stem (and re-check the synonym map on the stemmed root) when the
+        # raw token isn't already a recognized vocabulary word.
+        if t not in all_vocab:
+            stemmed = _stem(t)
+            t = CANONICAL_SYNONYM_MAP.get(stemmed, stemmed)
+        for name, vocab in slot_order:
+            if t in vocab:
+                buckets[name].append(t)
+                break
+        else:
+            buckets["unclassified"].append(t)
+
+    parts = []
+    for name, _ in slot_order:
+        parts.extend(sorted(set(buckets[name])))
+    parts.extend(sorted(set(buckets["unclassified"])))
+    return "-".join(parts)
+
+
 def load_active_codebook_slugs() -> dict:
     """Returns {slug: {"definition", "scope"}} for active axes, or {} if no
     codebook exists yet (batch 1)."""
