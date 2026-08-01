@@ -32,6 +32,7 @@ from collections import defaultdict, Counter
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
+import validate_slug  # noqa: E402 -- D7 wiring, walk-ratification 2026-07-31
 
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 
@@ -95,13 +96,57 @@ def resolve_codebook_label(label: str, active_slugs: dict) -> str | None:
     return None
 
 
+def is_banned_restriction_family_label(label: str) -> bool:
+    """D-4 (CODEBOOK-NAMING-GRAMMAR.md sec.3, wired D7 walk-ratification
+    2026-07-31): the activation-restriction family is exclusively DET-owned;
+    SYNTH must never be credited with one of these slugs under ANY lane, even
+    if the model complied with the system prompt's own ban and this is a
+    stray compliance slip. Checked against the exact 8-member closed family
+    (validate_slug.ACTIVATION_RESTRICTION_FAMILY), not a prefix guess."""
+    bare = label[len("rule:"):] if label.startswith("rule:") else label
+    return bare in validate_slug.ACTIVATION_RESTRICTION_FAMILY
+
+
+def resolve_codebook_grammar_label(label: str, active_slugs: dict) -> tuple:
+    """D7 wiring: lane="codebook-grammar" resolution. Returns
+    (resolved_slug_or_None, validator_result). A grammar-composed label must
+    pass validate_slug() (charset/vocab/restriction-family/counter-law/cost-
+    law/collision) to be accepted; CODEBOOK-NAMING-GRAMMAR.md sec.11: "anything
+    neither exact-codebook nor grammar-valid stays lane=free" -- so an invalid
+    label here means the CALLER downgrades this instance to lane="free"
+    (folded into ordinary DET clustering), not discarded outright, matching
+    the same non-punitive handling lane=codebook anomalies already get."""
+    prefixed = label if label.startswith("rule:") else f"rule:{label}"
+    result = validate_slug.validate_slug(prefixed, definition=None, all_slugs=list(active_slugs.keys()))
+    if not result["ok"]:
+        return None, result
+    # Valid grammar-composed slug. If it already exists as an active codebook
+    # axis (a prior batch already instantiated this exact virtual node),
+    # attach to it directly like lane=codebook. Otherwise this is a brand
+    # new grammar-instantiated candidate -- the caller's cluster/candidate
+    # path handles that identically to a free-lane new_candidate axis, since
+    # both need >=2 corroborating cards before promotion (a single quote-
+    # verified member instantiates the grammar's virtual node per sec.11,
+    # but this script's own single-card-cluster guard, TRIAGE-BATCH-2.md
+    # sec.0/7.1, still applies -- one card is not corroboration).
+    if prefixed in active_slugs:
+        return prefixed, result
+    return prefixed, result
+
+
 def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
     """Returns (instances, discarded, anomalies). Each instance carries
     oracle_id, name, lane, label, definition, actor_scope, quote, and (for
     free-lane / unresolved instances) its normalized token set for
-    clustering. `anomalies` counts lane="codebook" instances whose label
-    didn't resolve to an active codebook slug -- these are folded into
-    `instances` for free-lane clustering, not discarded, but flagged."""
+    clustering. D7 wiring (walk-ratification 2026-07-31): `anomalies` counts
+    lane="codebook" instances whose label didn't resolve to an active
+    codebook slug (folded into free-lane clustering, not discarded) AND
+    lane="codebook-grammar" instances whose label failed validate_slug()
+    (also folded into free-lane clustering per CODEBOOK-NAMING-GRAMMAR.md
+    sec.11: "anything neither exact-codebook nor grammar-valid stays
+    lane=free"). A separate D-4 check rejects (discards outright, does NOT
+    fold into clustering) any label from the closed activation-restriction
+    family under any lane -- that family is exclusively DET-owned."""
     if not raw_results_path.exists():
         fc.halt(f"{raw_results_path} not found -- fetch batch results first")
 
@@ -113,6 +158,9 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
     refusals = 0
     non_succeeded = {}  # result-type -> count, for errored/canceled/expired rows
     codebook_hits = 0
+    grammar_hits = 0
+    grammar_new_instantiations = 0
+    banned_restriction_family_hits = 0
 
     for line in raw_results_path.read_text(encoding="utf-8").splitlines():
         row = json.loads(line)
@@ -168,7 +216,20 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
                                    "axis": axis})
                 continue
 
+            # D-4 (D7 wiring): reject an activation-restriction-family label
+            # under ANY lane -- SYNTH is banned from this closed, DET-owned
+            # family regardless of how it labeled itself.
+            if is_banned_restriction_family_label(label):
+                banned_restriction_family_hits += 1
+                anomalies.append({"oracle_id": oracle_id, "name": card["name"], "claimed_label": label,
+                                   "claimed_lane": lane,
+                                   "reason": "D-4: activation-restriction family is DET-owned; SYNTH-emitted "
+                                             "instance rejected outright, not folded into free-lane clustering"})
+                discarded.append({"oracle_id": oracle_id, "reason": "D-4 banned family", "axis": axis})
+                continue
+
             resolved_slug = None
+            new_grammar_instantiation = False
             if lane == "codebook":
                 resolved_slug = resolve_codebook_label(label, active_slugs)
                 if resolved_slug is not None:
@@ -176,11 +237,26 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
                 else:
                     anomalies.append({"oracle_id": oracle_id, "name": card["name"], "claimed_label": label,
                                        "reason": "lane=codebook but label did not resolve to an active codebook slug"})
+            elif lane == "codebook-grammar":
+                resolved_slug, validation = resolve_codebook_grammar_label(label, active_slugs)
+                if resolved_slug is not None:
+                    grammar_hits += 1
+                    if resolved_slug not in active_slugs:
+                        new_grammar_instantiation = True
+                        grammar_new_instantiations += 1
+                else:
+                    # sec.11: "anything neither exact-codebook nor grammar-
+                    # valid stays lane=free" -- downgrade, don't discard.
+                    lane = "free"
+                    anomalies.append({"oracle_id": oracle_id, "name": card["name"], "claimed_label": label,
+                                       "reason": f"lane=codebook-grammar but validate_slug failed "
+                                                 f"({validation['failures']}) -- downgraded to lane=free"})
 
             instances.append({
                 "oracle_id": oracle_id, "name": card["name"], "lane": lane,
                 "label": label, "definition": definition, "actor_scope": actor_scope,
                 "quote": quote, "resolved_codebook_slug": resolved_slug,
+                "new_grammar_instantiation": new_grammar_instantiation,
                 # Label-only tokens, not label+definition: definitions share
                 # enough generic connective prose that including them pulled
                 # in false merges even after stopword-filtering (measured
@@ -206,10 +282,17 @@ def load_raw_instances(cards: dict, raw_results_path: Path) -> tuple:
           f"({parse_failures} card(s) had non-JSON output, {refusals} card(s) had a model refusal -- both excluded entirely)")
     print(f"evidence-quote-or-discard gate: kept {len(instances)}, discarded {len(discarded)} "
           f"({sum(1 for d in discarded if d['reason'] == 'quote not verbatim in oracle text')} bad quotes, "
-          f"{sum(1 for d in discarded if d['reason'] == 'missing field')} missing a required field)")
+          f"{sum(1 for d in discarded if d['reason'] == 'missing field')} missing a required field, "
+          f"{sum(1 for d in discarded if d['reason'] == 'D-4 banned family')} D-4 banned-family rejections)")
     if active_slugs:
-        print(f"two-lane: {codebook_hits} instance(s) resolved to an existing codebook axis, "
-              f"{len(anomalies)} lane=codebook anomal(y/ies) (label didn't resolve -- folded into free-lane clustering)")
+        print(f"three-lane: {codebook_hits} instance(s) resolved to an existing codebook axis, "
+              f"{grammar_hits} instance(s) resolved via a ratified grammar family "
+              f"({grammar_new_instantiations} newly-instantiated virtual node(s), sec.11), "
+              f"{len(anomalies)} anomal(y/ies) total (lane=codebook unresolved, lane=codebook-grammar "
+              f"validation failures folded into free-lane clustering, and D-4 banned-family rejections)")
+        if banned_restriction_family_hits:
+            print(f"D-4 enforcement: {banned_restriction_family_hits} SYNTH instance(s) claimed an "
+                  f"activation-restriction-family slug -- rejected outright (that family is DET-owned)")
     return instances, discarded, anomalies
 
 
@@ -256,10 +339,19 @@ def slugify(label: str) -> str:
 
 def build_consolidated_axes(batch_num: int, codebook_attached: dict, free_clusters: list,
                              active_slugs: dict, codebook_version: str) -> Path:
-    """codebook_attached: {slug: [instance, ...]} for lane=codebook hits.
+    """codebook_attached: {slug: [instance, ...]} for lane=codebook hits AND
+    lane=codebook-grammar hits (D7 wiring). A grammar-composed slug not yet
+    in active_slugs is a brand-new virtual-node instantiation
+    (CODEBOOK-NAMING-GRAMMAR.md sec.11: "A virtual node instantiates the
+    moment one quote-verified member arrives -- no fresh ratification") --
+    tagged status="new_grammar_instantiation" (distinct from lane=codebook's
+    "existing_codebook_axis" and free-lane's "new_candidate") so Captain can
+    see at a glance which axes this batch is introducing via grammar
+    composition versus reconfirming.
     free_clusters: output of cluster_instances() over the free-lane pool
-    (lane="free", batch-1 legacy instances with no lane, and lane=codebook
-    anomalies). Clusters with >=2 distinct cards become NEW candidate axes;
+    (lane="free", batch-1 legacy instances with no lane, lane=codebook
+    anomalies, and lane=codebook-grammar validation failures downgraded to
+    free). Clusters with >=2 distinct cards become NEW candidate axes;
     singletons go to other_lane. source="B-only" throughout -- everything
     here originates from Stage 1B SYNTH, whether or not it matched the
     codebook; Source A reconciliation is a full-corpus-pass step, not a
@@ -269,13 +361,27 @@ def build_consolidated_axes(batch_num: int, codebook_attached: dict, free_cluste
     other_lane = []
 
     for slug, insts in sorted(codebook_attached.items()):
+        if slug in active_slugs:
+            definition = active_slugs[slug]["definition"]
+            scope = active_slugs[slug]["scope"]
+            status = "existing_codebook_axis"
+        else:
+            # new_grammar_instantiation=True on every instance here (D7
+            # wiring only ever populates codebook_attached with an
+            # out-of-active_slugs slug via the grammar path).
+            scope_counts = Counter(i["actor_scope"] for i in insts)
+            scope = sorted(scope_counts.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+            rep = sorted(insts, key=lambda i: i["oracle_id"])[0]
+            definition = rep["definition"]
+            status = "new_grammar_instantiation"
+            used_slugs.add(slug)
         axes.append({
             "slug": slug,
-            "definition": active_slugs[slug]["definition"],
-            "scope": active_slugs[slug]["scope"],
+            "definition": definition,
+            "scope": scope,
             "source": "B-only",
             "parameterized": False,
-            "status": "existing_codebook_axis",
+            "status": status,
             "members": [{"oracle_id": i["oracle_id"], "quote": i["quote"]} for i in insts],
         })
 
@@ -342,9 +448,11 @@ def build_consolidated_axes(batch_num: int, codebook_attached: dict, free_cluste
     out_path = fc.batch_paths(batch_num)["consolidated"]
     fc.write_json(out_path, consolidated)
     n_existing = sum(1 for a in axes if a["status"] == "existing_codebook_axis")
+    n_grammar_new = sum(1 for a in axes if a["status"] == "new_grammar_instantiation")
     n_new = sum(1 for a in axes if a["status"] == "new_candidate")
-    print(f"\nconsolidated: {n_existing} existing-codebook-axis confirmation(s), {n_new} new candidate axis(es) "
-          f"(all source=B-only), {len(other_lane)} other_lane rows")
+    print(f"\nconsolidated: {n_existing} existing-codebook-axis confirmation(s), "
+          f"{n_grammar_new} new grammar-instantiated axis(es) (sec.11 virtual-node self-instantiation), "
+          f"{n_new} new free-lane candidate axis(es) (all source=B-only), {len(other_lane)} other_lane rows")
     if single_card_clusters:
         print(f"single-card-cluster guard: {single_card_clusters} free-lane cluster(s) had n>=2 instances but "
               f"all traced to the SAME card -- routed to other_lane individually (flagged "

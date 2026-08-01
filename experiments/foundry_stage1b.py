@@ -83,6 +83,38 @@ def load_codebook_reference() -> str:
     return "\n".join(lines)
 
 
+GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
+
+
+def load_ratified_grammars_reference() -> str:
+    """D7 wiring (walk-ratification 2026-07-31, docs/WALK-RATIFICATION-
+    EXECUTION-HANDOFF.md sec.3 step 7): ratified (status="ratified" only --
+    never "proposed" or "rejected") grammar families from docs/grammars.json,
+    as a lane=codebook-grammar reference block. A family lets SYNTH compose a
+    NEW slug (stem + facet values) for a pattern that fits a ratified
+    lattice's shape even when no literal codebook slug exists yet for that
+    exact facet combination (CODEBOOK-NAMING-GRAMMAR.md sec.11: "A virtual
+    node instantiates the moment one quote-verified member arrives")."""
+    if not GRAMMARS_PATH.exists():
+        return "(no grammars file yet)"
+    g = json.loads(GRAMMARS_PATH.read_text(encoding="utf-8"))
+    # D-4: the activation-restriction family is exclusively DET-owned; SYNTH
+    # must never see it as an available lane=codebook-grammar option, even
+    # though it's status="ratified" for DET's own purposes.
+    BANNED_FOR_SYNTH = {"activation-restricted-<condition>"}
+    lines = []
+    for stem, fam in sorted(g.get("grammars", {}).items()):
+        if fam.get("status") != "ratified" or stem in BANNED_FOR_SYNTH:
+            continue
+        facet_desc = "; ".join(
+            f"{f['slot']}={f['closed_vocab']}" for f in fam.get("facets", [])
+        )
+        lines.append(f"- stem `{stem}` (delivery={fam.get('delivery')}): facets [{facet_desc}]")
+    if not lines:
+        return "(no ratified grammar families yet)"
+    return "\n".join(lines)
+
+
 def load_recently_killed_reference() -> str:
     """Killed-axis slugs as a bare list (no reasons, to control prompt-growth
     cost per the already-flagged cost trend) -- batch 5 found 3 SYNTH
@@ -107,14 +139,21 @@ SYSTEM_PROMPT_TEMPLATE = """You are doing functional decomposition for a Magic: 
 
 For the given card, identify 1 to 5 distinct FUNCTIONAL axes its oracle text expresses -- reusable mechanical patterns that OTHER cards, phrased completely differently, could also share (e.g. "restricts when opponents may cast spells", "doubles a triggered ability", "taxes an opponent's action unless they pay", "grants an ability to another permanent").
 
-TWO-LANE LABELING (check codebook fit FIRST, every time):
+THREE-LANE LABELING (check codebook fit FIRST, every time):
 Below is the current codebook of ratified functional axes. For each pattern you find on this card:
 1. Check whether it genuinely matches one of these existing axes' DEFINITION (not just a superficial word overlap). Before assigning lane="codebook", re-read the axis's definition and confirm the quote's effect runs in the SAME DIRECTION as that definition -- a card that does the OPPOSITE of an axis (untaps instead of taps, is countered instead of counters, sets a maximum instead of removing one, destroys a different object class than the one named) is NOT a match even when it shares surface vocabulary with the axis name or definition (batch 3 found 12 exactly this-shaped mismatches: Counterbore filed under "can't be countered" because its own quote is "Counter target spell."; Mishra's Helix filed under "untaps target land" because it taps lands). Also confirm the ABILITY TYPE and OBJECT CLASS match, not just the verb: before assigning an axis whose definition says "activated ability," confirm the card's ability actually has a player-chosen activation cost (a "{{cost}}:" template) -- "Whenever X happens" and "When this enters" are triggered abilities, never activated ones, even when their effect taps or costs a resource. Confirm WHAT gets tapped/targeted/damaged matches the definition's object class (creature vs. artifact vs. land vs. any permanent), and don't confuse an activation cost's own effect on the SOURCE (e.g. "{{T}}:") with the ability's EFFECT on a TARGET (batch 4 found this pattern in 9 of `rule:activated-tap-target-creature`'s 16 members: ETB/attack/Saga triggers mistaken for activated abilities, a source-tap cost mistaken for a target-tap effect, and non-creature objects tapped). If the quote genuinely matches: lane="codebook", label=that axis's EXACT slug (copy it verbatim, including the "rule:" prefix).
-2. If it does not genuinely fit any existing axis: lane="free", label=your own new short kebab-case slug candidate WITHOUT a "rule:" prefix (e.g. "restricts-opponent-cast", not "rule:restricts-opponent-cast"). Free-labeling novel patterns is explicitly encouraged -- do not force a card into a codebook slug that's a loose or partial match. The "rule:" prefix means "I am asserting this is an EXACT match to a slug in the CURRENT CODEBOOK block above" -- batch 6 found this violated twice: once as a near-miss invented slug for a real axis (adding "etb-" to a family that doesn't use that prefix), once by re-proposing two synonymous slugs for a pattern in the RECENTLY KILLED list, verbatim, despite the list being right above. If your candidate label is not letter-for-letter present in the CURRENT CODEBOOK block, it does not get the "rule:" prefix, full stop -- there is no partial-credit or "close enough" lane=codebook.
+2. If it does not match an existing slug but fits a RATIFIED GRAMMAR FAMILY below (a stem + closed facet-value combination), compose the slug yourself (stem + facet values, hyphen-joined, e.g. stem `create-token` + facet `type=treasure` -> "create-token-treasure") and use lane="codebook-grammar", label=your composed slug WITHOUT a "rule:" prefix. Only do this when the pattern's delivery/facets genuinely match the family's closed vocabulary -- if a facet value isn't in the closed list shown, this is NOT a grammar match, use lane="free" instead (never invent a new facet value).
+3. If it does not genuinely fit any existing axis or ratified grammar family: lane="free", label=your own new short kebab-case slug candidate WITHOUT a "rule:" prefix (e.g. "restricts-opponent-cast", not "rule:restricts-opponent-cast"). Free-labeling novel patterns is explicitly encouraged -- do not force a card into a codebook slug that's a loose or partial match. The "rule:" prefix means "I am asserting this is an EXACT match to a slug in the CURRENT CODEBOOK block above" -- batch 6 found this violated twice: once as a near-miss invented slug for a real axis (adding "etb-" to a family that doesn't use that prefix), once by re-proposing two synonymous slugs for a pattern in the RECENTLY KILLED list, verbatim, despite the list being right above. If your candidate label is not letter-for-letter present in the CURRENT CODEBOOK block, it does not get the "rule:" prefix, full stop -- there is no partial-credit or "close enough" lane=codebook.
+
+BANNED FAMILY (D-4, CODEBOOK-NAMING-GRAMMAR.md sec.3): the activation-restriction family (activate only as a sorcery / as an instant / during your turn / during your upkeep / during combat / during an opponent's turn / once each turn / if a condition holds) is CLOSED and exclusively DET-owned -- you must NEVER emit an axis whose entire pattern IS one of these restriction phrases, under any lane. If a card's ability has such a restriction as part of a larger pattern, describe the rest of the ability instead and simply omit the restriction clause from that axis's evidence quote's *purpose* (the quote can still include it verbatim if it's part of the same sentence, but the axis itself must be about something else).
 
 === CURRENT CODEBOOK (active axes) ===
 {codebook_reference}
 === END CODEBOOK ===
+
+=== RATIFIED GRAMMAR FAMILIES (lane="codebook-grammar" -- compose stem+facets, never invent a facet value outside the closed list shown) ===
+{ratified_grammars_reference}
+=== END GRAMMAR FAMILIES ===
 
 === RECENTLY KILLED (do not re-propose under a new free-lane label -- these patterns were already considered and rejected; if a card matches one of these, it is genuinely not an axis, full stop) ===
 {recently_killed_reference}
@@ -160,7 +199,7 @@ OUTPUT_SCHEMA = {
                 "items": {
                     "type": "object",
                     "properties": {
-                        "lane": {"type": "string", "enum": ["codebook", "free"]},
+                        "lane": {"type": "string", "enum": ["codebook", "codebook-grammar", "free"]},
                         "label": {"type": "string"},
                         "definition": {"type": "string"},
                         "actor_scope": {"type": "string"},
@@ -327,9 +366,10 @@ def cmd_prepare(batch_num: int):
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(
         codebook_reference=load_codebook_reference(),
+        ratified_grammars_reference=load_ratified_grammars_reference(),
         recently_killed_reference=load_recently_killed_reference(),
     )
-    print(f"system prompt built ({'two-lane, codebook-aware' if batch_num > 1 else 'free-form (batch 1)'}, "
+    print(f"system prompt built ({'three-lane, codebook+grammar-aware' if batch_num > 1 else 'free-form (batch 1)'}, "
           f"{len(system_prompt)} chars)")
 
     requests_out = [build_request(oid, cards[oid], system_prompt) for oid in oracle_ids]
