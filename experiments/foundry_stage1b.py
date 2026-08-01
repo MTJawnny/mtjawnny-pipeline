@@ -69,17 +69,44 @@ CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 batch_paths = fc.batch_paths  # canonical per-batch filenames now live in foundry_common.py
 
 
+DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v1.json"
+
+
+def load_det_owned_slugs() -> set:
+    """Slugs with a ratified DET pattern (docs/det-patterns-v1.json) that
+    also name a real active codebook axis (pre-filter-only pattern rows,
+    e.g. the energy pre-filters, don't) -- these are DET-owned and get
+    STRIPPED from the SYNTH-embedded codebook reference (CORPUS-PASS-
+    PLAN.md sec.1 Lane 2: "Once an axis is DET-owned, it is STRIPPED from
+    the embedded codebook reference SYNTH sees"). Codebook condensation
+    step 5, actioned 2026-07-31."""
+    if not DET_PATTERNS_PATH.exists():
+        return set()
+    det = json.loads(DET_PATTERNS_PATH.read_text())
+    return {
+        p["slug"].split(" (")[0].split(" ")[0]
+        for p in det["patterns"] if p["status"] == "ratified"
+    }
+
+
 def load_codebook_reference() -> str:
-    """Active axes as a slug+definition reference block for the two-lane
-    prompt. Read at runtime (not hardcoded) so every future batch's prompt
-    automatically reflects the codebook's current state."""
+    """Active, non-DET-owned axes as a slug+condensed-definition reference
+    block for the three-lane prompt. Read at runtime (not hardcoded) so
+    every future batch's prompt automatically reflects the codebook's
+    current state. Two condensation steps (step 5, actioned 2026-07-31):
+    DET-owned axes are stripped entirely (SYNTH doesn't need to see
+    membership-decidable-by-pattern axes), and every remaining definition
+    is shortened via fc.condense_definition_for_prompt() -- this does NOT
+    change codebook.json's own definition field, only what SYNTH is shown."""
     if not CODEBOOK_PATH.exists():
         return "(no codebook yet -- this is batch 1, free-form only)"
     cb = json.loads(CODEBOOK_PATH.read_text())
+    det_owned = load_det_owned_slugs()
     active = sorted(
-        (slug, a["definition"]) for slug, a in cb["axes"].items() if a.get("status") == "active"
+        (slug, a["definition"]) for slug, a in cb["axes"].items()
+        if a.get("status") == "active" and slug not in det_owned
     )
-    lines = [f"- {slug}: {definition}" for slug, definition in active]
+    lines = [f"- {slug}: {fc.condense_definition_for_prompt(definition)}" for slug, definition in active]
     return "\n".join(lines)
 
 
