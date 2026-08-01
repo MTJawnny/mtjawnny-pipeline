@@ -94,10 +94,20 @@ with empty hypotheses:
    members removed across 92 codebook-v0.5 axes); precedent rescan found and fixed one
    dangling citation (this doc's sibling, `docs/TRIAGE-BATCH-6.md` section 4).
 2. Keyword-bucket extraction (already ratified in an earlier session, unchanged by this
-   plan). **Not started.**
+   plan). **DET job run 2026-07-30** — `experiments/foundry_keyword_buckets.py` walked CR
+   702 (194 keyword entries), CR-cited, verify-or-drop. Output:
+   `experiments/out/foundry/keyword-buckets.json` + report. Taxonomy corrections and open
+   questions logged in `docs/CORPUS-PASS-WALK-RATIFICATION.md` sec.1 — **pending Captain
+   ratification**, not yet integrated into SYNTH prompt or tag-tree (per ratified
+   sequencing, that's schema pass).
 3. COMBINED per-axis walk: naming audit + agent-legible definition rewrite + DET-ability
    classification + grammar drafting — one walk across all ~271 active axes (v0.6),
-   four output columns per axis. **Not started.**
+   four output columns per axis. **Walk run 2026-07-30** against v0.7 (306 active axes) —
+   `experiments/foundry_axis_walk.py` + `experiments/validate_slug.py` +
+   `docs/grammars.json` + `experiments/foundry_det_patterns_probe.py`. Full proposal set
+   (rename list, DET-able axis list with corpus-measured hit-counts, grammar drafts, open
+   questions) in `docs/CORPUS-PASS-WALK-RATIFICATION.md` — **pending Captain ratification**;
+   codebook.json untouched.
 4. DET rule authoring + ratification + full-corpus DET pass (gate-passing cards only).
    **Not started.**
 5. Codebook condensation (largely automatic once the DET strip from step 4 lands).
@@ -130,9 +140,9 @@ any of the three.
 | Step | Status |
 |---|---|
 | 1. Gate #0 | **Done** |
-| 2. Keyword-bucket extraction | Not started (predates this plan) |
-| 3. Combined per-axis walk | Not started |
-| 4. DET authoring + full-corpus DET pass | Not started |
+| 2. Keyword-bucket extraction | **Walk done 2026-07-30, proposals pending ratification** |
+| 3. Combined per-axis walk | **Walk done 2026-07-30, proposals pending ratification** (see CORPUS-PASS-WALK-RATIFICATION.md) |
+| 4. DET authoring + full-corpus DET pass | Not started (blocked on step-3 DET pattern ratification) |
 | 5. Codebook condensation | Not started |
 | 6. SYNTH full-corpus pass | Not started (needs cost estimate + Captain trigger) |
 | 7. Schema pass | Not started |
