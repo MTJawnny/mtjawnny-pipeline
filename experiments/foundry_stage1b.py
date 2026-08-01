@@ -297,29 +297,46 @@ PACKED_MODE_APPENDIX = """
 PACKED-REQUEST MODE: this request contains {n} DIFFERENT cards, numbered 1 to {n} below, each labeled with its oracle_id. Process each card COMPLETELY INDEPENDENTLY:
 - Apply the full three-lane labeling process (codebook / codebook-grammar / free) separately to each card, from scratch, using only that card's own oracle text as evidence.
 - Do NOT let one card's axes influence another's -- two cards that look similar still each get their own independent judgment call. Do NOT skip, merge, or deduplicate axes across cards just because they resemble an axis you already emitted for a different card in this same request.
-- Return your answer as a single JSON object whose top-level keys are EXACTLY the {n} oracle_ids given below (copy each oracle_id string verbatim as the key), each mapped to that card's own {{"axes": [...]}} object in the same shape as the single-card format (empty axes array if the card has zero reusable functional axes). Every one of the {n} oracle_ids below MUST appear as a key, even for a card with no axes."""
+- Return your answer as a single JSON object with one key, "results", an array with EXACTLY {n} entries -- one per card, in ANY order. Each entry is {{"oracle_id": "<copy verbatim from that card's heading>", "axes": [...]}} in the same axes-array shape as the single-card format (empty axes array if that card has zero reusable functional axes). Every one of the {n} oracle_ids below MUST appear as an "oracle_id" value in exactly one entry -- no card skipped, no card duplicated."""
 
 
 def build_packed_output_schema(oracle_ids: list) -> dict:
-    """Dynamic per-pack JSON schema: one top-level property per oracle_id in
-    THIS pack (we know the exact key set at request-build time, so
-    additionalProperties=False is enforceable, same evidence-quote-or-
-    discard discipline as the single-card schema underneath each key)."""
+    """Fixed-shape schema (array of {{oracle_id, axes}}), NOT one top-level
+    property per oracle_id: an early version of this function generated a
+    schema with N top-level object properties, each carrying its own COPY
+    of the full nested axes-item schema -- for N=20/40 this blew past the
+    Batch API's structured-output "compiled grammar" size limit
+    (invalid_request_error: "The compiled grammar is too large... reduce
+    the number of strict tools", hit live on batch 8's first submission,
+    150/150 packed requests errored identically). This array shape
+    references the axes-item schema ONCE regardless of N -- schema size is
+    now constant, not O(N). additionalProperties=False still enforced on
+    each array entry (same evidence-quote-or-discard discipline); the
+    EXACT-oracle_id-set completeness check moves to the consolidation/diff
+    side (can no longer be a JSON-schema-level required-keys constraint
+    once oracle_id is a value instead of a key) -- see
+    foundry_batch8_diff.py's coverage report, which already treats a
+    missing oid as MISSING, never as an empty axes set."""
     axes_item_schema = OUTPUT_SCHEMA["schema"]["properties"]["axes"]
     return {
         "type": "json_schema",
         "schema": {
             "type": "object",
             "properties": {
-                oid: {
-                    "type": "object",
-                    "properties": {"axes": axes_item_schema},
-                    "required": ["axes"],
-                    "additionalProperties": False,
-                }
-                for oid in oracle_ids
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "oracle_id": {"type": "string"},
+                            "axes": axes_item_schema,
+                        },
+                        "required": ["oracle_id", "axes"],
+                        "additionalProperties": False,
+                    },
+                },
             },
-            "required": list(oracle_ids),
+            "required": ["results"],
             "additionalProperties": False,
         },
     }
@@ -369,11 +386,24 @@ def build_packed_request(pack_id: str, oracle_ids: list, cards: dict, system_pro
     }
 
 
+PACK_SHUFFLE_SEED = 20260731
+
+
 def pack_oracle_ids(oracle_ids: list, pack_size: int) -> list:
-    """Deterministic, order-preserving chunking -- no shuffling (batch-8's
-    tail-position quality check needs a STABLE position-within-pack for
-    every card, so packing must not itself introduce randomness)."""
-    return [oracle_ids[i:i + pack_size] for i in range(0, len(oracle_ids), pack_size)]
+    """Standing behavior (Captain directive, 2026-08-01, superseding the
+    batch-8 spec's original no-shuffle design): the full oracle_id list is
+    shuffled with a FIXED seed before chunking into packs of pack_size, so
+    which cards land in which pack AND their in-pack position are both
+    randomized -- avoiding a confound where some property of the corpus's
+    natural/assembly order (set, alphabetical, DET-stratum grouping, ...)
+    correlates with pack position and contaminates a tail-position quality
+    read. Still fully deterministic and reproducible (fixed seed): calling
+    this twice on the same oracle_ids list with the same pack_size produces
+    BYTE-IDENTICAL pack assignments -- this is what makes a same-harness
+    repeat arm (batch-8 Arm D) trivial to construct: just call this again."""
+    shuffled = list(oracle_ids)
+    random.Random(PACK_SHUFFLE_SEED).shuffle(shuffled)
+    return [shuffled[i:i + pack_size] for i in range(0, len(shuffled), pack_size)]
 
 
 def api_key() -> str:

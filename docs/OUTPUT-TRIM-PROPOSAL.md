@@ -1,12 +1,41 @@
-# Output-trim proposal — PROPOSED, NOT RATIFIED
+# Output-trim proposal — CONSIDERED AND DECLINED (2026-08-01)
 
-Status: **PROPOSAL ONLY.** Nothing in this document is implemented.
-`foundry_stage1b.py`'s `OUTPUT_SCHEMA` still requires the full
-`{lane, label, definition, actor_scope, evidence_quote}` shape for every
-lane, exactly as before. This document is input for Captain's ratify/reject
-call, per Captain's 2026-07-31 directive (point 2): "Propose (don't
-implement yet) the output-trim ruling... Present it with the reconcile-side
-verification design for my ratification."
+**Status: REJECTED for the corpus pass.** Captain's ruling, 2026-08-01,
+in the same message that ratified the accuracy-first batch-8
+configuration ($120 budget ceiling, 4-arm agreement-matrix design):
+full evidence quotes stay MANDATORY on every lane (codebook, codebook-
+grammar, free) for the full-corpus SYNTH pass. `foundry_stage1b.py`'s
+`OUTPUT_SCHEMA` is unchanged and stays unchanged — nothing in this
+document was ever implemented, and the rejection means it now won't be,
+for the corpus pass specifically.
+
+**Reason: accuracy-first.** The same session that rejected this also
+rejected the $707 single-card estimate on cost grounds and replaced it
+with a packing architecture that solves the cost problem WITHOUT
+weakening evidentiary rigor (packing amortizes the codebook block across
+N cards; it doesn't touch the evidence-quote-or-discard law at all). With
+packing available, the token-cost case for also trimming output no longer
+carries the weight it did when cost was the dominant open problem — and
+§2 of this document's own honest-limitation section already flagged that
+the trim's Layer-2 audit is inherently probabilistic, not deterministic,
+for exactly the axes (SYNTH-judgment territory) where quote verification
+matters most.
+
+**Revisit condition:** this proposal (Layers 1–3 as designed below) may be
+reconsidered for a FUTURE REFRESH pass (i.e., not the initial full-corpus
+pass, but a later incremental pass reprocessing cards after the codebook
+has matured further) — not reopened for the corpus pass itself. The
+design below is kept as-is, unedited, for that future reconsideration.
+
+---
+
+Status: **PROPOSAL ONLY (historical — see rejection above).** Nothing in
+this document is implemented. `foundry_stage1b.py`'s `OUTPUT_SCHEMA` still
+requires the full `{lane, label, definition, actor_scope, evidence_quote}`
+shape for every lane, exactly as before. This document was input for
+Captain's ratify/reject call, per Captain's 2026-07-31 directive (point 2):
+"Propose (don't implement yet) the output-trim ruling... Present it with
+the reconcile-side verification design for my ratification."
 
 ---
 
