@@ -15,13 +15,11 @@ corpus-pass arc (not per-submission). Before **ANY** Batch API submission, in th
 
 1. Compute actual cumulative spend to date this arc (real, metered numbers from prior
    batches' `usage` fields — never a pre-submission estimate standing in for an actual).
-   Running total as of 2026-08-01: **$32.88** — batch 8 A/B ≈ $32.73 (real, both the
-   original and retry submissions combined, from `batch8_ab_raw_results.jsonl`'s own
-   `usage` fields) + $0.15 (real, N=40 packed-schema pre-flight dry-run,
-   `experiments/out/foundry/preflight_n40_result.json`'s own `usage` field, one
-   synchronous non-batch `/v1/messages` call, task done before the full-corpus run-1
-   submission gate below) — update this line with each new submission's actual cost
-   once known.
+   Running total as of 2026-08-01: **$90.51** — batch 8 A/B ≈ $32.73 + $0.15 (N=40
+   schema pre-flight dry-run) + $56.94 (corpus-pass run 1 main batch) + $0.14 (pack-198
+   truncation retry) + $0.55 (164-card dropout recovery pass) — see the run-1 ACTUAL
+   entry below for the full accounting. Update this line with each new submission's
+   actual cost once known.
 
    **Full-corpus run 1 gate check, 2026-08-01** (pre-submission, per this rule):
    cumulative actual to date = $32.88. Live-priced estimate for the N=40 packed
@@ -33,6 +31,30 @@ corpus-pass arc (not per-submission). Before **ANY** Batch API submission, in th
    observed batch-level cache-read behavior — not assumed) scaled by pack count
    (814/30): **$55.05 projected**. `projected_total = 32.88 + 55.05 = $87.93` ≤
    $140.00 → **PASS, submission authorized to proceed** (headroom after: $52.07).
+
+   **Full-corpus run 1 ACTUAL, 2026-08-01** (post-fetch): 814/814 pack-requests
+   reported `succeeded` at the Batch API transport level, 0 errored/canceled/expired —
+   but two DATA-QUALITY issues surfaced on parse, caught by the coverage check before
+   any consolidation, not silently absorbed:
+   - 1 pack (`corpus-pass-1-pack-0198`, 40 cards) hit `stop_reason=max_tokens` and its
+     JSON payload was truncated/unparseable. Fixed by re-splitting the same 40
+     oracle_ids into two N=20 sub-packs and resubmitting synchronously — both
+     completed cleanly, full coverage recovered. Cost: $0.1446.
+   - 30 packs (164 cards total) completed with a valid `end_turn` but the model
+     stopped early without processing every card shown — a real instruction-compliance
+     miss, not a token-limit issue (two packs returned only 2/40 and 24/40 results
+     despite `end_turn`). Fixed by collecting all 164 missing oracle_ids and
+     resubmitting them fresh in 17 small (N≤10) synchronous sub-packs — all 164
+     recovered on the first retry, 0 still missing. Cost: $0.5472.
+   - Final verified coverage: **32,557/32,557** gate-passing cards, 0 missing, 0
+     malformed/hallucinated oracle_ids counted (24 such strings appeared across the
+     main batch — e.g. real UUIDs with a fabricated `-duplicate-skip`/`-DUP`/
+     `-placeholder` suffix — all discarded, never treated as card data).
+   - Main batch real cost: $56.94 (vs. $55.05 projected, +3.4%, consistent with a
+     slightly lower real batch-level cache-hit ratio than batch 8's Arm C proxy
+     predicted). Total run-1 cost including both remediation passes: **$57.63**.
+   - New cumulative arc spend: **$90.51**. Headroom remaining against the $140
+     ceiling: **$49.49**.
 2. Get a **live-priced estimate** for the submission about to happen — fresh
    `count_tokens` measurement (exact or sampled) against CURRENT pricing (re-fetched,
    never recalled/reused from a prior session's fetch even if it "should" be unchanged)

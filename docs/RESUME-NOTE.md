@@ -1,8 +1,17 @@
 # RESUME-NOTE — full-corpus SYNTH pass, run 1 (submitted 2026-08-01)
 
-If you are picking this up cold: this note plus `docs/CORPUS-PASS-PLAN.md`'s
-EMERGENCY COST STOP section is everything you need. Read both before doing
-anything else.
+**STATUS: COMPLETE as of 2026-08-01.** Batch ended, results fetched, two
+data-quality issues found and fixed (see `docs/CORPUS-PASS-PLAN.md`'s
+EMERGENCY COST STOP section, "Full-corpus run 1 ACTUAL" entry, for the full
+accounting), final verified coverage 32,557/32,557. Kept here as the
+historical record of run 1's mechanics and the two remediation fixes —
+useful context if a corroboration run (M=2) is ever triggered. Everything
+below this line describes the state AT SUBMISSION TIME, not the final
+outcome.
+
+If you are picking this up cold and run 1 is not yet resolved by the time
+you read this: this note plus `docs/CORPUS-PASS-PLAN.md`'s EMERGENCY COST
+STOP section is everything you need. Read both before doing anything else.
 
 ## What was submitted
 
