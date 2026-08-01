@@ -7,6 +7,33 @@ done as of this writing. Steps 2-8 are real, dollar-costed work requiring their 
 explicit Captain go-ahead per the batch API cost-estimate standing rule; nothing below
 authorizes spending on them.
 
+## EMERGENCY COST STOP (standing rule, ratified 2026-08-01 — binds this and every future
+session until Captain explicitly revokes it)
+
+**$140.00 total remaining-arc ceiling**, tracked as CUMULATIVE spend across the whole
+corpus-pass arc (not per-submission). Before **ANY** Batch API submission, in this order:
+
+1. Compute actual cumulative spend to date this arc (real, metered numbers from prior
+   batches' `usage` fields — never a pre-submission estimate standing in for an actual).
+   Running total as of 2026-08-01: **batch 8 A/B ≈ $32.73** (real, both the original and
+   retry submissions combined, from `batch8_ab_raw_results.jsonl`'s own `usage` fields) —
+   update this line with each new submission's actual cost once known.
+2. Get a **live-priced estimate** for the submission about to happen — fresh
+   `count_tokens` measurement (exact or sampled) against CURRENT pricing (re-fetched,
+   never recalled/reused from a prior session's fetch even if it "should" be unchanged)
+   and the CURRENT request set. A stale estimate (from an earlier prepare step, an earlier
+   session, or extrapolated without re-measuring) does not satisfy this requirement — redo
+   it immediately before the submission it gates.
+3. `projected_total = cumulative_actual_to_date + live_estimate`. If `projected_total >
+   $140.00`: **HALT. Report the numbers. Do not submit.** No exceptions, no "slightly
+   over," no rounding in the ceiling's favor — a projected total of $140.01 halts exactly
+   like $200 would.
+
+This rule exists independently of, and stacks with, the pre-existing standing rule
+("Batch API submissions: cost estimate from CURRENT pricing docs + Captain go-ahead
+first. Never remembered prices" — CLAUDE.md) — go-ahead for a specific submission does
+NOT waive this ceiling check; both gates must pass.
+
 ## Why this exists
 
 The batch-by-batch SUP-TRIAGE loop (`docs/SUP-TRIAGE-PROTOCOL.md`) samples ~1,200 cards
