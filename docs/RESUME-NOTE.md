@@ -13,6 +13,11 @@ If you are picking this up cold and run 1 is not yet resolved by the time
 you read this: this note plus `docs/CORPUS-PASS-PLAN.md`'s EMERGENCY COST
 STOP section is everything you need. Read both before doing anything else.
 
+**2026-08-01 (consolidation-run1 session):** consolidation executed per
+`docs/CONSOLIDATION-RUN1-DIRECTIVE.md`; discovery artifact + dry-run report
+complete, actual codebook.json write BLOCKED pending Captain's ruling on a
+member-provenance schema (see `docs/MASTER-HANDOFF-ADDENDUM-4.md` §6 item 0).
+
 ## What was submitted
 
 **Batch ID: `msgbatch_01Pk4qWUz28TCwC8nspLAJ2c`**

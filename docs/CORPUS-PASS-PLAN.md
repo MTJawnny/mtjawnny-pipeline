@@ -190,18 +190,27 @@ with empty hypotheses:
    patterns (`docs/det-patterns-v1.json`) — the actual gate-passing full-corpus DET pass
    (step 4 below) is still NOT run.
 4. DET rule authoring + ratification + full-corpus DET pass (gate-passing cards only).
-   **Unblocked, pending Captain's explicit go-ahead** (2026-07-31) — the 42 ratified
-   patterns are in `docs/det-patterns-v1.json` with the standing 20-hit fixed-seed sample-
-   sheet condition (sec.2.5 of the execution handoff) still to run per-pattern before any
-   provenance write. No cost/spend and no pass execution happened this session (G7 scope
-   guard, walk-ratification session) — this step is the next actionable trigger.
+   **Done 2026-08-01** — 39 of 44 ratified patterns map to a real codebook axis (the other
+   5 are Lane-1 pre-filters); full-corpus hit lists applied to codebook.json as
+   `source="DET"` membership via `foundry_det_pass.py apply`, gated by the fixed-seed
+   20-hit sample-sheet condition (all 39 passed, 2 root-caused fixes along the way —
+   `docs/det-patterns-v2.json` supersedes v1). Zero spend. Backup:
+   `experiments/out/foundry/backups/codebook.v0.7.pre-det-pass.20260801-013346.json`.
 5. Codebook condensation (largely automatic once the DET strip from step 4 lands).
-   **Not started.**
+   **Done** — the 39 DET-owned axes are stripped from the SYNTH-embedded codebook
+   reference (`foundry_stage1b.load_det_owned_slugs()`, reading det-patterns-v2.json);
+   268 non-DET active axes were what run 1's SYNTH prompt actually embedded.
 6. SYNTH full-corpus pass — budget re-estimated post-gate/strip (batch-6's own per-batch
    cost was on a 1,200-card sample against a 32,557-card gate-passing pool; the
    full-corpus number needs its own explicit estimate once step 4's DET strip is known).
    Explicit Captain trigger required regardless of estimate, same standing rule as every
-   other Batch API submission. **Not started.**
+   other Batch API submission. **Run 1 complete 2026-08-01** (M=1, N=40 packed, all
+   32,557 gate-passing cards, $57.63 total real spend incl. 2 remediation passes for a
+   truncated pack and 30 packs' partial dropout — see EMERGENCY COST STOP section above).
+   **Consolidation into codebook.json BLOCKED**, same date — see the Status summary table
+   below for the exact blocker (member-provenance schema ruling needed). Free-lane
+   discovery artifact and full dry-run report are complete; only the codebook.json write
+   itself is pending.
 7. SCHEMA PASS — the pre-existing schema-pass agenda (parent/child structure, ownership
    facets recorded during batch-6 D3, lattice-grammar formalization from section 2 above,
    the `rule:activated-tap-target` family consolidation flagged in batch-6's punch list).
@@ -220,15 +229,15 @@ above) is load-bearing for lattice derivation, DET pattern-matching, and parent 
 alike — a definition an agent can't mechanically apply is a definition that can't support
 any of the three.
 
-## Status summary (as of 2026-07-31, walk-ratification session)
+## Status summary (as of 2026-08-01, consolidation-run1 session)
 
 | Step | Status |
 |---|---|
 | 1. Gate #0 | **Done** |
 | 2. Keyword-bucket extraction | **Ratified 2026-07-31** (9-bucket taxonomy, F1 fix applied); not yet integrated into SYNTH/tag-tree (schema pass) |
 | 3. Combined per-axis walk | **Ratified and applied 2026-07-31** (23 renames + 1 kill in codebook.json v0.7/305 active; see WALK-RATIFICATION-EXECUTION-HANDOFF.md and CORPUS-PASS-WALK-RATIFICATION.md's RESOLUTION header) |
-| 4. DET authoring + full-corpus DET pass | **Unblocked, pending Captain's explicit go-ahead** — 42 ratified patterns in docs/det-patterns-v1.json; pass itself not run (G7 scope guard) |
-| 5. Codebook condensation | Not started |
-| 6. SYNTH full-corpus pass | Not started (needs cost estimate + Captain trigger) |
+| 4. DET authoring + full-corpus DET pass | **Done 2026-08-01** — 39 ratified patterns applied full-corpus (`docs/det-patterns-v2.json`, superseding v1 after 2 sample-gate-caught fixes); see RESUME-NOTE.md and this file's EMERGENCY COST STOP section |
+| 5. Codebook condensation | **Done** (byproduct of step 4 — DET-owned axes stripped from the SYNTH-embedded reference; 268 non-DET active axes shown to SYNTH for run 1) |
+| 6. SYNTH full-corpus pass | **Run 1 complete 2026-08-01** (M=1, 32,557/32,557 cards, $57.63 total incl. 2 remediation passes — see EMERGENCY COST STOP section). **Consolidation into codebook.json BLOCKED 2026-08-01** pending Captain's ruling on a member-level provenance/tier schema (`member_oracle_ids` is currently a flat oracle_id-string list with no per-member field to carry `source=SYNTH, tier=provisional, runs=[run1]` — CONSOLIDATION-RUN1-DIRECTIVE.md sec.4 anticipated exactly this and directs a HALT-and-propose, not a silent invention). Free-lane discovery artifact (`corpus_pass_run1_discovery.json`) and the full dry-run report (`corpus_pass_run1_consolidation_dry_run.json`) are complete and committed; only the actual codebook.json write is pending. Corroboration waves remain a future trigger regardless. |
 | 7. Schema pass | Not started |
 | 8. Display build | Not started |
