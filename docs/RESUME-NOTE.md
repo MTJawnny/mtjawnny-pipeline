@@ -43,7 +43,7 @@ external re-audit checkpoint.** Full report:
 **2026-08-01 (session close).** Session 2a executed (zero mutation); the A12
 external re-audit checkpoint is DISCHARGED — verdict NO-GO-AS-WRITTEN, three
 blockers, all verified true. Consolidation is now blocked on Captain rulings,
-not on code. Twelve decisions await in `docs/CDR-PROPOSALS.md` (rev 2). Full
+not on code. Thirteen decisions await in `docs/CDR-PROPOSALS.md` (rev 2). Full
 cold-readable context: **`docs/SESSION-HANDOFF-2026-08-01.md` — read that
 first.** A standing family/name/CR sweep now exists
 (`experiments/foundry_family_sweep.py --strict`). Spend $0.00; cumulative

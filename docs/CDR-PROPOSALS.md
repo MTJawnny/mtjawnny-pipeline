@@ -413,6 +413,38 @@ Map tokens and investigate cards.
 
 ---
 
+## CDR-13 (NEW) — Homograph Form Ledger; answers Captain's CR-audit question
+
+Full analysis: `docs/CR-VOCABULARY-AUDIT.md`. Verdict **CR-AUDIT-PARTIAL**.
+
+**Measured and verified:** 313 distinct tokens across the 307 active axes —
+123 exact CR terms, 45 indirectly CR-anchorable, 84 structural, **61 semantic
+coinages the CR can never adjudicate** (`grants`, `pump`, `tutor`, `bounce`).
+131 axes carry at least one coinage. So a CR audit was never going to carry the
+whole load; "CR audit OR system-unique naming" was a false either/or.
+
+**Recommend: a Homograph Form Ledger — sense-form rules on homograph tokens
+only, generalizing the ratified §8 `counter` pattern.** Rejected: mandatory
+sense-prefixes (worst churn, breaks the full-word legibility standard), domain
+namespaces (makes the canonicalizer harder), and an opaque unique id (the slug
+already IS the unique key; a second key invites drift).
+
+**Cost: ~15 renames — all already mandated by CDR-09. The ledger adds ZERO new
+churn.** `exile` needs zero renames: verified, the corpus already obeys the
+rule (the only two preposition-bound axes are exactly the two zone-sense ones),
+so it needs ratifying, not applying. Also needs ~40 lines in `validate_slug.py`
+to enforce forms in all positions, and one grammar section.
+
+Two riders:
+- **Coinage collision check** — a coinage must not collide with a
+  current-or-obsolete CR term in a different sense. Flags exactly 5 tokens
+  across 11 axes: `tribal` (CR now says Kindred), `unblockable`, `redirect(s)`,
+  `removal`, `alt`. Walk-time rename rulings.
+- **CDR-10 folds into this.** The `exile` ruling becomes one ledger row rather
+  than a separate decision.
+
+---
+
 ## Standing-rule proposals (not per-item decisions)
 
 **NEW-01 — DET-owned guard at the write boundary.** No free-lane or
@@ -487,9 +519,10 @@ order is the durable fix. Flagged for design, not designed here.
 | CDR-10 | `exile` homograph | prepositional binding for zone sense |
 | CDR-11 | predestined tags | ratify CR completions; derive mechanically; 7 Roles or 1? |
 | CDR-12 | CR keyword actions | CDR-11's first application; `investigate` first |
+| CDR-13 | homograph naming (CR-audit answer) | Homograph Form Ledger; zero new churn; CDR-10 folds in |
 | NEW-01..02, ADD-02..08 | standing rules | as stated above |
 
-**Nothing proceeds until CDR-01 through CDR-12 are ruled.** The largest
+**Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
 remaining work item is the B-02 semantic repair of the 93 nodes, gated on
 CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
 first, so nodes are not reviewed twice.

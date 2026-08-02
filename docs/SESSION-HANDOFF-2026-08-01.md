@@ -100,11 +100,12 @@ own grammar.
 only final-token position. Demonstrated canonicalizer corruption. Found `exile`
 as a second homograph.
 
-**Fable 5, CR-vs-slug audit feasibility.** Launched at session end; result had
-not landed when the session closed. Its question: whether all 307 active axis
-names can be mechanically audited against CR vocabulary, and if not, what
-system-unique naming scheme should replace that. **Check for its output before
-starting tomorrow** — it bears directly on CDR-09/10/11.
+**Fable 5, CR-vs-slug audit feasibility.** LANDED and filed —
+`docs/CR-VOCABULARY-AUDIT.md`, verdict CR-AUDIT-PARTIAL. Headline numbers
+re-verified (313 tokens, 131 coinage axes, 139 validator failures, all exact).
+Recommends a Homograph Form Ledger generalizing the ratified §8 pattern, at
+ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+folds into it.
 
 ---
 
@@ -136,7 +137,7 @@ all of them yields ~190 mostly-empty axes.
 ## 6. Decisions waiting on Captain
 
 All in `docs/CDR-PROPOSALS.md` (rev 2) with measurements and one recommendation
-each. Twelve numbered decisions plus standing-rule proposals:
+each. Thirteen numbered decisions plus standing-rule proposals:
 
 - **CDR-01** singleton node activation · **CDR-02** A15 disposition ·
   **CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
@@ -155,13 +156,11 @@ take the DET path in session 4 (Option A).
 
 ## 7. Recommended order for tomorrow
 
-1. **Read the Fable 5 feasibility result** (§4) — it may collapse CDR-09/10
-   into a single naming ruling.
-2. **Rule CDR-01 through CDR-12.** Nothing downstream can move first.
-3. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
+2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
    the 93 nodes against an incomplete vocabulary means reviewing some of them
    twice — Map tokens and `investigate` cards would be re-litigated.
-4. **Then** re-run session 2a against the completed vocabulary, and only then
+3. **Then** re-run session 2a against the completed vocabulary, and only then
    the B-02 semantic repair.
 
 **Do NOT** run session 2b or session 3 until the above lands. 2b expands ~18,135
