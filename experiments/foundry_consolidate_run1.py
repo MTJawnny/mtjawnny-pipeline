@@ -26,6 +26,7 @@ from collections import defaultdict, Counter
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
+import foundry_codebook as fcb  # noqa: E402
 import validate_slug  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
 
@@ -38,7 +39,12 @@ DRY_RUN_REPORT_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_consolidation_dry_r
 
 
 def load_full_codebook():
-    cb = json.loads(CODEBOOK_PATH.read_text(encoding="utf-8"))
+    # Schema-checked (foundry-codebook/2). This matters more here than the
+    # membership reads below suggest: `entry.get("member_oracle_ids", [])` on
+    # a /2 file does not raise, it silently returns [] -- so every axis would
+    # look empty and every hit would look like a brand-new member. The loader's
+    # schema check is what turns that into a loud failure.
+    cb = fcb.load_codebook(CODEBOOK_PATH)
     axes = cb["axes"]
     active = {s: e for s, e in axes.items() if e.get("status") == "active"}
     killed = {s: e for s, e in axes.items() if e.get("status") == "killed"}
@@ -257,7 +263,7 @@ def main():
     codebook_new_by_slug = {}
     codebook_already_by_slug = {}
     for slug, oids in result["codebook_all_hits"].items():
-        existing = set(result["active"][slug].get("member_oracle_ids", []))
+        existing = fcb.member_id_set(result["active"][slug])
         codebook_new_by_slug[slug] = oids - existing
         codebook_already_by_slug[slug] = oids & existing
     n_cb_axes = sum(1 for v in codebook_new_by_slug.values() if v)
@@ -278,7 +284,7 @@ def main():
     grammar_new_by_slug = {}
     grammar_already_by_slug = {}
     for slug, oids in result["grammar_all_hits"].items():
-        existing = set(result["active"][slug].get("member_oracle_ids", []))
+        existing = fcb.member_id_set(result["active"][slug])
         grammar_new_by_slug[slug] = oids - existing
         grammar_already_by_slug[slug] = oids & existing
     n_gram_new_instances = sum(len(v) for v in grammar_new_by_slug.values())
@@ -314,10 +320,12 @@ def main():
     dry_run = {
         "schema": "foundry-corpus-pass-run1-consolidation-dry-run/1",
         "BLOCKED": True,
-        "block_reason": "codebook.json member_oracle_ids has no per-member provenance/tier field shape "
-                         "(CONSOLIDATION-RUN1-DIRECTIVE.md sec.4: 'HALT and propose a shape -- do not "
-                         "invent one silently'). This report shows what consolidation WOULD write once "
-                         "Captain rules on the shape.",
+        "block_reason": "The original blocker (no per-member provenance shape) is CLEARED as of the "
+                         "2026-08-01 foundry-codebook/2 migration: members now carry assertion stacks. "
+                         "This report stays BLOCKED on the next gate instead -- per A12 the "
+                         "consolidation write executes an APPROVED plan (session 3) built by the "
+                         "zero-mutation plan session (session 2), not this dry run. Still what "
+                         "consolidation WOULD write.",
         "codebook_lane_would_add": {slug: sorted(oids) for slug, oids in codebook_new_by_slug.items() if oids},
         "codebook_lane_axes_touched": n_cb_axes,
         "codebook_lane_new_member_instances": n_cb_new_instances,

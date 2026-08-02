@@ -180,7 +180,7 @@ def main():
         val = val_results.get(slug, {})
         rows.append({
             "slug": slug,
-            "n_members": len(e.get("member_oracle_ids") or []),
+            "n_members": len(e.get("members") or []),
             "definition": definition,
             "rename_category": rename_category(slug, val),
             "validator_failures": [f["check"] for f in val.get("failures", [])],

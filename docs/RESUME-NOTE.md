@@ -18,6 +18,22 @@ STOP section is everything you need. Read both before doing anything else.
 complete, actual codebook.json write BLOCKED pending Captain's ruling on a
 member-provenance schema (see `docs/MASTER-HANDOFF-ADDENDUM-4.md` §6 item 0).
 
+**2026-08-01 (B-migration session 1 of 4, `docs/B-MIGRATION-DIRECTIVE.md`):**
+that schema blocker is CLEARED. codebook.json is now **`foundry-codebook/2`**
+— `member_oracle_ids` → `members`, each member an object carrying a STACK of
+assertions (class / source_ref / quote / corpus_ref / evidence_status; a
+member-level `tier` iff every assertion is llm-class). All 7,699 existing rows
+backfilled with exactly one assertion each: 3,697 rule-derived, 4,002 human.
+Membership itself is provably unchanged (455/455 id-sets identical). sha256
+`21f432817dc7a418ac62846f2bc5ee5edf5ccf28f944b74d4cbafa1059b39d2a`, 3,384,958 B.
+New tooling: `experiments/foundry_codebook.py` (accessor + lint + atomic write
++ add-member CLI), `foundry_migrate_codebook_v2.py`, `foundry_verify_migration.py`
+(independent verifier + 11 negative tests). `foundry_reconcile.py` is frozen as
+the /1 legacy producer with two hard guards. **Next: session 2 = PLAN
+(`docs/CONSOLIDATION-PLAN-DIRECTIVE.md`), zero-mutation, and the designated
+external re-audit checkpoint.** Full report:
+`docs/B-MIGRATION-SESSION-1-REPORT.md`. Spend $0.00.
+
 ## What was submitted
 
 **Batch ID: `msgbatch_01Pk4qWUz28TCwC8nspLAJ2c`**

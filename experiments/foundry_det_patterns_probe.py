@@ -221,7 +221,7 @@ def main():
                 imposed_on_others_report = imposed_rows
             hits = self_hits
 
-        n_members = len(axes.get(slug, {}).get("member_oracle_ids", [])) if slug in axes else None
+        n_members = len(axes.get(slug, {}).get("members", [])) if slug in axes else None
         results.append({
             "slug": slug, "pattern": pattern_src, "note": note,
             "corpus_hits": len(hits), "current_codebook_n_members": n_members,
@@ -247,7 +247,7 @@ def main():
         r"optionally with 'you control'/'your opponents control'/'played by opponents' "
         r"suffix, with NO self-reference word (this/it/that/the/CARDNAME) present)"
     )
-    n_members = len(axes.get(imposes_slug, {}).get("member_oracle_ids", [])) if imposes_slug in axes else None
+    n_members = len(axes.get(imposes_slug, {}).get("members", [])) if imposes_slug in axes else None
     results.append({
         "slug": imposes_slug, "pattern": imposes_pattern_doc,
         "note": "Root Maze class sibling of rule:enters-tapped; seeded via the G2 guard's own exclusion list",

@@ -9,6 +9,22 @@ and per-card tags to the running codebook, and writes:
   - experiments/out/foundry/captain_tags_queue.json (appended, provenance-noted)
   - experiments/out/foundry/reports/batch-<N>-diff.md (one-page diff + convergence metrics)
 
+FROZEN /1 LEGACY PRODUCER (B-MIGRATION-DISCOVERY.md sec.9 R4, sec.10 A4).
+This script speaks foundry-codebook/1 and nothing else. The live codebook is
+foundry-codebook/2 as of the 2026-08-01 migration, so this file can no longer
+write it: it exists to replay the batch-1..7 decisions paper trail into a
+/1-shaped codebook at a scratch destination, which is how per-membership
+provenance is ATTRIBUTED. Per A4, the earlier "permanent rebuild chain"
+framing is RETRACTED -- replay alone cannot reproduce post-walk state
+(walk-ratification renames, the Black Gate move and the batch-7 surgery are
+unscripted history), so there is NO replay-based rebuild chain. The live file
+plus its verified backups are the source of truth.
+
+Two hard guards enforce that, rather than a comment asking nicely:
+  - loading a codebook whose schema is not foundry-codebook/1 HALTS;
+  - writing to the live codebook path HALTS. A destination must be named
+    explicitly with --legacy-output, and it must not be the live file.
+
 Codebook schema (this repo's own convention -- the spec fixes batch-N.json/
 decisions-N.json, not the codebook's on-disk shape):
 {
@@ -24,7 +40,8 @@ decisions-N.json, not the codebook's on-disk shape):
 
 Usage:
   python3 experiments/foundry_reconcile.py --batch-json experiments/out/foundry/review/batch-1.json \\
-      --decisions experiments/out/foundry/decisions/batch-1.json
+      --decisions experiments/out/foundry/decisions/batch-1.json \\
+      --legacy-output /tmp/replay/codebook.json
 """
 import sys
 import json
@@ -36,18 +53,41 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 
-CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
+# The live artifact this script is forbidden to touch. CODEBOOK_PATH below is
+# the (re-pointable) destination; LIVE_CODEBOOK_PATH is the fixed thing that
+# destination is checked against.
+LIVE_CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
+CODEBOOK_PATH = LIVE_CODEBOOK_PATH
 TAGS_QUEUE_PATH = fc.FOUNDRY_OUT_DIR / "captain_tags_queue.json"
 REPORTS_DIR = fc.FOUNDRY_OUT_DIR / "reports"
 
+SCHEMA_V1 = "foundry-codebook/1"
+
 A_HANDFUL = 5  # convergence-gate wording ("no new axis exceeding a handful of members")
+
+
+def _guard_not_live(path: Path) -> None:
+    """Guard 2 (A4): this producer may never write the live codebook. The live
+    file is /2 and is maintained by the /2 tooling; a /1 write here would
+    silently replace an object-shaped membership list with bare strings."""
+    if Path(path).resolve() == LIVE_CODEBOOK_PATH.resolve():
+        fc.halt(f"foundry_reconcile.py is the FROZEN /1 legacy producer and refuses to write the live "
+                f"codebook at {LIVE_CODEBOOK_PATH}. The live file is {'foundry-codebook/2'} — pass "
+                f"--legacy-output with a scratch destination if you meant to replay the decisions "
+                f"trail, or use experiments/foundry_codebook.py for /2 writes")
 
 
 def load_codebook() -> dict:
     if CODEBOOK_PATH.exists():
         with open(CODEBOOK_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"schema": "foundry-codebook/1", "version": "0.0", "axes": {}, "batches_reconciled": []}
+            codebook = json.load(f)
+        # Guard 1 (A4): never read a shape this script cannot correctly write.
+        if codebook.get("schema") != SCHEMA_V1:
+            fc.halt(f"{CODEBOOK_PATH}: schema is {codebook.get('schema')!r}, but this script reads and "
+                    f"writes {SCHEMA_V1!r} only. Applying /1 union logic to a /2 file would append bare "
+                    f"oracle_id strings into object-shaped member lists")
+        return codebook
+    return {"schema": SCHEMA_V1, "version": "0.0", "axes": {}, "batches_reconciled": []}
 
 
 def load_json(path: Path) -> dict:
@@ -58,6 +98,7 @@ def load_json(path: Path) -> dict:
 
 
 def reconcile(batch_json_path: Path, decisions_path: Path, freeze: bool) -> dict:
+    _guard_not_live(CODEBOOK_PATH)
     batch = load_json(batch_json_path)
     decisions = load_json(decisions_path)
 
@@ -326,8 +367,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--batch-json", required=True)
     parser.add_argument("--decisions", required=True)
+    parser.add_argument("--legacy-output", required=True,
+                        help="where to write the /1 replay codebook. Required, and must not be the "
+                             "live codebook — this producer is frozen (A4)")
     parser.add_argument("--freeze", action="store_true", help="Captain has called the convergence gate — freeze codebook at v1.0")
     args = parser.parse_args()
+
+    global CODEBOOK_PATH
+    CODEBOOK_PATH = Path(args.legacy_output)
+    _guard_not_live(CODEBOOK_PATH)
     reconcile(Path(args.batch_json), Path(args.decisions), args.freeze)
 
 

@@ -18,14 +18,16 @@ Two-phase, matching the standing condition's own "gate before write" shape:
                        review report (no codebook.json mutation). Zero spend.
   apply             -- reads verdicts (hand-authored after reviewing the
                        samples report), and ONLY IF EVERY pattern passed,
-                       writes DET-derived membership to codebook.json
-                       (replacing existing member_oracle_ids for that axis,
-                       old membership preserved in the axis's history --
-                       DET's whole premise is "decidable by pattern, no
-                       judgment call," so once ratified+verified it
-                       supersedes the necessarily-partial sampling-era
-                       membership, not merges with it). ANY failing verdict
-                       halts with zero codebook.json writes, full stop.
+                       writes DET-derived membership to codebook.json. Under
+                       foundry-codebook/2 that means: drop this pass's own
+                       rule-derived assertions and merge the freshly computed
+                       ones back, each carrying its matched clause as evidence
+                       (A8). DET's premise is "decidable by pattern, no
+                       judgment call," so it supersedes the necessarily-partial
+                       sampling-era rule-derived set -- but it has no authority
+                       over a human or llm assertion on the same card, and
+                       never touches one. ANY failing verdict halts with zero
+                       codebook.json writes, full stop.
 
 Run:
   python3 experiments/foundry_det_pass.py generate-samples
@@ -42,6 +44,7 @@ from datetime import datetime, timezone
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
+import foundry_codebook as fcb  # noqa: E402
 import foundry_det_patterns_probe as probe  # noqa: E402
 import re  # noqa: E402
 
@@ -54,6 +57,10 @@ BATCH_LABEL = "det-pass-1"
 
 
 def load_axis_patterns():
+    # Deliberately a raw json.load rather than the schema-checking /2 loader:
+    # this reads axis STATUS only, never membership, so it is correct against
+    # /1 and /2 alike -- and the migration writer calls it while the live file
+    # is still /1.
     det = json.loads(DET_PATTERNS_PATH.read_text())
     cb = json.loads(CODEBOOK_PATH.read_text())
     active = {s for s, e in cb["axes"].items() if e.get("status") == "active"}
@@ -94,6 +101,40 @@ def _base_pattern_src(slug_key: str) -> str:
         if s == slug_key:
             return pattern_src
     fc.halt(f"could not find base pattern source for {slug_key!r} in foundry_det_patterns_probe.PATTERNS")
+
+
+# The pattern whose match IS the evidence clause for an axis. For the three
+# enters-tapped-family axes that is NOT the det-patterns-v2 "pattern" field:
+# membership there is decided by compute_special_hits() running the probe's
+# real G2 subject split on a BASE pattern, so the clause has to come from that
+# base pattern. This mapping is the single place that fact is written down --
+# the migration writer and any future DET pass both read it from here rather
+# than re-deriving it.
+_QUOTE_BASE_SLUG = {
+    "rule:enters-tapped": _ENTERS_TAPPED_BASE_SLUG,
+    "rule:enters-tapped-conditional": _ENTERS_TAPPED_COND_SLUG,
+    "rule:imposes-enters-tapped": _ENTERS_TAPPED_BASE_SLUG,
+}
+
+
+def quote_pattern_src(p: dict) -> str:
+    slug = p["resolved_slug"]
+    if slug in _QUOTE_BASE_SLUG:
+        return _base_pattern_src(_QUOTE_BASE_SLUG[slug])
+    return p["pattern"]
+
+
+def matched_clause(compiled, text_list: list):
+    """The oracle-text clause a ratified pattern matched on this card -- the
+    evidence quote for a rule-derived assertion (R2). Returns None when the
+    pattern matches none of the card's DET scan texts, which for a card on
+    that pattern's own hit list means the hit list and the pattern have
+    drifted apart; every caller treats that as a halt, never a skip."""
+    for text in text_list:
+        m = compiled.search(text)
+        if m and m.group(0).strip():
+            return m.group(0)
+    return None
 
 
 def compute_special_hits(resolved_slug: str, texts: dict, cards: dict) -> tuple:
@@ -191,30 +232,61 @@ def cmd_apply(verdicts_path: str):
                  "generate-samples before attempting apply again")
 
     print(f"all {len(axis_patterns)} patterns PASSED their sample-sheet gate. Applying DET-derived membership...")
-    cb = json.loads(CODEBOOK_PATH.read_text())
+
+    # Post-migration the codebook is foundry-codebook/2, so a DET refresh is an
+    # assertion operation, not a list swap (A8): it drops ONLY its own
+    # rule-derived assertions and merges the new ones back, leaving any human
+    # or llm assertion on the same member untouched. A member survives exactly
+    # as long as some assertion still supports it. The pre-migration behaviour
+    # -- overwrite the whole member list, paste the old list into a history
+    # note -- would now silently delete Captain-ratified provenance.
+    cb = fcb.load_codebook(CODEBOOK_PATH)
     axes = cb["axes"]
+    corpus_ref = fcb.corpus_ref_current()
+
+    cards, _, _ = fc.load_corpus_gated()
+    texts = {oid: fc.det_scan_texts(c) for oid, c in cards.items()}
+
+    fcb.backup_codebook("pre-det-pass")
     applied = []
     for p in axis_patterns:
         slug = p["resolved_slug"]
         e = axes[slug]
-        old_members = list(e["member_oracle_ids"])
-        new_members = full_hits[slug]
-        e["member_oracle_ids"] = new_members
+        before_n = len(fcb.member_ids(e))
+        removal = fcb.remove_det_assertions(e)
+        source_ref = f"{fcb.DET_SOURCE_REF_PREFIX}{p['pattern_index']}"
+        compiled = re.compile(quote_pattern_src(p), re.I)
+        for oid in full_hits[slug]:
+            if oid not in texts:
+                fc.halt(f"DET hit {slug}/{oid} is not in the Gate #0 corpus — hit list and corpus "
+                        f"disagree; nothing written")
+            clause = matched_clause(compiled, texts[oid])
+            if clause is None:
+                fc.halt(f"DET hit {slug}/{oid} produced no matched clause on re-scan — the recorded hit "
+                        f"list and the ratified pattern disagree; nothing written")
+            fcb.merge_assertion(e, oid, fcb.build_assertion(
+                "rule-derived", source_ref, clause, corpus_ref, "quoted"))
         e["source"] = "DET"
+        after_n = len(fcb.member_ids(e))
         e["history"] = list(e["history"]) + [{
             "batch": BATCH_LABEL, "action": "det_membership_applied",
+            # Counts only. The old note embedded the entire previous member
+            # list verbatim; under /2 that would inline a wall of member
+            # objects into a history note for no audit value the manifest and
+            # backups do not already provide.
             "note": (f"Full-corpus DET pass (docs/det-patterns-v2.json pattern_index={p['pattern_index']}, "
-                     f"seed={p['seed']}, sample-sheet verified). Membership REPLACED (rule-derived, full "
-                     f"corpus, supersedes the necessarily-partial sampling-era set): "
-                     f"{len(old_members)} -> {len(new_members)} members. Old member set preserved below for "
-                     f"audit trail, not merged: {old_members}"),
+                     f"seed={p['seed']}, sample-sheet verified). rule-derived assertions replaced under "
+                     f"{source_ref}: {removal['assertions_removed']} removed, {len(full_hits[slug])} "
+                     f"merged; {len(removal['members_dropped'])} member(s) dropped for having no "
+                     f"remaining assertion; membership {before_n} -> {after_n}."),
         }]
-        applied.append((slug, len(old_members), len(new_members)))
+        applied.append((slug, before_n, after_n, len(removal["members_dropped"])))
 
-    CODEBOOK_PATH.write_text(json.dumps(cb, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    digest = fcb.write_codebook_atomic(CODEBOOK_PATH, cb, "codebook.json")
     print(f"wrote {CODEBOOK_PATH}")
-    for slug, old_n, new_n in applied:
-        print(f"  {slug}: {old_n} -> {new_n} members")
+    print(f"  sha256={digest}")
+    for slug, old_n, new_n, dropped in applied:
+        print(f"  {slug}: {old_n} -> {new_n} members ({dropped} dropped with no remaining assertion)")
 
 
 def main():

@@ -207,10 +207,14 @@ with empty hypotheses:
    other Batch API submission. **Run 1 complete 2026-08-01** (M=1, N=40 packed, all
    32,557 gate-passing cards, $57.63 total real spend incl. 2 remediation passes for a
    truncated pack and 30 packs' partial dropout — see EMERGENCY COST STOP section above).
-   **Consolidation into codebook.json BLOCKED**, same date — see the Status summary table
-   below for the exact blocker (member-provenance schema ruling needed). Free-lane
-   discovery artifact and full dry-run report are complete; only the codebook.json write
-   itself is pending.
+   **Consolidation into codebook.json was BLOCKED**, same date, on the member-provenance
+   schema ruling. **That blocker is CLEARED as of 2026-08-01**: codebook.json migrated to
+   `foundry-codebook/2`, in which each member carries a stack of assertions
+   (class / source_ref / quote / corpus_ref / evidence_status), so a SYNTH confirmation
+   now has somewhere true to live. The consolidation write is NOT next: per A12 it is
+   session 3 (APPLY), and it executes an approved plan produced by session 2 (PLAN,
+   `docs/CONSOLIDATION-PLAN-DIRECTIVE.md`, zero-mutation, also the external re-audit
+   checkpoint). Free-lane discovery artifact and full dry-run report remain complete.
 7. SCHEMA PASS — the pre-existing schema-pass agenda (parent/child structure, ownership
    facets recorded during batch-6 D3, lattice-grammar formalization from section 2 above,
    the `rule:activated-tap-target` family consolidation flagged in batch-6's punch list).
@@ -238,6 +242,6 @@ any of the three.
 | 3. Combined per-axis walk | **Ratified and applied 2026-07-31** (23 renames + 1 kill in codebook.json v0.7/305 active; see WALK-RATIFICATION-EXECUTION-HANDOFF.md and CORPUS-PASS-WALK-RATIFICATION.md's RESOLUTION header) |
 | 4. DET authoring + full-corpus DET pass | **Done 2026-08-01** — 39 ratified patterns applied full-corpus (`docs/det-patterns-v2.json`, superseding v1 after 2 sample-gate-caught fixes); see RESUME-NOTE.md and this file's EMERGENCY COST STOP section |
 | 5. Codebook condensation | **Done** (byproduct of step 4 — DET-owned axes stripped from the SYNTH-embedded reference; 268 non-DET active axes shown to SYNTH for run 1) |
-| 6. SYNTH full-corpus pass | **Run 1 complete 2026-08-01** (M=1, 32,557/32,557 cards, $57.63 total incl. 2 remediation passes — see EMERGENCY COST STOP section). **Consolidation into codebook.json BLOCKED 2026-08-01** pending Captain's ruling on a member-level provenance/tier schema (`member_oracle_ids` is currently a flat oracle_id-string list with no per-member field to carry `source=SYNTH, tier=provisional, runs=[run1]` — CONSOLIDATION-RUN1-DIRECTIVE.md sec.4 anticipated exactly this and directs a HALT-and-propose, not a silent invention). Free-lane discovery artifact (`corpus_pass_run1_discovery.json`) and the full dry-run report (`corpus_pass_run1_consolidation_dry_run.json`) are complete and committed; only the actual codebook.json write is pending. Corroboration waves remain a future trigger regardless. |
+| 6. SYNTH full-corpus pass | **Run 1 complete 2026-08-01** (M=1, 32,557/32,557 cards, $57.63 total incl. 2 remediation passes — see EMERGENCY COST STOP section). **Consolidation blocker CLEARED 2026-08-01**: the member-provenance schema was ratified and executed — codebook.json is now `foundry-codebook/2`, where `member_oracle_ids` has become `members`, a list of objects each carrying an assertion stack (class / source_ref / quote / corpus_ref / evidence_status, plus a member-level tier iff every assertion is llm-class). CONSOLIDATION-RUN1-DIRECTIVE.md sec.4's HALT-and-propose was honoured: the shape was proposed, externally audited, amended and Captain-ratified before any write. The codebook.json write is now gated on the session-2 PLAN artifact rather than on schema (A12). Free-lane discovery artifact (`corpus_pass_run1_discovery.json`) and the full dry-run report (`corpus_pass_run1_consolidation_dry_run.json`) are complete and committed; only the actual codebook.json write is pending. Corroboration waves remain a future trigger regardless. |
 | 7. Schema pass | Not started |
 | 8. Display build | Not started |
