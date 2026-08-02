@@ -241,12 +241,40 @@ ability on the stack IS an object), so a `-object` marker would point at
 the wrong sense. `any-` adds no new vocabulary and fills the existing type
 slot.
 
-**Consequence for the canonicalizer (ADD-08):** this makes position-aware
-bucketing decidable by local adjacency for these tokens — `counters` is
-EFFECT iff followed by an OBJECT token, QUALIFIER iff preceded by a type
-word, `with`, or `any`. That is the only approach `CR-VOCABULARY-AUDIT.md`
-section 4 found feasible, and it does not work until the renames in
-section 12 land.
+**Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
+`CR-VOCABULARY-AUDIT.md` §4 proposes local adjacency — `counters` is EFFECT
+iff followed by an OBJECT token, QUALIFIER iff preceded by a type word or a
+`with`-binding — and states it becomes decidable once these renames land.
+Tested against all 33 counter-bearing active axes, scored against each
+axis's definition-confirmed sense:
+
+| names | misfiles |
+|---|---:|
+| current | **17 of 33 (52%)** |
+| after the §12a renames | **4** |
+
+So the dependency is REAL: 13 of the 17 are fixed by nothing except the
+renames, because slugs like `rule:self-counter-growth` have no type word
+for the rule to bind to. Implementing position-aware bucketing before the
+walk would misfile half the counter axes.
+
+But §4's claim is **too strong** — the renames alone do not finish the job.
+Three of the four residuals are defects in the rule as specified, not in
+the names, and both must be fixed before ADD-08 is implemented:
+
+1. **The rule must look past SCOPE tokens when hunting the object.** In
+   `counters-target-spell` the token after `counters` is `target` (SCOPE,
+   §6), not `spell`, so a literal "followed by an OBJECT token" test finds
+   nothing. Affects `counters-target-spell`,
+   `activated-counters-target-spell`, `-unless-pays`.
+2. **Left type-binding must take precedence over right object-adjacency.**
+   `cast-trigger-self-plus1-counter-noncreature-spell` is noun sense (the
+   card gains a +1/+1 counter when its controller casts a noncreature
+   spell) but has a type word on the left AND an object on the right.
+   Checking the object first returns verb, which is wrong.
+
+With both corrections applied after the walk, the residual is expected to
+be zero. ADD-08 stays blocked on §12a either way.
 
 ## 9. Cost-vs-effect law
 
