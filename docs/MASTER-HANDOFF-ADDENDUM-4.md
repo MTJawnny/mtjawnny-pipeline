@@ -149,8 +149,10 @@ each its own Captain trigger — then schema pass, then display build.
 0. **BLOCKING (new, 2026-08-01, consolidation-run1 session): member-level
    provenance/tier schema ruling needed before run-1's consolidation can
    write to codebook.json.** `member_oracle_ids` is currently a flat list
-   of bare oracle_id strings on every one of the 455 axes (confirmed, 0
-   exceptions) — there is no field to carry `source=SYNTH, tier=provisional,
+   of bare oracle_id strings on 442 of the 455 axis records — the 13
+   renamed shells carry no member field at all (CORRECTED per
+   B-MIGRATION-DISCOVERY.md §2; this line originally said "455 axes, 0
+   exceptions") — there is no field to carry `source=SYNTH, tier=provisional,
    runs=[run1]` per membership, only axis-level `source`. Per
    CONSOLIDATION-RUN1-DIRECTIVE.md sec.4's own instruction ("HALT and
    propose a shape — do not invent one silently"), this session halted the
@@ -158,7 +160,9 @@ each its own Captain trigger — then schema pass, then display build.
    (`experiments/out/foundry/corpus_pass_run1_consolidation_dry_run.json`:
    257 axes would gain >=1 new member, 14,255 new codebook-lane
    confirmations, 21 existing axes would gain 1,127 grammar-lane
-   confirmations, 95 new grammar virtual-node axes with 1,297 quote-verified
+   confirmations, 95 new grammar virtual-node axes with 607 quote-verified
+   (CORRECTED per B-MIGRATION-DISCOVERY.md §6a — 1,297 is the distinct-pair
+   count on the 21 existing grammar-lane axes, misattributed here originally)
    members) plus the free-lane discovery artifact (already written,
    doesn't touch codebook.json). Two shape options proposed for Captain's
    ruling: (A) additive `member_provenance: {oracle_id: {source, tier,

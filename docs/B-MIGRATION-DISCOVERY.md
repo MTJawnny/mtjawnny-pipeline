@@ -482,35 +482,44 @@ The real recoverable pools the future ruling would govern:
 1. **Ratify the member-object shape?** Fields oracle_id / class / tier /
    runs / batch as specified in §3 (classes = ratified
    rule-derived/human/llm; tier inside llm only). Evidence: §3.
+   VERDICT: Let's discuss the best shape for future forward member object shapes. we want the oracle ID of course. We want the unique tags it's associated with. maybe we have a gamechanger association section so we can easily and more clearly update the gamechanger list. Maybe even a rider that tells whether it's a double faced card or something to help with future doublefaced card discovery 
 2. **Do the 295 audit rows on non-active shells migrate too?** Uniform
    shape everywhere (recommended — avoids polymorphic reads) vs leaving
    shells as strings. Evidence: §2, §5.3.
+VERDICT: Uuniform shapes everywhere. We'll go with this. explain what we lose from this.
 3. **reconcile: freeze as /1 legacy producer (replay chain gains a
    migrate step) or rework its member handling to /2 now?** Freeze is less
    work and keeps historical replay bit-faithful; rework is only needed if
    the bootstrap loop ever runs again. Evidence: §1.1, §4.1 step 6, §5.2.
+   VERDICT: freeze as /1 legacy producer We'll go with this. explain what we lose from this.
 4. **Per-member evidence quotes: stay in run artifacts (recommended) or
    carried into member objects?** Carrying ≈ doubles file size again and
    puts oracle text in codebook.json. Evidence: §3 future-proofing.
+   VERDICT: would this affect the corpus size if we had them carry? sounds like carrying might be better.
 5. **Virtual-node collision policy:** rule:grants-haste (killed b1-Q1,
    recomposable from the ratified grants-<keyword> grammar — T1 live) and
    rule:draw-second-card-trigger-token (renamed shell, 2 audit members):
    instantiate / reject / ledger-route? And ratify adding
    killed/merged/renamed checks to the grammar lane. Evidence: §5.1 #1.
+   VERDICT: Let it make rule:grants-haste and others like rule:grants-haste-temporary.
 6. **The 141 exact-match reinventions (45 genuinely new members):
    implement the halted directive §4's promotion at execution, or re-rule
    them discovery-only?** Evidence: §6 item 2.
+   VERDICT: reword this what the hell are the choices?
 7. **Migration and consolidation: two sessions (recommended) or one?**
    Evidence: §4.2.
+   VERDICT: Two sessions.
 8. **Keep the per-member `batch` field (O(1) audit) or drop it (axis-level
    history already exists)?** Evidence: §3 table.
+   VERDICT: what are pro's and cons of this?
 9. **Accept 4.53 MB multi-line serialization (recommended), or ratify a
    single-line-member custom encoder (~2.98 MB, one more determinism
    surface)?** Evidence: §3 size.
+   VERDICT: 4.53 MB multi-line serialization
 10. **Correct ADDENDUM-4 §6 item 0's two figures** ("455 axes, 0
     exceptions" → 442 records carry the field; "95 nodes with 1,297
     members" → 607) in the next handoff revision? Evidence: §2, §6(a).
-
+VERDICT: Yes correct it.
 ---
 
 ## 8. PLAIN-LANGUAGE SUMMARY (same content, simpler words — nothing here adds or changes anything above)
@@ -569,6 +578,121 @@ a future ruling could recover automatically.
 session converts the file format and proves nothing changed but the
 format; a second session then merges the AI run's results on top. Both
 have backups, double-run checks, and a clean undo path.
+
+---
+
+## 9. CAPTAIN RATIFICATION — PARSED DIRECTIVES (2026-08-01)
+
+Authoritative over the §7 prose VERDICT annotations (which stay above as
+audit trail), per the standing §10-directives convention. Ratified in chat
+2026-08-01 after the discussion round and the nonsense-rule audit.
+
+**R1 — Member object shape (OQ1).** Lean rows:
+`{oracle_id, class, tier, runs, batch, quote}` — classes = ratified
+rule-derived | human | llm; `tier` (provisional|corroborated) required iff
+class=llm, forbidden otherwise; `runs` append-only, required iff class=llm;
+`batch` KEPT (OQ8); `quote` present-where-known (see R2). Card-level wants
+(card→axes view, DFC flag, gamechanger association) live in a DERIVED
+card-index artifact regenerated after every codebook write — never in
+membership rows. Gamechanger list's curated home: `tags/gamechangers.yaml`
+(in git, human provenance); the card-index surfaces it.
+
+**R2 — Quotes carried, including a BUILT DET quote store (OQ4).** llm rows:
+quote from run artifacts. human rows: backfilled from the proposing batch's
+review JSON where present (captain-seed rows may lack quotes — allowed).
+rule-derived rows: the DET pattern's matched clause, captured at apply time
+and regenerated on every DET pass; a one-time read-only backfill fills the
+existing 3,697 rows at migration. Projected file ~6.5–7 MB — accepted
+(multi-line serialization ratified, OQ9).
+
+**R3 — Uniform shape everywhere (OQ2).** All 442 member-bearing records
+migrate, including the 295 audit rows on non-active shells (classes from
+the replay map; `status` marks them non-live).
+
+**R4 — reconcile FROZEN as the /1 legacy producer (OQ3).** The migration
+script becomes the permanent second step of the from-decisions rebuild
+chain (replay → /1 → migrate → /2). A small /2-aware member-add helper is
+built in the migration session so hand-ratified additions have a home.
+Captain's rebuild-from-scratch alternative was discussed and declined: one
+chain link (walk-ratification renames/rewrites, Black Gate move, b7
+surgery) is unscripted history, so a ground-up rebuild re-derives truth
+with ambiguity; migration re-shapes ratified truth with an identity proof.
+
+**R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
+codebook-lane confirmations: 45 new members (llm, provisional, runs=[run1],
+quotes carried), 96 no-ops.
+
+**R6 — Reorder promotion (audit proposal #1, accepted).** Of the 6
+free-lane clusters whose canonical form equals a ratified closed grammar
+composition: 5 clusters / 213 rows PROMOTE (targeted-destruction-creature
+188 → instantiates its virtual node; cant-be-blocked-except-by-count 21 →
+instantiates; etb-create-token-blood 2 and etb-create-token-clue 1 → join
+their nodes; activated-tap-opponent-artifact 1 → instantiates). The
+placeholder-bearing cluster (canonical contains literal `<state>`, 10 rows)
+is a REPORT ROW, not promoted. The 161 active-slug near-miss rows stay in
+discovery (synonym collapse is involved; the canonicalizer never guesses).
+
+**R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
+The ratified pattern: faceted grants (scope/delivery/context) are
+legitimate axes; only BARE grants are engine-redundant. Therefore: the 12
+faceted grant virtual nodes instantiate normally; bare `rule:grants-haste`
+stays killed and its 1 member (Zidane, Tantalus Thief — "gains lifelink and
+haste until end of turn") routes to `rule:temporary-keyword-grant` per the
+D4 standing rule; the grammar lane gains the killed/merged/renamed checks
+the codebook lane already has; `rule:draw-second-card-trigger-token`
+(renamed shell, token-payoff member vs plus1-counter rename target) is a
+REPORT ROW for Captain at consolidation. T1 stays parked for schema pass.
+
+**R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
+implementation as recommended:
+1. `rule:grants-team-trample` REVIVES (scope-faceted; analogue
+   grants-haste-to-your-creatures is active+DET). Revival law applies.
+2. `rule:grants-haste-to-reanimated-creature` REVIVES (delivery-context
+   grant; analogue grants-haste-to-created-tokens is active+DET n=102).
+3. `rule:activated-regenerate-self` AUTHORED properly via the DET path —
+   pattern drafted with measured hit list + fixed-seed sample sheet;
+   goes live only on Captain's pattern ratification (closes the b3
+   "kill, then decompose" debt; regeneration currently has no active home).
+4. Cost-shape kill family: the two with live homes
+   (sacrifice-self-as-activation-cost ≈ activated-ability-costs-self-
+   sacrifice; sacrifice-as-additional-cost ≈ additional-cost-sacrifice-
+   permanent) STAY KILLED with kill notes corrected to
+   "duplicate-of-live-axis"; the facet children go to the ledger for
+   schema pass (D6 follow-up sizing now informed by run-1 data).
+5. `rule:grants-haste-to-token`: stays killed; kill note corrected to
+   "duplicate of grants-haste-to-created-tokens"; canonicalizer synonym
+   token→created-tokens added (R9).
+   DET pattern proposals are also drafted for items 1–2 (both are
+   template-shaped static grants) so the revived axes don't sit at n=0 —
+   same sample-sheet ratification gate as item 3.
+
+**R9 — Canonicalizer synonym additions** exposed by the audit (starting
+with token→created-tokens) are ratified like other vocabulary — proposed
+with evidence in the consolidation session, applied on approval.
+
+**R10 — Killed-slug routing table** (consolidation must implement; a
+killed-slug hit is no longer one thing): duplicate-of-live-axis → confirm
+the live axis if the quote fits; M8-violating combo label → split to
+per-class tags; temporary grant → temporary-keyword-grant per D4;
+mechanism/Alchemy kill → discovery + ledger flag; stale kill (Category 2)
+→ report row, never auto-revived.
+
+**R11 — Standing codebook lint** (audit proposal #3): the accessor module
+ships invariant checks (schema string, sorted members, no duplicate
+oracle_ids, class/tier vocabulary, tier-only-on-llm, quote type) run at
+the end of every mutating script.
+
+**R12 — Two sessions (OQ7):** MIGRATE (docs/B-MIGRATION-DIRECTIVE.md) then
+CONSOLIDATE (docs/CONSOLIDATION-RUN1-DIRECTIVE-2.md, superseding the
+halted §4+ of the original). SYNTH already-member confirmations (1,833
+codebook-lane + 170 grammar-lane no-ops) stay no-ops — logged as counts,
+flagged as future corroboration-wave input; NOT written into `runs`
+without a future ruling (no silent policy invention).
+
+**R13 — Record corrections (OQ10) executed** in this commit set:
+ADDENDUM-4 §6 item 0's "455 axes, 0 exceptions" → 442-of-455 phrasing;
+"1,297 quote-verified members" on the 95 nodes → 607, with 1,297
+reattributed to the existing-axis grammar confirmations.
 
 ---
 
