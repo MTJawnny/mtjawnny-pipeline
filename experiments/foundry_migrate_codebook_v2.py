@@ -231,7 +231,7 @@ def project_through_renames(attribution: dict, axes: dict) -> dict:
 # 2. DET evidence (rule-derived class)
 # --------------------------------------------------------------------------
 
-def det_evidence(scan_texts: dict) -> tuple:
+def det_evidence(scan_texts: dict, input_path: Path) -> tuple:
     """Returns ({(slug, oracle_id): (pattern_index, quote)}, {slug: pattern_index}).
 
     Regenerated READ-ONLY through the det pass's own machinery: the ratified
@@ -242,9 +242,18 @@ def det_evidence(scan_texts: dict) -> tuple:
     ratified DET preprocessing standard. No part of DET matching is
     re-implemented in this file -- a second implementation would be a second
     thing to keep true."""
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        axis_patterns, _ = dp.load_axis_patterns()
+    # load_axis_patterns() resolves which patterns map to a live active axis by
+    # reading its module-level CODEBOOK_PATH. Point that at the file we are
+    # actually migrating: reading the LIVE codebook while migrating a different
+    # input would silently cross two states (F6, re-audit 2026-08-01).
+    saved_path = dp.CODEBOOK_PATH
+    dp.CODEBOOK_PATH = Path(input_path)
+    try:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            axis_patterns, _ = dp.load_axis_patterns()
+    finally:
+        dp.CODEBOOK_PATH = saved_path
     if not DET_HITS_PATH.exists():
         fc.halt(f"{DET_HITS_PATH} not found — the DET hit lists are the source artifact for the "
                 f"rule-derived class; refusing to migrate without them")
@@ -325,7 +334,7 @@ def migrate(input_path: Path, output_path: Path, manifest_path: Path) -> dict:
     print(f"corpus: {len(cards)} cards ({len(gated_cards)} gate-passing, {gated_out} gated out)")
 
     print("regenerating DET matched clauses read-only from the det-pass machinery...")
-    det_ev, det_indices = det_evidence(scan_texts)
+    det_ev, det_indices = det_evidence(scan_texts, input_path)
     print(f"  DET evidence rows: {len(det_ev)} across {len(det_indices)} patterns")
 
     pay_life = pay_life_pairs(cards, name_index)

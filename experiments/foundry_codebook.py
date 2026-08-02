@@ -47,8 +47,15 @@ SCHEMA_V2 = "foundry-codebook/2"
 SCHEMA_V1 = "foundry-codebook/1"
 
 CLASSES = ("human", "llm", "rule-derived")
+# NOTE (F7, re-audit 2026-08-01): "legacy-captain-seed" is also worn by the 11
+# member_additions rows, which are Captain-ratified per-card additions rather
+# than captain_axes seeds. The label is the ratified vocabulary (A1/A3) and the
+# data is correct, but a future gate must not read this field alone to count
+# seeds: 47 rows are seeds (source_ref "captain-seed-batch-N") and 11 are
+# additions (source_ref "batch-N"). source_ref is what distinguishes them.
 EVIDENCE_STATUSES = ("quoted", "legacy-captain-seed")
 LANES = ("codebook", "codebook-grammar", "free")
+AXIS_STATUSES = ("active", "killed", "merged", "renamed", "deferred")
 # ADDENDUM-4's lane-aware consensus ruling: only these lanes are scored for
 # corroboration at all; free-lane output is unioned as discovery, never
 # treated as agreement or disagreement.
@@ -81,6 +88,33 @@ _SOURCE_REF_RES = (
 )
 
 DET_SOURCE_REF_PREFIX = "det-patterns-v2:"
+
+# Which source_ref families each class is allowed to cite (F4, re-audit
+# 2026-08-01). Without this, `class=human, source_ref=det-patterns-v2:3` and
+# `class=rule-derived, source_ref=run1` both lint clean -- which is precisely
+# the provenance-mislabelling the schema exists to prevent. The migration
+# verifier caught that class of error, but it retires after session 1; this is
+# the standing replacement.
+SOURCE_REF_FAMILIES = {
+    "rule-derived": re.compile(r"^det-patterns-v2:\d+$"),
+    "human": re.compile(r"^(batch-[1-9][0-9]*|captain-seed-batch-[1-9][0-9]*"
+                        r"|pay-life-scrub-2026-07-30|captain-cli-\d{4}-\d{2}-\d{2})$"),
+    "llm": re.compile(r"^(run|wave)[1-9][0-9]*$"),
+}
+
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# Known axis-level defects carried by the live codebook, each named with its
+# cause, so lint can be strict without being permanently red. An entry here is
+# a DECLARED debt awaiting a Captain ruling, not a silent pass -- lint prints
+# every exemption it applies.
+#
+# Currently EMPTY, and worth keeping that way. Its one entry
+# (rule:etb-with-negative-counters carrying a stale merged_into) was ruled on
+# by Captain 2026-08-01 and corrected by
+# experiments/foundry_axis_merge_pointer_correction.py, so the invariant now
+# holds outright rather than by exception.
+AXIS_INVARIANT_EXEMPTIONS = {}
 
 
 class LintError(Exception):
@@ -292,9 +326,32 @@ def lint(codebook: dict, path_label: str = "codebook") -> dict:
 
     n_members = 0
     n_assertions = 0
+    exemptions_applied = []
     for slug, entry in axes.items():
         if "member_oracle_ids" in entry:
             v.append(f"{slug}: carries a /1 'member_oracle_ids' field — /2 uses 'members'")
+
+        # --- axis-level invariants (F4). A status typo silently removes an axis
+        # from every status-partitioned consumer -- the SYNTH prompt, the
+        # consolidation active set -- with no error raised anywhere, so the
+        # vocabulary check is doing more work than it looks like.
+        status = entry.get("status")
+        if status not in AXIS_STATUSES:
+            v.append(f"{slug}: status {status!r} not in {AXIS_STATUSES}")
+        for field, required_status in (("renamed_to", "renamed"), ("merged_into", "merged")):
+            target = entry.get(field)
+            if status == required_status and not target:
+                v.append(f"{slug}: status is {required_status!r} but {field} is unset")
+            if target and status != required_status:
+                key = (slug, f"{field}-on-non-{required_status}")
+                if key in AXIS_INVARIANT_EXEMPTIONS:
+                    exemptions_applied.append(key)
+                else:
+                    v.append(f"{slug}: carries {field}={target!r} but status is {status!r} — a stale "
+                             f"pointer will mis-route this axis's members")
+            if target and target not in axes:
+                v.append(f"{slug}: {field}={target!r} names an axis that does not exist")
+
         if "members" not in entry:
             continue
         members = entry["members"]
@@ -334,6 +391,9 @@ def lint(codebook: dict, path_label: str = "codebook") -> dict:
                     v.append(f"{slug}/{oid}: assertion class {cls!r} not in {CLASSES}")
                 if not isinstance(sref, str) or not any(r.match(sref) for r in _SOURCE_REF_RES):
                     v.append(f"{slug}/{oid}: source_ref {sref!r} is outside the ratified vocabulary")
+                elif cls in SOURCE_REF_FAMILIES and not SOURCE_REF_FAMILIES[cls].match(sref):
+                    v.append(f"{slug}/{oid}: class {cls!r} may not cite source_ref {sref!r} — that "
+                             f"label belongs to a different provenance class")
                 if (cls, sref) in seen_keys:
                     v.append(f"{slug}/{oid}: duplicate assertion (class={cls!r}, source_ref={sref!r})")
                 seen_keys.add((cls, sref))
@@ -347,13 +407,20 @@ def lint(codebook: dict, path_label: str = "codebook") -> dict:
                 ev = a.get("evidence_status")
                 if ev not in EVIDENCE_STATUSES:
                     v.append(f"{slug}/{oid}: evidence_status {ev!r} not in {EVIDENCE_STATUSES}")
-                if "corpus_ref" not in a or not isinstance(a.get("corpus_ref"), str) or not a["corpus_ref"]:
+                corpus_ref = a.get("corpus_ref")
+                if not isinstance(corpus_ref, str) or not corpus_ref:
                     v.append(f"{slug}/{oid}: assertion is missing corpus_ref")
+                elif not _DATE_RE.match(corpus_ref):
+                    v.append(f"{slug}/{oid}: corpus_ref {corpus_ref!r} is not a YYYY-MM-DD snapshot "
+                             f"date — an unparseable corpus_ref makes quote validation impossible")
                 quote = a.get("quote")
                 if not isinstance(quote, str):
                     v.append(f"{slug}/{oid}: quote is {type(quote).__name__}, expected string")
                 elif not quote.strip() and ev != "legacy-captain-seed":
                     v.append(f"{slug}/{oid}: empty quote without the legacy-captain-seed exemption (A3)")
+                elif quote.strip() and ev == "legacy-captain-seed":
+                    v.append(f"{slug}/{oid}: evidence_status is 'legacy-captain-seed' but a quote is "
+                             f"present — the exemption means no quote was recorded; use 'quoted'")
 
                 for lane_field in ("original_lane", "effective_lane"):
                     if lane_field in a and a[lane_field] not in LANES:
@@ -386,7 +453,8 @@ def lint(codebook: dict, path_label: str = "codebook") -> dict:
     if v:
         raise LintError(f"{path_label}: {len(v)} lint violation(s):\n  " + "\n  ".join(v[:50])
                         + (f"\n  ... and {len(v) - 50} more" if len(v) > 50 else ""))
-    return {"axes": len(axes), "members": n_members, "assertions": n_assertions}
+    return {"axes": len(axes), "members": n_members, "assertions": n_assertions,
+            "exemptions_applied": exemptions_applied}
 
 
 def lint_or_halt(codebook: dict, path_label: str = "codebook") -> dict:
@@ -521,6 +589,9 @@ def cmd_lint(args):
     stats = lint_or_halt(cb, str(path))
     print(f"lint clean: {stats['axes']} axes, {stats['members']} members, "
           f"{stats['assertions']} assertions — {path}")
+    for key in stats["exemptions_applied"]:
+        print(f"  DECLARED EXEMPTION APPLIED — {key[0]}: {key[1]}")
+        print(f"    {AXIS_INVARIANT_EXEMPTIONS[key]}")
 
 
 def main():

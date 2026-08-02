@@ -22,12 +22,26 @@ confirms that batch's own artifacts genuinely contain that card on a slug
 that routes to that axis. Agreement between a forward derivation and a
 backward confirmation is worth more than running the same derivation twice.
 
+QUOTE GATE (hardened after the 2026-08-01 re-audit, finding F1). A9's
+report-don't-halt carve-out exists for a quote that was true at its
+corpus_ref snapshot and has since gone stale. That cannot apply when
+corpus_ref IS the current snapshot -- and this repo has only ever had one
+(2026-07-04) -- so treating every mismatch as a report row left a hole wide
+enough for a writer bug that scrambled hundreds of quotes to still print
+CLEAN. Now:
+  - corpus_ref == current snapshot  -> a non-verbatim quote HALTS, unless it
+    is in QUOTE_EXEMPTIONS (declared, enumerated, one entry per known row).
+  - corpus_ref <  current snapshot  -> report row (genuine A9 drift).
+  - human-class rows are additionally checked against the CLAIMED batch's own
+    review JSON, not merely against the corpus: the corpus says the card
+    could support the quote, the batch record says it actually did.
+
 Report categories (printed as counts + a card-by-card file, never as inline
 quotes -- A14). These do NOT halt:
-  quote-not-verbatim  -- a quote that is not literally present in the
-                         corpus representation it references. A9 accepts
-                         that a quote can be historically true and currently
-                         stale; each instance is listed for Captain.
+  quote-drift             -- corpus_ref predates the current snapshot and the
+                             quote no longer matches; historically true.
+  quote-exempted          -- a declared, Captain-visible exemption was applied.
+  pay-life-name-with-earlier-trail, det-pattern-match-exempt.
 Everything else that fails is a HALT.
 
   python3 experiments/foundry_verify_migration.py [--codebook <path>]
@@ -65,6 +79,26 @@ EXPECT_MEMBERS = 7699
 EXPECT_RULE_DERIVED = 3697
 EXPECT_HUMAN = 4002
 EXPECT_STATUSES = {"active": 307, "killed": 75, "renamed": 45, "merged": 26, "deferred": 2}
+
+# Declared quote exemptions (F1). Every entry names one (slug, oracle_id) and
+# says why it may fail verbatim validation against the CURRENT corpus. This is
+# the only thing standing between a hard halt and a passing run, so it stays
+# short, enumerated, and visible in the printed output -- never a predicate.
+QUOTE_EXEMPTIONS = {
+    ("rule:create-token-treasure", "0222dc7c-459b-4909-a037-72b2eb248599"):
+        "Gluntch, the Bestower. Batch 7 dropped the card's leading 'Then ' connective and "
+        "capitalised the result into a standalone sentence: card reads '...Then choose a "
+        "third player to create two Treasure tokens.', the assertion records 'Choose a third "
+        "player...'. This is NOT corpus drift, and it is not a bad quote: it IS verbatim "
+        "case-insensitively, which is the standard the rest of the pipeline validates against "
+        "(foundry_consolidate_run1.py uses `quote.lower() not in full_text`). It fails only "
+        "this file's stricter case-sensitive check. The membership is correct -- the card "
+        "genuinely creates Treasure tokens. CAPTAIN-RATIFIED 2026-08-01: KEEP AS THE HONEST "
+        "RECORD of what batch 7 claimed. Rewriting a ratified batch record so an automated "
+        "gate turns green would be the wrong way round. The strict check stays: measured, "
+        "46,921 of run 1's quotes are verbatim case-sensitively and 0 rely on "
+        "case-insensitivity, so strictness costs nothing at consolidation and catches more.",
+}
 
 # docs/det-patterns-v2.json records three enters-tapped-family patterns whose
 # "pattern" field is not the standalone regex that decided membership: two are
@@ -181,7 +215,12 @@ def load_pay_life(cards, name_index):
 
 def verify(codebook_path: Path) -> dict:
     problems = []
-    codebook = json.loads(Path(codebook_path).read_text(encoding="utf-8"))
+    codebook_path = Path(codebook_path)
+    # F5: a scratch run must not clobber the live file's report. The report
+    # lands next to whatever was actually verified.
+    report_path = (REPORT_PATH if codebook_path.resolve() == CODEBOOK_PATH.resolve()
+                   else codebook_path.parent / f"{codebook_path.stem}_verification_report.json")
+    codebook = json.loads(codebook_path.read_text(encoding="utf-8"))
     if codebook.get("schema") != "foundry-codebook/2":
         fc.halt(f"{codebook_path}: schema is {codebook.get('schema')!r}, expected 'foundry-codebook/2' "
                 f"— nothing to verify")
@@ -231,8 +270,22 @@ def verify(codebook_path: Path) -> dict:
     statuses = Counter()
     n_members = 0
     errata = []
+    exempted = []
     overlap_rows = []
     exempt_pattern_checks = Counter()
+
+    # Every quote each batch's review JSON recorded per card, for the F1
+    # cross-check. A card can appear on several axes in one batch, so this is a
+    # set of that batch's recorded quotes for the card.
+    batch_quotes = {}
+    for n in BATCHES:
+        per_card = defaultdict(set)
+        review = json.loads((REVIEW_DIR / f"batch-{n}.json").read_text(encoding="utf-8"))
+        for axis in review["axes"]:
+            for m in axis["members"]:
+                if m.get("quote"):
+                    per_card[m["oracle_id"]].add(m["quote"])
+        batch_quotes[n] = per_card
 
     for slug, entry in axes.items():
         statuses[entry.get("status")] += 1
@@ -276,9 +329,17 @@ def verify(codebook_path: Path) -> dict:
             ev = a.get("evidence_status")
             if ev not in ("quoted", "legacy-captain-seed"):
                 fail(problems, f"{where}: evidence_status {ev!r} outside the ratified vocabulary")
-            if a.get("corpus_ref") != expected_corpus_ref:
-                fail(problems, f"{where}: corpus_ref {a.get('corpus_ref')!r}, expected "
-                               f"{expected_corpus_ref!r} (the snapshot every quote is drawn from)")
+            # F5: validate corpus_ref as a DATE, don't pin it to today's snapshot.
+            # Pinning is correct only while exactly one snapshot has ever existed;
+            # after the first Scryfall refresh it would halt on all 7,699
+            # historically-correct rows -- the exact inverse of A9.
+            corpus_ref = a.get("corpus_ref")
+            if not isinstance(corpus_ref, str) or not re.match(r"^\d{4}-\d{2}-\d{2}$", corpus_ref):
+                fail(problems, f"{where}: corpus_ref {corpus_ref!r} is not a YYYY-MM-DD snapshot date")
+                continue
+            if corpus_ref > expected_corpus_ref:
+                fail(problems, f"{where}: corpus_ref {corpus_ref!r} is AFTER the current snapshot "
+                               f"{expected_corpus_ref!r} — an assertion cannot cite a future corpus")
             quote = a.get("quote")
             if not isinstance(quote, str):
                 fail(problems, f"{where}: quote is not a string")
@@ -347,21 +408,45 @@ def verify(codebook_path: Path) -> dict:
             else:
                 fail(problems, f"{where}: source_ref {sref!r} is outside the ratified vocabulary")
 
-            # -- (3) quote verbatim in the referenced corpus representation --
+            # -- (3) quote verbatim, HARD when corpus_ref is the current snapshot --
             if quote.strip():
                 reps = representations(oid)
                 if reps is None:
                     fail(problems, f"{where}: oracle_id is not in the corpus, cannot check the quote")
-                elif not any(quote in t for t in reps):
+                else:
                     normalized = " ".join(quote.split())
-                    if any(normalized in " ".join(t.split()) for t in reps):
+                    verbatim = any(quote in t for t in reps)
+                    loose = verbatim or any(normalized in " ".join(t.split()) for t in reps)
+                    if not loose:
+                        row = {"slug": slug, "oracle_id": oid, "name": cards[oid].get("name"),
+                               "source_ref": sref, "corpus_ref": corpus_ref, "quote": quote}
+                        if (slug, oid) in QUOTE_EXEMPTIONS:
+                            row["kind"] = "declared exemption"
+                            row["reason"] = QUOTE_EXEMPTIONS[(slug, oid)]
+                            exempted.append(row)
+                        elif corpus_ref < expected_corpus_ref:
+                            row["kind"] = "drift vs a later corpus (A9)"
+                            errata.append(row)
+                        else:
+                            fail(problems, f"{where}: quote is not present in the card's corpus "
+                                           f"representation, and corpus_ref {corpus_ref!r} IS the "
+                                           f"current snapshot — no drift is possible, so this is a "
+                                           f"corrupt or fabricated quote, not errata")
+                    elif not verbatim:
                         errata.append({"slug": slug, "oracle_id": oid, "name": cards[oid].get("name"),
-                                       "source_ref": sref, "kind": "whitespace-only difference",
-                                       "quote": quote})
-                    else:
-                        errata.append({"slug": slug, "oracle_id": oid, "name": cards[oid].get("name"),
-                                       "source_ref": sref, "kind": "not present in current corpus",
-                                       "quote": quote})
+                                       "source_ref": sref, "corpus_ref": corpus_ref,
+                                       "kind": "whitespace-only difference", "quote": quote})
+
+                    # F1: the corpus says the card COULD support this quote; the
+                    # batch record says it actually did. Only the second one is
+                    # provenance, so human rows get checked against it too.
+                    m_batch = re.match(r"^batch-([1-7])$", sref or "")
+                    if m_batch:
+                        recorded = batch_quotes[int(m_batch.group(1))].get(oid)
+                        if recorded is not None and quote not in recorded:
+                            fail(problems, f"{where}: quote does not match anything batch "
+                                           f"{m_batch.group(1)}'s review JSON recorded for this card "
+                                           f"— the assertion misreports what that batch claimed")
 
     # -- global counts ----------------------------------------------------
     if len(axes) != EXPECT_RECORDS:
@@ -385,24 +470,30 @@ def verify(codebook_path: Path) -> dict:
         "classes": dict(sorted(classes.items())),
         "statuses": dict(sorted((k, v) for k, v in statuses.items() if k)),
         "report_categories": {
-            "quote-not-verbatim": len(errata),
+            "quote-drift": len(errata),
+            "quote-exempted": len(exempted),
             "pay-life-name-with-earlier-trail": len(overlap_rows),
             "det-pattern-match-exempt": dict(sorted(exempt_pattern_checks.items())),
         },
         "det_pattern_match_exemption_reasons": PATTERN_MATCH_EXEMPT,
-        "quote_not_verbatim_rows": errata,
+        "quote_drift_rows": errata,
+        "quote_exempted_rows": exempted,
         "pay_life_name_with_earlier_trail_rows": overlap_rows,
         "problems": problems,
     }
-    fc.write_json(REPORT_PATH, report)
+    fc.write_json(report_path, report)
 
     print(f"records={len(axes)} members={n_members} classes={dict(sorted(classes.items()))}")
     print(f"statuses={dict(sorted((k, v) for k, v in statuses.items() if k))}")
-    print(f"corpus_ref checked against {expected_corpus_ref}")
-    print(f"report category 'quote-not-verbatim': {len(errata)} row(s) "
-          f"— listed card-by-card in {REPORT_PATH.name} (quotes to file only, never console)")
+    print(f"corpus_ref: current snapshot {expected_corpus_ref}; quote gate is HARD for rows citing it")
+    print(f"report category 'quote-drift': {len(errata)} row(s) "
+          f"— listed card-by-card in {report_path.name} (quotes to file only, never console)")
     for e in errata:
         print(f"    {e['slug']} / {e['name']} ({e['oracle_id']}) — {e['kind']}, source_ref={e['source_ref']}")
+    print(f"report category 'quote-exempted': {len(exempted)} row(s) — DECLARED, Captain-ruled "
+          f"exemptions (reasons in the report file)")
+    for e in exempted:
+        print(f"    {e['slug']} / {e['name']} ({e['oracle_id']}) — source_ref={e['source_ref']}")
     print(f"report category 'pay-life-name-with-earlier-trail': {len(overlap_rows)} row(s) "
           f"— named in the scrub report but already a member from an earlier batch, so the earlier "
           f"provenance stands (this is why the ratified pay-life count is 8, not 9)")
@@ -410,14 +501,14 @@ def verify(codebook_path: Path) -> dict:
         print(f"    {r['slug']} / {r['name']} ({r['oracle_id']}) — kept {r['source_ref']}")
     print(f"report category 'det-pattern-match-exempt': {sum(exempt_pattern_checks.values())} row(s) "
           f"across {len(exempt_pattern_checks)} axes ({', '.join(sorted(exempt_pattern_checks))})")
-    print(f"wrote {REPORT_PATH}")
+    print(f"wrote {report_path}")
 
     if problems:
         print(f"\nVERIFIER FOUND {len(problems)} PROBLEM(S):")
         for p in problems[:40]:
             print(f"  - {p}")
         fc.halt(f"independent verification FAILED with {len(problems)} problem(s) outside the declared "
-                f"report categories — see {REPORT_PATH}")
+                f"report categories — see {report_path}")
     print("\nindependent verification CLEAN.")
     return report
 
@@ -515,6 +606,74 @@ def negative_tests(codebook_path: Path):
         def bad_source_ref(cb):
             cb["axes"][first_slug_with_members]["members"][0]["assertions"][0]["source_ref"] = "vibes"
         expect_lint_error("source_ref outside the ratified vocabulary", bad_source_ref)
+
+        # --- hardening pass (re-audit F1/F4). A gate nobody has watched fail is
+        # not a gate; each new check gets an instance that must trip it.
+        def cross_family(cb):
+            a = cb["axes"][first_slug_with_members]["members"][0]["assertions"][0]
+            a["class"], a["source_ref"] = "human", "det-patterns-v2:3"
+        expect_lint_error("class citing another class's source_ref family", cross_family)
+
+        def malformed_corpus_ref(cb):
+            cb["axes"][first_slug_with_members]["members"][0]["assertions"][0]["corpus_ref"] = "yesterday-ish"
+        expect_lint_error("corpus_ref not a YYYY-MM-DD date", malformed_corpus_ref)
+
+        def status_typo(cb):
+            cb["axes"][first_slug_with_members]["status"] = "actve"
+        expect_lint_error("axis status typo", status_typo)
+
+        def stale_merge_pointer(cb):
+            target = next(s for s in cb["axes"] if s != first_slug_with_members)
+            cb["axes"][first_slug_with_members]["merged_into"] = target
+            cb["axes"][first_slug_with_members]["status"] = "active"
+        expect_lint_error("merged_into on a non-merged axis (undeclared)", stale_merge_pointer)
+
+        def dangling_rename(cb):
+            renamed = next(s for s, e in cb["axes"].items() if e.get("status") == "renamed")
+            cb["axes"][renamed]["renamed_to"] = "rule:does-not-exist"
+        expect_lint_error("renamed_to naming a nonexistent axis", dangling_rename)
+
+        def legacy_with_quote(cb):
+            for e in cb["axes"].values():
+                for m in e.get("members", []):
+                    a = m["assertions"][0]
+                    if a["evidence_status"] == "legacy-captain-seed":
+                        a["quote"] = "Flying"
+                        return
+        expect_lint_error("legacy-captain-seed carrying a quote", legacy_with_quote)
+
+        # --- verifier-level: the hardened quote gate must HALT, not report ---
+        def expect_verify_halt(name, mutate):
+            scratch = tmp / f"verify_{name.replace(' ', '_')}.json"
+            cb = json.loads(Path(codebook_path).read_text(encoding="utf-8"))
+            mutate(cb)
+            scratch.write_text(json.dumps(cb, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            try:
+                verify(scratch)
+                record(name, False, "verifier reported CLEAN on a corrupted file")
+            except SystemExit:
+                record(name, True, "verifier halted as required")
+
+        def corrupt_quote(cb):
+            for e in cb["axes"].values():
+                for m in e.get("members", []):
+                    a = m["assertions"][0]
+                    if a["class"] == "rule-derived":
+                        a["quote"] = "this clause appears on no card anywhere"
+                        return
+        expect_verify_halt("corrupted quote at the current corpus_ref", corrupt_quote)
+
+        def quote_not_in_batch_record(cb):
+            for e in cb["axes"].values():
+                for m in e.get("members", []):
+                    a = m["assertions"][0]
+                    if a["class"] == "human" and a["source_ref"].startswith("batch-") \
+                            and a["evidence_status"] == "quoted":
+                        # Real oracle text from a DIFFERENT card's axis: passes the
+                        # corpus check only if the corpus check were the whole gate.
+                        a["quote"] = "Flying"
+                        return
+        expect_verify_halt("quote absent from the claimed batch's own record", quote_not_in_batch_record)
 
         # 9. interrupted write: temp present, live untouched
         target = tmp / "interrupted.json"

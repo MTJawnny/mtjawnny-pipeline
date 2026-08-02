@@ -24,6 +24,14 @@ no aggregates without their underlying lists:
    257 axes) + grammar lane existing axes (expect 1,127 across 20): each
    as full A1 assertions (class=llm, source_ref="run1", lanes, quote,
    corpus_ref).
+
+   Total enumerated rows across items 1–4, for sizing: **~18,346** =
+   16,088 codebook pairs (14,255 additions + 1,833 merges) + 1,297 grammar
+   pairs (1,127 + 170) + 141 R5 + 607 virtual-node member rows + 213 A15
+   rows. (Corrected 2026-08-01 per re-audit finding F3: an earlier figure
+   of 17,526 omitted the 607 and the 213.) At ~425 B/row this artifact is
+   ~7.8 MB / ~1.95M tokens — which is why it cannot itself be the external
+   audit packet.
 2. **assertion_merges** — run-1 confirmations of EXISTING members
    (A1 consequence; expect 1,833 codebook + 170 grammar + R5's 96):
    llm assertions merged onto existing member records.
@@ -55,6 +63,26 @@ Dedupe law: a (slug, oracle_id) arriving via multiple routes appears
 EXACTLY ONCE in member_additions with all its assertions listed (or once
 in assertion_merges if the member exists); the plan is internally
 duplicate-free by construction and lint-checked for it.
+
+**Same-run collapse rule (CAPTAIN-RATIFIED 2026-08-01, re-audit finding
+F2).** Dedupe alone is insufficient under multi-assertion /2: `merge_assertion`
+halts on a duplicate (class, source_ref), and run 1 is MEASURED to contain
+35 codebook-lane + 3 grammar-lane + 6 free-lane intra-run duplicate
+emissions — the same card emitting the same label twice, potentially with
+different quotes or lanes. Left unruled, session 2b would have to invent a
+collapse policy (violating its zero-judgment charter) or session 3 would
+halt mid-apply. Therefore:
+
+- Two or more emissions from the SAME run for the same (slug, oracle_id)
+  collapse to a SINGLE assertion.
+- Lane precedence: `codebook` > `codebook-grammar` > free-promoted.
+- Quote tie-break within the winning lane: first in deterministic parse
+  order.
+- The plan records the collapse count per category so it is auditable;
+  discarded duplicates are never silently dropped.
+
+This is a ruling, not a heuristic: 2b applies it mechanically and halts on
+any same-run duplicate the rule does not fully resolve.
 
 ## 3. Reporting and stop
 

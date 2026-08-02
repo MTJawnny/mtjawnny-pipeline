@@ -24,11 +24,17 @@ that schema blocker is CLEARED. codebook.json is now **`foundry-codebook/2`**
 assertions (class / source_ref / quote / corpus_ref / evidence_status; a
 member-level `tier` iff every assertion is llm-class). All 7,699 existing rows
 backfilled with exactly one assertion each: 3,697 rule-derived, 4,002 human.
-Membership itself is provably unchanged (455/455 id-sets identical). sha256
-`21f432817dc7a418ac62846f2bc5ee5edf5ccf28f944b74d4cbafa1059b39d2a`, 3,384,958 B.
+Membership itself is provably unchanged (455/455 id-sets identical). Live sha256
+`61af1a1d7f81504f422feb4d35aff14aee890dcc892338e882766def93e66522`, 3,385,604 B
+(the migration write produced `21f4328…`; the live file has since moved by one
+ratified correction — the stale `merged_into` on rule:etb-with-negative-counters).
+A Fable 5 re-audit reproduced the migration byte-for-byte and re-derived all
+3,994 human rows by a third method, clean; its fixes were applied as a
+hardening pass (negative tests 11 → 19). Same-family check — does NOT satisfy
+the A12 external checkpoint.
 New tooling: `experiments/foundry_codebook.py` (accessor + lint + atomic write
 + add-member CLI), `foundry_migrate_codebook_v2.py`, `foundry_verify_migration.py`
-(independent verifier + 11 negative tests). `foundry_reconcile.py` is frozen as
+(independent verifier + 19 negative tests). `foundry_reconcile.py` is frozen as
 the /1 legacy producer with two hard guards. **Next: session 2 = PLAN
 (`docs/CONSOLIDATION-PLAN-DIRECTIVE.md`), zero-mutation, and the designated
 external re-audit checkpoint.** Full report:

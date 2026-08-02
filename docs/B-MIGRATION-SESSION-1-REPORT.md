@@ -31,8 +31,15 @@ designated external re-audit checkpoint. No consolidation writing was built.
 
 ## 3. Result
 
-- codebook.json sha256 `21f432817dc7a418ac62846f2bc5ee5edf5ccf28f944b74d4cbafa1059b39d2a`
-- size **3,384,958 B** (3.23 MiB), up from 785,747 B (×4.31). Well inside the
+- codebook.json sha256 `61af1a1d7f81504f422feb4d35aff14aee890dcc892338e882766def93e66522`,
+  size **3,385,604 B** — current state, after the §8 re-audit hardening pass
+  and the one-field merge-pointer correction.
+- The migration write itself produced sha256
+  `21f432817dc7a418ac62846f2bc5ee5edf5ccf28f944b74d4cbafa1059b39d2a` /
+  3,384,958 B, which is what `migration_manifest.json` records and what the
+  writer still reproduces byte-for-byte from the pre-migration backup. The
+  live file has since moved by exactly one ratified correction (§8).
+- Size up from 785,747 B (×4.31). Well inside the
   8–9 MB post-consolidation projection A1 accepted. The multiplier is higher
   than the discovery's ×1.76 shape-only figure because that figure excluded
   quotes; R2 projected 6.5–7 MB *with* quotes at this row count, so this
@@ -84,22 +91,25 @@ decisions files that carry no quote field. A3 keeps them and marks them.
 | Counts | PASS — 7,699 members; 307/75/45/26/2; rule-derived 3,697 / human 4,002 |
 | Independent verifier | **CLEAN** — every (slug, oracle_id) checked for assertion count, class, source_ref confirmed against the source artifact, quote verbatim, DET index resolution, tier/lane/evidence rules |
 | Lint | PASS — 455 axes, 7,699 members, 7,699 assertions |
-| Negative tests | PASS — 11/11 |
+| Negative tests | PASS — 11/11 at migration time; **19/19** after the §8 hardening pass |
 | Determinism ×2 | PASS — writer run twice from the backup: byte-identical codebook AND manifest, and both equal the live file |
 
 ### Verifier report categories (declared, non-halting)
 
-1. **quote-not-verbatim — 1 row.** `rule:create-token-treasure` / *Gluntch,
+These are the categories as they stood at migration time. §8 renamed
+`quote-not-verbatim` to `quote-exempted` and made every other quote mismatch
+a hard halt; the row inventory below is unchanged.
+
+1. **quote-not-verbatim (now `quote-exempted`) — 1 row.** `rule:create-token-treasure` / *Gluntch,
    the Bestower* (`0222dc7c…`), source_ref `batch-7`. The batch-7 review JSON
    recorded `"Choose a third player to create two Treasure tokens."`; the card
    reads `"Then choose a third player to create two Treasure tokens."` — a
-   dropped leading `Then `. Worth naming precisely: this is a **SYNTH
-   transcription slip, not corpus drift**, so it is not the "historically true,
-   currently stale" case A9 was written for. It is reported rather than
-   silently repaired because the assertion records what the proposing batch
-   actually claimed; rewriting it would fabricate provenance. Recommend
-   Captain either ratify the corrected quote via the `add-member` CLI path at
-   consolidation, or leave it as the honest historical record.
+   dropped leading `Then `. Not corpus drift, so not the "historically true,
+   currently stale" case A9 was written for. **Superseded by §8** — this
+   section originally called it a transcription slip failing verbatim
+   validation; closer measurement showed it IS verbatim case-insensitively,
+   which is the standard the rest of the pipeline uses. Captain ruled
+   2026-08-01 to keep it. See §8 for the full account and the ruling.
 2. **pay-life-name-with-earlier-trail — 1 row.** `rule:fixed-lifegain` /
    *Tanglebloom*. The scrub report names 9 additions but the ratified count is
    8: the scrub UNIONS, and Tanglebloom was already a member from batch 3, so
@@ -183,3 +193,83 @@ decisions files that carry no quote field. A3 keeps them and marks them.
   negative-tested, but is exercised only by tests until session 3.
 - `docs/grammars.json` untouched (backed up per the directive; it carries axis
   slugs, not card membership, and §1.3 ruled it out of scope).
+
+---
+
+## 8. Re-audit hardening pass (2026-08-01, same session)
+
+An adversarial re-audit (Fable 5) independently reproduced the migration
+byte-for-byte from the /1 backup and re-derived all 3,994 human provenance
+rows by a third method — no replay, no verifier code — finding zero
+unconfirmed claims, zero rows attributed later than their earliest candidate
+batch, and zero quotes mismatching their claimed batch's record. **The
+migrated data needed no correction.** Verdict: GO-WITH-FIXES, all fixes
+forward-looking.
+
+Caveat logged: Fable 5 is a Claude model, so this is a same-family check. Its
+*confirmations* are family-independent (byte reproduction, third-method
+re-derivation); the *absence* of further findings is weaker evidence. This
+does NOT satisfy the A12 external re-audit checkpoint.
+
+| Finding | Disposition |
+|---|---|
+| F1 — the verifier's quote check never halted; every mismatch became a report row | FIXED. Hard halt when `corpus_ref` == the current snapshot (A9's drift carve-out cannot apply when no drift is possible). Human rows are additionally checked against the claimed batch's own review JSON — the corpus says a card *could* support a quote; the batch record says it *did*. |
+| F2 — /2 cannot represent two same-run support events, and run 1 has 35+3+6 intra-run duplicate emissions | RULED by Captain and recorded in `CONSOLIDATION-PLAN-DIRECTIVE.md` §2: same-run emissions collapse to one assertion; lane precedence codebook > codebook-grammar > free-promoted; quote tie-break first-in-parse-order; collapse counts recorded. |
+| F3 — the session-split proposal undercounted plan rows by 820 | CORRECTED to ~18,346 (the omitted rows were the 95 virtual nodes' 607 members and A15's 213), with the derivation written into the plan directive. |
+| F4 — lint gaps | FIXED: class↔source_ref family map, `corpus_ref` date format, axis status vocabulary, `renamed_to`/`merged_into` iff-status plus dangling-target checks, `legacy-captain-seed` iff empty quote. |
+| F5 — verifier pinned `corpus_ref` to today (would halt on every row after the first Scryfall refresh); scratch runs clobbered the live report | FIXED both. |
+| F6 — the writer read the LIVE codebook for DET slug resolution while migrating a different `--input` | FIXED. |
+| F7 — the 11 `member_additions` rows wear `legacy-captain-seed` | DOCUMENTED at the vocabulary definition; `source_ref` distinguishes the 47 seeds from the 11 additions. Data correct, no change. |
+
+Negative tests grew 11 → **19**. Seven exist because a gate nobody has watched
+fail is not a gate; two of those run the verifier against deliberately
+corrupted copies (a fabricated quote at the current `corpus_ref`; a quote that
+is real oracle text but absent from the batch record it cites). Both now halt.
+Both would have printed CLEAN before.
+
+Determinism re-verified after every change: the writer still reproduces
+`21f4328…` twice from the backup. The hardening moved no output bytes.
+
+### Defect found during the pass, ruled and corrected
+
+`rule:etb-with-negative-counters` carried `merged_into: rule:etb-with-counters`
+while `status: active`. It was merged at batch 5 (the target's history records
+`received_merge`), then re-kept at batches 6 and 7 —
+`foundry_reconcile.py`'s keep path reactivates an axis without clearing the
+pointer. Nothing had followed it yet, but session 2 does extensive slug
+routing and would have. Measured: 3 members, zero overlap with the target's
+68, definitions differing by counter polarity; and it is the **only** axis in
+the codebook with this shape.
+
+The producer was NOT changed — `foundry_reconcile.py` is frozen and its replay
+output is load-bearing for the migration's byte-reproducibility. Captain ruled
+2026-08-01 to clear the pointer;
+`experiments/foundry_axis_merge_pointer_correction.py` applies it (idempotent,
+pre-state-asserted, refuses to run if the axes share any member). The standing
+lint invariant now holds outright, with an empty exemption list.
+
+### Ruled: the Gluntch quote — KEPT (Captain, 2026-08-01)
+
+A declared, Captain-ruled exemption, printed on every verify run. Measured
+precisely:
+batch 7 recorded `"Choose a third player to create two Treasure tokens."`; the
+card reads `"...Then choose a third player to create two Treasure tokens."`
+The recorded quote drops the `Then ` connective and capitalises the result
+into a standalone sentence. It **is** verbatim case-insensitively — which is
+the standard the rest of the pipeline uses (`foundry_consolidate_run1.py`
+validates with `quote.lower() not in full_text`). The membership is correct:
+the card genuinely creates Treasure tokens.
+
+Measured for context: **46,921** of run 1's quotes are verbatim
+case-sensitively and **0** rely on case-insensitivity — so the stricter
+case-sensitive gate costs nothing at consolidation time and catches strictly
+more.
+
+**Captain ruled 2026-08-01: keep it as the honest record of what batch 7
+claimed, and keep the strict gate.** Rewriting a ratified batch record so an
+automated gate turns green would be the wrong way round; the exemption
+mechanism exists for exactly this, and it is deliberately noisy so the row
+cannot be quietly forgotten. Correcting an assertion in place was considered
+and rejected; appending a `captain-cli` assertion with the verbatim clause
+remains available later if a byte-exact quote is ever wanted on the record,
+but it would not remove this exemption.
