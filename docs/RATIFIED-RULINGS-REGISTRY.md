@@ -15,10 +15,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **35 documents under docs/**
-- ruling references found: **429**
+- ruling references found: **430**
 - distinct ruling ids: **123**
-- corroborated (appear in >1 doc): **73**
-- **sole-home (appear in exactly 1 doc): 50**
+- corroborated (appear in >1 doc): **74**
+- **sole-home (appear in exactly 1 doc): 49**
 
 ## Deletion gate — per document
 
@@ -28,14 +28,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
 | `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
 | `BACKEND-BUILD-PLAN.md` | 277 | 1 | 0 | yes |
-| `CDR-PROPOSALS.md` | 528 | 31 | 7 | **NO** |
+| `CDR-PROPOSALS.md` | 528 | 31 | 6 | **NO** |
 | `CODEBOOK-NAMING-GRAMMAR.md` | 429 | 18 | 1 | **NO** |
 | `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
-| `DET-PATTERNS-RUN2-DIRECTIVE.md` | 52 | 2 | 0 | yes |
+| `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-3.md` | 308 | 10 | 1 | **NO** |
@@ -87,7 +87,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `R13` (line 692) — R13 — Record corrections (OQ10) executed** in this commit set:
 - `R8` (line 646) — R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
 
-**`CDR-PROPOSALS.md`** — sole home for 7:
+**`CDR-PROPOSALS.md`** — sole home for 6:
 
 - `ADD-03` (line 455) — re-patched lanes, which is how the grammar lane was missed. Requires ADD-03
 - `ADD-04` (line 477) — ADD-04 — enumerate and route the 23 grammar-lane DET contradictions**
@@ -95,7 +95,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `ADD-07` (line 489) — ADD-07 (NEW) — every-row-one-disposition count contract.** Adopt the external
 - `AG-EQUIV-01` (line 281) — Recommend:** run the auditor's AG-EQUIV-01 five-test pass over surviving
 - `AG-NODE-01` (line 313) — existing axis** per its AG-NODE-01 disposition — never "deferred". Deferred
-- `NEW-02` (line 458) — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
 
 **`CODEBOOK-NAMING-GRAMMAR.md`** — sole home for 1:
 
@@ -719,9 +718,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:450` — NEW-01 — DET-owned guard at the write boundary.** No free-lane or
 - `SESSION-HANDOFF-2026-08-01.md:150` — Standing rules **NEW-01/02** and **ADD-02..08**
 
-### `NEW-02` — 1 reference(s) across 1 doc(s)
+### `NEW-02` — 2 reference(s) across 2 doc(s)
 
 - `CDR-PROPOSALS.md:458` — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
+- `DET-PATTERNS-RUN2-DIRECTIVE.md:48` — 4a. NEW-02 — `rule:forced-attack-each-combat` widening (measured 2026-08-02, NOT applied)
 
 ### `Q1` — 18 reference(s) across 10 doc(s)
 

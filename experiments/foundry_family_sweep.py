@@ -100,6 +100,28 @@ def load_stores():
 def sweep_mirror_drift(grammars, det, codebook):
     out = []
 
+    # A0. A pattern anchored on a self-reference form the DET preprocessing
+    # has already rewritten. det_scan_texts() replaces a card's own printed
+    # NAME with "~", so a pattern matching only "this creature" cannot see
+    # cards that self-reference by name -- disproportionately legendaries.
+    # This is finding F-C generalised: the pattern was wrong, not the model.
+    # NEW-02 warns that session-4 patterns re-open it unless authored against
+    # det_scan_texts output, so the check is standing rather than one-off.
+    for slug, p in sorted(det.items()):
+        missed = fc.pattern_misses_cardname_token(p.get("pattern"))
+        if not missed:
+            continue
+        out.append(finding(
+            BLOCKING, "pattern-misses-cardname-token", slug,
+            f"pattern anchors {missed!r} but never accepts {fc.CARDNAME_TOKEN!r}. "
+            f"det_scan_texts() rewrites a card's own printed name to "
+            f"{fc.CARDNAME_TOKEN!r} before matching, so every card that "
+            f"self-references by name is silently missed. Fix by widening the "
+            f"anchor to (?:this creature|{fc.CARDNAME_TOKEN}) — through the "
+            f"sample-sheet gate, since the pattern is ratified (NEW-02).",
+            pattern_index=p["pattern_index"], corpus_hits=p["corpus_hits"],
+            anchored_forms=missed))
+
     # A1. A ratified axis pattern with no codebook record at all. This is the
     # orphan check. foundry_det_pass.load_axis_patterns() silently demotes
     # such a pattern to the prefilter list, so it never runs and never reports.

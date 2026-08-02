@@ -50,6 +50,37 @@ def pattern_slug(pattern: dict) -> str:
     return pattern["slug"].split(" (")[0].split(" ")[0]
 
 
+# A DET pattern is matched against det_scan_texts() output, in which a card's
+# own printed NAME has already been rewritten to CARDNAME_TOKEN ("~") by
+# canonicalize_self_reference(). So a pattern that anchors only on the
+# literal "this creature" silently misses every card that self-references by
+# name -- and those are disproportionately the legendaries.
+#
+# Measured 2026-08-02 on rule:forced-attack-each-combat: 59 hits anchored on
+# "this creature" alone, 67 with the token accepted, 8 missed, 0 regressions.
+# The missed cards are Ruric Thar, Toski, Xantcha, Ares, Alexios, Amarant
+# Coral and both Hulks -- all name-self-referencing. That is finding F-C, and
+# it is why the pattern looked wrong and the model looked right.
+_SELF_REF_FORMS = (
+    "this creature", "this permanent", "this artifact", "this enchantment",
+    "this land", "this planeswalker", "this spell", "this card",
+)
+
+
+def pattern_misses_cardname_token(pattern_src: str) -> list:
+    """Self-reference forms this pattern anchors WITHOUT also accepting `~`.
+
+    Empty list means the pattern is safe. Non-empty means it will silently
+    under-match cards that self-reference by printed name.
+    """
+    if not isinstance(pattern_src, str):
+        return []
+    if CARDNAME_TOKEN in pattern_src:
+        return []
+    low = pattern_src.lower()
+    return [form for form in _SELF_REF_FORMS if form in low]
+
+
 def batch_paths(batch_num: int) -> dict:
     """Canonical per-batch output filenames for every foundry_*.py script.
     Batch 1 kept its original unsuffixed filenames (already committed
