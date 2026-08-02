@@ -78,9 +78,11 @@ contract does not travel here. This file is this repo's own contract.
 
 ## Reference
 
-- Full architecture and phase plan:
-  `~/Projects/mtjawnny.github.io/docs/BACKEND-BUILD-PLAN.md` (3.1–3.11).
-  As-built corrections: `.../docs/PHASE-2-COMPLETION.md` — especially
+- Full architecture and phase plan: `docs/BACKEND-BUILD-PLAN.md` (3.1–3.11)
+  — the local, git-tracked copy; the site repo's byte-identical duplicate
+  was removed 2026-08-02.
+  As-built corrections: `~/Projects/mtjawnny.github.io/docs/PHASE-2-COMPLETION.md`
+  (deliberately site-resident) — especially
   correction #4 (`snapshot.jsonl` is a trimmed upload manifest, not
   field-complete; use `oracle-cards.jsonl.gz` for real fields).
 - T3 arc state + ratified constants: `docs/MASTER-HANDOFF.md`
