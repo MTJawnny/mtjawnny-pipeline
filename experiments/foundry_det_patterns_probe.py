@@ -206,7 +206,7 @@ def main():
         if pattern_src is None:
             results.append({
                 "slug": slug, "pattern": None, "note": note,
-                "corpus_hits": None, "current_codebook_n_members": None,
+                "corpus_hits": None, "codebook_n_members_at_probe": None,
                 "sample_hit_names": [], "status": "withdrawn",
             })
             print(f"{slug}: WITHDRAWN -- {note}")
@@ -224,7 +224,7 @@ def main():
         n_members = len(axes.get(slug, {}).get("members", [])) if slug in axes else None
         results.append({
             "slug": slug, "pattern": pattern_src, "note": note,
-            "corpus_hits": len(hits), "current_codebook_n_members": n_members,
+            "corpus_hits": len(hits), "codebook_n_members_at_probe": n_members,
             "sample_hit_names": sorted({cards[oid].get("name", "") for oid in hits[:8]}),
         })
         n_str = f"n_members={n_members}" if n_members is not None else "n_members=n/a"
@@ -251,7 +251,7 @@ def main():
     results.append({
         "slug": imposes_slug, "pattern": imposes_pattern_doc,
         "note": "Root Maze class sibling of rule:enters-tapped; seeded via the G2 guard's own exclusion list",
-        "corpus_hits": len(imposed_on_others_report), "current_codebook_n_members": n_members,
+        "corpus_hits": len(imposed_on_others_report), "codebook_n_members_at_probe": n_members,
         "sample_hit_names": sorted({row["name"] for row in imposed_on_others_report[:8]}),
     })
     print(f"{imposes_slug}: hits={len(imposed_on_others_report)}  n_members={n_members}  "

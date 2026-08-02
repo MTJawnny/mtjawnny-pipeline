@@ -176,19 +176,43 @@ def sweep_mirror_drift(grammars, det, codebook):
             ADVISORY, "det-marked-without-pattern", slug,
             "codebook marks this source=DET but no ratified pattern claims the slug."))
 
-    # A4. Stale denormalised counts inside the pattern file. Harmless to read,
-    # actively misleading to a future session that treats them as current.
+    # A4. Membership drift since a pattern was probed.
+    #
+    # The field used to be called `current_codebook_n_members`, and "current"
+    # was the lie: nothing ever refreshed it, so 35 of 38 disagreed with the
+    # codebook and the sweep reported all 35 as defects. Renamed 2026-08-02 to
+    # `codebook_n_members_at_probe` — it is a HISTORICAL datum, like
+    # corpus_hits, and the honest name makes the comparison meaningful instead
+    # of noisy.
+    #
+    # GROWTH is expected and advisory: these values were recorded in the
+    # sampling era (batches 1-7), and the full-corpus DET pass then replaced
+    # partial membership with complete membership. Measured 2026-08-02: all 35
+    # differences were growth, largest 38 -> 565.
+    #
+    # A SHRINK is different in kind — a pattern that used to match more cards
+    # and now matches fewer is a regression, in the pattern or in the corpus.
+    # That is BLOCKING. Zero today.
     for slug, p in sorted(det.items()):
-        recorded = p.get("current_codebook_n_members")
+        recorded = p.get("codebook_n_members_at_probe")
         if recorded is None or slug not in codebook:
             continue
         live = len(codebook[slug].get("members", []))
-        if recorded != live:
+        if live < recorded:
             out.append(finding(
-                ADVISORY, "stale-denormalised-count", slug,
-                f"det-patterns-v2.json records current_codebook_n_members={recorded}; "
-                f"the codebook holds {live}. A snapshot presented as a current value.",
-                recorded=recorded, live=live))
+                BLOCKING, "membership-shrank-since-probe", slug,
+                f"axis held {recorded} members when the pattern was probed and holds "
+                f"{live} now ({live - recorded}). Membership going DOWN is a "
+                f"regression, not drift — investigate the pattern or the corpus "
+                f"before trusting this axis.",
+                recorded=recorded, live=live, delta=live - recorded))
+        elif live > recorded:
+            out.append(finding(
+                ADVISORY, "membership-grew-since-probe", slug,
+                f"axis held {recorded} members at probe time and holds {live} now "
+                f"(+{live - recorded}). Expected where a sampling-era probe predates "
+                f"the full-corpus DET pass; recorded for audit, not a defect.",
+                recorded=recorded, live=live, delta=live - recorded))
 
     # A5. Vocabulary ratified in a family but absent from the validator. This
     # is what blocked A15: Q8.5 ratified the cant-be-blocked restriction vocab

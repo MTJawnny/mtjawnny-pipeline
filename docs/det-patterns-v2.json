@@ -18,7 +18,7 @@
       "cr_anchor": null,
       "def_anchor": "An activated ability can only be used during combat, restricting its use to that phase.",
       "corpus_hits": 7,
-      "current_codebook_n_members": 1,
+      "codebook_n_members_at_probe": 1,
       "note": "activation-restriction family (D-4 closed, DET-owned)"
     },
     {
@@ -30,7 +30,7 @@
       "cr_anchor": null,
       "def_anchor": "An activated ability can only be used during the controller's own turn (not restricted further to a specific phase like upkeep or to sorcery-speed/empty-stack timing).",
       "corpus_hits": 77,
-      "current_codebook_n_members": 7,
+      "codebook_n_members_at_probe": 7,
       "note": "activation-restriction family"
     },
     {
@@ -42,7 +42,7 @@
       "cr_anchor": null,
       "def_anchor": "An activated ability that can only be used during a specific phase of the controller's turn, namely their own upkeep.",
       "corpus_hits": 51,
-      "current_codebook_n_members": 4,
+      "codebook_n_members_at_probe": 4,
       "note": "activation-restriction family"
     },
     {
@@ -54,7 +54,7 @@
       "cr_anchor": "CR 602.5d",
       "def_anchor": "An activated ability can only be used at times when the controller could cast a sorcery, restricting its use to their own main phase with an empty stack.",
       "corpus_hits": 565,
-      "current_codebook_n_members": 38,
+      "codebook_n_members_at_probe": 38,
       "note": "activation-restriction family"
     },
     {
@@ -66,7 +66,7 @@
       "cr_anchor": null,
       "def_anchor": "An effect that creates a token specifies it enters the battlefield tapped, delaying its immediate usability.",
       "corpus_hits": 195,
-      "current_codebook_n_members": 11,
+      "codebook_n_members_at_probe": 11,
       "note": "'create a tapped ... token' (adjective-before-noun, the dominant print form) OR 'create ... token. It enters tapped' (verified against 5 live members -- all use the adjective form, e.g. Koilos Roc 'create a tapped Powerstone token')"
     },
     {
@@ -78,7 +78,7 @@
       "cr_anchor": null,
       "def_anchor": "The permanent enters the battlefield tapped, delaying its immediate usability as a cost/drawback.",
       "corpus_hits": 686,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "broad pre-filter; conditional variant subtracted separately below"
     },
     {
@@ -90,7 +90,7 @@
       "cr_anchor": null,
       "def_anchor": "The permanent enters tapped unless a stated condition is met (or a stated condition is what makes it enter tapped) -- contrast rule:enters-tapped's unconditional sibling.",
       "corpus_hits": 168,
-      "current_codebook_n_members": 13,
+      "codebook_n_members_at_probe": 13,
       "note": "both-polarity: 'tapped unless/if' AND the reversed 'unless X, ~ enters tapped' shape (Lesson 1)"
     },
     {
@@ -102,7 +102,7 @@
       "cr_anchor": null,
       "def_anchor": "When this permanent enters, it taps a target artifact or creature and applies stun counters, disabling it for multiple turns rather than just the current one.",
       "corpus_hits": 28,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "ETB clause containing both 'tap' and 'stun counter'"
     },
     {
@@ -114,7 +114,7 @@
       "cr_anchor": "CR 508.1a",
       "def_anchor": "The creature must attack every combat if it is able to, removing its controller's discretion over attacking.",
       "corpus_hits": 59,
-      "current_codebook_n_members": 9,
+      "codebook_n_members_at_probe": 9,
       "note": "CR 508.1a fixed phrase, self-scoped"
     },
     {
@@ -126,7 +126,7 @@
       "cr_anchor": "CR 508.1a",
       "def_anchor": "A static ability forces all creatures on the battlefield, regardless of controller, to attack each combat if able.",
       "corpus_hits": 5,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "CR 508.1a fixed phrase, all-creatures scoped"
     },
     {
@@ -138,7 +138,7 @@
       "cr_anchor": null,
       "def_anchor": "Grants the controller an extra combat phase after the current one, allowing another round of attacks.",
       "corpus_hits": 44,
-      "current_codebook_n_members": 13,
+      "codebook_n_members_at_probe": 13,
       "note": "fixed phrase"
     },
     {
@@ -150,7 +150,7 @@
       "cr_anchor": null,
       "def_anchor": "A static ability grants the cascade mechanic to spells the controller casts, rather than the spell itself having cascade printed.",
       "corpus_hits": 2,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "fixed phrase, granted (not printed) cascade"
     },
     {
@@ -162,7 +162,7 @@
       "cr_anchor": null,
       "def_anchor": "The permanent's controller gains hexproof, making them unable to be targeted by opponents' spells or abilities.",
       "corpus_hits": 13,
-      "current_codebook_n_members": 3,
+      "codebook_n_members_at_probe": 3,
       "note": "player-hexproof grant, distinct from permanent-hexproof"
     },
     {
@@ -174,7 +174,7 @@
       "cr_anchor": null,
       "def_anchor": "Causes the equipped/enchanted permanent to become an additional creature type it did not previously have.",
       "corpus_hits": 305,
-      "current_codebook_n_members": 11,
+      "codebook_n_members_at_probe": 11,
       "note": "fixed CR type-addition phrase"
     },
     {
@@ -186,7 +186,7 @@
       "cr_anchor": null,
       "def_anchor": "A source (instant, activated ability, or triggered ability -- delivery is mixed across current members) grants a target creature double strike until end of turn. Corrected 2026-08-01: v1's def_anchor said \"An instant grants...\" but this describes only one example member's delivery type, not a scope restriction -- the pattern itself (fixed-phrase, no delivery check) and the axis's real members include activated/triggered sources too. Wording-only correction, no regex change, no membership change (annotate-prose precedent, B2 ruling style).",
       "corpus_hits": 69,
-      "current_codebook_n_members": 4,
+      "codebook_n_members_at_probe": 4,
       "note": "fixed phrase | v2: def_anchor wording corrected (delivery-agnostic), pattern unchanged."
     },
     {
@@ -198,7 +198,7 @@
       "cr_anchor": null,
       "def_anchor": "Allows the controller to play one or more additional lands each turn beyond the normal limit.",
       "corpus_hits": 36,
-      "current_codebook_n_members": 10,
+      "codebook_n_members_at_probe": 10,
       "note": "fixed phrase"
     },
     {
@@ -210,7 +210,7 @@
       "cr_anchor": null,
       "def_anchor": "An activated ability grants the controller an additional turn after the current one.",
       "corpus_hits": 55,
-      "current_codebook_n_members": 8,
+      "codebook_n_members_at_probe": 8,
       "note": "fixed phrase"
     },
     {
@@ -222,7 +222,7 @@
       "cr_anchor": null,
       "def_anchor": "Gives a card in a graveyard the flashback ability temporarily, allowing it to be cast from the graveyard.",
       "corpus_hits": 14,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "granted (not printed) flashback -- excludes cards with printed Flashback keyword"
     },
     {
@@ -234,7 +234,7 @@
       "cr_anchor": null,
       "def_anchor": "An ability grants another creature you control a temporary power boost and flying until end of turn.",
       "corpus_hits": 55,
-      "current_codebook_n_members": 4,
+      "codebook_n_members_at_probe": 4,
       "note": "fixed phrase, both grants same clause (F2 sweep: pump amount may be X, not just a literal digit)"
     },
     {
@@ -246,7 +246,7 @@
       "cr_anchor": null,
       "def_anchor": "Tokens created by the ability immediately gain haste until end of turn, letting them act right away.",
       "corpus_hits": 102,
-      "current_codebook_n_members": 5,
+      "codebook_n_members_at_probe": 5,
       "note": "haste grant scoped to token(s) just created"
     },
     {
@@ -258,7 +258,7 @@
       "cr_anchor": null,
       "def_anchor": "A static ability grants haste to all creatures the controller controls.",
       "corpus_hits": 34,
-      "current_codebook_n_members": 6,
+      "codebook_n_members_at_probe": 6,
       "note": "fixed phrase, board-wide static"
     },
     {
@@ -270,7 +270,7 @@
       "cr_anchor": null,
       "def_anchor": "Grants a keyword ability to whichever creatures happen to have a +1/+1 counter on them, rather than to a fixed target or team.",
       "corpus_hits": 31,
-      "current_codebook_n_members": 3,
+      "codebook_n_members_at_probe": 3,
       "note": "conditional-scope trample grant"
     },
     {
@@ -282,7 +282,7 @@
       "cr_anchor": null,
       "def_anchor": "A static ability that grants the trample keyword to other creatures the controller controls, without granting it to the source itself.",
       "corpus_hits": 9,
-      "current_codebook_n_members": 7,
+      "codebook_n_members_at_probe": 7,
       "note": "fixed phrase"
     },
     {
@@ -294,7 +294,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); terminology law, CODEBOOK-NAMING-GRAMMAR.md sec.14/Q8.2",
       "def_anchor": "DELIVERY: activated (a paid cost) for all current members. SCOPE: mixed -- self (Leitmotif Composer grants it to creatures sharing its own name; Guild Thief grants it to itself) and target (Key to the City, up to one target creature; Temmet, Vizier of Naktamun, a target creature token you control; Rogue's Passage, target creature). DURATION: this turn (eot) for all current members. EFFECT: absolute unblockable per the terminology law (CODEBOOK-NAMING-GRAMMAR.md sec.14, Q8.2) -- no restriction rider on any current member. Quote-checked 2026-07-31, all 5 clean.",
       "corpus_hits": 185,
-      "current_codebook_n_members": 5,
+      "codebook_n_members_at_probe": 5,
       "note": "Q8.8 rebuild: dropped the old 'as long as' branch (now routes to cant-be-blocked-<restriction>); requires the eot duration marker since granted-unblockable effects are inherently temporary (distinguishes from rule:innate-unblockable's unmarked/permanent shape)"
     },
     {
@@ -306,7 +306,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); terminology law, CODEBOOK-NAMING-GRAMMAR.md sec.14/Q8.2",
       "def_anchor": "DELIVERY: mixed across current members -- static (Protective Bubble, an Aura's continuous ability), etb-trigger (Long River Lurker), activated (Wormhole Serpent, Soratami Mirror-Guard). SCOPE: target (a chosen creature, not the source) for all members. DURATION: this turn (eot) for all except Protective Bubble (static, continuous while the Aura is attached). EFFECT: absolute unblockable per the terminology law (CODEBOOK-NAMING-GRAMMAR.md sec.14, Q8.2) for all 10 current members -- The Black Gate's by-controller restriction rider moved to rule:cant-be-blocked-by-controller (B1 ruling, 2026-07-31), resolving the prior flag.",
       "corpus_hits": 35,
-      "current_codebook_n_members": 10,
+      "codebook_n_members_at_probe": 10,
       "note": "v2 fix (2026-08-01, DET-pass sample-gate catch, zero spend): restriction-continuation guard extended to also exclude the by-controller phrase shape (\"by creatures that/who/<player> controls\"), closing the KNOWN RESIDUAL GAP the v1 note flagged -- The Black Gate was still matching this axis's raw regex despite the B1 ruling moving it to rule:cant-be-blocked-by-controller, because the guard only excluded 'by creatures with', not 'by creatures that ... controls'. Caught during generate-samples' fixed-seed sample review (standing_condition), fixed before apply -- Black Gate confirmed excluded, other 9 members' matches unaffected (verified via synchronous regex test)."
     },
     {
@@ -318,7 +318,7 @@
       "cr_anchor": null,
       "def_anchor": "A static ability grants the ward keyword to other creatures the controller controls, without affecting the source itself.",
       "corpus_hits": 2,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "fixed phrase"
     },
     {
@@ -330,7 +330,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); terminology law, CODEBOOK-NAMING-GRAMMAR.md sec.14/Q8.2",
       "def_anchor": "The permanent has a static ability making it inherently unblockable, without needing an activated cost.",
       "corpus_hits": 183,
-      "current_codebook_n_members": 11,
+      "codebook_n_members_at_probe": 11,
       "note": "Q8.8 rebuild: replaced the old partial '(?!except)' guard with the full 4-phrase restriction-continuation guard. PREVIOUSLY a known gap (pronoun/proper-noun subject anchor missed 5/11 current members: 'It', 'Sygg', 'Willie Lumpkin', 'Ukkima') -- FIXED by the DET preprocessing standard v1 (CARDNAME canonicalization, 2026-07-31 follow-on): proper-noun self-references now canonicalize to the ~ token before matching. 'It' pronoun self-reference (Creeping Tar Pit) remains a separate, unaddressed gap -- pronoun coreference, not CARDNAME canonicalization."
     },
     {
@@ -342,7 +342,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); CR 113.3b (activated ability cost)",
       "def_anchor": "DELIVERY: activated (a paid mana cost) for all current members. SCOPE: self (the source becomes unblockable). DURATION: this turn (eot). EFFECT: absolute unblockable per the terminology law (CODEBOOK-NAMING-GRAMMAR.md sec.14, Q8.2) -- no restriction rider on any current member. Quote-checked 2026-07-31 (Harbor Bandit, Daring Saboteur): both read \"{cost}: This creature can't be blocked this turn.\" -- clean.",
       "corpus_hits": 25,
-      "current_codebook_n_members": 2,
+      "codebook_n_members_at_probe": 2,
       "note": "activated-cost self-unblockable (F2 sweep: cost isn't always a mana/tap symbol -- 'Sacrifice X:', 'Discard a card:', 'Remove a counter:' etc. are equally valid activation costs; excludes loyalty-ability '−N:' costs by requiring one of these literal cost words, verified against the corpus not to pick up Vronos, Masked Inquisitor's quoted grant text. Q8.8 rebuild: added the restriction-continuation guard. DET preprocessing standard v1: CARDNAME token added as a subject alternative)"
     },
     {
@@ -354,7 +354,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation)",
       "def_anchor": "The creature is textually forbidden from being blocked by creatures of one specific color.",
       "corpus_hits": 19,
-      "current_codebook_n_members": 4,
+      "codebook_n_members_at_probe": 4,
       "note": "seed axis, pattern newly authored this session (walk didn't originally propose one for this pre-existing axis); no keyword contamination risk found"
     },
     {
@@ -366,7 +366,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); contrast case CR 702.115a (Skulk, keyword-owned, excluded)",
       "def_anchor": null,
       "corpus_hits": 57,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "corpus-verified: requiring a literal number excludes Skulk's fixed numberless 'greater power' reminder text (81 raw hits collapse to 57 once the numberless Skulk phrasing is excluded)"
     },
     {
@@ -378,7 +378,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); contrast case CR 702.111a (Menace, keyword-owned, excluded)",
       "def_anchor": null,
       "corpus_hits": 10,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "corpus-verified: excluding 'two' specifically excludes Menace's fixed reminder text (0/244 'two or more' hits lack the word 'menace' nearby -- 100% Menace-owned); 'three or more'/'six or more' etc. are genuine non-keyword variants (10 hits)"
     },
     {
@@ -390,7 +390,7 @@
       "cr_anchor": "CR 113.12 (stated quality, corrected 2026-07-31 from an unverified 509.1h citation); contrast case CR 702.14c (Landwalk, keyword-owned, excluded)",
       "def_anchor": null,
       "corpus_hits": 18,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "corpus-verified: excluding 'defending player controls' excludes Landwalk's fixed reminder-text shape (209 hits, all landwalk); remainder are genuine non-keyword state-conditions (18 hits: life total, graveyard count, attacking-alone, etc.)"
     },
     {
@@ -402,7 +402,7 @@
       "cr_anchor": "CR 113.12 (stated quality); B1 ruling, 2026-07-31 follow-on",
       "def_anchor": "The creature is textually forbidden from being blocked by creatures a specific player controls (B1 ruling, 2026-07-31: cant-be-blocked-<restriction> closed vocab extended with by-controller to give The Black Gate's restriction rider a home -- \"can't be blocked by creatures that player controls\" -- that didn't fit by-color/by-power/except-by-count/as-long-as-<state>).",
       "corpus_hits": 2,
-      "current_codebook_n_members": 1,
+      "codebook_n_members_at_probe": 1,
       "note": "B1 ruling (2026-07-31, post-execution follow-on): new restriction-vocab value, names WHO may not block rather than what the blocker is like. Corpus-verified 2 hits: The Black Gate (quote-verified member, moved from rule:grants-unblockable-target) and Rikku, Resourceful Guardian (corpus candidate, NOT added as a member -- B1 only ordered Black Gate's move)"
     },
     {
@@ -414,7 +414,7 @@
       "cr_anchor": "CR 601.2b / 702.33 (withdrawn, Q9)",
       "def_anchor": "An additional cost may be paid at cast time to unlock a bonus effect that only occurs if that extra cost was paid.",
       "corpus_hits": null,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "WITHDRAWN (Q9, walk-ratification 2026-07-31): rule:kicker-conditional-bonus-effect killed as a bare-keyword duplicate (b1/b2 precedent); its DET pattern is withdrawn from the ratified set, not measured."
     },
     {
@@ -426,7 +426,7 @@
       "cr_anchor": null,
       "def_anchor": "Whenever a land the controller controls enters the battlefield, its controller may gain a fixed amount of life.",
       "corpus_hits": 15,
-      "current_codebook_n_members": 3,
+      "codebook_n_members_at_probe": 3,
       "note": "landfall ability word + gain-life effect in same paragraph (F2 sweep: paragraph-scoped not sentence-scoped, same fix class as landfall-produces-mana)"
     },
     {
@@ -438,7 +438,7 @@
       "cr_anchor": null,
       "def_anchor": "Whenever a land the controller controls enters the battlefield, the permanent produces mana of any color.",
       "corpus_hits": 4,
-      "current_codebook_n_members": 1,
+      "codebook_n_members_at_probe": 1,
       "note": "F2 fix: landfall ability word + 'add ... mana' in same paragraph (was sentence-scoped [^.]* and symbol-only \\{ -- Omnath, Locus of Creation's landfall clause has a period between the ability-word sentence and the 'add {R}{G}{W}{U}' sentence, AND the pattern must also catch prose mana description with no {} symbol at all, e.g. 'add one mana of any color')"
     },
     {
@@ -450,7 +450,7 @@
       "cr_anchor": null,
       "def_anchor": "Whenever a land the controller controls enters, the permanent grants itself a temporary power/toughness boost until end of turn.",
       "corpus_hits": 41,
-      "current_codebook_n_members": 5,
+      "codebook_n_members_at_probe": 5,
       "note": "landfall ability word + self-pump in same paragraph (F2 sweep: paragraph-scoped not sentence-scoped, and pump amount may be X. KNOWN GAP, flagged not silently dropped: single-line scoping intentionally does NOT cross a newline, so a modal 'choose one —' + bulleted pump option on its own line (Retreat to Hagra/Valakut) isn't caught -- an unbounded cross-newline window was tested and rejected because it produces real false positives, matching an unrelated static pump ability elsewhere on the same card, e.g. Moraug/Maja Bretagard Protector/Springheart Nantuko; modal-bullet handling needs per-mode text splitting, out of scope for this sweep)"
     },
     {
@@ -462,7 +462,7 @@
       "cr_anchor": null,
       "def_anchor": "Removes the normal maximum hand size restriction for the controller.",
       "corpus_hits": 43,
-      "current_codebook_n_members": 5,
+      "codebook_n_members_at_probe": 5,
       "note": "fixed phrase"
     },
     {
@@ -474,7 +474,7 @@
       "cr_anchor": "CR 701.15",
       "def_anchor": "Prevents the destroyed creature from being regenerated.",
       "corpus_hits": 152,
-      "current_codebook_n_members": 28,
+      "codebook_n_members_at_probe": 28,
       "note": "fixed phrase, CR 701.15"
     },
     {
@@ -486,7 +486,7 @@
       "cr_anchor": null,
       "def_anchor": "A mana ability produces mana that can only be spent to cast a specific card type or activate a specific kind of ability.",
       "corpus_hits": 217,
-      "current_codebook_n_members": 24,
+      "codebook_n_members_at_probe": 24,
       "note": "fixed mana-restriction phrase"
     },
     {
@@ -498,7 +498,7 @@
       "cr_anchor": "CR 701.44 / 122.1 (typed counter)",
       "def_anchor": "Places a stun counter on a permanent, causing it to skip its next untap step instead of becoming untapped normally.",
       "corpus_hits": 87,
-      "current_codebook_n_members": 17,
+      "codebook_n_members_at_probe": 17,
       "note": "CR 701.44/122.1 typed counter name"
     },
     {
@@ -510,7 +510,7 @@
       "cr_anchor": null,
       "def_anchor": "Triggers The Ring tempts you, advancing the player along the Ring-bearer ability chain.",
       "corpus_hits": 54,
-      "current_codebook_n_members": 19,
+      "codebook_n_members_at_probe": 19,
       "note": "fixed phrase, unique to Ring-bearer mechanic"
     },
     {
@@ -522,7 +522,7 @@
       "cr_anchor": null,
       "def_anchor": null,
       "corpus_hits": 117,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "activated-ability cost spends energy -- pre-filter for the 4-axis energy family, NOT a full classifier"
     },
     {
@@ -534,7 +534,7 @@
       "cr_anchor": null,
       "def_anchor": null,
       "corpus_hits": 141,
-      "current_codebook_n_members": null,
+      "codebook_n_members_at_probe": null,
       "note": "energy-counter GRANT text -- pre-filter for gives-energy-counters-condition/-immediately"
     },
     {
@@ -546,7 +546,7 @@
       "cr_anchor": null,
       "def_anchor": "A static ability makes OTHER permanents (not the source itself) enter the battlefield tapped -- the Root Maze class: a class filter (artifacts/lands/creatures/permanents, optionally scoped to an opponent's, a specific player's, or a type-qualified subset) rather than a self-reference. Sibling of rule:enters-tapped (self) and rule:enters-tapped-conditional; discovered as a systematic false-positive risk on rule:enters-tapped's own DET pattern (G2 guard, walk-ratification 2026-07-31) and authored as its own axis per Captain's explicit instruction rather than left as an unlabeled exclusion list.",
       "corpus_hits": 24,
-      "current_codebook_n_members": 24,
+      "codebook_n_members_at_probe": 24,
       "note": "Root Maze class sibling of rule:enters-tapped; seeded via the G2 guard's own exclusion list"
     }
   ],
