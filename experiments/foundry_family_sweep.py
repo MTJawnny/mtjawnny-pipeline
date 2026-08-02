@@ -89,7 +89,7 @@ def load_stores():
         slug = p["slug"].split(" (")[0].split(" ")[0]
         # A pattern whose slug text is marked "(pre-filter)" is Lane-1
         # machinery with no axis of its own; anything else is an axis pattern.
-        det[slug] = dict(p, is_prefilter="pre-filter" in p["slug"])
+        det[slug] = dict(p, is_prefilter=fc.is_prefilter_pattern(p))
     return grammars, det, codebook
 
 

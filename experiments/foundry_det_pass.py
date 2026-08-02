@@ -56,6 +56,25 @@ HITS_CACHE_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_full_hits.json"
 BATCH_LABEL = "det-pass-1"
 
 
+# Ratified AXIS-BEARING patterns that legitimately have no axis yet, each
+# with the Captain ruling that authorises the gap. Anything ratified,
+# axis-bearing and axis-less that is NOT listed here HALTS.
+#
+# EMPTY THIS LIST as session 4 creates each axis — a stale entry here
+# re-opens exactly the hole this guard closes.
+RULED_AXISLESS_PATTERNS = {
+    "rule:cant-be-blocked-by-power":
+        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
+        "(57 corpus hits)",
+    "rule:cant-be-blocked-except-by-count":
+        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
+        "(10 corpus hits)",
+    "rule:cant-be-blocked-as-long-as-state":
+        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
+        "(18 corpus hits)",
+}
+
+
 def load_axis_patterns():
     # Deliberately a raw json.load rather than the schema-checking /2 loader:
     # this reads axis STATUS only, never membership, so it is correct against
@@ -65,14 +84,52 @@ def load_axis_patterns():
     cb = json.loads(CODEBOOK_PATH.read_text())
     active = {s for s, e in cb["axes"].items() if e.get("status") == "active"}
     axis_patterns, prefilter_patterns = [], []
+    ruled_gaps, deferred_gaps = [], []
     for p in det["patterns"]:
         if p["status"] != "ratified":
             continue
-        slug = p["slug"].split(" (")[0].split(" ")[0]
+        slug = fc.pattern_slug(p)
+
+        if fc.is_prefilter_pattern(p):
+            prefilter_patterns.append(p)          # declared a pre-filter
+            continue
         if slug in active:
             axis_patterns.append(dict(p, resolved_slug=slug))
-        else:
+            continue
+
+        # Axis-bearing, ratified, and no ACTIVE axis to apply to. This used
+        # to fall through to prefilter_patterns silently, so the pattern
+        # never ran, never wrote membership, and never reported.
+        record = cb["axes"].get(slug)
+        if record is not None and record.get("status") != "active":
+            deferred_gaps.append((slug, record.get("status")))
             prefilter_patterns.append(p)
+            continue
+        if slug in RULED_AXISLESS_PATTERNS:
+            ruled_gaps.append(slug)
+            prefilter_patterns.append(p)
+            continue
+        fc.halt(
+            f"ratified axis-bearing DET pattern {slug!r} has no axis in "
+            f"codebook.json at all.\n"
+            f"  It is not marked '(pre-filter)' in det-patterns-v2.json, so it "
+            f"is expected to decide an axis's membership.\n"
+            f"  Silently demoting it to the prefilter list is what hid three "
+            f"ratified patterns for weeks.\n"
+            f"  Resolve one of these ways, then re-run:\n"
+            f"    - create the axis (the pattern is genuinely axis-bearing), or\n"
+            f"    - mark the slug '(pre-filter)' in docs/det-patterns-v2.json "
+            f"(it is a Lane-1 net, not a classifier), or\n"
+            f"    - add it to RULED_AXISLESS_PATTERNS here WITH the Captain "
+            f"ruling that authorises the gap."
+        )
+
+    for slug in sorted(ruled_gaps):
+        print(f"NOTE: ratified pattern {slug!r} has no axis yet — "
+              f"{RULED_AXISLESS_PATTERNS[slug]}. Not applied this run.")
+    for slug, st in sorted(deferred_gaps):
+        print(f"NOTE: ratified pattern {slug!r} targets a {st!r} axis — "
+              f"not applied (only active axes receive DET membership).")
     return axis_patterns, prefilter_patterns
 
 

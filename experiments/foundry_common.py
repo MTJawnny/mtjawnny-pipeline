@@ -22,6 +22,34 @@ def halt(message: str) -> None:
     sys.exit(1)
 
 
+# --- DET pattern roles -------------------------------------------------
+# A ratified DET pattern is one of exactly two things:
+#
+#   AXIS-BEARING  its slug names a codebook axis whose membership it
+#                 decides. It MUST have an active axis to apply to.
+#   PRE-FILTER    a Lane-1 net that narrows the corpus for a family and
+#                 is never a classifier, e.g.
+#                 "rule:energy-<family> pre-filter (spends {E})".
+#
+# The role is carried in the slug text itself. These two helpers are the
+# SINGLE definition of that fact. foundry_det_pass and
+# foundry_family_sweep both read them from here; each previously derived
+# the distinction independently, and that duplication is precisely how
+# three ratified patterns sat orphaned and unapplied for weeks — the
+# det pass silently demoted them to "prefilter" because they had no axis,
+# which is the same shape as having been declared a prefilter.
+
+
+def is_prefilter_pattern(pattern: dict) -> bool:
+    """True iff this ratified pattern is a deliberate Lane-1 pre-filter."""
+    return "pre-filter" in pattern["slug"]
+
+
+def pattern_slug(pattern: dict) -> str:
+    """The bare `rule:` slug, stripped of parenthetical/qualifier text."""
+    return pattern["slug"].split(" (")[0].split(" ")[0]
+
+
 def batch_paths(batch_num: int) -> dict:
     """Canonical per-batch output filenames for every foundry_*.py script.
     Batch 1 kept its original unsuffixed filenames (already committed
