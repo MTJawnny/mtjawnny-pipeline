@@ -1,5 +1,16 @@
 # CONSOLIDATION-PLAN-DIRECTIVE — run-1 consolidation plan artifact (session 2 of 4)
 
+> **SUPERSEDED 2026-08-01.** Split into
+> `docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` (the decisions, ~1,000 rows,
+> externally auditable whole) and
+> `docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` (the mechanical expansion,
+> ~18,346 rows). Reason: the full plan is ~7.8 MB / ~1.95M tokens and cannot
+> be externally audited at any meaningful sampling rate, while the judgment
+> inside it is ~88K tokens and can be audited in full. This amends the A12
+> four-session split to five. Kept for the audit trail — the two successor
+> directives are what execute. The same-run collapse rule and the corrected
+> row count recorded below both carried forward into them.
+
 ZERO MUTATION, ZERO API SPEND. This session computes and writes ONE
 artifact — the exact consolidation plan — and STOPS for Captain approval.
 Nothing touches codebook.json. Governed by B-MIGRATION-DISCOVERY.md §10
