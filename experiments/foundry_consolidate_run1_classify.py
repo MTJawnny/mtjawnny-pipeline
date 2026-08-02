@@ -42,13 +42,57 @@ PARSED_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_parsed_final.json"
 GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
 
 EXPECTED_NODE_TOTAL = 95
-EXPECTED_CLEAN_NODES = 93          # A14: 95 - 2 collisions
+# A14 measured 95 - 2 collisions = 93. That count was computed with a
+# STRING existence test, which cannot see that a proposed node is an
+# existing axis spelled differently. Testing on canonical form (F-D fix,
+# 2026-08-02) removes three more:
+#   rule:targeted-damage-creature      -> live rule:targeted-creature-damage
+#   rule:targeted-damage-player        -> live rule:targeted-player-damage
+#   rule:grants-flying-target-static   -> sibling node -static-target
+# So 93 -> 90 clean instantiations, 3 reclassified as join-existing /
+# collision-node-duplicate. No node is lost; membership routes to the axis
+# that already exists.
+EXPECTED_CLEAN_NODES = 90          # A14's 93, minus 3 canonical duplicates
 EXPECTED_A15_ROWS = 213            # A15 / R6
 EXPECTED_R5_ROWS = 141             # R5
 
 NODE_CATEGORIES = ("instantiate", "join-existing", "redirect", "report-only",
-                   "collision-killed", "collision-renamed")
+                   "collision-killed", "collision-renamed",
+                   "collision-node-duplicate")
 ROUTING_ACTIONS = ("redirect", "split", "report", "discovery", "reject")
+
+
+def build_canonical_axis_index(axes: dict) -> dict:
+    """canonical form -> the slug that owns it, preferring the ACTIVE axis.
+
+    Existence must be tested on CANONICAL form, not on the slug string.
+    `rule:targeted-damage-creature` and `rule:targeted-creature-damage` are
+    one axis spelled two ways; a string test says "no such axis" and
+    instantiates a twin. That is finding F-D, and it would have created two
+    duplicate axes out of the 93 proposed nodes.
+
+    A rename or merge leaves a shell whose old slug canonicalises the same
+    as its target — 16 such pairs live today — so a bare canonical lookup is
+    ambiguous. Resolution: the ACTIVE member of a canonical group owns it.
+    Two ACTIVE axes sharing a canonical form is a genuine ambiguity that 2a
+    is not entitled to resolve, so it halts (currently zero such cases).
+    """
+    groups = defaultdict(list)
+    for slug, entry in sorted(axes.items()):
+        groups[fcon.canonicalize_label(slug)].append((slug, entry.get("status")))
+
+    index = {}
+    for canon, members in sorted(groups.items()):
+        live = sorted(s for s, st in members if st == "active")
+        if len(live) > 1:
+            fc.halt(
+                f"two ACTIVE axes share the canonical form {canon!r}: "
+                f"{live!r}. They are the same axis spelled two ways; 2a "
+                f"cannot pick a winner. Resolve by ruling (merge or rename), "
+                f"then re-run."
+            )
+        index[canon] = live[0] if live else sorted(s for s, _ in members)[0]
+    return index
 
 # The five free-lane clusters A15 promotes, named as the ratification prose
 # names them. They are resolved to canonical form through the SAME
@@ -143,16 +187,49 @@ def classify_nodes(result: dict) -> list:
     axes = result["axes"]
     nodes = result["grammar_new_virtual_nodes"]
     rows = []
+    canon_index = build_canonical_axis_index(axes)
+    # Canonical collisions WITHIN this run's own node set (the
+    # grants-flying-static-target / -target-static pair). CDR-05 requires the
+    # winner be named deterministically rather than by whichever the loop
+    # reaches first: lowest slug string wins, the rest alias into it.
+    node_canon = defaultdict(list)
+    for s in sorted(nodes):
+        node_canon[fcon.canonicalize_label(s)].append(s)
+
     for slug in sorted(nodes):
         node = nodes[slug]
         members = sorted(node["members"], key=lambda m: m["oracle_id"])
-        existing = axes.get(slug)
-        status = existing.get("status") if existing else None
+        canon = fcon.canonicalize_label(slug)
 
+        # Existence by canonical form, not by string (F-D).
+        existing = axes.get(slug)
+        matched_slug = slug if existing is not None else None
         if existing is None:
+            twin = canon_index.get(canon)
+            if twin is not None:
+                existing, matched_slug = axes[twin], twin
+        status = existing.get("status") if existing else None
+        canonical_twin = matched_slug is not None and matched_slug != slug
+
+        siblings = node_canon[canon]
+        if existing is None and len(siblings) > 1 and slug != siblings[0]:
+            category, action, target = "collision-node-duplicate", "join-existing", siblings[0]
+            reason = (f"canonically identical to sibling node {siblings[0]!r} proposed in the "
+                      f"same run ({canon!r}); one axis spelled two ways. The lowest slug "
+                      f"instantiates and this one aliases into it (CDR-05, deterministic "
+                      f"tie-break). Instantiating both would create duplicate axes.")
+        elif existing is None:
             category, action, target = "instantiate", "instantiate", None
             reason = ("grammar-valid composition with no existing axis of any status; "
                       "instantiates as a new axis (source=B-only, grammar lane).")
+        elif status == "active" and canonical_twin:
+            category, action, target = "join-existing", "join-existing", matched_slug
+            reason = (f"canonically identical to the live active axis {matched_slug!r} "
+                      f"({canon!r}) — the same axis spelled two ways. Members route there; "
+                      f"instantiating would create a duplicate (F-D).")
+        elif status == "active":
+            category, action, target = "join-existing", "join-existing", matched_slug
+            reason = "slug already exists as an active axis; members route to it."
         elif status == "killed":
             # R7: bare, unscoped keyword grants stay killed (b1-Q1 says "PURE
             # keyword-grant axes"); the member routes per the b4-D4 standing
@@ -175,7 +252,9 @@ def classify_nodes(result: dict) -> list:
                     f"invent a category. Resolve by ruling, then re-run")
 
         rows.append({
-            "slug": slug, "category": category, "action": action, "target": target,
+            "slug": slug, "canonical_label": canon,
+            "matched_slug": matched_slug, "matched_by_canonical_form": canonical_twin,
+            "category": category, "action": action, "target": target,
             "n_members": len(members), "reason": reason,
             "definition": node["definition"],
             "scope_counts": dict(sorted(node["scope_counts"].items())),
@@ -282,11 +361,18 @@ def classify_a15(discovery: dict, result: dict) -> tuple:
         if not insts:
             fc.halt(f"A15 cluster {name!r} (canonical {canon!r}) has no rows after recomputation — "
                     f"the ratified promotion set and the measured data disagree")
+        # Same F-D fix as classify_nodes: existence is a CANONICAL question.
+        # `active` here is already active-only, so no rename-shell ambiguity.
         target = f"rule:{name}"
-        if target in active:
+        active_canon = build_canonical_axis_index(active)
+        node_canon_index = {fcon.canonicalize_label(s): s for s in sorted(nodes)}
+        canon_target = fcon.canonicalize_label(target)
+        if canon_target in active_canon:
             disposition = "join-existing-active"
-        elif target in nodes:
+            target = active_canon[canon_target]
+        elif canon_target in node_canon_index:
             disposition = "join-existing-node"
+            target = node_canon_index[canon_target]
         else:
             disposition = "instantiate"
 
@@ -400,7 +486,7 @@ def build(output_path: Path) -> dict:
                 f"{EXPECTED_NODE_TOTAL} (AG-COUNT-01)")
     if node_counts["instantiate"] != EXPECTED_CLEAN_NODES:
         fc.halt(f"clean instantiations = {node_counts['instantiate']}, expected "
-                f"{EXPECTED_CLEAN_NODES} (A14 corrected 92 -> 93)")
+                f"{EXPECTED_CLEAN_NODES} (A14 measured 93 with a string existence test; the F-D canonical fix removes 3 duplicates)")
 
     routing = route_killed_slugs(result, cards)
     r5 = classify_r5(exact_match, result)
@@ -555,7 +641,7 @@ def build(output_path: Path) -> dict:
         "deviations_from_priors": [],
     }
     if node_counts["instantiate"] != EXPECTED_CLEAN_NODES:
-        human_summary["deviations_from_priors"].append("clean node count differs from A14's 93")
+        human_summary["deviations_from_priors"].append("clean node count differs from the post-F-D expectation of 90")
 
     artifact = {
         "schema": "foundry-consolidation-classification/1",
