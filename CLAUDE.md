@@ -88,4 +88,20 @@ contract does not travel here. This file is this repo's own contract.
   (`/triage-alpha N` -> `/triage-beta N` -> Captain annotates ->
   `/triage-emit N`)
 - Derivation law: `docs/DERIVED-TAG-LAYER-SPEC.md` (Lessons 1-3)
-- Foundry spec: `docs/T3-AXIS-FOUNDRY-v3.md`
+- Foundry spec: `docs/T3-AXIS-FOUNDRY-v3.md` — **inherits every standing
+  rule in `docs/T3-BUILDOUT-PLAYBOOK.md`**; read both.
+- Schema-pass ledger (parents/hierarchy, structural rulings S1-S7, open
+  tensions T1-T2): `docs/PARENT-TREE-CANDIDATES.md`. Parents are DERIVED
+  (union of children + direct members) — never hand-authored as axes.
+- Family evidence + 6 unresolved family rulings:
+  `docs/FAMILY-TREE-EVIDENCE.md`
+- Batch ratification record: `docs/TRIAGE-BATCH-1.md` .. `-7.md`
+  (Captain's annotations are authoritative; batch-4 §10 D1-D7 in
+  particular defines the `deferred` status and the D6 cost-shape reversal)
+
+**Docs live in THIS repo.** The site repo's `docs/` is gitignored, so
+anything left there has no version history. On 2026-08-02 twelve
+load-bearing documents were moved here for that reason. Never author or
+leave pipeline/foundry/tier-engine documentation in `mtjawnny.github.io`.
+The only deliberate exceptions, both read by absolute path:
+`mtg-comprehensive-rules.md` and `PHASE-2-COMPLETION.md`.
