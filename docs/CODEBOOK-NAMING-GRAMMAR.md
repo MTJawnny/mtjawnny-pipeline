@@ -205,6 +205,49 @@ Hard rules, each anchored:
    left to evidence), `mana-producing-artifact` (umbrella; excludes treasure,
    which owns its own node — S5 semantics at schema pass).
 
+### 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
+
+Rules 1–2 above disambiguate by number: singular `counter` = noun, plural
+`counters` = verb stem. **That is insufficient, because plural is itself
+ambiguous** — `counters` is both the verb stem AND the noun plural.
+`rule:etb-with-counters` (noun) and `rule:counters-target-spell` (verb)
+carry the identical token. This is the root of the `canonicalize_label`
+corruption: `counters` sits in EFFECT_VOCAB and `counter` in the qualifier
+sets, so the canonicalizer sorts by grammatical number rather than by
+sense.
+
+**Ratified replacement test, enforced across the WHOLE slug — not only in
+final-token position, closing the `validate_slug` gap that let
+`rule:self-counter-growth` and `rule:etb-with-counters` pass clean:**
+
+1. **VERB sense (CR 701.6)** — the token is `counters` (plural) and is
+   **immediately followed by what is countered** (`spell`, `ability`, or a
+   restriction word binding to one, e.g. `noncreature-spell`). Never bare,
+   never slug-final. Singular `counter` in verb sense is BANNED.
+2. **NOUN sense (CR 122.1)** — `counter`/`counters` must be **bound on the
+   left**, by either:
+   - a counter TYPE word (`plus1`, `minus1`, `charge`, `stun`, `oil`,
+     `energy`, `loyalty`, `<name>`), or
+   - the preposition `with` (`etb-with-counters`), or
+   - **`any`** — newly ratified for axes that genuinely span every counter
+     type and therefore cannot be typed. `any-counter` / `any-counters`.
+
+**Why `any-` and not a sense-marker like `counter-object`:** a counter is
+**not** an object. CR 109.1 defines *object* as a spell, permanent, card,
+token, copy, or emblem; CR 122.1 defines a counter as "a marker placed on
+an object or player." The CR's own word for the noun sense is **marker**.
+Worse, the VERB sense is the one that genuinely acts on objects (a spell or
+ability on the stack IS an object), so a `-object` marker would point at
+the wrong sense. `any-` adds no new vocabulary and fills the existing type
+slot.
+
+**Consequence for the canonicalizer (ADD-08):** this makes position-aware
+bucketing decidable by local adjacency for these tokens — `counters` is
+EFFECT iff followed by an OBJECT token, QUALIFIER iff preceded by a type
+word, `with`, or `any`. That is the only approach `CR-VOCABULARY-AUDIT.md`
+section 4 found feasible, and it does not work until the renames in
+section 12 land.
+
 ## 9. Cost-vs-effect law
 
 Anchors: CR 113.3b ("[Cost]: [Effect]") and CR 601.2b (additional costs).
@@ -264,8 +307,61 @@ exhaustive; the walk validates all ~300):
 - `attack-trigger-damage-defender` → three-way split (b7 §12 pending).
 - `death-trigger-card-draw` → reuse original slug `death-trigger-draw-card`
   (registry continuity) — then family-normalize per D-1.
-- `counter-removal-as-activation-cost` → keep (verb-adjacent but shielded by
-  `-removal-`); revisit under section-8 rule 1 at the walk.
+- ~~`counter-removal-as-activation-cost` → keep (verb-adjacent but shielded by
+  `-removal-`); revisit under section-8 rule 1 at the walk.~~ **SUPERSEDED
+  by the CDR-09 walk below.**
+
+### 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — LOGGED, NOT EXECUTED
+
+Measured live against codebook v0.7 this session, classified against each
+axis's own ratified DEFINITION (not by name-guessing). **33 active axes
+carry a counter token; 16 are non-conforming.** Members and definitions are
+unchanged by every row below — these are name-only.
+
+Correcting `CDR-PROPOSALS.md` rev 2, which stated 34 axes and "~15 renames
+(3 verb-side, 9 noun-side)". Live measurement: **33 axes, 16 renames —
+3 verb-side, 10 noun-side, 3 `any-`.** The noun count was off by one and
+the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
+
+**Verb-side (3)** — singular `counter` in verb sense, banned by 8a rule 1:
+
+| from | to |
+|---|---|
+| `rule:activated-counter-target-spell` | `rule:activated-counters-target-spell` |
+| `rule:activated-tax-counter-unless-pays` | `rule:activated-counters-target-spell-unless-pays` |
+| `rule:tax-or-counter-spell` | `rule:counters-spell-unless-pays` |
+
+Note: those last two plus `rule:activated-counter-target-spell` are also a
+near-duplicate cluster differing only in delivery — resolve together, see
+CDR-05.
+
+**Noun-side, gain `plus1-` (10)** — every one of these definitions says
++1/+1 explicitly, verified this session:
+
+`activated-counter-transfer-from-other-creature` ·
+`attack-trigger-buff-other-attacker-counters` ·
+`attack-trigger-self-counter-growth` ·
+`cast-trigger-self-counter-noncreature-spell` ·
+`death-trigger-counter-transfer` · `draw-trigger-self-counter-growth` ·
+`etb-counter-on-other-creature` · `lifegain-triggered-counter` ·
+`mass-counter-distribution` · `self-counter-growth`
+
+**Type-agnostic, gain `any-` (3)** — definitions confirm each genuinely
+spans every counter type:
+
+| from | to |
+|---|---|
+| `rule:doubles-counter-placement` | `rule:doubles-any-counter-placement` |
+| `rule:cleanup-counters-on-leaving-battlefield` | `rule:cleanup-any-counters-on-leaving-battlefield` |
+| `rule:counter-removal-as-activation-cost` | `rule:any-counter-removal-as-activation-cost` |
+
+**Already conforming, no action (17):** 3 verb (`counters-target-spell`,
+`counters-noncreature-spell`, `counters-spell-or-ability-targeting-your-permanent`)
++ 14 noun (typed or `with`-bound).
+
+Execution is a codebook mutation and rides the walk as its own step, under
+the backup law with determinism ×2 — **not executed here**, per the
+ratified "no midflight renames" standing rule.
 - `untaps-target-land`, `activated-untap-target-creature`,
   `activated-untap-another-permanent`, `activated-tap-target-creature`,
   tap-or-untap pair, mass-untap pair → normalize onto
