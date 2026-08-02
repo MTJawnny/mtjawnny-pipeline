@@ -1,4 +1,15 @@
-# CONSOLIDATION-RUN1-DIRECTIVE-2 — run-1 consolidation on the /2 schema (session 2 of 2)
+# CONSOLIDATION-RUN1-DIRECTIVE-2 — SUPERSEDED (2026-08-01, post-external-audit)
+
+> **DO NOT EXECUTE.** Superseded by the audit-amended four-session split
+> (B-MIGRATION-DISCOVERY.md §10, A12): CONSOLIDATION-PLAN-DIRECTIVE.md
+> (session 2) + CONSOLIDATION-APPLY-DIRECTIVE.md (session 3) +
+> DET-PATTERNS-RUN2-DIRECTIVE.md (session 4). Known defects preserved
+> below for the audit trail: "92 clean nodes" is an off-by-one (correct:
+> 93), §2 directs printing a quote to console (transcript-hygiene
+> violation), §3 contains undefined small/large-drift thresholds, and §4's
+> global token synonym was withdrawn (A6). Body retained verbatim.
+
+# [SUPERSEDED] CONSOLIDATION-RUN1-DIRECTIVE-2 — run-1 consolidation on the /2 schema (session 2 of 2)
 
 Supersedes docs/CONSOLIDATION-RUN1-DIRECTIVE.md §4 onward where they
 differ; its §0–§3 orientation, input verification, and backup law carry

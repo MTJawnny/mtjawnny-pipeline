@@ -1,119 +1,142 @@
-# B-MIGRATION-DIRECTIVE — codebook /1 → /2 schema migration (session 1 of 2)
+# B-MIGRATION-DIRECTIVE — codebook /1 → /2 schema migration (session 1 of 4, rev 2)
 
-Captain-triggered (ratified 2026-08-01, B-MIGRATION-DISCOVERY.md §9 —
-rulings cited below as R1–R13). ZERO API SPEND: everything here is local
-compute. If any step appears to require spend, that is a HALT, not a
-judgment call. This session does the SHAPE migration ONLY — the run-1
-consolidation write is session 2 (CONSOLIDATION-RUN1-DIRECTIVE-2.md) and
-must NOT run here (R12).
+Rev 2 incorporates the external-audit amendments (B-MIGRATION-DISCOVERY.md
+§10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
+compute; any step appearing to need spend is a HALT. This session does the
+schema migration ONLY. Consolidation is sessions 2–3; DET run 2 is
+session 4 (A12). Prior rev is in git history.
 
 ## 0. Orientation reads (in order)
 
-1. docs/B-MIGRATION-DISCOVERY.md — §3 (schema), §2 (backfill classes,
-   verified counts), §4 (plan this directive enacts), §9 (ratified rulings)
+1. docs/B-MIGRATION-DISCOVERY.md §10 (AMENDMENTS — governs where it
+   conflicts with anything below it in the stack), §9, §3, §2
 2. docs/MASTER-HANDOFF.md + ADDENDUM-2 + ADDENDUM-3 + ADDENDUM-4
-3. docs/CONSOLIDATION-RUN1-DIRECTIVE.md (context only — do not execute)
+3. B-MIGRATION-EXTERNAL-AUDIT-LLM-HANDOFF.md if present (context; its
+   PROPOSALS are advisory — §10 is what was actually ratified)
 
-Print a state-check first: codebook.json schema/version + record count +
-membership-row count (expect foundry-codebook/1, v0.7, 455 records, 7,699
-rows), git status clean y/n. Then proceed.
+State-check first: codebook.json schema/version (expect
+foundry-codebook/1, v0.7), 455 records, 7,699 membership rows, git clean
+y/n. Then proceed.
 
-## 1. Build the accessor module (R1, R11)
+## 1. Accessor module + lint (A1, A13, R11)
 
 `experiments/foundry_codebook.py`:
-- `load_codebook(path)` — halts unless `schema == "foundry-codebook/2"`
-  (plain-English message naming the file's actual schema string).
-- `member_ids(entry) -> list[str]`, `member_id_set(entry) -> set[str]`.
-- `add_member(entry, obj)` — validates the object (field order oracle_id,
-  class, tier, runs, batch, quote; class vocab; tier iff llm), halts on
-  duplicate oracle_id, inserts keeping the list sorted by oracle_id.
-- `lint(codebook)` — invariants: schema string; every member list sorted;
-  no intra-axis duplicate oracle_ids; class ∈ {rule-derived, human, llm};
-  tier present iff class=llm; runs list-of-str when present; quote str when
-  present. Returns violations; callers halt on any. EVERY mutating script
-  ends by running lint (R11).
-- A small member-add CLI (`python3 -m foundry_codebook add-member <slug>
-  <oracle_id> --class human --batch N [--quote ...]`) — the post-freeze
-  home for hand-ratified additions (R4).
+- `load_codebook(path)` — halts unless schema == "foundry-codebook/2".
+- `member_ids(entry)` / `member_id_set(entry)` — id views over `members`.
+- `merge_assertion(entry, oracle_id, assertion)` — creates the member if
+  absent (sorted insert by oracle_id); appends the assertion in
+  deterministic (class, source_ref) order; HALTS on duplicate
+  (class, source_ref) for the same member; recomputes/validates the
+  member `tier` per A1 (present iff all-llm; value per the lane-aware
+  rule). Existing assertions are NEVER modified or removed here.
+- `remove_det_assertions(entry, source_ref_prefix)` — the ONLY removal
+  primitive, scoped to rule-derived assertions (A8); a member with zero
+  remaining assertions is dropped (logged).
+- `lint(codebook)` — schema string; members sorted by oracle_id;
+  assertions sorted by (class, source_ref); no duplicate oracle_id per
+  axis; no duplicate (class, source_ref) per member; valid UUID shape;
+  class/evidence_status/lane vocabularies; llm assertions carry
+  original_lane+effective_lane; tier present iff all-llm and value
+  consistent with the stack; quote non-empty unless
+  evidence_status="legacy-captain-seed"; corpus_ref present on every
+  assertion. Every mutating script ends with lint; violations halt.
+- Atomic write helper (A13): temp file → flush → lint+verify temp →
+  atomic rename over live. ALL mutators in this arc use it.
+- Member-add CLI (AG-CLI-01): validates schema/target status/UUID/
+  evidence, backs up, MERGES an assertion (never overwrites), appends
+  history, lints, writes atomically, prints final sha256, halts on
+  DET-axis operations other than assertion-merge of non-DET classes.
 
-## 2. Build the migration script (R1–R4)
+## 2. Migration writer (A1, A3, A5, R2, R3)
 
-`experiments/foundry_migrate_codebook_v2.py` — deterministic, re-runnable,
-G4-clean (never hand-edit output). Inputs:
-- `experiments/out/foundry/codebook.json` (/1, the truth being re-shaped)
-- `decisions/batch-{1..7}.foundry-decisions-v1.json` +
-  `review/batch-{1..7}.json` — replayed IN MEMORY through
-  foundry_reconcile.reconcile() with paths monkeypatched to a temp dir
-  (the discovery session's measured method) to build the (slug, oracle_id)
-  → {batch, pathway} provenance map, migrating across in-replay renames,
-  then following the live codebook's rename chains
-- `experiments/out/foundry/batch7_pay_life_scrub_report.json` (the 8)
-- `docs/det-patterns-v2.json` + the corpus via foundry_common (read-only)
-  — to regenerate each DET-owned axis's matched clause per member for the
-  quote backfill (R2). Reuse the det-pass matching machinery; do not
-  re-implement patterns.
-- review JSONs again for human-row quote backfill (quote of the proposing
-  batch where present; captain-seed rows without quotes stay quoteless)
+`experiments/foundry_migrate_codebook_v2.py` — deterministic,
+re-runnable, G4-clean. Builds each existing row's SINGLE initial
+assertion (existing rows have exactly one known support event each;
+multi-assertion stacks grow from session 3 onward):
 
-Class assignment (must reproduce B-MIGRATION-DISCOVERY.md §2 exactly):
-DET-owned axes' rows → rule-derived, batch="det-pass-1", quote=matched
-clause; decisions-traceable rows → human, batch=originating batch, quote
-where recoverable; the pay-life 8 → human, batch=7; the 295 shell rows →
-human with replay-map batches (R3). Top-level schema → "foundry-codebook/2".
-Axis insertion order preserved byte-for-byte; only member lists change
-shape. Output via fc.write_json.
+| Bucket (expected counts, B-MIGRATION-DISCOVERY.md §2) | Assertion |
+|---|---|
+| DET rows (3,697) | class=rule-derived, source_ref="det-patterns-v2:<pattern_index>", quote=matched clause (regenerated read-only from the det-pass machinery — never re-implemented), corpus_ref=current snapshot date, evidence_status=quoted |
+| Decisions-traceable (3,699) | class=human, source_ref="batch-N" (captain-seed rows: "captain-seed-batch-N"), quote from the proposing batch's review JSON where present (corpus_ref=that batch's era snapshot date if recorded, else current, stated in report), else evidence_status="legacy-captain-seed" (A3) |
+| Pay-life 8 | class=human, source_ref="pay-life-scrub-2026-07-30", quote from the scrub report/oracle text |
+| Shell audit rows (295) | same replay-derived human assertions, under their original slugs (R3) |
 
-HALT conditions: any current member pair absent from the provenance map
-(other than the known 8); any DET member without a pattern match for the
-quote backfill (that would contradict det_pass_full_hits.json); any count
-diverging from §3's gates.
+Provenance attribution: in-memory replay of batches 1→7 through
+foundry_reconcile.reconcile() with ALL paths pointed at a temp dir
+(never the live file), rename-chain mapping to current slugs — the
+discovery session's measured method. Top-level schema →
+"foundry-codebook/2"; `member_oracle_ids` renamed `members` (A1/CDR-11);
+axis insertion order preserved.
 
-## 3. Backup law, run, gates
+Also emits `experiments/out/foundry/migration_manifest.json`
+(foundry-migration-manifest/1): input hashes + per-(slug, oracle_id)
+expected assertion summaries — written by the WRITER for the record; the
+verifier does NOT read it as ground truth (see §3).
 
-1. Timestamped backups of codebook.json AND grammars.json to backups/,
-   readback-verified (size + sha256 printed) BEFORE any write.
-2. Run the migration.
-3. Gates (all must pass, else restore backup and halt):
-   - Membership-identity: per record, id-set exactly equals pre-migration
-     (455/455; the 13 field-less shells stay field-less only if R3 review
-     says so — R3 says uniform for the 442 member-bearing records; the 13
-     empty shells gain nothing).
-   - Counts: 7,699 rows; statuses 307/75/45/26/2; class totals
-     rule-derived 3,697 / human 4,002 (3,707 active+deferred + 295 shells).
-   - Quote coverage report: counts by class; missing-quote rows LISTED
-     (expected: captain-seed only), not halted.
-   - lint() clean.
-   - Determinism ×2: second run from the backup, byte-identical.
+## 3. Independent verifier (A13 / B-02 — the audit's core demand)
 
-## 4. Consumer adaptations (same session, R4/R12)
+`experiments/foundry_verify_migration.py` — imports NOTHING from the
+migration writer's assignment logic (file-level separation; shared code
+limited to foundry_common loaders). Re-derives expected metadata
+directly from source artifacts and checks EVERY (slug, oracle_id):
+1. expected assertion count (exactly 1 post-migration) and class;
+2. source_ref confirmed against the source artifact itself (the member
+   is genuinely in batch-N's staged decisions / det hit list /
+   pay-life report);
+3. quote verbatim in the referenced corpus representation (A9 policy:
+   validate against corpus_ref snapshot where available; errata'd
+   mismatches vs current corpus are REPORT rows, not halts, listed
+   card-by-card);
+4. DET pattern index resolves in det-patterns-v2.json;
+5. tier/lane/evidence_status rules hold.
+Any check failing outside the declared report categories = HALT.
 
-- `foundry_det_pass.py` apply path: emit member objects (rule-derived +
-  matched-clause quote); history note trimmed to counts (no embedded
-  member lists); write via fc.write_json; end with lint.
-- `foundry_gate0_scrub.py`: iterate `m["oracle_id"]`, preserve objects.
-- `foundry_consolidate_run1.py`: the two set() reads swap to
-  member_id_set. (Its write extension is SESSION 2 — do not build here.)
-- `foundry_reconcile.py`: UNTOUCHED except a top-of-file comment marking
-  it the frozen /1 legacy producer and pointing at the migrate script for
-  the rebuild chain (R4).
-- Smoke checks: axis_walk + det_patterns_probe run clean;
-  stage1b.load_codebook_reference() output byte-identical pre/post
-  (proves the SYNTH prompt is untouched).
+Negative tests (run against scratch copies, never live): /1 consumer ×
+/2 file; /2 loader × /1 file; duplicate member; duplicate
+(class, source_ref); invalid UUID; empty quote without exemption; bad
+corpus_ref; tier contradicting stack; interrupted-write simulation
+(temp file present, live untouched).
 
-## 5. Documentation + report
+## 4. Reconcile guards (A4)
 
-- CORPUS-PASS-PLAN.md status: note the schema blocker is CLEARED by this
-  session (consolidation itself still pending session 2).
-- RESUME-NOTE.md: one line (date + commit).
-- Report: gate results, class/quote coverage tables, file size before/
-  after, commit hashes, spend $0.00 / cumulative $90.51 / headroom $49.49.
-- Commit code + docs (codebook.json itself is gitignored — state its new
-  sha256 in the report for the record).
+foundry_reconcile.py gains two hard guards (its only edits):
+- load halts if the input file's schema is not foundry-codebook/1;
+- writing to the live codebook path halts unless an explicit
+  `--legacy-output <path>` names a non-live destination.
+Header comment states: frozen /1 legacy producer; replay is provenance
+attribution only; there is NO replay-based rebuild chain (A4 retraction).
+
+## 5. Run order and gates
+
+1. Backup law: timestamped codebook.json + grammars.json backups,
+   readback-verified (size + sha256 printed) + a restore DRILL to a
+   scratch path before any mutation.
+2. Run migration writer (atomic write path).
+3. Gates — ALL must pass or restore-and-halt:
+   - membership-identity: per-record id-set exactly unchanged (455/455);
+   - counts: 7,699 members; statuses 307/75/45/26/2; class totals
+     rule-derived 3,697 / human 4,002;
+   - INDEPENDENT VERIFIER clean (§3), report categories printed;
+   - lint clean;
+   - determinism ×2: writer twice from backup, byte-identical codebook
+     AND manifest.
+4. Consumer adaptations: foundry_det_pass.py apply →
+   remove_det_assertions + merge_assertion pattern (A8; preserves any
+   future non-DET assertions; history note = counts only);
+   foundry_gate0_scrub.py → iterate m["oracle_id"], removal drops the
+   whole member (gate-0 is a card-level fact, all assertions moot —
+   state this in its header); foundry_consolidate_run1.py reads →
+   member_id_set. No consolidation writing is built this session.
+5. Smoke: axis_walk + det_patterns_probe adapt trivially (len(members));
+   stage1b.load_codebook_reference() output byte-identical pre/post.
+6. Docs: CORPUS-PASS-PLAN note (blocker cleared, plan session next);
+   RESUME-NOTE line; report per standing format + new codebook sha256 +
+   file size + quote-coverage table by class + errata report count.
+   Spend $0.00 / cumulative $90.51 / headroom $49.49.
 
 ## 6. Standing discipline
 
-Halt loudly · verify-or-drop · transcript hygiene (no oracle text to
-console; quotes go in files only) · G1 constants untouchable · G4 no
-hand-edits · determinism ×2 · pre-mutation backups · one session, this
-work item only. Continue through all phases — stop only on genuine
-ambiguity, a failed gate, or an unspecified decision.
+Halt loudly · verify-or-drop · transcript hygiene (quotes to files ONLY,
+never console — A14) · G1 · G4 · determinism ×2 · pre-mutation backups ·
+one session, this work item only. Continue through all phases — stop only
+on genuine ambiguity, a failed gate, or an unspecified decision.

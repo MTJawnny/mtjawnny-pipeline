@@ -696,5 +696,156 @@ reattributed to the existing-axis grammar confirmations.
 
 ---
 
+## 10. POST-AUDIT AMENDMENTS — CAPTAIN RATIFIED (2026-08-01, rev 2)
+
+An external-LLM audit (B-MIGRATION-EXTERNAL-AUDIT-LLM-HANDOFF.md, verdict
+NO-GO-AS-WRITTEN) was verified against the live system finding-by-finding.
+Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
+H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
+off-by-one; H-06 caught a real bug — 28 active slugs carry the bare token
+`token`, a global synonym map would have corrupted them; H-01 caught a
+transcript-hygiene violation in the session-2 directive); H-04 and M-02
+correct in direction (an unrestricted-extension census re-run found zero
+new consumers — the census conclusion stands, the method criticism was
+fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
+keyword-grant axes", ADDENDUM-2 §4 — the bare-vs-faceted reading is the
+record, not a rationalization). This section AMENDS §9 where they
+conflict; §9 otherwise stands.
+
+**A1 (amends R1, Captain YES 2026-08-01) — multi-assertion members.**
+`member_oracle_ids` is renamed `members` (CDR-11) and each member holds a
+STACK of proofs:
+
+```json
+{
+  "oracle_id": "<uuid>",
+  "tier": "provisional",
+  "assertions": [
+    {"class": "human", "source_ref": "batch-3",
+     "quote": "...", "corpus_ref": "2026-07-18",
+     "evidence_status": "quoted"},
+    {"class": "llm", "source_ref": "run1",
+     "original_lane": "free", "effective_lane": "codebook",
+     "promotion_reason": "exact-active-slug-match",
+     "quote": "...", "corpus_ref": "2026-08-01",
+     "evidence_status": "quoted"},
+    {"class": "rule-derived", "source_ref": "det-patterns-v2:12",
+     "quote": "...", "corpus_ref": "2026-08-01",
+     "evidence_status": "quoted"}
+  ]
+}
+```
+
+- One member record per (axis, oracle_id); assertions are append-merge,
+  never overwritten; duplicate (class, source_ref) pairs halt.
+- Assertion fields: `class` (rule-derived|human|llm, required);
+  `source_ref` (required — "batch-N" / "captain-seed-batch-N" /
+  "pay-life-scrub-2026-07-30" / "captain-cli-<date>" / "run1"/"wave1" /
+  "det-patterns-v2:<index>"; this SUBSUMES the old `batch` field, which
+  is dropped); `original_lane`/`effective_lane`/`promotion_reason`
+  (llm-class only, lane fields required for llm); `quote` +
+  `evidence_status` ("quoted" | "legacy-captain-seed") + `corpus_ref`
+  (corpus snapshot date, CDR-09).
+- Member-level `tier`: present iff ALL assertions are llm-class
+  (provisional at M=1; corroborated per the lane-aware multi-run rule);
+  ABSENT when any human or rule-derived assertion exists (full weight).
+  Lint VALIDATES tier against the assertion stack (a tier the stack
+  doesn't support is a halt).
+- Deterministic order: members by oracle_id; assertions by
+  (class, source_ref); fixed key order within each object.
+- Consequence embraced: run-1's 1,833 codebook-lane + 170 grammar-lane
+  already-member confirmations are no longer discarded no-ops — they
+  merge as llm assertions onto existing members (assertion-merges).
+  R5's 96 already-member exact matches likewise.
+
+**A2 (amends R8, Captain YES 2026-08-01) — revived axes enter
+`deferred`,** not active-at-n=0 (consistent with "empty axes never
+authored"; the ratified b4-D5 status exists for exactly this). They flip
+to active automatically when their ratified DET pattern lands its first
+membership (the flip is part of DET apply, logged in history).
+
+**Delegated decisions (Captain's blanket delegation 2026-08-01, each
+logged, none silent):**
+- **A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
+  `evidence_status: "legacy-captain-seed"` — an explicit ratified
+  EXCEPTION to evidence-quote-or-discard (which was aimed at model
+  assignments; discarding Captain-ratified members to satisfy it would
+  invert its purpose).
+- **A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
+  (the audit was right: replay alone cannot reproduce post-walk state).
+  The live file + verified backups is the source of truth; the in-memory
+  replay is provenance ATTRIBUTION only. foundry_reconcile.py gets hard
+  guards, not a comment: halts on schema=foundry-codebook/2 input and on
+  writing to the live codebook path without an explicit override flag.
+- **A5 (CDR-08):** class boundary principle recorded: class = who made
+  the PER-CARD judgment. Batch-triage memberships (Captain-reviewed with
+  rosters/samples) = human. Bulk transformations of run output (R5/R6)
+  = llm even though the rule was Captain-ratified. A future individual
+  Captain confirmation ADDS a human assertion; it never rewrites the llm
+  one.
+- **A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
+  WITHDRAWN (would corrupt 28 active slugs). Replaced by a whole-slug
+  alias in the routing artifact: rule:grants-haste-to-token →
+  rule:grants-haste-to-created-tokens. Future synonym proposals must
+  state their scope (global token map vs whole-slug alias) explicitly.
+- **A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
+  the ratified text already says "pure"): bare, unscoped grant axes are
+  engine-redundant; scope-, delivery-, duration-, and context-faceted
+  grant axes are legitimate.
+- **A8 (CDR-07):** DET refresh updates ONLY rule-derived assertions —
+  it replaces its own assertion set per axis and never touches human/llm
+  assertions on the same member. Membership disappears only when no
+  assertions remain.
+- **A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
+  the verifier validates quotes against the REFERENCED snapshot where
+  available, else current corpus with errata'd mismatches reported (not
+  halted) — a quote can be historically-true and currently-stale.
+- **A10 (CDR-10):** temporary keyword grants route to
+  rule:temporary-keyword-grant per the b4-D4 standing rule (already
+  ratified precedent; recorded here for the routing artifact).
+- **A11 (CDR-01):** members hold DIRECT assertions only; parent rollups
+  stay derived views (matches compounds-authored/atomics-derived).
+- **A12 (CDR-12):** FOUR sessions, each Captain-triggered:
+  1. MIGRATE — schema + migration writer + INDEPENDENT VERIFIER + atomic
+     writes + reconcile guards (docs/B-MIGRATION-DIRECTIVE.md, revised).
+  2. PLAN — zero-mutation consolidation plan artifact enumerating every
+     slug and oracle_id (docs/CONSOLIDATION-PLAN-DIRECTIVE.md); resolves
+     the 93-node classification (AG-COUNT-01), all routing, all
+     promotions; ends STOPPED for Captain approval — and this artifact
+     plus the amended schema is the designated EXTERNAL RE-AUDIT
+     checkpoint (one focused packet, different model family).
+  3. APPLY — executes exactly the approved plan, zero judgment
+     (docs/CONSOLIDATION-APPLY-DIRECTIVE.md), plus card-index artifact +
+     gamechangers seed + kill-note corrections + record corrections.
+  4. DET RUN 2 — the three new patterns through the standing
+     ratification flow (docs/DET-PATTERNS-RUN2-DIRECTIVE.md); revived
+     axes flip deferred→active here.
+- **A13 (B-02):** an independent verifier is REQUIRED before any
+  mutation lands: separate code path from the writer, per-member
+  expected-assertion checks derived directly from source artifacts,
+  quote-verbatim validation, negative-test suite, temp-write + verify +
+  atomic-replace on every mutator.
+- **A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
+  collisions; the prior directive's "92" was an off-by-one); killed-slug
+  routing becomes a ratified data artifact
+  (foundry-killed-slug-routing/1, closed action vocabulary, no runtime
+  "quote fits" judgment — every instance enumerated in the plan);
+  evidence quotes are NEVER printed to console (report files only —
+  fixing the session-2 directive's violation); "small/large drift"
+  language replaced by exact-match-or-halt against the approved plan.
+- **A15 (H-03, amends R6's framing):** the 213 rows are promoted as
+  free-lane labels whose canonical forms match ratified closed grammar
+  compositions (NOT "residual reorders" — measured residual reorders
+  were 0). Implementation: each row re-validates through validate_slug
+  exactly like a grammar-lane label; original_lane="free" and
+  effective_lane="codebook-grammar" are preserved on the assertion;
+  the `<state>`-placeholder cluster stays report-only.
+
+Size note: assertions raise the projection to roughly 8–9 MB at
+post-consolidation scale. Accepted under the same reasoning as R2
+(local, gitignored, never prompt-embedded).
+
+---
+
 *Session spend: $0.00. Cumulative arc: $90.51. Headroom vs the $140
 ceiling: $49.49.*
