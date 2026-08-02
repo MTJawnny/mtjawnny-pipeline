@@ -14,7 +14,7 @@ same as this session — the pipeline work happens cross-repo in
 Playbook: `docs/T3-BUILDOUT-PLAYBOOK.md` (Steps 1-9, one step per fresh
 session, per its own header).
 
-- **Steps 1-2 — done.** See `docs/T3-BUILDOUT-STEP3-HANDOFF.md` for full
+- **Steps 1-2 — done.** See `docs/archive/T3-BUILDOUT-STEP3-HANDOFF.md` for full
   detail (Step 1 superseded/committed `c53b30d`; Step 2 Phase A change
   order D1/D2/N1/N2 committed `b5d5e3a`).
 

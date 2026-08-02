@@ -398,7 +398,7 @@ Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 
 - **Q5 extended structural/descriptive vocabulary** (the ~40-most-common-token
-  proposal from `docs/CORPUS-PASS-WALK-RATIFICATION.md` §2.2.2, ratified as
+  proposal from `docs/archive/CORPUS-PASS-WALK-RATIFICATION.md` §2.2.2, ratified as
   EXACTLY the named list — the "and similar" backlog remainder is logged to
   the final naming audit, not silently expanded here):
   `creatures`, `other`, `on`, `from`, `library`, `triggers`, `ability`, `and`,

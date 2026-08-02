@@ -683,7 +683,7 @@ oracle_ids, class/tier vocabulary, tier-only-on-llm, quote type) run at
 the end of every mutating script.
 
 **R12 — Two sessions (OQ7):** MIGRATE (docs/B-MIGRATION-DIRECTIVE.md) then
-CONSOLIDATE (docs/CONSOLIDATION-RUN1-DIRECTIVE-2.md, superseding the
+CONSOLIDATE (docs/archive/CONSOLIDATION-RUN1-DIRECTIVE-2.md, superseding the
 halted §4+ of the original). SYNTH already-member confirmations (1,833
 codebook-lane + 170 grammar-lane no-ops) stay no-ops — logged as counts,
 flagged as future corroboration-wave input; NOT written into `runs`
@@ -809,7 +809,7 @@ logged, none silent):**
   1. MIGRATE — schema + migration writer + INDEPENDENT VERIFIER + atomic
      writes + reconcile guards (docs/B-MIGRATION-DIRECTIVE.md, revised).
   2. PLAN — zero-mutation consolidation plan artifact enumerating every
-     slug and oracle_id (docs/CONSOLIDATION-PLAN-DIRECTIVE.md); resolves
+     slug and oracle_id (docs/archive/CONSOLIDATION-PLAN-DIRECTIVE.md); resolves
      the 93-node classification (AG-COUNT-01), all routing, all
      promotions; ends STOPPED for Captain approval — and this artifact
      plus the amended schema is the designated EXTERNAL RE-AUDIT

@@ -179,7 +179,7 @@ with empty hypotheses:
    `docs/grammars.json` + `experiments/foundry_det_patterns_probe.py`. **RATIFIED AND
    APPLIED 2026-07-31** (walk-ratification session, see
    `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` for the full ruling set and
-   `docs/CORPUS-PASS-WALK-RATIFICATION.md`'s RESOLUTION header): 23 renames applied to
+   `docs/archive/CORPUS-PASS-WALK-RATIFICATION.md`'s RESOLUTION header): 23 renames applied to
    codebook.json (19 structural + Q10's 4 combat-damage normalizations), 1 kill
    (rule:kicker-conditional-bonus-effect, bare-keyword duplicate), the unblockable/evasion
    family redesigned (Q8: `<delivery>-unblockable-<scope>` rejected, new
@@ -213,7 +213,7 @@ with empty hypotheses:
    (class / source_ref / quote / corpus_ref / evidence_status), so a SYNTH confirmation
    now has somewhere true to live. The consolidation write is NOT next: per A12 it is
    session 3 (APPLY), and it executes an approved plan produced by session 2 (PLAN,
-   `docs/CONSOLIDATION-PLAN-DIRECTIVE.md`, zero-mutation, also the external re-audit
+   `docs/archive/CONSOLIDATION-PLAN-DIRECTIVE.md`, zero-mutation, also the external re-audit
    checkpoint). Free-lane discovery artifact and full dry-run report remain complete.
 7. SCHEMA PASS — the pre-existing schema-pass agenda (parent/child structure, ownership
    facets recorded during batch-6 D3, lattice-grammar formalization from section 2 above,

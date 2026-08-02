@@ -7,7 +7,7 @@ self-contained: it carries the complete ruling set (nothing here requires the
 dead session's context) plus the execution order and guard rails. Read these
 first for standing doctrine: `docs/MASTER-HANDOFF.md`, `ADDENDUM-2`,
 `ADDENDUM-3`, `docs/CORPUS-PASS-PLAN.md`, `docs/CODEBOOK-NAMING-GRAMMAR.md`,
-`docs/CORPUS-PASS-WALK-RATIFICATION.md`. Where anything conflicts, THIS
+`docs/archive/CORPUS-PASS-WALK-RATIFICATION.md`. Where anything conflicts, THIS
 DOCUMENT is newest and governs. Halt loudly on genuine ambiguity, a failed
 gate, or an unspecified decision — never guess, never paper over.
 
@@ -20,7 +20,7 @@ gate) live with retroactive scrub done; pay-life axis surgery applied (18→8 +
 rehomes). CORPUS-PASS-PLAN steps 2–3 were EXECUTED (keyword buckets from CR
 702; combined per-axis walk: validate_slug.py, grammars.json, 19 structural
 renames, 41 DET pattern proposals with corpus hit-counts, 10 open questions)
-and written to `docs/CORPUS-PASS-WALK-RATIFICATION.md` — all PROPOSALS,
+and written to `docs/archive/CORPUS-PASS-WALK-RATIFICATION.md` — all PROPOSALS,
 codebook untouched. Captain has now ruled on everything (section 2 below).
 Your job: verify state, apply the rulings, wire the deferred mechanisms, and
 report — leaving the repo one ratified DET pass away from pricing the
@@ -39,7 +39,7 @@ dress-rehearsal AFTER the DET pass and condensation).
    `experiments/out/foundry/axis_walk_scaffold.json`,
    `experiments/foundry_det_patterns_probe.py`,
    `experiments/out/foundry/det_patterns_probe.json`,
-   `docs/CORPUS-PASS-WALK-RATIFICATION.md`.
+   `docs/archive/CORPUS-PASS-WALK-RATIFICATION.md`.
    ANY missing → HALT and report which; do not regenerate silently.
 2. `git status` / `git diff` — commit the walk artifacts AS-IS first
    ("walk artifacts, pre-ratification state") so the proposal state is in

@@ -14,33 +14,26 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **44 documents under docs/**
-- ruling references found: **520**
+- documents scanned: **36 documents under docs/**
+- ruling references found: **443**
 - distinct ruling ids: **123**
-- corroborated (appear in >1 doc): **81**
-- **sole-home (appear in exactly 1 doc): 42**
+- corroborated (appear in >1 doc): **73**
+- **sole-home (appear in exactly 1 doc): 50**
 
 ## Deletion gate — per document
 
 | document | lines | rulings | sole home for | deletable |
 |---|---:|---:|---:|---|
 | `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
-| `B-MIGRATION-AUDIT-PACKET.md` | 1359 | 18 | 0 | yes |
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
-| `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 7 | **NO** |
-| `B-MIGRATION-SESSION-1-REPORT.md` | 275 | 2 | 0 | yes |
-| `B-SESSION-SPLIT-REVIEW-PACKET.md` | 446 | 15 | 0 | yes |
+| `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
 | `BACKEND-BUILD-PLAN.md` | 277 | 1 | 0 | yes |
-| `BATCH-8-AB-DRESS-REHEARSAL-SPEC.md` | 133 | 1 | 0 | yes |
 | `CDR-PROPOSALS.md` | 528 | 31 | 7 | **NO** |
 | `CODEBOOK-NAMING-GRAMMAR.md` | 429 | 18 | 1 | **NO** |
 | `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
-| `CONSOLIDATION-PLAN-DIRECTIVE.md` | 121 | 6 | 0 | yes |
-| `CONSOLIDATION-RUN1-DIRECTIVE-2.md` | 127 | 5 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
-| `CORPUS-PASS-WALK-RATIFICATION.md` | 469 | 3 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 52 | 2 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
@@ -54,7 +47,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
-| `T3-BUILDOUT-STEP3-HANDOFF.md` | 72 | 1 | 0 | yes |
 | `T3-BUILDOUT-STEP4-HANDOFF.md` | 161 | 1 | 0 | yes |
 | `T3-BUILDOUT-STEP5-HANDOFF.md` | 151 | 1 | 0 | yes |
 | `TRIAGE-BATCH-1.md` | 368 | 5 | 0 | yes |
@@ -64,7 +56,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 2 | **NO** |
 | `TRIAGE-BATCH-6.md` | 1008 | 12 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 1 | **NO** |
-| `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 6 | **NO** |
+| `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 8 | **NO** |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
@@ -80,8 +72,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `AG-CLI-01` (line 45) — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/
 
-**`B-MIGRATION-DISCOVERY.md`** — sole home for 7:
+**`B-MIGRATION-DISCOVERY.md`** — sole home for 13:
 
+- `A3` (line 769) — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
 - `A4` (line 774) — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `A9` (line 799) — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
 - `H-03` (line 704) — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
@@ -89,6 +82,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `H-06` (line 704) — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `M-03` (line 704) — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `M01` (line 710) — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
+- `R10` (line 673) — R10 — Killed-slug routing table** (consolidation must implement; a
+- `R11` (line 680) — R11 — Standing codebook lint** (audit proposal #3): the accessor module
+- `R12` (line 685) — R12 — Two sessions (OQ7):** MIGRATE (docs/B-MIGRATION-DIRECTIVE.md) then
+- `R13` (line 692) — R13 — Record corrections (OQ10) executed** in this commit set:
+- `R8` (line 646) — R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
 
 **`CDR-PROPOSALS.md`** — sole home for 7:
 
@@ -147,31 +145,28 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `D9` (line 764) — D9 — All remaining verdicts stand; process items
 
-**`WALK-RATIFICATION-EXECUTION-HANDOFF.md`** — sole home for 6:
+**`WALK-RATIFICATION-EXECUTION-HANDOFF.md`** — sole home for 8:
 
 - `F2` (line 155) — landfall-produces-mana fixed per F2. Report the final ratified count
 - `G2` (line 196) — G2 (enters-tapped subject check):** the pattern "enters tapped" will
 - `G3` (line 202) — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
+- `G4` (line 205) — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
 - `G5` (line 207) — G5 (rename sweep completeness):** every rename must sweep slug
 - `G6` (line 211) — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
+- `G7` (line 214) — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
 - `Q10` (line 93) — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
 ## Full registry
 
-### `A1` — 12 reference(s) across 8 doc(s)
+### `A1` — 7 reference(s) across 6 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:109` — Part 3 — THE SCHEMA THE PLAN WRITES INTO (ratified amendment A1)
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1708` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `B-MIGRATION-DIRECTIVE.md:4` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
 - `B-MIGRATION-DISCOVERY.md:715` — A1 (amends R1, Captain YES 2026-08-01) — multi-assertion members.**
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:161` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:291` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:416` — A1** — the multi-assertion member shape (Part 2). Deterministic order:
 - `CDR-PROPOSALS.md:261` — This is an amendment to ratified A1 and needs ratifying as one.
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:17` — (A1–A15) and §9 where unamended. PRECONDITION: session 1
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:108` — `docs/B-CONSOLIDATION-REAUDIT-PACKET.md` — amended schema (§10 A1) +
 
 ### `A10` — 3 reference(s) across 2 doc(s)
 
@@ -179,19 +174,16 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-MIGRATION-DISCOVERY.md:803` — A10 (CDR-10):** temporary keyword grants route to
 
-### `A11` — 3 reference(s) across 3 doc(s)
+### `A11` — 2 reference(s) across 2 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1686` — A11** — members hold DIRECT assertions only; parent rollups stay
 - `B-MIGRATION-DISCOVERY.md:806` — A11 (CDR-01):** members hold DIRECT assertions only; parent rollups
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:428` — A11** — members hold DIRECT assertions only; parent rollups stay derived
 
-### `A12` — 6 reference(s) across 5 doc(s)
+### `A12` — 4 reference(s) across 3 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:9` — This is the ratified A12 checkpoint.** A multi-session arc is rewriting a
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:25` — all since fixed. You are the different-family check that ruling A12 actually
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:145` — This amends a ratified ruling.** Amendment A12 fixed a four-session arc
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:9` — > inside it is ~88K tokens and can be audited in full. This amends the A12
 - `SESSION-HANDOFF-2026-08-01.md:86` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
 
 ### `A13` — 2 reference(s) across 2 doc(s)
@@ -199,13 +191,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:823` — A13 (B-02):** an independent verifier is REQUIRED before any
 - `CDR-PROPOSALS.md:254` — guarantee so it must be ratified, not chosen ad hoc; **the A13 verifier's
 
-### `A14` — 3 reference(s) across 3 doc(s)
+### `A14` — 2 reference(s) across 2 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1688` — A14** — killed-slug routing is a closed data vocabulary with every
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:430` — A14** — evidence quotes are NEVER printed to console, only to report
 
-### `A15` — 18 reference(s) across 8 doc(s)
+### `A15` — 13 reference(s) across 6 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
@@ -215,45 +206,36 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1761` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
 - `B-MIGRATION-DIRECTIVE.md:4` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
 - `B-MIGRATION-DISCOVERY.md:836` — A15 (H-03, amends R6's framing):** the 213 rows are promoted as
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:161` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:214` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:291` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:434` — A15** — the 213 rows are free-lane labels whose canonical forms match
 - `CDR-PROPOSALS.md:92` — not ratified vocabulary at all (§1 above). **A15-VOCAB-01 was never a
 - `CDR-PROPOSALS.md:285` — A15-instantiated axes (`rule:activated-tap-opponent-artifact` and node
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:60` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:17` — (A1–A15) and §9 where unamended. PRECONDITION: session 1
 
-### `A2` — 5 reference(s) across 5 doc(s)
+### `A2` — 4 reference(s) across 4 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1679` — A2** — a revived axis enters `deferred`, never active-at-n=0.
 - `B-MIGRATION-DISCOVERY.md:761` — A2 (amends R8, Captain YES 2026-08-01) — revived axes enter
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:418` — A2** — revived axes enter `deferred`, never active-at-n=0. They flip to
 - `CDR-PROPOSALS.md:173` — itself. A2 set this precedent for revived axes; this applies it to identical
 - `DET-PATTERNS-RUN2-DIRECTIVE.md:4` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
 
-### `A3` — 2 reference(s) across 2 doc(s)
+### `A3` — 1 reference(s) across 1 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:769` — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
-- `B-MIGRATION-SESSION-1-REPORT.md:83` — decisions files that carry no quote field. A3 keeps them and marks them.
 
 ### `A4` — 1 reference(s) across 1 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 
-### `A5` — 3 reference(s) across 3 doc(s)
+### `A5` — 2 reference(s) across 2 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1680` — A5** — class = who made the PER-CARD judgment. Bulk transformation of
 - `B-MIGRATION-DISCOVERY.md:780` — A5 (CDR-08):** class boundary principle recorded: class = who made
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:420` — A5** — class = who made the PER-CARD judgment. Batch triage = human.
 
-### `A6` — 3 reference(s) across 3 doc(s)
+### `A6` — 2 reference(s) across 2 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1682` — A6** — the token→created-tokens synonym is a WHOLE-SLUG alias, not a
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:424` — A6** — the token→created-tokens synonym is a WHOLE-SLUG alias, not a
 
 ### `A7` — 3 reference(s) across 2 doc(s)
 
@@ -261,11 +243,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
 
-### `A8` — 4 reference(s) across 4 doc(s)
+### `A8` — 3 reference(s) across 3 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1684` — A8** — a rule-derived refresh replaces only its own assertions and
 - `B-MIGRATION-DISCOVERY.md:795` — A8 (CDR-07):** DET refresh updates ONLY rule-derived assertions —
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:426` — A8** — a DET refresh replaces only its own rule-derived assertions and
 - `DET-PATTERNS-RUN2-DIRECTIVE.md:4` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
 
 ### `A9` — 1 reference(s) across 1 doc(s)
@@ -319,15 +300,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `B-MIGRATION-DIRECTIVE.md:45` — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/
 
-### `AG-COUNT-01` — 7 reference(s) across 6 doc(s)
+### `AG-COUNT-01` — 5 reference(s) across 4 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:150` — Part 4 — THE 95-NODE CLASSIFICATION (AG-COUNT-01)
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1742` — (AG-COUNT-01), each classified into the closed vocabulary:
 - `B-MIGRATION-DISCOVERY.md:813` — the 93-node classification (AG-COUNT-01), all routing, all
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:195` — (AG-COUNT-01), each classified into the closed vocabulary:
 - `CDR-PROPOSALS.md:490` — auditor's AG-COUNT-01 shape as a named gate. Category-sum totals drop rows that
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:41` — (AG-COUNT-01), each classified into the closed vocabulary:
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:50` — (AG-COUNT-01; categories: instantiate / join-existing / redirect /
 
 ### `AG-EQUIV-01` — 2 reference(s) across 1 doc(s)
 
@@ -441,11 +420,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:147` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
 
-### `CDR-11` — 8 reference(s) across 5 doc(s)
+### `CDR-11` — 7 reference(s) across 4 doc(s)
 
 - `B-MIGRATION-DIRECTIVE.md:68` — "foundry-codebook/2"; `member_oracle_ids` renamed `members` (A1/CDR-11);
 - `B-MIGRATION-DISCOVERY.md:716` — `member_oracle_ids` is renamed `members` (CDR-11) and each member holds a
-- `B-MIGRATION-SESSION-1-REPORT.md:157` — CDR-11) converts every such site from a loud TypeError into a quiet wrong
 - `CDR-PROPOSALS.md:371` — CDR-11 (NEW) — Predestined tags: derive axes from the CR top-down
 - `CDR-PROPOSALS.md:408` — Recommend: treat as CDR-11's first application after token types.** These are
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
@@ -465,13 +443,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:159` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 
-### `D1` — 21 reference(s) across 9 doc(s)
+### `D1` — 19 reference(s) across 8 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:85` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
 - `CODEBOOK-NAMING-GRAMMAR.md:384` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
-- `CORPUS-PASS-WALK-RATIFICATION.md:120` — family as literally `dies`. §13 D-1 ratifies **`death-trigger`** as the
-- `CORPUS-PASS-WALK-RATIFICATION.md:122` — D-1 (the explicit, later ratification) throughout — every `death-trigger-*`
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
 - `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
@@ -518,11 +494,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
-### `D2` — 15 reference(s) across 9 doc(s)
+### `D2` — 14 reference(s) across 8 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:129` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:385` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
-- `CORPUS-PASS-WALK-RATIFICATION.md:189` — D-2 (bare verb stem), 1 slug:**
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
@@ -536,11 +511,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
-### `D3` — 10 reference(s) across 7 doc(s)
+### `D3` — 9 reference(s) across 6 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:168` — One connective, one order, closed stat list — RATIFIED (D-3):
 - `CODEBOOK-NAMING-GRAMMAR.md:386` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
-- `CORPUS-PASS-WALK-RATIFICATION.md:163` — D-3 (`-scaled-by-` → `-scales-with-`), 15 slugs — the connective is
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
 - `TRIAGE-BATCH-4.md:567` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `TRIAGE-BATCH-6.md:477` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -553,18 +527,15 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 
-### `D4` — 16 reference(s) across 11 doc(s)
+### `D4` — 13 reference(s) across 8 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1746` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
-- `B-MIGRATION-AUDIT-PACKET.md:782` — D4 standing rule; the grammar lane gains the killed/merged/renamed checks
 - `B-MIGRATION-DISCOVERY.md:641` — D4 standing rule; the grammar lane gains the killed/merged/renamed checks
 - `B-MIGRATION-DISCOVERY.md:804` — rule:temporary-keyword-grant per the b4-D4 standing rule (already
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:199` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `CODEBOOK-NAMING-GRAMMAR.md:388` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:53` — redirect-per-D4 (Zidane → rule:temporary-keyword-grant),
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
 - `TRIAGE-BATCH-4.md:576` — D4 — Merges ratified.**
 - `TRIAGE-BATCH-5.md:208` — `rule:damage-then-exile-instead-of-die` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- same continuous-replacement-effect pattern as batch-4's replaces-death-with-exile merge (D4), just phras…
@@ -637,9 +608,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `RULING-MANIFEST-2026-07-09.md:94` — Swat evidence. F7 (Rhythm of the Wild / Surrak) is WITHDRAWN by Captain —
 
-### `G1` — 3 reference(s) across 3 doc(s)
+### `G1` — 2 reference(s) across 2 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:70` — G1: ratified scoring constants are untouchable by agents.
 - `CONSOLIDATION-RUN1-DIRECTIVE.md:36` — No engine/scoring changes. G1: ratified constants untouchable
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:190` — G1 (constants untouchable):** the DET pass will eventually multiply
 
@@ -651,10 +621,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:202` — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
 
-### `G4` — 3 reference(s) across 2 doc(s)
+### `G4` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:71` — G4: never hand-edit generated artifacts — fix the producer, re-run.
-- `B-MIGRATION-AUDIT-PACKET.md:888` — G4-clean (never hand-edit output). Inputs:
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:205` — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
 
 ### `G5` — 1 reference(s) across 1 doc(s)
@@ -665,9 +633,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:211` — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
 
-### `G7` — 2 reference(s) across 2 doc(s)
+### `G7` — 1 reference(s) across 1 doc(s)
 
-- `BATCH-8-AB-DRESS-REHEARSAL-SPEC.md:4` — directive (point 4). G7 (walk-ratification session) already ruled batch 8
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:214` — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
 
 ### `GRAMMAR-SS9` — 1 reference(s) across 1 doc(s)
@@ -681,14 +648,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
 - `SESSION-HANDOFF-2026-08-01.md:85` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
-### `H-02` — 6 reference(s) across 5 doc(s)
+### `H-02` — 4 reference(s) across 3 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1752` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:205` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:51` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
-- `CONSOLIDATION-PLAN-DIRECTIVE.md:60` — 5. **routing artifact** — `foundry-killed-slug-routing/1` (A14/H-02):
 
 ### `H-03` — 2 reference(s) across 1 doc(s)
 
@@ -766,10 +731,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:458` — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
 
-### `Q1` — 25 reference(s) across 12 doc(s)
+### `Q1` — 23 reference(s) across 11 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:35` — WITHOUT reversing ruling b1-Q1 — is that reading honest, or is it a
-- `B-MIGRATION-AUDIT-PACKET.md:776` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
 - `B-MIGRATION-DISCOVERY.md:635` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
 - `B-MIGRATION-DISCOVERY.md:710` — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
@@ -863,45 +826,30 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:365` — rule:evasion parent (Q8.7, walk-ratification 2026-07-31)** — CR
 
-### `R1` — 9 reference(s) across 4 doc(s)
+### `R1` — 3 reference(s) across 2 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:21` — 1. A verdict per ratified ruling R1–R13 (Part 5): sound / unsound /
-- `B-MIGRATION-AUDIT-PACKET.md:47` — packet, recommended change), then the R1–R13 verdict table, then a short
-- `B-MIGRATION-AUDIT-PACKET.md:731` — R1 — Member object shape (OQ1).** Lean rows:
-- `B-MIGRATION-AUDIT-PACKET.md:850` — rulings cited below as R1–R13). ZERO API SPEND: everything here is local
-- `B-MIGRATION-AUDIT-PACKET.md:976` — R1–R13). ZERO API SPEND. PRECONDITION: B-MIGRATION-DIRECTIVE.md completed
 - `B-MIGRATION-DISCOVERY.md:590` — R1 — Member object shape (OQ1).** Lean rows:
 - `B-MIGRATION-DISCOVERY.md:715` — A1 (amends R1, Captain YES 2026-08-01) — multi-assertion members.**
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:17` — R1–R13). ZERO API SPEND. PRECONDITION: B-MIGRATION-DIRECTIVE.md completed
 - `RULING-MANIFEST-2026-07-09.md:36` — R1 — PROVENANCE DISCOUNT. A shared-paragraph/fragment match whose evidence
 
-### `R10` — 2 reference(s) across 2 doc(s)
+### `R10` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:814` — R10 — Killed-slug routing table** (consolidation must implement; a
 - `B-MIGRATION-DISCOVERY.md:673` — R10 — Killed-slug routing table** (consolidation must implement; a
 
-### `R11` — 2 reference(s) across 2 doc(s)
+### `R11` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:821` — R11 — Standing codebook lint** (audit proposal #3): the accessor module
 - `B-MIGRATION-DISCOVERY.md:680` — R11 — Standing codebook lint** (audit proposal #3): the accessor module
 
-### `R12` — 3 reference(s) across 3 doc(s)
+### `R12` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:826` — R12 — Two sessions (OQ7):** MIGRATE (docs/B-MIGRATION-DIRECTIVE.md) then
 - `B-MIGRATION-DISCOVERY.md:685` — R12 — Two sessions (OQ7):** MIGRATE (docs/B-MIGRATION-DIRECTIVE.md) then
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:442` — R12** — run-1's already-member confirmations were originally to stay
 
-### `R13` — 5 reference(s) across 2 doc(s)
+### `R13` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:21` — 1. A verdict per ratified ruling R1–R13 (Part 5): sound / unsound /
-- `B-MIGRATION-AUDIT-PACKET.md:47` — packet, recommended change), then the R1–R13 verdict table, then a short
-- `B-MIGRATION-AUDIT-PACKET.md:833` — R13 — Record corrections (OQ10) executed** in this commit set:
-- `B-MIGRATION-AUDIT-PACKET.md:850` — rulings cited below as R1–R13). ZERO API SPEND: everything here is local
 - `B-MIGRATION-DISCOVERY.md:692` — R13 — Record corrections (OQ10) executed** in this commit set:
 
-### `R2` — 7 reference(s) across 5 doc(s)
+### `R2` — 6 reference(s) across 4 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:741` — R2 — Quotes carried, including a BUILT DET quote store (OQ4).** llm rows:
 - `B-MIGRATION-DISCOVERY.md:600` — R2 — Quotes carried, including a BUILT DET quote store (OQ4).** llm rows:
 - `BACKEND-BUILD-PLAN.md:3` — The build plan. Architecture: Option A from BACKEND-RESEARCH-FINDINGS.md (static artifacts + GitHub Actions pipeline + R2, no server). Locked decisions: PNG print-quality images, one per card (backfilled 2026-07-03: 36,…
 - `BACKEND-BUILD-PLAN.md:103` — Why this phase no longer stands alone.** Phase 1 was originally "sync the existing site jpgs to R2 ahead of the pipeline, so the repo stops growing immediately." The one-lane decisions locked this session (PNG only, `or…
@@ -909,75 +857,53 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF.md:19` — R2, no live backend), every scoring constant a ratified ruling, gates +
 - `RULING-MANIFEST-2026-07-09.md:43` — R2 — TWO METRICS FOR T1, PER PARAGRAPH. Paragraphs of >=5 tokens use
 
-### `R3` — 3 reference(s) across 3 doc(s)
+### `R3` — 2 reference(s) across 2 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:749` — R3 — Uniform shape everywhere (OQ2).** All 442 member-bearing records
 - `B-MIGRATION-DISCOVERY.md:608` — R3 — Uniform shape everywhere (OQ2).** All 442 member-bearing records
 - `RULING-MANIFEST-2026-07-09.md:49` — R3 — COMMONALITY BANDS. Provisional edges pending the Phase 1 re-cut:
 
-### `R4` — 4 reference(s) across 3 doc(s)
+### `R4` — 2 reference(s) across 2 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:753` — R4 — reconcile FROZEN as the /1 legacy producer (OQ3).** The migration
-- `B-MIGRATION-AUDIT-PACKET.md:883` — home for hand-ratified additions (R4).
 - `B-MIGRATION-DISCOVERY.md:612` — R4 — reconcile FROZEN as the /1 legacy producer (OQ3).** The migration
 - `RULING-MANIFEST-2026-07-09.md:62` — R4 — MANA KINSHIP RUNS PARALLEL, NEVER REPLACES. Literal-text matching is
 
-### `R5` — 10 reference(s) across 7 doc(s)
+### `R5` — 4 reference(s) across 4 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1759` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
-- `B-MIGRATION-AUDIT-PACKET.md:762` — R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
-- `B-MIGRATION-AUDIT-PACKET.md:1014` — 3. Ratified promotions (R5, R6)
-- `B-MIGRATION-AUDIT-PACKET.md:1016` — R5:** the 141 exact-match free-lane reinventions become codebook-lane
 - `B-MIGRATION-DISCOVERY.md:621` — R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:212` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:58` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:55` — 3. Ratified promotions (R5, R6)
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:57` — R5:** the 141 exact-match free-lane reinventions become codebook-lane
 - `RULING-MANIFEST-2026-07-09.md:68` — R5 — MANA-FACT SYSTEM (ratified). Extractors over mana-producing
 
-### `R6` — 10 reference(s) across 5 doc(s)
+### `R6` — 5 reference(s) across 3 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
-- `B-MIGRATION-AUDIT-PACKET.md:766` — R6 — Reorder promotion (audit proposal #1, accepted).** Of the 6
-- `B-MIGRATION-AUDIT-PACKET.md:1014` — 3. Ratified promotions (R5, R6)
-- `B-MIGRATION-AUDIT-PACKET.md:1020` — R6:** the 5 reorder clusters / 213 rows promote:
 - `B-MIGRATION-DISCOVERY.md:625` — R6 — Reorder promotion (audit proposal #1, accepted).** Of the 6
 - `B-MIGRATION-DISCOVERY.md:836` — A15 (H-03, amends R6's framing):** the 213 rows are promoted as
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:55` — 3. Ratified promotions (R5, R6)
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:61` — R6:** the 5 reorder clusters / 213 rows promote:
 - `RULING-MANIFEST-2026-07-09.md:83` — R6 — MANA-PIP KINSHIP TIER RULE. Same mana-ability shape sharing at least
 
-### `R7` — 11 reference(s) across 6 doc(s)
+### `R7` — 7 reference(s) across 3 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:169` — > collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and the rename target's …
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1668` — node-report-only** — collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and t…
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1691` — R7** — faceted keyword-grant axes (scope / delivery / context) are
-- `B-MIGRATION-AUDIT-PACKET.md:776` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
-- `B-MIGRATION-AUDIT-PACKET.md:1012` — normally (hexproof precedent, R7).
 - `B-MIGRATION-DISCOVERY.md:635` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
-- `B-SESSION-SPLIT-REVIEW-PACKET.md:438` — R7** — faceted keyword-grant axes (scope / delivery / context) are
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:53` — normally (hexproof precedent, R7).
 - `RULING-MANIFEST-2026-07-09.md:90` — R7 — STRUCK / PARKED. Black Market Connections is OFF the F1
 
-### `R8` — 5 reference(s) across 3 doc(s)
+### `R8` — 2 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:787` — R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
-- `B-MIGRATION-AUDIT-PACKET.md:1037` — history note citing R8 and the hexproof-precedent rationale; membership
 - `B-MIGRATION-DISCOVERY.md:646` — R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
 - `B-MIGRATION-DISCOVERY.md:761` — A2 (amends R8, Captain YES 2026-08-01) — revived axes enter
-- `CONSOLIDATION-RUN1-DIRECTIVE-2.md:78` — history note citing R8 and the hexproof-precedent rationale; membership
 
 ### `R8.3` — 1 reference(s) across 1 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1671` — routing-report** — R8.3 ratified that this axis is being AUTHORED properly via the DET path, with a drafted pattern and a fixed-seed sample sheet, going live only on Captain's pattern ratification in session 4. Routing …
 
-### `R9` — 4 reference(s) across 3 doc(s)
+### `R9` — 3 reference(s) across 2 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1693` — R9** — vocabulary additions are ratified like any other constant:
-- `B-MIGRATION-AUDIT-PACKET.md:810` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
@@ -1017,10 +943,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF.md:59` — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
 
-### `T1` — 6 reference(s) across 4 doc(s)
+### `T1` — 4 reference(s) across 3 doc(s)
 
-- `B-MIGRATION-AUDIT-PACKET.md:641` — recomposable from the ratified grants-<keyword> grammar — T1 live) and
-- `B-MIGRATION-AUDIT-PACKET.md:785` — REPORT ROW for Captain at consolidation. T1 stays parked for schema pass.
 - `B-MIGRATION-DISCOVERY.md:500` — recomposable from the ratified grants-<keyword> grammar — T1 live) and
 - `B-MIGRATION-DISCOVERY.md:644` — REPORT ROW for Captain at consolidation. T1 stays parked for schema pass.
 - `PARENT-TREE-CANDIDATES.md:387` — T1. Company Commander example (batch-3 §1) assigns
@@ -1033,7 +957,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RULING-MANIFEST-2026-07-09.md:55` — T1 and T2 get SEPARATE constants (Captain ruling) — Phase 1 produces
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
 
-### `T3` — 11 reference(s) across 9 doc(s)
+### `T3` — 10 reference(s) across 8 doc(s)
 
 - `KEYWORD-LEDGER-CANDIDATES.md:3` — Standing doc for keyword mechanics killed out of the T3 axis foundry's
 - `MASTER-HANDOFF.md:65` — T3." Growth path: engine-DERIVED structural rule: tags (generalizing the
@@ -1043,7 +967,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SUP-TRIAGE-PROTOCOL.md:5` — Ratified deviation from T3-AXIS-FOUNDRY-v3: SUP performs full-pass triage;
 - `T3-AXIS-FOUNDRY-v3.md:4` — T3-BUILDOUT-PLAYBOOK.md between Steps 5 and 6; inherits every standing
 - `T3-BUILDOUT-PLAYBOOK.md:230` — Captain each anchor's new T3 band for eyeball, punch-list style: findings
-- `T3-BUILDOUT-STEP3-HANDOFF.md:71` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
 - `T3-BUILDOUT-STEP4-HANDOFF.md:160` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
 - `T3-BUILDOUT-STEP5-HANDOFF.md:150` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
 

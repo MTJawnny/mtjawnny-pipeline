@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Batch 8 -- accuracy-first A/B dress rehearsal (Captain directive,
-2026-08-01, superseding docs/BATCH-8-AB-DRESS-REHEARSAL-SPEC.md's original
+2026-08-01, superseding docs/archive/BATCH-8-AB-DRESS-REHEARSAL-SPEC.md's original
 2-arm design). Four arms on the SAME 1,200 gate-passing cards (reused
 verbatim from experiments/out/foundry/batch7_assembled.json -- real,
 already-vetted gate-passing cards; batch 8 tests HARNESS agreement, not
