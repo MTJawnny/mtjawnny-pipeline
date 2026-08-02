@@ -116,6 +116,38 @@ punch_list, override_spotcheck record (seed, n, reversals, result).
   (steps 2–5) uses this document as its kickoff and is not yet run —
   until it runs, most of the codebook has not been validated against it.
 
+## SUP standard updates (ratified batch 2, binding from batch 3 onward)
+
+RESTORED 2026-08-02. These ratified rules were present only in the site
+repo's gitignored fork of this document and absent from this — the copy the
+`/triage-*` skills actually load — from the 2026-07-19 partial migration
+(`abf9c2b`) until now. Batches 4–7 and corpus-pass run 1 all ran without
+them in the operational protocol.
+
+- **"Don't absorb, expand."** When candidate axes differ by object class,
+  target class, or game vector, prefer sibling axes plus a logged parent
+  scheme over an absorption merge. Absorption is right when ONE
+  vector/mechanism (e.g. mana) would own the rule; wrong when it would
+  swallow multiple distinct mechanics under one label (e.g. "any count of
+  anything scales an effect" is not one axis). Example family this
+  ratified: the damage-target axes are per-object-class
+  (`rule:direct-damage-any-target`, `rule:targeted-creature-damage`,
+  `rule:targeted-player-damage`, `rule:targeted-planeswalker-damage`,
+  `rule:targeted-battle-damage`) — mixed-target cards get MULTIPLE tags,
+  never a combination tag (damageable objects are a closed system in
+  Magic).
+- **Cost qualifiers in axis names are binding.** An axis named "free
+  ___" may not absorb paid-cost members ("Free must be Free").
+- **Copying a spell is never casting a spell.** Guard against this
+  conflation in all cast-trigger derivation work.
+- **Joke / Un-set / non-constructed-legal-only card families get no
+  axis.**
+- Final-audit naming standardization (consistent family-naming schemes
+  across the whole codebook, e.g. `rule:animate-<type>`,
+  `rule:<type>-scales-with-<type>-count`) is a standing punch-list item,
+  applied in one pass once the codebook stabilizes — never mid-flight
+  during a batch.
+
 ## Convergence metrics (report both, every batch)
 
 (a) Spec metrics: OTHER-lane rate and kill/merge/rename rate — annotated
