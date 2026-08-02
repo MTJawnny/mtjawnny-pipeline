@@ -40,6 +40,15 @@ the /1 legacy producer with two hard guards. **Next: session 2 = PLAN
 external re-audit checkpoint.** Full report:
 `docs/B-MIGRATION-SESSION-1-REPORT.md`. Spend $0.00.
 
+**2026-08-01 (session close).** Session 2a executed (zero mutation); the A12
+external re-audit checkpoint is DISCHARGED — verdict NO-GO-AS-WRITTEN, three
+blockers, all verified true. Consolidation is now blocked on Captain rulings,
+not on code. Twelve decisions await in `docs/CDR-PROPOSALS.md` (rev 2). Full
+cold-readable context: **`docs/SESSION-HANDOFF-2026-08-01.md` — read that
+first.** A standing family/name/CR sweep now exists
+(`experiments/foundry_family_sweep.py --strict`). Spend $0.00; cumulative
+$90.51, headroom $49.49.
+
 ## What was submitted
 
 **Batch ID: `msgbatch_01Pk4qWUz28TCwC8nspLAJ2c`**
