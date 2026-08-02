@@ -16,7 +16,7 @@ card selection):
        from packing effects when B and D disagree despite identical input.
 
 Full untrimmed OUTPUT_SCHEMA on every arm (the output-trim proposal was
-rejected 2026-08-01, docs/OUTPUT-TRIM-PROPOSAL.md).
+rejected 2026-08-01, docs/archive/OUTPUT-TRIM-PROPOSAL.md).
 
 Subcommands:
   prepare       -- builds all 4 arms' requests, counts EXACT input tokens
@@ -64,7 +64,7 @@ STANDARD_INPUT_PER_MTOK, STANDARD_OUTPUT_PER_MTOK = 3.00, 15.00
 BATCH_DISCOUNT = 0.5
 INTRO_EXPIRES = "2026-08-31"
 
-# Real batch-6/7-derived output-token model (docs/OUTPUT-TRIM-PROPOSAL.md sec.1) --
+# Real batch-6/7-derived output-token model (docs/archive/OUTPUT-TRIM-PROPOSAL.md sec.1) --
 # full untrimmed schema, no trim anywhere in batch 8.
 AVG_AXES_PER_CARD = 1.7325
 CODEBOOK_LANE_FRACTION = 0.342

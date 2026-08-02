@@ -15,7 +15,7 @@ the full-corpus SYNTH pass by ~90%+ (see the re-pricing table in this
 session's report). Before trusting it with 32,557 cards, verify it doesn't
 silently degrade SYNTH's judgment quality relative to the harness every
 prior batch (1–7) was measured against. This is a QUALITY experiment, not
-a cost experiment — the output-trim proposal (`docs/OUTPUT-TRIM-PROPOSAL.md`)
+a cost experiment — the output-trim proposal (`docs/archive/OUTPUT-TRIM-PROPOSAL.md`)
 is a SEPARATE, unratified change and is deliberately NOT exercised here;
 both harnesses below use the current, full, untrimmed `OUTPUT_SCHEMA` so
 packing is the only variable.

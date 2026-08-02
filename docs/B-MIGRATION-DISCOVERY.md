@@ -815,7 +815,7 @@ logged, none silent):**
      plus the amended schema is the designated EXTERNAL RE-AUDIT
      checkpoint (one focused packet, different model family).
   3. APPLY — executes exactly the approved plan, zero judgment
-     (docs/CONSOLIDATION-APPLY-DIRECTIVE.md), plus card-index artifact +
+     (docs/archive/CONSOLIDATION-APPLY-DIRECTIVE.md), plus card-index artifact +
      gamechangers seed + kill-note corrections + record corrections.
   4. DET RUN 2 — the three new patterns through the standing
      ratification flow (docs/DET-PATTERNS-RUN2-DIRECTIVE.md); revived

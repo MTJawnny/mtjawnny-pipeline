@@ -1087,7 +1087,7 @@ only. The corroboration wave remains a FUTURE Captain trigger.
 
 ---
 
-# PART 6 — THE ORIGINAL DISCOVERY TASKING (verbatim: docs/B-MIGRATION-DISCOVERY-DIRECTIVE.md) — audit the report against this assignment
+# PART 6 — THE ORIGINAL DISCOVERY TASKING (verbatim: docs/archive/B-MIGRATION-DISCOVERY-DIRECTIVE.md) — audit the report against this assignment
 
 # B-MIGRATION-DISCOVERY-DIRECTIVE — provenance schema migration, discovery pass (2026-08-01)
 

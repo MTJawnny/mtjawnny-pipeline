@@ -14,7 +14,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **48 documents under docs/**
+- documents scanned: **44 documents under docs/**
 - ruling references found: **520**
 - distinct ruling ids: **123**
 - corroborated (appear in >1 doc): **81**
@@ -68,7 +68,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`B-MIGRATION-DISCOVERY-DIRECTIVE.md`, `CONSOLIDATION-APPLY-DIRECTIVE.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `OUTPUT-TRIM-PROPOSAL.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `RESUME-NOTE.md`
+`DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`
 
 ## Sole-home rulings — these block their document
 

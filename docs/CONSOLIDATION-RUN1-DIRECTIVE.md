@@ -13,7 +13,7 @@ If any step appears to require spend, that is a HALT, not a judgment call.
    ruling, §6 punch list, §7 discipline)
 5. docs/CORPUS-PASS-PLAN.md (lanes, steps 7–8, EMERGENCY COST STOP section
    incl. the run-1 ACTUAL entry)
-6. docs/RESUME-NOTE.md (run-1 mechanics, resume steps 5–7)
+6. docs/archive/RESUME-NOTE.md (run-1 mechanics, resume steps 5–7)
 7. docs/CODEBOOK-NAMING-GRAMMAR.md (validator rules, sec.11 downgrade rule)
 
 Print a state-check first: codebook.json version + active axis count, raw
