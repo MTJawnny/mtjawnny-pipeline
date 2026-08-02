@@ -36,6 +36,7 @@ The four ratified stores it cross-reads:
 Run:  python3 experiments/foundry_family_sweep.py
       python3 experiments/foundry_family_sweep.py --strict   # exit 1 on BLOCKING
 """
+import re
 import sys
 import json
 import argparse
@@ -53,6 +54,15 @@ import validate_slug  # noqa: E402
 GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
 DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
 REPORT_PATH = fc.FOUNDRY_OUT_DIR / "family_sweep_report.json"
+
+# The Comprehensive Rules live in the SITE repo, not this one. They are the
+# only store in this system that is NOT a hand-maintained mirror -- every
+# other vocabulary here is copied by hand from somewhere and has been found
+# drifted at least once. Optional by design: this is a public repo whose CI
+# has no reason to hold the CR, so pass E reports itself unavailable rather
+# than failing when the file is absent. An unavailable pass is stated in the
+# report, never silently skipped.
+CR_PATH = REPO_ROOT.parent / "mtjawnny.github.io" / "docs" / "mtg-comprehensive-rules.md"
 
 # Severities. BLOCKING = a ratified thing is not where the record says it is,
 # or two axes cannot be told apart. ADVISORY = worth a human's eye, not a stop.
@@ -307,6 +317,156 @@ def sweep_family_completeness(grammars, det, codebook, extra_known):
 
 
 # --------------------------------------------------------------------------
+# E. CR vocabulary completeness -- the check against the one non-mirror
+# --------------------------------------------------------------------------
+
+# The CR enumerates a closed set in exactly two shapes. Both are parsed
+# generically; neither is a per-family hardcoding.
+#
+#   TERM-HEADING     "701.2. Activate"      -- rule number, then a bare term,
+#                                              no sentence. Used for keyword
+#                                              actions (701) and keyword
+#                                              abilities (702).
+#   DEFINED-INSTANCE "111.10a A Treasure token is a colorless ..."
+#                                           -- lettered subrule defining one
+#                                              named instance of a category.
+_CR_TERM_HEADING = re.compile(r"^(\d{3}\.\d+)\.\s+([A-Z][A-Za-z'’\- ]{2,40})\s*$", re.M)
+_CR_DEFINED_INSTANCE = re.compile(
+    r"^(\d{3}\.\d+[a-z])\s+An?\s+([A-Z][\w'’]*(?:\s+[A-Z][\w'’]*)*)\s+(\w+)\s+is\b", re.M)
+
+
+def load_cr():
+    if not CR_PATH.exists():
+        return None
+    return CR_PATH.read_text(encoding="utf-8")
+
+
+def cr_enumeration(cr_text, anchor):
+    """Every term the CR enumerates under `anchor` (e.g. "111.10", "701").
+    Returns (shape, [terms]) or (None, []) when nothing parses -- the caller
+    reports that rather than treating an unparsed anchor as agreement."""
+    if not cr_text:
+        return None, []
+    terms = [m.group(2).strip() for m in _CR_DEFINED_INSTANCE.finditer(cr_text)
+             if m.group(1).startswith(anchor)]
+    if terms:
+        return "defined-instance", sorted(set(terms))
+    prefix = anchor if "." in anchor else anchor + "."
+    terms = [m.group(2).strip() for m in _CR_TERM_HEADING.finditer(cr_text)
+             if m.group(1).startswith(prefix)]
+    if terms:
+        return "term-heading", sorted(set(terms))
+    return None, []
+
+
+def _norm(s):
+    return s.lower().replace("’", "'").replace(" ", "-")
+
+
+def sweep_cr_vocabulary(grammars, cr_text):
+    """Compare each ratified closed vocabulary against what the CR actually
+    enumerates under that family's own cr_anchor.
+
+    A gap is reported, never auto-judged: the project may legitimately scope
+    NARROWER than the CR, and this pass cannot tell a deliberate exclusion
+    from a forgotten one. What it can prove is that a value the CR defines has
+    no home in the ratified vocabulary -- and a card carrying that value must
+    then land somewhere wrong, because the model has nowhere right to put it.
+    That is exactly how Map and Vibranium tokens ended up inside
+    rule:create-token-clue and rule:etb-create-token-mana-producing-artifact
+    (2026-08-01), which an external audit read as model incoherence.
+    """
+    out, coverage = [], []
+    if cr_text is None:
+        out.append(finding(
+            ADVISORY, "cr-unavailable", str(CR_PATH),
+            "the Comprehensive Rules were not found, so ratified vocabularies were NOT "
+            "checked against their CR anchors. This pass did not run — its silence is "
+            "absence of evidence, not evidence of agreement."))
+        return out, coverage
+
+    for fam_name, fam in sorted(grammars.items()):
+        if fam.get("status") != "ratified":
+            continue
+        anchors = re.findall(r"\b(\d{3}(?:\.\d+)?)\b", fam.get("cr_anchor") or "")
+        for facet in fam.get("facets", []):
+            vocab = facet.get("closed_vocab")
+            if not isinstance(vocab, list):
+                continue
+            # Pick the anchor whose enumeration this facet's vocabulary is
+            # actually DRAWN FROM, not the one with the most terms. A family's
+            # cr_anchor prose often cites several rules, and only one of them
+            # (if any) enumerates the domain a given facet ranges over: the
+            # grants-<keyword> family anchors on CR 702 for its `keyword`
+            # facet, but its `duration` facet (eot / next-turn / ...) ranges
+            # over nothing CR 702 lists. Scoring by overlap keeps the check
+            # from indicting every facet whose anchor merely mentions a big
+            # enumeration -- an alarm that is wrong most of the time trains
+            # people to ignore the times it is right.
+            ratified_norm = {_norm(v) for v in vocab}
+            best = (None, [], None, 0.0)
+            any_parsed = None
+            for a in anchors:
+                shape, terms = cr_enumeration(cr_text, a)
+                if not terms:
+                    continue
+                any_parsed = any_parsed or a
+                overlap = len({_norm(t) for t in terms} & ratified_norm)
+                score = overlap / len(ratified_norm) if ratified_norm else 0.0
+                if score > best[3]:
+                    best = (shape, terms, a, score)
+            shape, terms, anchor, score = best
+            if not terms and any_parsed:
+                # An enumeration parsed fine; this facet simply does not range
+                # over it. Distinct from "nothing parsed" -- saying otherwise
+                # would misreport a working check as a broken one.
+                anchor, score, terms = any_parsed, 0.0, []
+
+            # Below this bar the vocabulary is not drawn from the enumeration,
+            # so "what the CR lists and we lack" is not a gap in our coverage
+            # -- it is a comparison against the wrong list.
+            if (terms or any_parsed) and score < 0.5:
+                coverage.append({
+                    "family": fam_name, "slot": facet["slot"], "cr_anchor": anchor,
+                    "applicable": False, "overlap_fraction": round(score, 3),
+                    "note": "facet vocabulary is not drawn from this CR enumeration; "
+                            "no completeness claim is made either way",
+                })
+                continue
+            if not terms:
+                out.append(finding(
+                    ADVISORY, "cr-enumeration-not-extractable",
+                    f"{fam_name}:{facet['slot']}",
+                    f"no enumerable term list could be parsed from CR anchor(s) {anchors} in "
+                    f"either known shape, so this vocabulary was NOT checked against the CR. "
+                    f"Reported rather than passed."))
+                continue
+
+            ratified = {_norm(v) for v in vocab}
+            cr_terms = {_norm(t): t for t in terms}
+            missing = sorted(cr_terms[k] for k in set(cr_terms) - ratified)
+            extra = sorted(v for v in vocab if _norm(v) not in cr_terms)
+            coverage.append({
+                "family": fam_name, "slot": facet["slot"], "cr_anchor": anchor,
+                "applicable": True, "overlap_fraction": round(score, 3),
+                "cr_shape": shape, "cr_enumerated": len(terms),
+                "ratified": len(vocab), "missing_from_ratified": missing,
+                "ratified_beyond_cr": extra,
+            })
+            if missing:
+                out.append(finding(
+                    ADVISORY, "cr-vocabulary-incomplete", f"{fam_name}:{facet['slot']}",
+                    f"CR {anchor} enumerates {len(terms)} terms; this ratified vocabulary "
+                    f"covers {len(terms) - len(missing)}. A card carrying one of the "
+                    f"{len(missing)} uncovered values has no valid slug in this family and "
+                    f"will be absorbed by the nearest sibling. Confirm each is a deliberate "
+                    f"exclusion or ratify it: {missing}",
+                    family=fam_name, slot=facet["slot"], cr_anchor=anchor,
+                    missing=missing))
+    return out, coverage
+
+
+# --------------------------------------------------------------------------
 # C. name differentiation -- "rules challenge each other by name"
 # --------------------------------------------------------------------------
 
@@ -408,10 +568,13 @@ def run(include_proposed: bool):
                 extra_known[fcon.canonicalize_label(n["slug"])] = n["slug"]
                 extra_labels[n["slug"]] = "proposed-2a-node"
 
+    cr_text = load_cr()
     findings = []
     findings += sweep_mirror_drift(grammars, det, codebook)
     fam_findings, coverage = sweep_family_completeness(grammars, det, codebook, extra_known)
     findings += fam_findings
+    cr_findings, cr_coverage = sweep_cr_vocabulary(grammars, cr_text)
+    findings += cr_findings
     findings += sweep_name_differentiation(codebook, extra_labels)
 
     findings.sort(key=lambda f: (f["severity"] != BLOCKING, f["kind"], f["subject"]))
@@ -425,7 +588,10 @@ def run(include_proposed: bool):
         "included_proposed_nodes": bool(extra_labels),
         "totals": {"findings": len(findings), **dict(sorted(by_sev.items()))},
         "by_kind": dict(sorted(by_kind.items())),
+        "cr_available": cr_text is not None,
+        "cr_path": str(CR_PATH),
         "family_coverage": coverage,
+        "cr_vocabulary_coverage": cr_coverage,
         "findings": findings,
     }
     fc.write_json(REPORT_PATH, report)
@@ -442,6 +608,19 @@ def run(include_proposed: bool):
         else:
             print(f"{c['family'][:50]:<52} {'yes':>7} {c['product']:>8} "
                   f"{c['covered']:>8} {len(c['uncovered']):>6}")
+
+    if cr_coverage:
+        print(f"\n{'family:slot':<44} {'CR anchor':>10} {'CR':>5} {'ours':>5} {'gap':>5}")
+        print("-" * 76)
+        for c in cr_coverage:
+            if not c.get("applicable"):
+                print(f"{(c['family'][:30] + ':' + c['slot'])[:42]:<44} {c['cr_anchor']:>10} "
+                      f"{'n/a':>5} {'-':>5} {'-':>5}   (not this facet's domain)")
+            else:
+                print(f"{(c['family'][:30] + ':' + c['slot'])[:42]:<44} {c['cr_anchor']:>10} "
+                      f"{c['cr_enumerated']:>5} {c['ratified']:>5} {len(c['missing_from_ratified']):>5}")
+    elif cr_text is None:
+        print("\nCR pass: NOT RUN (comprehensive rules not found)")
 
     print(f"\nfindings: {len(findings)}  ({by_sev.get(BLOCKING, 0)} blocking, "
           f"{by_sev.get(ADVISORY, 0)} advisory)")
