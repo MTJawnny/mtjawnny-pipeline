@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **36 documents under docs/**
-- ruling references found: **443**
+- documents scanned: **35 documents under docs/**
+- ruling references found: **429**
 - distinct ruling ids: **123**
 - corroborated (appear in >1 doc): **73**
 - **sole-home (appear in exactly 1 doc): 50**
@@ -42,6 +42,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF-ADDENDUM-4.md` | 264 | 5 | 3 | **NO** |
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-TREE-CANDIDATES.md` | 400 | 17 | 9 | **NO** |
+| `RATIFIED-DIRECTIVES-BATCH-4-6.md` | 746 | 11 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-01.md` | 210 | 27 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
@@ -52,9 +53,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-1.md` | 368 | 5 | 0 | yes |
 | `TRIAGE-BATCH-2.md` | 452 | 5 | 1 | **NO** |
 | `TRIAGE-BATCH-3.md` | 462 | 4 | 0 | yes |
-| `TRIAGE-BATCH-4.md` | 672 | 10 | 0 | yes |
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 2 | **NO** |
-| `TRIAGE-BATCH-6.md` | 1008 | 12 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 1 | **NO** |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 8 | **NO** |
 
@@ -443,7 +442,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:159` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 
-### `D1` — 19 reference(s) across 8 doc(s)
+### `D1` — 18 reference(s) across 7 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:85` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
@@ -451,26 +450,24 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
 - `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:27` — D1 — `rule:activated-tap-target-creature` (n=16): KEEP, member removals
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:170` — D1 — LEGALITY GATE (new standing ruling, brand-wide; EXPLICIT PARTIAL REVERSAL)
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:253` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:349` — 1. GATE #0 — legality gate implemented + retroactive scrub + precedent rescan (D1).
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:388` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
-- `TRIAGE-BATCH-4.md:544` — D1 — `rule:activated-tap-target-creature` (n=16): KEEP, member removals
-- `TRIAGE-BATCH-4.md:628` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `TRIAGE-BATCH-5.md:820` — D1 — Verdict lines stand, with three KILLs added
-- `TRIAGE-BATCH-6.md:76` — `rule:create-token-mana-producing-artifact` (scope=self, n=1) -- KEEP; member_addition(Stone Retrieval Unit) -- "create a tapped Powerstone token" is a genuine mana-producing-artifact-token match on its own oracle text;…
-- `TRIAGE-BATCH-6.md:433` — D1 — LEGALITY GATE (new standing ruling, brand-wide; EXPLICIT PARTIAL REVERSAL)
-- `TRIAGE-BATCH-6.md:516` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
-- `TRIAGE-BATCH-6.md:612` — 1. GATE #0 — legality gate implemented + retroactive scrub + precedent rescan (D1).
-- `TRIAGE-BATCH-6.md:635` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
-- `TRIAGE-BATCH-6.md:651` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
-- `TRIAGE-BATCH-6.md:672` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
 - `TRIAGE-BATCH-7.md:687` — D1 — Captain's inline verdicts stand, with one expansion
 
-### `D10` — 4 reference(s) across 4 doc(s)
+### `D10` — 3 reference(s) across 3 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:281` — own commit. Batch-5's ledger entries (D10's ratified depth-3 etb/
 - `PARENT-TREE-CANDIDATES.md:80` — Depth-3 etb scheme, EXECUTED (batch-5 D10, Captain, per
 - `TRIAGE-BATCH-5.md:936` — D10 — ETB and LTB token families restructured (ratified depth-3 etb
-- `TRIAGE-BATCH-6.md:140` — `rule:leaves-battlefield-trigger-create-token-creature` (scope=self, n=2) -- KEEP but corrected -- member_removal(Zoo Escapees): its LTB trigger creates a Mutagen token, which the corpus text explicitly types as "an art…
 
 ### `D11` — 1 reference(s) across 1 doc(s)
 
@@ -488,38 +485,38 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CORPUS-PASS-PLAN.md:159` — 3. Sequencing (amends batch-5 §11.3/D17)
 - `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
-- `TRIAGE-BATCH-6.md:611` — 11.3 Sequencing (amends batch-5 D17; registry update)
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:348` — 11.3 Sequencing (amends batch-5 D17; registry update)
 
 ### `D18` — 1 reference(s) across 1 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
-### `D2` — 14 reference(s) across 8 doc(s)
+### `D2` — 14 reference(s) across 7 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:129` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:385` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
-- `TRIAGE-BATCH-4.md:557` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
 - `TRIAGE-BATCH-5.md:334` — `rule:targeted-planeswalker-damage` (n=2) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see s…
 - `TRIAGE-BATCH-5.md:838` — D2 — Q1 ruled: MERGE
 - `TRIAGE-BATCH-5.md:1057` — per D2). Captain-authored additions this batch (12):
-- `TRIAGE-BATCH-6.md:470` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
-- `TRIAGE-BATCH-6.md:739` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
-### `D3` — 9 reference(s) across 6 doc(s)
+### `D3` — 9 reference(s) across 5 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:168` — One connective, one order, closed stat list — RATIFIED (D-3):
 - `CODEBOOK-NAMING-GRAMMAR.md:386` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
-- `TRIAGE-BATCH-4.md:567` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
-- `TRIAGE-BATCH-6.md:477` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
-- `TRIAGE-BATCH-6.md:516` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
-- `TRIAGE-BATCH-6.md:739` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:253` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
 - `TRIAGE-BATCH-7.md:713` — The `-scales-with-` connective standard is ratified via GRAMMAR D-3; the
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
@@ -527,7 +524,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 
-### `D4` — 13 reference(s) across 8 doc(s)
+### `D4` — 13 reference(s) across 7 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
@@ -537,23 +534,23 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:388` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
-- `TRIAGE-BATCH-4.md:576` — D4 — Merges ratified.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:251` — D4 — All remaining verdicts stand
 - `TRIAGE-BATCH-5.md:208` — `rule:damage-then-exile-instead-of-die` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- same continuous-replacement-effect pattern as batch-4's replaces-death-with-exile merge (D4), just phras…
 - `TRIAGE-BATCH-5.md:318` — `rule:replacement-graveyard-to-exile-self` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- direct resurrection of batch-4's replacement-exile-instead-of-graveyard merge (D4), same self-protect…
 - `TRIAGE-BATCH-5.md:852` — D4 — OTHER-lane promotions ratified
-- `TRIAGE-BATCH-6.md:514` — D4 — All remaining verdicts stand
 
-### `D5` — 7 reference(s) across 6 doc(s)
+### `D5` — 7 reference(s) across 5 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:763` — authored"; the ratified b4-D5 status exists for exactly this). They flip
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:390` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
 - `MASTER-HANDOFF-ADDENDUM-2.md:183` — 4. D5 follow-up (NEW, batch 4): Captain rules on
 - `MASTER-HANDOFF-ADDENDUM-3.md:166` — D5: two pump merges DEFERRED pending Captain review of
-- `TRIAGE-BATCH-4.md:597` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
-- `TRIAGE-BATCH-6.md:520` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:257` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
 
-### `D6` — 11 reference(s) across 6 doc(s)
+### `D6` — 11 reference(s) across 5 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:87` — batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
 - `MASTER-HANDOFF-ADDENDUM-3.md:151` — forced sac as effect) — now partially ratified via the D6 reversal
@@ -561,23 +558,23 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-3.md:238` — rulings registry, never parsed silently (D6 is the model case).
 - `PARENT-TREE-CANDIDATES.md:197` — Cost-shape facet scheme (batch-4, Captain, §10 STEP 2b, per the D6
 - `PARENT-TREE-CANDIDATES.md:209` — Precedent reversal (batch-4 D6, Captain): "cost-shape riders are not
-- `TRIAGE-BATCH-4.md:608` — D6 — PRECEDENT REVERSAL: cost-shape riders are legitimate wide-net axes.**
-- `TRIAGE-BATCH-4.md:628` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
-- `TRIAGE-BATCH-6.md:448` — sole exclusion. Logged Captain-explicit, D6-style.
-- `TRIAGE-BATCH-6.md:635` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:91` — D6 — PRECEDENT REVERSAL: cost-shape riders are legitimate wide-net axes.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:185` — sole exclusion. Logged Captain-explicit, D6-style.
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `TRIAGE-BATCH-7.md:742` — D6 — Forsaken Crossroads rehome (SUP "no axis fits" overturned)
 
 ### `D67` — 1 reference(s) across 1 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
-### `D7` — 6 reference(s) across 5 doc(s)
+### `D7` — 6 reference(s) across 4 doc(s)
 
 - `CORPUS-PASS-PLAN.md:136` — WIRED 2026-07-31** (walk-ratification session, batch-7 D7): `foundry_stage1b.py`'s
 - `CORPUS-PASS-PLAN.md:189` — (D7). Codebook now v0.7, 305 active axes. DET pattern set finalized at 42 ratified
 - `MASTER-HANDOFF-ADDENDUM-3.md:177` — D7: all other verdicts stand.
-- `TRIAGE-BATCH-4.md:627` — D7 — All other section-1 verdicts stand as written.**
-- `TRIAGE-BATCH-6.md:635` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:110` — D7 — All other section-1 verdicts stand as written.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
 ### `D77` — 1 reference(s) across 1 doc(s)
@@ -705,22 +702,17 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:52` — (batch-2 M6 ruling): damage-scales-with-creature-count,
 
-### `M8` — 14 reference(s) across 4 doc(s)
+### `M8` — 9 reference(s) across 3 doc(s)
 
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:51` — reconcile, per the ratified M8 per-object-class mixed-target rule.**
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:226` — rule:targeted-bounce-creature.** Ruled: **M8 GENERALIZES from damage to every
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:284` — 2. M8-generalized: multi-class targeted-<action> cards get every applicable per-class
 - `TRIAGE-BATCH-3.md:87` — One new candidate directly violates the ratified M8 per-object-class
 - `TRIAGE-BATCH-3.md:289` — 3e. Violates the ratified M8 per-object-class rule (1)
-- `TRIAGE-BATCH-4.md:131` — ratified M8 rule (mixed targets get multiple tags), but currently doesn't.
-- `TRIAGE-BATCH-4.md:281` — `rule:targeted-planeswalker-damage` (n=1) — **VERDICT: KEEP** — NOTE: Breya, Etherium Shaper (quote: "Breya deals 3 damage to target player or planeswalker") is a mixed player/planeswalker-target card tagged only under …
-- `TRIAGE-BATCH-4.md:568` — reconcile, per the ratified M8 per-object-class mixed-target rule.**
 - `TRIAGE-BATCH-5.md:62` — two object classes, violating the ratified M8 per-object-class
 - `TRIAGE-BATCH-5.md:206` — `rule:damage-creature-or-planeswalker` (n=2) — VERDICT: KILL — Violates the ratified M8 per-object-class damage-target rule -- direct resurrection of batch-3-killed rule:damage-to-creature-or-planeswalker. Members get b…
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
 - `TRIAGE-BATCH-5.md:334` — `rule:targeted-planeswalker-damage` (n=2) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see s…
-- `TRIAGE-BATCH-6.md:7` — rule, ratified depth-3 etb scheme, M8 mixed-target-class rule).
-- `TRIAGE-BATCH-6.md:188` — `rule:targeted-planeswalker-damage` (scope=opponent-stuff, n=4) -- KEEP; member_addition(Insult // Injury, Injury face) -- "2 damage to target creature and 2 damage to target player or planeswalker" is a mixed-object-cl…
-- `TRIAGE-BATCH-6.md:354` — `rule:targeted-planeswalker-damage` — Insult // Injury (Injury face), per the ratified M8
-- `TRIAGE-BATCH-6.md:489` — rule:targeted-bounce-creature.** Ruled: **M8 GENERALIZES from damage to every
-- `TRIAGE-BATCH-6.md:547` — 2. M8-generalized: multi-class targeted-<action> cards get every applicable per-class
 
 ### `NEW-01` — 2 reference(s) across 2 doc(s)
 
@@ -731,7 +723,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:458` — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
 
-### `Q1` — 23 reference(s) across 11 doc(s)
+### `Q1` — 18 reference(s) across 10 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:635` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
 - `B-MIGRATION-DISCOVERY.md:710` — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
@@ -739,6 +731,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-2.md:105` — Captain's annotations so far: Q1 answered (stun-counter-lockdown
 - `MASTER-HANDOFF-ADDENDUM-3.md:113` — ratification, mirrors b1-Q1.
 - `PARENT-TREE-CANDIDATES.md:392` — Q1 redundancy ruling because the engine indexes the grant but not the
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `TRIAGE-BATCH-1.md:198` — Q1 — Keyword-grant axes vs the engine's granted-keyword dimension.**
 - `TRIAGE-BATCH-2.md:271` — engine-redundant, Q1 precedent; the reanimation context doesn't change
 - `TRIAGE-BATCH-2.md:285` — Q1 — `rule:gain-fixed-life` / `rule:fixed-lifegain` (same concept, two
@@ -746,34 +739,26 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-3.md:284` — gains hexproof — exactly the batch-1 Q1 precedent: `granted_keyword`
 - `TRIAGE-BATCH-3.md:300` — Q1 — `rule:prevents-target-untap-next-step` (2: Crippling Chill, Rush of
 - `TRIAGE-BATCH-3.md:461` — fill `-> RULE:` blanks for Q1–Q3, add `## CAPTAIN-AUTHORED` blocks for any
-- `TRIAGE-BATCH-4.md:327` — `rule:replaces-death-with-exile` (n=2) — **VERDICT: QUESTION (Q1, see section 2)**
-- `TRIAGE-BATCH-4.md:337` — Q1 — `rule:replaces-death-with-exile` (2: Bouncer's Beatdown, Incendiary
-- `TRIAGE-BATCH-4.md:531` — fill the `-> RULE:` blank for Q1, add `## CAPTAIN-AUTHORED` blocks for any
 - `TRIAGE-BATCH-5.md:149` — `rule:activated-prevent-damage-any-target` (n=3) — VERDICT: QUESTION — see Q1
 - `TRIAGE-BATCH-5.md:349` — Q1 — `rule:activated-prevent-damage-any-target` (n=3: Daru Healer,
 - `TRIAGE-BATCH-5.md:838` — D2 — Q1 ruled: MERGE
-- `TRIAGE-BATCH-6.md:237` — Q1 — `rule:activated-tap-or-untap-any-creature` scope.** Fatestitcher's actual text is
-- `TRIAGE-BATCH-6.md:411` — parent flag contingent on Captain's Q1 ruling.
-- `TRIAGE-BATCH-6.md:470` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:77` — Q1** 9-bucket keyword taxonomy; "casting-modifier" demoted to the
 
 ### `Q10` — 1 reference(s) across 1 doc(s)
 
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:93` — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
-### `Q2` — 12 reference(s) across 9 doc(s)
+### `Q2` — 10 reference(s) across 8 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:397` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `KEYWORD-LEDGER-CANDIDATES.md:154` — Killed axis:** `rule:etb-grants-energy-counters` (Q2, Captain-ratified
 - `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
 - `MASTER-HANDOFF-ADDENDUM-2.md:108` — Q2 (energy = archetype vs ledger) and Q3 (perpetual, Alchemy-only)
+- `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
 - `TRIAGE-BATCH-1.md:217` — Q2 — Drain/lifegain restructure.** (covers: drain-life-effect,
 - `TRIAGE-BATCH-2.md:297` — Q2 — `rule:sacrifice-for-creature-token` vs. existing
 - `TRIAGE-BATCH-3.md:312` — Q2 — `rule:etb-grants-energy-counters` (2: Aether Inspector, Riparian
 - `TRIAGE-BATCH-3.md:442` — and Perpetual pending Q2/Q3's rulings — add if Captain rules
-- `TRIAGE-BATCH-4.md:314` — `rule:etb-grants-energy-counters` (n=3) — **VERDICT: MERGE INTO `rule:gives-energy-counters-immediately`** — exact duplicate: both definitions are "ETB, immediate/unconditional energy counters" -- gives-energy-counters-…
-- `TRIAGE-BATCH-6.md:250` — Q2 — `rule:etb-pump-target-creature` ownership restriction.** Herald of the Fair's text
-- `TRIAGE-BATCH-6.md:477` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:80` — Q2** Closed DELIVERY vocabulary gains `becomes-targeted-trigger` and
 
 ### `Q3` — 11 reference(s) across 7 doc(s)

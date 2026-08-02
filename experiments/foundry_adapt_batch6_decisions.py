@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """One-time adapter: sup-triage-decisions-v1 (decisions/batch-6.json, Captain-
-ratified per TRIAGE-BATCH-6.md sections 10-11, D1-D8) -> foundry-decisions/1
+ratified per TRIAGE-BATCH-6.md sections 10-11, D1-D8, now docs/RATIFIED-DIRECTIVES-BATCH-4-6.md) -> foundry-decisions/1
 (what foundry_reconcile.py consumes). Same schema gap batches 2-5's adapters
 bridge.
 

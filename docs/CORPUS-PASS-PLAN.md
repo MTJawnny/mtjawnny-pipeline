@@ -1,6 +1,6 @@
 # CORPUS-PASS-PLAN — full-corpus processing design (ratified batch-6 §11, 2026-07-30)
 
-Persisted from `docs/TRIAGE-BATCH-6.md` section 11 per Captain's explicit instruction
+Persisted from `docs/archive/TRIAGE-BATCH-6.md` section 11 per Captain's explicit instruction
 ("Claude Code: persist this section into the protocol docs... and wire the sequencing").
 This is **ratified direction, not an executed plan** — only sequencing step 1 (Gate #0) is
 done as of this writing. Steps 2-8 are real, dollar-costed work requiring their own
@@ -131,7 +131,7 @@ with empty hypotheses:
   problem batch 6 found twice (the etb-prefix confusion on
   `rule:create-token-mana-producing-artifact`, and the synonymous
   `rule:equipment-static-pt-buff` / `rule:equipment-grants-stat-buff` re-invention of a
-  killed axis — see `docs/TRIAGE-BATCH-6.md` sections 4 and 15) by making the composition
+  killed axis — see `docs/archive/TRIAGE-BATCH-6.md` sections 4 and 15) by making the composition
   rule deterministic instead of relying on SYNTH recall against a bare keyword list.
   **WIRED 2026-07-31** (walk-ratification session, batch-7 D7): `foundry_stage1b.py`'s
   system prompt now has a three-lane instruction with a ratified-grammar-families
@@ -162,7 +162,7 @@ with empty hypotheses:
    2026-07-30 (batch-6 D1). `foundry_common.gate_passes()` / `load_corpus_gated()`;
    retroactive scrub report at `experiments/out/foundry/gate0_scrub_report.json` (173
    members removed across 92 codebook-v0.5 axes); precedent rescan found and fixed one
-   dangling citation (this doc's sibling, `docs/TRIAGE-BATCH-6.md` section 4).
+   dangling citation (this doc's sibling, `docs/archive/TRIAGE-BATCH-6.md` section 4).
 2. Keyword-bucket extraction (already ratified in an earlier session, unchanged by this
    plan). **DET job run 2026-07-30** — `experiments/foundry_keyword_buckets.py` walked CR
    702 (194 keyword entries), CR-cited, verify-or-drop. Output:
