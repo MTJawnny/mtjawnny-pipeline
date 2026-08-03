@@ -12,15 +12,15 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 307 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 309 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**31 findings.**
+**30 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 1 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 19 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 18 |
 | C3 | §4 — member effect contradicts the slug suffix | 10 |
 
 Member tests are **double-gated**: a member is only reported when the
@@ -34,18 +34,18 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-49 misfiled member assignments across 19 axes:
+46 misfiled member assignments across 18 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
 | `etb-` | 13 | 39 |
-| `combat-damage-to-player-` | 2 | 5 |
+| `combat-damage-to-player-` | 1 | 2 |
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
 | `upkeep-` | 1 | 1 |
 
-**`etb-` accounts for 39 of 49.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 39 of 46.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -83,16 +83,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 **slug's delivery is 'cast-trigger', so members must say 'cast'; 1 of 15 never do, in the cited quote or anywhere in their oracle text**
 
 - **Avengers Assemble!** — "At the beginning of each end step, if you attacked with a Hero this turn or a Hero entered the battlefield under your control this turn, draw a card."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:combat-damage-to-player-discard`
-
-**slug's delivery is 'combat-damage-to-player', so members must say 'combat damage to a player'; 3 of 9 never do, in the cited quote or anywhere in their oracle text**
-
-- **Zhang Liao, Hero of Hefei** — "Whenever Zhang Liao deals damage to an opponent, that opponent discards a card."
-- **Hypnotic Specter** — "Whenever this creature deals damage to an opponent, that player discards a card at random."
-- **Keen Sense** — "Whenever enchanted creature deals damage to an opponent, you may draw a card."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
@@ -276,9 +266,8 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:combat-damage-to-player-discard`
 
-**slug's effect is 'discard', so members must show 'discard'; 2 of 9 never do, in the cited quote or anywhere in their oracle text**
+**slug's effect is 'discard', so members must show 'discard'; 1 of 6 never do, in the cited quote or anywhere in their oracle text**
 
-- **Keen Sense** — "Whenever enchanted creature deals damage to an opponent, you may draw a card."
 - **Riptide Entrancer** — "Whenever this creature deals combat damage to a player, you may sacrifice it."
 
 *Proposed:* these members do not perform 'discard' — re-home onto the axis matching their real effect, or ratify a sibling

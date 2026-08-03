@@ -67,6 +67,7 @@ variable.
 | `cast-trigger` | "when(ever) [someone] casts" — requires cast verbiage; never an ETB; the trigger EVENT must be the cast itself, not a condition about casting (b6 Village Ironsmith ruling) | 701.5a |
 | `combat-damage-to-player` | "deals combat damage to a player" | — |
 | `combat-damage-to-creature` | "deals combat damage to a creature" | — |
+| `any-damage-to-player` | "deals damage to a player/opponent" with NO combat restriction — fires off pingers, burn, fight effects (Captain-ratified 2026-08-02) | 120.3 |
 | `upkeep-trigger` | "at the beginning of [whose] upkeep" | 113.3c |
 | `landfall` | the landfall ability word | 207.2c |
 | `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |
@@ -87,6 +88,12 @@ Rules:
 - `combat-damage-triggers-<effect>` normalizes to
   `combat-damage-to-player-<effect>` / `-to-creature-<effect>` at the walk —
   the b7 Guild Thief definition bug is exactly this slot being unmarked.
+- **`combat-` is a RESTRICTION, not decoration (Captain-ratified 2026-08-02).**
+  A card reading "whenever ~ deals damage to an opponent" makes no
+  combat claim and takes `any-damage-to-player`. The two are different
+  mechanisms for deck-building — an any-damage trigger fires off pingers, burn
+  and fight effects — so they never share an axis. Record:
+  `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
 
 ## 3. Activation-restriction family — fully enumerated, DET-owned
 

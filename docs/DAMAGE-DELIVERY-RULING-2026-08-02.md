@@ -81,8 +81,35 @@ Open questions for ratification:
    `-discard` axis when discard is one of two modes? Bears on the general
    modal-membership question, not just this axis.
 
-## Status
+## Status — EXECUTED 2026-08-02
 
-Ruling RATIFIED. The axis split and the vocabulary it needs are **proposed and
-unexecuted** — no codebook mutation has been made. `codebook.json` sha256
-`d0b1183fc155f13e7b1ae025…`, unchanged since the CDR-09 walk.
+Captain ratified the `any-damage-` prefix and ordered the split. Both are done.
+
+| | before | after |
+|---|---|---|
+| codebook sha256 | `d0b1183fc155f13e7b1ae025…` | `2c766ca2fab3300d836d18fd…` |
+| active axes | 307 | 309 |
+| members (all) | 7,864 | **7,864** — members move, none created or lost |
+| `combat-damage-to-player-discard` | 9 members | 6 |
+| `rule:any-damage-to-player-discard` | — | 2 (Zhang Liao, Hypnotic Specter), scope `opponent-stuff` |
+| `rule:any-damage-to-player-draw` | — | 1 (Keen Sense), scope `self` |
+| lint | clean | clean |
+| sweep blocking | 6 | 6 |
+
+Executor: `experiments/foundry_any_damage_split.py`, under the backup law
+(`backups/codebook.pre-any-damage-split.20260802-172906.json`, verified by
+readback) with determinism ×2. Members moved carrying their assertions — and
+therefore their evidence quotes — verbatim; nothing was re-evidenced.
+
+The source definition was corrected in the same pass: it read "deals damage to
+an opponent", the any-damage wording this ruling forbids under a `combat-`
+prefix.
+
+`any-damage-to-player` is now in the closed DELIVERY vocabulary
+(`CODEBOOK-NAMING-GRAMMAR.md` §2, CR 120.3), with the standing rule that
+**`combat-` is a restriction, not decoration.**
+
+Re-running the drift audit confirms the fix: the C2 delivery finding on
+`combat-damage-to-player-discard` cleared entirely (19 → 18 C2 findings). Its
+only remaining finding is Riptide Entrancer, which is open question 3 below —
+an effect defect, not a delivery one.
