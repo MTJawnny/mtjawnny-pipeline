@@ -201,7 +201,7 @@ class tag; the class lattice (`targeted-bounce-<class>`,
 
 ## 6. SCOPE vocabulary
 
-`self` (the source), `own` (yours), `opponent`, `any`, `each`/`mass-`
+`self` (the source), `own` (yours), `opponent`, `any`, `each`
 (non-targeted, all-covered), `target` (ONLY when the word "target" appears in
 the ability per CR 601.2c — the b7 Unwind ruling: "untap up to three lands"
 without "target" may NOT sit in a `-target-` slug), `defending-player`
@@ -254,6 +254,39 @@ did not exist before this ruling — no gate read scope, targeting or ownership.
 First run: **93 memberships across 22 active axes**. That population is the
 measured cost of the rule never having been enforced, and it is a decision
 packet's worth of rulings, not a mechanical fix.
+
+### 6c. `mass-` is RETIRED from axis names (Captain-ratified 2026-08-02)
+
+> *"'Mass'. What does mass mean in Magic the Gathering? Mass is not game logic
+> wording. Mass should only be used for the parent layer to relate two cards
+> that affect all players and just your opponents."*
+
+**Measured: the Comprehensive Rules print the word "mass" zero times in 10,060
+lines.** It is a project coinage. What the CR prints is `each`, `all`,
+`any number of`, `target`. So `mass-` is a **job** word, and §6b puts job words
+in the parent layer.
+
+- **BANNED in axis names.** Use the printed scope, composed from the §6 tokens
+  above: `each-<class>` symmetric, `each-own-<class>` / `each-opponent-<class>`
+  one-sided.
+- **RATIFIED as PARENT vocabulary**, for exactly the job Captain names:
+  relating "affects everyone" to "affects just your opponents". That
+  relationship is real and belongs one layer up.
+- Amends §6's own scope list, which had carried `each`/`mass-` as equivalents.
+  They are not equivalent: `each` is printed, `mass` is not.
+
+**Why it was not harmless.** "Mass" papered over the symmetric/one-sided
+distinction, and three axes came to hold both — `mass-damage-opponent-creatures-only`
+said *opponent creatures only* while holding Wildfire Howl, "deals 2 damage to
+**each creature**", which hits yours too. A symmetric sweeper and a one-sided
+sweeper are different cards for deck-building.
+
+**Executed 2026-08-02:** 12 of 15 renamed (`experiments/moves/2026-08-02-mass-retirement.json`).
+The rename also retired `destruction` → `destroy` on `mass-creature-destruction`,
+a §4 violation CDR-PROPOSALS §1 had already identified. One axis was found not
+to be a mass effect at all: `mass-untap-and-haste-stolen-creatures`' 14 members
+all print "Untap **that** creature" — singular. The remaining 3 conflating axes
+need SPLITS, not renames, and are open.
 
 ### 6b. SHAPE vs JOB — the two layers (Captain-ratified 2026-08-02)
 

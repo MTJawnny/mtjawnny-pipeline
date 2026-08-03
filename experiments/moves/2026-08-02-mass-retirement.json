@@ -1,0 +1,57 @@
+{
+  "batch": "mass-retirement-2026-08-02",
+  "ruling": "docs/CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md \u00a71 \u2014 Captain-ratified 2026-08-02. 'Mass' appears zero times in the Comprehensive Rules; it is a JOB word and under grammar \u00a76b belongs to the parent layer, not to axis names. Replaced with printed CR scope composed from ratified \u00a76 tokens (each / own / opponent / defending-player).",
+  "source_ref": "captain-cli-2026-08-02",
+  "renames": {
+    "rule:attack-trigger-mass-damage-defending-players-creatures": {
+      "to": "rule:attack-trigger-damage-each-defending-player-creature",
+      "why": "mass- retired; 'each creature defending player controls' is the printed scope (CR 506.2)"
+    },
+    "rule:attack-trigger-mass-pump-attackers": {
+      "to": "rule:attack-trigger-pump-each-own-attacker",
+      "why": "mass- retired; members print 'attacking creatures you control' \u2014 own-restricted, not symmetric"
+    },
+    "rule:death-trigger-mass-debuff": {
+      "to": "rule:death-trigger-debuff-each-creature",
+      "why": "mass- retired; all 3 members print 'all creatures get -N/-N' \u2014 symmetric"
+    },
+    "rule:etb-mass-pump-your-creatures": {
+      "to": "rule:etb-pump-each-own-creature",
+      "why": "mass- retired; all 7 members print 'creatures you control'"
+    },
+    "rule:mass-creature-destruction": {
+      "to": "rule:destroy-each-creature",
+      "why": "mass- retired; all 14 print 'destroy all creatures'. Also fixes 'destruction' -> 'destroy': \u00a74 lists destroy as the standardized verb and CDR-PROPOSALS \u00a71 already ruled 'destruction' a naming violation",
+      "definition": "Destroys every creature on the battlefield regardless of controller \u2014 a symmetric board wipe. Printed as 'destroy all creatures'."
+    },
+    "rule:mass-damage-flying-creatures-scales-with-x": {
+      "to": "rule:damage-each-flying-creature-scales-with-x",
+      "why": "mass- retired; both members print 'each creature with flying', symmetric"
+    },
+    "rule:mass-damage-opponents": {
+      "to": "rule:damage-each-opponent",
+      "why": "mass- retired; 'each opponent' is the printed CR scope. Renaming an axis created earlier today for consistency"
+    },
+    "rule:mass-debuff-opponent-creatures": {
+      "to": "rule:debuff-each-opponent-creature",
+      "why": "mass- retired; members print 'creatures your opponents control' / 'you don't control'"
+    },
+    "rule:mass-pump-your-creatures": {
+      "to": "rule:pump-each-own-creature",
+      "why": "mass- retired; 17 of 19 print 'creatures you control'"
+    },
+    "rule:mass-untap-your-creatures": {
+      "to": "rule:untap-each-own-creature",
+      "why": "mass- retired; members print 'untap all creatures you control'"
+    },
+    "rule:mass-untap-and-haste-stolen-creatures": {
+      "to": "rule:untap-and-grant-haste-stolen-creature",
+      "why": "mass- retired AND it was never a mass effect: all 14 members print 'Untap THAT creature. It gains haste' \u2014 a single stolen creature, singular. The mass- prefix asserted a breadth no member has",
+      "definition": "After gaining control of a creature, untaps that creature and grants it haste so it can attack immediately. Singular: the effect applies to the one creature whose control changed, not to a board."
+    },
+    "rule:mass-graveyard-exile": {
+      "to": "rule:exile-each-graveyard",
+      "why": "mass- retired; the symmetric members print 'exile all cards from graveyards'. The 5 members that instead print 'target card' are an open C4f finding and are NOT resolved by this rename"
+    }
+  }
+}

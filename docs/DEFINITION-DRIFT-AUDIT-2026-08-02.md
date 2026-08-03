@@ -14,14 +14,14 @@ accident; this is the systematic pass for the rest.
 
 Scope: 344 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**36 findings.**
+**35 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
 | C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
-| C3 | §4 — member effect contradicts the slug suffix | 6 |
+| C3 | §4 — member effect contradicts the slug suffix | 7 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -58,7 +58,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## C2 — grammar §1/§2 — DELIVERY is closed vocabulary
 
-### `rule:attack-trigger-mass-pump-attackers`
+### `rule:attack-trigger-pump-each-own-attacker`
 
 **slug's delivery is 'attack-trigger', so members must say 'attacks'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
 
@@ -233,6 +233,14 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* these members do not perform 'draw' — re-home onto the axis matching their real effect, or ratify a sibling
 
+### `rule:destroy-each-creature`
+
+**slug's effect is 'destroy', so members must show 'destroy'; 1 of 14 never do, in the cited quote or anywhere in their oracle text**
+
+- **Thunderwave** — "Thunderwave deals 3 damage to each creature."
+
+*Proposed:* these members do not perform 'destroy' — re-home onto the axis matching their real effect, or ratify a sibling
+
 ### `rule:draw-cards-with-life-loss-cost`
 
 **slug's effect is 'draw', so members must show 'draw'; 1 of 10 never do, in the cited quote or anywhere in their oracle text**
@@ -249,7 +257,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* these members do not perform 'loot' — re-home onto the axis matching their real effect, or ratify a sibling
 
-### `rule:mass-graveyard-exile`
+### `rule:exile-each-graveyard`
 
 **slug's effect is 'exile', so members must show 'exile'; 1 of 17 never do, in the cited quote or anywhere in their oracle text**
 
