@@ -1,0 +1,121 @@
+{
+  "batch": "membership-packet-2026-08-02",
+  "ruling": "Captain-ratified 2026-08-02 (docs/MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md)",
+  "new_axes": {
+    "rule:permanent-control-theft": {
+      "definition": "Permanently gains control of a permanent an opponent controls; the effect lasts indefinitely rather than expiring at end of turn or at a stated duration.",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "effect axis. Distinct from rule:temporary-control-theft by DURATION, which is load-bearing: a permanent steal answers a threat forever, a temporary one is a tempo play."
+    },
+    "rule:combat-damage-to-player-permanent-control-theft": {
+      "definition": "Whenever this creature deals combat damage to a player, its controller may permanently gain control of a creature that player controls.",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "compound of combat-damage-to-player delivery with permanent control theft."
+    },
+    "rule:optional-self-sacrifice-in-trigger": {
+      "definition": "A triggered ability offers its controller the option to sacrifice the source as a condition of the effect (\"you may sacrifice it. If you do, ...\"). Distinct from an activation cost: the sacrifice happens on RESOLUTION, not on activation, so grammar section 9's cost-vs-effect law bars it from any -cost- slug.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "deliberately NOT rule:activated-ability-costs-self-sacrifice, which is an activation cost (CR 113.3b, left of the colon)."
+    },
+    "rule:combat-damage-to-player-forced-owner-bounce": {
+      "definition": "Whenever this creature deals combat damage to a player, that player returns a permanent they control to its owner's hand. The AFFECTED PLAYER chooses, not the controller, so the bounce cannot be aimed at a specific threat.",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "no existing bounce axis fits: targeted-bounce-creature / etb-bounce-other-creature are all YOU bouncing a chosen target."
+    },
+    "rule:combat-damage-to-player-draw": {
+      "definition": "Whenever this creature deals combat damage to a player, its controller draws one or more cards, with NO discard attached. Distinct from the -loot sibling: looting is draw-THEN-discard (grammar section 4).",
+      "scope": "self",
+      "source": "CAPTAIN"
+    },
+    "rule:combat-damage-to-player-plus1-counter-on-other-creature": {
+      "definition": "Whenever this creature deals combat damage to a player, its controller puts a +1/+1 counter on another target creature they control.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN"
+    },
+    "rule:combat-damage-to-player-free-cast": {
+      "definition": "Whenever this creature deals combat damage to a player, its controller may cast one or more spells without paying their mana costs.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "Kotis, the Fangkeeper is a second member waiting -- it is not in the codebook at all and should seed here at the corpus pass."
+    },
+    "rule:combat-damage-to-player-mill-opponent": {
+      "definition": "Whenever this creature deals combat damage to a player, that player mills cards.",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN"
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:combat-damage-to-player-discard",
+      "to": "rule:combat-damage-to-player-permanent-control-theft",
+      "members": [
+        "d0bf59a2-347c-4c3e-85cf-b27a2af77192"
+      ],
+      "why": "Riptide Entrancer never discards -- it gains control of a creature"
+    },
+    {
+      "from": "rule:combat-damage-to-player-loot",
+      "to": "rule:combat-damage-to-player-draw",
+      "members": [
+        "191ba5f0-45f4-4b7f-910d-4bd4d2d28b33",
+        "1f3c2b00-0000-4ae1-9650-9553accac52e",
+        "34fd461b-a913-4a60-9477-ce2bd5c6fc5a",
+        "b08633e9-7b8f-4f69-a3b7-8d982b17574c",
+        "e87813a3-893d-4416-9263-2ea2e3140490"
+      ],
+      "why": "draw with no discard; looting is draw-THEN-discard"
+    },
+    {
+      "from": "rule:combat-damage-to-player-loot",
+      "to": "rule:combat-damage-to-player-plus1-counter-on-other-creature",
+      "members": [
+        "8a56c2a7-7131-4495-aa27-52f48e5f1fb6"
+      ],
+      "why": "Prowler puts a +1/+1 counter; it neither draws nor discards"
+    },
+    {
+      "from": "rule:combat-damage-to-player-loot",
+      "to": "rule:combat-damage-to-player-free-cast",
+      "members": [
+        "ac50ef98-1791-4dd4-9c1f-8cea7db7ade5"
+      ],
+      "why": "Maelstrom Archangel casts a free spell; it neither draws nor discards"
+    },
+    {
+      "from": "rule:combat-damage-to-player-loot",
+      "to": "rule:combat-damage-to-player-mill-opponent",
+      "members": [
+        "fac42229-4f5f-4d04-85dd-5031d4e435aa"
+      ],
+      "why": "Sword of Body and Mind mills and creates a token; it neither draws nor discards"
+    }
+  ],
+  "adds": [
+    {
+      "from": "rule:combat-damage-to-player-permanent-control-theft",
+      "to": "rule:permanent-control-theft",
+      "member": "d0bf59a2-347c-4c3e-85cf-b27a2af77192",
+      "why": "Riptide Entrancer decomposes onto its effect axis as well as the compound"
+    },
+    {
+      "from": "rule:combat-damage-to-player-permanent-control-theft",
+      "to": "rule:optional-self-sacrifice-in-trigger",
+      "member": "d0bf59a2-347c-4c3e-85cf-b27a2af77192",
+      "why": "\"you may sacrifice it. If you do\" -- the cost-condition facet"
+    },
+    {
+      "from": "rule:combat-damage-to-player-discard",
+      "to": "rule:combat-damage-to-player-forced-owner-bounce",
+      "member": "b6f4148d-8511-46b3-93ec-2f5eb1e4ffad",
+      "why": "Blizzard Specter is modal; it holds membership on BOTH modes' axes"
+    }
+  ],
+  "definition_edits": {
+    "rule:temporary-control-theft": "Gains control of a target permanent, usually another player's, only UNTIL END OF TURN or for another stated temporary duration. The duration is load-bearing: a steal that lasts indefinitely belongs on rule:permanent-control-theft.",
+    "rule:combat-damage-to-player-loot": "Whenever this creature deals combat damage to a player, its controller LOOTS -- draws one or more cards and then discards. Both halves are required; a conditional discard still counts, a missing discard does not. Draw-only belongs on rule:combat-damage-to-player-draw."
+  }
+}

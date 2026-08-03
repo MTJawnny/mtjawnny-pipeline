@@ -104,6 +104,32 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
             {"batch": batch, "action": "members_moved",
              "note": f"moved {len(carried)} member(s) to {dst}: {mv.get('why', '')} {ruling}".strip()})
 
+    # --- multi-axis additions ------------------------------------------------
+    # Captain-ratified 2026-08-02: a card holds membership on EVERY axis it
+    # genuinely satisfies. An `add` copies a card onto an additional axis
+    # without removing it from where it already lives, so it legitimately RAISES
+    # the total member count -- the conservation gate accounts for these
+    # explicitly rather than treating the increase as corruption.
+    for ad in spec.get("adds", []):
+        src, dst, oid = ad["from"], ad["to"], ad["member"]
+        if src not in axes:
+            fc.halt(f"{src}: add source axis not in the codebook")
+        if dst not in axes:
+            fc.halt(f"{dst}: add destination does not exist and is not declared in new_axes")
+        by_id = {m["oracle_id"]: m for m in axes[src].get("members", [])}
+        if oid not in by_id:
+            fc.halt(f"{oid}: not a member of {src} — cannot copy a membership that is not there")
+        if any(m["oracle_id"] == oid for m in axes[dst]["members"]):
+            fc.halt(f"{oid}: already a member of {dst}")
+        # The evidence travels with the membership: the same quote that proves
+        # the ability proves every axis that ability satisfies.
+        axes[dst]["members"] = sorted(axes[dst]["members"] + [copy.deepcopy(by_id[oid])],
+                                      key=lambda m: m["oracle_id"])
+        axes[dst].setdefault("history", []).append(
+            {"batch": batch, "action": "member_added_multi_axis",
+             "note": f"also a member of {src}; multi-axis membership. "
+                     f"{ad.get('why', '')} {ruling}".strip()})
+
     # --- definition corrections ---------------------------------------------
     for slug, new_def in sorted(spec.get("definition_edits", {}).items()):
         if slug not in axes:
@@ -142,10 +168,13 @@ def main():
     fcb.lint_or_halt(result, "codebook (post-move, in memory)")
 
     before, after = total_members(cb), total_members(result)
-    if before != after:
-        fc.halt(f"MEMBER CONSERVATION FAILED: {before} -> {after}. Members move; they are "
-                f"never created or lost by a re-homing.")
-    print(f"member conservation OK ({before} unchanged)")
+    n_adds = len(spec.get("adds", []))
+    expected = before + n_adds
+    if after != expected:
+        fc.halt(f"MEMBER CONSERVATION FAILED: {before} -> {after}, expected {expected} "
+                f"({before} + {n_adds} declared multi-axis add(s)). Members move; they are "
+                f"never created or lost except by an explicitly declared add.")
+    print(f"member conservation OK ({before} -> {after}, {n_adds} declared add(s))")
 
     print()
     for slug in sorted(spec.get("new_axes", {})):

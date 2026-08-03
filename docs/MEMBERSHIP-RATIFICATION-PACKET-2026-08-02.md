@@ -130,8 +130,44 @@ this axis alongside Maelstrom Archangel at the corpus pass.
 
 ---
 
-## What executes on ratification
+## EXECUTED 2026-08-02
 
-7 new axes, ~11 member moves, 1 standing rule, 2 definition edits. All through
-`experiments/foundry_membership_move.py` with a declared spec — member
-conservation, determinism ×2, backup with readback, lint and sweep either side.
+All names ratified by Captain; packet executed. **Correction to this doc's own
+earlier count: the packet names 8 new axes, not 7** — `mill-opponent` was
+dropped from the summary line.
+
+| | before | after |
+|---|---|---|
+| codebook sha256 | `4c72ccc69519f355d25e6513…` | `9c3d9cba3aae48cbd1be6ce7…` |
+| axes | 474 | 482 |
+| active axes | 310 | 318 |
+| members | 7,864 | 7,867 (+3 declared multi-axis adds) |
+| lint | clean | clean |
+| sweep blocking | 6 | 6 |
+| drift findings | 34 | **27** |
+
+Spec: `experiments/moves/2026-08-02-membership-packet.json`.
+Executor: `experiments/foundry_membership_move.py`.
+Backup: `backups/codebook.pre-membership-packet.20260802-*.json`, readback-verified.
+
+Every drift finding on the `combat-damage-to-player-*` family is now cleared.
+
+### The gate caught one proposal that was already true
+
+The spec declared a multi-axis add of Sword of Body and Mind onto
+`rule:create-token-creature`. The executor halted: **it was already a member.**
+That prompted a measurement which turned the standing rule from a change into a
+ratification of existing practice — **1,236 of 5,844 carded cards (21.1%)
+already sat on more than one active axis**, up to 5 axes for a single card. The
+rule is now recorded in grammar §1, along with the consequence that member
+counts are not a partition of the corpus.
+
+### Carried forward, not executed
+
+- **Surrakar Spellblade** landed on `-draw` but scales with charge counters;
+  §7 wants `-draw-scales-with-charge-counters`. Sub-question 1, still open.
+- **Jace, Cunning Castaway** stays on `-loot` with the correct effect but a
+  `loyalty`-created delivery. Sub-question 2, still open — same class as the
+  39 ETB findings.
+- **Kotis, the Fangkeeper** is not in the codebook; it seeds
+  `combat-damage-to-player-free-cast` at the corpus pass.

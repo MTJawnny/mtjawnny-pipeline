@@ -47,6 +47,21 @@ Compounds remain the only authored thing (addendum-3 §3): one slug asserts one
 ability doing one thing. Multi-ability cards get multiple tags, never fused
 slugs (M8, generalized batch-6 D3).
 
+**Membership is not exclusive (Captain-ratified 2026-08-02).** A card holds
+membership on **every axis it genuinely satisfies**. Modal modes each earn
+their axis — Blizzard Specter is a member of both its discard axis and its
+bounce axis. A single ability decomposes onto its compound slug *and* the
+facet axes it is built from — Riptide Entrancer is a member of
+`combat-damage-to-player-permanent-control-theft`, `permanent-control-theft`
+and `optional-self-sacrifice-in-trigger`. This extends the rule above: §1
+already covered multiple *abilities*, this covers multiple *axes per ability*.
+
+This ratifies existing practice rather than changing it — measured
+2026-08-02, **1,236 of 5,844 carded cards (21.1%) already sat on more than
+one active axis**, up to 5. Consequence to respect: member counts are NOT a
+partition of the corpus, and any consumer assuming one-card-one-home is
+wrong. Record: `docs/MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`.
+
 Formatting law: lowercase ASCII, hyphens only, no articles ("a", "the"), no
 plurals except where the mechanic is inherently plural (`-two-target-creatures`,
 mass effects), `plus1`/`minus1` for counter polarity (ratified), `x` for the

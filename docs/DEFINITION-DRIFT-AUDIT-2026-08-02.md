@@ -12,16 +12,16 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 310 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 318 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**29 findings.**
+**27 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 1 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
 | C2 | §1/§2 — member delivery contradicts the slug prefix | 17 |
-| C3 | §4 — member effect contradicts the slug suffix | 10 |
+| C3 | §4 — member effect contradicts the slug suffix | 8 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -253,29 +253,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Rehearsed Debater** — "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn."
 
 *Proposed:* these members do not perform 'draw' — re-home onto the axis matching their real effect, or ratify a sibling
-
-### `rule:combat-damage-to-player-discard`
-
-**slug's effect is 'discard', so members must show 'discard'; 1 of 6 never do, in the cited quote or anywhere in their oracle text**
-
-- **Riptide Entrancer** — "Whenever this creature deals combat damage to a player, you may sacrifice it."
-
-*Proposed:* these members do not perform 'discard' — re-home onto the axis matching their real effect, or ratify a sibling
-
-### `rule:combat-damage-to-player-loot`
-
-**slug's effect is 'loot', so members must show a discard (looting is draw-THEN-discard); 8 of 15 never do, in the cited quote or anywhere in their oracle text**
-
-- **Beast, Erudite Aerialist** — "Whenever Beast deals combat damage to a player, draw a card."
-- **Ninja of the Deep Hours** — "Whenever this creature deals combat damage to a player, you may draw a card."
-- **Fear of Failed Tests** — "Whenever this creature deals combat damage to a player, draw that many cards."
-- **Prowler, Misguided Mentor** — "Whenever Prowler deals combat damage to a player, put a +1/+1 counter on another target creature you control."
-- **Maelstrom Archangel** — "Whenever this creature deals combat damage to a player, you may cast a spell from your hand without paying its mana cost."
-- **Willie Lumpkin, Postman** — "Whenever Willie Lumpkin deals combat damage to an opponent, you draw a card and that player may draw a card."
-- **Surrakar Spellblade** — "Whenever this creature deals combat damage to a player, you may draw X cards, where X is the number of charge counters on it."
-- **Sword of Body and Mind** — "Whenever equipped creature deals combat damage to a player, you create a 2/2 green Wolf creature token and that player mills ten cards."
-
-*Proposed:* these members do not perform 'loot' — re-home onto the axis matching their real effect, or ratify a sibling
 
 ### `rule:delayed-destroy-trigger`
 
