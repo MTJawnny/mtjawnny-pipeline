@@ -235,6 +235,11 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     return out or [parse_delivery(line, ratified, card)]
 
 
+def _mark_top(tok, desc, ratified):
+    """mark() for the branches that run BEFORE the trigger block defines it."""
+    return (tok, desc) if tok in ratified else (None, desc)
+
+
 def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     """(token, descriptor) -- token is a ratified §2 value, or None when the
     shape is real but unnamed. descriptor always describes what was actually
@@ -247,7 +252,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # branch above -- correctly, because CR 716.2a says a class level bar
         # "represents both an ACTIVATED ability and a STATIC ability". Only
         # Saga chapters are triggered (CR 714.2).
-        return None, "saga-chapter"
+        return _mark_top("chapter-trigger", "saga-chapter", ratified)
     body = ABILITY_WORD.sub("", raw)
     # Collapse the card's own name (and short forms) to `~` so a self-reference
     # is detectable without case or spelling games. This is the same helper the
