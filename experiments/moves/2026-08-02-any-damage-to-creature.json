@@ -1,0 +1,26 @@
+{
+  "batch": "any-damage-to-creature-2026-08-02",
+  "ruling": "Captain-ratified 2026-08-02 (docs/DAMAGE-DELIVERY-RULING-2026-08-02.md)",
+  "new_axes": {
+    "rule:any-damage-to-creature-triggers-self-plus1-counter": {
+      "definition": "Whenever this creature deals damage of any kind -- combat or noncombat -- to a creature, it grows itself by adding a +1/+1 counter to itself.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "split from rule:combat-damage-to-player-triggers-self-plus1-counter: these members deal damage to a CREATURE, not a player, and make no combat restriction."
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:combat-damage-to-player-triggers-self-plus1-counter",
+      "to": "rule:any-damage-to-creature-triggers-self-plus1-counter",
+      "members": [
+        "3913c7f2-86b7-4dd4-84a6-9bd4c1c66781",
+        "ffde2558-2168-4b40-a31a-86d160bdb289"
+      ],
+      "why": "Spiritmonger and Strax both read 'deals damage to a creature' -- wrong object AND no combat restriction"
+    }
+  ],
+  "definition_edits": {
+    "rule:combat-damage-to-player-triggers-self-plus1-counter": "Whenever this creature deals COMBAT damage to a PLAYER, it grows itself by adding a +1/+1 counter to itself. Both restrictions are load-bearing: damage to a creature, or damage of any kind, belongs on the any-damage-to-creature- family."
+  }
+}

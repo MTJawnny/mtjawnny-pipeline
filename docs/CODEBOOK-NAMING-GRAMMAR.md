@@ -68,6 +68,7 @@ variable.
 | `combat-damage-to-player` | "deals combat damage to a player" | — |
 | `combat-damage-to-creature` | "deals combat damage to a creature" | — |
 | `any-damage-to-player` | "deals damage to a player/opponent" with NO combat restriction — fires off pingers, burn, fight effects (Captain-ratified 2026-08-02) | 120.3 |
+| `any-damage-to-creature` | "deals damage to a creature" with NO combat restriction (Captain-ratified 2026-08-02) | 120.3 |
 | `upkeep-trigger` | "at the beginning of [whose] upkeep" | 113.3c |
 | `landfall` | the landfall ability word | 207.2c |
 | `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |

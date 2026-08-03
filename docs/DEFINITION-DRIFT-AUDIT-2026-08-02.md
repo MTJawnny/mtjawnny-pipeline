@@ -12,15 +12,15 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 309 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 310 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**30 findings.**
+**29 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 1 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 18 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 17 |
 | C3 | §4 — member effect contradicts the slug suffix | 10 |
 
 Member tests are **double-gated**: a member is only reported when the
@@ -34,18 +34,17 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-46 misfiled member assignments across 18 axes:
+44 misfiled member assignments across 17 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
 | `etb-` | 13 | 39 |
-| `combat-damage-to-player-` | 1 | 2 |
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
 | `upkeep-` | 1 | 1 |
 
-**`etb-` accounts for 39 of 46.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 39 of 44.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -83,15 +82,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 **slug's delivery is 'cast-trigger', so members must say 'cast'; 1 of 15 never do, in the cited quote or anywhere in their oracle text**
 
 - **Avengers Assemble!** — "At the beginning of each end step, if you attacked with a Hero this turn or a Hero entered the battlefield under your control this turn, draw a card."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:combat-damage-to-player-triggers-self-plus1-counter`
-
-**slug's delivery is 'combat-damage-to-player', so members must say 'combat damage to a player'; 2 of 6 never do, in the cited quote or anywhere in their oracle text**
-
-- **Spiritmonger** — "Whenever this creature deals damage to a creature, put a +1/+1 counter on this creature."
-- **Strax, Sontaran Nurse** — "Whenever Strax deals damage to a creature, put a +1/+1 counter on Strax."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
