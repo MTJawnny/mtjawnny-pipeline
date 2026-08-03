@@ -1,0 +1,154 @@
+{
+ "n": 21,
+ "schema": "cr-predefined-tokens/1",
+ "source": "CR 111.10",
+ "tokens": {
+  "Blood": {
+   "cr": "111.10g",
+   "definition": "a colorless Blood artifact token with \u201c{1}, {T}, Discard a card, Sacrifice this token: Draw a card.\u201d",
+   "granted": [
+    "{1}, {T}, Discard a card, Sacrifice this token: Draw a card."
+   ]
+  },
+  "Clue": {
+   "cr": "111.10f",
+   "definition": "a colorless Clue artifact token with \u201c{2}, Sacrifice this token: Draw a card.\u201d",
+   "granted": [
+    "{2}, Sacrifice this token: Draw a card."
+   ]
+  },
+  "Cursed Role": {
+   "cr": "111.10j",
+   "definition": "a colorless Aura Role enchantment token named Cursed with enchant creature and \u201cEnchanted creature has base power and toughness 1/1.\u201d",
+   "granted": [
+    "Enchanted creature has base power and toughness 1/1."
+   ]
+  },
+  "Food": {
+   "cr": "111.10b",
+   "definition": "a colorless Food artifact token with \u201c{2}, {T}, Sacrifice this token: You gain 3 life.\u201d",
+   "granted": [
+    "{2}, {T}, Sacrifice this token: You gain 3 life."
+   ]
+  },
+  "Gold": {
+   "cr": "111.10c",
+   "definition": "a colorless Gold artifact token with \u201cSacrifice this token: Add one mana of any color.\u201d",
+   "granted": [
+    "Sacrifice this token: Add one mana of any color."
+   ]
+  },
+  "Incubator": {
+   "cr": "111.10i",
+   "definition": "a double-faced token. Its front face is a colorless Incubator artifact with \u201c{2}: Transform this token.\u201d Its back face is a 0/0 colorless Phyrexian artifact creature named Phyrexian Token.",
+   "granted": [
+    "{2}: Transform this token."
+   ]
+  },
+  "Junk": {
+   "cr": "111.10t",
+   "definition": "a colorless Junk artifact token with \u201c{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\u201d",
+   "granted": [
+    "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery."
+   ]
+  },
+  "Lander": {
+   "cr": "111.10u",
+   "definition": "a colorless Lander artifact token with \u201c{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\u201d",
+   "granted": [
+    "{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle."
+   ]
+  },
+  "Map": {
+   "cr": "111.10s",
+   "definition": "a colorless Map artifact token with \u201c{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\u201d See rule 701.44, \u201cExplore.\u201d",
+   "granted": [
+    "{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.",
+    "Explore."
+   ]
+  },
+  "Monster Role": {
+   "cr": "111.10k",
+   "definition": "a colorless Aura Role enchantment token named Monster with enchant creature and \u201cEnchanted creature gets +1/+1 and has trample.\u201d",
+   "granted": [
+    "Enchanted creature gets +1/+1 and has trample."
+   ]
+  },
+  "Mutagen": {
+   "cr": "111.10v",
+   "definition": "a colorless Mutagen artifact token with \u201c{1}, {T}, Sacrifice this token: Put a +1/+1 counter on target creature. Activate only as a sorcery.\u201d",
+   "granted": [
+    "{1}, {T}, Sacrifice this token: Put a +1/+1 counter on target creature. Activate only as a sorcery."
+   ]
+  },
+  "Powerstone": {
+   "cr": "111.10h",
+   "definition": "a colorless Powerstone artifact token with \u201c{T}: Add {C}. This mana can\u2019t be spent to cast a nonartifact spell.\u201d",
+   "granted": [
+    "{T}: Add {C}. This mana can\u2019t be spent to cast a nonartifact spell."
+   ]
+  },
+  "Royal Role": {
+   "cr": "111.10m",
+   "definition": "a colorless Aura Role enchantment token named Royal with enchant creature and \u201cEnchanted creature gets +1/+1 and has ward {1}.\u201d",
+   "granted": [
+    "Enchanted creature gets +1/+1 and has ward {1}."
+   ]
+  },
+  "Shard": {
+   "cr": "111.10e",
+   "definition": "a colorless Shard enchantment token with \u201c{2}, Sacrifice this token: Scry 1, then draw a card.\u201d",
+   "granted": [
+    "{2}, Sacrifice this token: Scry 1, then draw a card."
+   ]
+  },
+  "Sorcerer Role": {
+   "cr": "111.10n",
+   "definition": "a colorless Aura Role enchantment token named Sorcerer with enchant creature and \u201cEnchanted creature gets +1/+1 and has \u2018Whenever this creature attacks, scry 1.\u2019\u201d",
+   "granted": [
+    "Enchanted creature gets +1/+1 and has \u2018Whenever this creature attacks, scry 1.\u2019"
+   ]
+  },
+  "Treasure": {
+   "cr": "111.10a",
+   "definition": "a colorless Treasure artifact token with \u201c{T}, Sacrifice this token: Add one mana of any color.\u201d",
+   "granted": [
+    "{T}, Sacrifice this token: Add one mana of any color."
+   ]
+  },
+  "Vibranium": {
+   "cr": "111.10w",
+   "definition": "a colorless Vibranium artifact token with indestructible and \u201c{T}: Add {C}. This mana can\u2019t be spent to cast a nonartifact spell.\u201d",
+   "granted": [
+    "{T}: Add {C}. This mana can\u2019t be spent to cast a nonartifact spell."
+   ]
+  },
+  "Virtuous Role": {
+   "cr": "111.10p",
+   "definition": "a colorless Aura Role enchantment token named Virtuous with enchant creature and \u201cEnchanted creature gets +1/+1 for each enchantment you control.\u201d",
+   "granted": [
+    "Enchanted creature gets +1/+1 for each enchantment you control."
+   ]
+  },
+  "Walker": {
+   "cr": "111.10d",
+   "definition": "a 2/2 black Zombie creature token named Walker.",
+   "granted": []
+  },
+  "Wicked Role": {
+   "cr": "111.10q",
+   "definition": "a colorless Aura Role enchantment token named Wicked with enchant creature, \u201cEnchanted creature gets +1/+1,\u201d and \u201cWhen this token is put into a graveyard from the battlefield, each opponent loses 1 life.\u201d",
+   "granted": [
+    "Enchanted creature gets +1/+1,",
+    "When this token is put into a graveyard from the battlefield, each opponent loses 1 life."
+   ]
+  },
+  "Young Hero Role": {
+   "cr": "111.10r",
+   "definition": "a colorless Aura Role enchantment token named Young Hero with enchant creature and \u201cEnchanted creature has \u2018Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.\u2019\u201d",
+   "granted": [
+    "Enchanted creature has \u2018Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.\u2019"
+   ]
+  }
+ }
+}
