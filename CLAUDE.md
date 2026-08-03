@@ -20,8 +20,12 @@ Before any work on the codebook, the grammar, the tier engine or the foundry:
 **→ Follow `docs/SESSION-START-PROCEDURE.md`. It is five gates and it is
 short.** The summary, so this file stands alone if that one is missed:
 
-1. Read the current session handoff — the newest `docs/SESSION-HANDOFF-*.md`.
-   Its READING MANIFEST lists what else is mandatory for the task at hand.
+1. Read the current session handoff. **`docs/SESSION-START-PROCEDURE.md`
+   Gate 1 names which file that is** — do NOT pick it by filename sort, because
+   `-EVE`/`-PM` suffixes sort *before* the bare-date file and "newest by name"
+   selects the oldest same-day handoff. Superseded handoffs carry a
+   forward-pointing banner. Its READING MANIFEST lists what else is mandatory
+   for the task at hand.
 2. Read **`docs/CODEBOOK-NAMING-GRAMMAR.md` WHOLE.** Not the section that
    looks relevant. Three separate errors on 2026-08-02 came from encoding one
    section's law while §7, §12a or a batch ruling governed the same slug — two

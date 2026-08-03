@@ -1,5 +1,12 @@
 # SESSION HANDOFF — 2026-08-02
 
+> ⚠ **SUPERSEDED — this is NOT current state.**
+> The current handoff is **`docs/SESSION-HANDOFF-2026-08-02-EVE.md`**.
+> Start at **`docs/SESSION-START-PROCEDURE.md`**.
+> (Filename sort is misleading: `-EVE` and `-PM` sort BEFORE the
+> bare-date file, so "newest by name" picks the wrong one. Follow
+> this pointer, not the sort.)
+
 Written to be read COLD. This file supersedes `SESSION-HANDOFF-2026-08-01.md`
 for current state; that file remains accurate as the record of the B-migration
 arc and is still worth reading for §3's mirror-drift analysis.

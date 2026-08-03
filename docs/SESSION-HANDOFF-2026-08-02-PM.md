@@ -1,5 +1,12 @@
 # SESSION HANDOFF — 2026-08-02 (PM)
 
+> ⚠ **SUPERSEDED — this is NOT current state.**
+> The current handoff is **`docs/SESSION-HANDOFF-2026-08-02-EVE.md`**.
+> Start at **`docs/SESSION-START-PROCEDURE.md`**.
+> (Filename sort is misleading: `-EVE` and `-PM` sort BEFORE the
+> bare-date file, so "newest by name" picks the wrong one. Follow
+> this pointer, not the sort.)
+
 Supersedes `SESSION-HANDOFF-2026-08-02.md` for current state. That file remains
 the accurate record of the documentation-migration arc and the Tier-0 bug fixes;
 its §2 walk specification is now **executed**.

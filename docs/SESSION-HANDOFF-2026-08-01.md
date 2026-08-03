@@ -1,5 +1,12 @@
 # SESSION HANDOFF — 2026-08-01 (B-migration arc)
 
+> ⚠ **SUPERSEDED — this is NOT current state.**
+> The current handoff is **`docs/SESSION-HANDOFF-2026-08-02-EVE.md`**.
+> Start at **`docs/SESSION-START-PROCEDURE.md`**.
+> (Filename sort is misleading: `-EVE` and `-PM` sort BEFORE the
+> bare-date file, so "newest by name" picks the wrong one. Follow
+> this pointer, not the sort.)
+
 Written to be read COLD. If you are picking this up with no memory of the
 session, this file plus `docs/CDR-PROPOSALS.md` is everything you need. Read
 this first, then CDR-PROPOSALS, then stop and wait for Captain's rulings.

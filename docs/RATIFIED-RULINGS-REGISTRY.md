@@ -49,11 +49,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `REAUDIT-TIER-2-2-2026-08-02.md` | 1878 | 2 | 0 | yes |
 | `REAUDIT-TIER-2-FINDINGS-2026-08-02.md` | 114 | 1 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
-| `SESSION-HANDOFF-2026-08-01.md` | 210 | 27 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-01.md` | 217 | 27 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-EVE.md` | 150 | 11 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02-PM.md` | 248 | 6 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02.md` | 210 | 17 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 126 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 134 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -191,7 +191,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:9` — This is the ratified A12 checkpoint.** A multi-session arc is rewriting a
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:25` — all since fixed. You are the different-family check that ruling A12 actually
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
-- `SESSION-HANDOFF-2026-08-01.md:86` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
+- `SESSION-HANDOFF-2026-08-01.md:93` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
 
 ### `A13` — 2 reference(s) across 2 doc(s)
 
@@ -265,7 +265,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:23` — ADD-01 — the three orphaned DET patterns. CAPTAIN RULED: Option A
 - `CDR-PROPOSALS.md:192` — belongs to the ratified DET pattern per ADD-01. Most surviving subsets will
-- `SESSION-HANDOFF-2026-08-01.md:152` — Already ruled, no action needed:** ADD-01 — the three orphaned DET patterns
+- `SESSION-HANDOFF-2026-08-01.md:159` — Already ruled, no action needed:** ADD-01 — the three orphaned DET patterns
 - `SESSION-HANDOFF-2026-08-02-EVE.md:96` — and it collides with ADD-01's session-4 DET plan. It is a merge-or-extend
 - `TIER-3-DECISION-PACKET-2026-08-02.md:446` — ADD-01 (Captain-ruled 2026-08-01) says the by-power axis gets its axis via the
 - `TIER-3-DECISION-PACKET-2026-08-02.md:459` — Either way this **interacts with ADD-01's session-4 DET plan**, which expects
@@ -277,8 +277,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:200` — ADD-02.
 - `CDR-PROPOSALS.md:464` — ADD-02 — reconcile `validate_slug` with the grammar doc BEFORE re-running
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:150` — Standing rules **NEW-01/02** and **ADD-02..08**
-- `SESSION-HANDOFF-2026-08-01.md:160` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+- `SESSION-HANDOFF-2026-08-01.md:157` — Standing rules **NEW-01/02** and **ADD-02..08**
+- `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
 
 ### `ADD-03` — 2 reference(s) across 1 doc(s)
 
@@ -297,8 +297,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:482` — ADD-06 — generated-numbers discipline.** Prose numbers must be pasted from
 - `CODEBOOK-NAMING-GRAMMAR.md:431` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
-- `SESSION-HANDOFF-2026-08-01.md:198` — generator output (ADD-06).
-- `SESSION-HANDOFF-2026-08-02.md:199` — generator output (ADD-06).
+- `SESSION-HANDOFF-2026-08-01.md:205` — generator output (ADD-06).
+- `SESSION-HANDOFF-2026-08-02.md:206` — generator output (ADD-06).
 
 ### `ADD-07` — 1 reference(s) across 1 doc(s)
 
@@ -311,11 +311,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:306` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
 - `CODEBOOK-NAMING-GRAMMAR.md:325` — the names, and both must be fixed before ADD-08 is implemented:
 - `CODEBOOK-NAMING-GRAMMAR.md:339` — be zero. ADD-08 stays blocked on §12a either way.
-- `SESSION-HANDOFF-2026-08-01.md:177` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
-- `SESSION-HANDOFF-2026-08-02-PM.md:107` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
-- `SESSION-HANDOFF-2026-08-02.md:79` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
-- `SESSION-HANDOFF-2026-08-02.md:106` — Two corrections to the ADD-08 rule** (measured, recorded in grammar §8a) —
-- `SESSION-HANDOFF-2026-08-02.md:169` — Tier-0 bug 4 (ADD-08)** — blocked on the walk, measured, rule corrections
+- `SESSION-HANDOFF-2026-08-01.md:184` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
+- `SESSION-HANDOFF-2026-08-02-PM.md:114` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
+- `SESSION-HANDOFF-2026-08-02.md:86` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
+- `SESSION-HANDOFF-2026-08-02.md:113` — Two corrections to the ADD-08 rule** (measured, recorded in grammar §8a) —
+- `SESSION-HANDOFF-2026-08-02.md:176` — Tier-0 bug 4 (ADD-08)** — blocked on the walk, measured, rule corrections
 
 ### `AG-CLI-01` — 1 reference(s) across 1 doc(s)
 
@@ -341,8 +341,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `B-01` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
-- `SESSION-HANDOFF-2026-08-01.md:82` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
-- `SESSION-HANDOFF-2026-08-02.md:173` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
+- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `B-02` — 9 reference(s) across 5 doc(s)
 
@@ -352,15 +352,15 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:127` — The model had nowhere correct to put it.** This reframes part of blocker B-02
 - `CDR-PROPOSALS.md:287` — created by two routes in one session — neither the B-02 review nor rev 1's
 - `CDR-PROPOSALS.md:526` — remaining work item is the B-02 semantic repair of the 93 nodes, gated on
-- `SESSION-HANDOFF-2026-08-01.md:82` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
-- `SESSION-HANDOFF-2026-08-01.md:164` — the B-02 semantic repair.
-- `SESSION-HANDOFF-2026-08-02.md:173` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
+- `SESSION-HANDOFF-2026-08-01.md:171` — the B-02 semantic repair.
+- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `B-03` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
-- `SESSION-HANDOFF-2026-08-01.md:84` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
-- `SESSION-HANDOFF-2026-08-02.md:173` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:91` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
+- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `CDR-01` — 13 reference(s) across 8 doc(s)
 
@@ -369,10 +369,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:311` — Recommend: the CDR-01 rule, applied after repair.** Passes review → active
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:142` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
-- `SESSION-HANDOFF-2026-08-01.md:159` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
+- `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
+- `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02-EVE.md:104` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
-- `SESSION-HANDOFF-2026-08-02.md:102` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
+- `SESSION-HANDOFF-2026-08-02.md:109` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
 - `TIER-3-DECISION-PACKET-2026-08-02.md:57` — > packet's precedent (its four n=1 axes are all `active`). CDR-01 — which
 - `TIER-4-DECISION-PACKET-2026-08-02.md:130` — grammar-composable, but at n=1 CDR-01 would defer it anyway.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:155` — extension, not new territory. n=1 → CDR-01 would defer.
@@ -383,25 +383,25 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
-- `SESSION-HANDOFF-2026-08-01.md:142` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
+- `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:102` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
-- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:99` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
-- `SESSION-HANDOFF-2026-08-02.md:104` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `SESSION-HANDOFF-2026-08-02-PM.md:109` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
+- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-03` — 4 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:769` — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
 - `CDR-PROPOSALS.md:204` — CDR-03 — R5 revalidation method
 - `CDR-PROPOSALS.md:478` — alongside CDR-03's 6.
-- `SESSION-HANDOFF-2026-08-01.md:143` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
+- `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
 
 ### `CDR-04` — 3 reference(s) across 3 doc(s)
 
 - `CDR-PROPOSALS.md:226` — CDR-04 — Duplicate same-run quotes: one assertion or a linked artifact
-- `SESSION-HANDOFF-2026-08-01.md:143` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
-- `SESSION-HANDOFF-2026-08-02.md:104` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
+- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-05` — 8 reference(s) across 6 doc(s)
 
@@ -411,32 +411,32 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:265` — CDR-05 — Near-duplicate axes: merge, alias, or parent/child
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
 - `CODEBOOK-NAMING-GRAMMAR.md:443` — CDR-05.
-- `SESSION-HANDOFF-2026-08-01.md:144` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
-- `SESSION-HANDOFF-2026-08-02.md:99` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
+- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 
 ### `CDR-06` — 5 reference(s) across 4 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
 - `CDR-PROPOSALS.md:292` — CDR-06 — Routing target for temporary multi-keyword grants
-- `SESSION-HANDOFF-2026-08-01.md:144` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
-- `SESSION-HANDOFF-2026-08-02.md:99` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
-- `SESSION-HANDOFF-2026-08-02.md:104` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
+- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-07` — 5 reference(s) across 4 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:795` — A8 (CDR-07):** DET refresh updates ONLY rule-derived assertions —
 - `CDR-PROPOSALS.md:309` — CDR-07 — Final status of semantically repaired nodes
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:145` — routing · **CDR-07** repaired-node status
-- `SESSION-HANDOFF-2026-08-02.md:178` — "Captain's review surface is a tool, not a document."* Captain's CDR-07
+- `SESSION-HANDOFF-2026-08-01.md:152` — routing · **CDR-07** repaired-node status
+- `SESSION-HANDOFF-2026-08-02.md:185` — "Captain's review surface is a tool, not a document."* Captain's CDR-07
 
 ### `CDR-08` — 5 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:780` — A5 (CDR-08):** class boundary principle recorded: class = who made
 - `CDR-PROPOSALS.md:71` — to rename four live axes is a migration call — see CDR-08.**
 - `CDR-PROPOSALS.md:319` — CDR-08 (NEW) — Rename the four slot-order violators?
-- `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
-- `SESSION-HANDOFF-2026-08-01.md:207` — contradictions — CDR-08 territory).
+- `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
+- `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
 ### `CDR-09` — 24 reference(s) across 14 doc(s)
 
@@ -455,11 +455,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CR-VOCABULARY-AUDIT.md:135` — Cost, plainly: ~15 renames total — all already mandated by CDR-09. The ledger
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:12` — passes every existing check. The CDR-09 walk surfaced one instance by
 - `REAUDIT-TIER-2-FINDINGS-2026-08-02.md:31` — Note this axis was renamed by today's CDR-09 walk (from
-- `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
+- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-02-EVE.md:4` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
-- `SESSION-HANDOFF-2026-08-02-PM.md:122` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
-- `SESSION-HANDOFF-2026-08-02.md:103` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
+- `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
+- `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
@@ -470,8 +470,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:803` — A10 (CDR-10):** temporary keyword grants route to
 - `CDR-PROPOSALS.md:359` — CDR-10 (NEW) — The `exile` homograph (F-H)
 - `CDR-PROPOSALS.md:443` — CDR-10 folds into this.** The `exile` ruling becomes one ledger row rather
-- `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:147` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
+- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:154` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
 
 ### `CDR-11` — 7 reference(s) across 4 doc(s)
 
@@ -480,23 +480,23 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:371` — CDR-11 (NEW) — Predestined tags: derive axes from the CR top-down
 - `CDR-PROPOSALS.md:408` — Recommend: treat as CDR-11's first application after token types.** These are
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:148` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
-- `SESSION-HANDOFF-2026-08-01.md:160` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+- `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
+- `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
 
 ### `CDR-12` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
 - `CDR-PROPOSALS.md:403` — CDR-12 (NEW) — The CR keyword-action gap (F-F)
-- `SESSION-HANDOFF-2026-08-01.md:149` — umbrella?) · **CDR-12** the CR keyword-action gap
+- `SESSION-HANDOFF-2026-08-01.md:156` — umbrella?) · **CDR-12** the CR keyword-action gap
 
 ### `CDR-13` — 6 reference(s) across 4 doc(s)
 
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:113` — corrections are implemented). CDR-13's Homograph Form Ledger — its "zero new
 - `CDR-PROPOSALS.md:416` — CDR-13 (NEW) — Homograph Form Ledger; answers Captain's CR-audit question
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
-- `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:159` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
-- `SESSION-HANDOFF-2026-08-02.md:82` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
+- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
+- `SESSION-HANDOFF-2026-08-02.md:89` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
 
 ### `D1` — 21 reference(s) across 9 doc(s)
 
@@ -537,7 +537,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D12` — 6 reference(s) across 4 doc(s)
 
 - `SESSION-HANDOFF-2026-08-02-EVE.md:45` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
-- `SESSION-HANDOFF-2026-08-02-PM.md:94` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
+- `SESSION-HANDOFF-2026-08-02-PM.md:101` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:157` — E6 — `rule:draw-second-card-trigger-plus1-counter` — THE 2×2, AND D12 ALREADY RATIFIED THE FIX
 - `TIER-4-DECISION-PACKET-2026-08-02.md:174` — The fix does not need new ratification.** Batch-5 D12 ledgered the full
@@ -733,7 +733,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:706` — `token`, a global synonym map would have corrupted them; H-01 caught a
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `SESSION-HANDOFF-2026-08-01.md:85` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `H-02` — 4 reference(s) across 3 doc(s)
 
@@ -755,7 +755,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `SESSION-HANDOFF-2026-08-01.md:85` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `H-06` — 2 reference(s) across 1 doc(s)
 
@@ -765,12 +765,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `M-01` — 2 reference(s) across 2 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:710` — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
-- `SESSION-HANDOFF-2026-08-01.md:85` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `M-02` — 2 reference(s) across 2 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:707` — transcript-hygiene violation in the session-2 directive); H-04 and M-02
-- `SESSION-HANDOFF-2026-08-01.md:85` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `M-03` — 1 reference(s) across 1 doc(s)
 
@@ -807,7 +807,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `NEW-01` — 2 reference(s) across 2 doc(s)
 
 - `CDR-PROPOSALS.md:450` — NEW-01 — DET-owned guard at the write boundary.** No free-lane or
-- `SESSION-HANDOFF-2026-08-01.md:150` — Standing rules **NEW-01/02** and **ADD-02..08**
+- `SESSION-HANDOFF-2026-08-01.md:157` — Standing rules **NEW-01/02** and **ADD-02..08**
 
 ### `NEW-02` — 2 reference(s) across 2 doc(s)
 
@@ -902,7 +902,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CODEBOOK-NAMING-GRAMMAR.md:505` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CODEBOOK-NAMING-GRAMMAR.md:526` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
-- `SESSION-HANDOFF-2026-08-01.md:71` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
+- `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 
 ### `Q8.7` — 1 reference(s) across 1 doc(s)
 
@@ -995,8 +995,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
 - `PARENT-TREE-CANDIDATES.md:12` — S1. Parents are DERIVED: union of ratified children computed at
 - `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1027,8 +1027,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `PARENT-TREE-CANDIDATES.md:35` — S7. Validation: proposed parents get the family-tree evidence check
 - `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T0` — 1 reference(s) across 1 doc(s)
 
@@ -1040,7 +1040,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:644` — REPORT ROW for Captain at consolidation. T1 stays parked for schema pass.
 - `PARENT-TREE-CANDIDATES.md:387` — T1. Company Commander example (batch-3 §1) assigns
 - `RULING-MANIFEST-2026-07-09.md:55` — T1 and T2 get SEPARATE constants (Captain ruling) — Phase 1 produces
-- `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T2` — 5 reference(s) across 4 doc(s)
 
@@ -1048,7 +1048,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PARENT-TREE-CANDIDATES.md:395` — T2. Cantrip predicate refined again (batch-3 §1): draw must occur upon
 - `RULING-MANIFEST-2026-07-09.md:55` — T1 and T2 get SEPARATE constants (Captain ruling) — Phase 1 produces
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
-- `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T3` — 10 reference(s) across 8 doc(s)
 

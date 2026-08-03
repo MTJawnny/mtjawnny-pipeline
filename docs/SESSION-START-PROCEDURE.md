@@ -41,7 +41,15 @@ ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
 ### Gate 1 — load the reading manifest (always)
 
-Read the newest `docs/SESSION-HANDOFF-*.md` and follow its READING MANIFEST.
+**Current handoff: `docs/SESSION-HANDOFF-2026-08-02-EVE.md`.** ← this line is
+the pointer; update it when you write a new handoff.
+
+**Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*
+the bare-date file, so "newest `SESSION-HANDOFF-*.md`" selects the oldest
+same-day file. Every superseded handoff now carries a banner pointing forward,
+so if you landed on one of those, follow its banner. `ls -t` also works.
+
+Read the current handoff and follow its READING MANIFEST.
 Read `docs/CODEBOOK-NAMING-GRAMMAR.md` **whole** — not the section that looks
 relevant. Three separate errors on 2026-08-02 came from reading one section
 while §7, §12a or a batch ruling governed the same slug.
