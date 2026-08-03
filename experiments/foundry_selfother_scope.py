@@ -44,16 +44,22 @@ sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc                # noqa: E402
 import foundry_shape_extractor as fse      # noqa: E402
 
-# The five families the census named. Sourced from the extractor's own
-# descriptors so the two agree by construction -- if it renames one, this halts
-# rather than silently measuring nothing.
-FAMILIES = [
-    "other-permanent-enters",
-    "other-creature-dies",
-    "other-creature-attacks",
-    "other-creature-combat-damage-player",
-    "other-permanent-ltb",
+# POST-RATIFICATION (§2a, Captain-ratified 2026-08-03). These five shapes were
+# unnamed gap descriptors when this tool was written; the subject-prefix ruling
+# turned them into composed DELIVERY tokens. The tool now selects on the TOKEN,
+# so it measures the ratified population rather than a gap.
+#
+# It deliberately still halts if it collects nothing -- that halt is what caught
+# the ratification landing, instead of silently reporting an empty census.
+BASE_TOKENS = [
+    "etb",
+    "death-trigger",
+    "attack-trigger",
+    "combat-damage-to-player",
+    "leaves-battlefield-trigger",
 ]
+SUBJECT_PREFIXES = ("other-", "any-")
+FAMILIES = [p + b for b in BASE_TOKENS for p in SUBJECT_PREFIXES]
 
 # SUBJECT -- does the printed trigger subject exclude the source? (§6a rule 3)
 SUBJ_ANOTHER = re.compile(r"\banother\b|\bother\b")
@@ -76,7 +82,7 @@ OBJECT_CLASS = [
 
 
 def classify_clause(clause: str) -> dict:
-    subject = "another" if SUBJ_ANOTHER.search(clause) else "bare-a"
+    subject = "other-" if SUBJ_ANOTHER.search(clause) else "any-"
     controller = None
     for name, rx in CONTROLLER:
         if rx.search(clause):
@@ -93,17 +99,32 @@ def classify_clause(clause: str) -> dict:
 
 
 def collect(cards: dict, ratified: dict) -> list:
+    """NOTE on the BY-FAMILY cross-tab. The `family` column is the extractor's
+    ratified token; the `subject` column re-derives the prefix from the whole
+    line's FIRST trigger clause. On a COMPOUND line those disagree, because the
+    token came from one sub-clause and the re-derivation reads another.
+    Measured 2026-08-03: exactly 2 of 1,594 rows, both compound, and in both the
+    extractor's token is the better read --
+
+      Giott, King of the Dwarves  "whenever ~ OR ANOTHER Dwarf you control
+        enters" -> any-etb, because {self} u {other Dwarves} IS "a Dwarf you
+        control". Printed "another", but the source is included.
+      Rhuk, Hexgold Nabber        two triggers on one line; the token is from
+        the death clause, the re-derivation reads the attack clause.
+
+    Reported here rather than papered over: the off-diagonal cells are real and
+    they are compounds, not misfiles."""
     rows = []
     for oid, card in cards.items():
         for line in fse.ability_lines(card):
             for tok, desc in fse.parse_deliveries(line, ratified, card):
-                if tok is not None or desc not in FAMILIES:
+                if tok not in FAMILIES:
                     continue
                 body = fse.ABILITY_WORD.sub("", line.strip())
                 body = fc.canonicalize_self_reference(body, card)
                 clause = fse.trigger_clause(body.lower())
                 row = classify_clause(clause)
-                row.update({"family": desc, "name": card["name"],
+                row.update({"family": tok, "name": card["name"],
                             "oracle_id": oid, "clause": clause.strip()})
                 rows.append(row)
     return rows
@@ -141,19 +162,19 @@ def main() -> None:
     controllers = sorted({c for _, c in grid})
     print(f"{'subject':12s}" + "".join(f"{c:>14s}" for c in controllers)
           + f"{'total':>10s}")
-    for subj in ("another", "bare-a"):
+    for subj in ("other-", "any-"):
         cells = [grid.get((subj, c), 0) for c in controllers]
         print(f"{subj:12s}" + "".join(f"{n:14d}" for n in cells)
               + f"{sum(cells):10d}")
 
     print("\nBY FAMILY")
     print("-" * 74)
-    print(f"{'family':38s}{'another':>10s}{'bare-a':>10s}{'cards':>9s}")
+    print(f"{'delivery token':38s}{'other-':>10s}{'any-':>10s}{'cards':>9s}")
     for fam in FAMILIES:
         fr = [r for r in rows if r["family"] == fam]
         if not fr:
             continue
-        a = sum(1 for r in fr if r["subject"] == "another")
+        a = sum(1 for r in fr if r["subject"] == "other-")
         print(f"{fam:38s}{a:10d}{len(fr) - a:10d}"
               f"{len({r['oracle_id'] for r in fr}):9d}")
 

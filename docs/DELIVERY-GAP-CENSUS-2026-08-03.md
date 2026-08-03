@@ -17,6 +17,15 @@
 > Full derivation, the generator fixes, and the ruling questions that follow
 > from it: **`docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md`** §2.
 >
+> **✅ AND THE FIVE SELF-VS-OTHER ROWS ARE NO LONGER GAPS.** Captain ratified
+> the `other-` / `any-` subject prefix on 2026-08-03 (**grammar §2a**), so
+> `other-permanent enters`, `another creature dies`, `another creature
+> attacks`, `other creature deals combat damage to a player` and `other
+> permanent leaves the battlefield` now compose onto ratified DELIVERY tokens
+> (`other-etb`, `any-etb`, `other-death-trigger`, …) and have been **removed
+> from the table below**. 1,558 cards unblocked. Re-run `--gaps` to see the
+> current state — this document is a dated snapshot, not live state.
+>
 > Seventh instance of the standing lesson — §8 of the PM handoff.
 >
 > **And the ground-truth set did NOT catch it.** The 116 hand-verified Clue
@@ -81,19 +90,19 @@ set, which a session's throwaway classifier cannot.
 | `unclassified-trigger` (residual — see below) | **1,245** | **1,203** |
 | **end step** | **657** | **652** — of which 333 are `delayed` triggers (CR 603.7), already buildable; **536 need vocabulary** per `END-STEP-TRIGGER-RULING-2026-08-03.md` §1 |
 | Saga / Class chapter | 576 | 221 |
-| **other-permanent enters** | **561** | **556** |
-| **another creature dies** | **439** | **436** |
-| **another creature attacks** | **348** | **345** |
+| ~~other-permanent enters~~ | — | **RATIFIED §2a** → `other-etb` 242 / `any-etb` 315 |
+| ~~another creature dies~~ | — | **RATIFIED §2a** → `other-death-trigger` 117 / `any-death-trigger` 319 |
+| ~~another creature attacks~~ | — | **RATIFIED §2a** → `other-attack-trigger` 34 / `any-attack-trigger` 311 |
 | beginning of combat | **333** | **331** |
 | to graveyard from anywhere | **224** | **224** |
-| other creature deals combat damage to a player | **203** | **202** |
+| ~~other creature deals combat damage to a player~~ | — | **RATIFIED §2a** → `other-combat-damage-to-player` 1 / `any-` 201 |
 | sacrifice trigger | 178 | 176 |
 | player attacks ("whenever you attack") | 159 | 158 |
 | discard trigger | 140 | 132 |
 | turned face up | 116 | 116 |
 | damage **received** ("is dealt N damage") | **109** | **108** |
 | lifegain trigger | **98** | **96** |
-| other permanent leaves the battlefield | **43** | **43** |
+| ~~other permanent leaves the battlefield~~ | — | **RATIFIED §2a** → `other-leaves-battlefield-trigger` 14 / `any-` 29 |
 | is attacked | **38** | **37** |
 | counter placed on the source | 37 | 37 |
 | draw step | **31** | **30** |

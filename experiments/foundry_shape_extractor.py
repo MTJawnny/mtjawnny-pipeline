@@ -96,7 +96,11 @@ def ratified_delivery_tokens() -> dict:
     if not GRAMMAR.exists():
         fc.halt(f"{GRAMMAR} not found — the ratified DELIVERY vocabulary lives there")
     text = GRAMMAR.read_text(encoding="utf-8")
-    m = re.search(r"^## 2\. DELIVERY slot.*?$(.*?)^## 3\.", text, re.S | re.M)
+    # Stop at the first ### subsection, not at "## 3." -- §2a's ratified
+    # subject-prefix tables live between them, and their cells ("prefix",
+    # "axis", "other-", "any-") are NOT delivery tokens. Reading to "## 3."
+    # ingested all four, silently widening the vocabulary from 19 to 23.
+    m = re.search(r"^## 2\. DELIVERY slot.*?$(.*?)^(?:###\s|## 3\.)", text, re.S | re.M)
     if not m:
         fc.halt("CODEBOOK-NAMING-GRAMMAR.md: could not locate §2's DELIVERY table. "
                 "The section heading may have been renamed — this tool must not "
@@ -278,6 +282,21 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 return None, desc
             return tok, desc
 
+        # §2a (Captain-ratified 2026-08-03): the trigger SUBJECT is a DELIVERY
+        # prefix on any §2 trigger token. Unmarked = the source; `other-` =
+        # printed "another" (source excluded); `any-` = printed bare "a"
+        # (source INCLUDED, CR 603.6a "including the newcomers"). `any-` is
+        # deliberately the marked form even though it is the majority shape --
+        # only the source earns the unmarked slot.
+        def msub(base, desc):
+            """Compose the ratified subject prefix onto a base §2 token."""
+            if base not in ratified:
+                return None, desc
+            if selfish and not other:
+                return base, desc
+            pre = "other-" if re.search(r"\banother\b|\bother\b", clause) else "any-"
+            return pre + base, pre + desc
+
         # PHASE triggers are decided on the CLAUSE, and decided FIRST. The
         # event tests below scan the whole line, so "At the beginning of combat
         # on your turn, create a Goblin ... that ATTACKS this combat" reads as
@@ -299,28 +318,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\bland (you control )?enters\b", low) or low.startswith("landfall"):
             return mark("landfall", "landfall")
         if re.search(r"\benters\b", low):
-            return mark("etb", "enters") if selfish and not other else (None, "other-permanent-enters")
+            return msub("etb", "enters")
         if re.search(r"\bdies\b|\bdie\b", low):
             if re.search(r"\bfrom (your |a )?(library|hand|anywhere)\b", low):
                 return None, "to-graveyard-from-nonbattlefield"
-            return mark("death-trigger", "dies") if selfish and not other else (None, "other-creature-dies")
+            return msub("death-trigger", "dies")
         if re.search(r"\bput into (a |their |your )?graveyards?\b", low):
             return None, "to-graveyard-from-anywhere"
         if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", low):
-            return mark("leaves-battlefield-trigger", "ltb") if selfish and not other \
-                   else (None, "other-permanent-ltb")
+            return msub("leaves-battlefield-trigger", "ltb")
         if re.search(r"\battacks?\b", low):
             if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", low):
                 return None, "is-attacked"
             if re.search(r"^when(ever)? you attack\b", low):
                 return None, "player-attacks"
-            return mark("attack-trigger", "attacks") if selfish and not other \
-                   else (None, "other-creature-attacks")
+            return msub("attack-trigger", "attacks")
         if re.search(r"\bcasts?\b", low):
             return mark("cast-trigger", "casts")
         if re.search(r"combat damage to (a|target)?\s*(player|opponent)", low):
-            return mark("combat-damage-to-player", "combat-damage-player") if selfish and not other \
-                   else (None, "other-creature-combat-damage-player")
+            return msub("combat-damage-to-player", "combat-damage-player")
         if re.search(r"combat damage to (a|target)?\s*creature", low):
             return mark("combat-damage-to-creature", "combat-damage-creature")
         if re.search(r"\bis dealt\b.{0,30}\bdamage\b", low):

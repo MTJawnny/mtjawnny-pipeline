@@ -135,6 +135,89 @@ Rules:
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
 
+### 2a. TRIGGER SUBJECT — the `other-` / `any-` prefixes (Captain-ratified 2026-08-03)
+
+Every DELIVERY row in §2's table names the SOURCE as the trigger subject: "when
+**~** enters", "whenever **~** attacks", "when **~** dies". Read literally, as
+§6a demands, **a trigger keyed on any other permanent had no name at all** —
+measured corpus-wide at **1,558 cards** across five families.
+
+The gap is not "self vs other". It is three-way, and **CR 603.6a** is the
+anchor:
+
+> "Each time an event puts one or more permanents onto the battlefield, **all
+> permanents on the battlefield (including the newcomers)** are checked for any
+> enters-the-battlefield triggers that match the event."
+
+"Including the newcomers" means a permanent printed "whenever **a** creature
+you control enters" **sees its own arrival**. That is exactly why the templating
+prints "another" when it wants to stop it — Soul Warden's *"Whenever **another**
+creature enters"* uses the word to do a job.
+
+**RATIFIED — a DELIVERY subject prefix, applied to any §2 trigger token:**
+
+| prefix | printed subject | the source | example |
+|---|---|---|---|
+| *(unmarked)* | "when **~** enters" | **is** the trigger | `etb` |
+| `other-` | "whenever **another** creature enters" | **excluded** | `other-etb` |
+| `any-` | "whenever **a** creature enters" | **included** | `any-etb` |
+
+Composes with every trigger token in §2 and with every one ratified later —
+`other-death-trigger`, `any-attack-trigger`,
+`other-leaves-battlefield-trigger`, `any-combat-damage-to-player`, and so on.
+Per §11 a node instantiates on its first quote-verified member with no fresh
+ratification.
+
+**The worked pair, both creatures, one word apart:**
+
+- **Venom Connoisseur** — "Whenever **another** creature you control enters,
+  this creature gains deathtouch." Its own ETB does nothing. → `other-`
+- **Sharp-Eyed Rookie** — "Whenever **a** creature you control enters, if its
+  power is greater than this creature's power…" Its own ETB **does** trigger
+  it. → `any-`
+
+Fusing them would make the codebook assert something false about one of them.
+§6a rule 3 already forbade it: *"a slug may not claim `another` of a member
+whose printed text can affect itself."*
+
+**`any-` is MARKED, and stays marked (Captain-ratified).** Bare "a" is the
+majority shape — 1,183 of 1,594 ability lines — so the marked form is more
+common than the unmarked one. That is deliberate and is not to be "corrected"
+by a later session: the unmarked form already means *the source*, and
+overloading it to also mean *any permanent* would make it readable as two
+mechanics, which is design goal #2. **Frequency does not earn the unmarked
+slot; only the source does.**
+
+**Opponent-controlled subjects follow the PRINTED word (Q2, ratified).** 62
+lines print "a creature **an opponent controls** dies" — mechanically the source
+can never be that creature, so `any-` and `other-` are indistinguishable in
+play. They still take `any-`, because §6a's premise is that the printed word is
+the claim. The redundancy is harmless; a mechanics-based exception would put
+the reader back to case-by-case judgement.
+
+**Consequence for SCOPE.** The trigger's CONTROLLER (`you control` /
+`an opponent controls`) is a **separate slot** and uses §6's existing tokens —
+no new vocabulary. But §1's "SCOPE is REQUIRED the moment a scope-sibling
+exists" bites immediately, because controller-siblings exist in nearly every
+family.
+
+**Migration — LOGGED, not executed.** No delivery-bearing axis renames, because
+the unmarked tokens keep their meaning. Two axes encode a trigger-subject
+"other" ad hoc and normalize onto this grammar (6 memberships total):
+
+| axis | n | note |
+|---|--:|---|
+| `rule:gains-life-on-other-creature-etb` | 3 | Soul Warden's axis |
+| `rule:death-of-other-permanents-grows-this-creature` | 3 | |
+
+Execution is a codebook mutation and rides its own step under the backup law
+with determinism ×2 — **not executed at ratification**, per the standing
+"no midflight renames" rule (§12a precedent).
+
+Record: `docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md` Q1/Q2, which also carries
+the measurement and the three generator defects that put the first number at
+1,921 instead of 1,558.
+
 ## 3. Activation-restriction family — fully enumerated, DET-owned
 
 The batch 5–7 failure class (own-upkeep collapse, Kjeldoran during-combat).

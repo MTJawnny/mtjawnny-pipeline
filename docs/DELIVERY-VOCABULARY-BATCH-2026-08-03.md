@@ -4,7 +4,24 @@ The batch `BECOMES-TAPPED-RULING-2026-08-03.md` §6 and
 `END-STEP-TRIGGER-RULING-2026-08-03.md` §5 both asked for. Assembled at
 Captain's direction: *"take the vocabulary batch."*
 
-**Nothing here is ratified and no axis was authored.** New vocabulary is a
+> ## ✅ Q1 + Q2 RATIFIED by Captain, 2026-08-03
+>
+> *"ratify Q1 and Q2 as recommended, keep any- as marked"*
+>
+> The `other-` / `any-` subject prefix is now **§2a of
+> `docs/CODEBOOK-NAMING-GRAMMAR.md`**, which is its authoritative home. `any-`
+> stays the MARKED form despite being the majority shape (1,183 of 1,594
+> lines) — frequency does not earn the unmarked slot, only the source does.
+> Q2 ratified with it: opponent-controlled subjects follow the printed word.
+>
+> **Executed:** the shape extractor now emits the composed tokens, so the
+> population is buildable rather than blocked. **Not executed:** the 2-axis /
+> 6-membership migration, which is a codebook mutation and rides its own step
+> per the standing no-midflight-renames rule (§12a precedent).
+>
+> **Q3–Q7 remain open.**
+
+**Nothing else here is ratified and no axis was authored.** New vocabulary is a
 Captain ratification (§10.3). Every number was measured this session; none is
 carried from a handoff.
 
