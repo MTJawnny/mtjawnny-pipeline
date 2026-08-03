@@ -1,3 +1,8 @@
+> ⚠ **SUPERSEDED — go to `docs/SESSION-HANDOFF-2026-08-03-PM.md`.**
+> Its numbers are stale (codebook was 533/347/8,056; now 545/359/8,571) and it
+> shipped **without a READING MANIFEST**, which Gate 1 requires. The PM handoff
+> has one.
+
 # SESSION HANDOFF — 2026-08-03
 
 Supersedes `SESSION-HANDOFF-2026-08-02-EVE.md`. **Zero API calls all session.

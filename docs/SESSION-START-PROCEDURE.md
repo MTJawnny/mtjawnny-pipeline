@@ -41,7 +41,7 @@ ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
 ### Gate 1 — load the reading manifest (always)
 
-**Current handoff: `docs/SESSION-HANDOFF-2026-08-03.md`.** ← this line is
+**Current handoff: `docs/SESSION-HANDOFF-2026-08-03-PM.md`.** ← this line is
 the pointer; update it when you write a new handoff.
 
 **Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*

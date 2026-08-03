@@ -118,9 +118,15 @@ encodes.
 
 ## Reference
 
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-02-PM.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-03-PM.md`**
   — start here, always. It lists every markdown a session needs, tiered by
-  what you are about to touch.
+  what you are about to touch. (This line goes stale; the authoritative
+  pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)
+- **Corpus-wide SHAPE work is a script, not tokens.**
+  `experiments/foundry_shape_extractor.py` parses every card's DELIVERY slot
+  for free, deriving its vocabulary from grammar §2 at run time. Run it before
+  reading cards by hand; audit its output rather than re-deriving it.
+  Census: `docs/DELIVERY-GAP-CENSUS-2026-08-03.md`.
 - Ratified codebook surgery runs through
   `experiments/foundry_membership_move.py` with a declared spec in
   `experiments/moves/*.json` — it decides nothing, and enforces member
