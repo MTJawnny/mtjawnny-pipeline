@@ -255,6 +255,57 @@ First run: **93 memberships across 22 active axes**. That population is the
 measured cost of the rule never having been enforced, and it is a decision
 packet's worth of rulings, not a mechanical fix.
 
+### 6b. SHAPE vs JOB — the two layers (Captain-ratified 2026-08-02)
+
+> **"All cards have absolute shapes. Shapes shared among other cards. There's
+> no value lost to build per-shape axis. This game ultimately does not contain
+> ambiguity whatsoever. Linking the spirit of each card is of course up for
+> interpretation. But hard game logic is not."**
+
+Two layers, and confusing them is what produces both false merges and false
+splits:
+
+| layer | governed by | ambiguity | lives in |
+|---|---|---|---|
+| **SHAPE** — what the card literally does | printed text, CR terms of art | **none** | the axis (child) |
+| **JOB** — what the card is *for* | play outcome, deck role | genuine, interpretive | the parent |
+
+This sharpens the standing parent-tree principle (*"children are defined by
+MECHANISM, parents are defined by JOB"*) by naming the reason: mechanism is
+decidable, job is not.
+
+**Three binding consequences:**
+
+1. **Per-shape axes are free. Mint them.** A distinct printed shape earns its
+   own axis even at n=1. Do not fold a shape into a near neighbour to avoid
+   axis count, and do not treat a printed distinction as a "facet" to defer.
+   Thinness of membership is not an argument against a real shape.
+2. **Never be allergic to a new ruling** when a legitimate game-logic shape
+   demands one.
+3. **Adjacent vocabulary is not equivalent vocabulary.** *"Each opponent and
+   each player for instance are completely different and have real in-game
+   consequences players must accept. These are not equitable."* Same for
+   `player` vs `opponent` vs `defending player`, `choose` vs `target`, `may`
+   vs mandatory, `each` vs `all`, `another` vs `target`.
+
+**The hard part, stated by Captain as the open challenge:** finding linkage
+between cards whose *verbatim game logic differs* but whose *gameplay outcome
+converges*. Worked case, ratified as the illustration:
+
+> **The One Ring** and **Grand Abolisher** are semi-related — both protect you
+> from outside threats. But The One Ring is **one turn cycle**, and Grand
+> Abolisher is **your-turn anchored.** Different shapes; adjacent jobs.
+
+So they are **never one axis** (the durations are printed, hard, and
+consequential) and are **candidates for one parent** (the job is the same
+answer to "what does this card do for my deck"). That is precisely the Tier-3
+promise — *same job, different words* — and it is the parent layer's work, not
+the axis layer's.
+
+**Consequence for anyone merging:** two axes may be merged only when their
+printed shapes are identical. Similar *outcome* is never grounds for a merge;
+it is grounds for a shared parent.
+
 ## 7. Scaling standard
 
 One connective, one order, closed stat list — RATIFIED (D-3):

@@ -1,0 +1,109 @@
+{
+  "batch": "c4-part1-2026-08-02",
+  "ruling": "docs/C4-DECISION-SHEET-2026-08-02.md calls 1, 2, 6 \u2014 Captain-ratified 'all defaults' 2026-08-02. Grammar \u00a76a: the printed word is the claim.",
+  "source_ref": "captain-cli-2026-08-02",
+  "renames": {
+    "rule:activated-animate-other-artifact": {
+      "to": "rule:activated-animate-target-artifact",
+      "definition": "An activated ability makes a target noncreature artifact become an artifact creature until end of turn. The printed text says 'target', not 'another', so the source is not excluded (grammar \u00a76a).",
+      "why": "call 1 \u2014 2 of 2 members print plain 'target'; the -other- claim was unsupported"
+    },
+    "rule:activated-plus1-counter-transfer-to-other-creature": {
+      "to": "rule:activated-plus1-counter-transfer-to-target-creature",
+      "definition": "An activated ability removes a +1/+1 counter from the SOURCE and puts a +1/+1 counter on target creature. Direction is source -> target; the printed text says 'target creature', not 'another', so the source is not excluded (grammar \u00a76a).",
+      "why": "call 1 \u2014 Spike Hatcher and Spike Rogue both print 'Put a +1/+1 counter on target creature'. Tier-2 D1 corrected this axis's DIRECTION yesterday and left the -other- claim standing"
+    },
+    "rule:etb-bounce-other-creature": {
+      "to": "rule:etb-bounce-target-creature",
+      "definition": "When the permanent enters, a triggered ability returns target creature to its owner's hand. The printed text says 'target', not 'another' (grammar \u00a76a).",
+      "why": "call 1 \u2014 6 of 9 members print plain 'target creature' and can bounce themselves"
+    },
+    "rule:etb-plus1-counter-on-other-creature": {
+      "to": "rule:etb-plus1-counter-on-target-creature",
+      "definition": "When the permanent enters, a triggered ability puts a +1/+1 counter on target creature. The printed text says 'target', not 'another' (grammar \u00a76a); members whose counter goes on the source itself belong on rule:etb-self-plus1-counter.",
+      "why": "call 1 \u2014 15 of 42 members print plain 'target creature'; the -other- claim was unsupported"
+    }
+  },
+  "new_axes": {
+    "rule:grants-self-double-strike": {
+      "definition": "A triggered or activated ability gives the SOURCE ITSELF double strike until end of turn. Distinct from rule:grants-double-strike-target, which targets another creature: these members print 'this creature gains double strike' and affect nothing else (grammar \u00a76a).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "C4 call 2 \u2014 21 members"
+    },
+    "rule:etb-self-plus1-counter": {
+      "definition": "When the permanent enters, a triggered ability puts one or more +1/+1 counters on the SOURCE ITSELF. Sibling of rule:etb-plus1-counter-on-target-creature; joins the self-counter family (self-plus1-counter-growth, attack-trigger-self-plus1-counter-growth, draw-trigger-self-plus1-counter-growth).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "C4 call 2 \u2014 12 members"
+    },
+    "rule:etb-self-tapped-with-stun-counters": {
+      "definition": "The permanent enters tapped and with one or more stun counters on ITSELF, as a printed drawback. Distinct from rule:etb-tap-and-stun-target, which taps and stuns another permanent (grammar \u00a76a).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "C4 call 2 \u2014 3 members"
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:grants-double-strike-target",
+      "to": "rule:grants-self-double-strike",
+      "members": [
+        "0166996d-941f-49fe-bf4f-64b6fd4b69e9",
+        "058f74f6-eeed-4ee8-8574-f95fea8d8f14",
+        "119af12a-b767-4408-9bb5-72a6d0ec63d1",
+        "1acb289f-fb7f-4d83-aaef-4e7b9462c593",
+        "2b51d6e5-a4cd-4f2f-9762-6ad2cfd8b084",
+        "3d937cd9-b1e1-406d-9e29-3b9d3ceea3be",
+        "3dcbbbeb-4efe-4363-bfb4-b7d7f803bafa",
+        "42bf9435-02e6-428f-a93c-fe4652deb4fc",
+        "502230fb-3a7a-439c-adfa-f7820deacf87",
+        "5291deb9-0b89-42c2-bde6-26f88931c3f4",
+        "5df784c0-3adc-4613-ba30-905ec8cf66f9",
+        "5e0d877c-6ce3-462b-9746-7fc921c93be9",
+        "76c43ac8-a878-4239-b0e3-f0254ef63e50",
+        "c0b3bbce-977c-42a9-afcb-dabdfc717c97",
+        "c6e17443-2379-419d-8c32-13ea9bf52993",
+        "cb690399-0fb8-4bd8-a73d-5e0e594ff2ae",
+        "cdaefc96-4560-43bb-9514-bf87657bd481",
+        "dac3a263-cc02-446a-88ec-882a21096b6c",
+        "dfee20a6-7737-49a8-b1cb-0a4914ac0ad3",
+        "e0efb48b-e7e5-4ed0-a7de-c8f72d357319",
+        "f1812d69-c016-4bc3-b899-ed47f5e893e5"
+      ],
+      "why": "call 2 \u2014 each prints 'this creature gains double strike until end of turn' and targets nothing"
+    },
+    {
+      "from": "rule:etb-plus1-counter-on-target-creature",
+      "to": "rule:etb-self-plus1-counter",
+      "members": [
+        "06a2a50d-f54f-4eb7-9cf8-ce37d802794a",
+        "0c7f18d5-36cb-4bc6-a358-443b97666215",
+        "33042d12-f08b-4b3e-b106-c424ef868c13",
+        "4b515bb0-f275-4400-8032-3173b799ab40",
+        "4c0a8eed-f2e2-4821-8011-6e6ad2081936",
+        "78427103-9543-41fb-b6d4-72963fe87275",
+        "8a15841a-dcb6-454a-b865-43a067f42b4e",
+        "8c4da760-8913-46ca-b00c-bba6d877d482",
+        "c4212ba4-8c43-40ca-aa36-b3b535659fa8",
+        "cae23ced-b0a7-4e53-a01c-499e5ab58ecd",
+        "e54ad5a1-e79d-42db-a3e9-5caecae62c9f",
+        "f1761d24-a19e-43ea-bbb3-a987b5a2941b"
+      ],
+      "why": "call 2 \u2014 each puts its counter(s) on the source itself, not on another creature"
+    },
+    {
+      "from": "rule:etb-tap-and-stun-target",
+      "to": "rule:etb-self-tapped-with-stun-counters",
+      "members": [
+        "a17633aa-b1a7-4ae5-b051-6747975d8a2f",
+        "a26f3cbb-39b5-4688-92f7-26534613a9f3",
+        "dba3dcc1-2177-4a8c-8cf3-7d4fb83c7a16"
+      ],
+      "why": "call 2 \u2014 each prints 'enters tapped with N stun counters on it': self, no target"
+    }
+  ],
+  "scope_edits": {
+    "rule:activated-tap-grants-haste-other-creature-you-control": "your-stuff"
+  }
+}

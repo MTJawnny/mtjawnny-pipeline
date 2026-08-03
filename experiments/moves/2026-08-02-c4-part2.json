@@ -1,0 +1,226 @@
+{
+  "batch": "c4-part2-2026-08-02",
+  "ruling": "docs/C4-DECISION-SHEET-2026-08-02.md calls 3, 4, 5, 7 \u2014 Captain-ratified 'all defaults' 2026-08-02. Per-shape axes are ratified freely per the same ruling ('no value lost to build per shape axis').",
+  "source_ref": "captain-cli-2026-08-02",
+  "new_axes": {
+    "rule:aura-taps-enchanted-permanent": {
+      "definition": "An Aura taps the permanent it enchants, by its own triggered or activated ability. The attachment already fixed the object, so nothing is targeted (grammar \u00a76a; CR 601.2c).",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:aura-destroys-enchanted-land": {
+      "definition": "An Aura destroys the land it enchants. No targeting: the attachment fixed the object (grammar \u00a76a).",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:aura-untaps-enchanted-land": {
+      "definition": "An Aura untaps the land it enchants, as an upkeep or activated benefit. No targeting (grammar \u00a76a).",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:prevent-fixed-damage-from-chosen-source": {
+      "definition": "Prevents the next fixed amount of damage from a SOURCE OF YOUR CHOICE. Choosing is not targeting: the choice cannot be responded to by changing targets and is unaffected by ward or hexproof (grammar \u00a76a).",
+      "scope": "all-players",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:prevents-damage-to-controller": {
+      "definition": "A static or replacement effect prevents damage that would be dealt to the permanent's CONTROLLER \u2014 the player, not the permanent. Distinct from rule:prevents-damage-to-self, which protects the permanent itself (grammar \u00a76a: 'you' and 'this permanent' are different objects).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:grants-double-strike-chosen-own-creature": {
+      "definition": "Gives double strike until end of turn to A CREATURE YOU CONTROL, chosen rather than targeted. Two printed distinctions from rule:grants-double-strike-target: the creature is chosen, not targeted, and it is ownership-restricted (grammar \u00a76a).",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:copy-own-creature-token": {
+      "definition": "Creates a token copy of a creature YOU CONTROL. Ownership-restricted sibling of rule:copy-creature-token, which can copy any creature (grammar \u00a76a).",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:attack-trigger-pump-own-creature": {
+      "definition": "An attack-triggered ability gives a creature ITS CONTROLLER CONTROLS a temporary power/toughness boost. Ownership-restricted sibling of rule:attack-trigger-pump-any-creature.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:etb-pump-own-creature": {
+      "definition": "When the permanent enters, a triggered ability gives a creature ITS CONTROLLER CONTROLS a temporary power/toughness boost. Ownership-restricted sibling of rule:etb-pump-target-creature. Reverses batch-6 D3's facet treatment per grammar \u00a76a.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:sets-base-power-or-toughness-own-creatures": {
+      "definition": "Sets the base power and/or toughness of creatures ITS CONTROLLER CONTROLS. Ownership-restricted sibling of rule:sets-base-power-or-toughness.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:attack-trigger-untap-own-attacker": {
+      "definition": "An attack trigger untaps an attacking creature ITS CONTROLLER CONTROLS. Ownership-restricted sibling of rule:attack-trigger-untap-attacker.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:activated-untap-another-own-permanent": {
+      "definition": "An activated ability untaps another target permanent ITS CONTROLLER CONTROLS. Ownership-restricted sibling of rule:activated-untap-another-permanent.",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    },
+    "rule:mass-damage-opponents": {
+      "definition": "Deals damage to EACH OPPONENT, without targeting. 'Each opponent' and 'each player' are different claims with different in-game consequences and never share an axis (grammar \u00a76a). Distinct from rule:mass-damage-opponent-creatures-only, which hits creatures.",
+      "scope": "opponent-stuff",
+      "source": "CAPTAIN",
+      "note": "C4 all-defaults 2026-08-02"
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:activated-tap-target-creature",
+      "to": "rule:aura-taps-enchanted-permanent",
+      "members": [
+        "1ae88ba6-4973-45d1-a251-4d924ab4bc73",
+        "9dc4b172-da33-40c0-ab29-d68807dbe93f",
+        "4c3745ff-6e1e-4660-abe6-1a30611ec00c"
+      ],
+      "why": "call 3 \u2014 each prints 'tap enchanted creature/permanent'; an Aura does not target what it enchants"
+    },
+    {
+      "from": "rule:activated-destroy-target-land",
+      "to": "rule:aura-destroys-enchanted-land",
+      "members": [
+        "4933c2a9-0ef7-4b59-8c55-faa1cb3abbc2",
+        "1e687c04-b573-425d-b2d1-0e0cbe02bb52"
+      ],
+      "why": "call 3 \u2014 'Destroy enchanted land'"
+    },
+    {
+      "from": "rule:untaps-target-land",
+      "to": "rule:aura-untaps-enchanted-land",
+      "members": [
+        "8650bd97-ecf6-420f-9b72-a749970afcd4"
+      ],
+      "why": "call 3 \u2014 Wellspring: 'untap enchanted land'"
+    },
+    {
+      "from": "rule:prevent-fixed-damage-any-target",
+      "to": "rule:prevent-fixed-damage-from-chosen-source",
+      "members": [
+        "35e2730e-b3aa-4080-aae8-7b3ad1e59848",
+        "7071aee8-b5ca-4be5-9ba0-2df7e3af303b"
+      ],
+      "why": "call 4 \u2014 'a source of your choice' is a choice, not a target"
+    },
+    {
+      "from": "rule:prevent-fixed-damage-any-target",
+      "to": "rule:prevents-damage-to-self",
+      "members": [
+        "e4acac65-112b-48fc-bea3-44747c1389a3"
+      ],
+      "why": "call 4 \u2014 Opal-Eye prevents damage to ITSELF and targets nothing. Corrects my own tier-4 call-1 move, made before grammar \u00a76a existed"
+    },
+    {
+      "from": "rule:prevent-fixed-damage-any-target",
+      "to": "rule:prevents-damage-to-controller",
+      "members": [
+        "e5fa232a-c8f2-4532-88bf-60d1223181b0"
+      ],
+      "why": "call 4 \u2014 Urza's Armor prevents damage dealt to YOU, the player"
+    },
+    {
+      "from": "rule:grants-double-strike-target",
+      "to": "rule:grants-double-strike-chosen-own-creature",
+      "members": [
+        "32620b26-10b9-47a7-bfa7-ca590ab5fa50",
+        "d1fc2549-40d5-41c8-b3ab-07ea13e9381d",
+        "32aee76a-e738-4898-985a-801d1cce15ea"
+      ],
+      "why": "call 4 \u2014 'a creature you control' is chosen, not targeted, and is ownership-restricted"
+    },
+    {
+      "from": "rule:copy-creature-token",
+      "to": "rule:copy-own-creature-token",
+      "members": [
+        "1f0883f8-89c9-4620-9837-72a2909e0599",
+        "2b0c08fb-7c46-484a-a446-b26a94db7172",
+        "9080a7bb-2b8b-42af-9f5b-a9f374ecb801",
+        "99c32f20-da98-477d-9eb2-9c0b189d8d88",
+        "a3faf698-1dac-45ef-9c43-c8cead489ffc",
+        "ae771e78-1d29-4b8c-8511-9da196a78dcf",
+        "e7a1c21b-5966-4ce0-a925-0b3cb3c3db00"
+      ],
+      "why": "call 5 \u2014 each prints 'you control'; an any-scope axis claims it can copy an opponent's"
+    },
+    {
+      "from": "rule:attack-trigger-pump-any-creature",
+      "to": "rule:attack-trigger-pump-own-creature",
+      "members": [
+        "cd39e485-71ba-40cb-8608-f5a0dfb7ef5f",
+        "f40cb1af-3db6-4e90-830f-86ff4b60e239"
+      ],
+      "why": "call 5 \u2014 your 3a ruling: any must mean any"
+    },
+    {
+      "from": "rule:etb-pump-target-creature",
+      "to": "rule:etb-pump-own-creature",
+      "members": [
+        "6bb7d985-b033-46a2-9bbb-6f7ee62aaaff"
+      ],
+      "why": "call 5 \u2014 Herald of the Fair is 'target creature you control'; reverses batch-6 D3"
+    },
+    {
+      "from": "rule:sets-base-power-or-toughness",
+      "to": "rule:sets-base-power-or-toughness-own-creatures",
+      "members": [
+        "d804b0e5-785a-4e6e-9fe7-38b8add826fa"
+      ],
+      "why": "call 5 \u2014 Oko's Hospitality: 'Creatures you control'"
+    },
+    {
+      "from": "rule:attack-trigger-untap-attacker",
+      "to": "rule:attack-trigger-untap-own-attacker",
+      "members": [
+        "b4b5b928-8b98-4f65-9f15-212859874fe4"
+      ],
+      "why": "call 5 \u2014 Tadeas: 'a creature you control with reach'"
+    },
+    {
+      "from": "rule:activated-untap-another-permanent",
+      "to": "rule:activated-untap-another-own-permanent",
+      "members": [
+        "8fc1e8b1-3afc-4e9d-a3ae-7bd9bcdcb465"
+      ],
+      "why": "call 5 \u2014 Kelpie Guide: 'another target permanent you control'"
+    },
+    {
+      "from": "rule:direct-damage-any-target",
+      "to": "rule:mass-damage-opponents",
+      "members": [
+        "f3d4f5ab-0ff4-48e1-8cf0-163b290804a5"
+      ],
+      "why": "call 7 \u2014 Unstable Amulet: 'each opponent', a mass effect that targets nothing"
+    }
+  ],
+  "drops": [
+    {
+      "from": "rule:attack-trigger-buff-other-attacker-plus1-counters",
+      "member": "087b2490-e415-44e2-a674-3b5619a0fad5",
+      "why": "call 7 \u2014 Sovereign Okinec Ahau is 'for each creature you control with power greater than\u2026', a mass effect with no target and no 'other'. No mass sibling exists; ledger-flagged per b6 D5"
+    }
+  ],
+  "renames": {
+    "rule:etb-grants-connive-to-other-creature": {
+      "to": "rule:etb-grants-connive-to-own-creature",
+      "definition": "When the permanent enters, a triggered ability makes a creature its controller controls connive. Printed text says 'target creature you control', not 'another' (grammar \u00a76a).",
+      "why": "call 7 \u2014 Mob Lookout prints no 'other'; both members are ownership-restricted"
+    }
+  }
+}

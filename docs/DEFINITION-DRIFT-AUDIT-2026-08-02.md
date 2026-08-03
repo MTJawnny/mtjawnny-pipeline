@@ -12,15 +12,15 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 328 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 344 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**44 findings.**
+**26 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 15 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
 | C3 | §4 — member effect contradicts the slug suffix | 6 |
 
 Member tests are **double-gated**: a member is only reported when the
@@ -34,11 +34,11 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-41 misfiled member assignments across 15 axes:
+41 misfiled member assignments across 16 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
-| `etb-` | 12 | 37 |
+| `etb-` | 13 | 37 |
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
@@ -83,7 +83,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-bounce-other-creature`
+### `rule:etb-bounce-target-creature`
 
 **slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 9 never do, in the cited quote or anywhere in their oracle text**
 
@@ -160,11 +160,10 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-plus1-counter-on-other-creature`
+### `rule:etb-plus1-counter-on-target-creature`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 6 of 42 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 5 of 30 never do, in the cited quote or anywhere in their oracle text**
 
-- **The Wandering Emperor** — "Put a +1/+1 counter on up to one target creature."
 - **Guardian Shield-Bearer** — "When this creature is turned face up, put a +1/+1 counter on another target creature you control."
 - **C.A.M.P.** — "put a +1/+1 counter on target creature you control"
 - **Kaya, Geist Hunter** — "Put a +1/+1 counter on up to one target creature token you control."
@@ -181,6 +180,14 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Falcon, Joaquin Torres** — "put a +1/+1 counter on him and scry 1"
 - **Samut's Sprint** — "Scry 1."
 - **Coming In Hot** — "Scry 1."
+
+*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
+
+### `rule:etb-self-plus1-counter`
+
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 12 never do, in the cited quote or anywhere in their oracle text**
+
+- **The Wandering Emperor** — "Put a +1/+1 counter on up to one target creature."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
