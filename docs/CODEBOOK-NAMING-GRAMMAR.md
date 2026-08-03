@@ -117,6 +117,17 @@ Rules:
   never by effect words", applied one level up: read *whose* ability it is
   before reading what it does. Record:
   `docs/REAUDIT-TIER-1-FINDINGS-2026-08-02.md` §2a.
+- **A `{T}` in an activated cost is AXIS IDENTITY (Captain-ratified
+  2026-08-02, D3f).** Tapping caps an ability at once per turn; an
+  otherwise-identical ability without it goes arbitrarily wide with mana. That
+  is a when/whether difference, not a magnitude one, and it separates a combo
+  piece from a value creature — so the tapped and untapped forms are siblings,
+  never one axis. Worked case: `activated-tap-grants-haste-other-creature-you-control`
+  (Paragon of Fierce Defiance) vs `activated-grants-haste-any-creature` (Boros
+  Guildmage). Test to apply: does the distinction change WHEN or WHETHER the
+  effect can happen (split), or only how much (parameter, per batch-5's
+  counter-polarity ruling)? Record:
+  `docs/TIER-2-DECISION-PACKET-2026-08-02.md` D3f.
 - **`combat-` is a RESTRICTION, not decoration (Captain-ratified 2026-08-02).**
   A card reading "whenever ~ deals damage to an opponent" makes no
   combat claim and takes `any-damage-to-player`. The two are different

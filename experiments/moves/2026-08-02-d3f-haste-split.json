@@ -1,0 +1,59 @@
+{
+  "batch": "d3f-haste-split-2026-08-02",
+  "ruling": "Captain-ratified 2026-08-02, D3f (docs/TIER-2-DECISION-PACKET-2026-08-02.md): split on repeatability.",
+  "renames": {
+    "rule:activated-grants-haste-other-creature": {
+      "to": "rule:activated-tap-grants-haste-other-creature-you-control",
+      "definition": "An activated ability whose cost includes TAPPING the source grants haste until end of turn to another target creature the controller controls. The tap is axis identity, not a cost detail: it caps the ability at once per turn. The untapped-cost form, which goes arbitrarily wide with mana, is rule:activated-grants-haste-any-creature.",
+      "why": "D3f -- the axis contradicted itself: its scope field (any-creature) matched Boros Guildmage while its definition (tap, another, you control) matched Paragon. This name and definition now match Paragon exactly."
+    }
+  },
+  "new_axes": {
+    "rule:activated-grants-haste-any-creature": {
+      "definition": "An activated ability paid with mana only -- no tap -- grants haste until end of turn to any target creature, including the source itself and creatures the controller does not control. Repeatable within a turn as long as mana is available; the once-per-turn tapped form is rule:activated-tap-grants-haste-other-creature-you-control.",
+      "scope": "any-creature",
+      "source": "CAPTAIN",
+      "note": "D3f -- the untapped-cost sibling."
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:activated-tap-grants-haste-other-creature-you-control",
+      "to": "rule:activated-grants-haste-any-creature",
+      "members": [
+        "266c2f49-82eb-48e9-a7ea-e0da787fa40e"
+      ],
+      "why": "D3f -- Boros Guildmage has no tap in its cost and can target any creature including itself"
+    }
+  ],
+  "adds": [
+    {
+      "from": "rule:activated-grants-haste-any-creature",
+      "to": "rule:temporary-keyword-grant",
+      "member": "266c2f49-82eb-48e9-a7ea-e0da787fa40e",
+      "quote": "{1}{W}: Target creature gains first strike until end of turn.",
+      "why": "Boros Guildmage's SECOND ability grants a temporary keyword; multi-axis membership as ratified 2026-08-02"
+    }
+  ],
+  "source_ref": "captain-cli-2026-08-02",
+  "quote_edits": {
+    "rule:permanent-control-theft": {
+      "d0bf59a2-347c-4c3e-85cf-b27a2af77192": {
+        "quote": "gain control of target creature that player controls. (This effect lasts indefinitely.)",
+        "source_ref": "captain-cli-2026-08-02"
+      }
+    },
+    "rule:optional-self-sacrifice-in-trigger": {
+      "d0bf59a2-347c-4c3e-85cf-b27a2af77192": {
+        "quote": "Whenever this creature deals combat damage to a player, you may sacrifice it. If you do,",
+        "source_ref": "captain-cli-2026-08-02"
+      }
+    },
+    "rule:combat-damage-to-player-forced-owner-bounce": {
+      "b6f4148d-8511-46b3-93ec-2f5eb1e4ffad": {
+        "quote": "Whenever this creature deals combat damage to a player, choose one -- * That player returns a permanent they control to its owner's hand.",
+        "source_ref": "captain-cli-2026-08-02"
+      }
+    }
+  }
+}

@@ -182,9 +182,14 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
             fc.halt(f"add {oid} -> {dst}: no `quote` given. The source quote proves the "
                     f"SOURCE axis's claim and may not prove this one; state the evidence "
                     f"for this axis explicitly (evidence-quote-or-discard).")
+        # Provenance must name what actually made THIS assignment. Inheriting
+        # the source axis's batch label would credit a triage batch with a
+        # decision it never made -- the provenance-mislabelling the closed
+        # source_ref vocabulary exists to prevent. `captain-cli-<date>` is the
+        # ratified label for a hand-ratified addition.
         for a in carried.get("assertions", []):
             a["quote"] = ad["quote"]
-            a["source_ref"] = batch
+            a["source_ref"] = spec.get("source_ref", "captain-cli-2026-08-02")
         axes[dst]["members"] = sorted(axes[dst]["members"] + [carried],
                                       key=lambda m: m["oracle_id"])
         axes[dst].setdefault("history", []).append(
@@ -215,13 +220,19 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
         if slug not in axes:
             fc.halt(f"{slug}: quote_edits names an axis not in the codebook")
         by_id = {m["oracle_id"]: m for m in axes[slug].get("members", [])}
-        for oid, new_quote in sorted(per_card.items()):
+        for oid, val in sorted(per_card.items()):
+            # A value may be a bare quote string, or {quote, source_ref} when the
+            # provenance label needs correcting too.
+            new_quote = val if isinstance(val, str) else val["quote"]
+            new_ref = None if isinstance(val, str) else val.get("source_ref")
             if oid not in by_id:
                 fc.halt(f"{oid}: quote_edits names a non-member of {slug}")
             if not new_quote.strip():
                 fc.halt(f"{oid} on {slug}: refusing to set an empty quote")
             for a in by_id[oid].get("assertions", []):
                 a["quote"] = new_quote
+                if new_ref:
+                    a["source_ref"] = new_ref
                 if a.get("evidence_status") == "legacy-captain-seed":
                     a["evidence_status"] = "quoted"
         axes[slug].setdefault("history", []).append(
@@ -292,7 +303,10 @@ def main():
         print(f"  + {slug}: {len(result['axes'][slug]['members'])} members "
               f"(scope={result['axes'][slug]['scope']})")
     for mv in spec.get("moves", []):
-        print(f"  {mv['from']}: {len(cb['axes'][mv['from']]['members'])} -> "
+        # A move's source may itself have been created earlier in this spec (by
+        # a rename), so it need not exist in the pre-state.
+        was = cb["axes"].get(mv["from"], {}).get("members")
+        print(f"  {mv['from']}: {len(was) if was is not None else '(new this spec)'} -> "
               f"{len(result['axes'][mv['from']]['members'])} members")
     a_b = sum(1 for e in cb["axes"].values() if e.get("status") == "active")
     a_a = sum(1 for e in result["axes"].values() if e.get("status") == "active")
