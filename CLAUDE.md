@@ -154,4 +154,4 @@ anything left there has no version history. On 2026-08-02 twelve
 load-bearing documents were moved here for that reason. Never author or
 leave pipeline/foundry/tier-engine documentation in `mtjawnny.github.io`.
 The only deliberate exceptions, both read by absolute path:
-`mtg-comprehensive-rules.md` and `PHASE-2-COMPLETION.md`.
+`docs/mtg-comprehensive-rules.md` and `docs/PHASE-2-COMPLETION.md`.
