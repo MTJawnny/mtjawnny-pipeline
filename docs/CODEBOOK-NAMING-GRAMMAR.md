@@ -397,9 +397,7 @@ Hard rules, each anchored:
 
    `treasure` · `food` · `gold` · `walker` · `shard` · `clue` · `blood` ·
    `powerstone` · `incubator` · `map` · `junk` · `lander` · `mutagen` ·
-   `vibranium` · and the seven Role types: `cursed-role` · `monster-role` ·
-   `royal-role` · `sorcerer-role` · `virtuous-role` · `wicked-role` ·
-   `young-hero-role`
+   `vibranium` · **`role`** (umbrella — see 4a)
 
    Plus two project umbrellas that are NOT CR types: `creature` (with P/T left
    to evidence) and `mana-producing-artifact` (excludes treasure, which owns
@@ -412,10 +410,41 @@ Hard rules, each anchored:
    nearest sibling. A partial enumeration of a closed CR list is a defect, not
    a shortlist.
 
-   **Still open, not decided here:** CDR-11 asks whether the seven Roles are
-   seven values or one `role` umbrella with a facet. Ratifying them as
-   vocabulary does not answer that — it only means a Role token now has a legal
-   name either way.
+### 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
+
+Captain's finding: *"at the moment there are no rules that care about what kind
+of role a creature has. just that the roles themselves are either applied, or a
+creature having a role, or placing a role."* **Researched against the corpus and
+the CR, and confirmed from three independent directions:**
+
+1. **CR 205.3h — `Role` is a single enchantment SUBTYPE.** The seven are token
+   *names* ("a colorless Aura Role enchantment token **named Wicked**"), not
+   types. The CR itself does not treat them as seven things.
+2. **CR 303.7a / 704.5y — the only rule keying off Roles is type-agnostic:**
+   *"If a permanent has more than one **Role** controlled by the same player
+   attached to it, each of those **Roles** except the one with the most recent
+   timestamp is put into its owner's graveyard."* The state-based action reads
+   "a Role", never "a Wicked Role".
+3. **39 of 39 gate-passing cards printing "Role" only CREATE one.** Every Role
+   line is "create a *X* Role token attached to…". Not one card conditions on
+   which Role, counts Roles by type, or references a Role except to make it.
+   Verified line by line, not sampled.
+
+So the type is named only because a creation instruction must say what it
+makes. **`role` is the token type; the specific name is a PARAMETER.**
+
+This follows batch-5's counter-polarity precedent exactly: +1/+1 and -1/-1
+counters do *opposite* things and were still ruled a parameter rather than
+distinct axes. The Roles likewise differ in effect (Cursed makes the creature
+1/1; Wicked gives +1/+1 and drains on death) — that is the honest argument for
+splitting, and it is the same argument batch-5 rejected.
+
+**Standing reversal condition, stated so a future session does not have to
+re-derive this:** the moment ONE card conditions on a Role's identity — "if
+it's enchanted by a Monster Role", "sacrifice a Cursed Role" — this ruling is
+void and the seven become vocabulary. The finding is about the current corpus,
+not about the mechanic in principle. Re-run the check in §8.4a's evidence
+before assuming it still holds.
 
 ### 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
 
