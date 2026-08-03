@@ -198,6 +198,40 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
              "note": f"also a member of {src}; multi-axis membership. "
                      f"{ad.get('why', '')} {ruling}".strip()})
 
+    # --- seeds ---------------------------------------------------------------
+    # A member that is not currently on ANY axis. `adds` cannot express this --
+    # it copies an existing membership -- and `moves` needs a source. Seeding is
+    # how a newly modelled mechanic gets its first members, which the CR-coverage
+    # work needs constantly: 40 CR keyword actions have no axis, so their cards
+    # are on nothing to move FROM.
+    #
+    # Every seed states its own quote. Evidence-quote-or-discard is not relaxed
+    # because the card is new to the codebook -- if anything it binds harder,
+    # since no prior assertion exists to inherit from.
+    for sd in spec.get("seeds", []):
+        slug, oid = sd["to"], sd["member"]
+        if slug not in axes:
+            fc.halt(f"{slug}: seed destination does not exist and is not declared in new_axes")
+        if "quote" not in sd or not sd["quote"].strip():
+            fc.halt(f"seed {oid} -> {slug}: no quote. A seeded member has no prior "
+                    f"assertion to inherit, so its evidence must be stated explicitly.")
+        if any(m["oracle_id"] == oid for m in axes[slug]["members"]):
+            fc.halt(f"{oid}: already a member of {slug}")
+        axes[slug]["members"] = sorted(
+            axes[slug]["members"] + [{
+                "oracle_id": oid,
+                "assertions": [{
+                    "class": sd.get("class", "rule-derived"),
+                    "source_ref": spec.get("source_ref", "captain-cli-2026-08-02"),
+                    "quote": sd["quote"],
+                    "corpus_ref": sd.get("corpus_ref", "2026-08-02"),
+                    "evidence_status": "quoted",
+                }],
+            }], key=lambda m: m["oracle_id"])
+        axes[slug].setdefault("history", []).append(
+            {"batch": batch, "action": "member_seeded",
+             "note": f"seeded {oid}: {sd.get('why','')} {ruling}".strip()})
+
     # --- drops ---------------------------------------------------------------
     # Removing a membership that was never true. Declared explicitly because it
     # LOWERS the member count, and a silent decrease is indistinguishable from
@@ -300,7 +334,8 @@ def main():
     # (CDR-09 precedent) and therefore add a copy; merges relocate and are
     # neutral except for members the target already had.
     before, after = total_members(cb), total_members(result)
-    n_adds, n_drops = len(spec.get("adds", [])), len(spec.get("drops", []))
+    n_adds = len(spec.get("adds", [])) + len(spec.get("seeds", []))
+    n_drops = len(spec.get("drops", []))
     n_rename_copies = sum(len(cb["axes"][old].get("members", []))
                           for old in spec.get("renames", {}) if old in cb["axes"])
     n_merge_dupes = 0

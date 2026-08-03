@@ -1,0 +1,160 @@
+{
+  "batch": "role-shapes-2026-08-02",
+  "ruling": "docs/CODEBOOK-NAMING-GRAMMAR.md \u00a78.4a (role umbrella) + \u00a76b (per-shape axes). Captain-ratified 2026-08-02. Members hand-verified line by line; 20 of 39 held, see docs/ROLE-SHAPES-2026-08-02.md",
+  "source_ref": "captain-cli-2026-08-02",
+  "new_axes": {
+    "rule:create-token-role-attached-to-own-creature": {
+      "definition": "A spell creates a Role token attached to a target creature its controller controls. Role type is a parameter, not axis identity (\u00a78.4a). Unmarked delivery = spell ability (\u00a71, CR 113.3a).",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "Role shape axes, 2026-08-02"
+    },
+    "rule:etb-create-token-role-attached-to-own-creature": {
+      "definition": "When the permanent enters, a triggered ability creates a Role token attached to a target creature its controller controls. Role type is a parameter (\u00a78.4a).",
+      "scope": "your-stuff",
+      "source": "CAPTAIN",
+      "note": "Role shape axes, 2026-08-02"
+    },
+    "rule:etb-create-token-role-attached-to-self": {
+      "definition": "When the permanent enters, a triggered ability creates a Role token attached to the SOURCE ITSELF, enchanting the creature that just entered. Distinct from the -own-creature sibling: the printed text says 'attached to it', not 'attached to target creature you control' (\u00a76a).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "Role shape axes, 2026-08-02"
+    }
+  },
+  "seeds": [
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "c7b6d2cd-9105-404b-88f0-a67037fb2120",
+      "quote": "Create a Royal Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "1c751201-24ba-4e5c-bf44-71c3e4693a92",
+      "quote": "Create a Wicked Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "64b41b54-ca22-41df-8bd3-dc4f7832fbb7",
+      "quote": "Create a Monster Role token attached to target creature you control. When you do, that creature fights up to one target creature you don't control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "9b205900-ec39-455e-900b-615ece08a07f",
+      "quote": "Create a Young Hero Role token attached to up to one target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "27ca3201-a374-4a9d-b0ba-93b391f36844",
+      "quote": "Target opponent discards two cards. Create a Wicked Role token attached to up to one target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "fef67393-9b7b-495d-8b03-865537386d42",
+      "quote": "Create a Monster Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "f545870d-b628-4acb-88c7-37c2d72a5a85",
+      "quote": "Destroy target creature or enchantment. Create a Wicked Role token attached to up to one target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:create-token-role-attached-to-own-creature",
+      "member": "00807825-88e5-4b88-8527-a49f553a91be",
+      "quote": "Create a Wicked Role token attached to up to one target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "ad0e6b12-a6bd-4860-9eac-68b2492d9567",
+      "quote": "When this creature enters, create a Royal Role token attached to another target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "9eec304d-ffcb-4287-b877-280ac1e4f496",
+      "quote": "\u2022 Create a Wicked Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "97f9b82f-b3cf-44ff-9abc-2d92d7cbaa27",
+      "quote": "Whenever Ellivere enters or attacks, create a Virtuous Role token attached to another target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "d5bd40fc-6138-4752-b3ff-b1e5fa269214",
+      "quote": "When this enchantment enters, create a Wicked Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "699fa8e6-84f5-4010-a8fe-7b2e4f280ef9",
+      "quote": "When this creature enters, you may pay {1}. When you do, create a Young Hero Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "f6cb9c5a-601e-4580-9fab-903e9b00e35e",
+      "quote": "When this creature enters, create a Royal Role token attached to another target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "d07e0d88-8b7f-423d-97b7-cf7b80d8924c",
+      "quote": "When this creature enters, create a Cursed Role token attached to target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-own-creature",
+      "member": "53fc09e1-1e5d-4f22-b623-2c5c770183ab",
+      "quote": "When Syr Armont enters, create a Monster Role token attached to another target creature you control.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-own-creature"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-self",
+      "member": "17916cf9-1e6c-41bd-96ce-2b050d828838",
+      "quote": "When this creature enters, create a Cursed Role token attached to it.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-self"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-self",
+      "member": "b707c131-de13-4d4d-839d-b9f47d62f090",
+      "quote": "When this creature enters, create a Monster Role token attached to it.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-self"
+    },
+    {
+      "to": "rule:etb-create-token-role-attached-to-self",
+      "member": "1cf4e16b-2273-41c7-9bcd-0cdc78e12198",
+      "quote": "When this creature enters, you may pay {2}. If you do, create a Sorcerer Role token attached to it.",
+      "class": "human",
+      "why": "hand-verified Role shape for etb-create-token-role-attached-to-self"
+    }
+  ]
+}

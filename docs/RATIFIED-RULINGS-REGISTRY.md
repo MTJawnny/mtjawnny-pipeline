@@ -14,7 +14,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **56 documents under docs/**
+- documents scanned: **57 documents under docs/**
 - ruling references found: **528**
 - distinct ruling ids: **125**
 - corroborated (appear in >1 doc): **80**
@@ -72,7 +72,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`
+`C4-DECISION-SHEET-2026-08-02.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`
 
 ## Sole-home rulings — these block their document
 

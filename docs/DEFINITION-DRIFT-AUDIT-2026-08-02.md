@@ -12,7 +12,7 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 344 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 347 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
 **35 findings.**
 
