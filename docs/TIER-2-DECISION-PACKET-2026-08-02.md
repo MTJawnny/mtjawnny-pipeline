@@ -33,7 +33,7 @@ mechanic that actually exists.
 | ✅ **Rename to `activated-plus1-counter-transfer-to-other-creature` + fix the definition** | Axis matches its members. One rename, one definition edit, no member moves. The Spike cycle is a real, coherent family. |
 | Keep the name, move both members out | Leaves a 0-member axis asserting a mechanic no card performs — and the tier-1 finding says unevidenced axes shouldn't sit active. |
 | Keep both, treat direction as a parameter | Contradicts today's `combat-`-is-a-restriction ruling: direction is exactly the kind of distinction that ruling says is load-bearing. |
-
+VERDICT: Rename to `activated-plus1-counter-transfer-to-other-creature` + fix the definition
 ## D2 — The duplicate pair
 
 Two axes, one mechanic. **All four members carry identical printed text:**
