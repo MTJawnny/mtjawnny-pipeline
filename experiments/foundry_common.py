@@ -215,9 +215,29 @@ def _cardname_candidates(card: dict) -> list:
             part = part.strip()
             if not part:
                 continue
+            # Alchemy rebalanced cards are named "A-Elderleaf Mentor" but their
+            # oracle text self-references the BASE name. Measured 2026-08-03:
+            # without this, every A- card's self-trigger reads as a trigger on
+            # another permanent. (CLAUDE.md prefers paper rows over A- variants,
+            # but the A- rows are still in the corpus and still scanned.)
+            if re.match(r"^A-\S", part):
+                names.add(part[2:].strip())
+                part = part[2:].strip()
             names.add(part)
             if "," in part:
                 names.add(part.split(",")[0].strip())
+            # Legendary subtitle without a comma: "Sharuum the Hegemon" prints
+            # "When Sharuum enters"; "Rosie Cotton of South Lane" prints "Rosie
+            # Cotton". Same Oracle short-form convention the comma case already
+            # covers -- this completes the ratified standard rather than
+            # changing it. Guarded to >2 chars so a leading article ("The
+            # Ring") can never produce a degenerate token.
+            for sep in (" the ", " of "):
+                if sep in part.lower():
+                    idx = part.lower().index(sep)
+                    head = part[:idx].strip()
+                    if len(head) > 2:
+                        names.add(head)
     return sorted((n for n in names if n), key=len, reverse=True)
 
 

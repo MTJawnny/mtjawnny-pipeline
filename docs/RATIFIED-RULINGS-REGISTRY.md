@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **63 documents under docs/**
-- ruling references found: **534**
-- distinct ruling ids: **125**
+- documents scanned: **65 documents under docs/**
+- ruling references found: **547**
+- distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **81**
-- **sole-home (appear in exactly 1 doc): 44**
+- **sole-home (appear in exactly 1 doc): 45**
 
 ## Deletion gate — per document
 
@@ -39,6 +39,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CR-COVERAGE-PACKET-2026-08-02.md` | 134 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 275 | 2 | 0 | yes |
+| `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 436 | 9 | 1 | **NO** |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
@@ -55,7 +56,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03.md` | 113 | 5 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-PM.md` | 191 | 2 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 134 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -114,6 +116,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`CODEBOOK-NAMING-GRAMMAR.md`** — sole home for 1:
 
 - `F3` (line 363) — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+
+**`DELIVERY-VOCABULARY-BATCH-2026-08-03.md`** — sole home for 1:
+
+- `Q7` (line 65) — > **Q7 (mechanical).** Confirm: `end-step-trigger` is ratified as §2 DELIVERY
 
 **`MASTER-HANDOFF-ADDENDUM-3.md`** — sole home for 1:
 
@@ -360,18 +366,20 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:91` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
 - `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
-### `CDR-01` — 14 reference(s) across 9 doc(s)
+### `CDR-01` — 16 reference(s) across 11 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:806` — A11 (CDR-01):** members hold DIRECT assertions only; parent rollups
 - `CDR-PROPOSALS.md:164` — CDR-01 — Activation policy for singleton grammar nodes
 - `CDR-PROPOSALS.md:311` — Recommend: the CDR-01 rule, applied after repair.** Passes review → active
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:409` — (88 Alchemy) · CDR-01 · Saga/Class chapter vocabulary (576 lines, 221 cards —
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02-EVE.md:108` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
 - `SESSION-HANDOFF-2026-08-02.md:109` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
-- `SESSION-HANDOFF-2026-08-03.md:84` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
+- `SESSION-HANDOFF-2026-08-03-PM.md:153` — CDR-01 · `begin-combat-trigger` + Saga-chapter vocabulary
+- `SESSION-HANDOFF-2026-08-03.md:89` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
 - `TIER-3-DECISION-PACKET-2026-08-02.md:57` — > packet's precedent (its four n=1 axes are all `active`). CDR-01 — which
 - `TIER-4-DECISION-PACKET-2026-08-02.md:130` — grammar-composable, but at n=1 CDR-01 would defer it anyway.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:155` — extension, not new territory. n=1 → CDR-01 would defer.
@@ -482,7 +490,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:420` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
 - `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
 - `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
-- `SESSION-HANDOFF-2026-08-03.md:49` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
+- `SESSION-HANDOFF-2026-08-03.md:54` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
 
 ### `CDR-12` — 3 reference(s) across 3 doc(s)
 
@@ -547,7 +555,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D13` — 6 reference(s) across 4 doc(s)
 
 - `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
-- `SESSION-HANDOFF-2026-08-03.md:83` — Carried: **D13** (by-power family, still a sweep blocker) · **§S** (88
+- `SESSION-HANDOFF-2026-08-03.md:88` — Carried: **D13** (by-power family, still a sweep blocker) · **§S** (88
 - `TIER-3-DECISION-PACKET-2026-08-02.md:61` — > **Not executed, and not in scope of this ratification:** D13 (by-power
 - `TIER-3-DECISION-PACKET-2026-08-02.md:427` — D13 — `rule:evasion-vs-high-power-blockers` vs the ratified `cant-be-blocked-<restriction>` grammar
 - `TIER-3-DECISION-PACKET-2026-08-02.md:595` — D13 is where a ratified grammar and a blocking gate disagree with live
@@ -556,7 +564,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D14` — 3 reference(s) across 3 doc(s)
 
 - `CR-COVERAGE-PACKET-2026-08-02.md:42` — `create-token-<type>` is an **already ratified grammar family** (batch-5 D14).
-- `SESSION-HANDOFF-2026-08-03.md:93` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
+- `SESSION-HANDOFF-2026-08-03.md:98` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
 ### `D16` — 2 reference(s) across 2 doc(s)
@@ -821,11 +829,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:458` — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
 - `DET-PATTERNS-RUN2-DIRECTIVE.md:48` — 4a. NEW-02 — `rule:forced-attack-each-combat` widening (measured 2026-08-02, NOT applied)
 
-### `Q1` — 18 reference(s) across 10 doc(s)
+### `Q1` — 21 reference(s) across 11 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:635` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
 - `B-MIGRATION-DISCOVERY.md:710` — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:18` — Seven numbered questions, **Q1–Q7**. Q1 is the big one (1,558 cards) and the
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:211` — > **Q1.** Ratify a **DELIVERY subject prefix**, applied to the existing §2
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:382` — With Q1 ratified, these are the delivery tokens the four 2026-08-03 rulings
 - `MASTER-HANDOFF-ADDENDUM-2.md:105` — Captain's annotations so far: Q1 answered (stun-counter-lockdown
 - `MASTER-HANDOFF-ADDENDUM-3.md:113` — ratification, mirrors b1-Q1.
 - `PARENT-TREE-CANDIDATES.md:425` — Q1 redundancy ruling because the engine indexes the grant but not the
@@ -846,9 +857,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:93` — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
-### `Q2` — 13 reference(s) across 10 doc(s)
+### `Q2` — 14 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:690` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:254` — > **Q2.** For opponent-controlled subjects, follow the **printed** word (`any-`)
 - `KEYWORD-LEDGER-CANDIDATES.md:154` — Killed axis:** `rule:etb-grants-energy-counters` (Q2, Captain-ratified
 - `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
 - `MASTER-HANDOFF-ADDENDUM-2.md:108` — Q2 (energy = archetype vs ledger) and Q3 (perpetual, Alchemy-only)
@@ -862,9 +874,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-3.md:442` — and Perpetual pending Q2/Q3's rulings — add if Captain rules
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:80` — Q2** Closed DELIVERY vocabulary gains `becomes-targeted-trigger` and
 
-### `Q3` — 11 reference(s) across 7 doc(s)
+### `Q3` — 12 reference(s) across 8 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:690` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:276` — > **Q3.** Ratify **`active-player`** as new §6 SCOPE vocabulary, anchored to
 - `KEYWORD-LEDGER-CANDIDATES.md:125` — Killed axis:** `rule:draft-from-spellbook` (Q3, Captain-ratified
 - `KEYWORD-LEDGER-CANDIDATES.md:171` — Killed axis:** `rule:perpetual-any-color-mana-cast` (Q3, Captain-
 - `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
@@ -876,28 +889,35 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-3.md:461` — fill `-> RULE:` blanks for Q1–Q3, add `## CAPTAIN-AUTHORED` blocks for any
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:83` — Q3** Editorial fix to CODEBOOK-NAMING-GRAMMAR.md §2: DELIVERY table value
 
-### `Q4` — 6 reference(s) across 4 doc(s)
+### `Q4` — 7 reference(s) across 5 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:181` — "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:300` — > **Q4.** Does §6's `own` mean *controller*? If so, ratify a distinct token for
 - `TRIAGE-BATCH-1.md:237` — Q4 — Token-creation super-family.** creates-creature-token,
 - `TRIAGE-BATCH-2.md:85` — parent split at the schema pass, per batch-1's Q4 ruling. Not restructured
 - `TRIAGE-BATCH-2.md:317` — Q4 — `rule:grants-controller-hexproof` (2): mixed coherence within the
 - `TRIAGE-BATCH-2.md:451` — Q1–Q4, add `## CAPTAIN-AUTHORED` blocks for any new axes), then run
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:85` — Q4** `rule:cant-be-countered` → `rule:spell-uncounterable`;
 
-### `Q5` — 4 reference(s) across 4 doc(s)
+### `Q5` — 5 reference(s) across 5 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:691` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CR-COVERAGE-PACKET-2026-08-02.md:86` — One batch ratification, the same shape as Q5's ~30-token batch.
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:355` — > **Q5.** Adopt **"a CR 702 keyword's DELIVERY is whatever its `702.Na`
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
-### `Q6` — 4 reference(s) across 3 doc(s)
+### `Q6` — 5 reference(s) across 4 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:669` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
 - `CODEBOOK-NAMING-GRAMMAR.md:691` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:31` — Ratified exemptions encoded: the 11 idiomatic leaves (§12 + Q6), and
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:121` — > **Q6 (mechanical).** Confirm the canonicalizer change is a bug fix under the
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:90` — Q6** All 7 idiomatic-leaf exemptions ratified: burst-draw, cantrip,
+
+### `Q7` — 1 reference(s) across 1 doc(s)
+
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:65` — > **Q7 (mechanical).** Confirm: `end-step-trigger` is ratified as §2 DELIVERY
 
 ### `Q8` — 4 reference(s) across 4 doc(s)
 
@@ -1014,10 +1034,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:18` — S3. Depth is ratified PER FAMILY. Trigger families are depth-3 by
 
-### `S4` — 5 reference(s) across 3 doc(s)
+### `S4` — 7 reference(s) across 5 doc(s)
 
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:169` — This is the seventh instance of the standing lesson** (§S4 154→90→44 · C4f ·
 - `PARENT-TREE-CANDIDATES.md:21` — S4. Multiple parents allowed when earned (stun-counter sits under both
-- `SESSION-HANDOFF-2026-08-03.md:77` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
+- `SESSION-HANDOFF-2026-08-03-PM.md:180` — Standing lesson, now on its fifth instance (§S4 154→90→44 · C4f · Roles 85% ·
+- `SESSION-HANDOFF-2026-08-03.md:82` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:358` — token's** printed text."* That rule was ratified against SYNTH misfiles; §S4
 - `TIER-4-DECISION-PACKET-2026-08-02.md:425` — Plus §S4, which is its own ruling and larger than all of the above combined.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:429` — §S4 is the finding.** A ratified DET pattern set has been writing

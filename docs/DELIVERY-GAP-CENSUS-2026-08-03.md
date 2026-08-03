@@ -1,5 +1,33 @@
 # DELIVERY GAP CENSUS — 2026-08-03
 
+> ## ⚠ CORRECTED 2026-08-03 PM — the numbers below were overstated
+>
+> Re-measured against a fixed extractor. **Self-vs-other was 1,921; it is
+> 1,558** (−18.9%). Three defects, none of them in the data:
+>
+> | defect | cards |
+> |---|--:|
+> | this table summed **per-family** counts; 51 cards sit in two families | −52 |
+> | self-triggers read as other-triggers (`this Equipment`, `Sharuum`, `A-` cards) | −265 |
+> | phase triggers read as event triggers (Legion Warboss's *"create a Goblin **that attacks**"*) | −45 |
+>
+> **End-step and begin-combat went UP**, because those 45 came home to them.
+> The table below has been corrected in place; corrected figures are **bold**.
+>
+> Full derivation, the generator fixes, and the ruling questions that follow
+> from it: **`docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md`** §2.
+>
+> Seventh instance of the standing lesson — §8 of the PM handoff.
+>
+> **And the ground-truth set did NOT catch it.** The 116 hand-verified Clue
+> routings are **byte-identical before and after** all three fixes, so §"Validation
+> — 116 of 116" below still holds and always did. What surfaced the defects was
+> measuring a *new* dimension (SUBJECT × CONTROLLER), whose residual bucket
+> exposed `this Equipment` and `at the beginning of…` clauses sitting in the
+> wrong families. A ground-truth set only validates the shapes it contains —
+> here, no Clue card is an Equipment, a Siege, or a legendary short-name
+> self-reference. Keep the set, and keep widening it.
+
 Corpus-wide, **zero tokens**. Produced by `experiments/foundry_shape_extractor.py`,
 built this session at Captain's direction: *"language is so hardcoded we can
 seemingly build a python script that can run corpus wide with no tokens spent."*
@@ -46,29 +74,29 @@ set, which a session's throwaway classifier cannot.
 
 ## The census — delivery shapes with NO ratified §2 token
 
-63,019 ability lines scanned.
+~~63,019~~ **61,804** ability lines scanned.
 
 | unratified delivery shape | lines | cards |
 |---|--:|--:|
-| `unclassified-trigger` (residual — see below) | 1,243 | 1,201 |
-| **other-permanent enters** | 799 | **792** |
-| **end step** | 606 | **601** — ⚠ CORRECTED to 536 by `END-STEP-TRIGGER-RULING-2026-08-03.md` §1: 333 of these are `delayed` triggers (CR 603.7), already buildable |
+| `unclassified-trigger` (residual — see below) | **1,245** | **1,203** |
+| **end step** | **657** | **652** — of which 333 are `delayed` triggers (CR 603.7), already buildable; **536 need vocabulary** per `END-STEP-TRIGGER-RULING-2026-08-03.md` §1 |
 | Saga / Class chapter | 576 | 221 |
-| **another creature dies** | 451 | **448** |
-| **another creature attacks** | 416 | **413** |
-| beginning of combat | 279 | 277 |
-| to graveyard from anywhere | 233 | 233 |
-| other creature deals combat damage to a player | 221 | 220 |
+| **other-permanent enters** | **561** | **556** |
+| **another creature dies** | **439** | **436** |
+| **another creature attacks** | **348** | **345** |
+| beginning of combat | **333** | **331** |
+| to graveyard from anywhere | **224** | **224** |
+| other creature deals combat damage to a player | **203** | **202** |
 | sacrifice trigger | 178 | 176 |
 | player attacks ("whenever you attack") | 159 | 158 |
 | discard trigger | 140 | 132 |
 | turned face up | 116 | 116 |
-| damage **received** ("is dealt N damage") | 107 | 106 |
-| lifegain trigger | 104 | 102 |
-| other permanent leaves the battlefield | 48 | 48 |
-| is attacked | 43 | 42 |
+| damage **received** ("is dealt N damage") | **109** | **108** |
+| lifegain trigger | **98** | **96** |
+| other permanent leaves the battlefield | **43** | **43** |
+| is attacked | **38** | **37** |
 | counter placed on the source | 37 | 37 |
-| draw step | 28 | 27 |
+| draw step | **31** | **30** |
 | to graveyard from non-battlefield | 8 | 8 |
 
 `experiments/out/foundry/delivery_gaps.json` carries the full card lists.
@@ -86,15 +114,23 @@ The two biggest are not exotic:
 1. **Self vs other is unnamed across the whole corpus.** §2's rows read "when
    **~** enters", "whenever **~** attacks", "when **~** dies". Read literally —
    and §6a says read it literally — every trigger keyed on *another* permanent
-   has no name. That is **792 + 448 + 413 + 220 + 48 = 1,921 cards** across five
-   families. This is the single largest vocabulary gap in the codebook and it is
-   one ruling, not five, if the answer is a scope-slot convention.
+   has no name. That is ~~1,921~~ **1,558 distinct cards** across five families
+   (the per-family counts above sum to 1,582 and double-count 51 cards that sit
+   in two). Still the single largest vocabulary gap in the codebook.
+
+   **⚠ It is not one ruling if the question is "self vs other".** Re-measured,
+   **75% of the population prints "a", not "another"** — and §6a rule 3 makes
+   those different shapes, because bare "a" *includes* the source. The real
+   question is a SUBJECT × CONTROLLER matrix; see
+   `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` §3.
 2. **`end-step-trigger` does not exist.** §2 ratifies `upkeep-trigger` and not
-   its mirror. 601 cards, wholly regular templating.
+   its mirror. **536 cards need vocabulary**, wholly regular templating.
+   (`end-step-trigger` was also **killed as an axis** in `TRIAGE-BATCH-1.md`
+   §1c — that kill governs the axis, not this vocabulary; batch §1.)
 
 ### The residual, stated honestly
 
-`unclassified-trigger` is 1,201 cards the tool can see are triggered abilities
+`unclassified-trigger` is 1,203 cards the tool can see are triggered abilities
 but cannot name. It is a genuine "I don't know", not a silent bucket. Sampling
 shows real recurring shapes inside it — cycling (48), draw-a-card (42), first
 main phase (44), becomes-tapped (30), mutates (26), unlock-a-door (26),
@@ -106,22 +142,26 @@ nameable; none is named yet.
 `--rank`, single corpus pass. "ready" = ability lines whose delivery already has
 a ratified token; "blocked" = lines needing vocabulary.
 
+**Re-measured 2026-08-03 PM** against the fixed extractor; every `ready`/`blocked`
+split below has been updated, and one row (`manifest dread`) was missing.
+
 | action | CR | cards | ready | blocked | % ready | has an axis? |
 |---|---|--:|--:|--:|--:|---|
-| counter | 701.6 | 4,450 | 3,105 | 2,563 | 54.8% | yes |
-| create | 701.7 | 3,378 | 1,801 | 1,827 | 49.6% | yes |
-| sacrifice | 701.21 | 3,114 | 2,466 | 841 | 74.6% | yes |
-| exile | 701.13 | 2,711 | 1,725 | 1,460 | 54.2% | yes |
-| cast | 701.5 | 2,604 | 999 | 1,777 | 36.0% | yes |
-| destroy | 701.8 | 1,722 | 616 | 1,193 | 34.1% | yes |
-| discard | 701.9 | 1,642 | 974 | 734 | 57.0% | yes |
+| counter | 701.6 | 4,450 | 3,113 | 2,556 | 54.9% | yes |
+| create | 701.7 | 3,378 | 1,857 | 1,773 | 51.2% | yes |
+| sacrifice | 701.21 | 3,114 | 2,474 | 834 | 74.8% | yes |
+| exile | 701.13 | 2,711 | 1,728 | 1,457 | 54.3% | yes |
+| cast | 701.5 | 2,604 | 968 | 1,808 | 34.9% | yes |
+| destroy | 701.8 | 1,722 | 623 | 1,186 | 34.4% | yes |
+| discard | 701.9 | 1,642 | 987 | 721 | 57.8% | yes |
 | **regenerate** | 701.19 | 397 | 296 | 113 | **72.4%** | **NO AXIS** |
-| **transform** | 701.27 | 281 | 220 | 121 | **64.5%** | **NO AXIS** |
+| **transform** | 701.27 | 281 | 219 | 122 | **64.2%** | **NO AXIS** |
 | investigate | 701.16 | 135 | 73 | 67 | 52.1% | built today |
 | **goad** | 701.15 | 77 | 43 | 39 | 52.4% | **NO AXIS** |
-| **manifest** | 701.40 | 68 | 33 | 36 | 47.8% | **NO AXIS** |
+| **manifest** | 701.40 | 68 | 37 | 32 | 53.6% | **NO AXIS** |
+| **venture into the dungeon** | 701.49 | 45 | 31 | 16 | **66.0%** | **NO AXIS** |
 | **amass** | 701.47 | 57 | 28 | 33 | 45.9% | **NO AXIS** |
-| **venture into the dungeon** | 701.49 | 45 | 24 | 23 | 51.1% | **NO AXIS** |
+| **manifest dread** | 701.62 | 33 | 19 | 15 | 55.9% | **NO AXIS** |
 
 `activate` (701.2, 86.5%) is correctly excluded per the CR-coverage packet — it
 duplicates the `activated-` delivery marker.

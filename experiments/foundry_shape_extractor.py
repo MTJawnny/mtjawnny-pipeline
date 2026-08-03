@@ -56,6 +56,36 @@ REMINDER = re.compile(r"\([^)]*\)")
 ABILITY_WORD = re.compile(r"^\s*[A-Z][A-Za-z'’\- ]{2,40}(\s*—|\s*-)\s*")
 CHAPTER = re.compile(r"^\s*[IVX]+\s*(,\s*[IVX]+\s*)*(—|-)\s*")
 
+# "this <noun>" is a SELF-reference, and the noun set is not guessable: a card
+# says "When this Equipment enters", "Whenever this Siege ...", "this
+# Spacecraft", "this Class". Measured 2026-08-03, a hand-written list missed
+# equipment(104) siege(36) spacecraft(16) class(13) -- 170 ability lines that
+# were then counted as OTHER-permanent triggers, inflating the self-vs-other
+# gap census. So the set is DERIVED from the corpus's own type lines at load
+# time, the same discipline as parsing §2's vocabulary out of the grammar.
+# It must not include time/stack words ("this turn", "this combat", "this
+# spell") -- type lines never contain them, which is exactly why deriving
+# beats listing.
+SELF_NOUN_RX = None          # compiled by build_self_noun_rx()
+_ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
+
+
+def build_self_noun_rx(cards: dict) -> None:
+    """Compile the 'this <noun>' self-reference test from corpus type lines."""
+    global SELF_NOUN_RX
+    nouns = set(_ALWAYS_SELF_NOUNS)
+    for card in cards.values():
+        parts = [card.get("type_line") or ""]
+        parts += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
+        for word in re.findall(r"[A-Za-z'-]+", " ".join(parts)):
+            if len(word) > 2:
+                nouns.add(word.lower())
+    if "equipment" not in nouns:
+        fc.halt("Derived self-reference noun set has no 'equipment' — the "
+                "corpus type lines did not load. Refusing to run with a "
+                "vocabulary that would silently misfile self-triggers.")
+    SELF_NOUN_RX = re.compile(r"\bthis (" + "|".join(sorted(map(re.escape, nouns))) + r")\b")
+
 
 # ---------------------------------------------------------------------------
 # ratified vocabulary, parsed from the grammar rather than remembered
@@ -233,9 +263,8 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         clause = trigger_clause(low)
         # NB: `~` is not a word character, so \b~\b can never match. Match it
         # positionally instead -- this silently blinded the self-reference test.
-        selfish = bool(re.search(
-            r"\bthis (creature|permanent|artifact|enchantment|land|vehicle|card|aura|case|token)\b",
-            clause)) or bool(re.search(r"(?:^|\s)~(?:\s|$|'s)", clause))
+        selfish = bool(SELF_NOUN_RX.search(clause)) or \
+            bool(re.search(r"(?:^|\s)~(?:\s|$|'s)", clause))
         other = bool(re.search(r"\banother\b|\bother\b|\byou control\b|\ba creature\b|"
                                r"\bone or more\b|\beach\b|\bplayers?\b", clause))
         # "Whenever ~ enters or attacks" -- the source naming itself as the
@@ -248,6 +277,24 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             if tok not in ratified:
                 return None, desc
             return tok, desc
+
+        # PHASE triggers are decided on the CLAUSE, and decided FIRST. The
+        # event tests below scan the whole line, so "At the beginning of combat
+        # on your turn, create a Goblin ... that ATTACKS this combat" reads as
+        # an attack trigger unless the phase is claimed first. Measured
+        # 2026-08-03: 45 cards were misfiled into the self-vs-other families
+        # this way (Legion Warboss, Mathas, Curious Obsession...). Same
+        # whole-line-vs-clause bug the census already fixed for self/other --
+        # it was still live for family selection.
+        if re.match(r"^at the beginning\b", clause):
+            if re.search(r"\bupkeep\b", clause):
+                return mark("upkeep-trigger", "upkeep")
+            if re.search(r"\bend step\b", clause):
+                return None, "end-step"
+            if re.search(r"\bcombat\b", clause):
+                return None, "begin-combat"
+            if re.search(r"\bdraw step\b", clause):
+                return None, "draw-step"
 
         if re.search(r"\bland (you control )?enters\b", low) or low.startswith("landfall"):
             return mark("landfall", "landfall")
@@ -480,6 +527,7 @@ def main():
     args = ap.parse_args()
 
     cards, _, gated_out = fc.load_corpus_gated()
+    build_self_noun_rx(cards)
     ratified = ratified_delivery_tokens()
     actions = cr_action_terms()
 
