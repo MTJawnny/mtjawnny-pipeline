@@ -84,7 +84,8 @@ variable.
 | `combat-damage-to-creature` | "deals combat damage to a creature" | — |
 | `any-damage-to-player` | "deals damage to a player/opponent" with NO combat restriction — fires off pingers, burn, fight effects (Captain-ratified 2026-08-02) | 120.3 |
 | `any-damage-to-creature` | "deals damage to a creature" with NO combat restriction (Captain-ratified 2026-08-02) | 120.3 |
-| `upkeep-trigger` | "at the beginning of [whose] upkeep" | 113.3c |
+| `upkeep-trigger` | "at the beginning of [whose] upkeep" | 113.3c, 503.1 |
+| `end-step-trigger` | "at the beginning of [whose] end step" — the mirror of `upkeep-trigger`; REQUIRES a §6 scope (`you-control` 405 / `each` 81 / `active-player` 50). Captain-ratified 2026-08-03 (Q7). Older cards printed this as "at end of turn" and carry Oracle errata (CR 513.1a), so DET patterns must canonicalize both eras. The bare **axis** `rule:end-step-trigger` remains KILLED per `TRIAGE-BATCH-1.md` §1c — delivery-only slugs are parents, not axes | 113.3c, 513.1 |
 | `landfall` | the landfall ability word | 207.2c |
 | `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |
 | `replacement` | "instead" / "skip" / "enters with/as" shapes | 614.1a–c |
@@ -134,6 +135,55 @@ Rules:
   mechanisms for deck-building — an any-damage trigger fires off pingers, burn
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
+
+### 2b. A CR 702 KEYWORD'S DELIVERY IS DERIVED, NOT RULED (Captain-ratified 2026-08-03, Q5)
+
+**A keyword ability never needs a per-keyword delivery ruling.** Its ability
+class and its trigger event are both stated by the CR in its own `702.Na`
+sub-rule, so its §2 slot is *derivable*:
+
+    702.6a   "Equip is an ACTIVATED ability of Equipment cards."
+    702.108a "Prowess is a TRIGGERED ability. 'Prowess' means
+              'WHENEVER YOU CAST A NONCREATURE SPELL, ...'"
+
+**CR 702.1** licenses reading it this way: *"the object lists only the name of
+the ability as a 'keyword'; sometimes **reminder text summarizes** the game
+rule."* The printed keyword is a **pointer**; the CR rule is the definition and
+the reminder text is only a summary. That is the same boundary §6a already
+draws when it excludes reminder-text parentheticals from a card's claim — the
+card's reminder text is discarded, and the CR's own wording supplies the shape.
+
+**RATIFIED:** route a CR 702 keyword to the §2 token its `702.Na` text
+resolves to. No new vocabulary; no ruling per keyword.
+
+Derived by `experiments/foundry_cr702_classes.py --homes`, zero tokens:
+**138 of 193 keywords route to an ALREADY-RATIFIED token.**
+
+| home | n | keywords |
+|---|--:|---|
+| `static` | 63 | Flying, Trample, Vigilance, Flash, Kicker, Convoke, Morph … |
+| `replacement` | 16 | Amplify, Bloodthirst, Dredge, Madness, Modular, Riot … |
+| `activated` | 13 | Cycling, Equip, Crew, Embalm, Level Up … |
+| **`attack-trigger`** | **11** | **Annihilator, Battle Cry, Dethrone, Firebending, Frenzy, Melee, Mentor, Mobilize, Myriad, Provoke, Training** |
+| `etb` | 9 | Backup, Champion, Exploit, Fabricate, For Mirrodin!, Living Weapon … |
+| `cast-trigger` | 8 | Cascade, Demonstrate, Extort, Gravestorm, Prowess, Ripple, Storm … |
+| `death-trigger` | 5 | Afterlife, Haunt, Persist, Soulshift, Undying |
+| `blocks-or-becomes-blocked-trigger` | 4 | Afflict, Bushido, Flanking, Rampage |
+| `combat-damage-to-player` | 3 | Ingest, Poisonous, Renown |
+| `upkeep-trigger` | 2 | Cumulative Upkeep, Echo |
+| `becomes-targeted-trigger` | 1 | Ward |
+| `any-attack-trigger` · `any-etb` · `any-death-trigger` | 3 | Exalted · Evolve · Recover (§2a) |
+
+**55 remain unrouted and are reported, never approximated** — 49 whose
+templated text is a cost/static shape, 5 with neither templated text nor a
+single class (Companion, Forecast, Foretell, Space Sculptor, Start Your
+Engines!), and **Visit**, which genuinely needs new vocabulary ("whenever you
+roll to visit your Attractions").
+
+**A keyword's CLASS and its TRIGGER EVENT are separate questions.** The class
+says *which slot*; the templated text says *which token in that slot*. Ten
+keywords are multi-class (CR 702.62a: *"Suspend is a keyword that represents
+**three abilities**"*) and the tool warns rather than collapsing them.
 
 ### 2a. TRIGGER SUBJECT — the `other-` / `any-` prefixes (Captain-ratified 2026-08-03)
 
@@ -284,7 +334,13 @@ class tag; the class lattice (`targeted-bounce-<class>`,
 
 ## 6. SCOPE vocabulary
 
-`self` (the source), `own` (yours), `opponent`, `any`, `each`
+`self` (the source), `you-control` / `you-own` (see 6d; `own` is RETIRED),
+**`active-player`** (the player whose turn it is — **CR 102.1** defines the
+term verbatim: *"The active player is the player whose turn it is."*
+Captain-ratified 2026-08-03, Q3. Required by "at the beginning of **the** end
+step", 50 cards, where `you-control` is wrong (it need not be your turn) and
+`each` is wrong (it fires once, not once per player)),
+`opponent`, `any`, `each`
 (non-targeted, all-covered), `target` (ONLY when the word "target" appears in
 the ability per CR 601.2c — the b7 Unwind ruling: "untap up to three lands"
 without "target" may NOT sit in a `-target-` slug), `defending-player`

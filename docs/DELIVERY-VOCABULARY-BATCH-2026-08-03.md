@@ -19,7 +19,31 @@ Captain's direction: *"take the vocabulary batch."*
 > 6-membership migration, which is a codebook mutation and rides its own step
 > per the standing no-midflight-renames rule (§12a precedent).
 >
-> **Q3–Q7 remain open.**
+> ## ✅ Q3, Q5, Q6, Q7 RATIFIED by Captain, 2026-08-03
+>
+> *"ratify Q3, Q5, Q6, Q7 as recommended. but before. if any of them would
+> benefit from a CR query. do that first."*
+>
+> The CR query was the right instinct — **it corrected two of my own citations
+> and strengthened a third:**
+>
+> | Q | what the CR said | effect |
+> |---|---|---|
+> | **Q3** | **CR 102.1** — *"The **active player** is the player whose turn it is."* | `active-player` is the CR's own defined term, not a coinage. My cited 500.1/502.1 were **wrong** |
+> | **Q7** | **CR 513** is the end step; **CR 500.7 is about EXTRA TURNS** | the end-step ruling's anchor was **wrong**; corrected there |
+> | **Q7** | **CR 513.1a** — cards printed "at end of turn" carry Oracle errata to "at the beginning of the end step" / "…**next** end step" | confirms the two-era templating AND the immediate-vs-delayed split |
+> | **Q6** | **CR 201.5c** — *"Text printed on some cards refers to that card by a **shortened version of its name** … treated as though they used the card's **full name**."* | the canonicalizer isn't "a bug fix under a standard" — it **implements a CR rule** that was only half-implemented |
+> | **Q5** | **CR 702.1** — the keyword is a name; *"reminder text **summarizes**"* | the CR rule, not the reminder text, is the definition — the same boundary §6a draws |
+>
+> **Landed:** `end-step-trigger` is §2 vocabulary (536 cards unblocked, extractor
+> now emits it) · `active-player` is §6 scope · §2b ratifies CR-derived keyword
+> delivery · the canonicalizer carries its CR 201.5c citation · the killed axis
+> `rule:end-step-trigger` **stays killed**, batch-1 §1c upheld.
+>
+> **Still proposed, NOT ratified** (they were separate rulings' asks, not
+> numbered questions here): `becomes-tapped-trigger`, `becomes-untapped-trigger`,
+> `tapped-for-mana-trigger`, `cycled-trigger`, `cycles-a-card-trigger`,
+> `cycle-or-discard-trigger`.
 
 **Nothing else here is ratified and no axis was authored.** New vocabulary is a
 Captain ratification (§10.3). Every number was measured this session; none is

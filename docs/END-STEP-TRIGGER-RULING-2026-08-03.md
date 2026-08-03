@@ -52,7 +52,30 @@ over a printed scope difference.
 
 | token | cards | CR |
 |---|--:|---|
-| `end-step-trigger` + §6 scope (`own` / `each` / active-player) | 536 | 113.3c, 500.7 |
+| `end-step-trigger` + §6 scope (`you-control` / `each` / `active-player`) | 536 | 113.3c, **513.1** |
+
+> **✅ RATIFIED 2026-08-03 (batch Q7 + Q3).** Now grammar §2 vocabulary; the
+> `active-player` scope token is ratified in §6. The bare **axis**
+> `rule:end-step-trigger` stays KILLED — see the correction below.
+>
+> **⚠ TWO CITATIONS IN THIS DOCUMENT WERE WRONG, corrected on ratification:**
+>
+> 1. **CR 500.7 is about EXTRA TURNS**, not the end step. The end step is
+>    **CR 513**; `upkeep-trigger`'s mirror anchor is CR 503.1.
+> 2. **§0's "no prior ruling, in any status" is false.** `rule:end-step-trigger`
+>    exists as `status: killed` and `TRIAGE-BATCH-1.md` §1c killed it by name as
+>    "timing boilerplate". That kill governs the **axis** and is UPHELD; this
+>    document only ever proposed **vocabulary**, and §3 already declined to
+>    author axes. No reversal.
+>
+> **CR 513.1a is a gift to this ruling** and was not cited: *"Previously,
+> abilities that triggered at the beginning of the end step were printed with
+> the trigger condition **'at end of turn.'** Cards that were printed with that
+> text have received errata … to say 'at the beginning of the end step' or 'at
+> the beginning of the **next** end step'."* That is the CR itself confirming
+> both the two-era templating (DET patterns must canonicalize both) and the
+> immediate-vs-**delayed** split this document made — the 333 delayed triggers
+> are the "next end step" wording.
 
 §2 already ratifies `upkeep-trigger`. This is its mirror and takes the same
 shape. **No axes authored** — delivery-only slugs are parents (cycling ruling §5,

@@ -228,10 +228,18 @@ def _cardname_candidates(card: dict) -> list:
                 names.add(part.split(",")[0].strip())
             # Legendary subtitle without a comma: "Sharuum the Hegemon" prints
             # "When Sharuum enters"; "Rosie Cotton of South Lane" prints "Rosie
-            # Cotton". Same Oracle short-form convention the comma case already
-            # covers -- this completes the ratified standard rather than
-            # changing it. Guarded to >2 chars so a leading article ("The
-            # Ring") can never produce a degenerate token.
+            # Cotton".
+            #
+            # CR 201.5c is the rule this whole function implements, and it is
+            # explicit: "Text printed on some cards refers to that card by a
+            # SHORTENED VERSION OF ITS NAME. Instances of a card's shortened
+            # name used in this manner are treated as though they used the
+            # card's FULL NAME." The comma case was already handled; the
+            # subtitle case is the same rule and was simply missing.
+            # (Captain-ratified 2026-08-03, batch Q6.)
+            #
+            # Guarded to >2 chars so a leading article ("The Ring") can never
+            # produce a degenerate token.
             for sep in (" the ", " of "):
                 if sep in part.lower():
                     idx = part.lower().index(sep)

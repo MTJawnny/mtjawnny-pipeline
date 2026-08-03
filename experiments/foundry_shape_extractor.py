@@ -309,7 +309,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             if re.search(r"\bupkeep\b", clause):
                 return mark("upkeep-trigger", "upkeep")
             if re.search(r"\bend step\b", clause):
-                return None, "end-step"
+                return mark("end-step-trigger", "end-step")
             if re.search(r"\bcombat\b", clause):
                 return None, "begin-combat"
             if re.search(r"\bdraw step\b", clause):
@@ -366,7 +366,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\bupkeep\b", low):
             return mark("upkeep-trigger", "upkeep")
         if re.search(r"\bend step\b", low):
-            return None, "end-step"
+            return mark("end-step-trigger", "end-step")
         if re.search(r"beginning of (each |your )?combat", low):
             return None, "begin-combat"
         if re.search(r"\bdraw step\b", low):
