@@ -21,6 +21,39 @@ schema pass ratifies it. Design principle (Captain, 2026-07-20):
 - S4. Multiple parents allowed when earned (stun-counter sits under both
   lockdown and a counters-as-object family); every parent edge is a
   ratified ruling.
+- **S4a. PARENT EDGES ARE UNRANKED AND EQUAL (Captain-ratified 2026-08-02).**
+  When a card earns two parents, **neither wins.** They apply
+  simultaneously, at equal weight, with no primary and no discount.
+
+  > *"Neither one wins, they live both simultaneously — two different rules
+  > applied equally. Applied unbiased, it's not more than one or the other.
+  > Someone looking to build an enchantment deck that contains red might want
+  > Monstrous Rage just as much as a mono-red aggro deck. The distinction is
+  > on what a player might need. And they fit both roles equally."*
+
+  Worked case: **Monstrous Rage** is a combat trick (+2/+0 at instant speed,
+  composed to +3/+1 with trample via CR 111.10k) *and* an enchantment-deck card
+  (it makes a Role, which is an enchantment — Virtuous Role literally scales
+  with enchantments you control). Both are true at full strength. Which one
+  matters is a property of **the deck being built**, not of the card, so the
+  data may not decide it in advance.
+
+  **Binding consequences for the build:**
+  - No "primary parent" field. Anything that needs to pick one is wrong.
+  - No confidence weight or ordering on parent edges. A card with two parents
+    is equally a member of both, exactly as §1 made axis membership
+    non-exclusive.
+  - **"Parent TREE" is a misnomer.** Unranked multi-parent edges make this a
+    lattice/DAG, not a tree. This file's name is historical; do not let it
+    imply a single path to a root.
+  - S2's most-specific-shared-node rule is unaffected — it selects the
+    scoring node for a *pair* of cards, which is a different question from
+    ranking one card's parents. But S2 may not be implemented by walking "the"
+    parent chain, because there is no single chain.
+
+  This is the §1 multi-axis ruling applied one layer up, and for the same
+  reason: member counts are not a partition, and now neither are parent
+  populations.
 - S5. Implication edges ("counts toward"): a superset-scoped tag counts
   toward its subset siblings (mass-nonland-destruction counts toward
   mass-creature-destruction, mass-artifact-destruction, ...). Damageable/

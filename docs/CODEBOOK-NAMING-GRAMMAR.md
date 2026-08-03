@@ -339,6 +339,13 @@ the axis layer's.
 printed shapes are identical. Similar *outcome* is never grounds for a merge;
 it is grounds for a shared parent.
 
+**Parents are UNRANKED (Captain-ratified 2026-08-02).** A card that earns two
+jobs holds both at equal weight — *"neither one wins, they live both
+simultaneously… applied unbiased."* Monstrous Rage is a combat trick **and** an
+enchantment-deck card; which matters is a property of the deck being built, not
+of the card. There is no primary parent and no discount on a second one. Full
+ruling and its build consequences: `docs/PARENT-TREE-CANDIDATES.md` S4a.
+
 ## 7. Scaling standard
 
 One connective, one order, closed stat list — RATIFIED (D-3):
