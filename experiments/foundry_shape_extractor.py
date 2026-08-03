@@ -157,21 +157,43 @@ def in_created_ability(line: str, pos: int) -> bool:
     return any(a <= pos < b for a, b in quoted_spans(line))
 
 
+# The event verbs a trigger CONDITION can carry (CR 113.3c: the condition names
+# the event). Used only to decide WHERE the condition ends when commas appear
+# inside an object phrase -- never to classify. Kept in step with the branches
+# below; a verb missing here only makes the clause end earlier, which is the
+# conservative direction.
+TRIGGER_VERB = re.compile(
+    r"\b(enters?|dies|die|leaves?|leave|attacks?|blocks?|casts?|deals?|"
+    r"becomes?|discards?|sacrifices?|gains?|cycles?|is|are|put|puts?|"
+    r"tapped|untapped|turned|declared|drawn|draws?)\b")
+
+
 def trigger_clause(low: str) -> str:
     """The condition half of a triggered ability -- everything up to the comma
     that ends it. Whose permanent the trigger watches is decided HERE; reading
     the effect half too is how 'Parley — Whenever this creature attacks, each
     player reveals…' gets misread as an other-creature trigger, because `each`
-    appears in the effect."""
-    depth = 0
+    appears in the effect.
+    A comma does NOT always end it. "Whenever a Mutant, Ninja, or Turtle you
+    control enters, investigate" has commas inside the OBJECT phrase, and
+    stopping at the first one yields "whenever a mutant" -- no event, so the
+    line went unclassified. CR 113.3c says the condition is the half that
+    carries the trigger EVENT, so extend across commas until an event verb is
+    present, then stop at that segment's end."""
+    cuts, depth = [], 0
     for i, ch in enumerate(low):
         if ch in "([":
             depth += 1
         elif ch in ")]":
             depth -= 1
         elif ch == "," and depth == 0:
+            cuts.append(i)
+    if not cuts:
+        return low
+    for i in cuts:
+        if TRIGGER_VERB.search(low[:i]):
             return low[:i]
-    return low
+    return low[:cuts[0]]
 
 
 
@@ -352,6 +374,13 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 return "loyalty", "loyalty-ability"
             return ("activated", "cost-colon") if "activated" in ratified else (None, "cost-colon")
 
+    # CR 113.3c: "Triggered abilities have a TRIGGER CONDITION and an EFFECT.
+    # They are written as '[Trigger condition], [effect]'." The event that names
+    # the delivery is in the CONDITION, by definition -- so every event test in
+    # this block reads `clause`, never the whole line. Seven separate defects
+    # were fixed one at a time before this was done systematically: self/other,
+    # phase triggers, graveyard, Snowfall's upkeep, is-attacked, sacrifice,
+    # discard. All of them were the same root cause.
     if re.match(r"^(when|whenever|at )", low):
         # the SUBJECT matters: §2's rows read "when ~ enters", "whenever ~
         # attacks" -- the tilde is the SOURCE. Other-permanent triggers are a
@@ -411,13 +440,21 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 return mark("begin-combat-trigger", "begin-combat")
             if re.search(r"\bdraw step\b", clause):
                 return None, "draw-step"
+            if re.search(r"\bmain phase\b", clause):
+                return None, "main-phase"
+            # A clause that opens "at the beginning of ..." IS a phase trigger,
+            # even when the phase has no token yet. Falling through let the
+            # event branches read the EFFECT half -- "at the beginning of your
+            # first main phase, you may DISCARD a card" was filed as a discard
+            # trigger. Claim it here and report the phase honestly instead.
+            return None, "phase-trigger-unnamed"
 
-        if re.search(r"\bland (you control )?enters\b", low) or low.startswith("landfall"):
+        if re.search(r"\bland (you control )?enters\b", clause) or low.startswith("landfall"):
             return mark("landfall", "landfall")
-        if re.search(r"\benters\b", low):
+        if re.search(r"\benters\b", clause):
             return msub("etb", "enters")
-        if re.search(r"\bdies\b|\bdie\b", low):
-            if re.search(r"\bfrom (your |a )?(library|hand|anywhere)\b", low):
+        if re.search(r"\bdies\b|\bdie\b", clause):
+            if re.search(r"\bfrom (your |a )?(library|hand|anywhere)\b", clause):
                 return None, "to-graveyard-from-nonbattlefield"
             return msub("death-trigger", "dies")
         # CR 700.4, verbatim: "The term DIES means 'is put into a graveyard
@@ -440,7 +477,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("death-trigger", "dies")
         if re.search(r"\bput into (a |their |your )?graveyards?\b", clause):
             return None, "to-graveyard-from-anywhere"
-        if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", low):
+        if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", clause):
             return msub("leaves-battlefield-trigger", "ltb")
         # Tested on the CLAUSE. Fifth instance of the whole-line-vs-clause bug:
         # Willie Lumpkin ("Whenever ~ deals combat damage to an opponent, ...
@@ -450,25 +487,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\battacks?\b", clause):
             if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", clause):
                 return mark("is-attacked-trigger", "is-attacked")
-            if re.search(r"^when(ever)? you attack\b", low):
+            if re.search(r"^when(ever)? you attack\b", clause):
                 return mark("player-attack-trigger", "player-attacks")
             return msub("attack-trigger", "attacks")
-        if re.search(r"\bcasts?\b", low):
+        if re.search(r"\bcasts?\b", clause):
             return mark("cast-trigger", "casts")
         # "an opponent" was unmatched by `(a|target)?` -- 17 cards print "deals
         # combat damage to AN OPPONENT" (Kosei, Strixhaven Stadium, Etrata...).
         # It IS a combat claim, so it takes combat-damage-to-player; only a
         # non-combat "deals damage to an opponent" takes any-damage-to-player
         # per DAMAGE-DELIVERY-RULING-2026-08-02.
-        if re.search(r"combat damage to (a |an |target )?\s*(player|opponent)", low):
+        if re.search(r"combat damage to (a |an |target )?\s*(player|opponent)", clause):
             return msub("combat-damage-to-player", "combat-damage-player")
-        if re.search(r"combat damage to (a|target)?\s*creature", low):
+        if re.search(r"combat damage to (a|target)?\s*creature", clause):
             return mark("combat-damage-to-creature", "combat-damage-creature")
-        if re.search(r"\bis dealt\b.{0,30}\bdamage\b", low):
+        if re.search(r"\bis dealt\b.{0,30}\bdamage\b", clause):
             return None, "damage-received"
-        if re.search(r"\bdeals? damage to\b.{0,24}\bplayer\b", low):
+        if re.search(r"\bdeals? damage to\b.{0,24}\bplayer\b", clause):
             return mark("any-damage-to-player", "any-damage-player")
-        if re.search(r"\bdeals? damage to\b", low):
+        if re.search(r"\bdeals? damage to\b", clause):
             return mark("any-damage-to-creature", "any-damage-creature")
         if re.search(r"\bupkeep\b", clause):
             return mark("upkeep-trigger", "upkeep")
@@ -485,9 +522,9 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return mark("end-combat-trigger", "end-combat")
         if re.search(r"\bdraw step\b", clause):
             return None, "draw-step"
-        if re.search(r"\bbecomes the target of\b", low):
+        if re.search(r"\bbecomes the target of\b", clause):
             return mark("becomes-targeted-trigger", "becomes-targeted")
-        if re.search(r"\bblocks\b|\bbecomes blocked\b", low):
+        if re.search(r"\bblocks\b|\bbecomes blocked\b", clause):
             return mark("blocks-or-becomes-blocked-trigger", "blocks")
         # --- Captain-ratified 2026-08-03, the six remaining trigger tokens ---
         # ORDER MATTERS: "whenever you cycle OR DISCARD a card" contains the
@@ -518,20 +555,20 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("becomes-untapped-trigger", "becomes-untapped")
         if re.search(r"\bbecomes? tapped\b", clause):
             return msub("becomes-tapped-trigger", "becomes-tapped")
-        if re.search(r"\bis turned face up\b|\bturned face up\b", low):
+        if re.search(r"\bis turned face up\b|\bturned face up\b", clause):
             return None, "turned-face-up"
-        if re.search(r"\bdiscards?\b", low):
+        if re.search(r"\bdiscards?\b", clause):
             return None, "discard-trigger"
-        if re.search(r"counters? (are|is) put on", low):
+        if re.search(r"counters? (are|is) put on", clause):
             return None, "counter-placed"
-        if re.search(r"\bgains? life\b|\bgained\b", low):
+        if re.search(r"\bgains? life\b|\bgained\b", clause):
             return None, "lifegain-trigger"
         # SIXTH whole-line-vs-clause instance. Afiya Grove ("When this
         # enchantment has no +1/+1 counters on it, SACRIFICE IT") and Ember
         # Swallower ("When this creature becomes monstrous, SACRIFICE three
         # lands") were counted as sacrifice triggers by their EFFECT text.
         if re.search(r"\bsacrifices?\b", clause):
-            return None, "sacrifice-trigger"
+            return msub("sacrifice-trigger", "sacrifice")
         return None, "unclassified-trigger"
 
     if re.search(r"\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", low):

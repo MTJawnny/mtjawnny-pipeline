@@ -94,9 +94,15 @@ it applies.** The subject split is real and printed:
 
 | printed | §2a form | lines |
 |---|---|--:|
-| "when you sacrifice **this** creature / **~**" | `sacrifice-trigger` | 8 |
-| "whenever you sacrifice **another** creature" | `other-sacrifice-trigger` | 24 |
+| "when you sacrifice **this** creature / **~**" | `sacrifice-trigger` | 7 |
+| "whenever you sacrifice **another** creature" | `other-sacrifice-trigger` | 25 |
 | "whenever you sacrifice **a** creature" | `any-sacrifice-trigger` | 78 |
+
+**Measured after wiring: 7 / 25 / 78.** My hand-classification said 8 / 24 —
+Kingpin, Wilson Fisk ("whenever you sacrifice **~ or another** creature") is a
+compound that I filed under the source and the tool files under `other-`. The
+tool's read is the better one, since "another creature" is printed. Gate 4: the
+measurement wins.
 
 So **one ratification yields three names**, and no new subject vocabulary. Foul
 Emissary ("when you sacrifice **this creature**") and Fleshtaker ("whenever you
