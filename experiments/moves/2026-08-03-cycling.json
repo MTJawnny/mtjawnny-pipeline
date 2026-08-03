@@ -1,0 +1,2786 @@
+{
+ "batch": "2026-08-03-cycling",
+ "ruling": "docs/CYCLING-RULING-2026-08-03.md",
+ "source_ref": "captain-cli-2026-08-03",
+ "new_axes": {
+  "rule:cycling": {
+   "definition": "The cycling keyword ability (CR 702.29a): an ACTIVATED ability that functions only while the card is in a player's hand — '[Cost], Discard this card: Draw a card.' Because an activated ability on the stack is not a spell (CR 113.9), cycling cannot be countered by anything that counters only spells. The cycling cost is a parameter. Typecycling is a separate axis (CR 702.29e) — it searches the library rather than drawing.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "parameterized": true
+  },
+  "rule:typecycling": {
+   "definition": "The typecycling keyword ability (CR 702.29e): '[Type]cycling [cost]' means '[Cost], Discard this card: Search your library for a [type] card, reveal it, and put it into your hand. Then shuffle.' An activated ability from hand, so CR 113.9 applies as for cycling. The TYPE is a parameter (plains, basic land, wizard, ...). Separate from rule:cycling because the printed effect is a library search, not a draw (§6b: similar outcome is grounds for a shared parent, never a merge); CR 702.29f's 'typecycling abilities are cycling abilities' is recorded as the PARENT edge.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "parameterized": true
+  }
+ },
+ "seeds": [
+  {
+   "to": "rule:cycling",
+   "member": "00625242-9348-4ef4-b975-f2ac82fee21d",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Savai Triome: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "008c92bc-3022-4d34-aa04-584576ff8f8e",
+   "quote": "Cycling {3}{R}",
+   "class": "human",
+   "why": "Deem Worthy: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "04858b93-0a2a-44d0-942d-7fadf589cbb7",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Curator of Mysteries: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "04cc9d99-69a9-499b-91bc-f2f30d217bdd",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lay Waste: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "04dcda3b-3401-4523-8b97-b700a14feb36",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Gallant Strike: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "05e910aa-cf84-468c-8a48-256588cbbf08",
+   "quote": "Cycling {X}{2}{R}",
+   "class": "human",
+   "why": "Rampaging War Mammoth: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "06355d3f-a82d-4f12-a399-016a12824795",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Shefet Archfiend: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "06a6130f-f27b-4db0-915d-decd9a7d3c15",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Crystal Carapace: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "07237694-b5d5-4c92-a429-55e343b8dd1c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Yoked Plowbeast: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "072db429-3838-42ba-89b6-e26cbce22af9",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Pest Control: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "092dd5be-da62-4198-b7fa-0813f075047c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Blue: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "09726c3d-f700-4bf4-a9e7-326fe41b0a4a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Skybox Ferry: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0a994401-d37c-4e30-9410-422e7ae5a715",
+   "quote": "Cycling {2}{G}",
+   "class": "human",
+   "why": "Warped Tusker: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0ab0be8e-d6be-411b-827f-584bb5d03766",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Razaketh's Rite: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0ad3b788-eb3d-4876-9c89-893429595e0e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Scrap: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0bc418c3-ebde-4e52-9284-65d7e3433f27",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Wasteland Scorpion: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0c59db70-9cb4-4edf-ba6e-12ffa7c06b7b",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Esper Sojourners: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0dc30c06-3900-44e8-9e63-c232e42c1b5c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Marshaling Cry: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0e25faa2-efb0-4ca5-b280-18c38faa860c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Coastal Peak: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0e608f48-d3a6-422c-839d-f06bb8a32014",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Savage Hunger: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "0ea2c5ad-2982-4041-8c9d-a1d31ced11aa",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Detention Chariot: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "10da681b-50bd-4a1b-9934-f0c90e0af55c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Tectonic Reformation: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "11b21086-0779-4d16-8a56-252c6bee9bed",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Djeru's Renunciation: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "11bf211c-95a3-4e7f-bd08-13f979d54e73",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Reconnaissance Mission: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "11cf103c-f8a3-4892-942d-2c4472dd5716",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Go for Blood: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "121bd1af-da21-4937-a911-377c5b430796",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Intimidation Tactics: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "13e2a2c3-5ab5-4de4-96ca-5f9c72137000",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Drannith Healer: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "14f081bb-dd7a-4419-af9b-f75d91e1a6d0",
+   "quote": "Cycling {3}{G}",
+   "class": "human",
+   "why": "Shefet Monitor: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "1720d38a-c3c1-4294-85c1-a91fc7179d6f",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Boon of the Wish-Giver: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "1831fe12-dbe0-437f-8fc8-f01bbb701fe1",
+   "quote": "Cycling {W}{B}{G}",
+   "class": "human",
+   "why": "Deceptive Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "190e664b-9875-4335-af46-353886ed18ff",
+   "quote": "Cycling {1}{B}",
+   "class": "human",
+   "why": "Desert of the Glorified: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "1ad5766b-9ae3-437b-bd91-c4c988a8b095",
+   "quote": "Cycling {2}{G}",
+   "class": "human",
+   "why": "Agonasaur Rex: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "1b73639b-2b07-4e82-b990-ca7721074e43",
+   "quote": "Cycling {G}",
+   "class": "human",
+   "why": "Dissenter's Deliverance: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "1da1aa95-b587-4bc3-8bc1-7daa1fc33f00",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Windcaller Aven: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2031b17c-0536-446f-a9aa-b46fe79b7ea7",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Canyon Slough: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "21f507fd-6a26-455c-879a-f838e0aa2a43",
+   "quote": "Cycling {2}{B}",
+   "class": "human",
+   "why": "Grixis Sojourners: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2227bab2-36a0-47f1-a797-7b82323eca9d",
+   "quote": "Cycling {1}{B}{B}",
+   "class": "human",
+   "why": "Death Pulse: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2343ebff-edf4-4132-ad9e-7800f8014072",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Skycrash: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "23732d20-aba6-46cc-89d0-0542629bc6b5",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Glittering Massif: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "24aebda0-315f-4d2f-8bd9-00bbaf5bd76a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Remote Isle: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "25012c1f-c069-43d7-b930-a3a5a7eb1389",
+   "quote": "Cycling {6}{W}{W}",
+   "class": "human",
+   "why": "Dismantling Wave: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "256d884f-5dea-4906-a53d-cf14d43e6bc8",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Memory Leak: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "25a73cfc-a40d-47ea-a7b1-61c7b62a9e6c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Eldrazi Ravager: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2672e0ca-8d5c-449f-8483-35d0e697fbb2",
+   "quote": "Cycling {1}{W}",
+   "class": "human",
+   "why": "Desert of the True: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "27547519-9474-49fa-80e7-e604d61cb3ca",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Beneath the Sands: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "28196fd9-00c9-4cd0-b603-0eec8511ec79",
+   "quote": "Cycling {W}{U}{B}",
+   "class": "human",
+   "why": "Contaminated Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "287d5a5d-e477-4d5b-815a-d83c73f4792d",
+   "quote": "Cycling {5}{U}{B}{R}",
+   "class": "human",
+   "why": "Resounding Scream: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "28a1e053-eb14-4fbf-afd1-bfb6117a839a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Primoc Escapee: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "29925297-b6d4-4fc8-a585-1425c1482ec6",
+   "quote": "Cycling {2}{R}",
+   "class": "human",
+   "why": "Sanctuary Smasher: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2c51e20b-07b2-4c96-8d73-87379aafbc7c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Countervailing Winds: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2c769dfc-79be-4fcb-840c-b72cafdd0a23",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rapid Decay: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2c96ab90-155b-4bf4-acc9-65a2f0cd3189",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Capital City: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2d8635bd-ed96-4bb1-8718-6962a0eee3d5",
+   "quote": "Cycling {U}{B}{R}",
+   "class": "human",
+   "why": "Seething Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2e29025e-6954-4fbd-933f-81c2309c704e",
+   "quote": "Cycling {B/R}",
+   "class": "human",
+   "why": "Monstrous Carabid: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2eb69a8f-9456-4852-b868-85ae609d3441",
+   "quote": "Cycling {G}{U}{R}",
+   "class": "human",
+   "why": "Bountiful Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "2f1e2742-d7df-4893-abc8-cb927c500569",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Macetail Hystrodon: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "30fce201-03a8-4afc-a1ad-7a9b3fd59836",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Sandbar Serpent: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "311f38a6-f68f-4d30-bc4e-62339f1e0d88",
+   "quote": "Cycling {1}{R}",
+   "class": "human",
+   "why": "Desert of the Fervent: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3123ec89-8e95-4761-ba17-747ec667509f",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Spara's Headquarters: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "31a49fb9-1081-46c3-a352-0444869afdc9",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Essence Fracture: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "326ba371-124c-4949-a048-3a0c8962e567",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Barren Moor: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "32b03b48-06da-4a74-a7ac-e5ae39a4f428",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Fetid Pools: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "34d112c3-cc2d-4428-bd7f-568bda61bd30",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Starstorm: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "35069cdb-e5bd-4224-a1a8-b329054e003b",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rejuvenate: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3617c4ec-dc70-4fa8-94f3-fbc48abcaeea",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Indatha Crystal: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "37985fef-696e-4c6b-9a60-29c5051b5a25",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Volcanic Submersion: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "394c6de5-7957-4a0b-a6b9-ee0c707cd022",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Forgotten Cave: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3992369a-2158-4cf8-b7e5-be517b91c1f5",
+   "quote": "Cycling {R/G}",
+   "class": "human",
+   "why": "Deadshot Minotaur: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3a225d39-c1f8-4ab0-98ec-dad63bf268db",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Repopulate: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3a42558c-7432-4c05-9599-95343eb09be1",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Censor: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3a46d85b-ce1a-4842-a342-92a5bddb1053",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Scrounging Skyray: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3c1083c2-180a-4e26-96ba-24b3da2770ea",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Resolute Rejection: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3c87ea85-ca29-45a7-b5b2-758c62898b0a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Scattered Groves: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3d747c43-a09b-4209-b042-2b89156612d8",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Vile Manifestation: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3ee5d7b6-0263-4239-a5fb-de1e1a220c55",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Ketria Crystal: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "3f487c8e-a923-4031-b0a7-04f778544fe0",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rescind: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4056c1dd-9db4-4ff6-9dc5-a69e8da1d2a6",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rooting Moloch: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "406eabe2-df62-49e2-bb39-c0227509d875",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Irrigated Farmland: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "40ad5a52-37ad-4524-be06-9e263a907d31",
+   "quote": "Cycling {5}{R}{G}{W}",
+   "class": "human",
+   "why": "Resounding Roar: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "41fed659-237c-4d8e-ad31-d17fa0d3f764",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Ozolith, the Shattered Spire: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "42d86827-6459-42fc-86b6-6eb055604c36",
+   "quote": "Cycling—Sacrifice a land.",
+   "class": "human",
+   "why": "Edge of Autumn: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4306a9e5-6845-4fd4-96ad-8888147612aa",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Jolted Awake: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "44add927-4e6b-408e-907f-6a665add8b16",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Flourishing Fox: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "463fc961-d34e-4f40-b383-5b78a0fcb5c8",
+   "quote": "Cycling {2}{R}",
+   "class": "human",
+   "why": "Slice and Dice: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "467ea3e3-7767-405a-9d1a-8fa5de696376",
+   "quote": "Cycling {1}{R}",
+   "class": "human",
+   "why": "Gempalm Incinerator: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "469c4b77-733e-472b-aeae-6015b409beb2",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Artifacts: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "48792146-e20c-4d93-83af-f746069fc6f1",
+   "quote": "Cycling {2}{G}{G}",
+   "class": "human",
+   "why": "Gempalm Strider: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "48a1d55e-0b71-4724-ab2a-6d2c87e86b5b",
+   "quote": "Cycling {X}{G}{G}",
+   "class": "human",
+   "why": "Webstrike Elite: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "496999a7-a82a-45ea-9c4e-1b6aabc781cd",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rebuild: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4b1fee86-360d-41d8-9238-eff216376732",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Expunge: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4cdb9f80-d08f-4986-99c8-573166d66082",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Night Market: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4d94d807-97d9-4cdf-a63c-d8b82c2acc6e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lava Serpent: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4da2425d-2118-4116-855d-2ef80693a7b7",
+   "quote": "Cycling {1}{B}",
+   "class": "human",
+   "why": "Undead Gladiator: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4e0b647a-6e1a-421b-bca9-8d5e346bda80",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Unearth: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4ef6ec4a-bbd2-487f-98c2-c0e78aebb550",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Claws of Wirewood: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "4fd3dafe-e6a4-49d5-950a-e2fcc77eda98",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Hampering Snare: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "508f9e7e-2ff7-4593-b0a9-0612d7b5d646",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Desert of the Mindful: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "50c13b38-9865-4c60-b2df-3fd6e3a9c6a2",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Inferno Jet: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5208a5f2-eebe-4adc-8f29-543b60116817",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Sicken: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "526cd570-046e-402a-986c-f6ece68eec47",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Sweltering Suns: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "52fa7e9b-36d9-409c-8981-6f8dfd8bb031",
+   "quote": "Cycling {3}{B}",
+   "class": "human",
+   "why": "Stir the Sands: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "535e2af0-7b08-4026-b1bf-87626407dd42",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Archfiend of Ifnir: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "55ad9924-f217-4844-8a82-48746186bc53",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Darkwatch Elves: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "562aaf81-e70a-401d-a638-bb7ce4f40626",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Ridge Rannet: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5733c3fb-c533-456c-b30e-5d2b9e206b6b",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Don't Blink: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "57f15861-82cf-4faf-827c-9bc7f4844d2a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Runaway Boulder: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "581425e6-3128-4f83-9efc-17028fc65078",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Barrier Breach: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "585a1c82-8a6c-4770-be9c-3a4916b74a9f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Power Taint: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "58bfd9a1-67ce-41d0-be38-f05addd1dd9e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Slippery Karst: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "58ea9b0a-1bef-4ccb-acb7-f03c8daf3df3",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Ominous Seas: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5a1dfc60-645d-4bc0-8883-e06ed9c80706",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Umbral Expanse: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5b67a944-ab0b-4155-8bc0-becb1b38b3bb",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Unpredictable Cyclone: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5b932be0-4dac-41b9-9c59-f79e4cecc31a",
+   "quote": "Cycling {R}{G}{W}",
+   "class": "human",
+   "why": "Sheltering Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5cf069cf-3a10-4427-a02b-5405429b5652",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Frostveil Ambush: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5d957045-acb2-4546-8c19-71511fd497ef",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Migrating Ketradon: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "5ddcc7a5-c869-49fd-baa1-ab5f5f456f90",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Bloated Toad: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "605dd1b5-8946-4bd0-b31b-e99bf63a1bc4",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Lands: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "60e358ec-eb11-4a16-a0ae-b7c064a8ea6c",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Hieroglyphic Illumination: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "61d2f269-8674-4429-a07c-59972afd9ede",
+   "quote": "Cycling {1}{W}",
+   "class": "human",
+   "why": "Sunfire Balm: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "633a41f0-3889-49a0-b2fc-9baf59f4ddc2",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rain-Slicked Copse: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "63d92baf-0007-4519-a5bc-d189448ea126",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Disciple of Malice: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6560517d-41c0-4c9c-b9d5-3ecfcb2b99fd",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Viashino Sandsprinter: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6679b462-3c90-418c-8727-acd1a61d988b",
+   "quote": "Cycling {5}{R}{R}",
+   "class": "human",
+   "why": "Decree of Annihilation: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "67a98359-6f02-4556-ad47-c01b643686d6",
+   "quote": "Cycling {2}{W}",
+   "class": "human",
+   "why": "Decree of Justice: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "67ceffa4-2fdb-499c-88cd-49fb5eb9be59",
+   "quote": "Cycling {2}{W}",
+   "class": "human",
+   "why": "Bant Sojourners: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "686e0b86-121c-45be-842d-c83d3b6547f6",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Compelling Argument: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "688a0b7d-bf00-45ab-ab3f-9d19f52f019a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Coordinated Charge: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "699fc7cf-1ad3-4c32-b3e4-49f9a2da4b26",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Vizier of Tumbling Sands: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6ad18589-ece4-4809-80f6-6764d2822372",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Desert Cerodon: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6bae00e8-06cf-4ac4-a1cc-757e454109fe",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Ketria Triome: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6c0e22f2-f0f3-43e6-87c5-c543032112d8",
+   "quote": "Cycling {1}{R}",
+   "class": "human",
+   "why": "Yidaro, Wandering Monster: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6c540822-4ceb-4ebf-b777-da172ada3f1b",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Waxen Shapethief: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6d9746bc-0b72-4ac4-b48a-742b63b1c41b",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Backslide: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6de20c2c-b8a8-4f12-897b-a2f55d7eed87",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Horror of the Broken Lands: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6e9ef5ef-6aed-4d3e-a59b-9e3dc8740b1b",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Raffine's Tower: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6eefa487-1542-4d24-80bd-4893d9d908c8",
+   "quote": "Cycling {5}{G}{W}{U}",
+   "class": "human",
+   "why": "Resounding Silence: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "6f214a42-e38f-4923-8afc-832efdde7975",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: White: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "701912d5-9995-4ac7-9858-188f78b2b8a3",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Angel of the God-Pharaoh: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "703215df-dee2-4b82-9f32-256e1410543c",
+   "quote": "Cycling {2}{G}",
+   "class": "human",
+   "why": "Naya Sojourners: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "711cda97-bf57-4b22-b9c1-854ef448d27a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Wild Dogs: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7185e345-d8a1-4dd3-a071-f90f265634b4",
+   "quote": "Cycling {2}{B}",
+   "class": "human",
+   "why": "Void Beckoner: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "725972de-4816-44cf-a2a5-4326c3bc1b4b",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Striped Riverwinder: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "72a0e0f1-e8be-441a-bcaf-029fb1bd1fd2",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Airship Crash: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7476a14a-611e-4f81-b603-fd600e88568f",
+   "quote": "Cycling {1}{G}",
+   "class": "human",
+   "why": "Thornado: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "74e6dd0f-2866-4d45-a214-8b09b837bc02",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Slipstream Eel: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "750d846e-2774-4296-8d9f-5207477d842d",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Nimble Obstructionist: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Lonely Sandbar: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "771be8ad-5ab5-40b1-ad9b-e5e834949d32",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Lurching Rotbeast: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "77630700-3828-4063-95a7-f6283f0f9da5",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Viscera Dragger: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "77b6c3bb-bd05-4547-8f3e-9c50879973f1",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Wilt: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "79d290ea-c095-4135-9711-f3ce089dae43",
+   "quote": "Cycling {U/B}",
+   "class": "human",
+   "why": "Architects of Will: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7a36fc2e-bb02-4222-a335-4c80e380e690",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Ichor Slick: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7aa5db50-5057-45fd-bce9-fb4a5e874263",
+   "quote": "Cycling {2}{W}",
+   "class": "human",
+   "why": "Astral Drift: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7bb5c5af-6943-4958-a666-0c322d5b9f33",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Swat: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7bf22390-a6c0-4da6-9f05-e66628f72079",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Moaning Wall: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7c3bf598-070a-4f34-bcfb-7530aa58405a",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Radiant Smite: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7c72df45-c3bd-4fb9-8365-5a5639566742",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Molten Frame: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7c943883-06af-45a4-b5ed-b4564835dbb0",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Fade from Memory: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7cf5c3dd-5c07-4eaf-8227-6f4e7f9b134d",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Drownyard Lurker: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7d6e5a88-a7fd-466c-a9f8-5015e3400176",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Sandbar Merfolk: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7e607fc7-ec22-4249-8936-70a026f9996d",
+   "quote": "Cycling {5}{W}{U}{B}",
+   "class": "human",
+   "why": "Resounding Wave: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7f4ceca9-0f55-4fa6-8e64-befbc4303d4e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Disciple of Grace: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7fbad3f2-66f6-4e3a-b9e0-1ddbcd94d42a",
+   "quote": "Cycling {R}{W}{B}",
+   "class": "human",
+   "why": "Shattered Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "7fd7d20d-d44c-443c-a2cf-320f39a3bec4",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Stinging Shot: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "80c7b1b4-4e37-4aef-9432-d629d71b7045",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Suffocating Fumes: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "817464d8-1e2d-4e12-96f8-5c7ec9b3e681",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Thundering Broodwagon: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "817eb91a-e3b4-40c3-9a6e-e4d0387e0f4f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Flame Blitz: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "82406175-63b3-4972-be8b-db0e70c908cb",
+   "quote": "Cycling {2}{G}",
+   "class": "human",
+   "why": "Krosan Tusker: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8291543f-d086-48aa-b2b7-5481ca8c9198",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Xander's Lounge: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "84100106-1f97-4859-aadd-a35796ee000f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Aura Extraction: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "84a18b1f-5f9f-4e2b-87cd-c437bdf4d278",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Barkhide Mauler: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "84a3ebc2-5c38-40ef-b5f4-62a92cbca493",
+   "quote": "Cycling {2}{R}",
+   "class": "human",
+   "why": "Jund Sojourners: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "85271333-af96-447a-8a16-9fadf0eaedb2",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Dragon Wings: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "852d4dc3-404d-4565-99e9-1eac8f6eca5e",
+   "quote": "Cycling {1}{G}",
+   "class": "human",
+   "why": "Desert of the Indomitable: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "85fd04e9-b39c-4ce0-97a1-58f9670a298f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Radiant's Judgment: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8656a32b-eb95-402b-9daf-0b6d876b4b13",
+   "quote": "Cycling {1}{G}",
+   "class": "human",
+   "why": "Titanoth Rex: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "86b7ff68-0bd9-4fc9-9803-fde2d4a2f59b",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Keeneye Aven: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "87050537-99c9-4993-a770-4329b2e749e4",
+   "quote": "Cycling {W}{U}",
+   "class": "human",
+   "why": "Cid, Timeless Artificer: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8747ca90-ac1d-45fd-89fe-aac385cd66b4",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Startling Development: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "87edb566-8929-4961-9c03-d3657a8c6feb",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Zagoth Crystal: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "89c89499-23a8-412d-9406-1a7ffc88c64d",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Wreck Remover: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8a9d6a30-e2c2-4da5-ad3b-d64fb2b5543c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Flame Jet: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8abeaa77-d455-47e7-bf60-aefb94ab83fb",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Howler's Heavy: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8b9043d3-a1c6-4f49-9c49-ef78bbfbd4ac",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Scarab Feast: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b",
+   "quote": "Cycling {X}{1}{U}",
+   "class": "human",
+   "why": "Shark Typhoon: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8d8981df-4cdc-4fd4-acd8-095fa3281281",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Pendrell Drake: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8dec6fcf-1254-4b1b-ba23-7a3e492a7241",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Secluded Steppe: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "8f7479e6-b2bd-46b1-96ad-34deb43565c1",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Spectacular Pileup: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "900b9409-9c16-414d-8674-2ea42c2415a1",
+   "quote": "Cycling {1}{R}",
+   "class": "human",
+   "why": "Magmakin Artillerist: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "902e7d4b-7ab4-40b5-b3a5-c83ef604989a",
+   "quote": "Cycling {2}{G}",
+   "class": "human",
+   "why": "Primal Boost: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9078db26-3a54-4a11-9aae-e45c38da7226",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Miscalculation: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "92017087-18f4-46ee-8808-5959d31d0011",
+   "quote": "Cycling {G/W}",
+   "class": "human",
+   "why": "Sigil of the Nayan Gods: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "920684d0-aef3-4408-a66b-a0c9394c58f4",
+   "quote": "Cycling {4}{U}{U}",
+   "class": "human",
+   "why": "Decree of Silence: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "932668fa-d6e3-41c0-ad0c-8e0a00e68d11",
+   "quote": "Cycling {3}{B}{B}",
+   "class": "human",
+   "why": "Decree of Pain: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "94674840-c73c-4659-80b9-11140d1deaa3",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Shimmering Barrier: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "96a6a8d4-6077-470f-984e-b576a24557a2",
+   "quote": "Cycling {4}{G}{G}",
+   "class": "human",
+   "why": "Decree of Savagery: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "97acd3aa-ae4a-4e9d-a5b9-36eaba158735",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Unburden: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9809d975-7ef8-4946-9041-607c4e954b13",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Polluted Mire: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9b3f6b29-675a-4153-9582-03318851b20e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Red: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9c8007ac-4b3d-4444-93e9-f583185e5d81",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Blasted Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9e34ab18-5d39-49d9-9d3d-e1d4a3611b87",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Constricting Tendrils: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "9f8fe514-77ed-41b4-a6f3-c6f095bb97be",
+   "quote": "Cycling {G}",
+   "class": "human",
+   "why": "Tranquil Thicket: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a08580da-e5aa-424b-86bf-d4535f3480d1",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Clamorous Ironclad: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a0d5fce0-a439-496a-9fcf-9271503f3ce8",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Imposing Vantasaur: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a1379c25-6daf-4efa-a517-6e6e25c31875",
+   "quote": "Cycling {W/U}",
+   "class": "human",
+   "why": "Glassdust Hulk: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a2184c37-ee92-40f2-b7d1-97c39ce5f277",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Limits of Solidarity: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a3023de2-61e7-4f46-aa4a-09d08ee7d939",
+   "quote": "Cycling {X}{2}{W}",
+   "class": "human",
+   "why": "Valor's Flagship: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a3fc6888-0a4b-4e1d-b709-042b8b6b1a04",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Akroma's Blessing: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a4689767-46c3-42ab-af27-5877e226bc05",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Disciple of Law: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a585186c-d7c2-4f8b-acdc-c5f9ab950398",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Jungle Weaver: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "a60348fa-b182-4667-9e38-15bdf3511f82",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Choking Tethers: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "aa4ecefa-808e-4706-af16-4ea5af9743fc",
+   "quote": "Cycling {1}{W}",
+   "class": "human",
+   "why": "Renewed Faith: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "aca7c0a7-b365-421e-aeb0-49d3a9873e4f",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Improvised Armor: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "acac15c8-877d-49d4-9b42-90181c05a684",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Chitin Gravestalker: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "adc1f3b4-cce7-42c9-a208-dbab1d1924f5",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Cloud of Faeries: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ade82acb-80c0-4033-aa02-4fa3d69aad69",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Hundroog: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ae19dce5-c9fc-4fbe-99b5-dc6a12124a68",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Akroma's Vengeance: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ae4a8470-4517-42c7-a7f6-ef7635e10fe5",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Raugrin Crystal: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "af045109-ed00-469f-814b-c759c0c5357c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Monstrous Step: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "b027302f-80c2-441d-a9fd-bbe64bf5cf8a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Black: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "b0e1d26e-2fa1-4826-bfe9-01b0bd2c138b",
+   "quote": "Cycling {5}{B}{R}{G}",
+   "class": "human",
+   "why": "Resounding Thunder: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "b1bc4498-43c0-461c-afba-ef81d743e5aa",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Imaginary Threats: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "b783246a-e00b-4cdf-9111-fe0afb896a8e",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Easy Prey: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "b9e4d34a-ba91-4ad6-b886-daeeda6c9498",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Hollow One: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bac52ae6-24ee-4c4f-a32c-3eb9859dc025",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Trip Up: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bcfe1653-e602-4d38-abe7-bfcc7f203f9d",
+   "quote": "Cycling {B}{G}{U}",
+   "class": "human",
+   "why": "Foreboding Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bd532f8d-789f-4ee1-a2f3-ae30e8282c76",
+   "quote": "Cycling {B}{B}",
+   "class": "human",
+   "why": "Gempalm Polluter: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bd7867f4-4f58-49c2-9c24-a124dfdb506d",
+   "quote": "Cycling—Pay 2 life.",
+   "class": "human",
+   "why": "Street Wraith: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bd940cab-d23a-44bf-ab96-8aa1dcd3f0ff",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Scion of Darkness: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "bdb9b2ce-342c-4935-8943-d0c3971b1e38",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Festering Thicket: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "be09e83f-6486-4f42-8d2e-416cb95173f9",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Smoldering Crater: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "be7b16ef-32aa-40d5-b287-c5e79d52d6b9",
+   "quote": "Cycling {1}{B}",
+   "class": "human",
+   "why": "Dirge of Dread: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c2248d3d-3157-4610-868d-2b3fae2b1ec8",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Raking Claws: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c2c60973-b4d5-43fa-a0c4-b5688b28df05",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Neutralize: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c3162232-b713-44be-b2af-29d801279ab2",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Gempalm Sorcerer: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c355180d-fa8f-452c-bca9-ab576d54fd47",
+   "quote": "Cycling {1}{W}",
+   "class": "human",
+   "why": "Benalish Partisan: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c37f1921-7ac3-4185-8579-1dfdfe647ea2",
+   "quote": "Cycling {R}",
+   "class": "human",
+   "why": "Spark Spray: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c4478c23-2690-4a2c-bb34-cb3fe9537793",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Mangled Soulrager: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c45d1df1-92a7-4b36-8e27-1f88c3737bf9",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Oketra's Attendant: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c478fb5c-9fde-400d-a2cd-f8c4fa6b957a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Trade the Helm: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c48ce123-bb07-4221-b3b3-0a458e101ca1",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Djeru's Resolve: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c6eb2814-0021-4308-ad44-6c8cc59b0d1c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Drifting Meadow: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c7111365-b96b-4d6a-8c3c-73a0d8baf641",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lay Claim: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c7fa1dda-9312-4ec8-82cd-a1ba7bc33497",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Raugrin Triome: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c7fca3f3-b48e-4ac5-be31-ce7ae3c7432c",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rune of Protection: Green: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "c9de9f0b-bf07-4171-b54d-69033424a212",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Valiant Rescuer: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ca4fdf89-a74e-4086-8109-b0f9dd91710e",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Footfall Crater: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cb9e6860-591f-4758-aaa3-14efa0a775f5",
+   "quote": "Cycling {2}{W}",
+   "class": "human",
+   "why": "Gempalm Avenger: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cbb6139f-827f-490b-b9b7-e8c3ef714d44",
+   "quote": "Cycling {1}{R}",
+   "class": "human",
+   "why": "Quakefoot Cyclops: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cce17310-585d-4738-8d5b-bbad65008c37",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lingering Mirage: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cd0c1165-673d-4936-8254-deedd0ebbe97",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Savai Crystal: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ce55c0a9-3334-440e-ae1b-c04a9e1c3d87",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Stall Out: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cf32524e-0df9-4af8-9371-84feeb0a86c6",
+   "quote": "Cycling {1}{U}",
+   "class": "human",
+   "why": "Fractured Sanity: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "cfdae813-7241-4f6c-99f0-c772af34af91",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Spell Snip: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d0783be9-e518-431a-8e71-121610da50e1",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Clear: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d1dfed64-6e88-44c2-b479-9a2d072e4be7",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Greater Sandwurm: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d2c53737-c265-46e3-a779-52c6b4f82d7d",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Break Asunder: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d398868b-7574-40d5-8915-6393ee489067",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Granitic Titan: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d48d9e93-72a2-48f2-8164-8032615ee217",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Violent Impact: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d4eb65d5-99fd-4daf-b7d3-8ebf99ee9c61",
+   "quote": "Cycling {G}{W}{U}",
+   "class": "human",
+   "why": "Tranquil Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d53f4c24-8deb-485a-b03a-945211fdf10d",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lull: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d6a03a52-7e85-46de-920c-93a3f6479c4c",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Avian Oddity: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d6f8c69f-e603-41f5-8f25-da8a102f7c8d",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "River Serpent: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d73191d8-6f94-4fba-acd2-2d0490e3ac00",
+   "quote": "Cycling {3}{R}",
+   "class": "human",
+   "why": "The Balrog of Moria: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "d8e1e9ba-708c-4f54-abc3-817004a2f2ac",
+   "quote": "Cycling {2}{W}",
+   "class": "human",
+   "why": "Basri, Tomorrow's Champion: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "db4907f3-4071-47c4-9329-96b4813435be",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Migration Path: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "db659cae-2078-423e-a6ed-63898dbab87f",
+   "quote": "Cycling {B}{R}{G}",
+   "class": "human",
+   "why": "Twisted Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "db8d8643-3d0b-4f20-bf53-f4cd26a0e8df",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Sheltered Thicket: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "dc0decb9-32da-47aa-a51a-0d9c623c534a",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Iron Will: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "dec281b4-e6d6-4b78-b755-358e07eb7c06",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Will of the All-Hunter: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e18c93bc-2073-4bb6-83b4-c5c70f2d8a82",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Winged Shepherd: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e2b472dd-047d-47eb-9ebb-df6aa4b52dd4",
+   "quote": "Cycling {U}{R}{W}",
+   "class": "human",
+   "why": "Perilous Landscape: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e349be42-5f14-44a9-9608-281985c10e2d",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Marauding Mako: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e48aa13b-7488-4644-9080-6c342a8ac463",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Rampaging Hippo: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e7d4e952-d7b9-489d-a9a7-c61d08bf17cc",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Fuel the Flames: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "e89cce0e-4fd7-40fa-8a55-b07d72826956",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Floodwaters: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ea908d2d-d443-4385-a71a-ebb00938cd57",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Shredded Sails: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "eaa0c6c2-eee5-443a-867f-ab77b995b6ef",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Hush: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ec2b3779-55f7-4169-aa66-6312fb52721f",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Indatha Triome: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ece3e379-c586-48bd-8742-472b5deccc35",
+   "quote": "Cycling {1}{R}{R}",
+   "class": "human",
+   "why": "Solar Blast: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ecef9e3d-dce8-405f-bba3-14732444258f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Lightshield Parry: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "edd1727e-3a6e-4d0e-b7ae-fae2108d2147",
+   "quote": "Cycling {1}",
+   "class": "human",
+   "why": "Drannith Stinger: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "eec7500b-418d-4387-beb2-d53e047c1d22",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Brand: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f0140f00-5414-493b-962d-33312d49f6ea",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Haze of Pollen: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f25c5451-58fa-4916-8342-ae88c5e406cc",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Wander in Death: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f371cdaf-7ab8-4555-8c96-61dfbf8c0179",
+   "quote": "Cycling {U}",
+   "class": "human",
+   "why": "Mage's Guile: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f3bd5ca1-9854-4bc0-b108-b555808e1d5f",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Shimmerscale Drake: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f4f925ad-c2d6-496f-b4ff-ca07a6ea0562",
+   "quote": "Cycling {1}{B}",
+   "class": "human",
+   "why": "Perforator Crocodile: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f5896356-5744-4f7e-a4e5-1cc36dde5958",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Jetmir's Garden: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f5cbc4f3-4e73-405f-9daf-e5b7c73fa6ee",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Wipe Clean: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f60fb81a-969a-476c-a227-5231bbed4ad4",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Forsake the Worldly: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f7e7b2aa-9fd2-41dd-b11e-3a233530dc83",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Gilded Light: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f7e7b78c-c769-4720-8585-1874773eb342",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Ziatora's Proving Ground: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f85edb4f-1eec-40cc-9e21-0a6fb71e8499",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Pursue Glory: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f90b00f6-36e0-4988-9409-57297483a952",
+   "quote": "Cycling {W}",
+   "class": "human",
+   "why": "Cast Out: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "f9dce026-2653-4793-b949-357b08a936ea",
+   "quote": "Cycling {B}",
+   "class": "human",
+   "why": "Locust Spray: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fa8f3827-8cd9-4896-ab0c-26fecacceb40",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Fend Off: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fc09cbc0-2d28-44c6-b9a9-b95e9e58bb1b",
+   "quote": "Cycling {2}{U}",
+   "class": "human",
+   "why": "Complicate: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fd2a00d1-9f21-4d54-9458-024fa03354b8",
+   "quote": "Cycling {1}{W}",
+   "class": "human",
+   "why": "Splendor Mare: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fdd46004-eaba-4024-8687-39b23dc6a58c",
+   "quote": "Cycling {3}",
+   "class": "human",
+   "why": "Zagoth Triome: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fdea1945-0bb6-4a83-8cb1-5ba6a4dc39bd",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Drifting Djinn: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fe7bad80-f853-4af9-82e2-5ccf8038d93b",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Angelsong: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "ff59a95c-28de-44cf-abbe-772417851ffa",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Veiled Serpent: CR 702.29a"
+  },
+  {
+   "to": "rule:cycling",
+   "member": "fffa9334-3576-4f70-9605-2ad062cdbc69",
+   "quote": "Cycling {2}",
+   "class": "human",
+   "why": "Without Weakness: CR 702.29a"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "04d8615c-3883-4251-9790-1d8a4a40e142",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Eternal Dragon: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "04ea7e88-7ea5-4b4c-9a7c-2a6ac0bc0682",
+   "quote": "Basic landcycling {1}{B}",
+   "class": "human",
+   "why": "Absorb Vis: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "05a1e1ee-67f0-4158-a012-01612bc9cc70",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Infernal Rebirth: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "09b4fba6-d943-49e4-9f9e-a74fcbabe83f",
+   "quote": "Basic landcycling {1}{R}",
+   "class": "human",
+   "why": "Battle Plan: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "10da681b-50bd-4a1b-9934-f0c90e0af55c",
+   "quote": "Each land card in your hand has cycling {R}.",
+   "class": "human",
+   "why": "Tectonic Reformation: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "137594f7-2422-461b-a3ae-7ce3c135e0c7",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Hill Gigas: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "139af10d-a3e5-4ade-b876-87324e6c8017",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Twisted Abomination: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "144bef8b-3583-4e98-9285-a1965e7e17f8",
+   "quote": "Basic landcycling {1}{W}",
+   "class": "human",
+   "why": "Landscaper Colos: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "14878a5f-7983-4133-a1a7-9d539531e092",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Angel of the Ruins: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "186b2256-4af3-48cb-96b0-b0e80a7ee6dc",
+   "quote": "Mountaincycling {1}",
+   "class": "human",
+   "why": "Oliphaunt: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "1cbfe1f2-776b-429d-9a60-8da32058a927",
+   "quote": "Artifact landcycling {2}",
+   "class": "human",
+   "why": "Sojourner's Companion: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "1d25b831-c1de-4f79-bbb3-1582eda96452",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Elvish Aberration: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "222fd9fc-7af4-4269-bbb9-cd7b8ac029bd",
+   "quote": "Swampcycling {1}",
+   "class": "human",
+   "why": "Troll of Khazad-dûm: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "223db021-979f-4312-8cb5-169ae4bf17bc",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Fall to Earth: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "271b37b6-b60b-4687-bd82-ecacf3b66cb3",
+   "quote": "Wizardcycling {3}",
+   "class": "human",
+   "why": "Vedalken Aethermage: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "29326487-6d95-40a8-9bcc-f94ada4e27c3",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Slavering Branchsnapper: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "34b4d137-780b-446c-8cdd-fd1673180971",
+   "quote": "Slivercycling {3}",
+   "class": "human",
+   "why": "Homing Sliver: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "36ab41b7-bcfb-4618-bbfb-70d608dba15a",
+   "quote": "Basic landcycling {1}{U}",
+   "class": "human",
+   "why": "Stratosoarer: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "371762f6-e07b-4c0e-a4ee-6c35a3809eb6",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Spectral Snatcher: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "39c813e1-0e26-440a-b9bd-e781f7576b8b",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Bebop, Warthog Warrior: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "3b66d2c2-be7a-4296-9888-f0cfb2975e89",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Seismic Monstrosaur: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "3b7120a6-700b-4c61-bea4-a835f0cc0bcb",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Ice Flan: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "3c2b9bb2-8201-47e8-84d5-f3518cac03cb",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Kree Sentinel: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "3f678f76-3863-4ab5-a4fd-9b76a282b1a8",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Balamb T-Rexaur: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "40cc8ac6-114f-439d-816d-f65cd52bbbd2",
+   "quote": "Islandcycling {2}, swampcycling {2}",
+   "class": "human",
+   "why": "Jhessian Zombies: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "41f6d6d9-3fe5-44b0-904d-1cb90d36f2b6",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Rampaging Spiketail: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "46db3dc2-9eb1-4be3-96f9-0013119fcd97",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Ancient Excavation: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "48252207-d345-455c-b655-c2027664e6a6",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Rabaroo Troop: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "488ca652-653b-4bb3-891c-874efdd418ff",
+   "quote": "Forestcycling {2}, plainscycling {2}",
+   "class": "human",
+   "why": "Pale Recluse: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "5437f560-7f61-4326-be8e-15d74bf4e6ec",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Gloomfang Mauler: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "57120486-0316-4591-abca-438ab8283d3f",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Cragsmasher Yeti: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "58257464-278e-45fa-8e0b-bcd9a7500bc1",
+   "quote": "Basic landcycling {1}",
+   "class": "human",
+   "why": "Ash Barrens: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "5d840e49-3ca5-4e4f-9152-a365ad2b1773",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Soaring Sandwing: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "5ee9940a-0569-45b6-b28c-0ef3914013a9",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Marvelous Melee: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "606fbf99-d3e3-4131-b991-3cb71c003834",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Shoreline Ranger: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "619c7d51-51d1-4467-a58b-4f275ff9df0f",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Injector Crocodile: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "61ade140-5b11-4882-82e5-a075fc80b260",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Wirewood Guardian: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "65ea3638-1766-4096-88a8-662a0d6faf0c",
+   "quote": "Each historic card in your hand has cycling {2}{W}.",
+   "class": "human",
+   "why": "Jo Grant: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "66f28905-c7fc-4ada-8fa0-199626d9bedb",
+   "quote": "Islandcycling {1}",
+   "class": "human",
+   "why": "Lórien Revealed: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "6804e329-800b-4aa4-9a00-b9a1f4b9537b",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Malboro: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "6e21ebdf-b97c-494e-a1d5-19db1b7d3016",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Savage Land Dinosaur: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "6effbf59-3933-4a77-9a6a-fd3bedf45c26",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Borough Backup: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "7143d82a-931a-4918-bb14-37bc5b9a4d99",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Bedhead Beastie: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "717152c3-2082-49aa-9274-a1a6abe54b65",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Chartooth Cougar: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "7af493e3-15a1-42d6-a66c-82aacabe816f",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Saber-Tooth Moose-Lion: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "823afa57-faac-4a43-a403-c1bb0446d594",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Shardless Outlander: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "8d0445ef-370b-4f4f-8975-a40cb02c031e",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Ruin Grinder: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "94e71162-7c9d-46f4-90e8-413a1b08a198",
+   "quote": "Basic landcycling {1}{U}",
+   "class": "human",
+   "why": "Mental Journey: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "99eff6e9-5911-4f89-bad1-0888067a7783",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Dismissive Denial: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "a30724f0-d174-408e-8baf-4bba3cbc45b5",
+   "quote": "Basic landcycling {1}{U}",
+   "class": "human",
+   "why": "Traumatic Visions: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "a5ae93e9-0385-47fd-9d8f-306e9a6b7fe6",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Timeless Dragon: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "a9bae56c-9666-42e8-94ec-03b0a964b142",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Mongoose Lizard: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "aeec8e85-6571-4da6-8a48-f5d3985ca10b",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Sylvan Reclamation: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "b55da4d3-2cad-4c89-ad3f-7d8397b64d52",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Jennika, Bad Apple Big Sister: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "b6859c7a-4c4d-4652-938f-ecedce29d506",
+   "quote": "Forestcycling {1}",
+   "class": "human",
+   "why": "Generous Ent: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "b92c2da9-eaa4-404b-8114-5527eec6390e",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Roxxon Brutes: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "baa4cb1b-6fb5-46df-9cdd-54421ee0fc88",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Stockman, Mad Fly-entist: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "bac94fc9-808b-4dc9-b405-408dd2aa6194",
+   "quote": "Swampcycling {2}",
+   "class": "human",
+   "why": "Canyon Crawler: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c20635d2-20e9-48f7-88f0-6de0f953bb08",
+   "quote": "Basic landcycling {1}{G}",
+   "class": "human",
+   "why": "Sylvan Bounty: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c2f7f39b-0569-4c32-bdbf-7fb0a0efd5cf",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Colossal Collision: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c4c0a391-4549-4041-bc6d-09f8b756868e",
+   "quote": "Basic landcycling {1}{W}",
+   "class": "human",
+   "why": "Gleam of Resistance: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c4fa89c7-f00d-42ef-bd67-407a288cd054",
+   "quote": "Wizardcycling {2}",
+   "class": "human",
+   "why": "Step Through: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c5f52c7f-5dba-4d4c-8acc-068732964031",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Monstrosity of the Lake: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c6906032-e08b-478f-bc71-cb1184f60bad",
+   "quote": "Basic landcycling {1}{G}",
+   "class": "human",
+   "why": "Orchard Strider: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "c93bb65a-a74a-499b-a538-65272079aab8",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Giant Koi: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "cb2c8ea9-c125-4742-a562-b693254152e5",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Lunar Hatchling: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "cbbd507e-06da-4b47-befc-61db8c92539e",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Marauding Brinefang: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "d0a3b261-3daf-4082-8bc5-e66326a6c382",
+   "quote": "Mountaincycling {2}, forestcycling {2}",
+   "class": "human",
+   "why": "Valley Rannet: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "d18ca75c-3572-4851-9580-27bafe10edd6",
+   "quote": "Basic landcycling {1}{R}",
+   "class": "human",
+   "why": "Kulrath Zealot: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "d1d719e9-9c02-40cf-8849-91a5c120a516",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Alabaster Host Intercessor: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "d33509d6-9d0c-4248-bb6d-0a9b7712f3a0",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Nurturing Bristleback: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "d944d33d-0a95-4d0d-96ce-49d02500227d",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Zog, Triceraton Castaway: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "dc638413-c4f8-4f6a-a003-5ce8a10a8f94",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Daggermaw Megalodon: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "de6e0f80-3a9e-4499-aec1-2513a0264538",
+   "quote": "Basic landcycling {1}{B}",
+   "class": "human",
+   "why": "World-Weary: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e445825a-e70e-4796-99be-4a7c4080b8cc",
+   "quote": "Each creature card in your hand has cycling {1}{U}.",
+   "class": "human",
+   "why": "Rhet-Tomb Mystic: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e519cebf-0f09-4da9-abef-82928738514d",
+   "quote": "Plainscycling {1}",
+   "class": "human",
+   "why": "Eagles of the North: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e5b43523-809a-4baf-b76d-9f59b82846b6",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Grave Upheaval: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e7079969-8d88-4f18-a872-2661bed6ff74",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Noble Templar: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e71eca6f-388c-4750-b70e-3ee1832931f0",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Timberland Ancient: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e7866ce6-d507-4221-bb19-d3e6fd7b57d8",
+   "quote": "Islandcycling {2}",
+   "class": "human",
+   "why": "Tidal Terror: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "e8ff3e99-eca9-44a5-baac-99ee34df3c36",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Shepherding Spirits: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "eced76b8-b29a-4c89-b77a-cbae99f56cb7",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Treacherous Terrain: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "ee6f1ddb-6749-4394-b2b0-4d293376f1af",
+   "quote": "Swampcycling {2}, mountaincycling {2}",
+   "class": "human",
+   "why": "Igneous Pouncer: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "efddf972-94c4-49d1-a844-b4aba70c93aa",
+   "quote": "Basic landcycling {1}{G}",
+   "class": "human",
+   "why": "Topiary Panther: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "f014b1a1-20ef-475c-bf83-f1a82e68ab97",
+   "quote": "Basic landcycling {1}{R}",
+   "class": "human",
+   "why": "Fiery Fall: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "f6a74582-62b6-48d1-89d6-e26059229840",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "Migratory Route: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "f718b520-d79d-4b91-9d85-de1f1c90c176",
+   "quote": "Plainscycling {2}",
+   "class": "human",
+   "why": "Cloudbound Moogle: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "f9330a7b-8a65-4e04-a777-bf6512332850",
+   "quote": "Forestcycling {2}",
+   "class": "human",
+   "why": "Rocksteady, Crash Courser: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "fa732888-5b7d-4087-a6e5-1db1c98fbd4c",
+   "quote": "Basic landcycling {2}",
+   "class": "human",
+   "why": "A.I.M. Scientists: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "fea60c45-cc36-4dd1-8475-23a9361e370d",
+   "quote": "Mountaincycling {2}",
+   "class": "human",
+   "why": "Furnace Host Charger: CR 702.29e"
+  },
+  {
+   "to": "rule:typecycling",
+   "member": "ff3fae6e-d8a1-46b3-a6cc-fb4e8800ee68",
+   "quote": "Plainscycling {2}, islandcycling {2}",
+   "class": "human",
+   "why": "Sanctum Plowbeast: CR 702.29e"
+  }
+ ]
+}

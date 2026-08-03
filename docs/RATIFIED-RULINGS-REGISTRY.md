@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **58 documents under docs/**
-- ruling references found: **533**
+- documents scanned: **63 documents under docs/**
+- ruling references found: **534**
 - distinct ruling ids: **125**
-- corroborated (appear in >1 doc): **80**
-- **sole-home (appear in exactly 1 doc): 45**
+- corroborated (appear in >1 doc): **81**
+- **sole-home (appear in exactly 1 doc): 44**
 
 ## Deletion gate — per document
 
@@ -28,6 +28,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
 | `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
 | `BACKEND-BUILD-PLAN.md` | 277 | 1 | 0 | yes |
+| `BECOMES-TAPPED-RULING-2026-08-03.md` | 113 | 1 | 0 | yes |
 | `CDR-09-WALK-DERIVATION-2026-08-02.md` | 147 | 4 | 0 | yes |
 | `CDR-PROPOSALS.md` | 528 | 31 | 6 | **NO** |
 | `CODEBOOK-NAMING-GRAMMAR.md` | 722 | 19 | 1 | **NO** |
@@ -44,7 +45,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF-ADDENDUM-3.md` | 308 | 10 | 1 | **NO** |
 | `MASTER-HANDOFF-ADDENDUM-4.md` | 264 | 5 | 3 | **NO** |
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
-| `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 8 | **NO** |
+| `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 7 | **NO** |
 | `RATIFIED-DIRECTIVES-BATCH-4-6.md` | 746 | 11 | 0 | yes |
 | `REAUDIT-TIER-0-1-2026-08-02.md` | 400 | 1 | 0 | yes |
 | `REAUDIT-TIER-2-2-2026-08-02.md` | 1878 | 2 | 0 | yes |
@@ -73,7 +74,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`
+`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `END-STEP-TRIGGER-RULING-2026-08-03.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`
 
 ## Sole-home rulings — these block their document
 
@@ -128,9 +129,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `T0` (line 59) — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
 
-**`PARENT-TREE-CANDIDATES.md`** — sole home for 8:
+**`PARENT-TREE-CANDIDATES.md`** — sole home for 7:
 
-- `D16` (line 287) — D16 new ledger entries (batch-5, Captain, logged per §10 — not
 - `GRAMMAR-SS9` (line 379) — D4 GRAMMAR-SS9 quote-pull on rule:pay-life-cost-for-effect
 - `M1` (line 212) — rule:overwrites-creature-type (batch-3 M1, Captain): sibling boundary
 - `M6` (line 85) — (batch-2 M6 ruling): damage-scales-with-creature-count,
@@ -559,8 +559,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-03.md:93` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
-### `D16` — 1 reference(s) across 1 doc(s)
+### `D16` — 2 reference(s) across 2 doc(s)
 
+- `BECOMES-TAPPED-RULING-2026-08-03.md:76` — cycling ruling §5 established the precedent (itself from batch-5 D16): a
 - `PARENT-TREE-CANDIDATES.md:287` — D16 new ledger entries (batch-5, Captain, logged per §10 — not
 
 ### `D17` — 3 reference(s) across 3 doc(s)

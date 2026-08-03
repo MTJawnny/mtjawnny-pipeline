@@ -52,7 +52,7 @@ set, which a session's throwaway classifier cannot.
 |---|--:|--:|
 | `unclassified-trigger` (residual — see below) | 1,243 | 1,201 |
 | **other-permanent enters** | 799 | **792** |
-| **end step** | 606 | **601** |
+| **end step** | 606 | **601** — ⚠ CORRECTED to 536 by `END-STEP-TRIGGER-RULING-2026-08-03.md` §1: 333 of these are `delayed` triggers (CR 603.7), already buildable |
 | Saga / Class chapter | 576 | 221 |
 | **another creature dies** | 451 | **448** |
 | **another creature attacks** | 416 | **413** |
