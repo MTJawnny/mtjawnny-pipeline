@@ -339,7 +339,24 @@ exhaustive; the walk validates all ~300):
   `-removal-`); revisit under section-8 rule 1 at the walk.~~ **SUPERSEDED
   by the CDR-09 walk below.**
 
-### 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — LOGGED, NOT EXECUTED
+### 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — **EXECUTED 2026-08-02**
+
+> **EXECUTED.** All 16 renames applied name-only; codebook sha256
+> `61af1a1d7f81504f422feb4d…` → `d0b1183fc155f13e7b1ae025…`. 307 active axes
+> before and after. The 33/16/17 partition below was re-derived from live state
+> and confirmed **set-identical**, not merely equal in count. Counter-bearing
+> active axes now measure **0 non-conforming**. Full record, the applied target
+> strings, and two residual items the walk does not touch:
+> `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
+>
+> Note for anyone re-running the conformance check: §8a is **not** the only
+> ratified law governing a counter token. §7's scaling standard
+> (`own-counters`, `charge-counters`, and the verbatim
+> `create-token-with-x-counters`), batch-5's polarity-is-a-parameter ruling,
+> and batch-5 D12 each govern specific slugs. A checker that knows only §8a
+> reports all of them as defects — it did, and two of those false positives
+> would have destroyed ratified names. `foundry_cdr09_derive.py` encodes each
+> with its citation.
 
 Measured live against codebook v0.7 this session, classified against each
 axis's own ratified DEFINITION (not by name-guessing). **33 active axes

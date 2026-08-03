@@ -1,117 +1,147 @@
-# CDR-09 §12a rename walk — derivation result, 2026-08-02
+# CDR-09 §12a rename walk — EXECUTED, 2026-08-02
 
-**Status: WALK HALTED BEFORE MUTATION. `codebook.json` is untouched**
-(sha256 `61af1a1d7f81504f422feb4d…`, identical to session start).
+**Status: COMPLETE.** 16 renames applied, name-only.
 
-Precondition 4 of the walk says: *"Re-derive the 16 renames from live state
-rather than pasting §12a's list. If the live set disagrees with §12a, halt —
-do not reconcile silently."*
+| | before | after |
+|---|---|---|
+| codebook sha256 | `61af1a1d7f81504f422feb4d…` | `d0b1183fc155f13e7b1ae025…` |
+| axes | 455 | 471 (+16 tombstones) |
+| **active** | **307** | **307** (unchanged — name-only) |
+| members (all statuses) | 7,699 | 7,864 (tombstones retain members) |
+| lint | clean | clean |
+| sweep blocking | 6 | **6** (same six) |
+| counter-bearing active axes | 33 (16 non-conforming) | 33 (**0 non-conforming**) |
 
-**The live set disagrees.** This document is the halt.
-
-Derivation script: `experiments/foundry_cdr09_derive.py` (writes nothing).
-Machine output: `experiments/out/foundry/cdr09_derivation.json`.
+Scripts: `experiments/foundry_cdr09_derive.py` (derivation, writes nothing),
+`experiments/foundry_cdr09_walk.py` (executor).
+Backup: `backups/codebook.v0.7.pre-cdr09-rename-walk.20260802-132352.json`,
+verified by readback (hash-identical **and** parsed deep-equal, 455 records).
 
 ---
 
-## 1. Preconditions 1–3 all passed
+## 1. Precondition 4 initially failed — and the failure was mine
 
-| gate | result |
-|---|---|
-| `foundry_codebook.py lint` | clean — 455 axes, 7,699 members, 7,699 assertions |
-| `foundry_family_sweep.py --strict` | 196 findings, **6 blocking** — matches handoff exactly |
-| backup | `backups/codebook.v0.7.pre-cdr09-rename-walk.20260802-132352.json`, verified by readback (hash-identical **and** parsed deep-equal, 455 records) |
+First derivation returned **19** non-conforming axes, not 16, plus one whose
+sense could not be derived from its definition. On the handoff's instruction
+("if the live set disagrees with §12a, halt") the walk was stopped and the
+disagreement written up.
 
-## 2. What agrees with §12a
+**Captain directed a read of the prior rulings before anything was decided.
+That read overturned three of the four findings.** All three were re-raising
+questions already ratified, by a derivation that only knew about §8a:
 
-**The axis count is exactly right: 33 active axes carry a counter token.**
-All **16** renames §12a lists were independently re-derived and every one is
-confirmed non-conforming for the reason §12a gives. Nothing in §12a's list is
-wrong.
-
-## 3. What disagrees — §12a's list is SHORT BY 3, plus 1 contradiction
-
-§12a's arithmetic gate is *16 renames + 17 already-conforming = 33*. Live
-derivation gives **16 + 3 + 1 + 13 = 33**. The count reconciles exactly; the
-partition does not. §12a counted these 4 axes as "already conforming". They
-are not.
-
-### 3a. Three axes non-conforming under §8 rule 1 — the `with`-plus-qualifier class
-
-§8a rule 2 admits `with` as a left binder with the example `etb-with-counters`,
-where `with` is the *immediate* left neighbour. In all three below a qualifier
-sits between `with` and `counters`, so nothing binds the counter token
-directly. **Two of the three are additionally clear §8 rule 1 violations**
-("noun sense is always TYPED") — their own definitions name the counter type
-while their slugs do not. That is not an artifact of a strict reading.
-
-| axis | mem | why non-conforming | proposed |
-|---|--:|---|---|
-| `rule:etb-with-negative-counters` | 3 | definition says **-1/-1**; `negative` is not ratified type vocabulary (`minus1` is) | `rule:etb-with-minus1-counters` |
-| `rule:create-token-with-x-counters` | 2 | definition says **+1/+1**; slug is untyped | `rule:create-token-with-x-plus1-counters` |
-| `rule:cost-reduction-scales-with-own-counters` | 1 | genuinely type-agnostic ("the number of counters accumulated on the source permanent") → the `any-` case, but no phrasing is obvious | **needs a ruling** — `-scales-with-own-any-counters` is the mechanical answer and reads badly |
-
-The first two I'd ratify as written. The third is a real naming question, not a
-typo.
-
-Note `create-token-with-x-counters` also sits under §8 rule 3 pressure (a
-counter is not a token): the slug names both, legitimately here, since the
-definition describes a token that *receives* counters.
-
-### 3b. One axis whose definition contradicts its own name AND its members
-
-`rule:draw-second-card-trigger-plus1-counter` (4 members) — **this is not a
-naming problem and it is not in scope for the walk.**
-
-- **Slug** says: draw-second-card trigger → +1/+1 counter.
-- **Definition** says: draw-second-card trigger → *"producing a **creature
-  token** as a reward."*
-- **Members** say: all four disagree with each other.
-
-| member evidence (human-class quotes) | delivery | payoff |
+| axis | my claim | the ruling I had missed |
 |---|---|---|
-| "Whenever you draw your second card each turn, put a +1/+1 counter on this creature." | draw-second | counter |
-| "When this creature enters, if it was the second spell you cast this turn, put a +1/+1 counter on target creature." | **etb / cast-second** | counter |
-| "Whenever you cast your second spell each turn, draw a card, then create a 0/3 white Wall creature token…" | **cast-second** | **token** |
-| "Whenever you draw your second card each turn, create a 1/1 colorless Thopter artifact creature token with flying." | draw-second | **token** |
+| `rule:create-token-with-x-counters` | rename to `-x-plus1-counters` | **grammar §7 names this slug verbatim** as the ratified answer to b7 line-84 ("X scales counters ON one created token"). Renaming it would have broken the ruling that chose it. |
+| `rule:cost-reduction-scales-with-own-counters` | rename, `own` isn't a binder | **`own-counters` is §7 closed stat vocabulary.** This exact question was already asked at the walk-ratification pass as the `bare_counter_noun` flag and **RESOLVED AS A PASS** — "already uses the correct connective and needs no rename." I re-raised a settled question. |
+| `rule:etb-with-negative-counters` | rename to `etb-with-minus1-counters` | **TRIAGE-BATCH-5 ratified counter polarity (+1/+1 vs -1/-1) as a PARAMETER, not a distinct axis.** Typing the slug `minus1-` would encode precisely the distinction that ruling rejects. |
 
-So the axis mixes two deliveries (draw-second vs cast-second) **and** two
-payoffs (counter vs token) — a live §8 rule 3 violation at the *membership*
-level, which the name-only walk cannot touch. Only one of the four members
-matches the slug.
+And the fourth, `rule:draw-second-card-trigger-plus1-counter`, was not
+undecidable at all — **batch-5 D12 renamed it FROM `-token` TO `-plus1-counter`
+for exactly the reason I flagged**: "the old slug's effect suffix did not match
+its only member." The name is Captain-ratified. What misled the classifier is
+that the *definition text* was never updated from the token era.
 
-**This is a split, not a rename.** It needs a Captain ruling before the walk
-can classify the axis at all, because its sense cannot be derived from its
-definition (the definition mentions no counter).
+With those four ratifications encoded (`RATIFIED_NAMES` / `RATIFIED_SENSE` /
+§7 scaling-stat binding, each carrying its citation in the source), the
+derivation returns **16 non-conforming, 17 conforming — set-identical to §12a**.
+Verified by set comparison, not by count.
 
-## 4. Why the walk did not proceed with the undisputed 16
+**§12a was right. The arithmetic gate holds: 16 + 17 = 33.**
 
-Executing the 16 in isolation was considered and rejected. All 16 are safe on
-their own, but:
+### The lesson
 
-1. §12a's stated post-walk gate (*16 + 17 = 33*) would not describe the
-   resulting codebook, so the walk could not be verified against its own
-   ratified check.
-2. **CDR-13's Homograph Form Ledger rests on a "zero new churn" claim.** Three
-   axes needing a second rename later is precisely new churn, and it would be
-   discovered *after* the ledger was built on the assumption it could not
-   happen.
-3. `draw-second-card-trigger-plus1-counter` would keep a name asserting a
-   counter payoff that its definition and 3 of its 4 members contradict.
+The derivation was written against §8a alone, so every slug governed by a
+*different* ratified law read as a defect. Encoding one law and calling the
+result a finding manufactures false positives that look exactly like real ones —
+and two of these three would have destroyed ratified names had the walk
+proceeded on my recommendation. **A conformance check is only as good as the
+set of rulings it knows about.**
 
-Ratifying §3a and §3b turns this into a **19-rename walk plus one split**, done
-once.
+## 2. The 16 renames as applied
 
-## 5. What is needed to unblock
+Verb-side (3) and `any-` (3) targets are stated verbatim in §12a. The 10
+noun-side targets are **derived** — §12a names the axes and the transform
+("gain `plus1-`") but not the strings — by inserting `plus1-` immediately left
+of the counter token. That insertion point is not a guess: grammar §8a
+correction 2 cites the post-walk name
+`cast-trigger-self-plus1-counter-noncreature-spell` verbatim, and the derived
+target matches it exactly.
 
-1. **Ratify or reject the three §3a renames** (two are straightforward; the
-   third needs a name).
-2. **Rule on `draw-second-card-trigger-plus1-counter`** — split by payoff, split
-   by delivery, or both.
-3. Then the walk re-derives, the arithmetic gate becomes *19 + 13 + (split
-   outcome) = 33*, and executes in one pass under the backup law.
+| from | to | mem |
+|---|---|--:|
+| `rule:activated-counter-target-spell` | `rule:activated-counters-target-spell` | 2 |
+| `rule:activated-tax-counter-unless-pays` | `rule:activated-counters-target-spell-unless-pays` | 2 |
+| `rule:tax-or-counter-spell` | `rule:counters-spell-unless-pays` | 2 |
+| `rule:activated-counter-transfer-from-other-creature` | `rule:activated-plus1-counter-transfer-from-other-creature` | 2 |
+| `rule:attack-trigger-buff-other-attacker-counters` | `rule:attack-trigger-buff-other-attacker-plus1-counters` | 2 |
+| `rule:attack-trigger-self-counter-growth` | `rule:attack-trigger-self-plus1-counter-growth` | 7 |
+| `rule:cast-trigger-self-counter-noncreature-spell` | `rule:cast-trigger-self-plus1-counter-noncreature-spell` | 2 |
+| `rule:death-trigger-counter-transfer` | `rule:death-trigger-plus1-counter-transfer` | 4 |
+| `rule:draw-trigger-self-counter-growth` | `rule:draw-trigger-self-plus1-counter-growth` | 5 |
+| `rule:etb-counter-on-other-creature` | `rule:etb-plus1-counter-on-other-creature` | 42 |
+| `rule:lifegain-triggered-counter` | `rule:lifegain-triggered-plus1-counter` | 8 |
+| `rule:mass-counter-distribution` | `rule:mass-plus1-counter-distribution` | 41 |
+| `rule:self-counter-growth` | `rule:self-plus1-counter-growth` | 13 |
+| `rule:doubles-counter-placement` | `rule:doubles-any-counter-placement` | 11 |
+| `rule:cleanup-counters-on-leaving-battlefield` | `rule:cleanup-any-counters-on-leaving-battlefield` | 2 |
+| `rule:counter-removal-as-activation-cost` | `rule:any-counter-removal-as-activation-cost` | 20 |
 
-## 6. Unchanged by this session
+Gates run by the executor before installing anything: live non-conforming set
+**set-identical** to §12a's 16; every target itself passes §8a; determinism ×2
+byte-identical (3,473,239 bytes). Then `write_codebook_atomic` re-linted the
+temp, verified re-serialization reproduced the written bytes, and checked the
+post-rename sha.
 
-`codebook.json` sha256 `61af1a1d7f81504f422feb4d…` — no mutation. ADD-08 /
-Tier-0 bug 4 remains blocked on the walk, as does CDR-13.
+## 3. Sweep: blocking held at 6, advisory +3 — and the +3 are the point
+
+The same six blockers, none new. Advisory 190 → 193, all `name-subsumption`,
+five findings touching walk targets:
+
+- `counters-target-spell` / `counters-spell-unless-pays` /
+  `activated-counters-target-spell(-unless-pays)` now share a stem. **This is
+  the near-duplicate cluster §12a itself flagged** ("differing only in
+  delivery — resolve together, see CDR-05"). The old inconsistent names hid it;
+  the walk made it mechanically detectable. CDR-05's business, not a regression.
+- `self-plus1-counter-growth` < `attack-trigger-…` / `draw-trigger-…` — the
+  correct delivery-prefixed family shape, now visible for the same reason.
+
+## 4. What this unblocks, and what it does not
+
+**Unblocked:** ADD-08 / Tier-0 bug 4 (the adjacency rule misfiled 17 of 33
+counter axes on the old names; expected 4 now, dropping to 0 once the two §8a
+corrections are implemented). CDR-13's Homograph Form Ledger — its "zero new
+churn" claim now rests on renames that exist.
+
+**Not touched by the walk, both pre-existing and already tracked:**
+
+1. **`rule:draw-second-card-trigger-plus1-counter` — stale definition and
+   membership drift.** The definition still reads "producing a creature token
+   as a reward" from before batch-5 D12 renamed the axis. Worse, it now holds
+   4 members that split two ways on delivery **and** two ways on payoff:
+
+   | member evidence (human-class quotes) | delivery | payoff |
+   |---|---|---|
+   | "Whenever you draw your second card each turn, put a +1/+1 counter on this creature." | draw-second | counter |
+   | "When this creature enters, if it was the second spell you cast this turn, put a +1/+1 counter on target creature." | **etb / cast-second** | counter |
+   | "Whenever you cast your second spell each turn, draw a card, then create a 0/3 white Wall creature token…" | **cast-second** | **token** |
+   | "Whenever you draw your second card each turn, create a 1/1 colorless Thopter artifact creature token with flying." | draw-second | **token** |
+
+   Only one matches the slug. D12 already ledgers the target scheme (the
+   `cast-second-spell-trigger` mirror family and the `-token` sibling), and
+   `B-CONSOLIDATION-REAUDIT-PACKET.md:169` already carries this as an **R7
+   report row** — "the node's payoff sense and the rename target's sense
+   differ." A definition fix plus a membership split, neither in walk scope.
+
+2. **`rule:etb-with-negative-counters` — contested existence, not a name.**
+   Batch-5 ruled MERGE into `etb-with-counters` (polarity is a parameter);
+   batches 6 and 7 both KEPT it; the 2026-08-01 Captain ruling cleared its
+   stale `merged_into` and declared it live in its own right. That is a
+   question about whether the axis exists, and the walk was right to leave the
+   name alone either way.
+
+## 5. Standing-discipline note
+
+The handoff's "measure, never recall" held again, in both directions: §12a's
+numbers were correct when measured, and my three "extra findings" evaporated
+when measured against the full ruling set rather than one section of it.

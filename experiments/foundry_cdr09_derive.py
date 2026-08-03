@@ -48,6 +48,45 @@ COUNTERABLE = {"spell", "ability", "spells", "abilities"}
 
 COUNTER_TOKENS = {"counter", "counters"}
 
+# --- Prior ratifications this derivation must not re-litigate -----------------
+# §8a is not the only ratified law touching a counter token. Three further
+# rulings already govern specific slugs, and a derivation blind to them
+# re-raises settled questions as if they were new findings.
+
+# §7 scaling standard: `<subject>-scales-with-<stat>` over a CLOSED stat
+# vocabulary that includes `own-counters` ("counters ON the source; the
+# charge-counter class") and its `charge-counters` alias. The counter token is
+# bound by the ratified stat name, not left dangling.
+SCALING_STATS_WITH_COUNTER = {"own-counters", "charge-counters"}
+
+# Slugs a ratified document names VERBATIM as the correct form. Renaming these
+# would break the ruling that chose them.
+RATIFIED_NAMES = {
+    "rule:create-token-with-x-counters":
+        "CODEBOOK-NAMING-GRAMMAR.md §7 — ratified verbatim as the answer to b7 "
+        "line-84: 'X scales counters ON one created token'.",
+    "rule:cost-reduction-scales-with-own-counters":
+        "CODEBOOK-NAMING-GRAMMAR.md §7 closed stat vocab (`own-counters`); the "
+        "bare_counter_noun question was raised at the walk-ratification pass and "
+        "RESOLVED AS A PASS (archive/CORPUS-PASS-WALK-RATIFICATION.md).",
+    "rule:etb-with-negative-counters":
+        "TRIAGE-BATCH-5 — counter polarity (+1/+1 vs -1/-1) is ratified a "
+        "PARAMETER, not a distinct axis. Typing this slug `minus1-` would encode "
+        "exactly the distinction that ruling rejects. Its live existence "
+        "(batch-5 MERGE vs batch-6/7 KEEP vs the 2026-08-01 pointer clearing) is "
+        "an open question about the AXIS, not about its name — out of walk scope.",
+}
+
+# Sense ratified by a Captain ruling, where the axis's own definition text does
+# not decide it. The ruling outranks the stale definition.
+RATIFIED_SENSE = {
+    "rule:draw-second-card-trigger-plus1-counter": ("noun",
+        "TRIAGE-BATCH-5 D12 — renamed FROM `-token` TO `-plus1-counter` precisely "
+        "because its member is a counter, not a token ('the old slug's effect "
+        "suffix did not match its only member'). The NAME is ratified; the "
+        "definition text was never updated from the token era and is stale."),
+}
+
 
 def tokens(slug: str) -> list:
     return slug.split(":", 1)[-1].split("-")
@@ -126,13 +165,17 @@ def verb_conforms(slug: str) -> tuple:
 
 def noun_conforms(slug: str) -> tuple:
     """§8a rule 2. Every counter token must be bound on the LEFT by a type word,
-    `with`, or `any`."""
+    `with`, or `any` -- OR by a ratified §7 scaling stat."""
     tk = tokens(slug)
     for i, t in enumerate(tk):
         if t not in COUNTER_TOKENS:
             continue
         if i == 0:
             return False, "counter token is slug-initial -- no left binder"
+        # §7: `-scales-with-own-counters` / `-charge-counters`. The stat name is
+        # itself ratified closed vocabulary, so it binds the counter token.
+        if i >= 2 and f"{tk[i-1]}-{tk[i]}" in SCALING_STATS_WITH_COUNTER:
+            continue
         left = tk[i - 1]
         if left not in LEFT_BINDERS:
             return False, f"left neighbour is {left!r}, not a type word / `with` / `any`"
@@ -151,7 +194,12 @@ def main():
             continue
         if not carries_counter_token(slug):
             continue
-        sense = definition_sense(entry)
+        ratified_sense = RATIFIED_SENSE.get(slug)
+        if ratified_sense:
+            sense, why_sense = ratified_sense
+        else:
+            sense = definition_sense(entry)
+            why_sense = "derived from definition text"
         if sense.startswith("ambiguous"):
             # Collect rather than halt-on-first: the Captain needs the whole
             # set in one look, not one axis per run.
@@ -159,9 +207,14 @@ def main():
                               "definition": entry.get("definition", ""),
                               "members": len(entry.get("members", []))})
             continue
-        ok, why = (verb_conforms(slug) if sense == "verb" else noun_conforms(slug))
+
+        if slug in RATIFIED_NAMES:
+            ok, why = True, f"ratified name — {RATIFIED_NAMES[slug]}"
+        else:
+            ok, why = (verb_conforms(slug) if sense == "verb" else noun_conforms(slug))
         rows.append({
-            "slug": slug, "sense": sense, "conforms": ok, "why": why,
+            "slug": slug, "sense": sense, "sense_basis": why_sense,
+            "conforms": ok, "why": why,
             "members": len(entry.get("members", [])),
             "definition": entry.get("definition", ""),
         })
