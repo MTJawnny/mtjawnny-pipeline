@@ -241,7 +241,13 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     printed, so gaps are reportable without inventing vocabulary."""
     raw = line.strip()
     if CHAPTER.match(raw):
-        return None, "saga-or-class-chapter"
+        # NOT "saga-or-class": measured 2026-08-03, all 576 lines are Sagas
+        # and ZERO are Classes. A Class level bar prints "{1}{G}: Level 2 —",
+        # which has a cost and a colon, so it is claimed by the `activated`
+        # branch above -- correctly, because CR 716.2a says a class level bar
+        # "represents both an ACTIVATED ability and a STATIC ability". Only
+        # Saga chapters are triggered (CR 714.2).
+        return None, "saga-chapter"
     body = ABILITY_WORD.sub("", raw)
     # Collapse the card's own name (and short forms) to `~` so a self-reference
     # is detectable without case or spelling games. This is the same helper the
