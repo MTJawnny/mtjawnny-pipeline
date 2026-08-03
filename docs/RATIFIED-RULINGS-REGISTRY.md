@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **65 documents under docs/**
-- ruling references found: **552**
+- ruling references found: **556**
 - distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **81**
 - **sole-home (appear in exactly 1 doc): 45**
@@ -39,7 +39,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CR-COVERAGE-PACKET-2026-08-02.md` | 134 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 275 | 2 | 0 | yes |
-| `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 453 | 9 | 1 | **NO** |
+| `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 530 | 11 | 1 | **NO** |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
@@ -373,7 +373,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:311` — Recommend: the CDR-01 rule, applied after repair.** Passes review → active
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:426` — (88 Alchemy) · CDR-01 · Saga/Class chapter vocabulary (576 lines, 221 cards —
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:503` — (88 Alchemy) · CDR-01 · Saga/Class chapter vocabulary (576 lines, 221 cards —
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02-EVE.md:108` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
@@ -445,7 +445,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 24 reference(s) across 14 doc(s)
+### `CDR-09` — 26 reference(s) across 15 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -461,6 +461,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CR-VOCABULARY-AUDIT.md:98` — `counter`/`counters` 33 axes (§8 rules exist, ~15 non-conforming — CDR-09) ·
 - `CR-VOCABULARY-AUDIT.md:135` — Cost, plainly: ~15 renames total — all already mandated by CDR-09. The ledger
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:12` — passes every existing check. The CDR-09 walk surfaced one instance by
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:363` — 5d. The naming problem — `own` / `owned` is the CDR-09 trap
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:393` — > CDR-09's 16 renames, which executed as a single clean step.
 - `REAUDIT-TIER-2-FINDINGS-2026-08-02.md:31` — Note this axis was renamed by today's CDR-09 walk (from
 - `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
@@ -837,7 +839,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:7` — > ## ✅ Q1 + Q2 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:35` — Seven numbered questions, **Q1–Q7**. Q1 is the big one (1,558 cards) and the
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:228` — > **Q1.** Ratify a **DELIVERY subject prefix**, applied to the existing §2
-- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:399` — With Q1 ratified, these are the delivery tokens the four 2026-08-03 rulings
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:476` — With Q1 ratified, these are the delivery tokens the four 2026-08-03 rulings
 - `MASTER-HANDOFF-ADDENDUM-2.md:105` — Captain's annotations so far: Q1 answered (stun-counter-lockdown
 - `MASTER-HANDOFF-ADDENDUM-3.md:113` — ratification, mirrors b1-Q1.
 - `PARENT-TREE-CANDIDATES.md:425` — Q1 redundancy ruling because the engine indexes the grant but not the
@@ -894,10 +896,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-3.md:461` — fill `-> RULE:` blanks for Q1–Q3, add `## CAPTAIN-AUTHORED` blocks for any
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:83` — Q3** Editorial fix to CODEBOOK-NAMING-GRAMMAR.md §2: DELIVERY table value
 
-### `Q4` — 7 reference(s) across 5 doc(s)
+### `Q4` — 8 reference(s) across 5 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:264` — "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
-- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:317` — > **Q4.** Does §6's `own` mean *controller*? If so, ratify a distinct token for
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:301` — 5. Q4 — `own` vs `owned`, parsed from the CR (Captain's ask, 2026-08-03)
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:378` — > **Q4 (revised). Two options, both CR-faithful. Recommend B.**
 - `TRIAGE-BATCH-1.md:237` — Q4 — Token-creation super-family.** creates-creature-token,
 - `TRIAGE-BATCH-2.md:85` — parent split at the schema pass, per batch-1's Q4 ruling. Not restructured
 - `TRIAGE-BATCH-2.md:317` — Q4 — `rule:grants-controller-hexproof` (2): mixed coherence within the
@@ -908,7 +911,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CR-COVERAGE-PACKET-2026-08-02.md:86` — One batch ratification, the same shape as Q5's ~30-token batch.
-- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:372` — > **Q5.** Adopt **"a CR 702 keyword's DELIVERY is whatever its `702.Na`
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:449` — > **Q5.** Adopt **"a CR 702 keyword's DELIVERY is whatever its `702.Na`
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
@@ -931,10 +934,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:170` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
 
-### `Q8.5` — 3 reference(s) across 2 doc(s)
+### `Q8.5` — 4 reference(s) across 3 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CODEBOOK-NAMING-GRAMMAR.md:795` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+- `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:387` — > distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
 - `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 
 ### `Q8.7` — 1 reference(s) across 1 doc(s)

@@ -298,26 +298,103 @@ necessarily yours) and `each` is wrong (it fires once, not per player).
 
 ---
 
-## 5. Q4 — `you own` is not `you control`, and §6's `own` is ambiguous
+## 5. Q4 — `own` vs `owned`, parsed from the CR (Captain's ask, 2026-08-03)
 
-Surfaced by the scope census; small but genuinely unresolved.
+**Two things changed when this was measured properly: the first half is
+settled by the CR outright, and the population is 30× what I first reported.**
 
-Three cards print **ownership**, not control:
+### 5a. Does §6's `own` mean controller? — YES, and the CR says so
 
-- Park Bleater — "whenever another creature **you own** enters"
-- Athreos, God of Passage — "whenever another creature **you own** dies"
-- Jon Irenicus, Shattered One — "whenever a creature **you own but don't
-  control** attacks"
+Not a preference. **CR 109.5**, verbatim:
 
-Jon Irenicus is the proof that these are not synonyms: it prints both, in
-opposition. CR 108.3 (owner) and CR 109.5 (controller) are different rules.
+> "The words **'you' and 'your'** on an object refer to the object's
+> **controller**, its would-be controller (if a player is attempting to play,
+> cast, or activate it), or its **owner (if it has no controller)**."
 
-**§6's scope token `own` is glossed "(yours)" — which does not say which.**
+And **CR 110.2**: *"A permanent's controller is, by default, the player under
+whose control it entered the battlefield. **Every permanent has a
+controller.**"*
 
-> **Q4.** Does §6's `own` mean *controller*? If so, ratify a distinct token for
-> ownership. **Recommend: `own` = controller** (it matches all ~1,000
-> "you control" members already using it), **and add `owned` for the
-> ownership sense**, n=3 today. §6b: "per-shape axes are free. Mint them."
+So for anything on the battlefield, "yours" is the **controller**, always.
+§6's `own`, glossed "(yours)", is therefore CR-correct as *controller* — the
+gloss was underspecified, not wrong.
+
+### 5b. "you own" is not a stylistic variant — it is CR-FORCED in most zones
+
+**CR 109.4**: *"**Only objects on the stack or on the battlefield have a
+controller.** Objects that are neither on the stack nor on the battlefield
+aren't controlled by any player."* With **CR 108.4a**: *"If anything asks for
+the controller of a card that doesn't have one … use its **owner** instead."*
+
+So a card in hand, library, graveyard, exile or the command zone **has no
+controller**, and the templating has no choice but to say "you own". Measured:
+
+| "«noun» you own" | occurrences | distinct cards |
+|---|--:|--:|
+| battlefield nouns (permanent / creature / commander) | 93 | **91** |
+| card nouns (hand / library / graveyard / exile) | 96 | **93** |
+
+Plus **20 cards** printing "an opponent owns".
+
+**Only the first row is a scope CHOICE.** The second is the CR forcing the only
+available referent, and it is already carried by the object/zone, not by scope.
+
+### 5c. The 91 battlefield cards are where ownership is a real claim
+
+And they are not an edge case — **Brand's entire function is that owner ≠
+controller**:
+
+- **Brand** / **Gruul Charm** / **Lich's Mirror** — "Gain control of all
+  permanents **you own**". A card that exists purely to undo theft.
+- **Yorion, Sky Nomad** · **Charming Prince** · **Venser, the Sojourner** ·
+  **Sword of Hearth and Home** — the blink family says "you own" so the
+  returned permanent comes back to **you**, not to whoever controlled it.
+- **~25 "commander creatures you own"** — the Commander/Background templating,
+  ownership precisely because your commander may sit under another player's
+  control.
+- **Jon Irenicus, Shattered One** — "a creature **you own but don't control**".
+  Prints both, in opposition, on one card. The proof they are not synonyms.
+
+My earlier figure of **3** came from looking only inside the five trigger
+families. The correct figure is **91 battlefield + 93 card-zone + 20
+opponent-owns**. Boundary stated per Gate 4: "«noun» you own", noun classified
+by whether its head word is a permanent type or a card word.
+
+### 5d. The naming problem — `own` / `owned` is the CDR-09 trap
+
+**Do not ratify `owned`.** A one-letter difference carrying a load-bearing
+distinction is exactly the homograph failure §8a was written to fix, where
+`counter`/`counters` sorted by grammatical number instead of by sense and
+misfiled **17 of 33** counter axes.
+
+`own` is already carrying **three** senses in the live codebook:
+
+| sense | where | example |
+|---|---|---|
+| controller ("yours") | §6 SCOPE | `combat-trick-pump-own-creature` |
+| counters **on the source** | §7 stat vocab | `cost-reduction-scales-with-own-counters` |
+| ownership (CR 108.3) | **needed, unassigned** | — |
+
+> **Q4 (revised). Two options, both CR-faithful. Recommend B.**
+>
+> **A — minimal.** Keep `own` = controller; ratify **`you-own`** for ownership.
+> Zero renames. Cost: `own` and `you-own` sit next to each other meaning
+> *different* things, which is the readability problem one step removed.
+>
+> **B — printed words, per §6a/§6c.** Rename the scope token `own` →
+> **`you-control`**, and ratify **`you-own`**. The pair is unmistakable; §6c set
+> the precedent by retiring `mass-` as a coinage that papered over a printed
+> distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
+> multi-word stem tokens (`cant-be-blocked`), and one axis
+> (`activated-tap-grants-haste-other-creature-you-control`) uses `-you-control`
+> today.
+>
+> **Cost of B: 23 active axes / 223 memberships, name-only.** Comparable to
+> CDR-09's 16 renames, which executed as a single clean step.
+>
+> **Logged either way, not fixed here:** §7's `own-counters` is the third sense
+> and should become `self-counters` for consistency. Flagged, not bundled — it
+> is a §7 change, not a §6 one.
 
 ---
 
