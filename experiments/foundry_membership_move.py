@@ -121,14 +121,45 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
             fc.halt(f"{oid}: not a member of {src} — cannot copy a membership that is not there")
         if any(m["oracle_id"] == oid for m in axes[dst]["members"]):
             fc.halt(f"{oid}: already a member of {dst}")
-        # The evidence travels with the membership: the same quote that proves
-        # the ability proves every axis that ability satisfies.
-        axes[dst]["members"] = sorted(axes[dst]["members"] + [copy.deepcopy(by_id[oid])],
+        # Evidence does NOT travel unchanged. The source quote may be a FRAGMENT
+        # scoped to the source axis's claim, in which case it does not prove the
+        # destination's claim -- caught 2026-08-02 in the tier-1 re-audit, where
+        # Blizzard Specter arrived on a bounce axis carrying "That player
+        # discards a card." An add must state the quote that proves ITS axis.
+        carried = copy.deepcopy(by_id[oid])
+        if "quote" not in ad:
+            fc.halt(f"add {oid} -> {dst}: no `quote` given. The source quote proves the "
+                    f"SOURCE axis's claim and may not prove this one; state the evidence "
+                    f"for this axis explicitly (evidence-quote-or-discard).")
+        for a in carried.get("assertions", []):
+            a["quote"] = ad["quote"]
+            a["source_ref"] = batch
+        axes[dst]["members"] = sorted(axes[dst]["members"] + [carried],
                                       key=lambda m: m["oracle_id"])
         axes[dst].setdefault("history", []).append(
             {"batch": batch, "action": "member_added_multi_axis",
              "note": f"also a member of {src}; multi-axis membership. "
                      f"{ad.get('why', '')} {ruling}".strip()})
+
+    # --- assertion quote corrections ----------------------------------------
+    # An assignment whose quote does not prove its axis is unevidenced, whatever
+    # else is true of it. The re-audit needs this constantly.
+    for slug, per_card in sorted(spec.get("quote_edits", {}).items()):
+        if slug not in axes:
+            fc.halt(f"{slug}: quote_edits names an axis not in the codebook")
+        by_id = {m["oracle_id"]: m for m in axes[slug].get("members", [])}
+        for oid, new_quote in sorted(per_card.items()):
+            if oid not in by_id:
+                fc.halt(f"{oid}: quote_edits names a non-member of {slug}")
+            if not new_quote.strip():
+                fc.halt(f"{oid} on {slug}: refusing to set an empty quote")
+            for a in by_id[oid].get("assertions", []):
+                a["quote"] = new_quote
+                if a.get("evidence_status") == "legacy-captain-seed":
+                    a["evidence_status"] = "quoted"
+        axes[slug].setdefault("history", []).append(
+            {"batch": batch, "action": "quotes_corrected",
+             "note": f"corrected evidence quote(s) for {len(per_card)} member(s). {ruling}".strip()})
 
     # --- definition corrections ---------------------------------------------
     for slug, new_def in sorted(spec.get("definition_edits", {}).items()):

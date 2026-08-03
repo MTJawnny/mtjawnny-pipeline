@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **40 documents under docs/**
-- ruling references found: **461**
+- documents scanned: **42 documents under docs/**
+- ruling references found: **463**
 - distinct ruling ids: **123**
 - corroborated (appear in >1 doc): **74**
 - **sole-home (appear in exactly 1 doc): 49**
@@ -45,6 +45,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-TREE-CANDIDATES.md` | 400 | 17 | 9 | **NO** |
 | `RATIFIED-DIRECTIVES-BATCH-4-6.md` | 746 | 11 | 0 | yes |
+| `REAUDIT-TIER-0-1-2026-08-02.md` | 400 | 1 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-01.md` | 210 | 27 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02.md` | 210 | 17 | 0 | yes |
@@ -62,7 +63,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`
+`DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DERIVED-TAG-LAYER-SPEC.md`, `FAMILY-TREE-EVIDENCE.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`
 
 ## Sole-home rulings — these block their document
 
@@ -777,13 +778,15 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:93` — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
-### `Q2` — 10 reference(s) across 8 doc(s)
+### `Q2` — 12 reference(s) across 9 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:465` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `KEYWORD-LEDGER-CANDIDATES.md:154` — Killed axis:** `rule:etb-grants-energy-counters` (Q2, Captain-ratified
 - `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
 - `MASTER-HANDOFF-ADDENDUM-2.md:108` — Q2 (energy = archetype vs ledger) and Q3 (perpetual, Alchemy-only)
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
+- `REAUDIT-TIER-0-1-2026-08-02.md:18` — definition:** An activated ability that spends energy counters with no upper bound on how many times it can be used, limited only by available energy -- as opposed to a once-per-turn or conditional outlet. Registered pe…
+- `REAUDIT-TIER-0-1-2026-08-02.md:29` — definition:** Gives the controller energy counters only when a recurring game-state condition is met, as opposed to unconditionally on cast/ETB -- sibling of rule:gives-energy-counters-immediately. Registered per Captai…
 - `TRIAGE-BATCH-1.md:217` — Q2 — Drain/lifegain restructure.** (covers: drain-life-effect,
 - `TRIAGE-BATCH-2.md:297` — Q2 — `rule:sacrifice-for-creature-token` vs. existing
 - `TRIAGE-BATCH-3.md:312` — Q2 — `rule:etb-grants-energy-counters` (2: Aether Inspector, Riparian
