@@ -526,7 +526,11 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return None, "counter-placed"
         if re.search(r"\bgains? life\b|\bgained\b", low):
             return None, "lifegain-trigger"
-        if re.search(r"\bsacrifices?\b", low):
+        # SIXTH whole-line-vs-clause instance. Afiya Grove ("When this
+        # enchantment has no +1/+1 counters on it, SACRIFICE IT") and Ember
+        # Swallower ("When this creature becomes monstrous, SACRIFICE three
+        # lands") were counted as sacrifice triggers by their EFFECT text.
+        if re.search(r"\bsacrifices?\b", clause):
             return None, "sacrifice-trigger"
         return None, "unclassified-trigger"
 

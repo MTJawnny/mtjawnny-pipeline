@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **69 documents under docs/**
-- ruling references found: **573**
+- documents scanned: **70 documents under docs/**
+- ruling references found: **574**
 - distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **82**
 - **sole-home (appear in exactly 1 doc): 44**
@@ -55,6 +55,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `REAUDIT-TIER-2-2-2026-08-02.md` | 1878 | 2 | 0 | yes |
 | `REAUDIT-TIER-2-FINDINGS-2026-08-02.md` | 114 | 1 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
+| `SACRIFICE-TRIGGER-RULING-2026-08-03.md` | 147 | 1 | 0 | yes |
 | `SAGA-CHAPTER-RULING-2026-08-03.md` | 172 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-01.md` | 217 | 27 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
@@ -570,12 +571,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-03.md:98` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
-### `D16` — 5 reference(s) across 5 doc(s)
+### `D16` — 6 reference(s) across 6 doc(s)
 
 - `BECOMES-TAPPED-RULING-2026-08-03.md:104` — cycling ruling §5 established the precedent (itself from batch-5 D16): a
 - `BEGIN-COMBAT-RULING-2026-08-03.md:133` — Per the cycling ruling §5 and batch-5 D16. The 331 begin-combat cards carry a
 - `PARENT-TREE-CANDIDATES.md:287` — D16 new ledger entries (batch-5, Captain, logged per §10 — not
 - `PLAYER-ATTACK-RULING-2026-08-03.md:115` — Per the cycling ruling §5 / batch-5 D16. The 158 cards carry a wide effect
+- `SACRIFICE-TRIGGER-RULING-2026-08-03.md:125` — Per the cycling ruling §5 / batch-5 D16.
 - `SAGA-CHAPTER-RULING-2026-08-03.md:146` — Per the cycling ruling §5 and batch-5 D16, a delivery-only slug is a **parent**;
 
 ### `D17` — 3 reference(s) across 3 doc(s)
