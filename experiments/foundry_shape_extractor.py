@@ -174,6 +174,84 @@ def trigger_clause(low: str) -> str:
     return low
 
 
+
+# ---------------------------------------------------------------------------
+# CR 702 keyword lines -- §2b (Captain-ratified 2026-08-03)
+# ---------------------------------------------------------------------------
+# A keyword printed bare ("Battle cry", "Flying", "Cycling {2}") IS an ability,
+# and §2b says its DELIVERY is derived from the keyword's own 702.Na text --
+# never ruled per keyword. Nothing was applying that to the corpus: measured
+# 2026-08-03, 12,419 ability lines (20% of the corpus) were bare keyword lines
+# falling through to `spell-or-static`.
+#
+# Hero of Bladehold is the case Captain raised. It has TWO attack triggers:
+#     "Battle cry"                                     -> attack-trigger
+#     "Whenever this creature attacks, create two ..." -> attack-trigger
+# Only the second was seen. The first is a keyword whose CR text (702.35a) is
+# "Whenever this creature attacks, each other attacking creature gets +1/+0."
+#
+# NOT applied to a sentence that merely MENTIONS a keyword: Adriana's "Other
+# creatures you control have melee." GRANTS the ability, and §2's
+# created-ability rule gives the delivery to the creator, not the created one.
+# Only a line that IS one or more keywords (with costs/params stripped) matches.
+KEYWORD_HOME = None
+
+
+def build_keyword_homes(ratified: dict) -> None:
+    """keyword name -> §2 DELIVERY token, derived from the CR (§2b)."""
+    global KEYWORD_HOME
+    import foundry_cr702_classes as k7
+    # k7 does `import foundry_shape_extractor`, which under `python3
+    # foundry_shape_extractor.py` is a SECOND module instance whose globals are
+    # unset -- so its parse_delivery would crash on SELF_NOUN_RX=None. Sync the
+    # derived state across instead of letting the copy run blind.
+    import foundry_shape_extractor as _twin
+    if _twin is not sys.modules[__name__]:
+        _twin.SELF_NOUN_RX = SELF_NOUN_RX
+        _twin.KEYWORD_HOME = None
+    kws = k7.load_702(k7.CR_PATH)
+    homes = {}
+    for num, kw in kws.items():
+        if not kw["name"] or num == k7.PREAMBLE_RULE:
+            continue
+        tok, _desc, _txt = k7.find_home(kw, ratified)
+        if tok is None:
+            # fall back to the CR-stated ability CLASS, exactly as --homes does
+            classes, _ev = k7.classify(kw)
+            eff = [k7.SUBSUMES.get(c, (None,))[0] or c for c in classes]
+            if eff == ["static"] and "static" in ratified:
+                tok = "static"
+        if tok:
+            homes[kw["name"].lower()] = tok
+    if "battle cry" not in homes:
+        fc.halt("Keyword home map has no 'battle cry' — the CR 702 parse "
+                "failed. Refusing to run with a partial keyword vocabulary.")
+    KEYWORD_HOME = homes
+
+
+COST_OR_PARAM = re.compile(r"\{[^}]*\}|\bN\b|\d+")
+
+
+def keyword_line_tokens(line: str) -> list:
+    """Tokens for a line that IS one or more printed keywords, else []."""
+    if KEYWORD_HOME is None:
+        return []
+    core = COST_OR_PARAM.sub("", line).strip().rstrip(".").lower()
+    core = re.sub(r"\s+", " ", core)
+    if not core:
+        return []
+    parts = [p.strip() for p in core.split(",") if p.strip()]
+    if not parts or not all(p in KEYWORD_HOME for p in parts):
+        return []
+    out, seen = [], set()
+    for p in parts:
+        t = KEYWORD_HOME[p]
+        if t not in seen:
+            seen.add(t)
+            out.append((t, f"keyword:{p}"))
+    return out
+
+
 def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     """One ability line can carry SEVERAL deliveries -- "Whenever ~ enters or
     attacks", "When ~ enters and at the beginning of your upkeep". Grammar §1's
@@ -184,6 +262,9 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     against the same subject. Returns a de-duplicated list of (token, descriptor).
     """
     raw = line.strip()
+    kw = keyword_line_tokens(raw)
+    if kw:
+        return kw
     body = ABILITY_WORD.sub("", raw)
     if card is not None:
         body = fc.canonicalize_self_reference(body, card)
@@ -361,15 +442,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return None, "to-graveyard-from-anywhere"
         if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", low):
             return msub("leaves-battlefield-trigger", "ltb")
-        if re.search(r"\battacks?\b", low):
-            if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", low):
+        # Tested on the CLAUSE. Fifth instance of the whole-line-vs-clause bug:
+        # Willie Lumpkin ("Whenever ~ deals combat damage to an opponent, ...
+        # that player CAN'T ATTACK YOU") and Unstable Glyphbridge ("Whenever an
+        # opponent casts a spell ..., they CAN'T ATTACK YOU") were both stolen
+        # into is-attacked by their effect text.
+        if re.search(r"\battacks?\b", clause):
+            if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", clause):
                 return None, "is-attacked"
             if re.search(r"^when(ever)? you attack\b", low):
-                return None, "player-attacks"
+                return mark("player-attack-trigger", "player-attacks")
             return msub("attack-trigger", "attacks")
         if re.search(r"\bcasts?\b", low):
             return mark("cast-trigger", "casts")
-        if re.search(r"combat damage to (a|target)?\s*(player|opponent)", low):
+        # "an opponent" was unmatched by `(a|target)?` -- 17 cards print "deals
+        # combat damage to AN OPPONENT" (Kosei, Strixhaven Stadium, Etrata...).
+        # It IS a combat claim, so it takes combat-damage-to-player; only a
+        # non-combat "deals damage to an opponent" takes any-damage-to-player
+        # per DAMAGE-DELIVERY-RULING-2026-08-02.
+        if re.search(r"combat damage to (a |an |target )?\s*(player|opponent)", low):
             return msub("combat-damage-to-player", "combat-damage-player")
         if re.search(r"combat damage to (a|target)?\s*creature", low):
             return mark("combat-damage-to-creature", "combat-damage-creature")
@@ -615,6 +706,7 @@ def main():
     cards, _, gated_out = fc.load_corpus_gated()
     build_self_noun_rx(cards)
     ratified = ratified_delivery_tokens()
+    build_keyword_homes(ratified)
     actions = cr_action_terms()
 
     if args.gaps:
