@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **57 documents under docs/**
-- ruling references found: **528**
+- documents scanned: **58 documents under docs/**
+- ruling references found: **533**
 - distinct ruling ids: **125**
 - corroborated (appear in >1 doc): **80**
 - **sole-home (appear in exactly 1 doc): 45**
@@ -51,9 +51,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `REAUDIT-TIER-2-FINDINGS-2026-08-02.md` | 114 | 1 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-01.md` | 217 | 27 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02-EVE.md` | 150 | 11 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03.md` | 113 | 5 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 134 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -263,7 +264,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:23` — ADD-01 — the three orphaned DET patterns. CAPTAIN RULED: Option A
 - `CDR-PROPOSALS.md:192` — belongs to the ratified DET pattern per ADD-01. Most surviving subsets will
 - `SESSION-HANDOFF-2026-08-01.md:159` — Already ruled, no action needed:** ADD-01 — the three orphaned DET patterns
-- `SESSION-HANDOFF-2026-08-02-EVE.md:96` — and it collides with ADD-01's session-4 DET plan. It is a merge-or-extend
+- `SESSION-HANDOFF-2026-08-02-EVE.md:100` — and it collides with ADD-01's session-4 DET plan. It is a merge-or-extend
 - `TIER-3-DECISION-PACKET-2026-08-02.md:446` — ADD-01 (Captain-ruled 2026-08-01) says the by-power axis gets its axis via the
 - `TIER-3-DECISION-PACKET-2026-08-02.md:459` — Either way this **interacts with ADD-01's session-4 DET plan**, which expects
 - `TIER-3-DECISION-PACKET-2026-08-02.md:462` — these two axes, but every one of those predates Q8 (2026-07-31) and ADD-01
@@ -359,7 +360,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:91` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
 - `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
-### `CDR-01` — 13 reference(s) across 8 doc(s)
+### `CDR-01` — 14 reference(s) across 9 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:806` — A11 (CDR-01):** members hold DIRECT assertions only; parent rollups
 - `CDR-PROPOSALS.md:164` — CDR-01 — Activation policy for singleton grammar nodes
@@ -368,8 +369,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
-- `SESSION-HANDOFF-2026-08-02-EVE.md:104` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
+- `SESSION-HANDOFF-2026-08-02-EVE.md:108` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
 - `SESSION-HANDOFF-2026-08-02.md:109` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
+- `SESSION-HANDOFF-2026-08-03.md:84` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
 - `TIER-3-DECISION-PACKET-2026-08-02.md:57` — > packet's precedent (its four n=1 axes are all `active`). CDR-01 — which
 - `TIER-4-DECISION-PACKET-2026-08-02.md:130` — grammar-composable, but at n=1 CDR-01 would defer it anyway.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:155` — extension, not new territory. n=1 → CDR-01 would defer.
@@ -381,7 +383,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
-- `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:109` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
@@ -454,7 +456,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `REAUDIT-TIER-2-FINDINGS-2026-08-02.md:31` — Note this axis was renamed by today's CDR-09 walk (from
 - `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
-- `SESSION-HANDOFF-2026-08-02-EVE.md:4` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:8` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
 - `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
@@ -470,7 +472,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:154` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
 
-### `CDR-11` — 8 reference(s) across 5 doc(s)
+### `CDR-11` — 9 reference(s) across 6 doc(s)
 
 - `B-MIGRATION-DIRECTIVE.md:68` — "foundry-codebook/2"; `member_oracle_ids` renamed `members` (A1/CDR-11);
 - `B-MIGRATION-DISCOVERY.md:716` — `member_oracle_ids` is renamed `members` (CDR-11) and each member holds a
@@ -480,6 +482,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:420` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
 - `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
 - `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+- `SESSION-HANDOFF-2026-08-03.md:49` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
 
 ### `CDR-12` — 3 reference(s) across 3 doc(s)
 
@@ -512,7 +515,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:388` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
-- `SESSION-HANDOFF-2026-08-02-EVE.md:45` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
+- `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
 - `TIER-3-DECISION-PACKET-2026-08-02.md:42` — > 1. **The executor had no way to edit a scope field.** D1's ratified scope
@@ -534,24 +537,26 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D12` — 6 reference(s) across 4 doc(s)
 
-- `SESSION-HANDOFF-2026-08-02-EVE.md:45` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
+- `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
 - `SESSION-HANDOFF-2026-08-02-PM.md:101` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:157` — E6 — `rule:draw-second-card-trigger-plus1-counter` — THE 2×2, AND D12 ALREADY RATIFIED THE FIX
 - `TIER-4-DECISION-PACKET-2026-08-02.md:174` — The fix does not need new ratification.** Batch-5 D12 ledgered the full
 - `TIER-4-DECISION-PACKET-2026-08-02.md:432` — E6 needs no new ratification** — batch-5 D12 ledgered the scheme and
 
-### `D13` — 5 reference(s) across 3 doc(s)
+### `D13` — 6 reference(s) across 4 doc(s)
 
-- `SESSION-HANDOFF-2026-08-02-EVE.md:94` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
+- `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
+- `SESSION-HANDOFF-2026-08-03.md:83` — Carried: **D13** (by-power family, still a sweep blocker) · **§S** (88
 - `TIER-3-DECISION-PACKET-2026-08-02.md:61` — > **Not executed, and not in scope of this ratification:** D13 (by-power
 - `TIER-3-DECISION-PACKET-2026-08-02.md:427` — D13 — `rule:evasion-vs-high-power-blockers` vs the ratified `cant-be-blocked-<restriction>` grammar
 - `TIER-3-DECISION-PACKET-2026-08-02.md:595` — D13 is where a ratified grammar and a blocking gate disagree with live
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 
-### `D14` — 2 reference(s) across 2 doc(s)
+### `D14` — 3 reference(s) across 3 doc(s)
 
 - `CR-COVERAGE-PACKET-2026-08-02.md:42` — `create-token-<type>` is an **already ratified grammar family** (batch-5 D14).
+- `SESSION-HANDOFF-2026-08-03.md:93` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
 ### `D16` — 1 reference(s) across 1 doc(s)
@@ -663,7 +668,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-3.md:177` — D7: all other verdicts stand.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:110` — D7 — All other section-1 verdicts stand as written.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
-- `SESSION-HANDOFF-2026-08-02-EVE.md:116` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
+- `SESSION-HANDOFF-2026-08-02-EVE.md:120` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
 - `TIER-3-DECISION-PACKET-2026-08-02.md:50` — > claim D7 ruled false. Caught on post-execution readback, corrected to
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
@@ -896,7 +901,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `Q8` — 4 reference(s) across 4 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:712` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
-- `SESSION-HANDOFF-2026-08-02-EVE.md:94` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
+- `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:170` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
 
@@ -996,7 +1001,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
 - `PARENT-TREE-CANDIDATES.md:12` — S1. Parents are DERIVED: union of ratified children computed at
-- `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
@@ -1008,9 +1013,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:18` — S3. Depth is ratified PER FAMILY. Trigger families are depth-3 by
 
-### `S4` — 4 reference(s) across 2 doc(s)
+### `S4` — 5 reference(s) across 3 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:21` — S4. Multiple parents allowed when earned (stun-counter sits under both
+- `SESSION-HANDOFF-2026-08-03.md:77` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:358` — token's** printed text."* That rule was ratified against SYNTH misfiles; §S4
 - `TIER-4-DECISION-PACKET-2026-08-02.md:425` — Plus §S4, which is its own ruling and larger than all of the above combined.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:429` — §S4 is the finding.** A ratified DET pattern set has been writing
@@ -1028,7 +1034,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `PARENT-TREE-CANDIDATES.md:68` — S7. Validation: proposed parents get the family-tree evidence check
-- `SESSION-HANDOFF-2026-08-02-EVE.md:107` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 

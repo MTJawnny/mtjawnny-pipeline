@@ -1,5 +1,9 @@
 # SESSION HANDOFF — 2026-08-02 (EVE)
 
+> ⚠ **SUPERSEDED — this is NOT current state.**
+> The current handoff is **`docs/SESSION-HANDOFF-2026-08-03.md`**.
+> Start at **`docs/SESSION-START-PROCEDURE.md`**.
+
 Supersedes `SESSION-HANDOFF-2026-08-02-PM.md` for current state. That file
 remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
 
