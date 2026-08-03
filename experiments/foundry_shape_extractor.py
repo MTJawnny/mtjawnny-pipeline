@@ -323,7 +323,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             if re.search(r"\bfrom (your |a )?(library|hand|anywhere)\b", low):
                 return None, "to-graveyard-from-nonbattlefield"
             return msub("death-trigger", "dies")
-        if re.search(r"\bput into (a |their |your )?graveyards?\b", low):
+        # CR 700.4, verbatim: "The term DIES means 'is put into a graveyard
+        # from the battlefield.'" So this phrasing IS a death trigger, not a
+        # separate shape -- §2 calls the dies/leaves-battlefield boundary "hard
+        # both directions" and D-1 made `death-trigger` the family word on this
+        # exact anchor. Measured 2026-08-03: without this, the seven CR 702
+        # keywords templated this way (Persist, Undying, Afterlife, Haunt,
+        # Soulshift, Recover, Gravestorm -- the canonical death triggers in the
+        # game) all missed their home.
+        # Tested on the CLAUSE, never the whole line. Gravestorm is the proof:
+        # "WHEN YOU CAST THIS SPELL, copy it for each permanent that was put
+        # into a graveyard from the battlefield this turn" is a cast trigger
+        # whose EFFECT mentions the graveyard. Scanning `low` routed it to
+        # death-trigger. Third occurrence of this same bug class in this file
+        # (self/other, then phase triggers, now this) -- when adding a branch
+        # here, match the trigger condition, not the sentence.
+        if re.search(r"\bput into (a |their |your |its owner's )?graveyards?\b", clause) \
+                and re.search(r"\bfrom the battlefield\b", clause):
+            return msub("death-trigger", "dies")
+        if re.search(r"\bput into (a |their |your )?graveyards?\b", clause):
             return None, "to-graveyard-from-anywhere"
         if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", low):
             return msub("leaves-battlefield-trigger", "ltb")

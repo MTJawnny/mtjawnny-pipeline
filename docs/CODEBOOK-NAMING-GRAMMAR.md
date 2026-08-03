@@ -293,6 +293,77 @@ Defender keyword, Captain's b7 ruling generalized), `two-target` (fixed
 plurality), `-conditional` (an intervening-if or "unless" gate on the same
 ability; the gate must be quoted in evidence).
 
+### 6d. OWNERSHIP vs CONTROL — `you-control` / `you-own` (Captain-ratified 2026-08-03)
+
+The scope token `own` was glossed "(yours)", which does not say **which**.
+The CR does.
+
+- **CR 109.5** — *"The words 'you' and 'your' on an object refer to the
+  object's **controller**, its would-be controller…, or its **owner (if it has
+  no controller)**."*
+- **CR 110.2** — *"**Every permanent has a controller.**"*
+- **CR 109.4** — *"**Only objects on the stack or on the battlefield have a
+  controller.**"* With **CR 108.4a**, a card in hand/library/graveyard/exile/
+  command has none, so "you own" is the **only available referent** there.
+
+**RATIFIED — Option B, the printed words:**
+
+| token | means | printed |
+|---|---|---|
+| `you-control` | the controller (CR 109.5 / 110.2) | "you control" |
+| `you-own` | the owner (CR 108.3) | "you own" |
+
+**`own` is RETIRED as a SCOPE token** and renames to `you-control`. Same
+reasoning that retired `mass-` in §6c: it is a project coinage sitting on top
+of a printed distinction, and here it actively collides with the English word
+for the *other* sense.
+
+**`owned` was considered and REJECTED.** A one-letter difference carrying a
+load-bearing distinction is the CDR-09 homograph failure — where
+`counter`/`counters` sorted by grammatical number instead of by sense and
+misfiled 17 of 33 counter axes. `you-control` / `you-own` cannot be confused.
+Multi-word stem tokens are already ratified (§14 Q8.5, `cant-be-blocked`), and
+`activated-tap-grants-haste-other-creature-you-control` was already using this
+form.
+
+**Ownership is not an edge case — 91 battlefield cards.** **Brand** exists
+solely because owner ≠ controller ("gain control of all permanents **you
+own**"), as do Gruul Charm and Lich's Mirror. The blink family (Yorion,
+Charming Prince, Venser, Sword of Hearth and Home) prints "you own" so the
+permanent returns to **you**. ~25 are "commander creatures you own".
+**Jon Irenicus, Shattered One** prints "a creature **you own but don't
+control**" — both senses in opposition on one card.
+
+A further **93 cards** print "«card» you own" in a non-battlefield zone; those
+are CR-forced by 109.4 and carry no scope claim, so they take **no** scope
+token. Plus 20 cards printing "an opponent owns".
+
+**Placement follows §1's slot order** `[EFFECT]-[OBJECT]-[SCOPE]` — the scope
+goes **after** the object, so `pump-own-creature` becomes
+`pump-creature-you-control`, which is also how the pre-existing
+`activated-tap-grants-haste-other-creature-you-control` already reads. The old
+`-own-<object>` form had the scope on the wrong side of the object.
+
+**`own` turned out to carry FOUR senses, not three.** A blind rename produced a
+wrong name and was caught by Gate 4 — the transform disagreed with a ratified
+list, and the transform was what was wrong:
+
+| sense | where | disposition |
+|---|---|---|
+| controller of an object | §6 SCOPE | **renames to `you-control`** |
+| counters **on the source** | §7 `own-counters` | **excluded** — separate §7 ruling → `self-counters` |
+| **whose turn/phase it is** | §3 `activation-restricted-to-own-upkeep` | **excluded** — a RATIFIED §3 table slug (D-4, DET-owned); "Activate only during **your** upkeep" is not an object's controller |
+| ownership (CR 108.3) | **new** | **`you-own`** |
+
+**Migration — LOGGED, not executed at ratification.** **20 axes / 169
+memberships** rename; **3 axes / 54 memberships excluded** with reasons
+recorded in the spec. Name-only, no member moves, no definition changes. Spec:
+`experiments/moves/2026-08-03-own-to-you-control.json`. Rides its own step under
+the backup law with determinism ×2, per the standing no-midflight-renames rule
+(§12a precedent).
+
+Record: `docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md` §5.
+
 ### 6a. THE PRINTED WORD IS THE CLAIM (Captain-ratified 2026-08-02)
 
 > **"Game logic is game logic. It cannot be partially assumed or opened for

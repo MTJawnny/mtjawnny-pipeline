@@ -171,10 +171,96 @@ MULTI_HINT = re.compile(
     r"\bThe (second|third) (is|are)\b", re.I)
 
 
+# The CR spells out most keywords as templated text: `"Prowess" means "Whenever
+# you cast a noncreature spell, ..."`. That quote is the keyword's ACTUAL
+# printed shape, so its DELIVERY slot is derivable by running it through the
+# same extractor every card goes through -- no per-keyword ruling required.
+MEANS = re.compile(r"means\s+[“\"]([^”\"]+)[”\"]")
+
+
+def find_home(kw: dict, ratified: dict) -> tuple:
+    """(delivery_token, descriptor, cr_templated_text) for one keyword, or
+    (None, None, None) when the CR states no templated text to parse."""
+    import foundry_shape_extractor as fse
+    for letter in sorted(kw["subrules"]):
+        m = MEANS.search(kw["subrules"][letter])
+        if not m:
+            continue
+        text = m.group(1).strip()
+        tok, desc = fse.parse_delivery(text, ratified, None)
+        return tok, desc, text
+    return None, None, None
+
+
+def cmd_homes(rows: list, keywords: dict) -> None:
+    """Captain, 2026-08-03: 'keywords that are attack triggers should go into
+    When this creature attacks rulings. then look at other keywords and find
+    them appropriate homes.'
+
+    Right, and it makes the 44-triggered-keyword 'gap' mostly illusory: a
+    triggered keyword does not need NEW delivery vocabulary, it needs to be
+    routed to the token its own CR templated text already resolves to."""
+    import foundry_shape_extractor as fse
+    import foundry_common as fc
+    cards, _, _ = fc.load_corpus_gated()
+    fse.build_self_noun_rx(cards)
+    ratified = fse.ratified_delivery_tokens()
+
+    homed = collections.defaultdict(list)
+    unresolved = []
+    for r in rows:
+        num = int(r["cr"].split(".")[1])
+        tok, desc, text = find_home(keywords[num], ratified)
+        r["home"] = tok
+        r["home_descriptor"] = desc
+        r["cr_text"] = text
+        if tok is not None:
+            homed[tok].append(r)
+            continue
+        # No trigger/activated shape parsed out of the templated text. Fall
+        # back to the keyword's CR ABILITY CLASS, which §2 already has a slot
+        # for -- a static keyword's home is `static`, and that is a real home,
+        # not a gap. Only keywords whose class ALSO fails to give a slot are
+        # reported unresolved.
+        eff = r["effective_classes"]
+        if eff == ["static"]:
+            r["home"] = "static"
+            r["home_via"] = "CR ability class (702.Na)"
+            homed["static"].append(r)
+        elif eff == ["spell"]:
+            r["home"] = "(none — spell ability)"
+            r["home_via"] = "CR ability class (702.Na)"
+            homed["(none — spell ability)"].append(r)
+        elif text is None:
+            unresolved.append((r, "no templated text AND no single-class fallback"))
+        else:
+            unresolved.append((r, f"templated shape has no ratified token: {desc}"))
+
+    total = sum(len(v) for v in homed.values())
+    print(f"\n{'='*78}\nKEYWORD -> DELIVERY HOME, derived from the CR's own "
+          f"templated text\n{'='*78}")
+    print(f"routed to an EXISTING ratified token: {total} of {len(rows)} keywords\n")
+    for tok in sorted(homed, key=lambda t: -len(homed[t])):
+        names = ", ".join(sorted(r["keyword"] for r in homed[tok]))
+        print(f"[{tok}]  ({len(homed[tok])})\n  {names}\n")
+
+    print(f"{'='*78}\nNOT ROUTED — {len(unresolved)} keywords. Reported, never "
+          f"approximated.\n{'='*78}")
+    by_reason = collections.defaultdict(list)
+    for r, why in unresolved:
+        by_reason[why].append(r["keyword"])
+    for why in sorted(by_reason, key=lambda w: -len(by_reason[w])):
+        print(f"\n({len(by_reason[why])}) {why}\n  "
+              + ", ".join(sorted(by_reason[why])))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--unstated", action="store_true",
                     help="list keywords whose CR text states no ability class")
+    ap.add_argument("--homes", action="store_true",
+                    help="route each keyword to its §2 DELIVERY token, derived "
+                         "from the CR's own templated text")
     ap.add_argument("--json", metavar="PATH")
     args = ap.parse_args()
 
@@ -256,6 +342,9 @@ def main() -> None:
                 first = (r["evidence"] or
                          keywords[int(r['cr'].split('.')[1])]["subrules"].get("a", ""))
                 print(f"  {r['cr']:9s} {r['keyword']:28s} {first[:90]}")
+
+    if args.homes:
+        cmd_homes(rows, keywords)
 
     if args.json:
         Path(args.json).write_text(json.dumps(rows, indent=1), encoding="utf-8")

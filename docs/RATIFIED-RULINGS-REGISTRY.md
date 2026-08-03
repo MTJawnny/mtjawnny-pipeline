@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **65 documents under docs/**
-- ruling references found: **556**
+- ruling references found: **558**
 - distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **81**
 - **sole-home (appear in exactly 1 doc): 45**
@@ -31,7 +31,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `BECOMES-TAPPED-RULING-2026-08-03.md` | 113 | 1 | 0 | yes |
 | `CDR-09-WALK-DERIVATION-2026-08-02.md` | 147 | 4 | 0 | yes |
 | `CDR-PROPOSALS.md` | 528 | 31 | 6 | **NO** |
-| `CODEBOOK-NAMING-GRAMMAR.md` | 805 | 19 | 1 | **NO** |
+| `CODEBOOK-NAMING-GRAMMAR.md` | 876 | 19 | 1 | **NO** |
 | `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
@@ -115,7 +115,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`CODEBOOK-NAMING-GRAMMAR.md`** — sole home for 1:
 
-- `F3` (line 446) — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+- `F3` (line 517) — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
 
 **`DELIVERY-VOCABULARY-BATCH-2026-08-03.md`** — sole home for 1:
 
@@ -300,7 +300,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `ADD-06` — 4 reference(s) across 4 doc(s)
 
 - `CDR-PROPOSALS.md:482` — ADD-06 — generated-numbers discipline.** Prose numbers must be pasted from
-- `CODEBOOK-NAMING-GRAMMAR.md:700` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
+- `CODEBOOK-NAMING-GRAMMAR.md:771` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
 - `SESSION-HANDOFF-2026-08-01.md:205` — generator output (ADD-06).
 - `SESSION-HANDOFF-2026-08-02.md:206` — generator output (ADD-06).
 
@@ -312,9 +312,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:111` — Unblocked:** ADD-08 / Tier-0 bug 4 (the adjacency rule misfiled 17 of 33
 - `CDR-PROPOSALS.md:495` — ADD-08 (NEW) — position-aware canonicalization.** `canonicalize_label`'s
-- `CODEBOOK-NAMING-GRAMMAR.md:575` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
-- `CODEBOOK-NAMING-GRAMMAR.md:594` — the names, and both must be fixed before ADD-08 is implemented:
-- `CODEBOOK-NAMING-GRAMMAR.md:608` — be zero. ADD-08 stays blocked on §12a either way.
+- `CODEBOOK-NAMING-GRAMMAR.md:646` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
+- `CODEBOOK-NAMING-GRAMMAR.md:665` — the names, and both must be fixed before ADD-08 is implemented:
+- `CODEBOOK-NAMING-GRAMMAR.md:679` — be zero. ADD-08 stays blocked on §12a either way.
 - `SESSION-HANDOFF-2026-08-01.md:184` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
 - `SESSION-HANDOFF-2026-08-02-PM.md:114` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
 - `SESSION-HANDOFF-2026-08-02.md:86` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
@@ -417,7 +417,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:105` — the walk made it mechanically detectable. CDR-05's business, not a regression.
 - `CDR-PROPOSALS.md:265` — CDR-05 — Near-duplicate axes: merge, alias, or parent/child
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
-- `CODEBOOK-NAMING-GRAMMAR.md:712` — CDR-05.
+- `CODEBOOK-NAMING-GRAMMAR.md:783` — CDR-05.
 - `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
 - `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 
@@ -445,7 +445,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 26 reference(s) across 15 doc(s)
+### `CDR-09` — 27 reference(s) across 15 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -454,10 +454,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:334` — CDR-09 (NEW) — The `counter` homograph (F-G)
 - `CDR-PROPOSALS.md:432` — Cost: ~15 renames — all already mandated by CDR-09. The ledger adds ZERO new
 - `CDR-PROPOSALS.md:497` — EFFECT even in noun slugs. CDR-09's typed prefixes make equality collision
-- `CODEBOOK-NAMING-GRAMMAR.md:539` — 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
-- `CODEBOOK-NAMING-GRAMMAR.md:671` — by the CDR-09 walk below.**
-- `CODEBOOK-NAMING-GRAMMAR.md:673` — 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — **EXECUTED 2026-08-02**
-- `CODEBOOK-NAMING-GRAMMAR.md:681` — > `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
+- `CODEBOOK-NAMING-GRAMMAR.md:322` — load-bearing distinction is the CDR-09 homograph failure — where
+- `CODEBOOK-NAMING-GRAMMAR.md:610` — 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
+- `CODEBOOK-NAMING-GRAMMAR.md:742` — by the CDR-09 walk below.**
+- `CODEBOOK-NAMING-GRAMMAR.md:744` — 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — **EXECUTED 2026-08-02**
+- `CODEBOOK-NAMING-GRAMMAR.md:752` — > `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
 - `CR-VOCABULARY-AUDIT.md:98` — `counter`/`counters` 33 axes (§8 rules exist, ~15 non-conforming — CDR-09) ·
 - `CR-VOCABULARY-AUDIT.md:135` — Cost, plainly: ~15 renames total — all already mandated by CDR-09. The ledger
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:12` — passes every existing check. The CDR-09 walk surfaced one instance by
@@ -489,7 +490,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:371` — CDR-11 (NEW) — Predestined tags: derive axes from the CR top-down
 - `CDR-PROPOSALS.md:408` — Recommend: treat as CDR-11's first application after token types.** These are
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `CODEBOOK-NAMING-GRAMMAR.md:503` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
+- `CODEBOOK-NAMING-GRAMMAR.md:574` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
 - `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
 - `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
 - `SESSION-HANDOFF-2026-08-03.md:54` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
@@ -513,7 +514,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:102` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
-- `CODEBOOK-NAMING-GRAMMAR.md:760` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
+- `CODEBOOK-NAMING-GRAMMAR.md:831` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
 - `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
@@ -587,7 +588,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D2` — 14 reference(s) across 7 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:259` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
-- `CODEBOOK-NAMING-GRAMMAR.md:761` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
+- `CODEBOOK-NAMING-GRAMMAR.md:832` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
@@ -603,11 +604,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D3` — 17 reference(s) across 7 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:323` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
-- `CODEBOOK-NAMING-GRAMMAR.md:434` — One connective, one order, closed stat list — RATIFIED (D-3):
-- `CODEBOOK-NAMING-GRAMMAR.md:451` — `lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
-- `CODEBOOK-NAMING-GRAMMAR.md:462` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
-- `CODEBOOK-NAMING-GRAMMAR.md:762` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
+- `CODEBOOK-NAMING-GRAMMAR.md:394` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
+- `CODEBOOK-NAMING-GRAMMAR.md:505` — One connective, one order, closed stat list — RATIFIED (D-3):
+- `CODEBOOK-NAMING-GRAMMAR.md:522` — `lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
+- `CODEBOOK-NAMING-GRAMMAR.md:533` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
+- `CODEBOOK-NAMING-GRAMMAR.md:833` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -632,9 +633,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1746` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `B-MIGRATION-DISCOVERY.md:641` — D4 standing rule; the grammar lane gains the killed/merged/renamed checks
 - `B-MIGRATION-DISCOVERY.md:804` — rule:temporary-keyword-grant per the b4-D4 standing rule (already
-- `CODEBOOK-NAMING-GRAMMAR.md:455` — parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
-- `CODEBOOK-NAMING-GRAMMAR.md:462` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
-- `CODEBOOK-NAMING-GRAMMAR.md:764` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
+- `CODEBOOK-NAMING-GRAMMAR.md:526` — parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
+- `CODEBOOK-NAMING-GRAMMAR.md:533` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
+- `CODEBOOK-NAMING-GRAMMAR.md:835` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
@@ -648,7 +649,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `B-MIGRATION-DISCOVERY.md:763` — authored"; the ratified b4-D5 status exists for exactly this). They flip
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
-- `CODEBOOK-NAMING-GRAMMAR.md:766` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
+- `CODEBOOK-NAMING-GRAMMAR.md:837` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
 - `MASTER-HANDOFF-ADDENDUM-2.md:183` — 4. D5 follow-up (NEW, batch 4): Captain rules on
 - `MASTER-HANDOFF-ADDENDUM-3.md:166` — D5: two pump merges DEFERRED pending Captain review of
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
@@ -699,13 +700,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `F3` — 2 reference(s) across 1 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:446` — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
-- `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:517` — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+- `CODEBOOK-NAMING-GRAMMAR.md:845` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 
 ### `F4` — 3 reference(s) across 2 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
-- `CODEBOOK-NAMING-GRAMMAR.md:791` — F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
+- `CODEBOOK-NAMING-GRAMMAR.md:845` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:862` — F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
 ### `F7` — 1 reference(s) across 1 doc(s)
@@ -863,7 +864,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `Q2` — 17 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:191` — Opponent-controlled subjects follow the PRINTED word (Q2, ratified).** 62
-- `CODEBOOK-NAMING-GRAMMAR.md:773` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `CODEBOOK-NAMING-GRAMMAR.md:844` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:7` — > ## ✅ Q1 + Q2 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:15` — > Q2 ratified with it: opponent-controlled subjects follow the printed word.
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:271` — > **Q2.** For opponent-controlled subjects, follow the **printed** word (`any-`)
@@ -882,7 +883,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q3` — 13 reference(s) across 8 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:773` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `CODEBOOK-NAMING-GRAMMAR.md:844` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:22` — > **Q3–Q7 remain open.**
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:293` — > **Q3.** Ratify **`active-player`** as new §6 SCOPE vocabulary, anchored to
 - `KEYWORD-LEDGER-CANDIDATES.md:125` — Killed axis:** `rule:draft-from-spellbook` (Q3, Captain-ratified
@@ -909,7 +910,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q5` — 5 reference(s) across 5 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:845` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CR-COVERAGE-PACKET-2026-08-02.md:86` — One batch ratification, the same shape as Q5's ~30-token batch.
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:449` — > **Q5.** Adopt **"a CR 702 keyword's DELIVERY is whatever its `702.Na`
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
@@ -917,8 +918,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q6` — 5 reference(s) across 4 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:752` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
-- `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:823` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
+- `CODEBOOK-NAMING-GRAMMAR.md:845` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:31` — Ratified exemptions encoded: the 11 idiomatic leaves (§12 + Q6), and
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:138` — > **Q6 (mechanical).** Confirm the canonicalizer change is a bug fix under the
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:90` — Q6** All 7 idiomatic-leaf exemptions ratified: burst-draw, cantrip,
@@ -929,15 +930,16 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q8` — 4 reference(s) across 4 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:795` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+- `CODEBOOK-NAMING-GRAMMAR.md:866` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:170` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
 
-### `Q8.5` — 4 reference(s) across 3 doc(s)
+### `Q8.5` — 5 reference(s) across 3 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:774` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
-- `CODEBOOK-NAMING-GRAMMAR.md:795` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+- `CODEBOOK-NAMING-GRAMMAR.md:325` — Multi-word stem tokens are already ratified (§14 Q8.5, `cant-be-blocked`), and
+- `CODEBOOK-NAMING-GRAMMAR.md:845` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:866` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:387` — > distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
 - `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 

@@ -1,0 +1,34 @@
+{
+ "batch": "2026-08-03-own-to-you-control",
+ "ruling": "docs/CODEBOOK-NAMING-GRAMMAR.md \u00a76d",
+ "source_ref": "captain-cli-2026-08-03",
+ "kind": "rename-only",
+ "note": "Grammar \u00a76d (Captain-ratified 2026-08-03, Option B). SCOPE token `own` retires to `you-control` per CR 109.5 ('you'/'your' = the object's CONTROLLER) + CR 110.2 ('Every permanent has a controller'). `you-own` is ratified separately for ownership (CR 108.3). `owned` was rejected as a one-letter homograph (CDR-09 precedent). Name-only: no member moves, no definition changes. Placement follows \u00a71's slot order [EFFECT]-[OBJECT]-[SCOPE] -- scope goes AFTER the object, which is also how the pre-existing rule:activated-tap-grants-haste-other-creature-you-control reads.",
+ "excluded": {
+  "rule:activation-restricted-to-own-upkeep": "\u00a73 RATIFIED table slug (grammar line 232, D-4 DET-owned). Here `own` means WHOSE TURN/PHASE it is (\"Activate only during your upkeep\"), a fourth sense -- not the controller of an object. Renaming would break \u00a73's exact-phrase enumeration.",
+  "rule:cost-reduction-scales-with-own-counters": "\u00a77 stat vocabulary: `own-counters` = counters ON THE SOURCE. Third sense. Logged for a separate \u00a77 ruling (-> `self-counters`), not bundled here.",
+  "rule:pump-scales-with-own-creature-count": "`own` sits INSIDE a \u00a77 scaling stat token (`own-creature-count`). Moving it would break \u00a77's closed stat list. Separate \u00a77 ruling."
+ },
+ "renames": {
+  "rule:activated-untap-another-own-permanent": "rule:activated-untap-another-permanent-you-control",
+  "rule:attack-trigger-pump-each-own-attacker": "rule:attack-trigger-pump-each-attacker-you-control",
+  "rule:attack-trigger-pump-own-creature": "rule:attack-trigger-pump-creature-you-control",
+  "rule:attack-trigger-untap-own-attacker": "rule:attack-trigger-untap-attacker-you-control",
+  "rule:cast-trigger-draw-on-target-own-creature-spell": "rule:cast-trigger-draw-on-target-creature-spell-you-control",
+  "rule:combat-trick-pump-own-creature": "rule:combat-trick-pump-creature-you-control",
+  "rule:copy-own-creature-token": "rule:copy-creature-token-you-control",
+  "rule:create-token-role-attached-to-own-creature": "rule:create-token-role-attached-to-creature-you-control",
+  "rule:etb-auto-attach-to-own-creature": "rule:etb-auto-attach-to-creature-you-control",
+  "rule:etb-bounce-own-land": "rule:etb-bounce-land-you-control",
+  "rule:etb-create-token-role-attached-to-own-creature": "rule:etb-create-token-role-attached-to-creature-you-control",
+  "rule:etb-grants-connive-to-own-creature": "rule:etb-grants-connive-to-creature-you-control",
+  "rule:etb-pump-each-own-creature": "rule:etb-pump-each-creature-you-control",
+  "rule:etb-pump-own-creature": "rule:etb-pump-creature-you-control",
+  "rule:etb-self-bounce-own-permanent": "rule:etb-self-bounce-permanent-you-control",
+  "rule:grants-cascade-to-own-spells": "rule:grants-cascade-to-spells-you-control",
+  "rule:grants-double-strike-chosen-own-creature": "rule:grants-double-strike-chosen-creature-you-control",
+  "rule:pump-each-own-creature": "rule:pump-each-creature-you-control",
+  "rule:sets-base-power-or-toughness-own-creatures": "rule:sets-base-power-or-toughness-creatures-you-control",
+  "rule:untap-each-own-creature": "rule:untap-each-creature-you-control"
+ }
+}
