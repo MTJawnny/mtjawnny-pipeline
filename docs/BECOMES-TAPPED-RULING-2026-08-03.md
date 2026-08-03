@@ -62,6 +62,34 @@ players; the axis takes the printed trigger, not the ability word.
   *restricted* becomes-tapped. Under §6a the restriction is printed, so it is a
   distinct shape, not decoration.
 
+> ## ✅ RATIFIED 2026-08-03 — and the CR sharpened two numbers
+>
+> All three tokens are now in grammar §2. **`tapped-for-mana-trigger` gained the
+> CR anchor this document left blank: CR 106.12a** — *"An ability that triggers
+> whenever a permanent 'is tapped for mana' … triggers whenever such a **mana
+> ability resolves and produces mana**."* That is verbatim support for §3's
+> claim that it is narrower than becoming tapped.
+>
+> **⚠ §2's population figures were high.** Re-measured against the ratified
+> tokens:
+>
+> | | this doc | measured |
+> |---|--:|--:|
+> | becomes tapped (self / other) | 65 / 46 | **58 / 43** |
+> | becomes untapped (self / other) | 27 / 6 | **23 / 3** |
+> | tapped for mana | 33 | **23** |
+>
+> **The tapped-for-mana gap is a category error, not a miss.** 33 cards print
+> the phrase but only 23 are *triggers*. Seven are **replacement effects**
+> (CR 614): Reality Twist, Contamination and Quarum Trench Gnomes print "**If**
+> tapped for mana, Plains produce {R}" — no trigger at all. One sits inside a
+> granted ability (§2's created-ability rule). The rest are claimed by their
+> real trigger.
+>
+> **self/other is no longer this document's problem** — §2a's subject prefix
+> composes automatically, giving `becomes-tapped-trigger` /
+> `any-becomes-tapped-trigger` without further ruling.
+
 ## 4. RULING — vocabulary ratified, axes NOT authored
 
 Proposed as new DELIVERY vocabulary (§2), each anchored to CR 603.2e:

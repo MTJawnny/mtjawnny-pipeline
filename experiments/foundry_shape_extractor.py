@@ -297,6 +297,11 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             pre = "other-" if re.search(r"\banother\b|\bother\b", clause) else "any-"
             return pre + base, pre + desc
 
+        # NB: the generic phase branches further down also test `clause`.
+        # Snowfall proved why: "Whenever an Island IS TAPPED FOR MANA, ... Spend
+        # this mana only to pay CUMULATIVE UPKEEP costs" -- the tail mentions
+        # upkeep, so a whole-line test stole it from tapped-for-mana-trigger.
+        # Fourth instance of this bug class in this file.
         # PHASE triggers are decided on the CLAUSE, and decided FIRST. The
         # event tests below scan the whole line, so "At the beginning of combat
         # on your turn, create a Goblin ... that ATTACKS this combat" reads as
@@ -363,18 +368,47 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return mark("any-damage-to-player", "any-damage-player")
         if re.search(r"\bdeals? damage to\b", low):
             return mark("any-damage-to-creature", "any-damage-creature")
-        if re.search(r"\bupkeep\b", low):
+        if re.search(r"\bupkeep\b", clause):
             return mark("upkeep-trigger", "upkeep")
-        if re.search(r"\bend step\b", low):
+        if re.search(r"\bend step\b", clause):
             return mark("end-step-trigger", "end-step")
-        if re.search(r"beginning of (each |your )?combat", low):
+        if re.search(r"beginning of (each |your )?combat", clause):
             return None, "begin-combat"
-        if re.search(r"\bdraw step\b", low):
+        if re.search(r"\bdraw step\b", clause):
             return None, "draw-step"
         if re.search(r"\bbecomes the target of\b", low):
             return mark("becomes-targeted-trigger", "becomes-targeted")
         if re.search(r"\bblocks\b|\bbecomes blocked\b", low):
             return mark("blocks-or-becomes-blocked-trigger", "blocks")
+        # --- Captain-ratified 2026-08-03, the six remaining trigger tokens ---
+        # ORDER MATTERS: "whenever you cycle OR DISCARD a card" contains the
+        # word "discard", so every cycling shape must be claimed before the
+        # generic discard-trigger branch below or it is swallowed by it.
+        # CR 702.29d also states these fire ONCE per cycle, which is what makes
+        # cycle-or-discard a distinct shape rather than a naive "cycle OR
+        # discard" reading.
+        if re.search(r"\bcycles? or discards?\b|\bcycle or discard\b", clause):
+            return mark("cycle-or-discard-trigger", "cycle-or-discard")
+        if re.search(r"\bcycles?\b", clause):
+            # CR 702.29c "When you cycle THIS CARD" is the source; "whenever you
+            # cycle A card" is any card. §2a's subject prefix already names that
+            # difference, so there is no separate `cycles-a-card-trigger` token
+            # -- minting one would give two slugs for one mechanic (design
+            # goal #1).
+            return msub("cycled-trigger", "cycled")
+        # CR 106.12a: "is tapped for mana" triggers when a MANA ABILITY resolves
+        # and produces mana -- strictly narrower than becoming tapped, so it is
+        # claimed first and is not a synonym of becomes-tapped (CR 603.2e).
+        if re.search(r"\bis tapped for mana\b|\btapped for mana\b", clause):
+            return mark("tapped-for-mana-trigger", "tapped-for-mana")
+        # CR 603.2e: "becomes tapped/untapped" is a STATE CHANGE and does not
+        # trigger if the permanent enters the battlefield in that state -- so it
+        # is neither `enters-tapped` (a replacement, CR 614) nor a tapped-state
+        # check.
+        if re.search(r"\bbecomes? untapped\b", clause):
+            return msub("becomes-untapped-trigger", "becomes-untapped")
+        if re.search(r"\bbecomes? tapped\b", clause):
+            return msub("becomes-tapped-trigger", "becomes-tapped")
         if re.search(r"\bis turned face up\b|\bturned face up\b", low):
             return None, "turned-face-up"
         if re.search(r"\bdiscards?\b", low):

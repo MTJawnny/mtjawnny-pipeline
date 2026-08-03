@@ -93,6 +93,11 @@ variable.
 | `kicker` | kicked-conditional bonus | 601.2b |
 | `death-trigger` | triggered, graveyard from battlefield | 700.4 |
 | `becomes-targeted-trigger` | triggered, "becomes the target of a spell or ability" (Ward's family; walk-ratification Q2, 2026-07-31) | 702.21a |
+| `becomes-tapped-trigger` | triggered on the STATE CHANGE untapped→tapped. Captain-ratified 2026-08-03. *"doesn't trigger if the permanent enters the battlefield in that state"* — so it is neither `enters-tapped` (a replacement, CR 614) nor a tapped-state check | 603.2e |
+| `becomes-untapped-trigger` | triggered on the state change tapped→untapped (the `Inspired` family — an ability WORD, CR 207.2c, with no rules meaning, so the axis takes the printed trigger) | 603.2e |
+| `tapped-for-mana-trigger` | triggered *"whenever such a **mana ability resolves and produces mana**"* — strictly NARROWER than becoming tapped: tapping for a non-mana cost fires `becomes-tapped-trigger` and NOT this. Not a synonym | 106.12a |
+| `cycled-trigger` | triggered when the card is cycled. CR 702.29c: *"'When you cycle this card' means 'When you **discard this card to pay an activation cost of a cycling ability**'"* — so it fires on paying the COST, and still fires if the draw is replaced or prevented | 702.29c |
+| `cycle-or-discard-trigger` | the CR's own named shape, *"whenever a player 'cycles or discards' a card"*, which **fires only ONCE when a card is cycled** — a real distinction from a naive "cycle OR discard" reading | 702.29d |
 | `blocks-or-becomes-blocked-trigger` | triggered, a blocking/being-blocked event (Bushido/Flanking/Rampage/Afflict shape; walk-ratification Q2, 2026-07-31) | 509 |
 
 Rules:
@@ -135,6 +140,28 @@ Rules:
   mechanisms for deck-building — an any-damage trigger fires off pingers, burn
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
+
+### 2c. `cycles-a-card-trigger` IS `any-cycled-trigger` — one name, not two
+
+Captain ratified **six** remaining trigger tokens on 2026-08-03. Five entered
+§2's table above. The sixth, `cycles-a-card-trigger` (21 cards, "whenever you
+cycle **a**/another card"), was **not minted as its own token** — because §2a,
+ratified the same day, already names that exact shape:
+
+| printed | token |
+|---|---|
+| "When you cycle **this card**" (CR 702.29c) | `cycled-trigger` — the source, unmarked |
+| "Whenever you cycle **a** card" | **`any-cycled-trigger`** — §2a `any-` |
+| "Whenever you cycle **another** card" | **`other-cycled-trigger`** — §2a `other-` |
+
+The **shape is ratified**; it is its slug that comes from §2a rather than from a
+new table row. Minting `cycles-a-card-trigger` alongside `any-cycled-trigger`
+would give **two slugs for one mechanic**, which design goal #1 forbids by
+name — it is the `scales-token-count-with-x` duplication class.
+
+This is the first case of §2a absorbing a token that was proposed before it
+existed, and it will not be the last: **any future "self vs a/another"
+proposal in a trigger family is already named.** Check §2a before minting.
 
 ### 2b. A CR 702 KEYWORD'S DELIVERY IS DERIVED, NOT RULED (Captain-ratified 2026-08-03, Q5)
 

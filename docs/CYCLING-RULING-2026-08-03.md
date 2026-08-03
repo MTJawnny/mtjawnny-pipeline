@@ -88,6 +88,29 @@ The specific type (`plains`, `basic land`, `wizard`…) is a **parameter**, per
 batch-5's counter-polarity precedent — no card conditions on *which* type
 another card can typecycle for.
 
+> ## ✅ RATIFIED 2026-08-03 — but only TWO of the three tokens were minted
+>
+> `cycled-trigger` (CR 702.29c) and `cycle-or-discard-trigger` (CR 702.29d) are
+> now grammar §2 vocabulary. **`cycles-a-card-trigger` was NOT minted** — §2a's
+> subject prefix, ratified the same day, already names that exact shape:
+>
+> | printed | token | measured |
+> |---|---|--:|
+> | "When you cycle **this card**" | `cycled-trigger` | 55 |
+> | "Whenever you cycle **another** card" | `other-cycled-trigger` | 5 |
+> | "Whenever **a player** cycles a card" | `any-cycled-trigger` | 13 |
+> | "Whenever you cycle **or discard** a card" | `cycle-or-discard-trigger` | 14 |
+>
+> A separate `cycles-a-card-trigger` alongside `any-cycled-trigger` would be two
+> slugs for one mechanic — design goal #1, the `scales-token-count-with-x`
+> duplication class. Recorded as **grammar §2c**. The shape is ratified; its
+> slug just comes from §2a rather than a new table row.
+>
+> This document's split of 54 / 21 / 14 measures as **55 / 18 / 14**; the 21
+> resolves into 5 `other-` + 13 `any-`, with the remainder claimed by
+> `cycle-or-discard-trigger` where the card prints both verbs ("cycle or discard
+> **another** card" — Curator of Mysteries).
+
 ## 5. LEDGERED, not authored — the trigger family
 
 CR 702.29c and 702.29d describe *triggered* abilities, which per §2 need
