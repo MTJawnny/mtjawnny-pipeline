@@ -1,0 +1,110 @@
+{
+  "batch": "tier2-packet-2026-08-02",
+  "ruling": "Captain-ratified 2026-08-02 (docs/TIER-2-DECISION-PACKET-2026-08-02.md). D3f deferred pending discussion.",
+  "renames": {
+    "rule:activated-plus1-counter-transfer-from-other-creature": {
+      "to": "rule:activated-plus1-counter-transfer-to-other-creature",
+      "definition": "An activated ability removes a +1/+1 counter from the SOURCE and places it onto another target creature. Direction is source -> other; both members (Spike Hatcher, Spike Rogue) read 'Remove a +1/+1 counter from this creature: Put a +1/+1 counter on target creature.'",
+      "why": "D1 -- name and definition asserted the reverse of what both members do"
+    }
+  },
+  "merges": [
+    {
+      "from": "rule:conditional-attack-restriction-by-opponent-land-type",
+      "to": "rule:conditional-attack-restriction-by-defending-player-land-type",
+      "why": "D2 -- identical mechanic; all four members carry the same printed text. Grammar section 1 design goal 1. `defending-player` is the CR-correct term."
+    }
+  ],
+  "new_axes": {
+    "rule:redirects-damage-from-controller-to-self": {
+      "definition": "A static ability redirects damage that would be dealt to the controller onto this permanent instead -- a lightning rod. Opposite direction from rule:redirects-combat-damage-to-controller-and-self, and distinct from rule:prevents-damage-to-self, which prevents rather than redirects.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D3a"
+    },
+    "rule:activated-redirect-damage-from-self-to-any-target": {
+      "definition": "An activated ability redirects the next damage that would be dealt to this permanent so it is dealt to any target instead. Distinct from rule:redirect-damage-to-spell-controller, which is restricted to instant/sorcery damage and sends it back at that spell's controller.",
+      "scope": "any-permanent-or-spell",
+      "source": "CAPTAIN",
+      "note": "D3b"
+    },
+    "rule:activated-prevent-combat-damage-unblocked-creature": {
+      "definition": "An activated ability, paid by returning the permanent to its owner's hand, prevents combat damage that would be dealt by a target unblocked creature this turn.",
+      "scope": "all-players",
+      "source": "CAPTAIN",
+      "note": "D3d -- the ACTIVATED sibling. Grammar section 1: DELIVERY is omitted for spell abilities, so the unmarked slug belongs to the instant (Snag) and the activated card takes the marked prefix."
+    },
+    "rule:lifegain-scales-with-target-color-count": {
+      "definition": "The controller gains life scaled to the number of colors of the TARGET itself, not to a count of permanents on the battlefield.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D3e -- distinct stat from section 7's `color-count`, which is a board count."
+    }
+  },
+  "moves": [
+    {
+      "from": "rule:redirects-combat-damage-to-controller-and-self",
+      "to": "rule:redirects-damage-from-controller-to-self",
+      "members": ["86d0ba9d-6972-4cbc-871d-3fb413565c45"],
+      "why": "D3a -- Weathered Bodyguards redirects INCOMING damage onto itself, the reverse of the axis"
+    },
+    {
+      "from": "rule:redirect-damage-to-spell-controller",
+      "to": "rule:activated-redirect-damage-from-self-to-any-target",
+      "members": ["fec51ab9-484f-46a8-b2b0-772a61d89e41"],
+      "why": "D3b -- Mirrorwood Treefolk matches neither the source restriction nor the destination"
+    },
+    {
+      "from": "rule:leaves-battlefield-trigger-create-token",
+      "to": "rule:leaves-battlefield-trigger-create-token-creature",
+      "members": ["c1b276b7-f1b3-4f6f-b6a2-1315d805e0f2"],
+      "why": "D3c -- Chittering Dispatcher is a SELF leaves-battlefield trigger with no once-per-turn limit"
+    },
+    {
+      "from": "rule:prevent-combat-damage-unblocked-creature",
+      "to": "rule:activated-prevent-combat-damage-unblocked-creature",
+      "members": ["af3936ab-0156-438d-9fef-a924d2fcffc3"],
+      "why": "D3d -- Gossamer Chains is the ACTIVATED ability; the unmarked slug is the spell's"
+    },
+    {
+      "from": "rule:lifegain-scales-with-color-count",
+      "to": "rule:lifegain-scales-with-target-color-count",
+      "members": ["dc3af7cb-03b9-445f-82eb-18798ec92934"],
+      "why": "D3e -- Breathe Your Last scales with the TARGET's colors, not a board count"
+    }
+  ],
+  "drops": [
+    {
+      "from": "rule:etb-create-token-mutagen",
+      "member": "107e9ada-4e2e-4032-addd-274bca956621",
+      "why": "Zoo Escapees triggers on LEAVING the battlefield, not entering; it is correctly homed on rule:leaves-battlefield-trigger-create-token-mutagen. Open C2 drift finding."
+    }
+  ],
+  "quote_edits": {
+    "rule:activated-counters-target-spell": {
+      "55c71732-6ba1-401d-8759-4d64dae22133": "{U}: Counter target spell with the chosen name."
+    },
+    "rule:activated-tap-or-untap-any-permanent": {
+      "55765934-07be-4f03-a2e8-8292c0b601ae": "{T}: You may tap or untap another target permanent."
+    },
+    "rule:death-trigger-scroll-regrowth": {
+      "3cd9bac9-0abc-43d8-9f84-94f965f7a2e0": "When Cormela dies, return up to one target instant or sorcery card from your graveyard to your hand."
+    },
+    "rule:energy-outlet-condition": {
+      "9373a176-a5e9-4fdc-906b-bc6aef657e5b": "Whenever this creature attacks, you may pay {E}{E}. If you do, create a 1/1 colorless Servo artifact creature token.",
+      "dbb6b7f0-33fd-4530-a621-114148fb3929": "Whenever this creature attacks, you may pay {E}{E}. If you do, it gets +2/+2 until end of turn."
+    },
+    "rule:leaves-battlefield-trigger-create-token-creature": {
+      "9087928a-4732-4661-b3ed-d0b1ea06edf6": "When this creature leaves the battlefield, create a 2/2 black Zombie creature token."
+    },
+    "rule:leaves-battlefield-trigger-create-token-mutagen": {
+      "107e9ada-4e2e-4032-addd-274bca956621": "When this creature leaves the battlefield, create a Mutagen token."
+    }
+  },
+  "definition_edits": {
+    "rule:conditional-attack-restriction-by-defending-player-land-type": "The creature can't attack unless the defending player controls a land of a specified type. Absorbed rule:conditional-attack-restriction-by-opponent-land-type (D2): the two described one mechanic, and `defending-player` is the CR-correct term -- `opponent` is wrong in multiplayer, since the restriction is templated on the defender.",
+    "rule:prevent-combat-damage-unblocked-creature": "A SPELL prevents combat damage that would be dealt by unblocked creatures this turn. DELIVERY is unmarked because it is a spell ability (grammar section 1, CR 113.3a); the activated-ability form is rule:activated-prevent-combat-damage-unblocked-creature.",
+    "rule:postcombat-main-phase-trigger": "A triggered ability that fires at the beginning of a postcombat main phase, rather than at end of turn or in the precombat main. Covers both the controller-only form (Florian) and the every-player form (Belbe); whose phase it is does not change the mechanic.",
+    "rule:combat-damage-to-player-proliferate": "Whenever a creature deals combat damage to a player or planeswalker, the controller proliferates. A condition gating the proliferate (Vexing Radgull) is a per-card detail, not part of the axis."
+  }
+}

@@ -63,6 +63,57 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
                          "note": meta.get("note", "") + (f" {ruling}" if ruling else "")}],
         }
 
+    # --- renames -------------------------------------------------------------
+    # CDR-09 precedent: the old slug becomes a `renamed` tombstone that RETAINS
+    # its members, and the new slug carries them forward. Applied before moves
+    # so a move may target a freshly renamed axis.
+    for old, meta in sorted(spec.get("renames", {}).items()):
+        if old not in axes:
+            fc.halt(f"{old}: rename source not in the codebook")
+        new = meta["to"]
+        if new in axes:
+            fc.halt(f"{old} -> {new}: rename target already exists — collision")
+        entry = axes[old]
+        new_entry = copy.deepcopy(entry)
+        new_entry["status"] = "active"
+        new_entry["merged_into"] = None
+        new_entry.pop("renamed_to", None)
+        if meta.get("definition"):
+            new_entry["definition"] = meta["definition"]
+        new_entry["history"] = list(entry.get("history", [])) + [
+            {"batch": batch, "action": "created_via_rename",
+             "note": f"renamed from {old}: {meta.get('why','')} {ruling}".strip()}]
+        axes[new] = new_entry
+        entry["status"] = "renamed"
+        entry["renamed_to"] = new
+        entry["merged_into"] = None
+        entry.setdefault("history", []).append(
+            {"batch": batch, "action": "renamed",
+             "note": f"renamed to {new}: {meta.get('why','')} {ruling}".strip()})
+
+    # --- merges --------------------------------------------------------------
+    # Members RELOCATE to the target and the source is emptied, unlike a rename
+    # tombstone: a merged axis's members live on the surviving slug, so keeping
+    # a copy on the source would double-count them.
+    for mg in spec.get("merges", []):
+        src, dst = mg["from"], mg["to"]
+        for s in (src, dst):
+            if s not in axes:
+                fc.halt(f"{s}: merge axis not in the codebook")
+        have = {m["oracle_id"] for m in axes[dst]["members"]}
+        moving = [m for m in axes[src]["members"] if m["oracle_id"] not in have]
+        axes[dst]["members"] = sorted(axes[dst]["members"] + [copy.deepcopy(m) for m in moving],
+                                      key=lambda m: m["oracle_id"])
+        axes[dst].setdefault("history", []).append(
+            {"batch": batch, "action": "absorbed_merge",
+             "note": f"absorbed {len(moving)} member(s) from {src}: {mg.get('why','')} {ruling}".strip()})
+        axes[src]["members"] = []
+        axes[src]["status"] = "merged"
+        axes[src]["merged_into"] = dst
+        axes[src].setdefault("history", []).append(
+            {"batch": batch, "action": "merged",
+             "note": f"merged into {dst}: {mg.get('why','')} {ruling}".strip()})
+
     # --- validate every move before mutating any of them --------------------
     routed = {}
     for mv in spec.get("moves", []):
@@ -141,6 +192,22 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
              "note": f"also a member of {src}; multi-axis membership. "
                      f"{ad.get('why', '')} {ruling}".strip()})
 
+    # --- drops ---------------------------------------------------------------
+    # Removing a membership that was never true. Declared explicitly because it
+    # LOWERS the member count, and a silent decrease is indistinguishable from
+    # corruption (the sweep's membership-shrank alarm exists for that reason).
+    for dr in spec.get("drops", []):
+        slug, oid = dr["from"], dr["member"]
+        if slug not in axes:
+            fc.halt(f"{slug}: drop source not in the codebook")
+        before_n = len(axes[slug]["members"])
+        axes[slug]["members"] = [m for m in axes[slug]["members"] if m["oracle_id"] != oid]
+        if len(axes[slug]["members"]) == before_n:
+            fc.halt(f"{oid}: not a member of {slug} — nothing to drop")
+        axes[slug].setdefault("history", []).append(
+            {"batch": batch, "action": "member_dropped",
+             "note": f"dropped {oid}: {dr.get('why','')} {ruling}".strip()})
+
     # --- assertion quote corrections ----------------------------------------
     # An assignment whose quote does not prove its axis is unevidenced, whatever
     # else is true of it. The re-audit needs this constantly.
@@ -198,14 +265,27 @@ def main():
     result = apply_spec(cb, spec)
     fcb.lint_or_halt(result, "codebook (post-move, in memory)")
 
+    # Expected delta is derived from the DECLARED operations, so any change the
+    # spec did not ask for is caught. Renames retain members on the tombstone
+    # (CDR-09 precedent) and therefore add a copy; merges relocate and are
+    # neutral except for members the target already had.
     before, after = total_members(cb), total_members(result)
-    n_adds = len(spec.get("adds", []))
-    expected = before + n_adds
+    n_adds, n_drops = len(spec.get("adds", [])), len(spec.get("drops", []))
+    n_rename_copies = sum(len(cb["axes"][old].get("members", []))
+                          for old in spec.get("renames", {}) if old in cb["axes"])
+    n_merge_dupes = 0
+    for mg in spec.get("merges", []):
+        if mg["from"] in cb["axes"] and mg["to"] in cb["axes"]:
+            have = {m["oracle_id"] for m in cb["axes"][mg["to"]]["members"]}
+            n_merge_dupes += sum(1 for m in cb["axes"][mg["from"]]["members"]
+                                 if m["oracle_id"] in have)
+    expected = before + n_adds - n_drops + n_rename_copies - n_merge_dupes
     if after != expected:
         fc.halt(f"MEMBER CONSERVATION FAILED: {before} -> {after}, expected {expected} "
-                f"({before} + {n_adds} declared multi-axis add(s)). Members move; they are "
-                f"never created or lost except by an explicitly declared add.")
-    print(f"member conservation OK ({before} -> {after}, {n_adds} declared add(s))")
+                f"(+{n_adds} adds -{n_drops} drops +{n_rename_copies} rename-tombstone copies "
+                f"-{n_merge_dupes} merge dupes). Every change must be declared.")
+    print(f"member conservation OK ({before} -> {after}: +{n_adds} adds, -{n_drops} drops, "
+          f"+{n_rename_copies} rename copies, -{n_merge_dupes} merge dupes)")
 
     print()
     for slug in sorted(spec.get("new_axes", {})):

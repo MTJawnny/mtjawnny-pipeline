@@ -211,7 +211,8 @@ Closed stat vocabulary (b6/b7 confusion pairs made explicit): `creature-count`,
 `graveyard-count`, `graveyard-creature-count`, `land-count`, `land-type-count`,
 `permanent-count`, `attacker-count`, `legendary-creature-count`, `mana-value`,
 `life-gained`, `x`, `opponent-count`, `target-count` (the Hinata stat),
-`token-count`, `color-count`, `charge-counters` (alias of own-counters where
+`token-count`, `color-count`, `target-color-count` (the colors of the TARGET
+ itself, not a board count — Captain-ratified 2026-08-02, D3e), `charge-counters` (alias of own-counters where
 the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
 2026-07-31 — required by the draw-scales-with-opponent-tapped-creature-count
 D-3 rename target).

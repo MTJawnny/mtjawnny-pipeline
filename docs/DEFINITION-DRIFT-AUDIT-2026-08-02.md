@@ -12,7 +12,7 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 318 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 321 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
 **27 findings.**
 
@@ -34,17 +34,17 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-44 misfiled member assignments across 17 axes:
+43 misfiled member assignments across 17 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
-| `etb-` | 13 | 39 |
+| `etb-` | 13 | 38 |
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
 | `upkeep-` | 1 | 1 |
 
-**`etb-` accounts for 39 of 44.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 38 of 43.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -135,9 +135,8 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:etb-create-token-mutagen`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 2 of 6 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
 
-- **Zoo Escapees** — "create a Mutagen token"
 - **The Ooze** — "Create a Mutagen token."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
