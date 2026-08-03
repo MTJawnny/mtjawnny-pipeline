@@ -17,15 +17,26 @@ session acting without enough context.** Not carelessness — partial reading.
 
 Before any work on the codebook, the grammar, the tier engine or the foundry:
 
+**→ Follow `docs/SESSION-START-PROCEDURE.md`. It is five gates and it is
+short.** The summary, so this file stands alone if that one is missed:
+
 1. Read the current session handoff — the newest `docs/SESSION-HANDOFF-*.md`.
    Its READING MANIFEST lists what else is mandatory for the task at hand.
 2. Read **`docs/CODEBOOK-NAMING-GRAMMAR.md` WHOLE.** Not the section that
    looks relevant. Three separate errors on 2026-08-02 came from encoding one
    section's law while §7, §12a or a batch ruling governed the same slug — two
    of them would have destroyed Captain-ratified names.
-3. Before calling any axis, slug or member defective:
-   `grep -rn '<slug>' docs/ docs/archive/` and read the hits. Batch documents
-   hold rulings recorded nowhere else, and **Captain's annotations in them are
+3. Before calling any axis, slug or member defective — **before writing the
+   finding, not after** — run:
+   ```
+   python3 experiments/foundry_slug_dossier.py <slug>
+   ```
+   It walks the axis's rename history and greps **every name it has ever
+   had** across `docs/` and `docs/archive/`, then separates ruling lines from
+   prose. A bare `grep` of the current slug is **not** sufficient: measured
+   2026-08-02, **77 of 328 active axes (23%) have their rulings filed under a
+   former name**, and 88% carry a ruling somewhere. Batch documents hold
+   rulings recorded nowhere else, and **Captain's annotations in them are
    authoritative**.
 4. Read **full oracle text, all faces**, never a truncated read. Three
    confident findings on 2026-08-02 were false because only the first ~150
