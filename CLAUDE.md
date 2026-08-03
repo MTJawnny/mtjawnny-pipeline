@@ -10,6 +10,31 @@ Also home of the tier engine and the T3 axis foundry (derived-tag mining).
 This is a separate repo from mtjawnny.github.io — that repo's CLAUDE.md
 contract does not travel here. This file is this repo's own contract.
 
+## FIRST: load full context before foundry/codebook work
+
+**Captain's finding, 2026-08-02: every drift this project has suffered was a
+session acting without enough context.** Not carelessness — partial reading.
+
+Before any work on the codebook, the grammar, the tier engine or the foundry:
+
+1. Read the current session handoff — the newest `docs/SESSION-HANDOFF-*.md`.
+   Its READING MANIFEST lists what else is mandatory for the task at hand.
+2. Read **`docs/CODEBOOK-NAMING-GRAMMAR.md` WHOLE.** Not the section that
+   looks relevant. Three separate errors on 2026-08-02 came from encoding one
+   section's law while §7, §12a or a batch ruling governed the same slug — two
+   of them would have destroyed Captain-ratified names.
+3. Before calling any axis, slug or member defective:
+   `grep -rn '<slug>' docs/ docs/archive/` and read the hits. Batch documents
+   hold rulings recorded nowhere else, and **Captain's annotations in them are
+   authoritative**.
+4. Read **full oracle text, all faces**, never a truncated read. Three
+   confident findings on 2026-08-02 were false because only the first ~150
+   characters were read.
+
+**When a check you wrote disagrees with a ratified list, suspect the check
+first.** A conformance checker is only as good as the set of rulings it
+encodes.
+
 ## Locked rules (do not drift)
 
 - **JSONL only.** All Scryfall bulk consumption goes through
@@ -78,6 +103,14 @@ contract does not travel here. This file is this repo's own contract.
 
 ## Reference
 
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-02-PM.md`**
+  — start here, always. It lists every markdown a session needs, tiered by
+  what you are about to touch.
+- Ratified codebook surgery runs through
+  `experiments/foundry_membership_move.py` with a declared spec in
+  `experiments/moves/*.json` — it decides nothing, and enforces member
+  conservation, determinism ×2 and an atomic write. Never hand-edit
+  `codebook.json`.
 - Full architecture and phase plan: `docs/BACKEND-BUILD-PLAN.md` (3.1–3.11)
   — the local, git-tracked copy; the site repo's byte-identical duplicate
   was removed 2026-08-02.

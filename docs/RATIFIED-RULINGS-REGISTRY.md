@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **45 documents under docs/**
-- ruling references found: **466**
-- distinct ruling ids: **123**
+- documents scanned: **46 documents under docs/**
+- ruling references found: **473**
+- distinct ruling ids: **124**
 - corroborated (appear in >1 doc): **75**
-- **sole-home (appear in exactly 1 doc): 48**
+- **sole-home (appear in exactly 1 doc): 49**
 
 ## Deletion gate — per document
 
@@ -50,6 +50,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `REAUDIT-TIER-2-FINDINGS-2026-08-02.md` | 114 | 1 | 0 | yes |
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-01.md` | 210 | 27 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02-PM.md` | 248 | 6 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-02.md` | 210 | 17 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -135,6 +136,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`RULING-MANIFEST-2026-07-09.md`** — sole home for 1:
 
 - `F7` (line 94) — Swat evidence. F7 (Rhythm of the Wild / Surrak) is WITHDRAWN by Captain —
+
+**`SESSION-HANDOFF-2026-08-02-PM.md`** — sole home for 1:
+
+- `D12` (line 94) — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
 
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
@@ -294,7 +299,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:489` — ADD-07 (NEW) — every-row-one-disposition count contract.** Adopt the external
 
-### `ADD-08` — 9 reference(s) across 5 doc(s)
+### `ADD-08` — 10 reference(s) across 6 doc(s)
 
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:111` — Unblocked:** ADD-08 / Tier-0 bug 4 (the adjacency rule misfiled 17 of 33
 - `CDR-PROPOSALS.md:495` — ADD-08 (NEW) — position-aware canonicalization.** `canonicalize_label`'s
@@ -302,6 +307,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:311` — the names, and both must be fixed before ADD-08 is implemented:
 - `CODEBOOK-NAMING-GRAMMAR.md:325` — be zero. ADD-08 stays blocked on §12a either way.
 - `SESSION-HANDOFF-2026-08-01.md:177` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
+- `SESSION-HANDOFF-2026-08-02-PM.md:107` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
 - `SESSION-HANDOFF-2026-08-02.md:79` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
 - `SESSION-HANDOFF-2026-08-02.md:106` — Two corrections to the ADD-08 rule** (measured, recorded in grammar §8a) —
 - `SESSION-HANDOFF-2026-08-02.md:169` — Tier-0 bug 4 (ADD-08)** — blocked on the walk, measured, rule corrections
@@ -362,12 +368,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:159` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02.md:102` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
 
-### `CDR-02` — 6 reference(s) across 4 doc(s)
+### `CDR-02` — 8 reference(s) across 5 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
 - `SESSION-HANDOFF-2026-08-01.md:142` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
+- `SESSION-HANDOFF-2026-08-02-PM.md:102` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
+- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:99` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 - `SESSION-HANDOFF-2026-08-02.md:104` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
@@ -419,7 +427,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:207` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 18 reference(s) across 9 doc(s)
+### `CDR-09` — 19 reference(s) across 10 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -438,6 +446,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `REAUDIT-TIER-2-FINDINGS-2026-08-02.md:31` — Note this axis was renamed by today's CDR-09 walk (from
 - `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
+- `SESSION-HANDOFF-2026-08-02-PM.md:122` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:103` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
@@ -504,6 +513,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `REAUDIT-TIER-2-2-2026-08-02.md:836` — definition:** When this permanent dies, return an instant or sorcery card from your graveyard to your hand. ('scroll' = instant/sorcery/interrupt card, used when a rule covers two or more; 'regrowth' = returns a card fr…
 - `TRIAGE-BATCH-5.md:831` — D11's captain-authored axis).
+
+### `D12` — 1 reference(s) across 1 doc(s)
+
+- `SESSION-HANDOFF-2026-08-02-PM.md:94` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
 
 ### `D14` — 1 reference(s) across 1 doc(s)
 
@@ -929,11 +942,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
-### `S1` — 4 reference(s) across 4 doc(s)
+### `S1` — 5 reference(s) across 5 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
 - `PARENT-TREE-CANDIDATES.md:12` — S1. Parents are DERIVED: union of ratified children computed at
+- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `S2` — 1 reference(s) across 1 doc(s)
@@ -957,10 +971,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:31` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
 
-### `S7` — 3 reference(s) across 3 doc(s)
+### `S7` — 4 reference(s) across 4 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `PARENT-TREE-CANDIDATES.md:35` — S7. Validation: proposed parents get the family-tree evidence check
+- `SESSION-HANDOFF-2026-08-02-PM.md:203` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:98` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T0` — 1 reference(s) across 1 doc(s)
