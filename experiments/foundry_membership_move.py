@@ -22,7 +22,8 @@ Spec shape:
   "batch": "...", "ruling": "docs/....md",
   "new_axes": {"rule:x": {"definition": "...", "scope": "...", "source": "CAPTAIN"}},
   "moves": [{"from": "rule:a", "to": "rule:x", "members": ["oid", ...]}],
-  "definition_edits": {"rule:a": "corrected definition text"}
+  "definition_edits": {"rule:a": "corrected definition text"},
+  "scope_edits": {"rule:a": "self"}
 }
 
 Usage:
@@ -247,6 +248,24 @@ def apply_spec(codebook: dict, spec: dict) -> dict:
         axes[slug].setdefault("history", []).append(
             {"batch": batch, "action": "definition_corrected",
              "note": f"definition corrected. {ruling}".strip()})
+
+    # --- scope corrections ---------------------------------------------------
+    # The scope field is a claim like any other and can drift from the members
+    # -- tier-3 D1 found `all-players` on an axis whose every correct member is
+    # controller-scoped. No gate reads scope, so it needs its own declared op.
+    for slug, new_scope in sorted(spec.get("scope_edits", {}).items()):
+        if slug not in axes:
+            fc.halt(f"{slug}: scope_edits names an axis not in the codebook")
+        if not str(new_scope).strip():
+            fc.halt(f"{slug}: refusing to set an empty scope")
+        old_scope = axes[slug].get("scope")
+        if old_scope == new_scope:
+            fc.halt(f"{slug}: scope is already {new_scope!r} — the spec and live state agree, "
+                    f"so this edit is a no-op and probably a mistake")
+        axes[slug]["scope"] = new_scope
+        axes[slug].setdefault("history", []).append(
+            {"batch": batch, "action": "scope_corrected",
+             "note": f"scope {old_scope!r} -> {new_scope!r}. {ruling}".strip()})
 
     return cb
 
