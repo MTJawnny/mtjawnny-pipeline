@@ -140,7 +140,49 @@ C4_CLAIMS = [
      "grammar §5/§6 — 'another' excludes the source; a slug may not claim it of "
      "a card whose printed text can affect itself",
      "C4c"),
+    # --- §6b vocabulary: adjacent words are not equivalent words --------------
+    # Captain-ratified 2026-08-02: "each opponent and each player for instance
+    # are completely different and have real in-game consequences players must
+    # accept. These are not equitable."
+    (re.compile(r"(?<![a-z])opponents?(?![a-z])"),
+     re.compile(r"\bopponents?\b", re.I),
+     "an OPPONENT restriction",
+     "grammar §6b — 'opponent' and 'player' are different claims; an "
+     "opponent-restricted slug may not hold a card that affects each player "
+     "(including its controller)",
+     "C4e"),
+    (re.compile(r"defending-player"),
+     # Templating eras: "defending player" was replaced by "the player or
+     # planeswalker it's attacking". Both are the same CR 506.2 object, and a
+     # check that knows only the old wording reports every modern card as a
+     # defect (the §3 both-polarity discipline applied to templating eras).
+     re.compile(r"\bdefending player\b|\bplayer or planeswalker it'?s attacking\b",
+                re.I),
+     "the DEFENDING PLAYER (CR 506.2)",
+     "grammar §6 — `defending-player` is CR 506.2's term of art and is not "
+     "interchangeable with 'opponent'; the bare token 'defender' is banned",
+     "C4g"),
+    (re.compile(r"(?<![a-z])controller(?![a-z])"),
+     re.compile(r"\bcontrollers?\b|\byour?\b", re.I),
+     "an effect on the CONTROLLER",
+     "grammar §6b — 'controller' names a specific player; it is not "
+     "interchangeable with owner, opponent, or each player",
+     "C4h"),
 ]
+
+# C4f is an ABSENCE test and cannot use the C4_CLAIMS shape above.
+# `mass-` does NOT mean the card prints "each" or "all" -- modern templating
+# writes a mass effect as a bare plural noun phrase ("Creatures you control get
+# +2/+2"), so an each/all/every test reports ~50 correct axes as defects.
+# What `mass-` actually asserts is grammar §6's own definition: NON-TARGETED,
+# all-covered. So the exact test is that the member must not target.
+MASS_SLUG = re.compile(r"(?<![a-z])mass(?![a-z])")
+# Object classes a mass- slug can cover. The test must be scoped to the CLASS
+# the slug claims: "each creature TARGET PLAYER controls" targets a player, not
+# the creatures, and is still a mass effect over creatures. Only a target on the
+# affected class itself contradicts the mass claim.
+MASS_NOUNS = ("creature", "permanent", "land", "artifact", "enchantment",
+              "planeswalker", "card", "player", "opponent")
 
 
 def strip_reminder(text: str) -> str:
@@ -339,6 +381,41 @@ def audit(cb: dict, cards: dict) -> list:
                     "members": bad,
                     "fix": "the printed word is the claim — re-home these members, or "
                            "correct the slug so it stops asserting what they do not do",
+                })
+
+        # C4f: `mass-` asserts NON-TARGETED (grammar §6). A member that prints
+        # "target" is making the opposite claim, whatever else is true of it.
+        if MASS_SLUG.search(body):
+            # Which class does this axis claim to cover en masse?
+            # When the slug names no class, fall back to OBJECT nouns only.
+            # Targeting a player never contradicts a mass effect over
+            # permanents: "each creature target player controls" is mass over
+            # creatures and targets nobody among them.
+            nouns = [n for n in MASS_NOUNS if n in body] or \
+                [n for n in MASS_NOUNS if n not in ("player", "opponent")]
+            hit = re.compile(
+                r"\btargets?\b(?:\s+\w+){0,2}\s+(?:" + "|".join(nouns) + r")s?\b", re.I)
+            bad = []
+            for m in entry.get("members", []):
+                quote, _full = member_texts(m, cards)
+                # Absence test: scope it to the QUOTE, the evidence this
+                # membership actually rests on. Reading whole-card text would
+                # let an unrelated second ability's "target" condemn a genuine
+                # mass ability.
+                if quote.strip() and hit.search(quote):
+                    bad.append({"oracle_id": m["oracle_id"],
+                                "card": card_label(m["oracle_id"], cards),
+                                "quote": quote.strip()})
+            if bad:
+                findings.append({
+                    "check": "C4f", "severity": "BLOCKING", "slug": slug,
+                    "law": "grammar §6 — 'mass-' means non-targeted and all-covered; "
+                           "targeting is the opposite claim",
+                    "what": f"slug claims a MASS (non-targeted) effect but {len(bad)} of "
+                            f"{len(entry.get('members', []))} member(s) print 'target'",
+                    "members": bad,
+                    "fix": "a targeted effect is not a mass effect — re-home to the "
+                           "targeted sibling, or drop 'mass-' from the slug",
                 })
 
         # C4b: the scope FIELD contradicts the members' printed ownership.

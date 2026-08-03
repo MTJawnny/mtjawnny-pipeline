@@ -14,7 +14,7 @@ accident; this is the systematic pass for the rest.
 
 Scope: 344 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**26 findings.**
+**36 findings.**
 
 | check | law | count |
 |---|---|--:|
