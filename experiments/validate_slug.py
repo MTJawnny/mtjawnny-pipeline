@@ -53,7 +53,7 @@ BANNED_LITERAL_TOKENS = {"defender", "countered"}
 DELIVERY_VOCAB = {
     "activated", "static", "etb", "death", "trigger", "leaves", "battlefield",
     "attack", "cast", "combat", "damage", "to", "player", "creature", "upkeep",
-    "landfall", "loyalty", "replacement", "delayed", "kicker", "dies",
+    "landfall", "loyalty", "replacement", "kicker", "dies",
     # Q2 (walk-ratification 2026-07-31): becomes-targeted-trigger,
     # blocks-or-becomes-blocked-trigger added to the closed DELIVERY vocab.
     "becomes", "targeted", "blocks", "blocked",
@@ -97,7 +97,12 @@ COUNTER_TOKEN_VOCAB = {
     "lander", "producing",
 }
 
-QUALIFIER_VOCAB = {"mass", "scales", "with", "cost", "activation", "additional"}
+# `delayed` moved here from DELIVERY_VOCAB by grammar §2d (Captain-ratified
+# 2026-08-03): a delayed trigger is a CREATED ability, and CR 603.7d/e give
+# its source to the creator -- so the card's delivery is whatever created it,
+# and `delayed` describes WHEN the effect happens.
+QUALIFIER_VOCAB = {"mass", "scales", "with", "cost", "activation", "additional",
+                   "delayed"}
 
 # sec.3 activation-restriction closed family -- vocabulary its slugs use.
 RESTRICTION_VOCAB = {

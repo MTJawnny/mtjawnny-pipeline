@@ -449,7 +449,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # into is-attacked by their effect text.
         if re.search(r"\battacks?\b", clause):
             if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", clause):
-                return None, "is-attacked"
+                return mark("is-attacked-trigger", "is-attacked")
             if re.search(r"^when(ever)? you attack\b", low):
                 return mark("player-attack-trigger", "player-attacks")
             return msub("attack-trigger", "attacks")

@@ -46,7 +46,7 @@ DELIVERY_PREFIX_MAP = [
     ("combat-trigger-", "combat (start-of-combat trigger, not in closed DELIVERY vocab)"),
     ("upkeep-", "upkeep-trigger"),
     ("landfall-", "landfall"),
-    ("delayed-", "delayed"),
+    ("delayed-", "QUALIFIER not delivery (§2d) -- delivery is the creating ability"),
     ("kicker-", "kicker"),
     ("draw-second-", "delayed (turn-scoped counting trigger, not in closed vocab)"),
     ("postcombat-main-phase-", "static (phase-scoped trigger, not in closed vocab)"),

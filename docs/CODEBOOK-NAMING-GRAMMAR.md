@@ -39,7 +39,10 @@ Every axis slug is a hyphen-joined sequence of slots in this fixed order:
   field carries it and no sibling differs only by scope; REQUIRED the moment a
   scope-sibling exists (the Q1/Q2 lesson: scope moved into the name for
   tap-or-untap because siblings differ there).
-- **QUALIFIER** — closed modifiers: `-conditional`, `-mass` (see 6),
+- **QUALIFIER** — closed modifiers: `-conditional`, **`delayed`** (the effect
+  happens at a later stated timing point rather than on resolution — CR 603.7;
+  moved here from DELIVERY by §2d, because the delivery of a card that creates a
+  delayed trigger is whatever *created* it), `-mass` (see 6),
   `-scales-with-<stat>` (see 7), token/counter types (see 8), cost qualifiers
   ("Free must be Free" — cost words in names are binding, ratified b2).
 
@@ -89,7 +92,7 @@ variable.
 | `landfall` | the landfall ability word | 207.2c |
 | `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |
 | `replacement` | "instead" / "skip" / "enters with/as" shapes | 614.1a–c |
-| `delayed` | delayed triggered ability created on resolution | 603.7 |
+| ~~`delayed`~~ | **RETIRED from DELIVERY 2026-08-03 — moved to QUALIFIER (§1). See §2d.** | 603.7 |
 | `kicker` | kicked-conditional bonus | 601.2b |
 | `death-trigger` | triggered, graveyard from battlefield | 700.4 |
 | `becomes-targeted-trigger` | triggered, "becomes the target of a spell or ability" (Ward's family; walk-ratification Q2, 2026-07-31) | 702.21a |
@@ -98,6 +101,7 @@ variable.
 | `tapped-for-mana-trigger` | triggered *"whenever such a **mana ability resolves and produces mana**"* — strictly NARROWER than becoming tapped: tapping for a non-mana cost fires `becomes-tapped-trigger` and NOT this. Not a synonym | 106.12a |
 | `cycled-trigger` | triggered when the card is cycled. CR 702.29c: *"'When you cycle this card' means 'When you **discard this card to pay an activation cost of a cycling ability**'"* — so it fires on paying the COST, and still fires if the draw is replaced or prevented | 702.29c |
 | `cycle-or-discard-trigger` | the CR's own named shape, *"whenever a player 'cycles or discards' a card"*, which **fires only ONCE when a card is cycled** — a real distinction from a naive "cycle OR discard" reading | 702.29d |
+| `is-attacked-trigger` | the DEFENDING side of the declaration — "whenever a creature **attacks you**". Captain-ratified 2026-08-03. CR 506.3 is a **closed enumeration**: *"Only a creature can attack or block. **Only a player, a planeswalker, or a battle can be attacked**."* **SCOPE is mandatory from day one** (§1: required the moment a sibling exists) and uses existing §5 objects: `player` 20 · `player-or-planeswalker` 15 · `planeswalker` 1 · `battle` **0 today**, reserved by the CR enumeration but **not instantiated** (zero members is a hypothesis). The compound "you or a planeswalker you control" is ONE trigger with two legal objects, not two abilities; its `or` takes the §14 F4 soft warning | 506.2, 506.3, 508.1b |
 | `player-attack-trigger` | "whenever **you attack**" — the trigger subject is the **player's declaration**, not a creature. Captain-ratified 2026-08-03. CR 508.1a: *"**the active player chooses** which creatures … will attack."* Fires **once per combat** regardless of attacker count, and **the source need not attack** — Cosmic Cube (Artifact), Sparring Regimen (Enchantment) and Gideon, the Oathsworn (Planeswalker) all print it and can never attack, so `attack-trigger` would assert something false. The "with «qualifier»" half (53 of 159) is a §1 QUALIFIER, not a second token. Not `you-attack-trigger`: §6d makes a leading `you-` a SCOPE marker | 508.1, 508.1a, 508.1m |
 | `begin-combat-trigger` | "at the beginning of combat on [whose] turn". Captain-ratified 2026-08-03. **NOT `combat-trigger`** — CR 506.1 gives combat FIVE steps and §2's combat vocabulary is already step-specific (`attack-trigger` 508, `blocks-or-becomes-blocked-trigger` 509, `combat-damage-to-*` 510), so a token spanning all five is design goal #2. Scope uses existing §6 tokens (`you-control` 300 / `each` 28 / `opponent` 5); no bare "the combat step" form exists, because combat only happens on the active player's turn | 506.1, 507 |
 | `end-combat-trigger` | *"Abilities that trigger **'at end of combat'** trigger as the end of combat step begins."* Captain-ratified 2026-08-03. **17 cards, not 111** — see the `delayed` note below: 94 further cards print "at end of combat" as a *duration inside an effect*, which is a delayed trigger belonging to its creator | 506.1, 511.2 |
@@ -118,7 +122,10 @@ Rules:
   2026-08-02).** When a card produces an ability — via an **emblem**, a
   **delayed trigger**, an ability **granted** to another permanent, or a
   **token's** printed text — the delivery belongs to the *creating* ability
-  (`loyalty`, `delayed`, …), never to the created one. Garruk, Caller of Beasts
+  (`loyalty`, `etb`, `activated`, …), never to the created one. **`delayed` is
+  NOT in that list** — a delayed trigger is the ability being CREATED, so it can
+  never be the creating ability's delivery; that was the inconsistency §2d
+  resolves. Garruk, Caller of Beasts
   is not a `cast-trigger-` card because its **−7 emblem** says "whenever you
   cast a creature spell"; Jace, Cunning Castaway is not a
   `combat-damage-to-player-` card because a **+1** made that delayed trigger.
@@ -144,6 +151,65 @@ Rules:
   mechanisms for deck-building — an any-damage trigger fires off pingers, burn
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
+
+### 2d. `delayed` is a QUALIFIER, not a DELIVERY (Captain-ratified 2026-08-03)
+
+Captain: *"delayed triggers can be annoying. CR describes it. make sure you
+checked."* Checked, and the check found §2 contradicting itself.
+
+**The contradiction.** §2 listed `delayed` as a DELIVERY slot value. But §2's own
+created-ability rule says the delivery belongs to the **creating** ability,
+never the created one — and a delayed trigger is *definitionally* a created
+ability. The two cannot both hold.
+
+**The CR settles it, and it agrees with the created-ability rule:**
+
+> **CR 603.7a** — *"Delayed triggered abilities **are created during the
+> resolution of spells or abilities**, as the result of a replacement effect
+> being applied, or as a result of a static ability…"*
+>
+> **CR 603.7d** — *"If a spell creates a delayed triggered ability, **the source
+> of that delayed triggered ability is that spell**."*
+>
+> **CR 603.7e** — *"If an activated or triggered ability creates a delayed
+> triggered ability, **the source … is the same as the source of that other
+> ability**."*
+
+The CR assigns the **source** to the creator. §2 assigns the **delivery** the
+same way. So a card that sets up a delayed trigger has the delivery of whatever
+*created* it — a spell ability (unmarked), an `etb`, an `activated` — and
+**there is no card left for `delayed` to be the delivery of.** Measured: the
+DET extractor never emitted it, and could not.
+
+**RATIFIED:**
+
+- **`delayed` is REMOVED from §2's DELIVERY vocabulary.**
+- **`delayed` is ratified as a §1 QUALIFIER** meaning *the effect happens at a
+  later, stated timing point rather than on resolution*. Anchor CR 603.7.
+- A card's DELIVERY is always its creating ability. Flickerwisp is `etb`;
+  Silent Assassin ("{3}{B}: Destroy target blocking creature at end of combat")
+  is `activated`. Both create delayed triggers; neither is `delayed`.
+
+**This is what the three live axes already mean.** Every one of their
+definitions is written from the creator's side — *"**Sets up** a delayed
+triggered ability that…"*:
+
+| axis | n | reading |
+|---|--:|---|
+| `rule:delayed-destroy-trigger` | 3 | the destroy happens later |
+| `rule:delayed-draw-next-upkeep` | 6 | the draw happens later |
+| `rule:delayed-cantrip` | 1 | *"the card draw arrives later via a delayed trigger"* |
+
+So no member moves and no definition changes. **§1's slot order puts QUALIFIER
+last**, so these three read out of order (`delayed-destroy-trigger` rather than
+`destroy-delayed`). That is a **name-only slot-order migration, LOGGED not
+executed** — it requires choosing three new names, which is a design call of its
+own and not part of resolving this tension.
+
+**No ratified number moves.** `END-STEP-TRIGGER-RULING-2026-08-03.md` §1 sets
+aside 333 cards printing "at the beginning of the **next** end step" as already
+buildable. They still are — as their creator's delivery rather than as
+`delayed`. The end-step family stays **536**.
 
 ### 2c. `cycles-a-card-trigger` IS `any-cycled-trigger` — one name, not two
 
