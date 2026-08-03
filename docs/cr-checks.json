@@ -1,0 +1,2506 @@
+{
+ "generated_from_cr_lines": 10061,
+ "n_terms": 262,
+ "schema": "cr-checks/1",
+ "source": "/Users/jawnny/Projects/mtjawnny.github.io/docs/mtg-comprehensive-rules.md",
+ "terms": [
+  {
+   "cr": "702.64",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "absorb"
+   ],
+   "term": "absorb"
+  },
+  {
+   "cr": "702.41",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "affinity"
+   ],
+   "term": "affinity"
+  },
+  {
+   "cr": "702.130",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "afflict"
+   ],
+   "term": "afflict"
+  },
+  {
+   "cr": "702.135",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "afterlife"
+   ],
+   "term": "afterlife"
+  },
+  {
+   "cr": "702.127",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "aftermath"
+   ],
+   "term": "aftermath"
+  },
+  {
+   "cr": "702.38",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "amplify"
+   ],
+   "term": "amplify"
+  },
+  {
+   "cr": "702.86",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "annihilator"
+   ],
+   "term": "annihilator"
+  },
+  {
+   "cr": "702.131",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ascend"
+   ],
+   "term": "ascend"
+  },
+  {
+   "cr": "702.132",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "assist"
+   ],
+   "term": "assist"
+  },
+  {
+   "cr": "702.65",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "aura swap"
+   ],
+   "term": "aura swap"
+  },
+  {
+   "cr": "702.113",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "awaken"
+   ],
+   "term": "awaken"
+  },
+  {
+   "cr": "702.165",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "backup"
+   ],
+   "term": "backup"
+  },
+  {
+   "cr": "702.22",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "banding"
+   ],
+   "term": "banding"
+  },
+  {
+   "cr": "702.166",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "bargain"
+   ],
+   "term": "bargain"
+  },
+  {
+   "cr": "702.91",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "battle cry"
+   ],
+   "term": "battle cry"
+  },
+  {
+   "cr": "702.103",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "bestow"
+   ],
+   "term": "bestow"
+  },
+  {
+   "cr": "702.152",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "blitz"
+   ],
+   "term": "blitz"
+  },
+  {
+   "cr": "702.54",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "bloodthirst"
+   ],
+   "term": "bloodthirst"
+  },
+  {
+   "cr": "702.142",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "boast"
+   ],
+   "term": "boast"
+  },
+  {
+   "cr": "702.45",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "bushido"
+   ],
+   "term": "bushido"
+  },
+  {
+   "cr": "702.27",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "buyback"
+   ],
+   "term": "buyback"
+  },
+  {
+   "cr": "702.85",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "cascade"
+   ],
+   "term": "cascade"
+  },
+  {
+   "cr": "702.153",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "casualty"
+   ],
+   "term": "casualty"
+  },
+  {
+   "cr": "702.72",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "champion"
+   ],
+   "term": "champion"
+  },
+  {
+   "cr": "702.73",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "changeling"
+   ],
+   "term": "changeling"
+  },
+  {
+   "cr": "702.99",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "cipher"
+   ],
+   "term": "cipher"
+  },
+  {
+   "cr": "702.148",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "cleave"
+   ],
+   "term": "cleave"
+  },
+  {
+   "cr": "702.139",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "companion"
+   ],
+   "term": "companion"
+  },
+  {
+   "cr": "702.150",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "compleated"
+   ],
+   "term": "compleated"
+  },
+  {
+   "cr": "702.78",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "conspire"
+   ],
+   "term": "conspire"
+  },
+  {
+   "cr": "702.51",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "convoke"
+   ],
+   "term": "convoke"
+  },
+  {
+   "cr": "702.167",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "craft"
+   ],
+   "term": "craft"
+  },
+  {
+   "cr": "702.122",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "crew"
+   ],
+   "term": "crew"
+  },
+  {
+   "cr": "702.24",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "cumulative upkeep"
+   ],
+   "term": "cumulative upkeep"
+  },
+  {
+   "cr": "702.29",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "cycling"
+   ],
+   "term": "cycling"
+  },
+  {
+   "cr": "702.109",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "dash"
+   ],
+   "term": "dash"
+  },
+  {
+   "cr": "702.145",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "daybound and nightbound"
+   ],
+   "term": "daybound and nightbound"
+  },
+  {
+   "cr": "702.2",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "deathtouch"
+   ],
+   "term": "deathtouch"
+  },
+  {
+   "cr": "702.147",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "decayed"
+   ],
+   "term": "decayed"
+  },
+  {
+   "cr": "702.3",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "defender"
+   ],
+   "term": "defender"
+  },
+  {
+   "cr": "702.66",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "delve"
+   ],
+   "term": "delve"
+  },
+  {
+   "cr": "702.144",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "demonstrate"
+   ],
+   "term": "demonstrate"
+  },
+  {
+   "cr": "702.105",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "dethrone"
+   ],
+   "term": "dethrone"
+  },
+  {
+   "cr": "702.114",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "devoid"
+   ],
+   "term": "devoid"
+  },
+  {
+   "cr": "702.82",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "devour"
+   ],
+   "term": "devour"
+  },
+  {
+   "cr": "702.168",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "disguise"
+   ],
+   "term": "disguise"
+  },
+  {
+   "cr": "702.146",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "disturb"
+   ],
+   "term": "disturb"
+  },
+  {
+   "cr": "702.4",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "double strike"
+   ],
+   "term": "double strike"
+  },
+  {
+   "cr": "702.52",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "dredge"
+   ],
+   "term": "dredge"
+  },
+  {
+   "cr": "702.30",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "echo"
+   ],
+   "term": "echo"
+  },
+  {
+   "cr": "702.128",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "embalm"
+   ],
+   "term": "embalm"
+  },
+  {
+   "cr": "702.119",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "emerge"
+   ],
+   "term": "emerge"
+  },
+  {
+   "cr": "702.5",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "enchant"
+   ],
+   "term": "enchant"
+  },
+  {
+   "cr": "702.141",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "encore"
+   ],
+   "term": "encore"
+  },
+  {
+   "cr": "702.154",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "enlist"
+   ],
+   "term": "enlist"
+  },
+  {
+   "cr": "702.42",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "entwine"
+   ],
+   "term": "entwine"
+  },
+  {
+   "cr": "702.50",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "epic"
+   ],
+   "term": "epic"
+  },
+  {
+   "cr": "702.6",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "equip"
+   ],
+   "term": "equip"
+  },
+  {
+   "cr": "702.120",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "escalate"
+   ],
+   "term": "escalate"
+  },
+  {
+   "cr": "702.138",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "escape"
+   ],
+   "term": "escape"
+  },
+  {
+   "cr": "702.129",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "eternalize"
+   ],
+   "term": "eternalize"
+  },
+  {
+   "cr": "702.74",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "evoke"
+   ],
+   "term": "evoke"
+  },
+  {
+   "cr": "702.100",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "evolve"
+   ],
+   "term": "evolve"
+  },
+  {
+   "cr": "702.83",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "exalted"
+   ],
+   "term": "exalted"
+  },
+  {
+   "cr": "702.177",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "exhaust"
+   ],
+   "term": "exhaust"
+  },
+  {
+   "cr": "702.110",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "exploit"
+   ],
+   "term": "exploit"
+  },
+  {
+   "cr": "702.101",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "extort"
+   ],
+   "term": "extort"
+  },
+  {
+   "cr": "702.123",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "fabricate"
+   ],
+   "term": "fabricate"
+  },
+  {
+   "cr": "702.32",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "fading"
+   ],
+   "term": "fading"
+  },
+  {
+   "cr": "702.36",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "fear"
+   ],
+   "term": "fear"
+  },
+  {
+   "cr": "702.189",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "firebending"
+   ],
+   "term": "firebending"
+  },
+  {
+   "cr": "702.7",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "first strike"
+   ],
+   "term": "first strike"
+  },
+  {
+   "cr": "702.25",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "flanking"
+   ],
+   "term": "flanking"
+  },
+  {
+   "cr": "702.8",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "flash"
+   ],
+   "term": "flash"
+  },
+  {
+   "cr": "702.34",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "flashback"
+   ],
+   "term": "flashback"
+  },
+  {
+   "cr": "702.9",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "flying"
+   ],
+   "term": "flying"
+  },
+  {
+   "cr": "702.57",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "forecast"
+   ],
+   "term": "forecast"
+  },
+  {
+   "cr": "702.143",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "foretell"
+   ],
+   "term": "foretell"
+  },
+  {
+   "cr": "702.67",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "fortify"
+   ],
+   "term": "fortify"
+  },
+  {
+   "cr": "702.173",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "freerunning"
+   ],
+   "term": "freerunning"
+  },
+  {
+   "cr": "702.68",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "frenzy"
+   ],
+   "term": "frenzy"
+  },
+  {
+   "cr": "702.102",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "fuse"
+   ],
+   "term": "fuse"
+  },
+  {
+   "cr": "702.174",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "gift"
+   ],
+   "term": "gift"
+  },
+  {
+   "cr": "702.58",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "graft"
+   ],
+   "term": "graft"
+  },
+  {
+   "cr": "702.69",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "gravestorm"
+   ],
+   "term": "gravestorm"
+  },
+  {
+   "cr": "702.180",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "harmonize"
+   ],
+   "term": "harmonize"
+  },
+  {
+   "cr": "702.10",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "haste"
+   ],
+   "term": "haste"
+  },
+  {
+   "cr": "702.55",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "haunt"
+   ],
+   "term": "haunt"
+  },
+  {
+   "cr": "702.11",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "hexproof"
+   ],
+   "term": "hexproof"
+  },
+  {
+   "cr": "702.106",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "hidden agenda"
+   ],
+   "term": "hidden agenda"
+  },
+  {
+   "cr": "702.75",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "hideaway"
+   ],
+   "term": "hideaway"
+  },
+  {
+   "cr": "702.31",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "horsemanship"
+   ],
+   "term": "horsemanship"
+  },
+  {
+   "cr": "702.176",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "impending"
+   ],
+   "term": "impending"
+  },
+  {
+   "cr": "702.126",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "improvise"
+   ],
+   "term": "improvise"
+  },
+  {
+   "cr": "702.191",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "increment"
+   ],
+   "term": "increment"
+  },
+  {
+   "cr": "702.12",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "indestructible"
+   ],
+   "term": "indestructible"
+  },
+  {
+   "cr": "702.90",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "infect"
+   ],
+   "term": "infect"
+  },
+  {
+   "cr": "702.115",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ingest"
+   ],
+   "term": "ingest"
+  },
+  {
+   "cr": "702.13",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "intimidate"
+   ],
+   "term": "intimidate"
+  },
+  {
+   "cr": "702.182",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "job select"
+   ],
+   "term": "job select"
+  },
+  {
+   "cr": "702.33",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "kicker"
+   ],
+   "term": "kicker"
+  },
+  {
+   "cr": "702.14",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "landwalk"
+   ],
+   "term": "landwalk"
+  },
+  {
+   "cr": "702.87",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "level up"
+   ],
+   "term": "level up"
+  },
+  {
+   "cr": "702.15",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "lifelink"
+   ],
+   "term": "lifelink"
+  },
+  {
+   "cr": "702.161",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "living metal"
+   ],
+   "term": "living metal"
+  },
+  {
+   "cr": "702.92",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "living weapon"
+   ],
+   "term": "living weapon"
+  },
+  {
+   "cr": "702.35",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "madness"
+   ],
+   "term": "madness"
+  },
+  {
+   "cr": "702.178",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "max speed"
+   ],
+   "term": "max speed"
+  },
+  {
+   "cr": "702.187",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "mayhem"
+   ],
+   "term": "mayhem"
+  },
+  {
+   "cr": "702.121",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "melee"
+   ],
+   "term": "melee"
+  },
+  {
+   "cr": "702.111",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "menace"
+   ],
+   "term": "menace"
+  },
+  {
+   "cr": "702.134",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "mentor"
+   ],
+   "term": "mentor"
+  },
+  {
+   "cr": "702.94",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "miracle"
+   ],
+   "term": "miracle"
+  },
+  {
+   "cr": "702.181",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "mobilize"
+   ],
+   "term": "mobilize"
+  },
+  {
+   "cr": "702.43",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "modular"
+   ],
+   "term": "modular"
+  },
+  {
+   "cr": "702.162",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "more than meets the eye"
+   ],
+   "term": "more than meets the eye"
+  },
+  {
+   "cr": "702.37",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "morph"
+   ],
+   "term": "morph"
+  },
+  {
+   "cr": "702.140",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "mutate"
+   ],
+   "term": "mutate"
+  },
+  {
+   "cr": "702.116",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "myriad"
+   ],
+   "term": "myriad"
+  },
+  {
+   "cr": "702.49",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ninjutsu"
+   ],
+   "term": "ninjutsu"
+  },
+  {
+   "cr": "702.48",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "offering"
+   ],
+   "term": "offering"
+  },
+  {
+   "cr": "702.175",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "offspring"
+   ],
+   "term": "offspring"
+  },
+  {
+   "cr": "702.107",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "outlast"
+   ],
+   "term": "outlast"
+  },
+  {
+   "cr": "702.96",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "overload"
+   ],
+   "term": "overload"
+  },
+  {
+   "cr": "702.192",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "paradigm"
+   ],
+   "term": "paradigm"
+  },
+  {
+   "cr": "702.124",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "partner"
+   ],
+   "term": "partner"
+  },
+  {
+   "cr": "702.79",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "persist"
+   ],
+   "term": "persist"
+  },
+  {
+   "cr": "702.26",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "phasing"
+   ],
+   "term": "phasing"
+  },
+  {
+   "cr": "702.170",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "plot"
+   ],
+   "term": "plot"
+  },
+  {
+   "cr": "702.70",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "poisonous"
+   ],
+   "term": "poisonous"
+  },
+  {
+   "cr": "702.16",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "protection"
+   ],
+   "term": "protection"
+  },
+  {
+   "cr": "702.160",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "prototype"
+   ],
+   "term": "prototype"
+  },
+  {
+   "cr": "702.39",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "provoke"
+   ],
+   "term": "provoke"
+  },
+  {
+   "cr": "702.108",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "prowess"
+   ],
+   "term": "prowess"
+  },
+  {
+   "cr": "702.76",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "prowl"
+   ],
+   "term": "prowl"
+  },
+  {
+   "cr": "702.23",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "rampage"
+   ],
+   "term": "rampage"
+  },
+  {
+   "cr": "702.156",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ravenous"
+   ],
+   "term": "ravenous"
+  },
+  {
+   "cr": "702.17",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "reach"
+   ],
+   "term": "reach"
+  },
+  {
+   "cr": "702.155",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "read ahead"
+   ],
+   "term": "read ahead"
+  },
+  {
+   "cr": "702.88",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "rebound"
+   ],
+   "term": "rebound"
+  },
+  {
+   "cr": "702.151",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "reconfigure"
+   ],
+   "term": "reconfigure"
+  },
+  {
+   "cr": "702.59",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "recover"
+   ],
+   "term": "recover"
+  },
+  {
+   "cr": "702.77",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "reinforce"
+   ],
+   "term": "reinforce"
+  },
+  {
+   "cr": "702.112",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "renown"
+   ],
+   "term": "renown"
+  },
+  {
+   "cr": "702.56",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "replicate"
+   ],
+   "term": "replicate"
+  },
+  {
+   "cr": "702.81",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "retrace"
+   ],
+   "term": "retrace"
+  },
+  {
+   "cr": "702.136",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "riot"
+   ],
+   "term": "riot"
+  },
+  {
+   "cr": "702.60",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ripple"
+   ],
+   "term": "ripple"
+  },
+  {
+   "cr": "702.171",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "saddle"
+   ],
+   "term": "saddle"
+  },
+  {
+   "cr": "702.97",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "scavenge"
+   ],
+   "term": "scavenge"
+  },
+  {
+   "cr": "702.28",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "shadow"
+   ],
+   "term": "shadow"
+  },
+  {
+   "cr": "702.18",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "shroud"
+   ],
+   "term": "shroud"
+  },
+  {
+   "cr": "702.118",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "skulk"
+   ],
+   "term": "skulk"
+  },
+  {
+   "cr": "702.190",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "sneak"
+   ],
+   "term": "sneak"
+  },
+  {
+   "cr": "702.169",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "solved"
+   ],
+   "term": "solved"
+  },
+  {
+   "cr": "702.95",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "soulbond"
+   ],
+   "term": "soulbond"
+  },
+  {
+   "cr": "702.46",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "soulshift"
+   ],
+   "term": "soulshift"
+  },
+  {
+   "cr": "702.158",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "space sculptor"
+   ],
+   "term": "space sculptor"
+  },
+  {
+   "cr": "702.137",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "spectacle"
+   ],
+   "term": "spectacle"
+  },
+  {
+   "cr": "702.47",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "splice"
+   ],
+   "term": "splice"
+  },
+  {
+   "cr": "702.61",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "split second"
+   ],
+   "term": "split second"
+  },
+  {
+   "cr": "702.172",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "spree"
+   ],
+   "term": "spree"
+  },
+  {
+   "cr": "702.157",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "squad"
+   ],
+   "term": "squad"
+  },
+  {
+   "cr": "702.184",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "station"
+   ],
+   "term": "station"
+  },
+  {
+   "cr": "702.40",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "storm"
+   ],
+   "term": "storm"
+  },
+  {
+   "cr": "702.44",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "sunburst"
+   ],
+   "term": "sunburst"
+  },
+  {
+   "cr": "702.117",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "surge"
+   ],
+   "term": "surge"
+  },
+  {
+   "cr": "702.62",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "suspend"
+   ],
+   "term": "suspend"
+  },
+  {
+   "cr": "702.194",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "teamwork"
+   ],
+   "term": "teamwork"
+  },
+  {
+   "cr": "702.183",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "tiered"
+   ],
+   "term": "tiered"
+  },
+  {
+   "cr": "702.164",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "toxic"
+   ],
+   "term": "toxic"
+  },
+  {
+   "cr": "702.149",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "training"
+   ],
+   "term": "training"
+  },
+  {
+   "cr": "702.19",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "trample"
+   ],
+   "term": "trample"
+  },
+  {
+   "cr": "702.71",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "transfigure"
+   ],
+   "term": "transfigure"
+  },
+  {
+   "cr": "702.53",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "transmute"
+   ],
+   "term": "transmute"
+  },
+  {
+   "cr": "702.104",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "tribute"
+   ],
+   "term": "tribute"
+  },
+  {
+   "cr": "702.89",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "umbra armor"
+   ],
+   "term": "umbra armor"
+  },
+  {
+   "cr": "702.125",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "undaunted"
+   ],
+   "term": "undaunted"
+  },
+  {
+   "cr": "702.93",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "undying"
+   ],
+   "term": "undying"
+  },
+  {
+   "cr": "702.84",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "unearth"
+   ],
+   "term": "unearth"
+  },
+  {
+   "cr": "702.98",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "unleash"
+   ],
+   "term": "unleash"
+  },
+  {
+   "cr": "702.63",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "vanishing"
+   ],
+   "term": "vanishing"
+  },
+  {
+   "cr": "702.20",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "vigilance"
+   ],
+   "term": "vigilance"
+  },
+  {
+   "cr": "702.159",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "visit"
+   ],
+   "term": "visit"
+  },
+  {
+   "cr": "702.21",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "ward"
+   ],
+   "term": "ward"
+  },
+  {
+   "cr": "702.185",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "warp"
+   ],
+   "term": "warp"
+  },
+  {
+   "cr": "702.80",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "wither"
+   ],
+   "term": "wither"
+  },
+  {
+   "cr": "701.33",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "abandon",
+    "abandones",
+    "abandons"
+   ],
+   "term": "abandon"
+  },
+  {
+   "cr": "701.2",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "activate",
+    "activatees",
+    "activates"
+   ],
+   "term": "activate"
+  },
+  {
+   "cr": "701.46",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "adapt",
+    "adaptes",
+    "adapts"
+   ],
+   "term": "adapt"
+  },
+  {
+   "cr": "701.65",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "airbend",
+    "airbendes",
+    "airbends"
+   ],
+   "term": "airbend"
+  },
+  {
+   "cr": "701.47",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "amass"
+   ],
+   "term": "amass"
+  },
+  {
+   "cr": "701.45",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "assemble",
+    "assemblees",
+    "assembles"
+   ],
+   "term": "assemble"
+  },
+  {
+   "cr": "701.3",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "attach",
+    "attaches",
+    "attachs"
+   ],
+   "term": "attach"
+  },
+  {
+   "cr": "701.4",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "behold",
+    "beholdes",
+    "beholds"
+   ],
+   "term": "behold"
+  },
+  {
+   "cr": "701.68",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "blight",
+    "blightes",
+    "blights"
+   ],
+   "term": "blight"
+  },
+  {
+   "cr": "701.39",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "bolster",
+    "bolsteres",
+    "bolsters"
+   ],
+   "term": "bolster"
+  },
+  {
+   "cr": "701.5",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "cast",
+    "castes",
+    "casts"
+   ],
+   "term": "cast"
+  },
+  {
+   "cr": "701.30",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "clash",
+    "clashes",
+    "clashs"
+   ],
+   "term": "clash"
+  },
+  {
+   "cr": "701.58",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "cloak",
+    "cloakes",
+    "cloaks"
+   ],
+   "term": "cloak"
+  },
+  {
+   "cr": "701.59",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "collect evidence",
+    "collect evidencees",
+    "collect evidences"
+   ],
+   "term": "collect evidence"
+  },
+  {
+   "cr": "701.50",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "connive",
+    "connivees",
+    "connives"
+   ],
+   "term": "connive"
+  },
+  {
+   "cr": "701.28",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "convert",
+    "convertes",
+    "converts"
+   ],
+   "term": "convert"
+  },
+  {
+   "cr": "701.6",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "counter",
+    "counteres",
+    "counters"
+   ],
+   "term": "counter"
+  },
+  {
+   "cr": "701.7",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "create",
+    "createes",
+    "creates"
+   ],
+   "term": "create"
+  },
+  {
+   "cr": "701.8",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "destroy",
+    "destroyes",
+    "destroys"
+   ],
+   "term": "destroy"
+  },
+  {
+   "cr": "701.35",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "detain",
+    "detaines",
+    "detains"
+   ],
+   "term": "detain"
+  },
+  {
+   "cr": "701.9",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "discard",
+    "discardes",
+    "discards"
+   ],
+   "term": "discard"
+  },
+  {
+   "cr": "701.57",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "discover",
+    "discoveres",
+    "discovers"
+   ],
+   "term": "discover"
+  },
+  {
+   "cr": "701.10",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "double",
+    "doublees",
+    "doubles"
+   ],
+   "term": "double"
+  },
+  {
+   "cr": "701.66",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "earthbend",
+    "earthbendes",
+    "earthbends"
+   ],
+   "term": "earthbend"
+  },
+  {
+   "cr": "701.63",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "endure",
+    "endurees",
+    "endures"
+   ],
+   "term": "endure"
+  },
+  {
+   "cr": "701.12",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "exchange",
+    "exchangees",
+    "exchanges"
+   ],
+   "term": "exchange"
+  },
+  {
+   "cr": "701.43",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "exert",
+    "exertes",
+    "exerts"
+   ],
+   "term": "exert"
+  },
+  {
+   "cr": "701.13",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "exile",
+    "exilees",
+    "exiles"
+   ],
+   "term": "exile"
+  },
+  {
+   "cr": "701.44",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "explore",
+    "explorees",
+    "explores"
+   ],
+   "term": "explore"
+  },
+  {
+   "cr": "701.55",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "face a villainous choice",
+    "face a villainous choicees",
+    "face a villainous choices"
+   ],
+   "term": "face a villainous choice"
+  },
+  {
+   "cr": "701.29",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "fateseal",
+    "fateseales",
+    "fateseals"
+   ],
+   "term": "fateseal"
+  },
+  {
+   "cr": "701.14",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "fight",
+    "fightes",
+    "fights"
+   ],
+   "term": "fight"
+  },
+  {
+   "cr": "701.61",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "forage",
+    "foragees",
+    "forages"
+   ],
+   "term": "forage"
+  },
+  {
+   "cr": "701.15",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "goad",
+    "goades",
+    "goads"
+   ],
+   "term": "goad"
+  },
+  {
+   "cr": "701.64",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "harness"
+   ],
+   "term": "harness"
+  },
+  {
+   "cr": "701.69",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "heal",
+    "heales",
+    "heals"
+   ],
+   "term": "heal"
+  },
+  {
+   "cr": "701.53",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "incubate",
+    "incubatees",
+    "incubates"
+   ],
+   "term": "incubate"
+  },
+  {
+   "cr": "701.16",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "investigate",
+    "investigatees",
+    "investigates"
+   ],
+   "term": "investigate"
+  },
+  {
+   "cr": "701.48",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "learn",
+    "learnes",
+    "learns"
+   ],
+   "term": "learn"
+  },
+  {
+   "cr": "701.40",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "manifest",
+    "manifestes",
+    "manifests"
+   ],
+   "term": "manifest"
+  },
+  {
+   "cr": "701.62",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "manifest dread",
+    "manifest dreades",
+    "manifest dreads"
+   ],
+   "term": "manifest dread"
+  },
+  {
+   "cr": "701.42",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "meld",
+    "meldes",
+    "melds"
+   ],
+   "term": "meld"
+  },
+  {
+   "cr": "701.17",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "mill",
+    "milles",
+    "mills"
+   ],
+   "term": "mill"
+  },
+  {
+   "cr": "701.37",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "monstrosity",
+    "monstrosityes",
+    "monstrositys"
+   ],
+   "term": "monstrosity"
+  },
+  {
+   "cr": "701.51",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "open an attraction",
+    "open an attractiones",
+    "open an attractions"
+   ],
+   "term": "open an attraction"
+  },
+  {
+   "cr": "701.31",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "planeswalk",
+    "planeswalkes",
+    "planeswalks"
+   ],
+   "term": "planeswalk"
+  },
+  {
+   "cr": "701.18",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "play",
+    "playes",
+    "plays"
+   ],
+   "term": "play"
+  },
+  {
+   "cr": "701.36",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "populate",
+    "populatees",
+    "populates"
+   ],
+   "term": "populate"
+  },
+  {
+   "cr": "701.34",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "proliferate",
+    "proliferatees",
+    "proliferates"
+   ],
+   "term": "proliferate"
+  },
+  {
+   "cr": "701.19",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "regenerate",
+    "regeneratees",
+    "regenerates"
+   ],
+   "term": "regenerate"
+  },
+  {
+   "cr": "701.20",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "reveal",
+    "reveales",
+    "reveals"
+   ],
+   "term": "reveal"
+  },
+  {
+   "cr": "701.52",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "roll to visit your attractions"
+   ],
+   "term": "roll to visit your attractions"
+  },
+  {
+   "cr": "701.21",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "sacrifice",
+    "sacrificees",
+    "sacrifices"
+   ],
+   "term": "sacrifice"
+  },
+  {
+   "cr": "701.22",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "scry",
+    "scryes",
+    "scrys"
+   ],
+   "term": "scry"
+  },
+  {
+   "cr": "701.23",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "search",
+    "searches",
+    "searchs"
+   ],
+   "term": "search"
+  },
+  {
+   "cr": "701.32",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "set in motion",
+    "set in motiones",
+    "set in motions"
+   ],
+   "term": "set in motion"
+  },
+  {
+   "cr": "701.24",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "shuffle",
+    "shufflees",
+    "shuffles"
+   ],
+   "term": "shuffle"
+  },
+  {
+   "cr": "701.41",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "support",
+    "supportes",
+    "supports"
+   ],
+   "term": "support"
+  },
+  {
+   "cr": "701.25",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "surveil",
+    "surveiles",
+    "surveils"
+   ],
+   "term": "surveil"
+  },
+  {
+   "cr": "701.60",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "suspect",
+    "suspectes",
+    "suspects"
+   ],
+   "term": "suspect"
+  },
+  {
+   "cr": "701.26",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "tap and untap",
+    "tap and untapes",
+    "tap and untaps"
+   ],
+   "term": "tap and untap"
+  },
+  {
+   "cr": "701.54",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "the ring tempts you",
+    "the ring tempts youes",
+    "the ring tempts yous"
+   ],
+   "term": "the ring tempts you"
+  },
+  {
+   "cr": "701.56",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "time travel",
+    "time traveles",
+    "time travels"
+   ],
+   "term": "time travel"
+  },
+  {
+   "cr": "701.27",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "transform",
+    "transformes",
+    "transforms"
+   ],
+   "term": "transform"
+  },
+  {
+   "cr": "701.11",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "triple",
+    "triplees",
+    "triples"
+   ],
+   "term": "triple"
+  },
+  {
+   "cr": "701.49",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "venture into the dungeon",
+    "venture into the dungeones",
+    "venture into the dungeons"
+   ],
+   "term": "venture into the dungeon"
+  },
+  {
+   "cr": "701.38",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "vote",
+    "votees",
+    "votes"
+   ],
+   "term": "vote"
+  },
+  {
+   "cr": "701.67",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "waterbend",
+    "waterbendes",
+    "waterbends"
+   ],
+   "term": "waterbend"
+  },
+  {
+   "cr": "109.1",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "another",
+    "other"
+   ],
+   "term": "another"
+  },
+  {
+   "cr": "108.4",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "controller",
+    "controllers"
+   ],
+   "term": "controller"
+  },
+  {
+   "cr": "506.2",
+   "era_variants": [
+    "the player or planeswalker it's attacking",
+    "the player or planeswalker that creature is attacking"
+   ],
+   "kind": "scope",
+   "printed_forms": [
+    "defending player"
+   ],
+   "term": "defending player"
+  },
+  {
+   "cr": "n/a",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "each",
+    "all",
+    "every"
+   ],
+   "term": "each"
+  },
+  {
+   "cr": "102.1",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "opponent",
+    "opponents"
+   ],
+   "term": "opponent"
+  },
+  {
+   "cr": "601.2c",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "target",
+    "targets"
+   ],
+   "term": "target"
+  },
+  {
+   "cr": "108.4",
+   "era_variants": [],
+   "kind": "scope",
+   "printed_forms": [
+    "you control",
+    "your"
+   ],
+   "term": "you control"
+  }
+ ]
+}
