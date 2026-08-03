@@ -19,6 +19,7 @@ Usage:
   python3 experiments/foundry_reaudit.py --min-members 2 --max-members 2
 """
 import sys
+import re
 import json
 import argparse
 from pathlib import Path
@@ -29,6 +30,57 @@ import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
 
 DRIFT_JSON = fc.FOUNDRY_OUT_DIR / "definition_drift_report.json"
+
+
+_PUNCT = re.compile(r"[^a-z0-9 ]+")
+
+
+def _norm(t: str) -> str:
+    return " ".join(_PUNCT.sub(" ", t.lower()).split())
+
+
+def quote_is_verbatim(quote: str, card: dict, full: str) -> bool:
+    """Is the cited quote actually IN the card's text? A quote that is not
+    verbatim is paraphrased, mis-transcribed, or from another card -- none of
+    which is evidence. CARDNAME substitutions are tolerated: quotes routinely
+    write "this creature" where the printed text uses the card's own name."""
+    q, f = _norm(quote), _norm(full)
+    if not q:
+        return False
+    if q in f:
+        return True
+    # Tolerate CARDNAME <-> "this creature"/"this permanent" substitution both ways.
+    for nm in fc._cardname_candidates(card or {}):
+        n = _norm(nm)
+        if not n:
+            continue
+        f = f.replace(n, "this creature")
+        q = q.replace(n, "this creature")
+    return q in f
+
+
+# A card whose text carries loyalty abilities, an emblem, or a delayed trigger
+# may be filing a CREATED ability's delivery against itself -- Captain-ratified
+# 2026-08-02, grammar §2: a card does not deliver an ability it creates.
+_LOYALTY = re.compile(r"^\s*[+−-]?\d+\s*:", re.M)
+_EMBLEM = re.compile(r"\bemblem\b", re.I)
+_DELAYED = re.compile(r"at the beginning of the next|this turn,|until end of turn,", re.I)
+# Delivery prefixes that assert the CARD ITSELF delivers the ability.
+_SELF_DELIVERY = ("etb-", "cast-trigger-", "attack-trigger-", "death-trigger-",
+                  "combat-damage-to-player-", "combat-damage-to-creature-",
+                  "any-damage-to-player-", "any-damage-to-creature-",
+                  "leaves-battlefield-trigger-", "upkeep-", "landfall-")
+
+
+def created_ability_risk(slug: str, full: str) -> str:
+    body = slug.split(":", 1)[-1]
+    if not body.startswith(_SELF_DELIVERY):
+        return ""
+    if _EMBLEM.search(full):
+        return "card text mentions an EMBLEM — is the axis's ability the emblem's?"
+    if _LOYALTY.search(full):
+        return "card has LOYALTY abilities — is the axis's ability created by one?"
+    return ""
 
 
 def load_drift_index() -> dict:
@@ -82,6 +134,7 @@ def main():
         f"**{len(rows)} axes, {sum(r[0] for r in rows)} member-reads.**",
         "",
     ]
+    flag_tally = {}
     for n, slug, e in rows:
         flags = drift.get(slug, [])
         L += [f"## `{slug}` — {n} member(s)", ""]
@@ -102,15 +155,34 @@ def main():
             name = (card or {}).get("name") or oid
             full = fc.full_oracle_text(card) if card else "(NOT IN CORPUS)"
             L += [f"### {name}", ""]
+            auto = []
             for a in m.get("assertions", []):
                 q = (a.get("quote") or "").strip()
                 L.append(f"- *cited* (`{a.get('class')}`, {a.get('evidence_status')}): "
                          + (f"\"{q}\"" if q else "**NO QUOTE**"))
+                if not q:
+                    auto.append("**NO QUOTE** — unevidenced assignment")
+                elif card and not quote_is_verbatim(q, card, full):
+                    auto.append("**QUOTE NOT VERBATIM** — cited text is not in this card")
+            risk = created_ability_risk(slug, full) if card else ""
+            if risk:
+                auto.append(f"**CREATED-ABILITY RISK** — {risk}")
+            if card is None:
+                auto.append("**NOT IN CORPUS**")
+            for fl in auto:
+                L.append(f"- {fl}")
+                flag_tally[fl.split(chr(8212))[0].strip()] = \
+                    flag_tally.get(fl.split(chr(8212))[0].strip(), 0) + 1
             L += ["", "```", full.strip() or "(no oracle text)", "```", ""]
         L += ["**Verdict:** _(pending)_", "", "---", ""]
 
+    L += ["## Auto-flag tally", ""]
+    for k, v in sorted(flag_tally.items(), key=lambda kv: -kv[1]):
+        L.append(f"- {k} — **{v}**")
     out.write_text("\n".join(L))
     print(f"{len(rows)} axes, {sum(r[0] for r in rows)} member-reads")
+    for k, v in sorted(flag_tally.items(), key=lambda kv: -kv[1]):
+        print(f"  {k}: {v}")
     print(f"wrote {out}")
 
 

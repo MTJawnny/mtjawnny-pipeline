@@ -104,6 +104,19 @@ Rules:
 - `combat-damage-triggers-<effect>` normalizes to
   `combat-damage-to-player-<effect>` / `-to-creature-<effect>` at the walk —
   the b7 Guild Thief definition bug is exactly this slot being unmarked.
+- **A card does not deliver an ability it CREATES (Captain-ratified
+  2026-08-02).** When a card produces an ability — via an **emblem**, a
+  **delayed trigger**, an ability **granted** to another permanent, or a
+  **token's** printed text — the delivery belongs to the *creating* ability
+  (`loyalty`, `delayed`, …), never to the created one. Garruk, Caller of Beasts
+  is not a `cast-trigger-` card because its **−7 emblem** says "whenever you
+  cast a creature spell"; Jace, Cunning Castaway is not a
+  `combat-damage-to-player-` card because a **+1** made that delayed trigger.
+  Membership on the EFFECT axis may still be correct; the DELIVERY axis is not.
+  This is the same principle as "DELIVERY is determined by ability STRUCTURE,
+  never by effect words", applied one level up: read *whose* ability it is
+  before reading what it does. Record:
+  `docs/REAUDIT-TIER-1-FINDINGS-2026-08-02.md` §2a.
 - **`combat-` is a RESTRICTION, not decoration (Captain-ratified 2026-08-02).**
   A card reading "whenever ~ deals damage to an opponent" makes no
   combat claim and takes `any-damage-to-player`. The two are different
