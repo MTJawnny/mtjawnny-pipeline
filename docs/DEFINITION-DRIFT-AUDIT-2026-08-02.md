@@ -14,13 +14,14 @@ accident; this is the systematic pass for the rest.
 
 Scope: 307 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**21 findings.**
+**31 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 1 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
 | C2 | §1/§2 — member delivery contradicts the slug prefix | 19 |
+| C3 | §4 — member effect contradicts the slug suffix | 10 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -250,3 +251,100 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Faerie Dreamthief** — "When this creature enters, surveil 1."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
+
+## C3 — grammar §4 — EFFECT verbs are standardized; the suffix is a claim about what the member DOES
+
+### `rule:activated-ability-costs-self-sacrifice`
+
+**slug's effect is 'sacrifice', so members must show 'sacrifice'; 3 of 44 never do, in the cited quote or anywhere in their oracle text**
+
+- **Brittle Effigy** — "{4}, {T}, Exile this artifact: Exile target creature."
+- **Relic of Progenitus** — "{1}, Exile this artifact: Exile all graveyards. Draw a card."
+- **The Book of Vile Darkness** — "{T}, Exile The Book of Vile Darkness and artifacts you control named Eye of Vecna and Hand of Vecna: Create Vecna, a legendary 8/8 black Zombie God creature token with indestructible and all triggered abilities of the exiled cards."
+
+*Proposed:* these members do not perform 'sacrifice' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:cast-trigger-draw-on-target-own-creature-spell`
+
+**slug's effect is 'draw', so members must show 'draw'; 3 of 5 never do, in the cited quote or anywhere in their oracle text**
+
+- **Mockingbird, Ace Agent** — "Whenever you cast a spell that targets a creature you control, put a +1/+1 counter on Mockingbird."
+- **Scolding Administrator** — "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature."
+- **Rehearsed Debater** — "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn."
+
+*Proposed:* these members do not perform 'draw' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:combat-damage-to-player-discard`
+
+**slug's effect is 'discard', so members must show 'discard'; 2 of 9 never do, in the cited quote or anywhere in their oracle text**
+
+- **Keen Sense** — "Whenever enchanted creature deals damage to an opponent, you may draw a card."
+- **Riptide Entrancer** — "Whenever this creature deals combat damage to a player, you may sacrifice it."
+
+*Proposed:* these members do not perform 'discard' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:combat-damage-to-player-loot`
+
+**slug's effect is 'loot', so members must show a discard (looting is draw-THEN-discard); 8 of 15 never do, in the cited quote or anywhere in their oracle text**
+
+- **Beast, Erudite Aerialist** — "Whenever Beast deals combat damage to a player, draw a card."
+- **Ninja of the Deep Hours** — "Whenever this creature deals combat damage to a player, you may draw a card."
+- **Fear of Failed Tests** — "Whenever this creature deals combat damage to a player, draw that many cards."
+- **Prowler, Misguided Mentor** — "Whenever Prowler deals combat damage to a player, put a +1/+1 counter on another target creature you control."
+- **Maelstrom Archangel** — "Whenever this creature deals combat damage to a player, you may cast a spell from your hand without paying its mana cost."
+- **Willie Lumpkin, Postman** — "Whenever Willie Lumpkin deals combat damage to an opponent, you draw a card and that player may draw a card."
+- **Surrakar Spellblade** — "Whenever this creature deals combat damage to a player, you may draw X cards, where X is the number of charge counters on it."
+- **Sword of Body and Mind** — "Whenever equipped creature deals combat damage to a player, you create a 2/2 green Wolf creature token and that player mills ten cards."
+
+*Proposed:* these members do not perform 'loot' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:delayed-destroy-trigger`
+
+**slug's effect is 'destroy', so members must show 'destroy'; 1 of 4 never do, in the cited quote or anywhere in their oracle text**
+
+- **Arius, Flyby Trawler** — "Discard that card at the beginning of the next end step."
+
+*Proposed:* these members do not perform 'destroy' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:draw-cards-with-life-loss-cost`
+
+**slug's effect is 'draw', so members must show 'draw'; 1 of 10 never do, in the cited quote or anywhere in their oracle text**
+
+- **Bitter Revelation** — "You lose 2 life."
+
+*Proposed:* these members do not perform 'draw' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:etb-loot`
+
+**slug's effect is 'loot', so members must show a discard (looting is draw-THEN-discard); 1 of 21 never do, in the cited quote or anywhere in their oracle text**
+
+- **Instant Ramen** — "When this artifact enters, draw a card."
+
+*Proposed:* these members do not perform 'loot' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:etb-scry`
+
+**slug's effect is 'scry', so members must show 'scry'; 3 of 17 never do, in the cited quote or anywhere in their oracle text**
+
+- **Gallifrey Council Chamber** — "When Gallifrey Council Chamber enters, surveil 1."
+- **Lazav, the Multifarious** — "When Lazav enters, surveil 1."
+- **Watcher in the Mist** — "When this creature enters, surveil 2."
+
+*Proposed:* these members do not perform 'scry' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:mass-graveyard-exile`
+
+**slug's effect is 'exile', so members must show 'exile'; 1 of 17 never do, in the cited quote or anywhere in their oracle text**
+
+- **Oath of Druids** — "all other cards revealed this way into their graveyard"
+
+*Proposed:* these members do not perform 'exile' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:sacrifice-for-creature-token`
+
+**slug's effect is 'sacrifice', so members must show 'sacrifice'; 2 of 10 never do, in the cited quote or anywhere in their oracle text**
+
+- **Secluded Starforge** — "{5}, {T}: Create a 2/2 colorless Robot artifact creature token."
+- **Goro-Goro, Disciple of Ryusei** — "{3}{R}{R}: Create a 5/5 red Dragon Spirit creature token with flying."
+
+*Proposed:* these members do not perform 'sacrifice' — re-home onto the axis matching their real effect, or ratify a sibling

@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **37 documents under docs/**
-- ruling references found: **459**
+- documents scanned: **39 documents under docs/**
+- ruling references found: **462**
 - distinct ruling ids: **123**
 - corroborated (appear in >1 doc): **74**
 - **sole-home (appear in exactly 1 doc): 49**
@@ -36,6 +36,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
+| `DAMAGE-DELIVERY-RULING-2026-08-02.md` | 88 | 1 | 0 | yes |
+| `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 350 | 2 | 0 | yes |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
@@ -416,7 +418,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:207` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 16 reference(s) across 7 doc(s)
+### `CDR-09` — 18 reference(s) across 9 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -431,6 +433,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:350` — > `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
 - `CR-VOCABULARY-AUDIT.md:98` — `counter`/`counters` 33 axes (§8 rules exist, ~15 non-conforming — CDR-09) ·
 - `CR-VOCABULARY-AUDIT.md:135` — Cost, plainly: ~15 renames total — all already mandated by CDR-09. The ledger
+- `DAMAGE-DELIVERY-RULING-2026-08-02.md:88` — `d0b1183fc155f13e7b1ae025…`, unchanged since the CDR-09 walk.
+- `DEFINITION-DRIFT-AUDIT-2026-08-02.md:12` — passes every existing check. The CDR-09 walk surfaced one instance by
 - `SESSION-HANDOFF-2026-08-01.md:107` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
 - `SESSION-HANDOFF-2026-08-01.md:146` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-02.md:103` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
@@ -817,10 +821,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
-### `Q6` — 3 reference(s) across 2 doc(s)
+### `Q6` — 4 reference(s) across 3 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:421` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
 - `CODEBOOK-NAMING-GRAMMAR.md:443` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `DEFINITION-DRIFT-AUDIT-2026-08-02.md:31` — Ratified exemptions encoded: the 11 idiomatic leaves (§12 + Q6), and
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:90` — Q6** All 7 idiomatic-leaf exemptions ratified: burst-draw, cantrip,
 
 ### `Q8` — 2 reference(s) across 2 doc(s)

@@ -92,6 +92,34 @@ DELIVERY_EXPECT = [
 ]
 
 
+# --- C3: EFFECT token -> what the card must actually say ----------------------
+# The slug's effect suffix is a claim about what the member DOES. Captain
+# 2026-08-02, on Keen Sense sitting under `-discard` while its text reads "you
+# may draw a card": delivery being right does not make the effect right, and no
+# check was testing the effect at all.
+#
+# Deliberately biased toward FALSE NEGATIVES: a member passes if the phrase
+# appears anywhere in its quote or full oracle text, even in reminder or cost
+# text. An audit awaiting ratification must not cry wolf.
+EFFECT_EXPECT = [
+    ("loot", re.compile(r"\bdiscards?\b", re.I), "a discard (looting is draw-THEN-discard)"),
+    ("discard", re.compile(r"\bdiscards?\b", re.I), "'discard'"),
+    ("surveil", re.compile(r"\bsurveils?\b", re.I), "'surveil'"),
+    ("scry", re.compile(r"\bscrys?\b|\bscries\b", re.I), "'scry'"),
+    ("mill", re.compile(r"\bmills?\b", re.I), "'mill'"),
+    ("regenerate", re.compile(r"\bregenerates?\b", re.I), "'regenerate'"),
+    ("fight", re.compile(r"\bfights?\b", re.I), "'fight'"),
+    ("destroy", re.compile(r"\bdestroys?\b|\bdestroying\b", re.I), "'destroy'"),
+    ("exile", re.compile(r"\bexil(?:e|es|ed|ing)\b", re.I), "'exile'"),
+    ("sacrifice", re.compile(r"\bsacrific(?:e|es|ed|ing)\b", re.I), "'sacrifice'"),
+    ("bounce", re.compile(r"returns?\b[^.;]{0,90}(?:owner|hand)", re.I),
+     "'return … to its owner's hand'"),
+    ("unblockable", re.compile(r"can'?t be blocked", re.I), "\"can't be blocked\""),
+    ("lifegain", re.compile(r"gains?\b[^.;]{0,30}\blife\b", re.I), "'gain … life'"),
+    ("draw", re.compile(r"\bdraws?\b", re.I), "'draw'"),
+]
+
+
 def slug_body(slug: str) -> str:
     return slug.split(":", 1)[-1]
 
@@ -208,6 +236,42 @@ def audit(cb: dict, cards: dict) -> list:
                            f"(or ratify a new sibling if none exists)",
                 })
             break  # longest-prefix-wins; one delivery per slug
+
+        # --- C3: effect mismatch (grammar §4 EFFECT verbs) -------------------
+        # Strip the DELIVERY prefix first: `draw` in `draw-second-card-trigger-`
+        # names WHEN the ability triggers, not what it does. Reading it as an
+        # effect claim accuses every member of failing to draw.
+        effect_body = body
+        for _pre, _re, _h in DELIVERY_EXPECT:
+            if effect_body.startswith(_pre):
+                effect_body = effect_body[len(_pre):]
+                break
+        parts = set(effect_body.split("-"))
+        for tok, expect_re, human in EFFECT_EXPECT:
+            if tok not in parts:
+                continue
+            bad = []
+            for m in entry.get("members", []):
+                quote, full = member_texts(m, cards)
+                if not quote.strip():
+                    continue
+                if not expect_re.search(quote) and not expect_re.search(full or quote):
+                    bad.append({"oracle_id": m["oracle_id"],
+                                "card": card_label(m["oracle_id"], cards),
+                                "quote": quote.strip()})
+            if bad:
+                findings.append({
+                    "check": "C3", "severity": "BLOCKING", "slug": slug,
+                    "law": "grammar §4 — EFFECT verbs are standardized; the suffix is a "
+                           "claim about what the member DOES",
+                    "what": f"slug's effect is {tok!r}, so members must show {human}; "
+                            f"{len(bad)} of {len(entry.get('members', []))} never do, in the "
+                            f"cited quote or anywhere in their oracle text",
+                    "members": bad,
+                    "fix": f"these members do not perform {tok!r} — re-home onto the axis "
+                           f"matching their real effect, or ratify a sibling",
+                })
+            break  # one effect claim per slug, most specific first
     return findings
 
 
@@ -242,6 +306,8 @@ def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
         f"{len(by_check.get('C1b', []))} |",
         "| C2 | §1/§2 — member delivery contradicts the slug prefix | "
         f"{len(by_check.get('C2', []))} |",
+        "| C3 | §4 — member effect contradicts the slug suffix | "
+        f"{len(by_check.get('C3', []))} |",
         "",
         "Member tests are **double-gated**: a member is only reported when the",
         "cited evidence quote *and* the card's full oracle text (all faces, all",
@@ -288,7 +354,7 @@ def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
             "delivery.",
             "",
         ]
-    for check in ("C1a", "C1b", "C2"):
+    for check in ("C1a", "C1b", "C2", "C3"):
         rows = by_check.get(check, [])
         if not rows:
             continue
