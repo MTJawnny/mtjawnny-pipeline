@@ -58,7 +58,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## C2 — grammar §1/§2 — DELIVERY is closed vocabulary
 
-### `rule:attack-trigger-pump-each-own-attacker`
+### `rule:attack-trigger-pump-each-attacker-you-control`
 
 **slug's delivery is 'attack-trigger', so members must say 'attacks'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
 
@@ -223,7 +223,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* these members do not perform 'sacrifice' — re-home onto the axis matching their real effect, or ratify a sibling
 
-### `rule:cast-trigger-draw-on-target-own-creature-spell`
+### `rule:cast-trigger-draw-on-target-creature-spell-you-control`
 
 **slug's effect is 'draw', so members must show 'draw'; 3 of 5 never do, in the cited quote or anywhere in their oracle text**
 

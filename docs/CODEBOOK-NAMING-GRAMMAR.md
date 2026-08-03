@@ -355,12 +355,24 @@ list, and the transform was what was wrong:
 | **whose turn/phase it is** | §3 `activation-restricted-to-own-upkeep` | **excluded** — a RATIFIED §3 table slug (D-4, DET-owned); "Activate only during **your** upkeep" is not an object's controller |
 | ownership (CR 108.3) | **new** | **`you-own`** |
 
-**Migration — LOGGED, not executed at ratification.** **20 axes / 169
-memberships** rename; **3 axes / 54 memberships excluded** with reasons
-recorded in the spec. Name-only, no member moves, no definition changes. Spec:
-`experiments/moves/2026-08-03-own-to-you-control.json`. Rides its own step under
-the backup law with determinism ×2, per the standing no-midflight-renames rule
-(§12a precedent).
+**Migration — EXECUTED 2026-08-03.** **20 axes / 169 memberships** renamed;
+**3 axes / 54 memberships excluded** for the reasons in the table above, all
+recorded in the spec. Name-only: no member moved, no definition changed.
+
+| | |
+|---|---|
+| spec | `experiments/moves/2026-08-03-own-to-you-control.json` |
+| backup | `codebook.v0.7.pre-own-to-you-control.20260803-151959.json`, readback-verified |
+| sha256 | `48e36cc7…` → `5fa27b70fabdce8d40e537907358522449d4ce642d80f6680314c1b2d2e7d93e` |
+| determinism | ×2 byte-identical (4,128,049 bytes) |
+| axes | 545 → 565 · **active 359 → 359** |
+| assertions | 8,571 → 8,740 (+169 rename copies — the tombstone retains its members and the new slug carries them, CDR-09 model) |
+| Gate 2 after | lint clean · sweep 232 / 6 blocking · drift 35 — all unchanged |
+
+The three excluded axes still carry the bare token `own` and are **correct**:
+`activation-restricted-to-own-upkeep` (§3), `cost-reduction-scales-with-own-counters`
+and `pump-scales-with-own-creature-count` (both §7). A conformance check that
+flags them has not read this section.
 
 Record: `docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md` §5.
 

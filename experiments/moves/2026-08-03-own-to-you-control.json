@@ -10,25 +10,85 @@
   "rule:pump-scales-with-own-creature-count": "`own` sits INSIDE a \u00a77 scaling stat token (`own-creature-count`). Moving it would break \u00a77's closed stat list. Separate \u00a77 ruling."
  },
  "renames": {
-  "rule:activated-untap-another-own-permanent": "rule:activated-untap-another-permanent-you-control",
-  "rule:attack-trigger-pump-each-own-attacker": "rule:attack-trigger-pump-each-attacker-you-control",
-  "rule:attack-trigger-pump-own-creature": "rule:attack-trigger-pump-creature-you-control",
-  "rule:attack-trigger-untap-own-attacker": "rule:attack-trigger-untap-attacker-you-control",
-  "rule:cast-trigger-draw-on-target-own-creature-spell": "rule:cast-trigger-draw-on-target-creature-spell-you-control",
-  "rule:combat-trick-pump-own-creature": "rule:combat-trick-pump-creature-you-control",
-  "rule:copy-own-creature-token": "rule:copy-creature-token-you-control",
-  "rule:create-token-role-attached-to-own-creature": "rule:create-token-role-attached-to-creature-you-control",
-  "rule:etb-auto-attach-to-own-creature": "rule:etb-auto-attach-to-creature-you-control",
-  "rule:etb-bounce-own-land": "rule:etb-bounce-land-you-control",
-  "rule:etb-create-token-role-attached-to-own-creature": "rule:etb-create-token-role-attached-to-creature-you-control",
-  "rule:etb-grants-connive-to-own-creature": "rule:etb-grants-connive-to-creature-you-control",
-  "rule:etb-pump-each-own-creature": "rule:etb-pump-each-creature-you-control",
-  "rule:etb-pump-own-creature": "rule:etb-pump-creature-you-control",
-  "rule:etb-self-bounce-own-permanent": "rule:etb-self-bounce-permanent-you-control",
-  "rule:grants-cascade-to-own-spells": "rule:grants-cascade-to-spells-you-control",
-  "rule:grants-double-strike-chosen-own-creature": "rule:grants-double-strike-chosen-creature-you-control",
-  "rule:pump-each-own-creature": "rule:pump-each-creature-you-control",
-  "rule:sets-base-power-or-toughness-own-creatures": "rule:sets-base-power-or-toughness-creatures-you-control",
-  "rule:untap-each-own-creature": "rule:untap-each-creature-you-control"
+  "rule:activated-untap-another-own-permanent": {
+   "to": "rule:activated-untap-another-permanent-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:attack-trigger-pump-each-own-attacker": {
+   "to": "rule:attack-trigger-pump-each-attacker-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:attack-trigger-pump-own-creature": {
+   "to": "rule:attack-trigger-pump-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:attack-trigger-untap-own-attacker": {
+   "to": "rule:attack-trigger-untap-attacker-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:cast-trigger-draw-on-target-own-creature-spell": {
+   "to": "rule:cast-trigger-draw-on-target-creature-spell-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:combat-trick-pump-own-creature": {
+   "to": "rule:combat-trick-pump-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:copy-own-creature-token": {
+   "to": "rule:copy-creature-token-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:create-token-role-attached-to-own-creature": {
+   "to": "rule:create-token-role-attached-to-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-auto-attach-to-own-creature": {
+   "to": "rule:etb-auto-attach-to-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-bounce-own-land": {
+   "to": "rule:etb-bounce-land-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-create-token-role-attached-to-own-creature": {
+   "to": "rule:etb-create-token-role-attached-to-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-grants-connive-to-own-creature": {
+   "to": "rule:etb-grants-connive-to-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-pump-each-own-creature": {
+   "to": "rule:etb-pump-each-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-pump-own-creature": {
+   "to": "rule:etb-pump-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:etb-self-bounce-own-permanent": {
+   "to": "rule:etb-self-bounce-permanent-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:grants-cascade-to-own-spells": {
+   "to": "rule:grants-cascade-to-spells-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:grants-double-strike-chosen-own-creature": {
+   "to": "rule:grants-double-strike-chosen-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:pump-each-own-creature": {
+   "to": "rule:pump-each-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:sets-base-power-or-toughness-own-creatures": {
+   "to": "rule:sets-base-power-or-toughness-creatures-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  },
+  "rule:untap-each-own-creature": {
+   "to": "rule:untap-each-creature-you-control",
+   "why": "\u00a76d: SCOPE token `own` retires to `you-control` (CR 109.5 + CR 110.2); placement follows \u00a71 slot order [EFFECT]-[OBJECT]-[SCOPE]. Name-only."
+  }
  }
 }
