@@ -12,16 +12,16 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 322 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 328 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**27 findings.**
+**25 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 1 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 17 |
-| C3 | §4 — member effect contradicts the slug suffix | 8 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
+| C3 | §4 — member effect contradicts the slug suffix | 7 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -34,7 +34,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-43 misfiled member assignments across 17 axes:
+42 misfiled member assignments across 16 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
@@ -42,9 +42,8 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
-| `upkeep-` | 1 | 1 |
 
-**`etb-` accounts for 38 of 43.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 38 of 42.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -194,7 +193,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:etb-scry`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 4 of 17 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 4 of 14 never do, in the cited quote or anywhere in their oracle text**
 
 - **Voyage's End** — "Scry 1."
 - **Falcon, Joaquin Torres** — "put a +1/+1 counter on him and scry 1"
@@ -220,14 +219,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Molly Hayes, Runaway** — "Put two +1/+1 counters on Molly Hayes."
 - **Rush of Ice** — "also put three +1/+1 counters on target land you control"
 - **Mild-Mannered Librarian** — "Put two +1/+1 counters on it and you draw a card."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:upkeep-surveil`
-
-**slug's delivery is 'upkeep', so members must say 'upkeep'; 1 of 3 never do, in the cited quote or anywhere in their oracle text**
-
-- **Faerie Dreamthief** — "When this creature enters, surveil 1."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
@@ -276,16 +267,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Instant Ramen** — "When this artifact enters, draw a card."
 
 *Proposed:* these members do not perform 'loot' — re-home onto the axis matching their real effect, or ratify a sibling
-
-### `rule:etb-scry`
-
-**slug's effect is 'scry', so members must show 'scry'; 3 of 17 never do, in the cited quote or anywhere in their oracle text**
-
-- **Gallifrey Council Chamber** — "When Gallifrey Council Chamber enters, surveil 1."
-- **Lazav, the Multifarious** — "When Lazav enters, surveil 1."
-- **Watcher in the Mist** — "When this creature enters, surveil 2."
-
-*Proposed:* these members do not perform 'scry' — re-home onto the axis matching their real effect, or ratify a sibling
 
 ### `rule:mass-graveyard-exile`
 

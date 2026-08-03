@@ -1,0 +1,9 @@
+{
+  "batch": "tier3-reaudit-2026-08-02-followup",
+  "ruling": "docs/TIER-3-DECISION-PACKET-2026-08-02.md D7 (Captain-ratified 2026-08-02) — completing the ratified decision",
+  "source_ref": "captain-cli-2026-08-02",
+
+  "scope_edits": {
+    "rule:restricts-library-search": "all-players"
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "batch": "tier3-reaudit-2026-08-02",
+  "ruling": "docs/TIER-3-DECISION-PACKET-2026-08-02.md (D1-D12 + M, Captain-ratified 2026-08-02; D3f confirmed general)",
+  "source_ref": "captain-cli-2026-08-02",
+
+  "new_axes": {
+    "rule:activated-lifegain-scales-with-sacrificed-creature-toughness": {
+      "definition": "An activated ability whose cost includes sacrificing a creature causes its controller to gain life equal to that creature's toughness. Sibling of rule:lifegain-scales-with-sacrificed-creature-toughness, which is the unmarked spell form (grammar section 1: DELIVERY omitted = spell ability, CR 113.3a).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D3 - Miren, the Moaning Well; delivery split per the D3d Snag/Gossamer Chains precedent"
+    },
+    "rule:upkeep-trigger-lifegain-scales-with-sacrificed-creature-toughness": {
+      "definition": "At the beginning of its controller's upkeep, a triggered ability sacrifices a creature and its controller gains life equal to that creature's toughness. The sacrifice occurs in resolution text, not as a cost (grammar section 9). Sibling of rule:lifegain-scales-with-sacrificed-creature-toughness, the unmarked spell form.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D3 - Doomgape; delivery split per the D3d precedent"
+    },
+    "rule:attack-trigger-self-pump-scales-with-attacker-count": {
+      "definition": "An attack-triggered ability gives the attacking source itself a power/toughness boost scaling with the number of ATTACKING creatures its controller controls. Distinct from rule:attack-trigger-pump-scales-with-creature-count: grammar section 7 enumerates attacker-count and creature-count as separate closed stat vocabulary, so the two are different stats, not one parameterized stat.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D4 - Akroan Hoplite; section 7 stat split, same class as D3e target-color-count"
+    },
+    "rule:etb-surveil": {
+      "definition": "When the permanent itself enters the battlefield, its controller surveils a fixed number of cards. Distinct from rule:etb-creature-triggers-surveil, which fires when ANOTHER creature its controller controls enters, and from rule:etb-scry: surveil and scry are different keyword actions (grammar section 4).",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D5 - clears the open C2 finding on upkeep-surveil AND the open C3 finding on etb-scry"
+    },
+    "rule:death-trigger-token-count-scales-with-graveyard-creature-count": {
+      "definition": "When this permanent dies, a triggered ability creates a number of tokens scaling with the number of creature cards in its controller's graveyard. Sibling of rule:token-count-scales-with-graveyard-creature-count, the unmarked spell form, and of rule:death-trigger-token-scales-with-power in the same death-trigger token-scaling family.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D6 - Hallowed Spiritkeeper; delivery split per grammar section 1"
+    },
+    "rule:activated-tap-exile-graveyard-creature-for-token": {
+      "definition": "An activated ability whose cost includes tapping the source and exiling a creature card from a graveyard creates a creature token. The {T} caps the ability at once per turn, which is axis identity under grammar section 2 (D3f), separating it from the uncapped mana-only sibling rule:activated-exile-graveyard-creature-for-token.",
+      "scope": "self",
+      "source": "CAPTAIN",
+      "note": "D3f applied general per Captain ruling 2026-08-02; naming follows rule:activated-tap-grants-haste-other-creature-you-control"
+    }
+  },
+
+  "renames": {
+    "rule:restricts-opponent-search": {
+      "to": "rule:restricts-library-search",
+      "definition": "Prevents or restricts library searching. The restriction may be symmetric (binding every player, including the controller) or opponent-only; the ownership reading is a facet, not part of this axis's claim.",
+      "why": "D7 - the slug claimed opponent scope but 2 of 3 members are symmetric ('Players can't search libraries'). C1b class: member evidence contradicts the name. No new vocabulary: restricts/search were already in the slug, 'library' is Q5-ratified vocabulary"
+    },
+    "rule:death-of-your-permanents-grows-this-creature": {
+      "to": "rule:death-of-other-permanents-grows-this-creature",
+      "definition": "Whenever another permanent is put into a graveyard from the battlefield, this permanent gains a counter and grows. Not restricted to permanents its controller controls: two of three members trigger on any creature dying.",
+      "why": "D8 - the slug claimed 'your permanents' but Haruspex and Elenda trigger on ANY creature dying. C1b class. Minimal-churn derivation: only the false token 'your' is replaced, by 'other' (Q5-ratified vocabulary, and true of all three members, each of which prints 'another')"
+    }
+  },
+
+  "moves": [
+    {
+      "from": "rule:lifegain-scales-with-sacrificed-creature-toughness",
+      "to": "rule:activated-lifegain-scales-with-sacrificed-creature-toughness",
+      "members": ["03fe19bb-8e22-4030-8299-2ddd2d5a7eb2"],
+      "why": "D3 - Miren, the Moaning Well is '{3}, {T}, Sacrifice a creature:' -- an activated ability on a land, not a spell"
+    },
+    {
+      "from": "rule:lifegain-scales-with-sacrificed-creature-toughness",
+      "to": "rule:upkeep-trigger-lifegain-scales-with-sacrificed-creature-toughness",
+      "members": ["ab94d8f7-f811-436a-9a22-9a12bd929e98"],
+      "why": "D3 - Doomgape is 'At the beginning of your upkeep, sacrifice a creature' -- an upkeep trigger whose sacrifice is in resolution text"
+    },
+    {
+      "from": "rule:attack-trigger-pump-scales-with-creature-count",
+      "to": "rule:attack-trigger-self-pump-scales-with-attacker-count",
+      "members": ["e15db59f-4477-4139-8e7e-741ab4584e7f"],
+      "why": "D4 - Akroan Hoplite scales with 'the number of ATTACKING creatures you control' = attacker-count, a separate section 7 stat from creature-count"
+    },
+    {
+      "from": "rule:upkeep-surveil",
+      "to": "rule:etb-surveil",
+      "members": ["d6e68414-80cb-4e08-ae84-b084a3f4b6de"],
+      "why": "D5 - Faerie Dreamthief is 'When this creature enters, surveil 1' -- an ETB, not an upkeep trigger. Clears the open C2 drift finding on this axis"
+    },
+    {
+      "from": "rule:etb-scry",
+      "to": "rule:etb-surveil",
+      "members": [
+        "26e4b49e-77e7-41d9-94c5-924669a82591",
+        "c14bcef2-6d49-4430-86d0-e5a87ba442d9",
+        "e8c0fbea-a678-46b0-b385-e36f14c07672"
+      ],
+      "why": "D5 - Gallifrey Council Chamber, Lazav the Multifarious and Watcher in the Mist all SURVEIL on their own ETB, not scry. Clears the open C3 drift finding on etb-scry"
+    },
+    {
+      "from": "rule:token-count-scales-with-graveyard-creature-count",
+      "to": "rule:death-trigger-token-count-scales-with-graveyard-creature-count",
+      "members": ["5852ed2f-4332-4c30-b145-373deea471d9"],
+      "why": "D6 - Hallowed Spiritkeeper is 'When this creature dies, create X ...' -- a death trigger on an unmarked (spell) slug"
+    },
+    {
+      "from": "rule:activated-exile-graveyard-creature-for-token",
+      "to": "rule:activated-tap-exile-graveyard-creature-for-token",
+      "members": ["e91e7f62-0788-445e-ba93-2c9d233ec3ab"],
+      "why": "D12 - Havengul Runebinder's cost is '{2}{U}, {T}, Exile a creature card from your graveyard:'. The {T} caps it at once per turn; the other two members are uncapped mana-only engines. D3f, confirmed general by Captain 2026-08-02"
+    }
+  ],
+
+  "drops": [
+    {
+      "from": "rule:cast-from-exile-trigger",
+      "member": "3ec7ae18-b203-49bd-95f9-ad5482459a23",
+      "why": "D1 - Mirror of Life Trapping's trigger EVENT is 'Whenever a creature enters'; 'if it was cast' is an intervening-if condition about casting, which grammar section 2 (b6 Village Ironsmith) rules is not a cast trigger. The card never casts from exile. No axis has the other-permanent-ETB shape it needs; ledger-flagged as homeless per D5 remove-and-rehome's third option"
+    },
+    {
+      "from": "rule:combat-trigger-auto-attach-equipment",
+      "member": "785f55bb-d47c-470c-94d4-95f69055e35f",
+      "why": "D2 - Ria Ivor, Bane of Bladehold's own cited quote is about preventing combat damage and creating Mite tokens; the card's full text mentions neither Equipment nor attaching. Keen Sense class. Closest family (prevent-combat-damage-unblocked-creature) has an unblocked restriction Ria Ivor lacks; ledger-flagged as homeless"
+    }
+  ],
+
+  "quote_edits": {
+    "rule:alt-win-empty-library": {
+      "5277a68e-1ceb-4b40-8e10-3d0564f5d7be": "If you would draw a card while your library has no cards in it, you win the game instead.",
+      "aa286dd5-aa19-446d-9003-684d81eb57ca": "If you would draw a card while your library has no cards in it, you win the game instead.",
+      "1de1b591-a73f-4974-b507-8c63e07a0868": "If X is greater than or equal to the number of cards in your library, you win the game."
+    },
+    "rule:targets-a-player": {
+      "dbd6a94b-62ff-4a10-9d52-bdd90b26e425": "Target player takes an extra turn after this one."
+    }
+  },
+
+  "definition_edits": {
+    "rule:combat-trigger-auto-attach-equipment": "At the beginning of combat on its controller's turn, a triggered ability attaches an Equipment its controller controls to a creature -- the source itself or another creature its controller controls -- without paying the equip cost.",
+    "rule:lifegain-scales-with-sacrificed-creature-toughness": "A spell with an additional cost of sacrificing a creature causes its controller to gain life equal to that creature's toughness. Unmarked delivery = spell ability (grammar section 1, CR 113.3a); the activated and upkeep-triggered forms are separate sibling axes.",
+    "rule:attack-trigger-pump-scales-with-creature-count": "An attack-triggered ability grants a power/toughness boost scaling with the number of creatures its controller controls. The boosted creature may be the attacking source itself or another target creature its controller controls -- that object choice is a facet, not part of this axis's claim.",
+    "rule:leaves-battlefield-returns-exiled-card": "When this permanent leaves the battlefield, a card it had exiled is returned to its owner. The destination follows the zone the card was exiled from -- to its owner's hand in most cases, to the battlefield under its owner's control where a battlefield permanent was exiled -- and is a facet, not part of this axis's claim.",
+    "rule:alt-win-empty-library": "Wins the game on an empty or effectively-empty library, whether by replacing the draw that would otherwise be lethal ('if you would draw a card while your library has no cards in it, you win the game instead') or by an explicit library-size check. Child of rule:alternate-win-condition.",
+    "rule:draw-scales-with-creature-count": "The spell causes its controller to draw a number of cards equal to a creature count, optionally matching a filter. The count is not restricted to creatures its controller controls -- the slug is deliberately unscoped, and the codebook marks ownership explicitly when it means it (cf. rule:pump-scales-with-own-creature-count, grammar section 6)."
+  },
+
+  "scope_edits": {
+    "rule:cast-from-exile-trigger": "self"
+  }
+}

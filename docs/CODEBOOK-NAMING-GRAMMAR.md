@@ -226,7 +226,21 @@ Closed stat vocabulary (b6/b7 confusion pairs made explicit): `creature-count`,
  itself, not a board count — Captain-ratified 2026-08-02, D3e), `charge-counters` (alias of own-counters where
 the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
 2026-07-31 — required by the draw-scales-with-opponent-tapped-creature-count
-D-3 rename target).
+D-3 rename target), `sacrificed-creature-toughness` (the toughness of the
+creature sacrificed to pay for the effect — Captain-ratified 2026-08-02,
+tier-3 D3; same gap-closing as F3, the slug
+`lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
+rename target in the walk's §2.2.1 while its stat token was never added here).
+
+**`attacker-count` and `creature-count` are DIFFERENT stats, not one
+parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
+already listed above; the ruling records that the distinction is load-bearing
+and splits axes. Worked case: `attack-trigger-pump-scales-with-creature-count`
+(Rinoa Heartilly, "for each creature you control") vs
+`attack-trigger-self-pump-scales-with-attacker-count` (Akroan Hoplite, "the
+number of **attacking** creatures you control"). Same shape as D3e's
+board-color-count vs target-color-count split. Record:
+`docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 
 The two token axes under this standard (answers b7 line-84):
 - X scales HOW MANY tokens → `token-count-scales-with-x` (absorbs the
