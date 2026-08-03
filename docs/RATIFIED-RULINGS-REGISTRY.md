@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **55 documents under docs/**
-- ruling references found: **525**
+- documents scanned: **56 documents under docs/**
+- ruling references found: **527**
 - distinct ruling ids: **125**
-- corroborated (appear in >1 doc): **79**
-- **sole-home (appear in exactly 1 doc): 46**
+- corroborated (appear in >1 doc): **80**
+- **sole-home (appear in exactly 1 doc): 45**
 
 ## Deletion gate — per document
 
@@ -35,6 +35,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
+| `CR-COVERAGE-PACKET-2026-08-02.md` | 134 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 275 | 2 | 0 | yes |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
@@ -65,7 +66,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-1.md` | 368 | 5 | 0 | yes |
 | `TRIAGE-BATCH-2.md` | 452 | 5 | 1 | **NO** |
 | `TRIAGE-BATCH-3.md` | 462 | 4 | 0 | yes |
-| `TRIAGE-BATCH-5.md` | 1072 | 8 | 1 | **NO** |
+| `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 1 | **NO** |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
 
@@ -144,10 +145,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
 - `M2` (line 443) — slug that itself carries a KEEP verdict (M2's `etb-tutor-basic-land-to-hand`
-
-**`TRIAGE-BATCH-5.md`** — sole home for 1:
-
-- `D14` (line 990) — D14 — Naming standard + renames executed now (explicit Captain
 
 **`TRIAGE-BATCH-7.md`** — sole home for 1:
 
@@ -551,8 +548,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TIER-3-DECISION-PACKET-2026-08-02.md:595` — D13 is where a ratified grammar and a blocking gate disagree with live
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 
-### `D14` — 1 reference(s) across 1 doc(s)
+### `D14` — 2 reference(s) across 2 doc(s)
 
+- `CR-COVERAGE-PACKET-2026-08-02.md:42` — `create-token-<type>` is an **already ratified grammar family** (batch-5 D14).
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
 ### `D16` — 1 reference(s) across 1 doc(s)
@@ -880,9 +878,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-2.md:451` — Q1–Q4, add `## CAPTAIN-AUTHORED` blocks for any new axes), then run
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:85` — Q4** `rule:cant-be-countered` → `rule:spell-uncounterable`;
 
-### `Q5` — 3 reference(s) across 3 doc(s)
+### `Q5` — 4 reference(s) across 4 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:634` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CR-COVERAGE-PACKET-2026-08-02.md:86` — One batch ratification, the same shape as Q5's ~30-token batch.
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
