@@ -1,0 +1,75 @@
+{
+  "batch": "tier4-part1-2026-08-02",
+  "ruling": "docs/TIER-4-DECISION-SHEET-2026-08-02.md calls 1, 2, 3b, 3d, 5 (Captain-ratified 2026-08-02). Calls 3a/3c/4 held pending new-name ratification; call 6 is a generator change and rides its own pass.",
+  "source_ref": "captain-cli-2026-08-02",
+
+  "moves": [
+    {
+      "from": "rule:alt-cost-sacrifice-lands",
+      "to": "rule:additional-cost-sacrifice-permanent",
+      "members": ["5231a7d6-b6cf-4fa8-8da8-f0ecf023e054"],
+      "why": "call 1 / E1 -- Dwarven Landslide's 'Kicker-{2}{R}, Sacrifice a land' is an ADDITIONAL cost (CR 601.2b), not an alternative one. The axis claims 'instead of paying its normal mana cost'"
+    },
+    {
+      "from": "rule:attack-trigger-pump-any-creature",
+      "to": "rule:temporary-keyword-grant",
+      "members": ["18dcf3db-d6c6-4780-a931-546e71a3ae3f"],
+      "why": "call 1 / E2 -- Gravity Negator grants FLYING, not a pump. Grammar section 4 separates the verbs; batch-4 D4 is a standing rule that every grants-temporary-<keyword> folds here on sight"
+    },
+    {
+      "from": "rule:etb-destroy-target-enchantment",
+      "to": "rule:targeted-destruction",
+      "members": ["a90de2b8-4d71-4d0e-82b3-3b7ab194165b"],
+      "why": "call 1 / E7 -- Brokers Charm is a modal instant, not an ETB. Completes its section 1 modal decomposition; it already holds modal / burst-draw / combat-trick-pump-own-creature for the other two modes"
+    },
+    {
+      "from": "rule:prevents-damage-to-self",
+      "to": "rule:prevent-fixed-damage-any-target",
+      "members": ["e4acac65-112b-48fc-bea3-44747c1389a3"],
+      "why": "call 1 / E9 -- Opal-Eye's '{1}{W}: Prevent the next 1 damage' is an ACTIVATED, fixed-amount prevention. The destination was broadened by batch-5 D2/Q1 to cover exactly the activated-ability delivery"
+    },
+    {
+      "from": "rule:prevents-damage-to-self",
+      "to": "rule:prevent-damage-to-your-creatures",
+      "members": ["3f336198-2425-447a-88b4-9be21ef7e90a"],
+      "why": "call 1 / E9 -- Inviolability is an Aura preventing all damage to the ENCHANTED creature, another permanent, not to itself"
+    }
+  ],
+
+  "drops": [
+    {
+      "from": "rule:attack-trigger-untap-attacker",
+      "member": "41c0e1f1-8ebe-4cd2-96fe-e4bb625fe6ee",
+      "why": "call 2 / E3 -- Familiar Beeble Mascot untaps 'target permanent', not the attacker, which is the axis's whole claim. No axis holds attack-trigger-untaps-any-permanent; ledger-flagged homeless per b6 D5's third option"
+    },
+    {
+      "from": "rule:delayed-destroy-trigger",
+      "member": "a9efb84d-b19f-44b7-89a5-127c38b2ea6b",
+      "why": "call 2 / E4 -- Arius, Flyby Trawler DISCARDS, never destroys (confirms the open C3 drift finding). No delayed self-discard axis exists; ledger-flagged"
+    },
+    {
+      "from": "rule:tutor-from-outside-game-to-hand",
+      "member": "fa38394b-6ac4-460c-ae3a-54d50037715b",
+      "why": "call 2 / E11 -- Research // Development shuffles the cards into the LIBRARY; the slug names the hand as the destination. Ledger-flagged as a tutor-from-outside-game-to-library sibling"
+    },
+    {
+      "from": "rule:prevents-damage-to-self",
+      "member": "d41ab41d-07c8-4f6d-be5e-7aec9f5f6365",
+      "why": "call 2 / E9 -- Solitary Confinement prevents all damage dealt to YOU, the player, not to the permanent. No player-damage-prevention axis exists; ledger-flagged. It retains its correct rule:skips-controller-draw-step membership"
+    }
+  ],
+
+  "quote_edits": {
+    "rule:etb-destroy-target-enchantment": {
+      "48bda7dd-d023-41e8-8c28-e0cfda0d07ca": "When this creature enters, destroy target enchantment."
+    },
+    "rule:token-count-scales-with-x": {
+      "35807c14-4647-482f-9ba1-6d640fd5e8d8": "Create X 2/2 red Human Knight creature tokens with trample and haste."
+    }
+  },
+
+  "definition_edits": {
+    "rule:prevents-damage-to-self": "A static ability of the permanent prevents damage that would be dealt to that same permanent, making it hard to remove with damage. The prevention may be gated by a duration or a turn condition ('During your turn, prevent all damage that would be dealt to ~'). Excludes: activated fixed-amount prevention (rule:prevent-fixed-damage-any-target), Auras protecting the creature they enchant (rule:prevent-damage-to-your-creatures), and effects protecting the PLAYER rather than the permanent.",
+    "rule:draw-second-card-trigger-plus1-counter": "An ability triggers specifically when the controller draws their SECOND card in a turn, putting a +1/+1 counter on the source. Corrects a definition left stale by batch-5 D12, which renamed this axis from -token to -plus1-counter for its member Lat-Nam Adept but never updated the text; the stale 'creature token' wording was the standing C1a drift finding."
+  }
+}

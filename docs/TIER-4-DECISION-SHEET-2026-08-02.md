@@ -1,5 +1,26 @@
 # Tier-4 — decision sheet
 
+> ## STATUS after Captain's verdicts, 2026-08-02
+>
+> | call | verdict | state |
+> |---|---|---|
+> | 1 | default | **EXECUTED** |
+> | 2 | default | **EXECUTED** |
+> | 3b, 3d | (unaddressed by the "no", read as standing) | **EXECUTED** |
+> | 3a | **OVERRULED** — ownership is axis identity, not a facet | **HELD** — needs a new axis name + a scope answer |
+> | 3c | tied to 4c | **HELD** |
+> | 4 | new axis for each; Rammas Echor also earns a draw axis | **HELD** — 6 new names await ratification |
+> | 5 | default | **EXECUTED** |
+> | 6 | default — the rule binds DET | **HELD** — generator change, own pass |
+>
+> Executed via `experiments/moves/2026-08-02-tier4-part1.json`.
+> codebook `c184e76e…` → `5db28942…` · 497 axes · 328 active · 7,875 → 7,871
+> members · lint clean · sweep 6 blocking (unchanged) · **drift 25 → 22, and
+> C1a is now zero**. Backup `codebook.pre-tier4-part1.20260802-214234.json`,
+> verified by readback.
+>
+> **Two things need you before the rest can move — see §7 at the bottom.**
+
 **6 calls.** Evidence for every line is in
 `docs/TIER-4-DECISION-PACKET-2026-08-02.md` (same E-numbers).
 
@@ -30,7 +51,7 @@ itself.
 
 **DEFAULT: yes, move all five.**
 
-VERDICT:
+VERDICT: default
 
 ---
 
@@ -51,7 +72,7 @@ forced fit.
 (Alternative for any of them: author a 1-member axis instead. I don't
 recommend it — CDR-01 would park them as `deferred` anyway.)
 
-VERDICT:
+VERDICT: default
 
 ---
 
@@ -72,7 +93,7 @@ ordered it dropped. This just applies it.
 
 **DEFAULT: yes, correct all four.**
 
-VERDICT:
+VERDICT:no any creature means any creature. ownership is critically important for game logic. remove own restricted members from `attack-trigger-pump-any-creature` and create new axis for them.
 
 ---
 
@@ -96,7 +117,7 @@ I'll ledger it instead.
 
 **DEFAULT: yes to 4a–4d and Codespell Cleric.**
 
-VERDICT:
+VERDICT: make new axis for each one. Rammas echor should also have `cast-second-spell-trigger-draw` or whatever ruling fits
 
 ---
 
@@ -108,7 +129,7 @@ quote. No judgment involved.
 
 **DEFAULT: yes.**
 
-VERDICT:
+VERDICT: default
 
 ---
 
@@ -146,7 +167,7 @@ the data (G4: generated artifacts get generator fixes).
 
 **DEFAULT: yes — rule that it binds, fix the preprocessor.**
 
-VERDICT:
+VERDICT:default
 
 ---
 
@@ -156,3 +177,68 @@ VERDICT:
 one preprocessor fix + re-run. Calls 1–5 ride one declared spec under the usual
 gates. Call 6 gets its own pass, because it changes a generator and needs its
 own before/after diff.
+
+---
+
+## 7. What your verdicts opened — two things I will not guess
+
+### 7a. Call 3a is an explicit partial reversal of batch-6 D3. How far does it reach?
+
+You ruled: *"any creature means any creature. ownership is critically important
+for game logic."* Batch-6 D3 ruled the opposite, on a sibling axis, by name:
+
+> `rule:etb-pump-target-creature`: drop the "not restricted to the controller's
+> own creatures" definition clause … **ownership-scope logged as a facet
+> dimension for the schema pass.**
+
+So this is a reversal, and per the grammar's own discipline it gets logged as
+one rather than applied quietly. **Measured blast radius — 6 active axes hold
+BOTH own-restricted and unrestricted members under an `any-*` scope:**
+
+| axis | own-restricted | n | in tier 4? |
+|---|--:|--:|---|
+| `copy-creature-token` | 7 | 21 | no |
+| `sets-base-power-or-toughness` | 1 | 19 | no |
+| `attack-trigger-pump-any-creature` | 2 | 4 | **yes — your ruling** |
+| `attack-trigger-untap-attacker` | 1 (Tadeas) | 4 | yes, called CLEAN |
+| `etb-pump-target-creature` | 1 (Herald of the Fair) | 4 | yes, called CLEAN |
+| `activated-untap-another-permanent` | 1 | 2 | no |
+
+**The call:** narrow (just `attack-trigger-pump-any-creature`, now) or general
+(all 6, and batch-6 D3 is reversed on the record)?
+
+I lean **general** — your reasoning was about game logic, not about one axis,
+and leaving the other five is the "one law encoded, others ignored" shape that
+produced every drift this project has had. But it reverses a ratified directive
+and turns two axes I certified clean into defects, so it is yours.
+
+Note either way: after 3a executes, `attack-trigger-pump-any-creature` is left
+holding **Mayhem Patrol alone** (n=1).
+
+### 7b. Six new slug strings, derived from ratified grammar — confirm or correct
+
+You authorised the axes ("make new axis for each one"); these are the strings I
+derive from §1 slot order and the ratified vocabularies. New vocabulary is a
+ratification, so I am not writing them until you say.
+
+| for | proposed slug | derivation |
+|---|---|---|
+| Thopter Fabricator | `rule:draw-second-card-trigger-create-token-creature` | D12 prefix scheme × D14 `create-token-<type>` |
+| Rammas Echor (token half) | `rule:cast-second-spell-trigger-create-token-creature` | D12's mirrored family, instantiating per §11 |
+| **Rammas Echor (draw half)** | `rule:cast-second-spell-trigger-draw` | your addition; §4 verb `draw`. It earns BOTH under §1 multi-axis |
+| Farmer Cotton | `rule:etb-token-count-scales-with-x` | standard delivery split (D3d precedent) |
+| Echoes of Eternity | `rule:doubles-triggered-abilities-conditional` | `doubles-<thing>` family, batch-1 ledger |
+| Codespell Cleric | `rule:etb-plus1-counter-on-target-creature-conditional` | §1 order + §6 `-conditional` for the "if it was the second spell" intervening-if |
+| own-restricted attack pumps | `rule:attack-trigger-pump-own-creature` | §6 `own`; takes Yotian Frontliner + Hazardroot Herbalist |
+
+**Two sub-questions inside that table:**
+
+1. **Codespell Cleric's name is the weakest.** Its gate is specifically "the
+   second spell you cast this turn", which `-conditional` records but does not
+   name. Alternative: `rule:etb-plus1-counter-on-second-spell-cast`. Yours.
+2. **Does "another" split from "you control"?** Yotian Frontliner reads
+   "**another** target creature you control"; Hazardroot Herbalist reads
+   "target creature you control" and can hit itself. By the same logic that
+   makes ownership load-bearing, self-inclusion may be too — it is the
+   distinction D3f's `-other-creature-you-control` naming already encodes
+   elsewhere. I have put both on one axis; say the word and it becomes two.

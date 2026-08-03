@@ -120,6 +120,39 @@ EFFECT_EXPECT = [
 ]
 
 
+# --- C4 vocabulary: templating words hardcoded to the mechanic they name -----
+# Captain-ratified 2026-08-02. Each row is (token-in-slug, what the card must
+# print, human phrasing, law citation, finding id). These are CR terms of art,
+# not English: "target" is CR 115.1/601.2c, "another" excludes the source, and
+# "you control" is an ownership restriction on the affected object.
+OWN_CONTROL = re.compile(r"\byou control\b|\byour creatures?\b", re.I)
+
+C4_CLAIMS = [
+    (re.compile(r"(?<![a-z])target(?![a-z])"),
+     re.compile(r"\btargets?\b", re.I),
+     "targeting ('target' in the slug)",
+     "grammar §6 + CR 601.2c — 'target' appears in a slug ONLY when the word "
+     "'target' appears in the ability (the b7 Unwind ruling)",
+     "C4a"),
+    (re.compile(r"(?<![a-z])(another|other)(?![a-z])"),
+     re.compile(r"\banother\b|\bother\b", re.I),
+     "exclusion of the source ('another'/'other' in the slug)",
+     "grammar §5/§6 — 'another' excludes the source; a slug may not claim it of "
+     "a card whose printed text can affect itself",
+     "C4c"),
+]
+
+
+def strip_reminder(text: str) -> str:
+    """Reminder text is not the card's own claim.
+
+    Tier-4 §S4: a token-definition parenthetical states what the TOKEN does,
+    and grammar §2's created-ability rule says that is not the card's ability.
+    Matching inside it is how 44 DET memberships were written off token text.
+    """
+    return re.sub(r"\([^)]*\)", "", text or "")
+
+
 def slug_body(slug: str) -> str:
     return slug.split(":", 1)[-1]
 
@@ -272,6 +305,77 @@ def audit(cb: dict, cards: dict) -> list:
                            f"matching their real effect, or ratify a sibling",
                 })
             break  # one effect claim per slug, most specific first
+
+        # --- C4: the printed word is the claim ------------------------------
+        # Captain-ratified 2026-08-02: "game logic is game logic. it can not be
+        # partially assumed or opened for interpretation. if something targets
+        # it targets. if it does not target, it does not target." Templating
+        # words are chosen deliberately by the CR and are hardcoded here as
+        # mechanics, not read as prose.
+        #
+        # Reminder text is EXCLUDED from the card's own claim (tier-4 §S4:
+        # a token's printed text is the TOKEN's ability, not the card's).
+        for tok_re, need_re, human, law, sub in C4_CLAIMS:
+            if not tok_re.search(body):
+                continue
+            bad = []
+            for m in entry.get("members", []):
+                quote, full = member_texts(m, cards)
+                if not quote.strip():
+                    continue          # unevidenced: NO QUOTE owns that, not C4
+                hay = quote + " " + strip_reminder(full or "")
+                if not need_re.search(hay):
+                    bad.append({"oracle_id": m["oracle_id"],
+                                "card": card_label(m["oracle_id"], cards),
+                                "quote": quote.strip()})
+            if bad:
+                findings.append({
+                    "check": sub, "severity": "BLOCKING", "slug": slug,
+                    "law": law,
+                    "what": f"slug claims {human}; {len(bad)} of "
+                            f"{len(entry.get('members', []))} member(s) never say so in "
+                            f"the cited quote or in printed oracle text "
+                            f"(reminder text excluded)",
+                    "members": bad,
+                    "fix": "the printed word is the claim — re-home these members, or "
+                           "correct the slug so it stops asserting what they do not do",
+                })
+
+        # C4b: the scope FIELD contradicts the members' printed ownership.
+        scope = (entry.get("scope") or "")
+        if scope.startswith("any"):
+            bad = []
+            for m in entry.get("members", []):
+                quote, _full = member_texts(m, cards)
+                if quote.strip() and OWN_CONTROL.search(quote):
+                    bad.append({"oracle_id": m["oracle_id"],
+                                "card": card_label(m["oracle_id"], cards),
+                                "quote": quote.strip()})
+            if bad:
+                findings.append({
+                    "check": "C4b", "severity": "BLOCKING", "slug": slug,
+                    "law": "grammar §6 — ownership is AXIS IDENTITY, not a facet "
+                           "(Captain-ratified 2026-08-02; explicit partial reversal of "
+                           "batch-6 D3, which had logged ownership as a schema-pass facet)",
+                    "what": f"scope is {scope!r} — an any-ownership claim — but "
+                            f"{len(bad)} of {len(entry.get('members', []))} member(s) are "
+                            f"printed 'you control' and cannot affect an opponent's",
+                    "members": bad,
+                    "fix": "split the own-restricted members onto an -own- sibling, or "
+                           "correct the scope; 'any' must mean any",
+                })
+
+        # C4d: the scope field contradicts the slug's own name.
+        if scope.startswith("any") and re.search(r"you-control|own-", body):
+            findings.append({
+                "check": "C4d", "severity": "BLOCKING", "slug": slug,
+                "law": "grammar §6 — a slug and its scope field may not make "
+                       "opposite ownership claims",
+                "what": f"slug name asserts controller-restricted ownership while the "
+                        f"scope field says {scope!r}",
+                "members": [],
+                "fix": "correct the scope field to match the ratified name",
+            })
     return findings
 
 

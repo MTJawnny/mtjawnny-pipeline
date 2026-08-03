@@ -14,14 +14,14 @@ accident; this is the systematic pass for the rest.
 
 Scope: 328 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**25 findings.**
+**44 findings.**
 
 | check | law | count |
 |---|---|--:|
-| C1a | §8 rule 3 — definition contradicts the name | 1 |
+| C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
-| C3 | §4 — member effect contradicts the slug suffix | 7 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 15 |
+| C3 | §4 — member effect contradicts the slug suffix | 6 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -34,26 +34,16 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-42 misfiled member assignments across 16 axes:
+41 misfiled member assignments across 15 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
-| `etb-` | 13 | 38 |
+| `etb-` | 12 | 37 |
 | `draw-second-card-trigger-` | 1 | 2 |
 | `attack-trigger-` | 1 | 1 |
 | `cast-trigger-` | 1 | 1 |
 
-**`etb-` accounts for 38 of 42.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
-
-## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
-
-### `rule:draw-second-card-trigger-plus1-counter`
-
-**slug names a counter; its definition names a token and never a counter**
-
-> definition: An ability triggers specifically when the controller draws their second card in a turn, producing a creature token as a reward.
-
-*Proposed:* definition is stale or the name is wrong — reconcile against the members, then correct the DEFINITION (the name is ratified) or ratify a rename
+**`etb-` accounts for 37 of 41.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1b — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -137,14 +127,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 **slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
 
 - **The Ooze** — "Create a Mutagen token."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:etb-destroy-target-enchantment`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 4 never do, in the cited quote or anywhere in their oracle text**
-
-- **Brokers Charm** — "Destroy target enchantment."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
@@ -243,14 +225,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Rehearsed Debater** — "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn."
 
 *Proposed:* these members do not perform 'draw' — re-home onto the axis matching their real effect, or ratify a sibling
-
-### `rule:delayed-destroy-trigger`
-
-**slug's effect is 'destroy', so members must show 'destroy'; 1 of 4 never do, in the cited quote or anywhere in their oracle text**
-
-- **Arius, Flyby Trawler** — "Discard that card at the beginning of the next end step."
-
-*Proposed:* these members do not perform 'destroy' — re-home onto the axis matching their real effect, or ratify a sibling
 
 ### `rule:draw-cards-with-life-loss-cost`
 

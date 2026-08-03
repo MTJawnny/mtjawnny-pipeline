@@ -210,6 +210,51 @@ Defender keyword, Captain's b7 ruling generalized), `two-target` (fixed
 plurality), `-conditional` (an intervening-if or "unless" gate on the same
 ability; the gate must be quoted in evidence).
 
+### 6a. THE PRINTED WORD IS THE CLAIM (Captain-ratified 2026-08-02)
+
+> **"Game logic is game logic. It cannot be partially assumed or opened for
+> interpretation. If something targets, it targets. If it does not target, it
+> does not target. All words used purposefully and not up to interpretation."**
+
+Templating words are CR terms of art chosen deliberately, not English prose.
+They are **hardcoded to the mechanic they name** and are **axis identity**,
+never a facet deferred to the schema pass.
+
+Binding consequences:
+
+1. **`target`** (CR 115.1, 601.2c) — a slug may contain `target` only where the
+   ability prints the word "target". Generalizes the b7 Unwind ruling from one
+   card to a law. Burden of Guilt's "{1}: Tap **enchanted** creature" is not a
+   targeted tap; Unstable Amulet's "deals 1 damage to **each opponent**" is not
+   an any-target damage effect.
+2. **`you control` / ownership** — a restriction on the affected object.
+   An axis scoped `any-*` asserts it can affect an opponent's permanents; a
+   member printed "target creature **you control**" cannot, and does not belong.
+   **"Any" must mean any.**
+3. **`another` / `other`** — excludes the source. A slug may not claim it of a
+   member whose printed text can affect itself. Man-o'-War returns "**target**
+   creature", not "another", so it can bounce itself and is not an
+   `-other-creature` member.
+4. **The scope field and the slug may not make opposite claims.**
+
+**EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
+`rule:etb-pump-target-creature` by name, that the ownership clause be dropped
+and *"ownership-scope logged as a facet dimension for the schema pass."*
+Ownership is now axis identity. Logged as a reversal per §13's D6-style
+discipline; batch-6 D3's other provisions are untouched.
+
+**Where the reminder-text boundary sits.** A card's claim is its printed
+oracle text with reminder-text parentheticals **excluded** — a token-definition
+parenthetical states what the *token* does, which §2's created-ability rule
+assigns to the token, not the card. This is the tier-4 §S4 boundary and it is
+the same one that separates 44 real DET defects from 154 false ones.
+
+**Enforcement.** `foundry_definition_drift.py` check **C4** (a/b/c/d), which
+did not exist before this ruling — no gate read scope, targeting or ownership.
+First run: **93 memberships across 22 active axes**. That population is the
+measured cost of the rule never having been enforced, and it is a decision
+packet's worth of rulings, not a mechanical fix.
+
 ## 7. Scaling standard
 
 One connective, one order, closed stat list — RATIFIED (D-3):
