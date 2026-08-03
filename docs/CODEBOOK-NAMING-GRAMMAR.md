@@ -391,10 +391,31 @@ Hard rules, each anchored:
 3. **A counter is not a token and a token is not a counter (CR 122.1,
    verbatim).** Any slug naming one must have evidence quoting that one —
    the b7 Lat-Nam/Gnarlid effect-suffix check, now grammar law.
-4. Token types are their predefined names: `treasure`, `clue`, `food`,
-   `blood`, `gold`, `powerstone`, `mutagen`, `lander`, `creature` (with P/T
-   left to evidence), `mana-producing-artifact` (umbrella; excludes treasure,
-   which owns its own node — S5 semantics at schema pass).
+4. Token types are their predefined names. **The closed vocabulary is CR
+   111.10's enumeration in full — all 21 — derived from the CR, not curated
+   (Captain-ratified 2026-08-02):**
+
+   `treasure` · `food` · `gold` · `walker` · `shard` · `clue` · `blood` ·
+   `powerstone` · `incubator` · `map` · `junk` · `lander` · `mutagen` ·
+   `vibranium` · and the seven Role types: `cursed-role` · `monster-role` ·
+   `royal-role` · `sorcerer-role` · `virtuous-role` · `wicked-role` ·
+   `young-hero-role`
+
+   Plus two project umbrellas that are NOT CR types: `creature` (with P/T left
+   to evidence) and `mana-producing-artifact` (excludes treasure, which owns
+   its own node — S5 semantics at schema pass).
+
+   **Why the full enumeration:** §8 rule 4 previously carried 8 of the 21, and
+   the 13 absent ones all have corpus pressure — Incubator 35 cards, Junk 15,
+   Map 13, Wicked Role 11, the seven Roles 41 between them. F-E measured the
+   consequence: a Map token had no valid slug, so it was absorbed by the
+   nearest sibling. A partial enumeration of a closed CR list is a defect, not
+   a shortlist.
+
+   **Still open, not decided here:** CDR-11 asks whether the seven Roles are
+   seven values or one `role` umbrella with a facet. Ratifying them as
+   vocabulary does not answer that — it only means a Role token now has a legal
+   name either way.
 
 ### 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
 

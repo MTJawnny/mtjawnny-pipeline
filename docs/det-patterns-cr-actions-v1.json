@@ -1,0 +1,20 @@
+{
+ "note": "Separate from docs/det-patterns-v2.json so the previously ratified set stays untouched and this batch's provenance is legible.",
+ "patterns": [
+  {
+   "codebook_n_members_at_probe": 0,
+   "corpus_hits": 124,
+   "cr_anchor": "701.16 (investigate = create a Clue token); 111.10f (Clue token)",
+   "def_anchor": "An effect creates one or more Clue tokens, whether by the printed keyword action 'investigate' or by naming the token directly.",
+   "note": "CR-action batch, Captain-ratified 2026-08-02. Reminder text is stripped before matching (grammar \u00a76a / tier-4 \u00a7S4): a Clue token's own reminder text is the TOKEN's ability. Batch-5 D14 ledgered this exact slug as a future sibling and \u00a711 makes it self-instantiating on first quote-verified member -- it was never built.",
+   "pattern": "\\binvestigates?\\b|\\bClue tokens?\\b",
+   "pattern_index": 100,
+   "seed": 20260802,
+   "slug": "rule:create-token-clue",
+   "status": "ratified"
+  }
+ ],
+ "ratified": "2026-08-02, Captain \u2014 CR 701 keyword-action batch",
+ "schema": "det-patterns-cr-actions/1",
+ "standing_condition": "Per walk-ratification \u00a72.5: at DET-pass time each pattern emits a fixed-seed 20-hit sample sheet; ANY sample row failing its axis definition halts the pass before provenance writes."
+}
