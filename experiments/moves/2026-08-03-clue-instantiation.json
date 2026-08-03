@@ -1,0 +1,899 @@
+{
+ "batch": "2026-08-03-clue-instantiation",
+ "ruling": "docs/CLUE-INSTANTIATION-2026-08-03.md",
+ "source_ref": "captain-cli-2026-08-03",
+ "new_axes": {
+  "rule:create-token-clue": {
+   "definition": "A spell ability that creates one or more Clue tokens on resolution — printed either as the keyword action `investigate` (CR 701.16, 'create a Clue token') or as a literal Clue-token creation instruction. DELIVERY is omitted per grammar §1 because the ability is a spell ability (CR 113.3a). Scope is the caster: axes where ANOTHER player ends up with the Clue are a separate shape and are not members.",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:etb-create-token-clue": {
+   "definition": "A triggered ability on the source's own entry — 'when ~ enters' (CR 113.3c) — that creates one or more Clue tokens for you. Triggers keyed on ANOTHER permanent entering are a different printed shape (§6b) and are not members.",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:activated-create-token-clue": {
+   "definition": "An activated ability, '[Cost]: [Effect]' (CR 113.3b), whose effect creates one or more Clue tokens for you. The creation must sit RIGHT of the colon per grammar §9.",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:death-trigger-create-token-clue": {
+   "definition": "A triggered ability on the source's OWN death — 'when ~ dies' (CR 700.4) — that creates one or more Clue tokens for you. Triggers keyed on other creatures dying, and on cards reaching a graveyard from anywhere other than the battlefield, are different shapes and are not members.",
+   "scope": "self",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:attack-trigger-create-token-clue": {
+   "definition": "A triggered ability on the source's own attack — 'whenever ~ attacks' (CR 113.3c) — that creates one or more Clue tokens for you. Triggers keyed on other creatures attacking, or on the player attacking, are different shapes and are not members.",
+   "scope": "self",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:cast-trigger-create-token-clue": {
+   "definition": "A triggered ability whose trigger EVENT is a spell being cast (CR 701.5a) and whose effect creates one or more Clue tokens for you. Per grammar §2 the cast must be the trigger event itself, never an intervening-if condition about having cast (b6 Village Ironsmith).",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:combat-damage-to-player-create-token-clue": {
+   "definition": "A triggered ability on the source dealing COMBAT damage to a player that creates one or more Clue tokens for you. `combat-` is a restriction, not decoration (Captain-ratified 2026-08-02): an any-damage trigger is a different axis.",
+   "scope": "self",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:upkeep-trigger-create-token-clue": {
+   "definition": "A triggered ability at the beginning of an upkeep (CR 113.3c) that creates one or more Clue tokens for you.",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:landfall-create-token-clue": {
+   "definition": "The landfall ability word (CR 207.2c) creating one or more Clue tokens for you.",
+   "scope": "own",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  },
+  "rule:any-damage-to-creature-create-token-clue": {
+   "definition": "A triggered ability on the source dealing damage to a creature with NO combat restriction (Captain-ratified 2026-08-02) that creates one or more Clue tokens for you.",
+   "scope": "self",
+   "source": "GRAMMAR-§11-SELF-INSTANTIATION"
+  }
+ },
+ "seeds": [
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "0880461e-8943-443b-90e7-ff84eef46550",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Dining Room: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "1779869a-5e54-4ab5-86b8-d4d20e2e1ba4",
+   "quote": "{1}, Sacrifice another creature: Create a Clue token. Activate only during your turn.",
+   "class": "human",
+   "why": "June, Bounty Hunter: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "33a7d29a-ebc0-4606-91b6-7381e2a16016",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Library: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "47f71408-5509-4651-9121-fd0867adae00",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Kitchen: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "68227832-2916-49b9-92bb-c09b8a0c13f5",
+   "quote": "{1}{G}, Exile a creature card from your graveyard: Investigate. You gain 2 life.",
+   "class": "human",
+   "why": "Ongoing Investigation: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "6dd8ba09-f117-4514-9e09-f9f9f5fb5025",
+   "quote": "{3}, {T}: Investigate.",
+   "class": "human",
+   "why": "Floodhound: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "7ffadb3f-0b88-416f-b1a1-876383c22720",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Study: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "8f88b0bf-81bd-4223-9dad-d8c49ff4b87a",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Conservatory: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "9439d6eb-4c10-451d-85c4-3752611c671c",
+   "quote": "Hunt for Heresy — {1}, {T}: Tap target creature an opponent controls. Investigate.",
+   "class": "human",
+   "why": "Inquisitor Greyfax: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "949e455d-6a9e-491a-892f-826cc8be0fd9",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Hall: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "98a22879-d0b2-441f-bcf6-a67b4552b73c",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Lounge: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "a4fc174e-7fa6-41a8-ae03-255f226840f9",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Billiard Room: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "a68e57f3-f138-4c26-b8d5-55d1adec44a8",
+   "quote": "{T}: Create your choice of a Blood token, a Clue token, or a Food token.",
+   "class": "human",
+   "why": "Transmutation Font: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "c6a46fc2-fc8f-4dcd-bca7-682abfbf303d",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Secret Passage: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "cb91e842-9f06-4863-a328-2cabe1bcfe27",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Ballroom: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "e71ac446-02a4-4468-8d29-f28b21617665",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Havengul Laboratory // Havengul Mystery: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:activated-create-token-clue",
+   "member": "f2ce9e55-07c0-4f36-a59e-127693fc0f62",
+   "quote": "{4}, {T}: Investigate.",
+   "class": "human",
+   "why": "Magnifying Glass: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:any-damage-to-creature-create-token-clue",
+   "member": "784f0ca3-efe1-4e22-aedd-57cba7996fa5",
+   "quote": "Whenever this creature deals damage to one or more creatures, investigate.",
+   "class": "human",
+   "why": "Briarbridge Patrol: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "095dabda-4570-4764-8d62-4a29eb19d3e6",
+   "quote": "Whenever Sophina, Spearsage Deserter attacks, investigate once for each nontoken attacking creature.",
+   "class": "human",
+   "why": "Sophina, Spearsage Deserter: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "0fbe3805-b59b-47fc-ab21-f05a4aa4cfe0",
+   "quote": "Whenever Duggan enters or attacks, investigate.",
+   "class": "human",
+   "why": "Duggan, Private Detective: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "1ed9e351-0000-4b75-8ecb-d15bd88df68a",
+   "quote": "Whenever Tamiyo attacks, investigate.",
+   "class": "human",
+   "why": "Tamiyo, Inquisitive Student // Tamiyo, Seasoned Scholar: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "4ec0b64d-c793-47a6-9c26-9ad4d9e9c182",
+   "quote": "Whenever Lazav attacks, exile target card from a graveyard, then investigate.",
+   "class": "human",
+   "why": "Lazav, Wearer of Faces: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "89f96032-5cba-404d-82b0-38d2be963e4b",
+   "quote": "Whenever Azula attacks, you lose 1 life and create a Clue token.",
+   "class": "human",
+   "why": "Azula, On the Hunt: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "d97a0e41-9dd7-4466-afb7-3d8bd6cd0eed",
+   "quote": "Whenever this Vehicle attacks, put a card exiled with it into its owner's graveyard. If you do, investigate.",
+   "class": "human",
+   "why": "Foreboding Steamboat: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "ef764497-800e-4cbd-805e-7635919a983c",
+   "quote": "Parley — Whenever this creature attacks, each player reveals the top card of their library. For each nonland card revealed this way, you investigate. Then each player draws a card.",
+   "class": "human",
+   "why": "Innocuous Researcher: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:attack-trigger-create-token-clue",
+   "member": "f75ac0a3-8795-48b4-91fd-4717900ef5b7",
+   "quote": "Whenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card is exiled this way, create a Clue token.",
+   "class": "human",
+   "why": "Raven Eagle: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "16a44586-ea1d-45f1-b9de-da1c11f729df",
+   "quote": "The Last Centurion — When you cast this spell from anywhere other than exile, exile it with three time counters on it. It gains suspend. Then investigate.",
+   "class": "human",
+   "why": "Rory Williams: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "292aafef-8945-4827-90b2-1dd9764e517b",
+   "quote": "Paradox — Whenever you cast a spell from anywhere other than your hand, investigate.",
+   "class": "human",
+   "why": "Osgood, Operation Double: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "5a35201d-e9b1-433a-bb70-3280ceedbcd6",
+   "quote": "Whenever you cast your second spell each turn, untap target creature, then investigate.",
+   "class": "human",
+   "why": "Elmar, Ulvenwald Informant: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "7932ab35-39dc-4500-aa44-2ad7228f0d2a",
+   "quote": "Whenever you cast your second spell each turn, investigate.",
+   "class": "human",
+   "why": "Malcolm, the Eyes: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "9d5917d5-4fb3-4f37-9278-e08c1f73aae5",
+   "quote": "Whenever you cast an artifact spell, investigate.",
+   "class": "human",
+   "why": "Forensic Gadgeteer: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "a47d9ea3-95fe-4774-8e72-30e7f56756f4",
+   "quote": "Whenever you cast a creature spell with mana value 3 or less, investigate.",
+   "class": "human",
+   "why": "Bygone Bishop: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "b5b26cea-9be3-46f7-9603-a6eee0dd107e",
+   "quote": "Whenever you cast your second spell each turn, investigate.",
+   "class": "human",
+   "why": "Lavinia, Foil to Conspiracy: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "bad27b43-7716-4ce1-82ba-2a6d437363e7",
+   "quote": "Whenever you cast a noncreature spell, create a Clue token.",
+   "class": "human",
+   "why": "The Mechanist, Aerial Artisan: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "da268892-b190-4eee-9a2b-b0b9bb763033",
+   "quote": "Whenever you cast a historic spell, investigate. This ability triggers only once each turn.",
+   "class": "human",
+   "why": "Sarah Jane Smith: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:cast-trigger-create-token-clue",
+   "member": "e10065ba-fe24-4974-a500-d4151397a4d9",
+   "quote": "Whenever you cast an instant or sorcery spell, investigate.",
+   "class": "human",
+   "why": "Trail of Evidence: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:combat-damage-to-player-create-token-clue",
+   "member": "1ff9598a-0dac-4437-9450-fc8134fa3740",
+   "quote": "Whenever Piper Wright deals combat damage to a player, investigate that many times.",
+   "class": "human",
+   "why": "Piper Wright, Publick Reporter: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:combat-damage-to-player-create-token-clue",
+   "member": "3ba223b7-743f-4f99-836e-869778fb2e99",
+   "quote": "Whenever this creature deals combat damage to a player, investigate.",
+   "class": "human",
+   "why": "Undercover Crocodelf: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:combat-damage-to-player-create-token-clue",
+   "member": "69ca69c7-403b-4b5d-be08-d9dce8ce410e",
+   "quote": "Whenever this creature deals combat damage to a player, investigate.",
+   "class": "human",
+   "why": "Daring Sleuth // Bearer of Overwhelming Truths: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:combat-damage-to-player-create-token-clue",
+   "member": "db07a3f9-c6d1-4cae-a899-12b3e8d94018",
+   "quote": "Whenever Inquisitor Eisenhorn deals combat damage to a player, investigate that many times.",
+   "class": "human",
+   "why": "Inquisitor Eisenhorn: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:combat-damage-to-player-create-token-clue",
+   "member": "f4e0b557-4f80-4b7c-bfcc-6d4c468faf2e",
+   "quote": "Council's dilemma — Whenever Tivit enters or deals combat damage to a player, starting with you, each player votes for evidence or bribery. For each evidence vote, investigate. For each bribery vote, create a Treasure token.",
+   "class": "human",
+   "why": "Tivit, Seller of Secrets: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "0728b195-2dfe-4d73-91ae-e658a97b0b9a",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Hard Evidence: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "0c0ffb66-94db-4ba9-afde-c5b4fbf09578",
+   "quote": "Create a 2/2 white and blue Detective creature token. If a creature died this turn, you gain 2 life, surveil 2, then investigate.",
+   "class": "human",
+   "why": "Drag the Canal: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "19963c90-e7b2-4935-adcd-d41f0faf401a",
+   "quote": "Create a Clue token.",
+   "class": "human",
+   "why": "Sokka's Sword Training: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "1f3b0b15-2c38-4aaa-b527-afbb540a6715",
+   "quote": "Target creature gains deathtouch and lifelink until end of turn. Investigate.",
+   "class": "human",
+   "why": "Toxin Analysis: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "221240c5-3c97-438c-b906-2508eacf190f",
+   "quote": "Investigate, then target creature gets +1/+1 until end of turn for each Clue you control.",
+   "class": "human",
+   "why": "Confront the Unknown: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "26c2dd96-07e7-4294-9431-96d5aeff3761",
+   "quote": "Create a Clue token.",
+   "class": "human",
+   "why": "True Ancestry: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "2d16d51b-47e0-4cdc-83dd-a805ba50bd83",
+   "quote": "Tap up to two target creatures and put a stun counter on each of them. Investigate.",
+   "class": "human",
+   "why": "Out Cold: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "2d6a0d89-7ebd-420e-9892-be1506ab3714",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Follow the Bodies: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "2f2d75a0-d751-4c74-b357-8f92a992447f",
+   "quote": "Investigate. You may play an additional land this turn.",
+   "class": "human",
+   "why": "Kellan, Inquisitive Prodigy // Tail the Suspect: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "3bc47eae-cf6f-4b5e-96e1-94a4f307f474",
+   "quote": "The owner of target creature or enchantment puts it into their library second from the top or on the bottom. You create a Clue token.",
+   "class": "human",
+   "why": "Lost Days: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "47951720-9584-4ca3-a73d-3d259102b2f8",
+   "quote": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Investigate.",
+   "class": "human",
+   "why": "They Went This Way: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "4960c3a0-77ca-48d8-b565-6c5f1e6522cf",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Press for Answers: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "51473069-68dc-4e87-b345-d7cbcfdeea74",
+   "quote": "Torch the Witness deals twice X damage to target creature. If excess damage was dealt to that creature this way, investigate.",
+   "class": "human",
+   "why": "Torch the Witness: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "55c7ce94-3cd3-42f3-9dd8-0c118fa626c8",
+   "quote": "Investigate. If this spell was cast from a graveyard, investigate twice instead.",
+   "class": "human",
+   "why": "Secrets of the Key: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "5cca85e0-43e8-4b97-a43b-1b8f23f541d1",
+   "quote": "Create a Clue token.",
+   "class": "human",
+   "why": "Jet's Brainwashing: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "5e7586dd-d42e-4ac6-adb8-d46b6cdef923",
+   "quote": "Exile X target creatures, then investigate X times. Return the exiled cards to the battlefield tapped under their owners' control at the beginning of the next end step.",
+   "class": "human",
+   "why": "Disorder in the Court: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "6a69d4b1-72dd-4599-a16d-32299de5b0b9",
+   "quote": "Exile target creature. If it was dealt damage this turn, create a Clue token.",
+   "class": "human",
+   "why": "Sold Out: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "773c7a1e-0f59-4606-a2fc-c47bda760ecd",
+   "quote": "Destroy target creature with power 2 or less. Investigate.",
+   "class": "human",
+   "why": "Foul Play: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "789899eb-3a33-4a41-b6b5-5e2f55a9af51",
+   "quote": "Target creature gets +3/+0 and gains first strike until end of turn. Investigate.",
+   "class": "human",
+   "why": "The Chase Is On: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "8578c462-7b2d-4b69-ad10-a2eab44ac98d",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Jace's Scrutiny: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "8c90b558-de07-4689-9427-da68d823c2e8",
+   "quote": "Investigate X times.",
+   "class": "human",
+   "why": "James, Wandering Dad // Follow Him: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "96335212-ec57-4beb-bab1-11c8eaa62119",
+   "quote": "Create a Clue token.",
+   "class": "human",
+   "why": "Cunning Maneuver: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "a30d076b-c942-45e4-b943-3749ce955291",
+   "quote": "Investigate three times.",
+   "class": "human",
+   "why": "Confirm Suspicions: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "a31a66ee-5ddf-4d70-9ae9-725fc7327706",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Gone Missing: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "b0c28b2b-a2dd-4b76-bb1c-cec55a0a6784",
+   "quote": "Mill three cards. Investigate.",
+   "class": "human",
+   "why": "Flotsam // Jetsam: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "b25d5b06-44cf-42bc-90dd-3b238f702361",
+   "quote": "Target creature gets +2/+2 until end of turn. Investigate.",
+   "class": "human",
+   "why": "Auspicious Arrival: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "b5483037-5dd2-4282-a201-de2e08aaa76e",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Expose Evil: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "bea6606c-ea9a-4199-a8cd-b35d7c47fd7b",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Humble the Brute: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "bec03edc-261a-4b02-be37-2006f657e905",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Root Out: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "c78d4cec-6764-4cce-96d2-a2d85a57b218",
+   "quote": "Investigate. Creatures your opponents control get -2/-0 until end of turn. If any of them are suspected, they're no longer suspected.",
+   "class": "human",
+   "why": "Eliminate the Impossible: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "e4733889-4d4c-4bf7-8a9b-fb5ad7a38395",
+   "quote": "Creatures you control get +2/+1 until end of turn. Investigate.",
+   "class": "human",
+   "why": "On the Job: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "e57e448b-1186-4662-a6b0-01a9ce33b961",
+   "quote": "Choose any number of target players. Investigate X times, where X is the total number of creatures those players control.",
+   "class": "human",
+   "why": "Officious Interrogation: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "e8fcc7ff-6274-4130-a3a5-99f545eeee30",
+   "quote": "Investigate.",
+   "class": "human",
+   "why": "Survive the Night: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:create-token-clue",
+   "member": "eeae4161-9f35-45df-8b3c-c55e37f49cd1",
+   "quote": "Draw a card. Investigate.",
+   "class": "human",
+   "why": "Deduce: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:death-trigger-create-token-clue",
+   "member": "2e18ee5b-cda3-428b-be91-939c410256ac",
+   "quote": "When this creature dies, investigate.",
+   "class": "human",
+   "why": "Cold Case Cracker: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:death-trigger-create-token-clue",
+   "member": "5d950fd4-8956-4b1a-ab0f-ab31bcffce4e",
+   "quote": "When this creature dies, it deals 1 damage to you. Create a Clue token.",
+   "class": "human",
+   "why": "Callous Inspector: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:death-trigger-create-token-clue",
+   "member": "987aab63-a889-400f-a3bd-feaef978b407",
+   "quote": "When this Vehicle dies, create a Clue token.",
+   "class": "human",
+   "why": "Fire Nation Warship: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:death-trigger-create-token-clue",
+   "member": "bdc2d980-ca14-4040-a9a1-786d724dc65c",
+   "quote": "When this creature dies, create a Clue token.",
+   "class": "human",
+   "why": "Knowledge Seeker: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:death-trigger-create-token-clue",
+   "member": "e186cc6f-8c11-4475-a704-0b4c3a9eade9",
+   "quote": "When this creature dies, investigate.",
+   "class": "human",
+   "why": "Byway Courier: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "0fbe3805-b59b-47fc-ab21-f05a4aa4cfe0",
+   "quote": "Whenever Duggan enters or attacks, investigate.",
+   "class": "human",
+   "why": "Duggan, Private Detective: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "1095fcd9-8127-4345-9052-fccb350296d3",
+   "quote": "When this Aura enters, tap enchanted permanent and investigate.",
+   "class": "human",
+   "why": "Hold for Questioning: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "141a2757-8f20-4e10-9866-bb5d612ed62d",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Loxodon Eavesdropper: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "24038629-7c12-45ef-8ec4-0d2bb3e2265c",
+   "quote": "When this creature enters, investigate X times, where X is the number of opponents you have.",
+   "class": "human",
+   "why": "Ethereal Investigator: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "288fcf5c-f5aa-4f62-9dd8-ba295df48f7a",
+   "quote": "When this creature enters, return up to one other target creature to its owner's hand. If you controlled it, investigate.",
+   "class": "human",
+   "why": "Hotshot Investigators: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "2a73db99-5e31-49a8-91e7-b28b3434585d",
+   "quote": "When The Third Doctor enters, create your choice of a Clue token, a Food token, or a Treasure token.",
+   "class": "human",
+   "why": "The Third Doctor: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "33b31fb0-71ce-408a-a256-2a5a3b085cb6",
+   "quote": "When this Case enters, investigate.",
+   "class": "human",
+   "why": "Case of the Filched Falcon: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "3492cee8-b854-449a-ada4-a4e8a4333d87",
+   "quote": "When Nyla enters, exile up to one target creature card from your graveyard. If you do, you lose X life and create X Clue tokens, where X is that card's mana value.",
+   "class": "human",
+   "why": "Nyla, Shirshu Sleuth: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "4029e884-8154-42b3-ae29-3cb98374a294",
+   "quote": "When this creature enters, create a Clue token.",
+   "class": "human",
+   "why": "Messenger Hawk: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "4bc79fb3-81bb-42ed-9bbb-93f8cede3094",
+   "quote": "When this creature enters, discard your hand, then investigate four times.",
+   "class": "human",
+   "why": "Carnage Interpreter: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "5b7ccdd2-40aa-4619-a147-0792dc02b2e5",
+   "quote": "Woman Who Walked the Earth — When Martha Jones enters, investigate.",
+   "class": "human",
+   "why": "Martha Jones: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "5d1d9914-3ef2-45c5-b1cb-cb85d2f7394c",
+   "quote": "When this enchantment enters, create a Clue token.",
+   "class": "human",
+   "why": "Tolls of War: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "6148fcf5-466a-43aa-a0f3-d3d9fae4d883",
+   "quote": "Morbid — When this creature enters, if a creature died this turn, investigate.",
+   "class": "human",
+   "why": "Funnel-Web Recluse: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "7e7abb44-47b0-4d80-b8a1-36f0c1032aa3",
+   "quote": "When this enchantment enters and at the beginning of your upkeep, you lose 1 life and create a Clue token.",
+   "class": "human",
+   "why": "Obsessive Pursuit: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "8fe6e954-f19b-4d11-83d3-74c634d51bad",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Briarbridge Tracker: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "9ce5cc2f-e223-4c3b-adc1-c0109fd31762",
+   "quote": "When this Aura enters, investigate.",
+   "class": "human",
+   "why": "Weirding Wood: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "9e830359-ab92-4bfd-82b3-d9c67ac80cf7",
+   "quote": "When this enchantment enters, create a Clue token.",
+   "class": "human",
+   "why": "Air Nomad Legacy: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "a5a05edd-2a30-414b-b766-f0651d5783f5",
+   "quote": "When this creature enters, create a Clue token.",
+   "class": "human",
+   "why": "Forecasting Fortune Teller: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "af294df7-f8a0-4d52-88cb-086678463970",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Gleaming Geardrake: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "b0d639cb-71d4-454f-9dd6-89cd7a59b702",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Serene Sleuth: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "b37e9bc5-6a2c-4f08-b856-3f8d0d16defb",
+   "quote": "Raid — When this creature enters, if you attacked this turn, create a Clue token.",
+   "class": "human",
+   "why": "Fire Nation Raider: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "b3a03768-7676-4b33-a813-cc69dea77c4d",
+   "quote": "When The Fugitive Doctor enters, investigate.",
+   "class": "human",
+   "why": "The Fugitive Doctor: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "b401179f-eded-4973-8182-df4627133886",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Persuasive Interrogators: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "b401a490-d25f-4029-bb91-8999e140c6a1",
+   "quote": "When this enchantment enters, investigate twice.",
+   "class": "human",
+   "why": "Armed with Proof: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "c1ebbe89-8976-4ed7-a68a-8b08aac4616c",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Drownyard Explorers: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "c206bdcb-d2c4-4bda-a979-6c0627ef8f73",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Novice Inspector: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "caa02547-66e3-4e27-a2d3-5e94f3e7a069",
+   "quote": "When this creature enters, investigate.",
+   "class": "human",
+   "why": "Thraben Inspector: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "d1ec1e4e-faa6-4afc-9e00-a3327105c11b",
+   "quote": "When this creature enters, investigate twice.",
+   "class": "human",
+   "why": "Wavesifter: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "dd79a994-7dad-49d4-8d8f-62dbedde4a38",
+   "quote": "When Alquist Proft enters, investigate.",
+   "class": "human",
+   "why": "Alquist Proft, Master Sleuth: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "ddcd8a0a-7ac3-4400-a16f-8bb5aa50994e",
+   "quote": "When Ezrim enters, investigate twice.",
+   "class": "human",
+   "why": "Ezrim, Agency Chief: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "e4ecfccd-b8b4-4b18-b989-30de79b4971e",
+   "quote": "When this artifact enters, investigate twice.",
+   "class": "human",
+   "why": "Detective's Satchel: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "ec8a4b26-633a-4e88-aa8a-82e9704b3439",
+   "quote": "When this creature enters, you may discard a card. If you do, investigate twice.",
+   "class": "human",
+   "why": "Resonance Technician: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "f4e0b557-4f80-4b7c-bfcc-6d4c468faf2e",
+   "quote": "Council's dilemma — Whenever Tivit enters or deals combat damage to a player, starting with you, each player votes for evidence or bribery. For each evidence vote, investigate. For each bribery vote, create a Treasure token.",
+   "class": "human",
+   "why": "Tivit, Seller of Secrets: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "f75ac0a3-8795-48b4-91fd-4717900ef5b7",
+   "quote": "Whenever this creature enters or attacks, exile up to one target card from a graveyard. If a creature card is exiled this way, create a Clue token.",
+   "class": "human",
+   "why": "Raven Eagle: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:etb-create-token-clue",
+   "member": "fbb0173d-7ec9-4f43-b457-f8de6703497e",
+   "quote": "When this enchantment enters, investigate.",
+   "class": "human",
+   "why": "Fleeting Memories: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:landfall-create-token-clue",
+   "member": "e6555cca-e608-4c87-b835-9cd47fd1f543",
+   "quote": "Landfall — Whenever a land you control enters, investigate.",
+   "class": "human",
+   "why": "Tireless Tracker: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:upkeep-trigger-create-token-clue",
+   "member": "20591a83-7138-4876-b088-035bd3788be3",
+   "quote": "At the beginning of your upkeep, investigate.",
+   "class": "human",
+   "why": "Tamiyo's Journal: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:upkeep-trigger-create-token-clue",
+   "member": "7e7abb44-47b0-4d80-b8a1-36f0c1032aa3",
+   "quote": "When this enchantment enters and at the beginning of your upkeep, you lose 1 life and create a Clue token.",
+   "class": "human",
+   "why": "Obsessive Pursuit: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:upkeep-trigger-create-token-clue",
+   "member": "80ea3e65-946d-42c3-a26f-3d74e81d70b4",
+   "quote": "At the beginning of your upkeep, investigate.",
+   "class": "human",
+   "why": "Morska, Undersea Sleuth: CR 701.16 investigate == create a Clue token"
+  },
+  {
+   "to": "rule:upkeep-trigger-create-token-clue",
+   "member": "ab41243d-b178-4ebe-a7ac-bea37427be99",
+   "quote": "At the beginning of your upkeep, investigate once for each opponent who has more cards in hand than you.",
+   "class": "human",
+   "why": "Wojek Investigator: CR 701.16 investigate == create a Clue token"
+  }
+ ]
+}

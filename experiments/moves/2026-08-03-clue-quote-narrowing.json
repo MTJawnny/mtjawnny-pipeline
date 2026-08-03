@@ -1,0 +1,13 @@
+{
+ "batch": "2026-08-03-clue-quote-narrowing",
+ "ruling": "docs/CLUE-INSTANTIATION-2026-08-03.md §5a — evidence must prove ITS OWN axis",
+ "source_ref": "captain-cli-2026-08-03",
+ "quote_edits": {
+  "rule:create-token-clue": {
+   "2d16d51b-47e0-4cdc-83dd-a805ba50bd83": "Investigate."
+  },
+  "rule:cast-trigger-create-token-clue": {
+   "5a35201d-e9b1-433a-bb70-3280ceedbcd6": "When you cast this spell from anywhere other than exile, exile it with three time counters on it. It gains suspend. Then investigate."
+  }
+ }
+}
