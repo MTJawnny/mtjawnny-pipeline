@@ -141,7 +141,69 @@ exactly the §6b parent case: same job, different printed shapes.
 
 ---
 
-## 6. What this leaves
+## 6. ⚠ OPEN TENSION — `delayed` is §2 vocabulary that nothing can emit
+
+Captain, on this ruling: *"delayed triggers can be annoying. CR describes it.
+make sure you checked."* Checked, and the check found a problem that is bigger
+than this ruling.
+
+**CR 603.7 backs the classification exactly**, including the structural test
+this ruling used:
+
+> **CR 603.7** — *"A delayed triggered ability will contain 'when,' 'whenever,'
+> or 'at,' **although that word won't usually begin the ability**."*
+>
+> **CR 603.7d** — *"If a spell creates a delayed triggered ability, **the source
+> of that delayed triggered ability is that spell**."*
+>
+> **CR 603.7e** — *"If an activated or triggered ability creates a delayed
+> triggered ability, **the source … is the same as the source of that other
+> ability**."*
+
+603.7's "won't usually begin the ability" is precisely the boundary drawn in
+§3b — phrase mid-line, not at the head of the clause. And **603.7d/e are the
+rules-level basis for §2's created-ability rule**: the CR assigns the *source*
+to the creator, and §2 assigns the *delivery* the same way. They agree.
+
+**But that makes `delayed` unusable as a DELIVERY token, and it is one.**
+
+| | |
+|---|---|
+| §2 lists | `delayed` — "delayed triggered ability created on resolution", CR 603.7 |
+| §2's created-ability rule says | the delivery belongs to the **creating** ability, never the created one |
+| the extractor emits | **never** — measured, no branch produces `delayed` |
+| live axes using it | **3 / 10 memberships**: `rule:delayed-destroy-trigger` (3), `rule:delayed-draw-next-upkeep` (6), `rule:delayed-cantrip` (1) |
+
+If the delivery always belongs to the creator, then a card whose spell creates a
+delayed trigger has delivery *unmarked* (a spell ability), and Silent Assassin's
+is `activated` — which is exactly what the extractor does, and what CR 603.7d/e
+require. **There is then no card left for `delayed` to be the delivery of.**
+
+**This has a consequence already on the books.**
+`END-STEP-TRIGGER-RULING-2026-08-03.md` §1 sets aside **333 cards** as *"already
+buildable — `delayed` is ratified §2 vocabulary"*. That claim depends on
+`delayed` being a usable delivery. If the resolution below goes the other way,
+those 333 are not "already buildable" — they are ordinary spell/ETB/activated
+deliveries whose *effect* happens later, and the end-step figure of 536 needs
+re-deriving.
+
+**Two readings, both defensible — this is a ratification, not a fix:**
+
+1. **`delayed` is a DELIVERY** and the created-ability rule carves out an
+   exception for delayed triggers specifically. Keeps the 3 axes and the
+   end-step ruling's 333 intact; costs a stated exception to a Captain-ratified
+   rule.
+2. **`delayed` is not a delivery but an EFFECT-TIMING qualifier** — the card's
+   delivery is its creator, and `delayed-` in `rule:delayed-draw-next-upkeep`
+   describes *when the effect happens*, which is what those three slugs
+   actually mean. Costs moving `delayed` out of §2's DELIVERY table into the
+   qualifier vocabulary (§1), and re-deriving the end-step 333.
+
+**Recommend reading 2**, because it is what CR 603.7d/e say and what all three
+live slugs already mean — but it touches a ratified ruling's numbers, so it is
+flagged here rather than acted on. **Not folded into this ruling.**
+
+## 7. What this leaves
 
 | shape | cards |
 |---|--:|

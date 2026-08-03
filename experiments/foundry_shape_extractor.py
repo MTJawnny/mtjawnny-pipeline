@@ -327,7 +327,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             if re.search(r"\bend step\b", clause):
                 return mark("end-step-trigger", "end-step")
             if re.search(r"\bcombat\b", clause):
-                return None, "begin-combat"
+                return mark("begin-combat-trigger", "begin-combat")
             if re.search(r"\bdraw step\b", clause):
                 return None, "draw-step"
 
@@ -384,7 +384,14 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\bend step\b", clause):
             return mark("end-step-trigger", "end-step")
         if re.search(r"beginning of (each |your )?combat", clause):
-            return None, "begin-combat"
+            return mark("begin-combat-trigger", "begin-combat")
+        # CR 511.2: "Abilities that trigger 'at end of combat' trigger as the
+        # end of combat step begins." Tested on the CLAUSE -- 94 further cards
+        # print the same phrase as a DURATION inside an effect, which CR 603.7
+        # makes a delayed trigger whose source is the creating ability
+        # (603.7d/e), so those belong to their creator, not here.
+        if re.search(r"\bend of combat\b", clause):
+            return mark("end-combat-trigger", "end-combat")
         if re.search(r"\bdraw step\b", clause):
             return None, "draw-step"
         if re.search(r"\bbecomes the target of\b", low):
