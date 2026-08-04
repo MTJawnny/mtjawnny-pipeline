@@ -126,10 +126,29 @@ encodes.
 - **A ground-truth set only validates the shapes it contains.** The 116
   hand-verified Clue routings stayed byte-identical through every one of those
   seven fixes. Keep the set; keep widening it.
+- **A missing trigger verb makes the clause end LATER, not earlier.**
+  `trigger_clause` returns the first comma-prefix carrying a *listed* verb, so
+  when the real event verb is absent it walks PAST the condition and picks up a
+  verb from the EFFECT. The old comment claimed the opposite ("conservative
+  direction") and that is what hid the defect for eight fixes. The verb set is
+  now DERIVED from the CR keyword-action list — but note `cycle` is filed by the
+  CR as a KEYWORD, not a keyword-action, and participles (`tapped`) are
+  unreachable by `(es|s)?` inflection. Both are in the halt-guard.
+- **The gap census is BLIND to `spell-or-static` by construction.** It excludes
+  that bucket, so anything misrouted there is unreportable, not merely unfixed.
+  236 replacement effects (CR 614.1c "As [this permanent] enters…") hid there
+  indefinitely. When a shape "doesn't exist", check that bucket before believing it.
+- **Dossier the name you are about to WRITE, not the name you started from.**
+  Running Gate 3 on the census name `main-phase` returned clean while
+  `rule:postcombat-main-phase-trigger` was already an active axis with a batch-6
+  KEEP ruling.
+- **A parent's children having ~zero overlap is the RIGHT answer**, not weak
+  evidence — the parent exists to group cards that share no child ("Same Job,
+  Different Words"). Same-card co-occurrence remains the wrong test.
 
 ## Reference
 
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-03-EVE.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-04.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)

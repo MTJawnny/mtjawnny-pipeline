@@ -1,5 +1,13 @@
 # SESSION HANDOFF — 2026-08-03 EVE
 
+> **⚠ SUPERSEDED by `docs/SESSION-HANDOFF-2026-08-04.md`.** Specifically stale:
+> **§1's live-state table** (§2 vocabulary is now **31 tokens**, not 30;
+> `phase-trigger-unnamed` is **0**, not 10); **§4's NEXT WORK ITEM** —
+> `discard-trigger` was ratified 2026-08-04, at **90 lines / 82 cards**, not the
+> 96/88 recorded here; and **every gap-table number in §4**, all of which moved
+> when `TRIGGER-VERB-DERIVATION-2026-08-04.md` fixed the trigger-clause verb set.
+> §6 and §7 remain accurate and are still worth reading.
+
 Supersedes `SESSION-HANDOFF-2026-08-03-PM.md`. **Zero API calls all session.
 Cumulative arc spend unchanged at $90.51 / $140.** Captain's $37 still unspent.
 

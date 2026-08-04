@@ -159,13 +159,95 @@ def in_created_ability(line: str, pos: int) -> bool:
 
 # The event verbs a trigger CONDITION can carry (CR 113.3c: the condition names
 # the event). Used only to decide WHERE the condition ends when commas appear
-# inside an object phrase -- never to classify. Kept in step with the branches
-# below; a verb missing here only makes the clause end earlier, which is the
-# conservative direction.
-TRIGGER_VERB = re.compile(
-    r"\b(enters?|dies|die|leaves?|leave|attacks?|blocks?|casts?|deals?|"
-    r"becomes?|discards?|sacrifices?|gains?|cycles?|is|are|put|puts?|"
-    r"tapped|untapped|turned|declared|drawn|draws?)\b")
+# inside an object phrase -- never to classify.
+#
+# THE OLD COMMENT HERE STATED THE SAFETY PROPERTY BACKWARDS. It claimed "a verb
+# missing here only makes the clause end earlier, which is the conservative
+# direction." That is false, and it hid a defect for as long as it stood:
+# `trigger_clause` returns the FIRST comma-prefix that carries a listed verb, so
+# when the real event verb is ABSENT the loop walks PAST the condition and
+# returns a prefix whose verb came from the EFFECT half. A missing verb makes
+# the clause end LATER, not earlier.
+#
+# Measured 2026-08-04: the curated list held 24 verbs, and 488 of 13,028
+# when/whenever lines had no listed verb before their first comma. Worked cases,
+# each a real misfile:
+#   Illuna, Apex of Wishes  "Whenever this creature MUTATES, ..."   CR 702.140
+#   Ulrich of the Krallenhorde "Whenever this creature TRANSFORMS"  CR 701.27
+#   Fell Stinger            "When this creature EXPLOITS a creature" CR 702.110
+# All three were filed as `discard-trigger` because "discard" appears in their
+# effect half and was a listed verb. Ninth instance of the CR 113.3c bug class.
+#
+# The vocabulary is now DERIVED from the CR's own keyword-action list rather
+# than curated -- the same principle that parses the DELIVERY tokens out of
+# grammar §2 at run time. A curated list is only ever as good as the last
+# failure someone happened to notice.
+#
+# Only `kind == "keyword-action"` is derived. CR 702 KEYWORDS are deliberately
+# NOT bulk-derived: they are ability NAMES, not event verbs, and folding in
+# words like `flying` or `absorb` would match inside a SUBJECT phrase and cut
+# the clause too early -- "Whenever Flying Men, Goblin King, or a Bird enters"
+# would stop at "whenever flying men" and lose the event entirely. The handful
+# of CR 702 keywords that genuinely appear as trigger EVENTS are listed
+# explicitly below, each with its anchor.
+TRIGGER_VERB = None
+
+_SUPPLEMENT_VERBS = {
+    # CR 702 keywords that are printed as trigger events ("whenever ~ mutates")
+    "mutate": "702.140", "exploit": "702.110", "crew": "702.122",
+    "saddle": "702.171",
+    # verbs the CR defines outside the keyword-action list
+    "tap": "701.26", "untap": "701.26",          # 701.26 Tap and Untap
+    "lose": "104.3",                              # lose the game / lose life 118
+    "control": "109.4",                           # "when you lose control of ~"
+    "phase": "702.26a",                           # phase in / phase out
+    "tempt": "701.54d",                           # "Whenever the Ring tempts you"
+    "roll": "701.52",                             # roll to visit / dice rolls
+    # `cycle` is NOT in the CR keyword-action list -- CR 702.29 files it as a
+    # KEYWORD -- so deriving from that list alone silently dropped it. Measured:
+    # that flipped Radiant Smite off `cycled-trigger` and Crystalline Resonance
+    # off `any-cycled-trigger`, because the clause ran on into the effect and
+    # picked up "another target permanent" / "the starting player".
+    "cycle": "702.29c",
+    # structural verbs with no single CR keyword-action home
+    "enter": "603.6a", "die": "700.4", "leave": "700.4", "attack": "508.1",
+    "block": "509.1", "cast": "601.2", "deal": "120.3", "become": "603.2e",
+    "is": "113.3c", "are": "113.3c", "put": "701.9a", "turned": "701.34",
+    "declared": "508.1", "drawn": "121.1", "draw": "121.1", "gain": "119.3",
+    # PAST PARTICIPLES are not reachable by the `(es|s)?` inflection below and
+    # must be listed outright -- "becomes tapped" (CR 603.2e) is a trigger event.
+    "tapped": "603.2e", "untapped": "603.2e",
+}
+
+
+def build_trigger_verbs(actions: dict) -> None:
+    """Compile the trigger-CONDITION event-verb test from the CR term list."""
+    global TRIGGER_VERB
+    stems = set(_SUPPLEMENT_VERBS)
+    for term, meta in actions.items():
+        if meta.get("kind") != "keyword-action":
+            continue
+        # multi-word CR terms ("tap and untap", "venture into the dungeon",
+        # "collect evidence") carry their verb in the first word.
+        stems.add(term.split()[0])
+    if not {"discard", "sacrifice", "mutate", "transform",
+            "cycle", "tapped", "enter"} <= stems:
+        fc.halt("Trigger-verb vocabulary lost a known CR keyword action — "
+                "refusing to run with a verb set that would silently extend "
+                "trigger clauses into the effect half (CR 113.3c).")
+    # `s` and `es` cover the printed inflections; the bare stem covers plural
+    # subjects ("whenever one or more creatures you control enter").
+    alts = sorted((re.escape(s) for s in stems), key=len, reverse=True)
+    TRIGGER_VERB = re.compile(r"\b(?:" + "|".join(alts) + r")(?:es|s)?\b")
+
+
+# Built at IMPORT time, not from main(). `foundry_cr702_classes` does
+# `import foundry_shape_extractor as fse`, and when this file runs as a script
+# it is `__main__` -- so that import creates a SECOND module object with its own
+# globals. A main()-time build left that copy's TRIGGER_VERB as None and the
+# CR 702 keyword pass crashed on it. Keeping this a module-level constant is
+# what the original hand-written regex was doing implicitly.
+build_trigger_verbs(cr_action_terms())
 
 
 def trigger_clause(low: str) -> str:
@@ -297,13 +379,27 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
 
     clause = trigger_clause(low)
     rest = low[len(clause):]
-    parts = re.split(r"\s+(?:or|and)\s+", clause)
+    # Split on or/and KEEPING the connective, so a bad split can be undone.
+    _toks = re.split(r"\s+(or|and)\s+", clause)
+    parts, seps = _toks[0::2], _toks[1::2]
+    # An `or`/`and` inside the SUBJECT phrase leaves part 0 a bare subject with
+    # no event verb -- "Whenever Giott or another Dwarf you control enters"
+    # split to "whenever ~", whose clause then ran on into the EFFECT and was
+    # filed as a discard-trigger off "you may discard a card". Re-join leading
+    # segments until part 0 actually carries an event (CR 113.3c).
+    while len(parts) > 1 and not TRIGGER_VERB.search(parts[0]):
+        parts[0] = f"{parts[0]} {seps.pop(0)} {parts[1]}"
+        del parts[1]
     # Only a part that is itself a trigger PREDICATE is a second delivery.
     # "whenever you cast an instant or sorcery spell" splits on an `or` inside
     # the OBJECT phrase -- "sorcery spell" is not an event, and treating it as
     # one loses a real cast-trigger. Same for "a spell or ability".
+    # `at` opens a timing clause ("at the beginning of your upkeep"), but
+    # "at least" is a QUANTIFIER, not a trigger. Kytheon's "if Kytheon and at
+    # least two other creatures attacked this combat" split into a bogus second
+    # delivery until this was excluded.
     PREDICATE = re.compile(
-        r"^(?:at\b|when(?:ever)?\b|~\b|this \w+|"
+        r"^(?:at (?!least\b)|when(?:ever)?\b|~\b|this \w+|"
         r"(?:enters?|attacks?|dies|die|leaves?|leave|becomes?|is|are|deals?|"
         r"blocks?|deals)\b)")
     if len(parts) > 1:
@@ -432,16 +528,47 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # whole-line-vs-clause bug the census already fixed for self/other --
         # it was still live for family selection.
         if re.match(r"^at the beginning\b", clause):
-            if re.search(r"\bupkeep\b", clause):
+            # §2d / CR 603.7a: "at the beginning of the NEXT <phase>" is a
+            # DELAYED triggered ability. §2's created-ability rule gives the
+            # delivery to whatever CREATED it -- here the spell's own
+            # resolution -- so this is NOT a phase delivery. Siren's Call,
+            # Vivien's Stampede. (The other ~332 "next end step" cards carry
+            # the delayed trigger in the EFFECT half of a real trigger and
+            # already resolve to their creator's delivery.)
+            if re.match(r"^at the beginning of the next\b", clause):
+                return None, "spell-or-static"
+            # PLURALS are printed: "each of your postcombat main phaseS",
+            # "each of that player's upkeepS". A \b-anchored singular silently
+            # dropped them into phase-trigger-unnamed.
+            if re.search(r"\bupkeeps?\b", clause):
                 return mark("upkeep-trigger", "upkeep")
-            if re.search(r"\bend step\b", clause):
+            if re.search(r"\bend steps?\b", clause):
                 return mark("end-step-trigger", "end-step")
+            if re.search(r"\bdraw steps?\b", clause):
+                return None, "draw-step"
+            # CR 505.1 names THREE printed main phases and 505.1a/b keep them
+            # apart. Checked before the bare `combat` test: "precombat" and
+            # "postcombat" contain no \b-delimited "combat", but the ordering
+            # is made explicit rather than left to regex luck.
+            #   505.1  "the first main phase (also known as the precombat
+            #           main phase)" -- the CR makes these one phase.
+            #   505.1a "All OTHER main phases are postcombat main phases" --
+            #           so postcombat is a CATEGORY, not the second phase.
+            #   505.1b "first/second main phase ... COUNT the number of main
+            #           phases that have occurred only in the current turn."
+            # With an extra combat phase a third main phase is postcombat but
+            # is NOT the second -- so "second" and "postcombat" differ in WHEN
+            # the trigger fires, which is the ratified split test (§2, D3f).
+            if re.search(r"\b(?:first|precombat) main phases?\b", clause):
+                return mark("precombat-main-phase-trigger", "precombat-main-phase")
+            if re.search(r"\bpostcombat main phases?\b", clause):
+                return mark("postcombat-main-phase-trigger", "postcombat-main-phase")
+            if re.search(r"\bsecond main phases?\b", clause):
+                return mark("second-main-phase-trigger", "second-main-phase")
+            if re.search(r"\bmain phases?\b", clause):
+                return None, "main-phase-unqualified"
             if re.search(r"\bcombat\b", clause):
                 return mark("begin-combat-trigger", "begin-combat")
-            if re.search(r"\bdraw step\b", clause):
-                return None, "draw-step"
-            if re.search(r"\bmain phase\b", clause):
-                return None, "main-phase"
             # A clause that opens "at the beginning of ..." IS a phase trigger,
             # even when the phase has no token yet. Falling through let the
             # event branches read the EFFECT half -- "at the beginning of your
@@ -476,7 +603,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 and re.search(r"\bfrom the battlefield\b", clause):
             return msub("death-trigger", "dies")
         if re.search(r"\bput into (a |their |your )?graveyards?\b", clause):
-            return None, "to-graveyard-from-anywhere"
+            # CR 700.4 defines `dies` NARROWLY -- "from the battlefield" -- and
+            # that case is claimed above. Everything here is a DIFFERENT event,
+            # so the printed ZONE is the claim (§6a) and is reported rather
+            # than collapsed. "From anywhere" is strictly WIDER than dies;
+            # "from your library" is a mill shape and narrower still. Folding
+            # them together would repeat the dies/leaves-battlefield error that
+            # §2 calls "a hard boundary both directions".
+            if re.search(r"\bfrom anywhere\b", clause):
+                return None, "to-graveyard-from-anywhere"
+            if re.search(r"\bfrom (a |your |their )?library\b", clause):
+                return None, "to-graveyard-from-library"
+            if re.search(r"\bfrom (a |your |their )?hand\b", clause):
+                return None, "to-graveyard-from-hand"
+            if re.search(r"\bfrom (a |your |their )?exile\b|\bfrom the stack\b", clause):
+                return None, "to-graveyard-from-other-zone"
+            # No zone printed. CR 110.1 makes a PERMANENT necessarily on the
+            # battlefield, so "a permanent you control is put into a graveyard"
+            # is dies by CR 700.4 even unstated -- but a "card" is not, and the
+            # two cannot be told apart mechanically here. Reported for ruling
+            # rather than routed. House style: halt loudly, never best-guess.
+            return None, "to-graveyard-zone-unstated"
         if re.search(r"\bleaves? the battlefield\b|\bleave the battlefield\b", clause):
             return msub("leaves-battlefield-trigger", "ltb")
         # Tested on the CLAUSE. Fifth instance of the whole-line-vs-clause bug:
@@ -501,8 +648,29 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("combat-damage-to-player", "combat-damage-player")
         if re.search(r"combat damage to (a|target)?\s*creature", clause):
             return mark("combat-damage-to-creature", "combat-damage-creature")
-        if re.search(r"\bis dealt\b.{0,30}\bdamage\b", clause):
-            return None, "damage-received"
+        # RECIPIENT-side damage: "«X» is dealt damage". This is the mirror of the
+        # source-side `*-damage-to-*` tokens above, exactly as
+        # `is-attacked-trigger` mirrors `attack-trigger`. CR 120.1 is a CLOSED
+        # recipient enumeration -- "Objects can deal damage to battles,
+        # creatures, planeswalkers, and players" -- sealed by 120.1a: "Damage
+        # can't be dealt to an object that's not a battle, a creature, or a
+        # planeswalker." So the recipient slot is enumerable, not open.
+        m_recv = re.search(r"\b(?:is|are) dealt\b([^,]{0,60}?)\bdamage\b", clause)
+        if m_recv:
+            qual = m_recv.group(1)
+            # CR 120.10 makes "excess damage" its own triggered-ability check:
+            # "Some triggered abilities check whether a permanent has been
+            # dealt EXCESS damage." A CR-defined qualifier, not prose.
+            if re.search(r"\bexcess\b", qual):
+                return None, "is-dealt-excess-damage"
+            # `combat-` is a RESTRICTION, not decoration
+            # (DAMAGE-DELIVERY-RULING-2026-08-02), and its negation is printed
+            # too -- "noncombat damage" is a real, narrower claim.
+            if re.search(r"\bnoncombat\b", qual):
+                return None, "is-dealt-noncombat-damage"
+            if re.search(r"\bcombat\b", qual):
+                return None, "is-dealt-combat-damage"
+            return None, "is-dealt-damage"
         if re.search(r"\bdeals? damage to\b.{0,24}\bplayer\b", clause):
             return mark("any-damage-to-player", "any-damage-player")
         if re.search(r"\bdeals? damage to\b", clause):
@@ -557,12 +725,58 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("becomes-tapped-trigger", "becomes-tapped")
         if re.search(r"\bis turned face up\b|\bturned face up\b", clause):
             return None, "turned-face-up"
+        # ORDER MATTERS, same reason as the cycling pair above. CR 701.9b
+        # distinguishes a discard the AFFECTED PLAYER chooses from one that
+        # "another player" directs. "When a spell or ability an opponent
+        # controls CAUSES you to discard this card" is keyed on WHO CAUSED it
+        # and never fires on a voluntary discard -- folding it into
+        # discard-trigger would assert something false of all 11 lines
+        # (Sand Golem, Quagnoth, Guerrilla Tactics, the madness-adjacent
+        # family). Ruled a distinct shape, NOT ratified: reported as its own
+        # gap rather than approximated onto the nearest ratified token.
+        if re.search(r"causes? (?:you|a player|that player|them) to discard",
+                     clause):
+            return None, "caused-to-discard-trigger"
+        # CR 701.9a: "To discard a card, move it from its owner's HAND to that
+        # player's graveyard." Captain-ratified 2026-08-04.
         if re.search(r"\bdiscards?\b", clause):
-            return None, "discard-trigger"
-        if re.search(r"counters? (are|is) put on", clause):
-            return None, "counter-placed"
-        if re.search(r"\bgains? life\b|\bgained\b", clause):
-            return None, "lifegain-trigger"
+            return msub("discard-trigger", "discard")
+        # CR 122.1 noun sense is ALWAYS TYPED (§8 rule 1); the bare noun
+        # "counter" never appears in a slug. §8a ratified `any-` for axes that
+        # genuinely span every counter type and therefore cannot be typed.
+        # This is a §11 GRAMMAR family -- `<type>-counter-placed-trigger` --
+        # so a new counter type instantiates without fresh ratification.
+        # The type word must be captured WITHOUT a leading \b -- "+" is not a
+        # word character, so \b before "+1/+1" matched at the "1" and produced
+        # the nonsense type `1/+1`. §8 rule 1's polarity tokens are `plus1` /
+        # `minus1` (ratified), never the printed glyphs.
+        m_ctr = re.search(r"([+\-]\d/[+\-]\d|[a-z][a-z0-9]*)\s+counters?\s+"
+                          r"(?:are|is)\s+put on", clause)
+        if m_ctr or re.search(r"counters? (are|is) put on", clause):
+            word = m_ctr.group(1) if m_ctr else ""
+            if word == "+1/+1":
+                return None, "plus1-counter-placed"
+            if word == "-1/-1":
+                return None, "minus1-counter-placed"
+            # "one or more counterS are put on" -- no type word to bind to, so
+            # §8a's `any-` fills the type slot rather than leaving it bare.
+            if word in ("", "more", "or"):
+                return None, "any-counter-placed"
+            return None, f"{word}-counter-placed"
+        # CR 119.9 names this trigger family in its own sentence: "Some
+        # triggered abilities are written, 'Whenever [a player] gains life,
+        # . . . .' Such abilities are treated as though they are written,
+        # 'Whenever A SOURCE CAUSES [a player] to gain life'." So unlike
+        # discard -- where CR 701.9b makes "causes you to discard" a SEPARATE
+        # shape -- the CR here EQUATES the two phrasings, and Firesong and
+        # Sunspeaker's "whenever a white instant or sorcery spell causes you to
+        # gain life" is the same token with a source restriction.
+        # Descriptor is `gain-life`, NOT `lifegain`: grammar §14 Q5 excluded
+        # the token `lifegain` as a synonym collision against the ratified §4
+        # EFFECT verb `gain-life` (design goal #1).
+        if re.search(r"\bgains? life\b|\bcauses?\b.{0,40}\bto gain life\b|"
+                     r"\bgained\b", clause):
+            return None, "gain-life-trigger"
         # SIXTH whole-line-vs-clause instance. Afiya Grove ("When this
         # enchantment has no +1/+1 counters on it, SACRIFICE IT") and Ember
         # Swallower ("When this creature becomes monstrous, SACRIFICE three
@@ -571,7 +785,19 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("sacrifice-trigger", "sacrifice")
         return None, "unclassified-trigger"
 
-    if re.search(r"\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", low):
+    # CR 614.1c names THREE replacement templates verbatim: "[This permanent]
+    # enters with . . . ," "As [this permanent] enters . . . ," and "[This
+    # permanent] enters as . . ." Only the first was matched, so 236 lines
+    # printing the second template fell through to `spell-or-static` -- which
+    # the gap census EXCLUDES, so the defect was invisible rather than merely
+    # unfixed. CR 708.11 extends the same treatment to "As [this permanent] is
+    # turned face up . . .", applied WHILE the permanent turns face up.
+    # The lookahead keeps CR 601.2b additional-cost clauses and `as long as`
+    # static abilities out -- neither is a replacement effect.
+    if re.match(r"^as (?!an additional cost|long as)\b.{0,40}?"
+                r"\b(?:enters|is turned face up)\b", low) or \
+       re.search(r"\benters as\b", low) or \
+       re.search(r"\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", low):
         return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
     if re.search(r"^(enchant|equipped creature|enchanted )", low):
         return ("static", "static-aura") if "static" in ratified else (None, "static-aura")
@@ -747,8 +973,8 @@ def main():
     cards, _, gated_out = fc.load_corpus_gated()
     build_self_noun_rx(cards)
     ratified = ratified_delivery_tokens()
-    build_keyword_homes(ratified)
     actions = cr_action_terms()
+    build_keyword_homes(ratified)
 
     if args.gaps:
         cmd_gaps(args, cards, ratified, actions)

@@ -1,5 +1,35 @@
 # DISCARD TRIGGERS — RULING (2026-08-03)
 
+> **RATIFIED 2026-08-04.** `discard-trigger` is now a §2 DELIVERY token (§2
+> table row carries the full CR anchor set). **§2 vocabulary 30 → 31 tokens.**
+>
+> **⚠ THE NUMBERS BELOW ARE SUPERSEDED.** This document measured **96 lines /
+> 88 cards**, split 83 `any-` / 12 source / 1 `other-`. That measurement was
+> taken before `docs/TRIGGER-VERB-DERIVATION-2026-08-04.md` fixed the
+> trigger-clause verb set. **Live at ratification:**
+>
+> | | ruled 08-03 | ratified 08-04 |
+> |---|--:|--:|
+> | lines / cards | 96 / 88 | **90 / 82** |
+> | `any-discard-trigger` | 83 | **76** |
+> | `discard-trigger` (source) | 12 | **3** |
+> | `other-discard-trigger` | 1 | **0** |
+> | `caused-to-discard` held out (§2b) | 11 | **11** |
+>
+> Six lines left the family entirely — Cloudpiercer (mutates), Concealing
+> Curtains (transforms), Sauron (the Ring tempts you), Marina Vendrell's
+> Grimoire (lose life), Battlefield Scavenger (exert) and Giott (enters) all
+> printed "discard" in their **effect** half only. §2b's "caused to discard"
+> holdout is implemented and reports as its own gap.
+>
+> **Three CR rules this document did not cite, now in the §2 row:**
+> **702.35a** (madness — *"that player **discards it**, but exiles it instead"*;
+> the discard still happens, so madness cards DO fire these),
+> **702.29f** (typecycling triggers them too), and **701.9c** (hidden-zone
+> discard leaves characteristics undefined). **702.187b** (mayhem) is named as
+> the boundary: a static keyed on a past discard is not a trigger.
+
+
 Ninth ruling in the 2026-08-03 shape series, at Captain's direction: *"take
 discard-trigger next"* and *"reference the CR each time."*
 
