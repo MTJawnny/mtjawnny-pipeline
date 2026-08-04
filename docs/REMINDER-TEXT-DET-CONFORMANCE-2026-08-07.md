@@ -138,7 +138,18 @@ ratified.** On ratification, `--strict` makes it a gate.
    write, backup taken first. **Never hand-edit `codebook.json`.**
 4. Re-run all eight gates; re-pin the audit baseline on purpose.
 
-## 6. Boundaries stated
+## 6. NOT the same as the other reminder-text document
+
+`docs/REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md` (2026-07-10) is about
+**`experiments/tier_engine.py`** — reminder-text fragments shadowing
+granted-keyword kinship in the Similar Cards qualification cascade. It contains
+zero references to `det_scan_texts`, the foundry, §6a or the codebook.
+
+Different system, different defect, same substring. Do not merge them, and do
+not treat that document as prior art for this one — checked, on the rule that
+a session must search all rulings before flagging.
+
+## 7. Boundaries stated
 
 - **Gate-passing corpus only.** The 5,676 gated-out cards are not counted;
   `foundry_gate_audit.py` covers that population separately.
