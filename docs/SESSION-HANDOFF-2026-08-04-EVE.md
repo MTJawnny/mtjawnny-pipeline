@@ -1,7 +1,8 @@
 # SESSION HANDOFF — 2026-08-04 EVE
 
 Supersedes `SESSION-HANDOFF-2026-08-04.md`. **Zero API calls. Arc spend
-unchanged at $90.51 / $140.** Three commits: `8a4bb31`, `fa68b4e`, `ef0559f`.
+unchanged at $90.51 / $140.** Six commits: `8a4bb31` · `fa68b4e` · `ef0559f` ·
+`f40e40d` · `e80c1e7` · `ed252a6`. All pushed.
 
 **The session in one line: 1,928 ability lines were routed onto a correct
 DELIVERY token, step 2 was stopped before it misrouted 1,883 more — and the
@@ -134,6 +135,16 @@ hoisted out of the cost gate (916).
 
 **`ef0559f` Gate 3b.** `foundry_prior_art.py` + the procedure change.
 
+**`f40e40d` this handoff** — task-indexed manifest.
+
+**`e80c1e7` three blocking questions answered** (§6).
+
+**`ed252a6` NEW LOCKED RULE — "never transcribe the CR; derive from it at run
+time."** Captain: *"every time consulting the CR is the answer."* Every finding
+this session traced to a CR rule; every **defect** traced to a hand-written list
+standing in for a closed list the CR already publishes. **It is predictive —
+see §5 item 3.**
+
 ---
 
 ## 5. NEXT WORK ITEM — proceeds WITHOUT asking
@@ -171,11 +182,30 @@ Headers carry `etb` 201 · `activated` 64 · `cast-trigger` 33 · `begin-combat`
 · and more, and every bullet is a MODE of that ability (grammar §1: *"modal
 modes each earn their axis"*).
 
-### 3. D5 · D6 · D8 (160 + 30 + 29)
+### 3. D5 · D6 · D8 (160 + 30 + 29) — **and their derivations are already known**
 
-Replacement's `would…instead` window is 60 chars; measured gaps run to 173.
-Activated cost heads with no mana symbol (`Put a -1/-1 counter on this
-creature:`). Semicolon-joined keyword lines (`Flying; banding`).
+This item is where `ed252a6`'s locked rule pays off. **Both D5 and D6 are
+hand-written alternation lists standing in for closed CR enumerations**, and the
+rule identified them without an audit — it predicted the two defects the audit
+had found the expensive way.
+
+**D5 — `foundry_shape_extractor.py` line ~902.**
+`\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b`
+misses 160 lines (measured gap: min 61, median 89, max 173). **Do not widen the
+window — parse the CR.** CR **614.1a/b/c publishes exactly three templates
+verbatim**, and this is the same site as the previous session's 236-line
+*invisible* defect, where only one of the three was matched. Derive them.
+
+**D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
+loses 30 activated abilities whose cost head carries no mana symbol
+(`Put a -1/-1 counter on this creature:`, `Return a Forest you control to its
+owner's hand:`, `Remove two counters from ~:`). **CR 701's keyword-action list
+is ALREADY DERIVED in this same file ~350 lines above** for the trigger verbs —
+reuse it rather than extending the hand-list. One false positive to expect: a
+card *named* **"Ultimate Magic: Meteor"**, where the colon is in the name.
+
+**D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+`keyword_line_tokens` splits on commas only. 29 lines, no CR question.
 
 ### 4. THEN step 2 proper (≈5,647)
 
