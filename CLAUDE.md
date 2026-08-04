@@ -213,6 +213,28 @@ encodes.
 - **A carried-forward count in a handoff or a closing summary is not a
   measurement.** "931 lines" existed in no artifact; the real number was 2,185
   and the real shape was three shapes. Re-measure before naming the next slice.
+- **A DATA SOURCE can be a hand-list wearing better clothes.** The
+  self-reference noun set was *derived* from live corpus type lines and was
+  still missing **6 of CR 205.2a's 15 card types** — including CR 109.2d's own
+  worked case `this scheme` — because the corpus gate excludes those layouts.
+  The test is not "did a human type this list" but **"can the source contain
+  every member the CR names?"** Card types come from CR 205.2a; only SUBTYPES
+  (CR 205.3b, open and set-specific) may be harvested, and only from after the
+  long dash. Supertypes (CR 205.4a) are adjectives and never self-reference
+  nouns.
+- **A halt-guard must assert CONTENT, not cardinality.** `type_vocabulary`'s
+  Oxford-comma split produced `and vanguard`, `and world`, `and urza's` — so
+  the LAST member of every CR 205 list was missing while `len() >= 15` stayed
+  green. A count cannot see a substitution. Same family as "a ratified token
+  with no emitter" and "a ratified standard with no caller".
+- **When a rule names a card type, ask the CR which OTHER types it covers.**
+  The attachment branch had Auras (CR 303.4) and Equipment (CR 301.5a) and
+  omitted Fortifications, though CR 301.6 states the analogy outright
+  (*"Rules 301.5a–f apply to Fortifications in relation to lands just as they
+  apply to Equipment in relation to creatures"*). Same audit found the SOURCE
+  side of the damage family covering 2 of CR 120.1's 4 recipients while the
+  RECIPIENT side was ratified against all four — **one side of a family
+  enumerated from a closed CR list, the other not.**
 
 ## Reference
 

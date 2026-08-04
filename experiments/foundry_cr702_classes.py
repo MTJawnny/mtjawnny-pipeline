@@ -155,12 +155,33 @@ def type_vocabulary(path: Path = CR_PATH) -> dict:
             fc.halt(f"Could not parse {key} from the CR (rule 205). The CR's "
                     f"wording has changed; fix the parser, do not fall back to "
                     f"a remembered list.")
-        words = re.split(r",\s*|\s+and\s+", m.group(1))
+        # The CR writes these lists with an OXFORD COMMA -- "…, scheme, and
+        # vanguard." Splitting on `,\s*` first consumed the comma and left the
+        # conjunction attached, so the final item of EVERY list parsed as
+        # garbage: `and vanguard`, `and world`, `and urza's`. The last real
+        # card type, supertype and land type were therefore all MISSING.
+        #
+        # And the count guard below did not catch it, because the junk token
+        # kept the count correct -- 15 card types, of which one was `and
+        # vanguard` and `vanguard` itself absent. **A guard that counts is
+        # satisfied by the defect it exists to catch.** So the guard now
+        # asserts CONTENT, not cardinality: a known-last member of each list,
+        # which is exactly the item this bug class destroys.
+        words = re.split(r",\s*(?:and\s+)?|\s+and\s+", m.group(1))
         out[key] = {w.strip().strip(".").lower() for w in words if w.strip()}
-    for key, least in (("card_types", 15), ("land_types", 17), ("supertypes", 5)):
+    for key, least, tail in (("card_types", 15, "vanguard"),
+                             ("land_types", 17, "urza’s"),
+                             ("supertypes", 5, "world")):
         if len(out[key]) < least:
             fc.halt(f"parsed only {len(out[key])} {key} from CR 205 "
                     f"(expected >= {least}): {sorted(out[key])}")
+        if tail not in out[key]:
+            fc.halt(f"CR 205 {key} parsed without its LAST member {tail!r} — "
+                    f"the Oxford-comma split has regressed. Got: "
+                    f"{sorted(out[key])}")
+        if any(w.startswith("and ") for w in out[key]):
+            fc.halt(f"CR 205 {key} contains a conjunction fragment: "
+                    f"{sorted(w for w in out[key] if w.startswith('and '))}")
     return out
 
 

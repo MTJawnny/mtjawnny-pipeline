@@ -95,19 +95,65 @@ _ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
 
 
 def build_self_noun_rx(cards: dict) -> None:
-    """Compile the 'this <noun>' self-reference test from corpus type lines."""
+    """Compile the 'this <noun>' self-reference test.
+
+    TWO SOURCES, because CR 205 makes them different KINDS of list:
+
+      CARD TYPES  -- CR 205.2a publishes a CLOSED list in one sentence, so it
+                     is PARSED FROM THE CR (`type_vocabulary`, which already
+                     existed for CR 702.14a's landwalk template). Harvesting
+                     these from the corpus is what this fix replaces, and it
+                     was losing SIX of the fifteen: conspiracy, dungeon,
+                     phenomenon, plane, scheme and vanguard -- including
+                     CR 109.2d's OWN worked case, *"If an ability of a scheme
+                     card includes the text 'this scheme,' it means the scheme
+                     card in the command zone on which that ability is
+                     printed."* The corpus gate excludes those layouts, so the
+                     vocabulary was derived from a population that STRUCTURALLY
+                     CANNOT contain them -- a hand-list's failure mode with a
+                     data source standing in for the hand. Measured today all
+                     six are at zero corpus lines; zero members is a hypothesis
+                     (the `is-attacked-trigger` battle-slot precedent), and a
+                     widened gate must not silently fail to see them.
+
+      SUBTYPES    -- CR 205.3b makes these open and set-specific ("Equipment",
+                     "Siege", "Spacecraft", "Class", "Case"), and the CR does
+                     not enumerate them in one place, so the corpus harvest is
+                     legitimate here and stays. It is now taken only from AFTER
+                     the long dash, per CR 205.3b's own description of where
+                     subtypes are printed.
+
+    SUPERTYPES ARE EXCLUDED. CR 205.4a's five (basic, legendary, ongoing, snow,
+    world) are adjectives, never the noun of a self-reference -- no card says
+    "this legendary". The old whole-type-line harvest swept them in, along with
+    planeswalker names (ajani, ashiok, arlinn) picked up as planeswalker
+    subtypes.
+    """
     global SELF_NOUN_RX
-    nouns = set(_ALWAYS_SELF_NOUNS)
+    import foundry_cr702_classes as k7
+    vocab = k7.type_vocabulary()
+    nouns = set(_ALWAYS_SELF_NOUNS) | set(vocab["card_types"])
+    supertypes = set(vocab["supertypes"])
     for card in cards.values():
         parts = [card.get("type_line") or ""]
         parts += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
-        for word in re.findall(r"[A-Za-z'-]+", " ".join(parts)):
-            if len(word) > 2:
-                nouns.add(word.lower())
+        for part in parts:
+            # CR 205.3b: "Subtypes ... are listed AFTER A LONG DASH."
+            for chunk in part.split("//"):
+                if "—" not in chunk:
+                    continue
+                for word in re.findall(r"[A-Za-z'’\-]+", chunk.split("—", 1)[1]):
+                    if len(word) > 2 and word.lower() not in supertypes:
+                        nouns.add(word.lower())
     if "equipment" not in nouns:
         fc.halt("Derived self-reference noun set has no 'equipment' — the "
                 "corpus type lines did not load. Refusing to run with a "
                 "vocabulary that would silently misfile self-triggers.")
+    missing = sorted(set(vocab["card_types"]) - nouns)
+    if missing:
+        fc.halt(f"Self-reference noun set is missing CR 205.2a card types: "
+                f"{missing}. Every card type must be reachable as a 'this "
+                f"<type>' self-reference (CR 109.2d).")
     SELF_NOUN_RX = re.compile(r"\bthis (" + "|".join(sorted(map(re.escape, nouns))) + r")\b")
 
 
@@ -1322,6 +1368,34 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
     if re.search(r"^(enchant|equipped creature|enchanted )", low):
         return ("static", "static-aura") if "static" in ratified else (None, "static-aura")
+    # THE ATTACHMENT VOCABULARY HAS THREE MEMBERS, NOT TWO. The branch above
+    # covers Auras (CR 303.4, "enchanted <object>") and Equipment (CR 301.5a,
+    # "the creature an Equipment is attached to is called the EQUIPPED
+    # CREATURE") and silently omitted the third, which the CR states as an
+    # explicit analogy rather than leaving to inference:
+    #
+    #   CR 301.6 -- "Some artifacts have the subtype 'Fortification.' A
+    #   Fortification can be attached to a LAND. ... **Rules 301.5a-f apply to
+    #   Fortifications in relation to lands just as they apply to Equipment in
+    #   relation to creatures**."
+    #
+    # So 301.5a's "equipped creature" has an exact CR-stated analog, "fortified
+    # land", and the classifier could not see it. Measured: 1 line (Darksteel
+    # Garrison, "Fortified land has indestructible"), fully unrouted.
+    #
+    # n=1 is the point rather than a caveat. This is the SAME shape as the
+    # self-reference card-type gap Captain caught the same day: a rule written
+    # for the card types that happened to be in front of the author, where the
+    # CR names another and says outright that the rule extends to it. It routes
+    # to `static`, already ratified -- no new vocabulary, only scaffolding that
+    # should always have been there.
+    #
+    # Its own descriptor, not `static-aura`: the census must keep reporting
+    # what was PRINTED (§6a), and folding a Fortification into the Aura bucket
+    # would hide the very distinction this fix exists to make visible.
+    if re.match(r"^fortified\b", low):
+        return ("static", "static-fortification") if "static" in ratified \
+            else (None, "static-fortification")
     # A line that GRANTS a quoted ability to a class of permanents is a static
     # ability. CR 113.3d: static abilities "are written as statements. They're
     # simply true." §2's created-ability rule then assigns the QUOTED ability
