@@ -65,7 +65,32 @@ TYPE_RULES = {
     "card_types": re.compile(r"^205\.2a The card types are (.+?)\. See", re.M),
     "land_types": re.compile(r"^205\.3i .*?The land types are (.+?)\. Of that", re.M),
     "supertypes": re.compile(r"^205\.4a .*?The supertypes are (.+?)\.\s*$", re.M),
+    # EVERY subtype list is enumerated by the CR, in one uniform sentence
+    # shape, and CR 205.3r closes the set by naming the four card types that
+    # have NO subtypes ("Phenomenon cards, scheme cards, vanguard cards, and
+    # conspiracy cards have no subtypes"). An earlier comment in this project
+    # claimed the CR "does not enumerate them in one place" and used a corpus
+    # harvest instead -- that claim was simply wrong, and CR 205.3g-q is the
+    # refutation. A harvest can only ever contain what the gated corpus holds.
+    "artifact_types": re.compile(r"^205\.3g .*?The artifact types are (.+?)\.\s*$", re.M),
+    "enchantment_types": re.compile(r"^205\.3h .*?The enchantment types are (.+?)\.\s*$", re.M),
+    "planeswalker_types": re.compile(r"^205\.3j .*?The planeswalker types are (.+?)\.\s*$", re.M),
+    "spell_types": re.compile(r"^205\.3k .*?The spell types are (.+?)\.\s*$", re.M),
+    # 205.3m states the ONE two-word type separately, then the rest.
+    "creature_types": re.compile(r"^205\.3m .*?All other creature types are one word long: (.+?)\.\s*$", re.M),
+    "creature_types_multiword": re.compile(r"^205\.3m .*?creature type is two words long: (.+?)\. All other", re.M),
+    "planar_types": re.compile(r"^205\.3n .*?The planar types are (.+?)\.\s*$", re.M),
+    "dungeon_types": re.compile(r"^205\.3p .*?That dungeon type is (.+?)\.\s*$", re.M),
+    "battle_types": re.compile(r"^205\.3q .*?That battle type is (.+?)\.\s*$", re.M),
 }
+# CR 205.3g/h names its members with cross-references -- "Attraction (see rule
+# 717)", "Aura (see rule 303.4)". Strip them before splitting, or the type is
+# `attraction (see rule 717)`.
+_CR_XREF = re.compile(r"\s*\((?:see|as in)[^)]*\)")
+SUBTYPE_KEYS = ("artifact_types", "enchantment_types", "land_types",
+                "planeswalker_types", "spell_types", "creature_types",
+                "creature_types_multiword", "planar_types", "dungeon_types",
+                "battle_types")
 # CR 113.3a-d is the authority on which ability classes EXIST. Derived at run
 # time, never hand-listed -- same discipline as parsing §2's token table.
 CLASS_RULE = re.compile(r"^113\.3([a-d])\s+([A-Za-z-]+) abilit", re.M)
@@ -141,10 +166,15 @@ def load_702(path: Path) -> dict:
 
 
 def type_vocabulary(path: Path = CR_PATH) -> dict:
-    """{'card_types','land_types','supertypes'} -> sets, read from CR 205.
+    """Every CR 205 type list -> sets, read from the CR at run time.
 
-    Required by CR 702.14a's landwalk template, which is stated as a GRAMMAR
-    over these three lists rather than as a list of keyword names."""
+    Card types (205.2a), supertypes (205.4a), and ALL TEN subtype lists
+    (205.3g-q). Required by CR 702.14a's landwalk template, which is stated as
+    a GRAMMAR over these lists rather than as a list of keyword names, and by
+    the self-reference noun set, which needs "this <subtype>" to be complete.
+
+    `subtypes` is the union of the ten, provided so a caller never has to
+    remember which ten they are."""
     if not path.exists():
         fc.halt(f"CR markdown not found at {path}.")
     text = path.read_text(encoding="utf-8", errors="strict")
@@ -167,11 +197,30 @@ def type_vocabulary(path: Path = CR_PATH) -> dict:
         # satisfied by the defect it exists to catch.** So the guard now
         # asserts CONTENT, not cardinality: a known-last member of each list,
         # which is exactly the item this bug class destroys.
-        words = re.split(r",\s*(?:and\s+)?|\s+and\s+", m.group(1))
-        out[key] = {w.strip().strip(".").lower() for w in words if w.strip()}
+        words = re.split(r",\s*(?:and\s+)?|\s+and\s+", _CR_XREF.sub("", m.group(1)))
+        vals = {w.strip().strip(".").lower() for w in words if w.strip()}
+        # THE CR PRINTS A CURLY APOSTROPHE (U+2019); SCRYFALL TYPE LINES PRINT
+        # A STRAIGHT ONE. `Urza’s` from CR 205.3i never equals `Urza's` from a
+        # type line, and the same mismatch hits C’tan, Shi’ar, Serra’s Realm,
+        # Bolas’s Meditation Realm and Outside Mutter’s Spiral. Landwalk has
+        # been composing over `urza’s` and could never match a printed
+        # `Urza'swalk`. Both forms are emitted -- a mechanical transformation
+        # of a CR-parsed value, not a hand-added member.
+        vals |= {w.replace("’", "'") for w in vals if "’" in w}
+        out[key] = vals
+    out["subtypes"] = set().union(*(out[k] for k in SUBTYPE_KEYS))
     for key, least, tail in (("card_types", 15, "vanguard"),
                              ("land_types", 17, "urza’s"),
-                             ("supertypes", 5, "world")):
+                             ("supertypes", 5, "world"),
+                             ("artifact_types", 20, "vibranium"),
+                             ("enchantment_types", 12, "shrine"),
+                             ("planeswalker_types", 80, "zariel"),
+                             ("spell_types", 5, "trap"),
+                             ("creature_types", 250, "zubera"),
+                             ("planar_types", 60, "zhalfir"),
+                             ("dungeon_types", 1, "undercity"),
+                             ("battle_types", 1, "siege"),
+                             ("creature_types_multiword", 1, "time lord")):
         if len(out[key]) < least:
             fc.halt(f"parsed only {len(out[key])} {key} from CR 205 "
                     f"(expected >= {least}): {sorted(out[key])}")

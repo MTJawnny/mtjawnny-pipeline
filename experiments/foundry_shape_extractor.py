@@ -93,6 +93,20 @@ CHAPTER = re.compile(r"^\s*[IVX]+\s*(,\s*[IVX]+\s*)*(—|-)\s*")
 SELF_NOUN_RX = None          # compiled by build_self_noun_rx()
 _ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
 
+# CR-LAG REGISTER (2026-08-05). Subtypes the CORPUS prints that the LOCAL CR
+# snapshot does not yet enumerate. This is NOT a hand-list of vocabulary -- it
+# is a dated record of a discrepancy between two upstream sources, and every
+# entry must name its evidence. Anything printed that is neither in CR 205.3
+# nor here HALTS, so the register cannot quietly absorb a parse regression.
+#
+#   chorus -- a SPELL TYPE (CR 205.3k). The local CR lists five spell types
+#             (Adventure, Arcane, Lesson, Omen, Trap) and the corpus prints
+#             `Instant — Chorus` (Hymn to the Ages) and `Sorcery — Chorus`
+#             (Colossal Chorus). The CR snapshot is behind the printed cards.
+#             THE REAL FIX IS TO REFRESH `docs/mtg-comprehensive-rules.md`;
+#             this entry keeps the guard useful until that happens.
+_CR_LAG = {"chorus"}
+
 
 def build_self_noun_rx(cards: dict) -> None:
     """Compile the 'this <noun>' self-reference test.
@@ -116,12 +130,17 @@ def build_self_noun_rx(cards: dict) -> None:
                      (the `is-attacked-trigger` battle-slot precedent), and a
                      widened gate must not silently fail to see them.
 
-      SUBTYPES    -- CR 205.3b makes these open and set-specific ("Equipment",
-                     "Siege", "Spacecraft", "Class", "Case"), and the CR does
-                     not enumerate them in one place, so the corpus harvest is
-                     legitimate here and stays. It is now taken only from AFTER
-                     the long dash, per CR 205.3b's own description of where
-                     subtypes are printed.
+      SUBTYPES    -- ALSO PARSED FROM THE CR. **CR 205.3g-q enumerates every
+                     subtype list** -- artifact (205.3g), enchantment (205.3h),
+                     land (205.3i), planeswalker (205.3j), spell (205.3k),
+                     creature (205.3m), planar (205.3n), dungeon (205.3p),
+                     battle (205.3q) -- and CR 205.3r CLOSES the set by naming
+                     the four card types that have none. An earlier version of
+                     this function claimed the CR "does not enumerate them in
+                     one place" and kept a corpus harvest on that basis. **That
+                     claim was false**, and it is the same error one level down
+                     from the card-type gap: a harvest can only ever hold what
+                     the gated corpus holds.
 
     SUPERTYPES ARE EXCLUDED. CR 205.4a's five (basic, legendary, ongoing, snow,
     world) are adjectives, never the noun of a self-reference -- no card says
@@ -132,28 +151,49 @@ def build_self_noun_rx(cards: dict) -> None:
     global SELF_NOUN_RX
     import foundry_cr702_classes as k7
     vocab = k7.type_vocabulary()
-    nouns = set(_ALWAYS_SELF_NOUNS) | set(vocab["card_types"])
-    supertypes = set(vocab["supertypes"])
+    # `cards` is no longer read. The parameter is kept because every caller
+    # passes it and because the corpus is still the right place to CHECK the
+    # CR parse against -- see the coverage guard below.
+    nouns = (set(_ALWAYS_SELF_NOUNS) | set(vocab["card_types"])
+             | set(vocab["subtypes"])) - set(vocab["supertypes"])
+    for key in ("card_types", "subtypes"):
+        missing = sorted(set(vocab[key]) - nouns)
+        if missing:
+            fc.halt(f"Self-reference noun set is missing CR 205 {key}: "
+                    f"{missing}. Every type word must be reachable as a "
+                    f"'this <type>' self-reference (CR 109.2d).")
+    if "equipment" not in nouns or "siege" not in nouns:
+        fc.halt("Self-reference noun set has no 'equipment'/'siege' — the "
+                "CR 205.3 subtype parse failed. Refusing to run with a "
+                "vocabulary that would silently misfile self-triggers.")
+    # COVERAGE GUARD, and it points the opposite way to the old harvest: the
+    # corpus is no longer a SOURCE, it is a TEST. Any subtype a card actually
+    # prints that CR 205.3 does not list means the CR parse has degraded (or
+    # Scryfall is emitting a non-CR type line, which is itself worth halting
+    # on). Known and allowed: `Stickers`, a Scryfall-only type line on 48
+    # sticker-sheet cards that CR 205.2a does not define as a card type.
+    printed = set()
     for card in cards.values():
         parts = [card.get("type_line") or ""]
         parts += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
         for part in parts:
-            # CR 205.3b: "Subtypes ... are listed AFTER A LONG DASH."
             for chunk in part.split("//"):
                 if "—" not in chunk:
                     continue
                 for word in re.findall(r"[A-Za-z'’\-]+", chunk.split("—", 1)[1]):
-                    if len(word) > 2 and word.lower() not in supertypes:
-                        nouns.add(word.lower())
-    if "equipment" not in nouns:
-        fc.halt("Derived self-reference noun set has no 'equipment' — the "
-                "corpus type lines did not load. Refusing to run with a "
-                "vocabulary that would silently misfile self-triggers.")
-    missing = sorted(set(vocab["card_types"]) - nouns)
-    if missing:
-        fc.halt(f"Self-reference noun set is missing CR 205.2a card types: "
-                f"{missing}. Every card type must be reachable as a 'this "
-                f"<type>' self-reference (CR 109.2d).")
+                    if len(word) > 2:
+                        printed.add(word.lower())
+    # Guard-side tokenization parity: the corpus scan above splits on words, so
+    # CR 205.3m's ONE two-word type ("Time Lord") must contribute its words too.
+    # This is a comparison detail, not a vocabulary change -- the noun set still
+    # carries `time lord` whole, which is what "this Time Lord" needs.
+    known = set(nouns) | {w for n in nouns for w in n.split()}
+    unknown = sorted(printed - known - _CR_LAG - {"stickers"})
+    if unknown:
+        fc.halt(f"Corpus type lines print subtypes CR 205.3 does not "
+                f"enumerate: {unknown}. Either the CR parse degraded or the "
+                f"local CR snapshot is behind the corpus; fix the parser or "
+                f"refresh the CR — never widen by hand.")
     SELF_NOUN_RX = re.compile(r"\bthis (" + "|".join(sorted(map(re.escape, nouns))) + r")\b")
 
 

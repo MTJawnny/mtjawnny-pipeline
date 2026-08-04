@@ -218,10 +218,18 @@ encodes.
   still missing **6 of CR 205.2a's 15 card types** — including CR 109.2d's own
   worked case `this scheme` — because the corpus gate excludes those layouts.
   The test is not "did a human type this list" but **"can the source contain
-  every member the CR names?"** Card types come from CR 205.2a; only SUBTYPES
-  (CR 205.3b, open and set-specific) may be harvested, and only from after the
-  long dash. Supertypes (CR 205.4a) are adjectives and never self-reference
-  nouns.
+  every member the CR names?"** Card types come from CR 205.2a and **every
+  subtype list from CR 205.3g–q** (ten of them, closed by 205.3r). Supertypes
+  (CR 205.4a) are adjectives and never self-reference nouns. A corpus scan of
+  type lines is kept only as a **TEST** of the CR parse, never as its source.
+- **The CR prints a CURLY apostrophe (U+2019); Scryfall prints a straight one.**
+  `Urza’s` ≠ `Urza's`, and the same hits `C’tan`, `Shi’ar`, `Serra’s Realm`.
+  Any CR-parsed value compared against card data must emit both forms.
+- **The local CR is a VENDORED SNAPSHOT and can fall behind the corpus.**
+  Measured 2026-08-05: `Chorus` is a printed spell type absent from CR 205.3k's
+  five. Refreshing `docs/mtg-comprehensive-rules.md` is a real maintenance item;
+  known discrepancies live in a dated CR-LAG register that names its evidence,
+  and anything outside it halts.
 - **A halt-guard must assert CONTENT, not cardinality.** `type_vocabulary`'s
   Oxford-comma split produced `and vanguard`, `and world`, `and urza's` — so
   the LAST member of every CR 205 list was missing while `len() >= 15` stayed
