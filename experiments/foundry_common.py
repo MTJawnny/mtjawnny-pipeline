@@ -229,6 +229,26 @@ _MODAL_HEADER_RE = re.compile(
     r"X|\d+|any number|up to \w+)\b", re.I)
 
 
+def is_mode_line(line: str) -> bool:
+    """Is this line one of CR 700.2's options (a MODE)?
+
+    CR 700.2 describes modes as a BULLETED list, and CR 700.2i names the other
+    printed form outright: *"Some modal spells have one or more PAWPRINT
+    SYMBOLS ({P}) RATHER THAN BULLET POINTS, as well as an instruction to
+    choose up to a specified number of {P} 'worth of modes.'"*
+
+    Season of Loss prints `Choose up to five {P} worth of modes.` then
+    `{P} — …`, `{P}{P} — …`, `{P}{P}{P} — …`. Testing only for `•` made all 15
+    such lines invisible as modes, so each parsed alone and routed nowhere.
+
+    Shared by BOTH consumers -- `expand_modal_bullets` (the DET preprocessing
+    standard) and the extractor's `deliveries_for_lines` -- so the two cannot
+    drift apart. Fixing one and not the other is the D8 semicolon lesson.
+    """
+    s = line.lstrip()
+    return s.startswith("•") or bool(re.match(r"^(?:\{P\})+\s*—", s))
+
+
 def _cardname_candidates(card: dict) -> list:
     """All the proper-noun strings a card's own oracle text might use to
     self-reference instead of 'this creature'/'this permanent' -- the FULL
@@ -318,7 +338,7 @@ def expand_modal_bullets(text: str) -> list:
             header = lines[i]
             j = i + 1
             bullets = []
-            while j < len(lines) and lines[j].lstrip().startswith("•"):
+            while j < len(lines) and is_mode_line(lines[j]):
                 bullets.append(lines[j])
                 j += 1
             for b in bullets:

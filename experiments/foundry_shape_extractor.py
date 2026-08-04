@@ -193,6 +193,34 @@ LOYALTY_COST = re.compile(r"^([+\u2212\-][0-9X]+|0)\s*:")
 
 CHAPTER = re.compile(r"^\s*[IVX]+\s*(,\s*[IVX]+\s*)*(—|-)\s*")
 
+# THE STRIATED TEXT BOX. CR 711 (levelers), 716 (Classes) and 721 (station
+# cards) all divide a text box with a symbol, and all three say the SAME
+# sentence about what follows it:
+#
+#   CR 711.2  *"A LEVEL SYMBOL is a keyword ability that represents a STATIC
+#             ability. … Any abilities printed within the same text box
+#             striation as a level symbol are part of its static ability."*
+#   CR 721.2  *"A STATION SYMBOL represents a STATIC ability. … Any abilities
+#             printed within the same text box striation as a station symbol
+#             are part of its static ability."*
+#   CR 716.2  *"A CLASS LEVEL BAR is a keyword ability that represents both an
+#             activated ability and a static ability."*
+#
+# and CR 711.3 / 721.3 both add that the striations *"have NO GAME SIGNIFICANCE
+# other than clearly demarcating which abilities and which power/toughness box
+# are associated with which symbol."* So the separator is scaffolding, exactly
+# like a flavor word -- but unlike a flavor word the SYMBOL ITSELF is an
+# ability, and the CR names its class outright. No new vocabulary is needed;
+# `static` is already ratified and is what these rules say.
+#
+# The class level bar needs no branch here: it prints `{3}{U}: Level 2`, which
+# carries a cost and a colon and is already claimed by the activated branch --
+# correctly, because 716.2 makes it an activated ability too.
+#
+# Measured 2026-08-06: 50 level lines and 49 station lines, all unrouted.
+LEVEL_SYMBOL = re.compile(r"^LEVEL\s+\d+\s*(?:-\s*\d+|\+)\s*$", re.I)
+STATION_SYMBOL = re.compile(r"^\d+\+\s*\|")
+
 # "this <noun>" is a SELF-reference, and the noun set is not guessable: a card
 # says "When this Equipment enters", "Whenever this Siege ...", "this
 # Spacecraft", "this Class". Measured 2026-08-03, a hand-written list missed
@@ -404,7 +432,7 @@ def deliveries_for_lines(card: dict, ratified: dict):
     lines = ability_lines(card)
     header_deliveries, is_modal = None, False
     for line in lines:
-        if line.lstrip().startswith("•"):
+        if fc.is_mode_line(line):
             if is_modal and header_deliveries:
                 yield line, [(t, f"modal-mode:{d}") for t, d in header_deliveries]
             else:
@@ -1313,6 +1341,12 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     against the same subject. Returns a de-duplicated list of (token, descriptor).
     """
     raw = line.strip()
+    # CR 721.3 scaffolding, removed before ANY branch -- the keyword test runs
+    # first here, and `9+ | Flying, first strike` is a keyword line only once
+    # the striation marker is gone.
+    m_station = STATION_SYMBOL.match(raw)
+    if m_station and raw[m_station.end():].strip():
+        raw = raw[m_station.end():].strip()
     kw = keyword_line_tokens(raw)
     if kw:
         return kw
@@ -1420,6 +1454,29 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # "represents both an ACTIVATED ability and a STATIC ability". Only
         # Saga chapters are triggered (CR 714.2).
         return _mark_top("chapter-trigger", "saga-chapter", ratified)
+    # CR 711.2 -- a bare level symbol IS the ability ("as long as this creature
+    # has N1..N2 level counters, it has base P/T [P/T]"), so it is `static` on
+    # its own. Nothing follows it on the line; the striation's abilities are
+    # printed beneath.
+    if LEVEL_SYMBOL.match(raw):
+        return _mark_top("static", "level-symbol", ratified)
+    # CR 721.2 -- a station symbol prints its striation's abilities on the SAME
+    # line (`9+ | Flying, first strike`). The marker is scaffolding: CR 721.3,
+    # *"the text box striations have NO GAME SIGNIFICANCE other than clearly
+    # demarcating which abilities … are associated with which symbol."* So it
+    # is STRIPPED and the content classifies itself.
+    #
+    # Claiming the whole line as `static` instead cost 7 re-routes on the first
+    # run -- `12+ | {3}{W}, {T}: Create a token …` is an ACTIVATED ability, and
+    # calling it static is the standing `Max speed — [Ability]` trap: matching
+    # the wrapper overwrites the inner ability's correct delivery. Only a
+    # marker with NOTHING after it is static in its own right.
+    m_station = STATION_SYMBOL.match(raw)
+    if m_station:
+        rest = raw[m_station.end():].strip()
+        if not rest:
+            return _mark_top("static", "station-symbol", ratified)
+        raw = rest
     body = strip_ability_word(raw)
     # Collapse the card's own name (and short forms) to `~` so a self-reference
     # is detectable without case or spelling games. This is the same helper the
@@ -2121,7 +2178,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     # `static`. Better recall handed a wrong ratified token to a line that had
     # been an honest gap -- *"a fallback is a wrong answer with a ratified
     # name"*, one layer up. It stays reported until its header is detected.
-    is_mode = raw.lstrip().startswith("•")
+    is_mode = fc.is_mode_line(raw)
     m_self = re.match(r"^~|^" + SELF_NOUN_RX.pattern, low)
     if m_self and card is not None and not _has_spell_face(card) and \
        not is_mode and not re.match(r"\s+escapes\b", low[m_self.end():]):
