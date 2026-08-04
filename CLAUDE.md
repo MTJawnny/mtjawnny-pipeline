@@ -370,6 +370,15 @@ encodes.
   RECIPIENT side was ratified against all four — **one side of a family
   enumerated from a closed CR list, the other not.**
 
+## Out of scope — check before raising a finding
+
+**`docs/OUT-OF-SCOPE.md` is a DECLINE REGISTER, not a backlog.** Attractions /
+`Visit` (22 cards, one set), art tags (outside evidence law — quotes come from
+oracle text only) and Prototype (21 cards) were measured and deliberately
+declined. If it is in that file, report it as *declined*, never as *open*, and
+do not re-derive it. Captain's criterion decides membership: **judge by
+deck-building relevance, not textual frequency.**
+
 ## Reference
 
 - **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-06.md`**
