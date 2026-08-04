@@ -49,6 +49,24 @@ the bare-date file, so "newest `SESSION-HANDOFF-*.md`" selects the oldest
 same-day file. Every superseded handoff now carries a banner pointing forward,
 so if you landed on one of those, follow its banner. `ls -t` also works.
 
+**IF NO TASK WAS GIVEN, THE HANDOFF'S "NEXT WORK ITEM" *IS* YOUR INSTRUCTION.**
+Added 2026-08-04, because a `/clear` leaves the previous session's closing
+summary in the buffer and **no instruction**, and a session that stops to ask
+burns a turn on a question the handoff already answers. Take the items in the
+order listed and work them one at a time.
+
+Two things still require Captain's explicit word, and only these two:
+
+1. **Ratifying new vocabulary.** A RULED-NOT-RATIFIED shape stays that way.
+   *"New vocabulary is a ratification, not a typo fix."* Do the non-ratification
+   items first, and present every pending row as **one** decision sheet rather
+   than asking per token.
+2. **Mutating the codebook**, which additionally rides the backup law.
+
+Everything else — measuring, ruling with CR anchors, DET fixes, auditing,
+writing the ruling doc — **proceed without asking.** A CR-anchored ruling
+document is not load-bearing until ratified, so writing one is always safe.
+
 Read the current handoff and follow its READING MANIFEST.
 Read `docs/CODEBOOK-NAMING-GRAMMAR.md` **whole** — not the section that looks
 relevant. Three separate errors on 2026-08-02 came from reading one section

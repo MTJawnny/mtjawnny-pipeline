@@ -20,6 +20,12 @@ Before any work on the codebook, the grammar, the tier engine or the foundry:
 **→ Follow `docs/SESSION-START-PROCEDURE.md`. It is five gates and it is
 short.** The summary, so this file stands alone if that one is missed:
 
+0. **If no task was given, the handoff's NEXT WORK ITEM is the instruction** —
+   work it, do not stop to ask. Only two things need Captain's explicit word:
+   **ratifying new vocabulary** and **mutating the codebook**. Ruling, measuring,
+   DET fixes and ruling docs proceed unasked; a ruling doc is not load-bearing
+   until ratified. Pending ratifications go in ONE decision sheet, not one
+   question per token.
 1. Read the current session handoff. **`docs/SESSION-START-PROCEDURE.md`
    Gate 1 names which file that is** — do NOT pick it by filename sort, because
    `-EVE`/`-PM` suffixes sort *before* the bare-date file and "newest by name"
