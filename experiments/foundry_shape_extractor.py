@@ -1160,10 +1160,42 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     # turned face up . . .", applied WHILE the permanent turns face up.
     # The lookahead keeps CR 601.2b additional-cost clauses and `as long as`
     # static abilities out -- neither is a replacement effect.
+    # D5. The `{0,60}` window between `would` and `instead` was a hand-chosen
+    # number with no CR behind it, and it lost 128 permanent-side lines
+    # (Doubling Season 90, Embermaw Hellion 100, Soul-Scar Mage 105; measured
+    # gap max 173). **CR 614.1a states no distance at all** -- *"Effects that
+    # use the word 'instead' are replacement effects"* -- so the window is
+    # removed rather than widened to another guessed number. Widening it to
+    # 200 would be the same defect with a later expiry date.
+    #
+    # The `would` -> `instead` ORDER is kept, and that is the whole safety
+    # margin. Measured on the unrouted population: `would ... instead`
+    # unbounded claims 128 permanent + 25 spell lines, while a bare `instead`
+    # (614.1a read at its widest) claims 148 permanent + **298** spell -- it
+    # sweeps in every instant whose effect merely contains the word. CR 614.1a
+    # describes the EFFECT; §1 says an instant/sorcery's delivery is the
+    # unmarked default regardless. The template, not the bare word, is what
+    # identifies a replacement ABILITY.
+    #
+    # `.` does not match a newline and an ability line is one line, so the
+    # unbounded form cannot leave this ability.
+    # ... but it MUST NOT read inside a quoted CREATED ability. §2's
+    # created-ability rule (Captain-ratified 2026-08-02): an ability GRANTED to
+    # another permanent belongs to the creating ability, not to this card.
+    # Bewitching Leechcraft is the worked case -- `Enchanted creature has "If
+    # this creature would untap during your untap step, remove a +1/+1 counter
+    # from it instead."` The Aura's own delivery is `static`; the replacement
+    # is the enchanted creature's. The old window missed it only by luck (the
+    # gap is 61 characters, one past the cut), so removing the window exposed
+    # a guard that had never been needed here. Same class as the standing trap
+    # "a trigger clause must never cross into a quoted created ability".
+    unq = low
+    for a, b in quoted_spans(low):
+        unq = unq[:a] + " " * (b - a) + unq[b:]
     if re.match(r"^as (?!an additional cost|long as)\b.{0,40}?"
-                r"\b(?:enters|is turned face up)\b", low) or \
-       re.search(r"\benters as\b", low) or \
-       re.search(r"\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", low):
+                r"\b(?:enters|is turned face up)\b", unq) or \
+       re.search(r"\benters as\b", unq) or \
+       re.search(r"\bwould\b.*\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", unq):
         return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
     if re.search(r"^(enchant|equipped creature|enchanted )", low):
         return ("static", "static-aura") if "static" in ratified else (None, "static-aura")
