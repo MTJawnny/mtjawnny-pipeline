@@ -281,6 +281,27 @@ encodes.
   `_MODAL_HEADER_RE` reads the RAW line. The old behaviour was wrong somewhere
   nothing downstream could observe. Don't read "0 moved" as "no-op"; read it as
   "the guard was elsewhere".
+- **A MODE IS NOT AN ABILITY (CR 700.2), so CR 113.3's enumeration never
+  closes on a bullet.** *"Each of those options is a mode"* — an option inside
+  an ability is not one of CR 113.3's four categories, so "this card has no
+  instant/sorcery face, therefore `static`" is valid for a printed ability and
+  proves nothing about a `• …` line. A mode's delivery is its parent's (§2d /
+  D3 inheritance). Hawkeye's `• Explosive — Hawkeye deals 2 damage to target
+  player.` is a mode of a CR 603.12 reflexive trigger, not a static.
+- **An ABILITY NAME is a CR 207.2d flavor word and is never vocabulary.**
+  CR 207.2d: *"an ability word ties together several abilities with similar
+  functionality; each flavor word is tailored to the specific ability it
+  appears with."* `Landfall` is in CR 207.2c's closed list and on 174 lines;
+  `Sell Contraband` is on one card and in no list anywhere. Strip it and
+  discard it — never let one become an axis, a token or a tag, or you get a
+  1-member axis that can never gain a second. The **bullet** is CR 700.2 list
+  punctuation, so a mode name must be stripped through it.
+- **IMPROVING RECALL CAN HAND OUT A WRONG RATIFIED TOKEN.** Stripping mode
+  names let `~ deals 2 damage to target player` reach a branch that had never
+  seen it, and a line that was an *honest gap* became confidently `static`. A
+  gap-closing diff scores `None → ratified` as pure profit and **cannot see
+  this** — read every closed gap, every time. Same family as "a fallback is a
+  wrong answer with a ratified name", one layer up.
 - **A PROBE THAT OVERLAPS ANOTHER PROBE reports a correlation as a finding.**
   A `non-ASCII` punctuation class written as `[^\x00-\x7f]` also matches the
   em-dash, the bullet and the curly apostrophe — so it silently re-measured

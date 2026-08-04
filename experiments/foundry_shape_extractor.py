@@ -92,7 +92,21 @@ CR_ABILITY_WORDS = None    # CR 207.2c, built by build_cr_enumerations()
 # The em-dash phrase that OPENS a line. Every one of these is exactly one of
 # six things and the CR decides which, so each refusal below cites its rule
 # rather than guessing from characters.
-_DASH_PREFIX = re.compile(r"^\s*([^—]{1,40}?)\s*—\s*")
+#
+# The BULLET is skipped, not treated as part of the phrase. CR 700.2 makes it
+# LIST PUNCTUATION -- *"a spell or ability is modal if it has two or more
+# options in a BULLETED LIST preceded by instructions for a player to choose a
+# number of those options … each of those options is a MODE"* -- so the mode's
+# ability text begins after it. Captain, 2026-08-06, on Black Market
+# Connections' `• Sell Contraband —` / `• Buy Information —` /
+# `• Hire a Mercenary —`: *"they are just ability names, they currently have no
+# effective gameplay significance … they are fundamentally different than
+# abilities like landfall."* CR 207.2d says exactly that and says why:
+# *"While an ABILITY WORD ties together several abilities with similar
+# functionality, each FLAVOR WORD is tailored to the specific ability it
+# appears with."* Landfall is on 174 lines and in CR 207.2c's closed list;
+# `Sell Contraband` is on one card and in no list anywhere.
+_DASH_PREFIX = re.compile(r"^\s*(?:•\s*)?([^—]{1,40}?)\s*—\s*")
 # CR 207.2d residual: a flavor word is a printed PHRASE. Letters (any script),
 # digits, and the punctuation a title may carry. It must not be a cost, a
 # quote, or a table row -- those are refused by rule, not by class.
@@ -2079,9 +2093,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     # replacement section, so its home is probably `replacement`, not `static`.
     # That is a second shape and it gets its own pass; sweeping it in here
     # would be the lumping this method exists to avoid.
+    # A MODE IS NOT AN ABILITY, so the CR 113.3a closure below does not reach
+    # it. CR 700.2: *"a spell or ability is modal if it has two or more options
+    # in a bulleted list … **Each of those options is a MODE**."* An option
+    # inside an ability is not one of CR 113.3's four categories, so "this card
+    # has no instant or sorcery face, therefore the enumeration closes on
+    # static" -- valid for a printed ability -- proves nothing about a bullet.
+    # A mode's delivery is its parent ability's (§2d, D3 inheritance).
+    #
+    # Found 2026-08-06 the moment the mode-name strip improved recall: Hawkeye's
+    # `• Explosive — Hawkeye deals 2 damage to target player.` is a mode of a
+    # REFLEXIVE trigger (CR 603.12, `Trick Arrows — Whenever Hawkeye becomes
+    # tapped … When you do, choose up to that many.`) and this branch called it
+    # `static`. Better recall handed a wrong ratified token to a line that had
+    # been an honest gap -- *"a fallback is a wrong answer with a ratified
+    # name"*, one layer up. It stays reported until its header is detected.
+    is_mode = raw.lstrip().startswith("•")
     m_self = re.match(r"^~|^" + SELF_NOUN_RX.pattern, low)
     if m_self and card is not None and not _has_spell_face(card) and \
-       not re.match(r"\s+escapes\b", low[m_self.end():]):
+       not is_mode and not re.match(r"\s+escapes\b", low[m_self.end():]):
         return ("static", "static-self-statement") if "static" in ratified \
             else (None, "static-self-statement")
     return None, "spell-or-static"
