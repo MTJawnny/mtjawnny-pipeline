@@ -244,6 +244,43 @@ _ROLL_INSTRUCTION_RE = re.compile(
     r"\broll\w*\b(?:[^.\n]{0,40}?)\b(?:d\d+|dice|die)\b", re.I)
 
 
+# CR 711.2 (leveler) and CR 716.2 (class level bar) print the SAME sentence as
+# CR 721.2: *"any abilities printed within the same text box striation are part
+# of its static ability."*  But unlike the station striation, whose marker and
+# abilities share ONE line, these two put the marker on its own line and the
+# abilities it governs on the lines BELOW:
+#
+#     Level up {W}            {1}{R}: Level 2
+#     LEVEL 2-6               Whenever you roll one or more dice, …
+#     3/3                     {2}{R}: Level 3
+#     First strike            Creatures you control have haste.
+#     LEVEL 7+
+#
+# So `3/3` and `First strike` are governed by `LEVEL 2-6` and a proximity
+# pattern cannot span the newline to learn it -- exactly the CR 706.3b die-row
+# case one rule over. Measured 2026-08-07: 96 leveler content lines and 78
+# class content lines, NONE of them joined to the band that governs them.
+_LEVEL_BAND_RE = re.compile(r"^LEVEL\s+\d+\s*(?:-\s*\d+|\+)\s*$", re.I)
+_CLASS_LEVEL_RE = re.compile(r"^(?:\{[^}]*\})+\s*:\s*Level\s+\d+\s*$", re.I)
+
+
+def _is_band_marker(line: str) -> bool:
+    """Does this line OPEN a new striation, closing the previous one?
+
+    ONLY the two band markers. It is tempting to also stop at a modal header or
+    a roll instruction so an inner block is not swallowed -- and that was the
+    first version, and it was wrong: Barbarian Class's level-2 ability is
+    *"Whenever you ROLL one or more DICE, target creature you control gets
+    +2/+0…"*, which matches `_ROLL_INSTRUCTION_RE` and silently ended the band
+    one line early. The inner-block problem is real but belongs to the LOOP,
+    which solves it by not consuming a striation (see `expand_modal_bullets`),
+    not to the boundary test, which CR 711.2/716.2 define in terms of the
+    striation markers alone.
+    """
+    s = line.strip()
+    return bool(_LEVEL_BAND_RE.match(s) or _CLASS_LEVEL_RE.match(s))
+
+
 def _is_die_row(line: str) -> bool:
     """A CR 706.3b results-table row, however it is printed.
 
@@ -432,10 +469,24 @@ def expand_modal_bullets(text: str) -> list:
         # option lines actually follow it.
         header = None
         opt_test = None
+        consume = True
         if _MODAL_HEADER_RE.search(lines[i].strip()):        # CR 700.2/.2h/.2i
             header, opt_test = lines[i], is_mode_line
         elif _ROLL_INSTRUCTION_RE.search(lines[i]):          # CR 706.3b
             header, opt_test = lines[i], _is_die_row
+        elif (_LEVEL_BAND_RE.match(lines[i].strip())         # CR 711.2
+              or _CLASS_LEVEL_RE.match(lines[i].strip())):   # CR 716.2
+            # A striation claims every line until the NEXT marker -- the other
+            # two forms test each option positively, this one tests the
+            # boundary, because CR 711.2/716.2 say the striation owns whatever
+            # is printed in it rather than naming a shape those lines take.
+            #
+            # CONSUME=FALSE. A striation's content can itself be a modal header
+            # or a roll instruction, and consuming the block would rob it of
+            # its own expansion. These joins are purely additive -- the caller
+            # scans the original text too -- so the loop advances one line and
+            # every inner header still gets its turn.
+            header, opt_test, consume = lines[i], lambda l: not _is_band_marker(l), False
         if header is not None:
             j = i + 1
             bullets = []
@@ -450,7 +501,7 @@ def expand_modal_bullets(text: str) -> list:
                 # every pattern using "[^\n]*" proximity (F2's own scoping
                 # fix).
                 extra.append(header + " " + b)
-            i = j if bullets else i + 1
+            i = j if (bullets and consume) else i + 1
         else:
             i += 1
     return extra

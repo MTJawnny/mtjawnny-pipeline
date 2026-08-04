@@ -55,15 +55,41 @@ def rule(t):
     print("\n" + "=" * 78 + f"\n{t}\n" + "=" * 78)
 
 
-# Every printed OPTION form, and the rule that makes it one.
+# Every printed SEPARATED form, and the rule that makes it one.
+#
+# The first five were the whole list, and that covered 5 of the 11 constructs
+# `IN-CARD-SEPARATION-CENSUS-2026-08-06.md` measured. The other six had no
+# reporter for layers 2 and 3 AT ALL -- including the CR 711.2 leveler, which
+# was the construct this arc moved from 100% unrouted to 0%. A mechanism that
+# does not cover the thing it was built to protect is the gap, not the fix.
+#
+# Regexes are REUSED from the extractor wherever it already has one. A probe
+# that re-derives the classifier's own pattern is a probe that can disagree
+# with it, which is how `{TK}` got read as a CR 721 station symbol.
 OPTION_FORMS = [
     ("CR 700.2  bulleted mode",   re.compile(r"^\s*•\s*")),
     ("CR 700.2i pawprint mode",   re.compile(r"^\s*(?:\{P\})+\s*—\s*")),
     ("CR 700.2h spree mode",      re.compile(r"^\s*\+\s*\{[^}]*\}[^—]*—\s*")),
     # all three printed range separators -- see foundry_common._DIE_ROW_RE
     ("CR 706.3b die-roll row",    re.compile(r"^\s*\d+(?:\s*[-–—]\s*\d+)?\s*\|\s*")),
-    ("CR 721.2  station striation", re.compile(r"^\s*\d+\+\s*\|\s*")),
+    ("CR 721.2  station striation", fx.STATION_SYMBOL),
+    ("CR 714.2  Saga chapter",    fx.CHAPTER),
+    ("CR 606.2  loyalty ability", fx.LOYALTY_COST),
 ]
+
+# The two constructs whose marker is on its OWN line, with the abilities it
+# governs printed BELOW it. Everything in OPTION_FORMS carries its effect on
+# the same line, so the three questions are asked of `line[m.end():]`; for
+# these the effect is the FOLLOWING lines, up to the next marker.
+BAND_FORMS = [
+    ("CR 711.2  leveler band",    fc._LEVEL_BAND_RE),
+    ("CR 716.2  class level bar", fc._CLASS_LEVEL_RE),
+]
+
+# `Visit —` (CR 702.159a, 22 lines) is deliberately absent. Attractions are in
+# `docs/OUT-OF-SCOPE.md`, a DECLINE register: measured, then declined on
+# Captain's deck-building-relevance criterion. Reported as declined, never as
+# open, and not re-derived here.
 
 
 # Forms whose governing CONTEXT is printed on the SAME LINE, so there is
@@ -72,7 +98,15 @@ OPTION_FORMS = [
 # (`9+ | Flying, first strike`) -- the condition is right there. I reported
 # these 49 as needing a join and was wrong; the test is corrected rather than
 # the code bent to match it. (Fourth probe defect this session.)
-INLINE_CONTEXT = {"CR 721.2  station striation"}
+INLINE_CONTEXT = {
+    "CR 721.2  station striation",
+    # CR 714.2's chapter symbol and its ability share one line ("III — Knights
+    # you control get +2/+1"), and CR 606.2's loyalty cost likewise ("+1: Until
+    # your next turn…"). The condition is printed right there, so counting
+    # these as needing a join would repeat the station mistake exactly.
+    "CR 714.2  Saga chapter",
+    "CR 606.2  loyalty ability",
+}
 
 
 def option_form(line: str):
@@ -189,6 +223,37 @@ def main():
                 ctx_no[label] += 1
                 uncontexted.append(rec)
 
+    # ------------------------------------------------------------- BANDS
+    # CR 711.2 / 716.2: the marker is its own line and the abilities it governs
+    # are the lines below it, so the effect text is not `line[m.end():]` and the
+    # loop above cannot see these at all. Same three questions, one layer out.
+    band_forms = collections.Counter()
+    band_content = collections.Counter()
+    band_unscanned, band_uncontexted = [], []
+    for oid, card in cards.items():
+        lines = fx.ability_lines(card)
+        marks = [next((lbl for lbl, rx in BAND_FORMS if rx.match(l.strip())), None)
+                 for l in lines]
+        if not any(marks):
+            continue
+        scan = [align(t, card) for t in fc.det_scan_texts(card)]
+        canon = align(fc.full_oracle_text(card), card)
+        joined = [s for s in scan if s != canon]
+        for i, label in enumerate(marks):
+            if label is None:
+                continue
+            band_forms[label] += 1
+            j = i + 1
+            while j < len(lines) and not fc._is_band_marker(lines[j]):
+                band_content[label] += 1
+                key = align(lines[j], card)
+                head = align(lines[i], card)
+                if not any(key in s for s in scan):
+                    band_unscanned.append((card["name"], label, lines[j][:80]))
+                elif not any(key in s and head in s for s in joined):
+                    band_uncontexted.append((card["name"], label, lines[j][:80]))
+                j += 1
+
     rule("OPTIONS FOUND, by the rule that makes them options")
     for label, n in by_form.most_common():
         print(f"  {label:30}{n:6}   inherited timing {inherited[label]:5}"
@@ -221,8 +286,19 @@ def main():
             break
         print(f"     {nm[:26]:28}{line}")
 
+    rule("BANDS — marker on its own line, governed abilities BELOW it\n"
+         "   (CR 711.2 / 716.2: 'any abilities printed within the same text\n"
+         "    box striation are part of its static ability')")
+    print(f"  {'form':32}{'bands':>8}{'content':>9}{'UNSCANNED':>11}{'NOT joined':>12}")
+    for label, _rx in BAND_FORMS:
+        u = sum(1 for r in band_unscanned if r[1] == label)
+        c = sum(1 for r in band_uncontexted if r[1] == label)
+        print(f"  {label:32}{band_forms[label]:>8}{band_content[label]:>9}{u:>11}{c:>12}")
+    for r in (band_unscanned + band_uncontexted)[:args.limit]:
+        print(f"     {r[0][:26]:28}{r[2]}")
+
     rule("VERDICT")
-    fatal = len(dropped) + len(unscanned)
+    fatal = len(dropped) + len(unscanned) + len(band_unscanned)
     if fatal:
         print(f"  ✗ {fatal} option(s) are INVISIBLE — dropped or unscannable.")
     else:
