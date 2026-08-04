@@ -49,6 +49,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
+import foundry_audit_baseline as ab     # noqa: E402
 
 
 def rule(t):
@@ -162,6 +163,8 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json")
     ap.add_argument("--limit", type=int, default=12)
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="pin the CURRENT numbers as the baseline, on purpose")
     args = ap.parse_args()
 
     cards, _, _ = fc.load_corpus_gated()
@@ -297,11 +300,31 @@ def main():
     for r in (band_unscanned + band_uncontexted)[:args.limit]:
         print(f"     {r[0][:26]:28}{r[2]}")
 
+    # UNCONTEXTED is non-fatal by design -- some of it is correct, a mode of an
+    # instant has no timing to inherit. But it was also UNBOUNDED: nothing
+    # noticed it going from 33 to 900. The pinned baseline is what bounds it,
+    # without turning a judgement call into a fatal absolute.
+    metrics = {
+        "options": sum(by_form.values()),
+        "dropped": len(dropped),
+        "unscanned": len(unscanned),
+        "uncontexted": len(uncontexted),
+        "by_form": dict(by_form),
+        "uncontexted_by_form": {k: ctx_no[k] for k in by_form},
+        "band_content": sum(band_content.values()),
+        "band_unscanned": len(band_unscanned),
+        "band_uncontexted": len(band_uncontexted),
+    }
+    n_regressions = ab.report("visibility", metrics, args.update_baseline)
+
     rule("VERDICT")
-    fatal = len(dropped) + len(unscanned) + len(band_unscanned)
-    if fatal:
-        print(f"  ✗ {fatal} option(s) are INVISIBLE — dropped or unscannable.")
-    else:
+    invisible = len(dropped) + len(unscanned) + len(band_unscanned)
+    fatal = invisible + n_regressions
+    if invisible:
+        print(f"  ✗ {invisible} option(s) are INVISIBLE — dropped or unscannable.")
+    if n_regressions:
+        print(f"  ✗ {n_regressions} pinned metric(s) moved the WRONG way.")
+    if not fatal:
         print("  ✓ No option is invisible. Every one produces a delivery row and")
         print("    every effect text is reachable by a DET pattern.")
         if uncontexted:

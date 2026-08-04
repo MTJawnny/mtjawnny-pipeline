@@ -28,6 +28,7 @@ Exit 1 on any violation. Zero tokens, deterministic, safe to gate on.
 """
 import sys
 import re
+import math
 import json
 import argparse
 import collections
@@ -37,6 +38,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
+import foundry_audit_baseline as ab     # noqa: E402
 
 
 def rule(t):
@@ -73,6 +75,8 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json")
     ap.add_argument("--limit", type=int, default=12)
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="pin the CURRENT numbers as the baseline, on purpose")
     args = ap.parse_args()
 
     cards, _, _ = fc.load_corpus_gated()
@@ -283,15 +287,36 @@ def main():
                     unr[name] += is_unrouted
     base = n_unrouted / n_lines if n_lines else 0
     print(f"  corpus unrouted rate  {n_unrouted}/{n_lines} = {base:.3f}\n")
-    print(f"  {'class':<22}{'lines':>8}{'unrouted':>10}{'rate':>8}{'ratio':>8}")
+    # RATIO is what this table has always printed. Z and FLOOR are new, and
+    # they exist because the ratio flag's sensitivity was never stated:
+    #
+    #   `digit`  ratio 1.04 -- looks fine -- carries z = 3.7, a 256-line excess
+    #            the 1.25 flag needs +1,396 MORE lines to notice
+    #   `comma`  needs +4,213 newly-broken lines to trip the ratio flag at all,
+    #            because it currently sits well BELOW the corpus rate and has
+    #            that much room to fall before it looks abnormal
+    #
+    # FLOOR is the honest answer to "what can escape this test": a defect
+    # smaller than the floor is invisible here. It is printed rather than
+    # tuned away -- the pinned baseline below is what actually drives the floor
+    # to 1, by comparing each class against ITSELF instead of the corpus.
+    print(f"  {'class':<22}{'lines':>8}{'unrouted':>9}{'rate':>7}{'ratio':>7}"
+          f"{'z':>7}{'floor':>8}")
     rows = []
     for name in CLASSES:
         t, u = tot[name], unr[name]
         r = (u / t) if t else 0
-        rows.append((r / base if base else 0, name, t, u, r))
-    for ratio, name, t, u, r in sorted(rows, reverse=True):
+        exp = t * base
+        sd = math.sqrt(t * base * (1 - base)) if t else 0
+        z = (u - exp) / sd if sd else 0
+        floor = max(0, base * 1.25 * t - u)
+        rows.append((r / base if base else 0, name, t, u, r, z, floor))
+    for ratio, name, t, u, r, z, floor in sorted(rows, reverse=True):
         flag = "  <-- over-represented" if ratio > 1.25 and t >= 50 else ""
-        print(f"  {name:<22}{t:>8}{u:>10}{r:>8.3f}{ratio:>8.2f}{flag}")
+        if not flag and z > 3 and t >= 50:
+            flag = "  <-- z>3, ratio flag blind to it"
+        print(f"  {name:<22}{t:>8}{u:>9}{r:>7.3f}{ratio:>7.2f}{z:>7.1f}"
+              f"{floor:>8.0f}{flag}")
     report["recall_inversion"] = {n: {"lines": tot[n], "unrouted": unr[n]} for n in CLASSES}
 
     # ------------------------------------------------------------------ E
@@ -300,6 +325,24 @@ def main():
     for desc, n in per_desc.most_common(args.limit):
         print(f"  {n:>7}  {desc}")
     report["unrouted_descriptors"] = dict(per_desc)
+
+    # ------------------------------------------------------------------
+    # PINNED BASELINE. Everything above is an ABSOLUTE check -- it asks whether
+    # the current state is self-consistent. None of it can see DEGRADATION: the
+    # recall table has no thresholds, and test E's histogram is printed and
+    # never asserted, so 3,000 lines could slide out of a named descriptor into
+    # `spell-or-static` and this file would still exit 0.
+    metrics = {
+        "lines": lines_all,
+        "deliveries": emitted,
+        "unrouted_lines": n_unrouted,
+        "reminder_mid_line": mid_line,
+        "reminder_only_lines": emptied,
+        "class_unrouted": {n: unr[n] for n in CLASSES},
+        "class_lines": {n: tot[n] for n in CLASSES},
+        "descriptor_unrouted": dict(per_desc),
+    }
+    n_regressions = ab.report("conservation", metrics, args.update_baseline)
 
     # ------------------------------------------------------------------
     rule("VERDICT")
@@ -319,7 +362,7 @@ def main():
             {"test": c, "card": n, "line": l, "why": w} for c, n, l, w in violations]
         Path(args.json).write_text(json.dumps(report, indent=2, sort_keys=True))
         print(f"\nwrote {args.json}")
-    sys.exit(1 if violations else 0)
+    sys.exit(1 if (violations or n_regressions) else 0)
 
 
 if __name__ == "__main__":
