@@ -1,13 +1,13 @@
 # SESSION HANDOFF — 2026-08-05
 
 Supersedes `SESSION-HANDOFF-2026-08-04-EVE.md`. **Zero API calls. Arc spend
-unchanged at $90.51 / $140.** Seven commits: `216e480` · `eda04be` · `3c78e50` ·
-`15a3d71` · `2ffbcef` · `2d64b1f` · `9693441`.
+unchanged at $90.51 / $140.** Ten commits, `216e480` .. `341a28b`.
 
-**The session in one line: Captain ratified the 14 §2 rows, and every remaining
-open defect in the pre-step-2 audit (D3–D6, D8) was closed — 1,834 ability lines
-routed onto a correct DELIVERY token across six passes, with ten lines corrected
-OFF a token they should never have held and not one token losing ground.**
+**The session in one line: Captain ratified the 14 §2 rows; every remaining open
+defect in the pre-step-2 audit (D3–D6, D8) was closed; step 2 was opened as
+named shapes rather than a sweep — 2,128 ability lines routed onto a correct
+DELIVERY token across seven passes, ten lines corrected OFF a token they should
+never have held, and not one token losing ground.**
 
 ---
 
@@ -81,10 +81,11 @@ their home. **This is what keeps D9's ~951 lines correctly unrouted.**
 | ruling registry | 93 docs · 127 ruling ids |
 | **§2 DELIVERY vocabulary** | **45 tokens** (was 31) |
 | routed ability lines | **61,907** (was 61,868 — +39, all dual-delivery, see D3 §5a / D8 §3) |
-| **lines with NO ratified token** | **18,456** (was 20,290) |
+| ruling registry | 95 docs |
+| **lines with NO ratified token** | **18,162** (was 20,290 — **−2,128**) |
 | distinct ratified tokens in use | **64** (was 47) |
 | keyword homes | **148** (was 144 — 4 CR-confirmed, D6 §4) |
-| baseline snapshot | `experiments/out/foundry/regression/p8-d8.json` |
+| baseline snapshot | `experiments/out/foundry/regression/p9-step2a.json` |
 | working tree | clean |
 
 ---
@@ -121,6 +122,13 @@ only 11 of 27 — `return` and `put` are not keyword actions. CR 113.3b's
 defect was a **seam between the two keyword paths**, and 61 comma-joined lines
 had it too.
 
+**`1b443f2` FINDING — S7's "zero-cost next step" is NOT RUNNABLE. Nothing built.**
+See §4.2 and decision-sheet item 8.
+
+**`341a28b` step 2, first slice (+294).** Two named shapes, not a sweep:
+`enters? as` (the 57-card clone family, lost to a plural-only test) and the
+**static grant** (237). Took **two** tightenings, both found by reading output.
+
 ---
 
 ## 4. NEXT WORK ITEM — proceeds WITHOUT asking
@@ -129,17 +137,20 @@ had it too.
 D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 were closed on 2026-08-04. **What remains of that audit is step 2 itself.**
 
-### 1. Step 2 proper (≈5,647 lines) — the last big one, and the one stopped as unsafe
+### 1. Step 2, continued — one named shape at a time
 
-Against the corrected partition in `PRE-STEP-2-AUDIT` §3, **never as a blanket
-sweep.** §7 of the EVE handoff is the reason: *"a RATIFIED bucket used as a
-fallback"* would turn 1,883 wrong answers into answers that read as resolved.
+**The first slice is done** (`341a28b`, `docs/STEP-2A-STATIC-GRANT-2026-08-05.md`).
+**17,367 lines remain in `spell-or-static`, 5,153 of them permanent-side.**
 
-**Start with the population D5 §3a exposed**, which is small, named and already
-diagnosed: permanents whose delivery is `static` but whose line does not match
-`^(enchant|equipped creature|enchanted )` — *"Commander creatures you own
-have …"* (Scion of Halaster, Master Chef, The Eighth Doctor). That branch is
-narrow in a way nothing has measured.
+**Never as a blanket sweep** — §7 of the EVE handoff is the reason: *"a RATIFIED
+bucket used as a fallback"* would turn 1,883 wrong answers into answers that read
+as resolved.
+
+**The method that worked, and the one to continue with:** name a shape, measure
+it, **read its output**, tighten until leakage is zero or explained, then take
+the next shape. The static grant looked obvious and needed **two** tightenings —
+97 instants leaked on the first, 65 on the second — and both were visible only in
+the output, never in the idea.
 
 ### 2. The S7 gate — **NOT the one-liner three handoffs promised**
 
