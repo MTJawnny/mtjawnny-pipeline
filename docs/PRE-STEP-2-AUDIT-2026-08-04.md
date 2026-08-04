@@ -1,5 +1,14 @@
 # PRE-STEP-2 AUDIT — the delivery extractor, audited by method (2026-08-04)
 
+> **STATUS, 2026-08-05 — D1–D6 and D8 are ALL CLOSED.** This document remains the
+> reference for the partition and the method; its per-defect line counts are
+> pre-fix and are superseded by each defect's own record:
+> D3 `docs/D3-MODAL-MODES-2026-08-04.md` · D4 `docs/D4-KEYWORD-FORMS-2026-08-04.md` ·
+> D5 `docs/D5-REPLACEMENT-WINDOW-2026-08-04.md` · D6 `docs/D6-COST-HEAD-2026-08-04.md` ·
+> D8 `docs/D8-KEYWORD-LIST-SPLIT-2026-08-04.md`.
+> **D9 is a Captain ruling (Phase B), not a fix. What remains of this audit is
+> STEP 2 itself**, which §6 still correctly describes as unsafe as a blanket sweep.
+
 Captain, 2026-08-04: *"before the route let's do an additional audit on all work
 done"* — then: *"maybe even taking a step back and contemplating on how to more
 thoroughly audit wouldn't be a bad idea."*

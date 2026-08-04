@@ -1,12 +1,13 @@
 # SESSION HANDOFF — 2026-08-05
 
 Supersedes `SESSION-HANDOFF-2026-08-04-EVE.md`. **Zero API calls. Arc spend
-unchanged at $90.51 / $140.** Commits: `216e480` · `eda04be` · `3c78e50`.
+unchanged at $90.51 / $140.** Seven commits: `216e480` · `eda04be` · `3c78e50` ·
+`15a3d71` · `2ffbcef` · `2d64b1f` · `9693441`.
 
-**The session in one line: Captain ratified the 14 §2 rows, and ratifying them
-turned out to have a mechanical half nobody had counted — 1,545 ability lines
-were routed onto a correct DELIVERY token across three passes, and exactly ONE
-line moved off a ratified token, as a fix.**
+**The session in one line: Captain ratified the 14 §2 rows, and every remaining
+open defect in the pre-step-2 audit (D3–D6, D8) was closed — 1,834 ability lines
+routed onto a correct DELIVERY token across six passes, with ten lines corrected
+OFF a token they should never have held and not one token losing ground.**
 
 ---
 
@@ -39,9 +40,12 @@ python3 experiments/foundry_routing_regression.py invariance
 
 | read | why |
 |---|---|
-| **`docs/PRE-STEP-2-AUDIT-2026-08-04.md`** | the nine defects. **D3 and D4 are now CLOSED**; D5/D6/D8 are next and its numbers for them are still good |
+| **`docs/PRE-STEP-2-AUDIT-2026-08-04.md`** | the nine defects. **D1–D6 and D8 are all CLOSED**; D9 is a Captain ruling. What remains is **step 2** |
 | **`docs/D4-KEYWORD-FORMS-2026-08-04.md`** | the CR states a printed form in FOUR sentence shapes; five defects caught by measurement |
 | **`docs/D3-MODAL-MODES-2026-08-04.md`** | modal inheritance, and the 49-line gap in the ratified modal regex |
+| **`docs/D5-REPLACEMENT-WINDOW-2026-08-04.md`** | why a guessed constant HIDES missing logic; the created-ability guard |
+| **`docs/D6-COST-HEAD-2026-08-04.md`** | "derive from the CR" ≠ "copy the nearest CR list"; CR 113.3b is a grammar, not a list |
+| **`docs/D8-KEYWORD-LIST-SPLIT-2026-08-04.md`** | a 2-line residue meant the stated defect was a symptom |
 | `docs/CODEBOOK-NAMING-GRAMMAR.md` **§1, §2, §2a, §2b, §2e, §2f, §9** | the DELIVERY law. **§2 is now 45 tokens**; §2e and §2f are new |
 | `docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md` **§6** | 193 keywords already classified |
 | `docs/TRIGGER-VERB-DERIVATION-2026-08-04.md` | why the verb set is DERIVED |
@@ -74,17 +78,18 @@ their home. **This is what keeps D9's ~951 lines correctly unrouted.**
 | lint | clean |
 | family sweep | 6 blocking (the same 6) |
 | definition drift | 35 — C1b 1 · C2 16 · C3 7 · C4a 3 · C4e 5 · C4f 3 (unchanged) |
-| ruling registry | 89 docs · 127 ruling ids |
+| ruling registry | 93 docs · 127 ruling ids |
 | **§2 DELIVERY vocabulary** | **45 tokens** (was 31) |
-| routed ability lines | **61,900** (was 61,868 — +32, see D3 §5a) |
-| **lines with NO ratified token** | **18,745** (was 20,290) |
+| routed ability lines | **61,907** (was 61,868 — +39, all dual-delivery, see D3 §5a / D8 §3) |
+| **lines with NO ratified token** | **18,456** (was 20,290) |
 | distinct ratified tokens in use | **64** (was 47) |
-| baseline snapshot | `experiments/out/foundry/regression/p5-d3.json` |
+| keyword homes | **148** (was 144 — 4 CR-confirmed, D6 §4) |
+| baseline snapshot | `experiments/out/foundry/regression/p8-d8.json` |
 | working tree | clean |
 
 ---
 
-## 3. WHAT CHANGED — three commits
+## 3. WHAT CHANGED — seven commits
 
 **`216e480` RATIFIED: the 14 §2 rows (+502 lines).** §2 31 → 45 tokens, plus
 §8b's `<type>-counter-placed-trigger` grammar family and §2e (a static ability
@@ -100,49 +105,52 @@ which states them in **four** sentence shapes. 0 lines moved off a ratified toke
 Reproduces the audit's table to the line (etb 201, activated 64, cast-trigger 33,
 begin-combat 26).
 
+**`15a3d71` audit #2 + this handoff.**
+
+**`2ffbcef` D5 — the replacement window was a guessed number (+155, 9 corrected).**
+`{0,60}` had no CR behind it; CR 614.1a states no distance, so it was REMOVED,
+not widened. Removing it exposed a **missing created-ability guard** the window
+had been hiding by one character.
+
+**`2d64b1f` D6 — the cost head is STRUCTURE, not a verb list (+47).** The work
+order's prescription (reuse the derived CR 701 list) was measured and catches
+only 11 of 27 — `return` and `put` are not keyword actions. CR 113.3b's
+`[Cost]: [Effect]` is the claim.
+
+**`9693441` D8 — keyword lists (+95).** Stated as 29 semicolon lines; the real
+defect was a **seam between the two keyword paths**, and 61 comma-joined lines
+had it too.
+
 ---
 
 ## 4. NEXT WORK ITEM — proceeds WITHOUT asking
 
-**Each is its own measured pass: snapshot → change → `diff --strict` → read
-every moved line → `invariance`.**
+**`PRE-STEP-2-AUDIT-2026-08-04.md`'s D3, D4, D5, D6 and D8 are all CLOSED.**
+D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+were closed on 2026-08-04. **What remains of that audit is step 2 itself.**
 
-### 1. D5 — replacement templates (160 lines)
+### 1. Step 2 proper (≈5,647 lines) — the last big one, and the one stopped as unsafe
 
-`foundry_shape_extractor.py`, the replacement matcher.
-`\bwould\b.{0,60}\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b`
-misses 160 lines (gap min 61, median 89, max 173). **Do not widen the window —
-parse the CR.** CR **614.1a/b/c publishes exactly three templates verbatim**, and
-this is the same site as the 236-line *invisible* defect where only one of the
-three was matched. `ed252a6`'s locked rule named this defect before any audit
-found it.
+Against the corrected partition in `PRE-STEP-2-AUDIT` §3, **never as a blanket
+sweep.** §7 of the EVE handoff is the reason: *"a RATIFIED bucket used as a
+fallback"* would turn 1,883 wrong answers into answers that read as resolved.
 
-### 2. D6 — activated cost heads with no mana symbol (30 lines)
+**Start with the population D5 §3a exposed**, which is small, named and already
+diagnosed: permanents whose delivery is `static` but whose line does not match
+`^(enchant|equipped creature|enchanted )` — *"Commander creatures you own
+have …"* (Scion of Halaster, Master Chef, The Eighth Doctor). That branch is
+narrow in a way nothing has measured.
 
-`[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b` loses 30
-activated abilities (`Put a -1/-1 counter on this creature:`, `Return a Forest
-you control to its owner's hand:`). **CR 701's keyword-action list is ALREADY
-DERIVED in this same file** for the trigger verbs — reuse it rather than
-extending the hand-list. One false positive to expect: a card *named*
-**"Ultimate Magic: Meteor"**, where the colon is in the name.
-
-### 3. D8 — semicolon-joined keyword lines (29 lines)
-
-`keyword_line_tokens` splits on commas only (`Flying; banding`). No CR question.
-**Note:** it now falls through to `keyword_form_tokens`, so fix the split in both
-or hoist it.
-
-### 4. THEN step 2 proper (≈5,647)
-
-Against the corrected partition in `PRE-STEP-2-AUDIT` §3 — **never as a blanket
-sweep.**
-
-### 5. Zero-token, unstarted
+### 2. Zero-token, unstarted
 
 `python3 experiments/measure/family_tree_evidence.py` against the five populated
 parent candidates — the S7 gate they have never been through.
 
----
+### 3. Reviving `experiments/foundry_review.html`
+
+Dark since 2026-07-17. `SESSION-START-PROCEDURE.md` names **ratification
+throughput** as the real bottleneck, and this session is evidence: six passes of
+DET work landed while the decision sheet only grew.
 
 ## 5. BLOCKED ON CAPTAIN — one sheet
 

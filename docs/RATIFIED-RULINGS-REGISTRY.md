@@ -14,7 +14,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **89 documents under docs/**
+- documents scanned: **93 documents under docs/**
 - ruling references found: **591**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **83**
@@ -71,7 +71,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-04-EVE.md` | 287 | 4 | 1 | **NO** |
+| `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 192 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
@@ -92,7 +92,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`
+`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `SESSION-HANDOFF-2026-08-05.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`
 
 ## Sole-home rulings — these block their document
 
@@ -163,7 +163,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`SESSION-HANDOFF-2026-08-04-EVE.md`** — sole home for 1:
 
-- `D8` (line 207) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+- `D8` (line 212) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
@@ -678,7 +678,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-3.md:166` — D5: two pump merges DEFERRED pending Captain review of
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:257` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
-- `SESSION-HANDOFF-2026-08-04-EVE.md:192` — D5 — `foundry_shape_extractor.py` line ~902.**
+- `SESSION-HANDOFF-2026-08-04-EVE.md:197` — D5 — `foundry_shape_extractor.py` line ~902.**
 
 ### `D6` — 12 reference(s) across 6 doc(s)
 
@@ -692,7 +692,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:185` — sole exclusion. Logged Captain-explicit, D6-style.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
-- `SESSION-HANDOFF-2026-08-04-EVE.md:199` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
+- `SESSION-HANDOFF-2026-08-04-EVE.md:204` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
 - `TRIAGE-BATCH-7.md:742` — D6 — Forsaken Crossroads rehome (SUP "no axis fits" overturned)
 
 ### `D67` — 1 reference(s) across 1 doc(s)
@@ -716,14 +716,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D8` — 1 reference(s) across 1 doc(s)
 
-- `SESSION-HANDOFF-2026-08-04-EVE.md:207` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+- `SESSION-HANDOFF-2026-08-04-EVE.md:212` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 ### `D9` — 5 reference(s) across 5 doc(s)
 
 - `D4-KEYWORD-FORMS-2026-08-04.md:141` — keyword with no §2 home stays unrouted: that is **D9** — 49 keywords, ~951
 - `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:218` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
-- `SESSION-HANDOFF-2026-08-04-EVE.md:240` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
+- `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 
 ### `F2` — 3 reference(s) across 2 doc(s)
