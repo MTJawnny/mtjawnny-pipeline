@@ -1,5 +1,7 @@
 # SESSION HANDOFF — 2026-08-07
 
+> **SUPERSEDED by `docs/SESSION-HANDOFF-2026-08-07-EVE.md` (2026-08-07 eve).** Its §3 LIVE STATE numbers are stale — Gate 2 is now EIGHT commands, and `unrouted` here is a per-ROW count. §4's TRAP SWEEP is still the next work item and is carried forward verbatim.
+
 Supersedes `SESSION-HANDOFF-2026-08-06.md`. **Zero API calls. Arc spend
 unchanged at $90.51 / $140.** Nine commits, `98af57a` .. `3ff3afd`.
 
