@@ -371,6 +371,7 @@ def build_keyword_homes(ratified: dict) -> None:
                 "map that loses it is not a §2b router.")
     KEYWORD_HOME = homes
     build_landwalk_template(k7)
+    build_keyword_forms(kws, k7)
 
 
 # CR 702.14a: *"Landwalk is a generic term that appears within an object's
@@ -419,6 +420,173 @@ def landwalk_variant(part: str) -> bool:
 
 COST_OR_PARAM = re.compile(r"\{[^}]*\}|\bN\b|\d+")
 
+# ---------------------------------------------------------------------------
+# D4 -- PARAMETERIZED keyword lines, derived from each keyword's own CR form
+# ---------------------------------------------------------------------------
+# COST_OR_PARAM only strips mana symbols and bare digits, so a keyword whose
+# parameter is TYPED or a CLAUSE is invisible to the test above: `Ward-Pay 3
+# life.`, `Equip Knight {1}`, `Craft with artifact {2}{W}`, `Champion a
+# Kithkin`. Measured: 172 such lines on a NON-`static` home.
+#
+# The locked rule applies -- do not hand-list the forms, PARSE THEM. The CR
+# states each keyword's printed form verbatim, and it does so in FOUR shapes,
+# all four of which are load-bearing:
+#
+#   QUOTED     702.6a   "Equip [cost]" means ...
+#   UNQUOTED   702.21a  Ward [cost] means ...          <- Ward is the single
+#                                                         biggest keyword here
+#                                                         (53 lines); a
+#                                                         quote-only parse
+#                                                         loses all of it
+#   WRITTEN    702.57a  It's written "Forecast - [Activated ability]."
+#              702.167a It is written as "Craft with [materials] [cost],"
+#   IN-FORM    702.6c   restrictions ... appear in the form "Equip [quality]"
+#                       or "Equip [quality] creature."
+#
+# SAFETY FILTER: a captured form counts only if it BEGINS with the keyword's
+# own name. Without it, 702.29c's `"When you cycle this card" means ...`
+# becomes a printed form of Cycling, which it is not.
+KEYWORD_FORMS = None      # keyword name (lower) -> [compiled form regex]
+
+# A cost is not free text. CR 118.1 makes it mana and/or an action, and oracle
+# text prints it two ways only: a symbol run, or a long dash + an action
+# clause. The dash is the CR's OWN convention -- 702.49a writes the form as
+# "Reinforce N-[cost]", with the dash inside the quoted form.
+_KF_SYMS = r"(?:\{[^}]*\}\s*)+"
+# ... and a symbol run may be a CHOICE: "Cumulative upkeep {W} or {U}".
+_KF_SYMBOL_RUN = rf"{_KF_SYMS}(?:(?:or|and)\s+{_KF_SYMS})*"
+# The clause may contain commas ("Ward-{2}, Pay 2 life.") but may NOT cross a
+# sentence boundary. Without that bound, "Equip-Sacrifice another nonland
+# permanent. Activate only once each turn." matched while its symbol-form twin
+# "Equip {0}. Activate only once each turn." did not -- one shape decided two
+# ways by which arm happened to match.
+_KF_DASH_CLAUSE = r"[—–]\s*(?:[^—–.]|\.(?=\s*$))+"
+_KF_COST = rf"(?:{_KF_SYMBOL_RUN}|{_KF_DASH_CLAUSE})"
+_KF_NUMBER = r"(?:\d+|x)"
+_KF_PHRASE = r"[a-z][a-z',/ ]*"          # [quality] [object] [text] [materials]
+_KF_ACTIVATED = r".+:.+"                  # [Activated ability] -- CR 113.3b
+_KF_PLACEHOLDER = re.compile(r"\[([^\]]+)\]")
+
+_KF_QUOTED_MEANS = re.compile(r"[“\"]([^”\"]+)[”\"]\s+means\b")
+_KF_WRITTEN = re.compile(r"written(?:\s+as)?\s+[“\"]([^”\"]+)[”\"]", re.I)
+_KF_IN_FORM = re.compile(
+    r"in the form\s+((?:[“\"][^”\"]+[”\"]\s*(?:or|and)?\s*)+)", re.I)
+_KF_QUOTED_ANY = re.compile(r"[“\"]([^”\"]+)[”\"]")
+
+
+def cr_printed_forms(kw: dict) -> list:
+    """Every printed form the CR states for this keyword, in rule order."""
+    name = (kw.get("name") or "").strip()
+    if not name:
+        return []
+    low, out = name.lower(), []
+    for _letter, text in sorted(kw.get("subrules", {}).items()):
+        cands = _KF_QUOTED_MEANS.findall(text) + _KF_WRITTEN.findall(text)
+        for blob in _KF_IN_FORM.findall(text):
+            cands += _KF_QUOTED_ANY.findall(blob)
+        for m in re.finditer(r"\b" + re.escape(name) + r"\b([^.“”\"]{0,40}?)\s+means\b",
+                             text, re.I):
+            cands.append(name + m.group(1))
+        for c in cands:
+            c = c.strip().rstrip(".,").strip()
+            if c.lower().startswith(low) and c not in out:
+                out.append(c)
+    # COMPOSITION, CR 702.6a + 702.6c. 702.6c states Equip's restriction form
+    # WITHOUT the cost -- "Equip [quality]" -- but 702.6a's cost is still part
+    # of the ability, and every printed card carries both ("Equip Knight {1}",
+    # "Equip legendary creature {2}"). Composing the two rules is a derivation
+    # from the CR; reading 702.6c literally loses 18 Equip lines.
+    if any("[cost]" in f.lower() for f in out):
+        for f in list(out):
+            if "[cost]" not in f.lower() and f + " [cost]" not in out:
+                out.append(f + " [cost]")
+    return out
+
+
+def _kf_form_to_regex(form: str) -> str:
+    """CR printed form -> regex. The separator before a placeholder is NOT
+    uniform, and getting it wrong is how a keyword matcher eats prose:
+
+      before a COST   `\\s*` -- the cost may follow a long dash with no space.
+      everywhere else `\\s+` -- REQUIRED. With `\\s*`, 702.6c's "Equip
+                                [quality]" matched Kor Blademaster's
+                                "EQUIPPED Warriors you control have double
+                                strike" -- a static routed to `activated`.
+    """
+    out, last = [], 0
+    for m in _KF_PLACEHOLDER.finditer(form):
+        lit = re.escape(form[last:m.start()]).replace(r"\ ", r"\s+")
+        kind = m.group(1).lower()
+        is_cost = kind == "cost"
+        if is_cost and lit.endswith(r"\s+"):
+            lit = lit[: -len(r"\s+")] + r"\s*"
+        out.append(lit)
+        out.append(_KF_COST if is_cost
+                   else _KF_ACTIVATED if kind.startswith("activated abilit")
+                   else _KF_PHRASE)
+        last = m.end()
+    out.append(re.escape(form[last:]).replace(r"\ ", r"\s+"))
+    pat = "".join(out)
+    # The CR writes the article that suits ITS placeholder word (702.72a,
+    # "Champion an [object]"); a card prints the article agreeing with the
+    # object it actually names. Nine of Champion's twelve lines print "a".
+    pat = re.sub(r"\ban(?=\\s\+)", "an?", pat)
+    # A literal `\d` in a re.sub REPLACEMENT is read as a group escape, not as
+    # the character class -- hence the lambda. Same family as the recorded
+    # `re.escape`-before-substitution trap.
+    pat = re.sub(r"(?<![A-Za-z])N(?![A-Za-z])", lambda _m: _KF_NUMBER, pat)
+    pat = re.sub(r"(?<![A-Za-z\\])X(?![A-Za-z])", lambda _m: _KF_NUMBER, pat)
+    return pat
+
+
+def build_keyword_forms(kws: dict, k7) -> None:
+    global KEYWORD_FORMS
+    forms = {}
+    for num, kw in kws.items():
+        if not kw["name"] or num == k7.PREAMBLE_RULE:
+            continue
+        rxs = []
+        for f in cr_printed_forms(kw):
+            # A form whose parameter is a whole ABILITY is REFUSED here, and
+            # this is the one guard that had to be added after measurement.
+            # CR 702.178a: `"Max speed — [Ability]" means "As long as your
+            # speed is 4, this object has '[Ability]'."` The parameter is a
+            # real ability with its own delivery, which the classifier already
+            # reads correctly -- so matching the wrapper OVERWRITES a correct
+            # ratified routing with the wrapper's class. Measured: it moved
+            # Pride of the Road off `begin-combat-trigger` and Vnwxt off
+            # `replacement`, both onto `static`. Destroying a correct routing
+            # is the exact failure PRE-STEP-2-AUDIT stopped step 2 for.
+            # §2's created-ability rule says the same thing: the delivery
+            # belongs to the ability, not to the wrapper that grants it.
+            if re.search(r"\[[^\]]*\babilit(?:y|ies)\b[^\]]*\]", f, re.I):
+                continue
+            try:
+                rxs.append(re.compile("^" + _kf_form_to_regex(f) + r"\.?$", re.I))
+            except re.error as e:
+                fc.halt(f"CR 702 printed form {f!r} for {kw['name']} did not "
+                        f"compile: {e}. Fix the derivation; never fall back to "
+                        f"a hand-written form list.")
+        if rxs:
+            forms[kw["name"].lower()] = rxs
+    # Halt-guard. A silently-degraded CR parse would make every parameterized
+    # keyword line look unrouted, which is exactly the defect being closed.
+    for anchor in ("ward", "equip", "craft", "cumulative upkeep", "champion"):
+        if anchor not in forms:
+            fc.halt(f"No CR printed form derived for {anchor!r}. The 702 parse "
+                    f"has degraded; refusing to run with a partial form set.")
+    KEYWORD_FORMS = forms
+
+
+def _keyword_by_form(part: str):
+    """The keyword whose CR printed form this whole part matches, else None."""
+    if not KEYWORD_FORMS:
+        return None
+    for name, rxs in KEYWORD_FORMS.items():
+        if name in KEYWORD_HOME and any(rx.match(part) for rx in rxs):
+            return name
+    return None
+
 
 def keyword_line_tokens(line: str) -> list:
     """Tokens for a line that IS one or more printed keywords, else []."""
@@ -429,15 +597,51 @@ def keyword_line_tokens(line: str) -> list:
     if not core:
         return []
     parts = [p.strip() for p in core.split(",") if p.strip()]
-    if not parts or not all(p in KEYWORD_HOME or landwalk_variant(p)
-                            for p in parts):
+    if parts and all(p in KEYWORD_HOME or landwalk_variant(p) for p in parts):
+        out, seen = [], set()
+        for p in parts:
+            t = KEYWORD_HOME[p] if p in KEYWORD_HOME else KEYWORD_HOME["landwalk"]
+            if t not in seen:
+                seen.add(t)
+                out.append((t, f"keyword:{p}"))
+        return out
+    return keyword_form_tokens(line)
+
+
+def keyword_form_tokens(line: str) -> list:
+    """D4: the same job for keywords whose parameter is TYPED or a CLAUSE.
+
+    WHOLE LINE FIRST, comma-split second. A keyword parameter may itself
+    contain commas -- "Ward-{2}, Pay 2 life.", "Craft with a Dinosaur, a
+    Merfolk, a Pirate, and a Vampire {4}" -- so splitting first destroys the
+    form before it is ever tested. Splitting stays the fallback because a line
+    may also be a comma-LIST of keywords.
+
+    A keyword with no §2 home is NOT routed here. Those are D9 (49 keywords /
+    ~1,229 lines) and KEYWORD-LEDGER-CANDIDATES.md sends them to Phase B; that
+    is a Captain ruling, not a fix, so `_keyword_by_form` gates on KEYWORD_HOME.
+    """
+    if not KEYWORD_FORMS:
+        return []
+    text = line.strip()
+    names = None
+    whole = _keyword_by_form(text)
+    if whole:
+        names = [whole]
+    else:
+        parts = [p.strip() for p in text.split(",") if p.strip()]
+        if parts:
+            got = [_keyword_by_form(p) for p in parts]
+            if all(got):
+                names = got
+    if not names:
         return []
     out, seen = [], set()
-    for p in parts:
-        t = KEYWORD_HOME[p] if p in KEYWORD_HOME else KEYWORD_HOME["landwalk"]
+    for n in names:
+        t = KEYWORD_HOME[n]
         if t not in seen:
             seen.add(t)
-            out.append((t, f"keyword:{p}"))
+            out.append((t, f"keyword:{n}"))
     return out
 
 
