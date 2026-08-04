@@ -110,8 +110,17 @@ def align(text: str, card: dict) -> str:
     Reminder text is stripped from both sides too: `ability_lines` removes it
     (§6a) and `det_scan_texts` does not, so a mode carrying a mid-line
     parenthetical would fail containment for the same spurious reason.
+
+    It must be `strip_reminder`, not a bare `REMINDER.sub`. Removing a mid-line
+    parenthetical orphans the space before the following punctuation, and
+    `ability_lines` now repairs that; `norm()` collapses whitespace RUNS but
+    cannot put back a space the repair deleted, so `you get {E}{E}.` was
+    searched for inside `you get {E}{E} .` and one option reported UNSCANNED.
+    Fifth probe defect of the same family, and it appeared the moment the two
+    pipelines drifted by one space -- which is the argument for the shared
+    helper rather than two hand-matched strips.
     """
-    return norm(fx.REMINDER.sub("", fc.canonicalize_self_reference(text, card)))
+    return norm(fx.strip_reminder(fc.canonicalize_self_reference(text, card)))
 
 
 def main():

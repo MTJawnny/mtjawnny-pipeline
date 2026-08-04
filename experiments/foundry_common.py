@@ -329,13 +329,46 @@ def _cardname_candidates(card: dict) -> list:
             #
             # Guarded to >2 chars so a leading article ("The Ring") can never
             # produce a degenerate token.
-            for sep in (" the ", " of "):
-                if sep in part.lower():
-                    idx = part.lower().index(sep)
-                    head = part[:idx].strip()
-                    if len(head) > 2:
-                        names.add(head)
+            #
+            # LEGENDARY ONLY (2026-08-07). CR 201.5c licenses a shortened name
+            # only where the text "refers to that card BY a shortened version
+            # of its name" -- "used IN THIS MANNER" is the rule's own qualifier,
+            # and a name is not a name+subtitle construction just because it
+            # contains " of ". Ungated, this branch was erasing CR 205 TYPE
+            # words from oracle text on 26 non-legendary cards, silently and
+            # upstream of every DET pattern:
+            #
+            #   Destroy the Evidence   "Destroy target land"      -> "~ target land"
+            #   Knight of the New …    "create a … Knight token"  -> "… ~ token"
+            #   Case of the Uneaten …  "When this Case enters"    -> "When this ~ enters"
+            #   Storm of Memories      "Storm (When you cast …"   -> "~ (When you cast …"
+            #
+            # `Case` is a CR 205.3 enchantment subtype, `Knight`/`Wall`/`Angel`
+            # /`Cleric` creature types, `Storm` a CR 702.40 keyword. Every one
+            # of the 26 was a corruption; every one of the 118 LEGENDARY hits
+            # (Sharuum, Phage, Zo-Zu, Vraska, …) was a correct self-reference,
+            # which is what makes the supertype the honest cut. Both batch-Q6
+            # worked cases -- "Sharuum the Hegemon", "Rosie Cotton of South
+            # Lane" -- are legendary, so the ratified intent is preserved.
+            #
+            # The comma branch above is NOT gated: a comma subtitle is an
+            # explicit two-part name whatever the supertype.
+            if _is_legendary(card):
+                for sep in (" the ", " of "):
+                    if sep in part.lower():
+                        idx = part.lower().index(sep)
+                        head = part[:idx].strip()
+                        if len(head) > 2:
+                            names.add(head)
     return sorted((n for n in names if n), key=len, reverse=True)
+
+
+def _is_legendary(card: dict) -> bool:
+    """CR 205.4a supertype, read from the type line of the card OR any face --
+    a modal DFC carries its type line per face and the root may be empty."""
+    lines = [card.get("type_line") or ""]
+    lines += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
+    return any("Legendary" in t for t in lines)
 
 
 def canonicalize_self_reference(text: str, card: dict) -> str:

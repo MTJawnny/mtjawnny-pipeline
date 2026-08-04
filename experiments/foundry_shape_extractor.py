@@ -53,6 +53,40 @@ GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
 CR_CHECKS = REPO_ROOT.parent / "docs" / "cr-checks.json"
 
 REMINDER = re.compile(r"\([^)]*\)")
+
+# Removing a mid-line parenthetical leaves the SEPARATOR that preceded it
+# behind. CR 207.2a licenses the mid-line form outright -- *"it usually appears
+# on the same line as the ability it's relevant to"* -- so this is not a rare
+# shape: 155 lines, and the residue is `you get {E}{E} .` (space before the
+# period) and `costs {U}  less` (doubled space).
+#
+# Both conservation tests are blind to it BY CONSTRUCTION: test B compares
+# after `re.sub(r"\s+", "")`, and test A only inspects prefixes and suffixes.
+# So the class could only ever be found by looking, which is what happened.
+# It matters because this repo has already been bitten by whitespace
+# arithmetic once -- the ratified trap is *"a keyword matcher needs `\s+`, not
+# `\s*`, before a non-cost parameter"* -- and ` .` defeats any matcher anchored
+# on a sentence-final period.
+#
+# `[ \t]` never `\s`: `ability_lines()` strips before it splits on newlines, so
+# an `\s+` here would eat a PARAGRAPH boundary, and CR 113.2c makes the
+# paragraph the ability boundary. Measured: 156 lines change text, **0** change
+# their delivery token.
+_SPACE_RUN = re.compile(r"[ \t]{2,}")
+_ORPHANED_SEPARATOR = re.compile(r"[ \t]+([.,;:!?])")
+
+
+def strip_reminder(raw: str) -> str:
+    """CR 207.2a reminder strip, plus the separator repair it necessitates.
+
+    Kept as a named function rather than an inline `REMINDER.sub` so the
+    conservation audit can test the repair as well as the strip -- and so the
+    day `det_scan_texts()` is brought under §6a (it does not strip reminder
+    text today; 167 memberships depend on that) there is one place to call.
+    """
+    out = REMINDER.sub("", raw)
+    out = _SPACE_RUN.sub(" ", out)
+    return _ORPHANED_SEPARATOR.sub(r"\1", out)
 # CR 207.2c ability words are printed with an EM-DASH -- "Landfall —",
 # "Battalion —", "Parley —". The pattern also allowed a plain hyphen, and a
 # hyphen is a WORD character in Magic templating, so it matched across
@@ -399,7 +433,7 @@ def ability_lines(card: dict) -> list:
     """All-faces oracle text, reminder parentheticals removed (§6a: a card's
     claim is its printed text with reminder text EXCLUDED), split into the
     one-ability-per-line form Scryfall already uses."""
-    txt = REMINDER.sub("", fc.full_oracle_text(card))
+    txt = strip_reminder(fc.full_oracle_text(card))
     return [l.strip() for l in txt.split("\n") if l.strip()]
 
 

@@ -83,6 +83,107 @@ def main():
     violations = []
     report = {}
 
+    # ----------------------------------------------------------------- A0
+    # REMINDER CONSERVATION -- the stage UPSTREAM of test A.
+    #
+    # Test A measures from `ability_lines()` OUTPUT, and `ability_lines()` IS
+    # `REMINDER.sub()` + split. So the single largest text mutation in the
+    # pipeline -- 19.1% of every oracle character, 155 of them removed from the
+    # MIDDLE of a line -- sat entirely upstream of the conservation boundary.
+    # Test A's own law ("a strip that deletes from the MIDDLE of a line is
+    # wrong whatever its regex intended") was never applied to it.
+    #
+    # The law here is CR 207.2a: *"Reminder text is italicized text WITHIN
+    # PARENTHESES that summarizes a rule that applies to that card. It usually
+    # appears on the same line as the ability it's relevant to, but it MAY
+    # APPEAR ON ITS OWN LINE."* Both shapes are licensed by the rule, so the
+    # test cannot be "removals must be at the end" -- it has to be the
+    # structural one: what was removed is exactly the parenthesized spans, and
+    # kept + removed reassembles to the input character for character.
+    #
+    # The orphan-delimiter check is the CONTENT half (cf. the `type_vocabulary`
+    # trap -- a count cannot see a substitution). `\([^)]*\)` stops at the
+    # first `)`, so a NESTED parenthetical would leave a stray delimiter
+    # behind. Zero today; this is the guard for the day a set prints one.
+    rule("A0 — REMINDER CONSERVATION (CR 207.2a).  The strip removes whole\n"
+         "     parenthesized spans and nothing else.")
+    chars_in = chars_out = 0
+    mid_line = emptied = 0
+    for oid, card in cards.items():
+        for line in fc.full_oracle_text(card).split("\n"):
+            if not line.strip():
+                continue
+            chars_in += len(line)
+            body = fx.REMINDER.sub("", line)
+            chars_out += len(body)
+            kept, spans, pos = [], [], 0
+            for m in fx.REMINDER.finditer(line):
+                kept.append(line[pos:m.start()])
+                spans.append(m.group(0))
+                pos = m.end()
+            kept.append(line[pos:])
+            if not spans:
+                if body != line:
+                    violations.append(("A0", card["name"], line, "no span matched but line altered"))
+                continue
+            # every removed span is a WHOLE parenthetical, and ONE of them
+            # (CR 207.2a). The second half is not decoration: interleave
+            # conservation alone passes a GREEDY `\(.*\)`, which eats every
+            # character between the FIRST `(` and the LAST `)` on the line --
+            # real rules text included -- while still reassembling perfectly.
+            # Measured against four deliberately broken strips: the structural
+            # tests score the greedy form 0, this one scores it 1 (only one
+            # corpus line carries two parentheticals it could span, so the
+            # margin is thin -- but it does halt). The other three broken forms
+            # score 22,335 / 3,621 / 12. Assert CONTENT, not shape.
+            #
+            # A nested parenthetical would also trip this. There are none in
+            # the corpus today, and halting loudly on the day one is printed is
+            # the correct house behaviour -- `\([^)]*\)` would silently leave a
+            # stray delimiter behind, which is the orphan check below.
+            for span in spans:
+                if not (span.startswith("(") and span.endswith(")")):
+                    violations.append(("A0", card["name"], line, f"removed span not parenthesized: {span!r}"))
+                elif "(" in span[1:-1] or ")" in span[1:-1]:
+                    violations.append(("A0", card["name"], line, f"removed span spans >1 parenthetical: {span[:60]!r}"))
+            # INTERLEAVE CONSERVATION: kept segments and removed spans, in
+            # original order, reassemble to the input character for character.
+            # This is the test that sees a strip cutting from the middle of a
+            # segment -- the 2026-08-04 hyphen shape, one stage earlier.
+            inter = "".join(x for pair in zip(kept, spans) for x in pair) + kept[-1]
+            if inter != line:
+                violations.append(("A0", card["name"], line, "kept + removed != input"))
+            if "".join(kept) != body:
+                violations.append(("A0", card["name"], line, "kept segments != strip output"))
+            # CONTENT check: no orphan delimiter may survive the strip
+            if "(" in body or ")" in body:
+                violations.append(("A0", card["name"], line, f"orphan delimiter left behind: {body!r}"))
+            # SEPARATOR REPAIR. Removing a mid-line parenthetical orphans the
+            # space that preceded it (`you get {E}{E} .`). Neither test B (it
+            # normalises `\s+` away before comparing) nor test A (prefix/suffix
+            # only) can see this class, so it is asserted positively here
+            # against `strip_reminder`, which is the function that owes it.
+            repaired = fx.strip_reminder(line)
+            if fx._SPACE_RUN.search(repaired) or fx._ORPHANED_SEPARATOR.search(repaired):
+                violations.append(("A0", card["name"], line, f"separator debris survived: {repaired!r}"))
+            if repaired.replace(" ", "") != body.replace(" ", ""):
+                violations.append(("A0", card["name"], line, "repair changed more than whitespace"))
+            if not body.strip():
+                emptied += 1
+            elif not (line.startswith(body.strip()) or line.endswith(body.strip())):
+                mid_line += 1
+    print(f"  characters in                        {chars_in:>7}")
+    print(f"  characters out                       {chars_out:>7}")
+    print(f"  removed by the reminder strip        {chars_in - chars_out:>7}"
+          f"   ({(chars_in - chars_out) / chars_in:.1%})" if chars_in else "")
+    print(f"  ...removed MID-LINE (CR 207.2a ok)   {mid_line:>7}")
+    print(f"  lines that were reminder ONLY        {emptied:>7}")
+    print(f"  violations                           {len([v for v in violations if v[0]=='A0']):>7}")
+    report["reminder_chars_in"] = chars_in
+    report["reminder_chars_out"] = chars_out
+    report["reminder_mid_line"] = mid_line
+    report["reminder_only_lines"] = emptied
+
     # ------------------------------------------------------------------ A
     # TEXT CONSERVATION. The strip may only remove a PREFIX. This is the test
     # that would have caught the 2026-08-04 hyphen disaster ("When Spider-Ham
