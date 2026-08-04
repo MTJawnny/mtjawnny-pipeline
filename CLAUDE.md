@@ -263,7 +263,7 @@ encodes.
 
 ## Reference
 
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-05.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-06.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)

@@ -1,5 +1,10 @@
 # SESSION HANDOFF — 2026-08-05
 
+> **⚠ SUPERSEDED by `docs/SESSION-HANDOFF-2026-08-06.md`.** Follow that file's
+> READING MANIFEST and NEXT WORK ITEM. Numbers below are stale: §2 is now **53**
+> tokens (not 45), unrouted is **16,273** (not 18,162), and step 2's three
+> slices have landed.
+
 Supersedes `SESSION-HANDOFF-2026-08-04-EVE.md`. **Zero API calls. Arc spend
 unchanged at $90.51 / $140.** Ten commits, `216e480` .. `341a28b`.
 

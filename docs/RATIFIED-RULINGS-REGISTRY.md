@@ -14,7 +14,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **101 documents under docs/**
+- documents scanned: **103 documents under docs/**
 - ruling references found: **596**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **83**
@@ -73,7 +73,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-05.md` | 241 | 4 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 192 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -93,7 +93,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`
+`AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SESSION-HANDOFF-2026-08-06.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`
 
 ## Sole-home rulings — these block their document
 
@@ -547,7 +547,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:388` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
 - `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
-- `SESSION-HANDOFF-2026-08-05.md:136` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
 - `TIER-3-DECISION-PACKET-2026-08-02.md:42` — > 1. **The executor had no way to edit a scope field.** D1's ratified scope
@@ -618,7 +618,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
-- `SESSION-HANDOFF-2026-08-05.md:136` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
@@ -710,7 +710,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:110` — D7 — All other section-1 verdicts stand as written.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `SESSION-HANDOFF-2026-08-02-EVE.md:120` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
-- `SESSION-HANDOFF-2026-08-05.md:136` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TIER-3-DECISION-PACKET-2026-08-02.md:50` — > claim D7 ruled false. Caught on post-execution readback, corrected to
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
@@ -729,7 +729,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PRE-STEP-2-AUDIT-2026-08-04.md:9` — > **D9 is a Captain ruling (Phase B), not a fix. What remains of this audit is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
-- `SESSION-HANDOFF-2026-08-05.md:136` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 
 ### `F2` — 3 reference(s) across 2 doc(s)
