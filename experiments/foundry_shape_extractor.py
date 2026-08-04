@@ -222,6 +222,37 @@ def in_created_ability(line: str, pos: int) -> bool:
     return any(a <= pos < b for a, b in quoted_spans(line))
 
 
+def in_card_name(line: str, pos: int, card: dict) -> bool:
+    """Is `pos` inside an occurrence of the card's own printed NAME?
+
+    A positional guard, the same shape as `in_created_ability`. Needed because
+    CR 113.3b's cost test keys on a colon, and a handful of cards have a colon
+    IN THEIR NAME -- `Ultimate Magic: Meteor deals 7 damage to each creature.`
+    is a spell ability, not a `Ultimate Magic:` cost.
+
+    `fc.canonicalize_self_reference` normally collapses the name to `~` before
+    this point and would have prevented the question; it does not fire on these
+    because the colon breaks its matching. That is the root cause and it lives
+    in a shared ratified helper, so it is reported rather than patched here.
+    """
+    if not card:
+        return False
+    names = [card.get("name") or ""]
+    names += [f.get("name") or "" for f in (card.get("card_faces") or [])]
+    for name in names:
+        if ":" not in name:
+            continue          # only a colon-bearing name can create this case
+        start = 0
+        while True:
+            a = line.find(name, start)
+            if a < 0:
+                break
+            if a <= pos < a + len(name):
+                return True
+            start = a + 1
+    return False
+
+
 # The event verbs a trigger CONDITION can carry (CR 113.3c: the condition names
 # the event). Used only to decide WHERE the condition ends when commas appear
 # inside an object phrase -- never to classify.
@@ -810,11 +841,32 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         return _mark_top("loyalty", "loyalty-ability", ratified)
 
     # activated -- a cost left of a colon (CR 113.3b), colon not inside quotes
+    #
+    # D6. The head test used to require `{}` or one of SIX hand-listed verbs,
+    # and lost 26 activated abilities whose cost carries no mana symbol:
+    # `Put a -1/-1 counter on this creature:` (Barrenton Medic, Wall of Roots),
+    # `Return a Forest you control to its owner's hand:` (Quirion Ranger),
+    # `Reveal the player you chose:`, `Collect evidence 6:`.
+    #
+    # **The CR publishes no closed list of cost verbs, and that is why every
+    # hand-list here fails.** CR 118.1 defines a cost as *"an action or payment
+    # necessary to take another action"* -- deliberately open-ended. What the
+    # CR does publish is the STRUCTURE: CR 113.3b, *"Activated abilities have a
+    # cost and an effect. They are written as '[Cost]: [Effect.]'"* So the
+    # colon is the claim.
+    #
+    # Extending the list with CR 701's derived keyword actions -- the obvious
+    # fix, and the one the work order proposed -- was MEASURED and is
+    # insufficient: it catches 11 of the 27 candidates, because `return` and
+    # `put` are ordinary English verbs and not CR keyword actions at all. That
+    # would have been a hand-list wearing a derivation's clothes.
+    #
+    # Measured safe: the only lines a pure-structure test could take from
+    # another token are the 909 `loyalty` ones, and the loyalty branch above
+    # already claims them first. Nothing else in the corpus is at risk.
     if ":" in body:
-        head = body.split(":")[0]
-        if not in_created_ability(body, body.index(":")) and \
-           re.search(r"[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b",
-                     head, re.I):
+        i = body.index(":")
+        if not in_created_ability(body, i) and not in_card_name(body, i, card):
             return ("activated", "cost-colon") if "activated" in ratified else (None, "cost-colon")
 
     # CR 113.3c: "Triggered abilities have a TRIGGER CONDITION and an EFFECT.
