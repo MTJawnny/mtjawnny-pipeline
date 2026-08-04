@@ -281,6 +281,26 @@ encodes.
   `_MODAL_HEADER_RE` reads the RAW line. The old behaviour was wrong somewhere
   nothing downstream could observe. Don't read "0 moved" as "no-op"; read it as
   "the guard was elsewhere".
+- **A SEPARATOR IS SCAFFOLDING, BUT THE SYMBOL IS AN ABILITY.** CR 711.2,
+  716.2 and 721.2 say the same sentence — *"any abilities printed within the
+  same text box striation are part of its static ability"* — and 711.3/721.3
+  add the striations *"have no game significance other than clearly
+  demarcating"*. So STRIP the marker and let the content classify: claiming
+  `12+ | {3}{W}, {T}: Create a token…` as `static` overwrites an ACTIVATED
+  ability, which is the `Max speed — [Ability]` trap again. Only a marker with
+  nothing after it is the ability itself.
+- **"UNROUTED" IS NOT "STOPPED".** Pawprint modes read 100% unrouted after
+  being correctly fixed: Season of Loss is a sorcery, its header is
+  `spell-or-static` by CR 113.3a, and a mode inherits its header's delivery.
+  Inheriting "no ratified token" is the right answer. Test whether the delivery
+  is REACHABLE, not whether it is ratified — an unrouted rate alone called
+  three correct constructs broken.
+- **A SHAPE TEST LOOKS LIKE A MEASUREMENT.** `{TK} — 1/5` is not a CR 721
+  station symbol; `{TK}` is Unfinity's TICKET symbol on sticker cards
+  (`unf`/`sunf`, type line `Stickers`). 192 lines nearly filed under the wrong
+  CR rule on shape alone. Twice in one session (see the `non-ASCII` probe), so
+  ask the system map's question of your own probe: *where does this come from,
+  and can that source contain what I think it contains?*
 - **A MODE IS NOT AN ABILITY (CR 700.2), so CR 113.3's enumeration never
   closes on a bullet.** *"Each of those options is a mode"* — an option inside
   an ability is not one of CR 113.3's four categories, so "this card has no
