@@ -41,7 +41,7 @@ ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
 ### Gate 1 — load the reading manifest (always)
 
-**Current handoff: `docs/SESSION-HANDOFF-2026-08-06.md`.** ← this line is
+**Current handoff: `docs/SESSION-HANDOFF-2026-08-07.md`.** ← this line is
 the pointer; update it when you write a new handoff.
 
 **Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*
@@ -79,7 +79,13 @@ python3 experiments/foundry_codebook.py lint
 python3 experiments/foundry_family_sweep.py --strict
 python3 experiments/foundry_definition_drift.py
 python3 experiments/foundry_ruling_registry.py
+python3 experiments/foundry_punctuation_audit.py     # conservation: nothing lost
+python3 experiments/foundry_visibility_audit.py      # can each option be SEEN
 ```
+
+The last two were added 2026-08-06 and both exit 1 on failure. They answer a
+question the other four cannot: the first four check that what EXISTS is
+consistent, these check that nothing was silently DROPPED or made unreachable.
 
 Handoff numbers lag. Every hand-written number checked across two sessions on
 2026-08-02 was wrong in at least one direction — including the tier-3 scope

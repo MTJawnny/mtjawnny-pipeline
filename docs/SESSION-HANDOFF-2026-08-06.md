@@ -1,3 +1,11 @@
+# ⚠ SUPERSEDED — see `docs/SESSION-HANDOFF-2026-08-07.md`
+
+This handoff is closed. Its NEXT WORK ITEM #1 (widen `ABILITY_WORD`) was
+done as a CR 207.2c parse; items #2/#3 and the trap SWEEP are carried
+forward and are the 08-07 handoff's §4.
+
+---
+
 # SESSION HANDOFF — 2026-08-06
 
 Supersedes `SESSION-HANDOFF-2026-08-05.md`. **Zero API calls. Arc spend
