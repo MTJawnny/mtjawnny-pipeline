@@ -235,6 +235,23 @@ encodes.
   the LAST member of every CR 205 list was missing while `len() >= 15` stayed
   green. A count cannot see a substitution. Same family as "a ratified token
   with no emitter" and "a ratified standard with no caller".
+- **A PERIOD is not an ability boundary; a PARAGRAPH is (CR 113.2c).** But one
+  paragraph may hold several abilities: CR 603.11 / 607.2h put a STATIC ability
+  and the TRIGGERED abilities linked to it in one paragraph, and CR 701.43d
+  names exert as the worked case. **CR 603.12 is the discriminator** — a
+  reflexive "when you do" needs a *resolving* ability to create it, and a
+  created ability's delivery belongs to its creator (§2d). Measured 2026-08-05:
+  516 lines have a later-sentence trigger; only **37** are separate abilities.
+  Exclusions are all CR rules: 113.3a (spell abilities), 702.159a (`Visit —` is
+  triggered), 706.3b (a die-roll table is one ability), §2 (quoted grants).
+- **Strip an ability-word prefix BEFORE splitting sentences.** `No One Dies! —`
+  ends in "!", so a sentence splitter cuts the prefix off as its own sentence
+  and hides the real trigger. `ABILITY_WORD` accepts only `[A-Za-z'’\- ]`, so
+  any prefix with a DIGIT (`Nitro-9 —`) or punctuation is never stripped and
+  the line silently misses its own branch.
+- **"Reached `spell-or-static`" is NOT "is static."** It is a proxy, and it
+  fails exactly when the first ability is a trigger that went unrouted for an
+  unrelated reason. Gate on a positive test, never on "nothing else claimed it".
 - **When a rule names a card type, ask the CR which OTHER types it covers.**
   The attachment branch had Auras (CR 303.4) and Equipment (CR 301.5a) and
   omitted Fortifications, though CR 301.6 states the analogy outright

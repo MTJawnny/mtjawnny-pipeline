@@ -540,6 +540,131 @@ _SUPPLEMENT_VERBS = {
 
 
 _ENUM_CONT = re.compile(r"^\s*(?:and/or|and|or)\b")
+_SENT_BOUNDARY = re.compile(r"(?<=[.!])\s+")
+_OPENS_TRIGGER = re.compile(r"^(?:when|whenever|at the beginning)\b", re.I)
+
+
+def sentence_spans(line: str) -> list:
+    """Split an ability line into SENTENCES, ignoring punctuation inside a
+    quoted created ability.
+
+    A quoted ability carries its own periods -- `Equipped creature gets +1/+0
+    and has "Whenever this creature attacks, you may sacrifice Spare Dagger.
+    When you do, ..."` -- and splitting on those would hand a granted ability's
+    sentences to the CARD, which is exactly what §2's created-ability rule
+    forbids. Measured: 3 of the 45 candidates were this shape.
+    """
+    blanked = list(line)
+    for a, b in quoted_spans(line):
+        for i in range(a, b):
+            if blanked[i] in ".!":
+                blanked[i] = " "
+    marks = [m.start() for m in _SENT_BOUNDARY.finditer("".join(blanked))]
+    out, prev = [], 0
+    for m in marks:
+        out.append(line[prev:m].strip())
+        prev = m
+    out.append(line[prev:].strip())
+    return [s for s in out if s]
+
+
+def linked_abilities(raw: str, low: str, ratified: dict, card, first):
+    """CR 607.2h — a STATIC ability and the triggered abilities printed in the
+    SAME PARAGRAPH as it are SEPARATE abilities, each with its own delivery.
+
+    CR 113.2c is the frame: *"each PARAGRAPH BREAK in a card's text marks a
+    separate ability"* — so `ability_lines` (which splits on newlines) is right
+    that one line is one paragraph, and a period inside it is NOT automatically
+    a second ability. But a paragraph may still hold more than one:
+
+    > **CR 603.11** — *"Some objects have a STATIC ability that's LINKED to one
+    > or more TRIGGERED abilities. These objects combine the abilities into ONE
+    > PARAGRAPH, with the static ability first, followed by each triggered
+    > ability that's linked to it."*
+    > **CR 607.2h** — same rule from the linkage side.
+
+    THE DISCRIMINATOR IS CR 603.12, AND IT IS WHY THIS IS NOT A BLANKET SPLIT.
+    A later sentence opening "When you do" is usually a REFLEXIVE triggered
+    ability, and 603.12 requires *"a RESOLVING spell or ability"* to create
+    one. A reflexive trigger *"follow[s] the rules for delayed triggered
+    abilities"*, and §2d + §2's created-ability rule (both Captain-ratified)
+    give a created ability's delivery to its CREATOR. So:
+
+      first ability RESOLVES (spell / activated / triggered / loyalty)
+          -> the later trigger is CREATED. One delivery. Heart-Piercer
+             Manticore is CR 603.12's own example, and it is an `etb` card.
+             474 of the 516 candidate lines are this, and they are correct.
+      first ability is STATIC (a static ability does not resolve)
+          -> CR 607.2h: separate LINKED abilities, each with its own delivery.
+             42 lines. CR 701.43d names the shape outright -- *"'You may exert
+             [this creature] as it attacks' is an optional cost to attack. Some
+             objects with this STATIC ability have a triggered ability that
+             triggers 'when you do' PRINTED IN THE SAME PARAGRAPH. These
+             abilities are linked. (See rule 607.2h.)"*
+
+    Worked cases: Nef-Crop Entangler and Watchful Naga (exert), Magma Pummeler
+    and Outfitted Jouster (a prevention static plus its linked trigger), and
+    Keranos, God of Storms -- one static followed by TWO linked triggers, so a
+    paragraph can hold three abilities.
+    """
+    # STRIP THE DASH PREFIX BEFORE SPLITTING, not after. `sentence_spans`
+    # breaks on `.` and `!`, and Spider-Man, To the Rescue prints the ability
+    # word `No One Dies! —` -- so the "!" split the PREFIX into its own
+    # sentence, leaving a harmless-looking first sentence and hiding the `When
+    # Spider-Man enters` trigger in sentence two.
+    m_pre = re.match(r"^\s*([^—]{2,40})—\s*", raw)
+    prefix = (m_pre.group(1).strip().lower() if m_pre else "")
+    body = raw[m_pre.end():] if m_pre else raw
+    # CR 702.159a makes an Attraction's `Visit —` a TRIGGERED ability outright:
+    # *"'Visit — [Effect]' means 'WHENEVER you roll to visit your Attractions,
+    # … [effect].'"* and 702.159b puts `Prize —` inside that same visit
+    # ability. So the paragraph's first ability is triggered, and a later
+    # trigger in it is DELAYED and belongs to its creator (§2d). This is the
+    # b7 Pick-a-Beeble ruling ("an Attraction's Visit/Prize are triggered, not
+    # activated") reaching a second classifier. Swinging Ship and Storybook
+    # Ride are the two it catches.
+    if prefix in ("visit", "prize"):
+        return None
+    sents = sentence_spans(body)
+    if len(sents) < 2:
+        return None
+    # THE FIRST SENTENCE MUST BE POSITIVELY STATIC, not merely unrouted.
+    # "reached `spell-or-static`" is a proxy for "is static" and the proxy
+    # fails exactly when the first ability is a trigger that went unrouted for
+    # an unrelated reason. Measured on the first run, 5 false positives, all
+    # one root cause:
+    #
+    #   Ace, Fearless Rebel  `Nitro-9 — Whenever Ace attacks, ...`
+    #   Spider-Man           `No One Dies! — When Spider-Man enters, ...`
+    #
+    # `ABILITY_WORD` accepts only `[A-Za-z'’\- ]`, so a prefix carrying a DIGIT
+    # ("Nitro-9") or PUNCTUATION ("No One Dies!") is not stripped, the line
+    # never reaches its trigger branch, and it arrives here looking static.
+    # Their "When you do" is then a CR 603.12 REFLEXIVE trigger created by a
+    # resolving triggered ability — the exact case this function must not
+    # split. Widening ABILITY_WORD globally would touch every classifier, so
+    # the looser dash-strip is local to this gate.
+    head = sents[0].strip()
+    if _OPENS_TRIGGER.match(head):
+        return None
+    if ":" in head and not in_created_ability(head, head.index(":")):
+        return None
+    # CR 706.3b: a die-roll result table is ONE ability — *"An instruction to
+    # roll one or more dice, any instructions to modify that roll printed in
+    # the same paragraph, any additional instructions based on the result of
+    # the roll, and the associated results table are ALL PART OF ONE ABILITY."*
+    # The Deck of Many Things prints `20 | Put a creature card ... When that
+    # creature dies, ...`; that trigger is created by the resolving ability.
+    if re.match(r"^\s*\d+\s*[|—-]", sents[0]):
+        return None
+    later = [s for s in sents[1:] if _OPENS_TRIGGER.match(s)]
+    if not later:
+        return None
+    out = [first]
+    for s in later:
+        tok, desc = parse_delivery(s, ratified, card)
+        out.append((tok, f"linked:{desc}"))
+    return out
 
 
 def trigger_condition(clause: str) -> str:
@@ -1038,7 +1163,28 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     low = body.lower()
 
     if not re.match(r"^(when|whenever|at )", low):
-        return [parse_delivery(line, ratified, card)]
+        first = parse_delivery(line, ratified, card)
+        # CR 607.2h / 603.11: a STATIC ability may be printed in the same
+        # paragraph as the triggered abilities linked to it, and each is a
+        # separate ability with its own delivery. Gated on the first ability
+        # being static, because CR 603.12's reflexive triggers need a RESOLVING
+        # ability to create them and a created ability's delivery belongs to
+        # its creator (§2d). See `linked_abilities`.
+        # "Not a trigger" is NOT the same as "static". An instant's or
+        # sorcery's line reaches here as `spell-or-static` too, and a trigger
+        # in ITS later sentence is a DELAYED trigger created during resolution
+        # (CR 603.7a), whose delivery belongs to the creating spell (§2d). CR
+        # 113.3a supplies the cut, exactly as it did for the self-statement
+        # pass: a spell ability exists only on an instant or sorcery. Without
+        # this, the split fired on 137 lines instead of 42 — 95 of them spells.
+        is_static = first[0] == "static" or (
+            first[1] == "spell-or-static" and card is not None
+            and not _has_spell_face(card))
+        if is_static:
+            linked = linked_abilities(raw, low, ratified, card, first)
+            if linked:
+                return linked
+        return [first]
 
     clause = trigger_clause(low)
     rest = low[len(clause):]
