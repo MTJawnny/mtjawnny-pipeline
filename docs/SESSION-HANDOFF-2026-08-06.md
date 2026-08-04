@@ -26,8 +26,9 @@ word: **ratifying new vocabulary** and **mutating the codebook**.
 
 | | |
 |---|---|
+| **`python3 experiments/foundry_system_map.py`** | **RUN THIS FIRST.** The five stages, and which of each stage's lists is CR-parsed vs still heuristic. **Generated, so it cannot go stale.** It ends with the one question that finds defects in this codebase |
 | `docs/SESSION-START-PROCEDURE.md` | five gates, short |
-| `CLAUDE.md` | locked rules + traps (**9 new traps this session**) |
+| `CLAUDE.md` | locked rules + traps (**12 new traps this session**) |
 | Gate 2 commands | live state is measured, never recalled |
 
 ### If you are touching the DELIVERY EXTRACTOR (the current work)
