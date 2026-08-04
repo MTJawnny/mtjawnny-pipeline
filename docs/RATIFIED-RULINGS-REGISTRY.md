@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **82 documents under docs/**
-- ruling references found: **579**
+- ruling references found: **580**
 - distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **82**
 - **sole-home (appear in exactly 1 doc): 44**
@@ -64,10 +64,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03-EVE.md` | 184 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 134 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-04.md` | 178 | 1 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 152 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -85,7 +86,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TO-GRAVEYARD-RULING-2026-08-04.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `mtg-comprehensive-rules.md`
+`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TO-GRAVEYARD-RULING-2026-08-04.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`
 
 ## Sole-home rulings — these block their document
 
@@ -450,7 +451,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 32 reference(s) across 19 doc(s)
+### `CDR-09` — 33 reference(s) across 20 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -479,7 +480,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:8` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
 - `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
-- `SESSION-HANDOFF-2026-08-03-EVE.md:33` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
+- `SESSION-HANDOFF-2026-08-03-EVE.md:41` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
+- `SESSION-HANDOFF-2026-08-04.md:132` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
