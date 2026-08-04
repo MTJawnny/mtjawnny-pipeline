@@ -122,6 +122,14 @@ variable.
 | `to-graveyard-from-library-trigger` | "put into your graveyard **from your library**" — **narrower** than dies; the mill shape. Captain-ratified 2026-08-04. §6a governs: the printed ZONE is the claim, so collapsing this into the `-anywhere` token would make the codebook assert that Dread and a mill payoff are the same mechanism | 700.4 |
 | `to-graveyard-from-hand-trigger` | "put into your graveyard **from your hand**". Captain-ratified 2026-08-04 | 700.4 |
 | `to-graveyard-from-other-zone-trigger` | the printed zone is exile or the stack. Captain-ratified 2026-08-04 | 700.4 |
+| `combat-damage-to-planeswalker` | the SOURCE side's third CR 120.1 recipient — *"~ deals **combat** damage to a planeswalker"*. Captain-ratified 2026-08-05 ("complete all incomplete vocabulary"). **The recipient side was ratified against CR 120.1's full enumeration on 2026-08-04 and the source side never was**, so this family named 2 of 4 recipients for a year of sessions. Worse than unrouted: the `any-` arm ended in a **bare fallback** that returned `any-damage-to-creature` for every recipient that was not a player, so Hooded Blightfang (*"deals damage to a **planeswalker**"*) asserted a creature-damage trigger — a **wrong ratified token**, the one direction no gap census reports. `mark`, not `msub`: only the player arm carries a measured §2a split | 120.1, 120.1a |
+| `any-damage-to-planeswalker` | the same recipient with **no combat restriction**. `combat-` is a RESTRICTION, not decoration (`DAMAGE-DELIVERY-RULING-2026-08-02`), and that law governs this side of the family exactly as it governs `is-dealt-combat-damage-trigger`. Hooded Blightfang is the worked case. Captain-ratified 2026-08-05 | 120.1, 120.3 |
+| `combat-damage-to-battle` | CR 120.1's fourth recipient. Captain-ratified 2026-08-05. **0 lines today** — reserved by the enumeration and **not instantiated**, exactly as `battle` is on `is-attacked-trigger` (CR 506.3) and on `is-dealt-damage-trigger` (CR 120.1). **Zero members is a hypothesis, not an absence**, and the emitter exists, so a printed card routes on day one instead of falling into a fallback | 120.1 |
+| `any-damage-to-battle` | as above, without the combat restriction. Captain-ratified 2026-08-05. **0 lines today**, emitter present | 120.1, 120.3 |
+| `noncombat-damage-to-player` | the printed **negation** of the combat restriction on the SOURCE side — *"a source you control deals **noncombat** damage to an opponent"*. Captain-ratified 2026-08-05. The recipient side already carried all three (`is-dealt-damage-trigger` / `-combat-` / `-noncombat-`), so completing the source side means mirroring **three**, not two. 9 lines: Chandra's Incinerator, Chandra's Pyreling, Niv-Mizzet Visionary, Thor Guardian of Midgard, Virtue of Courage. They were sitting on `any-combat-damage-to-player` — a token asserting a **combat** claim the card explicitly negates | 120.2a (negation) |
+| `noncombat-damage-to-creature` | the same negation with a creature recipient. Captain-ratified 2026-08-05. 2 lines: Taii Wakeen, Crude Abattoir — both were on `combat-damage-to-creature`, again the exact inverse of what they print | 120.2a (negation) |
+| `noncombat-damage-to-planeswalker` | the third CR 120.1 recipient under the same negation. Captain-ratified 2026-08-05. **0 lines** — reserved by the enumeration, emitter present. **Written as its own row on purpose:** §2's table is machine-parsed one token per row, and a row naming two tokens in its first cell ratifies NEITHER — caught here by the token count reading 51 instead of 53. Third instance of "a markdown table is an API" | 120.1, 120.2a |
+| `noncombat-damage-to-battle` | the fourth, same reasoning. Captain-ratified 2026-08-05. **0 lines**, emitter present | 120.1, 120.2a |
 | `draw-step-trigger` | "at the beginning of [whose] draw step". Captain-ratified 2026-08-04. Completes the turn-structure family, which is now closed end to end: untap 502 (no card prints a trigger) · upkeep 503 · **draw 504** · precombat main 505.1 · begin combat 507 · end combat 511 · postcombat main 505.1a · end step 513. **CR 504.1** — *"First, **the active player draws a card**. This turn-based action doesn't use the stack."* The draw itself is a **turn-based action, not an ability** — the same structural note CR 714.3c supplies for Saga progression — which is why this token names the **step**, not the draw. **A card triggering on the draw EVENT is a different family and is not this token.** SCOPE required from day one: `each` 14 · `you-control` 14 · `opponent` 1. **2 lines have no available §6 scope token** — Curse of Obsession and Righteous Authority both key on *"**enchanted player's**"*; `enchanted-player` is PROPOSED §6 vocabulary (CR 303.4, 702.5) and is deliberately **not minted here**, because new vocabulary is a ratification | 504.1 |
 
 **Ratified 2026-08-04 — the 14 rows above.** Captain's word on the one decision
@@ -540,7 +548,20 @@ the ability per CR 601.2c — the b7 Unwind ruling: "untap up to three lands"
 without "target" may NOT sit in a `-target-` slug), `defending-player`
 (CR 506.2; the bare word "defender" is BANNED in slugs — it collides with the
 Defender keyword, Captain's b7 ruling generalized), `two-target` (fixed
-plurality), `-conditional` (an intervening-if or "unless" gate on the same
+plurality), **`enchanted-player`** (the player an Aura is attached to —
+**CR 303.4b** defines the term verbatim: *"The object or **player** an Aura is
+attached to is called **enchanted**."* **CR 702.5a** supplies the ability that
+makes a player a legal attachment at all: *"Enchant is a static ability,
+written 'Enchant [object **or player**].'"* Captain-ratified 2026-08-05. **54 corpus lines**
+print it — the Curse cycle (Curse of Oblivion, Cruel Reality, Overwhelming
+Splendor, Trespasser's Curse) plus Curse of Obsession and Righteous Authority
+on `draw-step-trigger` and Grievous Wound on `is-dealt-damage-trigger`. Before
+this row those lines carried **no scope token at all**, because no §6 value
+named the player: `opponent` is wrong — an Aura may enchant any player,
+including you — and `you-control` / `each` are simply false. It is a SCOPE
+value and never a delivery: an Aura's own delivery is `static` per §2e's
+sibling reasoning),
+`-conditional` (an intervening-if or "unless" gate on the same
 ability; the gate must be quoted in evidence).
 
 ### 6d. OWNERSHIP vs CONTROL — `you-control` / `you-own` (Captain-ratified 2026-08-03)

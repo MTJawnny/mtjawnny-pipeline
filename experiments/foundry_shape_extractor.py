@@ -150,6 +150,11 @@ def build_self_noun_rx(cards: dict) -> None:
     """
     global SELF_NOUN_RX
     import foundry_cr702_classes as k7
+    # Called from HERE, not from each entry point. All four callers already
+    # call this function, so hanging the other CR enumerations off it makes it
+    # impossible to add a fifth caller that silently runs without them -- the
+    # "a ratified standard with no caller" trap, closed by construction.
+    build_cr_enumerations()
     vocab = k7.type_vocabulary()
     # `cards` is no longer read. The parameter is kept because every caller
     # passes it and because the corpus is still the right place to CHECK the
@@ -298,6 +303,120 @@ def deliveries_for_lines(card: dict, ratified: dict):
         yield line, parsed
 
 
+CR_DAMAGE_RECIPIENTS = None    # CR 120.1, parsed by build_cr_enumerations()
+CR_ZONES = None                # CR 400.1, parsed by build_cr_enumerations()
+
+
+def build_cr_enumerations() -> None:
+    """CR 120.1's damage recipients and CR 400.1's zones, parsed at run time.
+
+    Both are CLOSED lists the CR states in one sentence each, so both are
+    parsed rather than named in code — the same discipline as CR 205's type
+    lists and CR 113.3's ability classes. Each carries a content halt-guard,
+    because a count guard cannot see a substitution (the CR 205 Oxford-comma
+    lesson, 2026-08-05)."""
+    global CR_DAMAGE_RECIPIENTS, CR_ZONES
+    import foundry_cr702_classes as k7
+    txt = k7.CR_PATH.read_text(encoding="utf-8", errors="strict")
+
+    def enum(rx, what, must):
+        m = re.search(rx, txt, re.M)
+        if not m:
+            fc.halt(f"Could not parse {what} from the CR. The wording has "
+                    f"changed; fix the parser, never fall back to a list.")
+        vals = {w.strip().strip(".").lower().rstrip("s")
+                for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", m.group(1)) if w.strip()}
+        missing = sorted(set(must) - vals)
+        if missing or any(v.startswith("and ") for v in vals):
+            fc.halt(f"CR parse of {what} is incomplete or malformed: "
+                    f"missing={missing} got={sorted(vals)}")
+        return vals
+
+    # CR 120.1: "Objects can deal damage to battles, creatures, planeswalkers,
+    # and players." Sealed by 120.1a.
+    CR_DAMAGE_RECIPIENTS = enum(
+        r"^120\.1\. Objects can deal damage to (.+?)\.", "CR 120.1 damage recipients",
+        ("battle", "creature", "planeswalker", "player"))
+    # CR 400.1: "There are normally seven zones: library, hand, battlefield,
+    # graveyard, stack, exile, and command." The ante zone is named in the next
+    # sentence and is deliberately NOT folded in -- the CR marks it as older.
+    CR_ZONES = enum(
+        r"^400\.1\. .*?There are normally seven zones: (.+?)\.", "CR 400.1 zones",
+        ("library", "hand", "battlefield", "graveyard", "stack", "exile", "command"))
+
+
+def _damage_recipient(tail: str, card: dict = None):
+    """Which CR 120.1 recipient does this damage clause name? None if unstated.
+
+    THE CR NAMES ITS RECIPIENTS INDIRECTLY FAR MORE OFTEN THAN DIRECTLY, and
+    reading only the four literal nouns left 31 lines unstated — every one of
+    which is in fact a CR 120.1 recipient. Three indirect forms, each with its
+    own rule:
+
+      "deals damage to YOU"          -> player.  CR 109.5: "The words 'you' and
+                                        'your' on an object refer to the
+                                        object's CONTROLLER". Owner (108.3) and
+                                        controller are players too. 19 lines:
+                                        Dread, No Mercy, Michiko Konda.
+      "deals damage to a DINOSAUR"   -> creature. CR 109.2: "If a spell or
+                                        ability uses a description of an object
+                                        that includes a card type OR SUBTYPE …
+                                        it means a PERMANENT of that card type
+                                        or subtype on the battlefield", and CR
+                                        205.3m's creature types are already
+                                        parsed. 6 lines: Dinosaur Hunter,
+                                        Vampire Slayer, Spider-Slayer.
+      "deals damage to ~"            -> read the card's OWN type line for a CR
+                                        120.1 recipient type. Rona, Herald of
+                                        Invasion is the worked case.
+
+    Longest-first over the parsed list, so `planeswalker` can never be taken as
+    `player`. The order is derived from the list, not hand-sequenced.
+    """
+    if CR_DAMAGE_RECIPIENTS is None:
+        fc.halt("CR 120.1 recipients not built — call build_cr_enumerations() "
+                "(build_self_noun_rx does) before parsing deliveries. Refusing "
+                "to default a damage recipient.")
+    # EARLIEST-PRINTED WINS, not longest. The corpus prints compounds -- "deals
+    # combat damage to A PLAYER OR BATTLE" on 9 cards (Deeproot Wayfinder,
+    # Rankle and Torbran, Invasion of Kamigawa) -- and a longest-first scan
+    # silently swapped all 9 from `combat-damage-to-player` onto
+    # `combat-damage-to-battle`. Both are true of the card; only one can be the
+    # single token, and §6a says the PRINTED WORD is the claim, so the printed
+    # ORDER decides. Length is used only to break a tie at the same position,
+    # which is what keeps "planeswalker" from being read as "player".
+    # CR 102.1 / 108.3 / 109.5 — "you", "opponent", "owner" and "controller"
+    # each denote a PLAYER, and they must compete for POSITION alongside the
+    # CR 120.1 nouns rather than being tried afterwards. Bloodfeather Phoenix
+    # is the proof: *"deals damage to an OPPONENT or BATTLE"* printed the
+    # player first, but a fallback that ran after the noun scan let `battle`
+    # win. An indirect name for a recipient is still the recipient.
+    candidates = [(r, r"\b" + r + r"s?\b") for r in CR_DAMAGE_RECIPIENTS]
+    candidates.append(("player", r"\byou\b|\byour\b|\bopponents?\b|\bowners?\b|\bcontrollers?\b"))
+    best = None
+    for name, rx in candidates:
+        m = re.search(rx, tail)
+        if m and (best is None or m.start() < best[0]
+                  or (m.start() == best[0] and len(name) > len(best[1]))):
+            best = (m.start(), name)
+    if best:
+        return best[1]
+    # CR 109.2 + CR 205.3m: a bare creature TYPE denotes a creature permanent.
+    import foundry_cr702_classes as k7
+    ct = k7.type_vocabulary()["creature_types"]
+    for word in re.findall(r"[a-z'’\-]+", tail):
+        if word in ct:
+            return "creature"
+    # A self-reference recipient is whatever THIS card is.
+    if re.search(r"(?:^|\s)~(?:\s|$|'s)", tail) and card is not None:
+        tl = " ".join([card.get("type_line") or ""]
+                      + [f.get("type_line") or "" for f in (card.get("card_faces") or [])]).lower()
+        for r in sorted(CR_DAMAGE_RECIPIENTS, key=len, reverse=True):
+            if re.search(r"\b" + r + r"\b", tl):
+                return r
+    return None
+
+
 _SPELL_TYPE = re.compile(r"\b(Instant|Sorcery)\b")
 
 
@@ -420,6 +539,52 @@ _SUPPLEMENT_VERBS = {
 }
 
 
+_ENUM_CONT = re.compile(r"^\s*(?:and/or|and|or)\b")
+
+
+def trigger_condition(clause: str) -> str:
+    """The CONDITION half of a CR 113.3c trigger, read past list punctuation.
+
+    CR 113.3c: *"Triggered abilities have a trigger condition and an effect.
+    They are written as '[Trigger condition], [effect]'."* So the boundary is a
+    comma -- but NOT every comma, and this project has been bitten from both
+    sides:
+
+      too EARLY  `clause.split(",")[0]` truncates an enumeration --
+                 "Whenever one or more Scouts, Pirates, AND/OR Rogues you
+                 control deal combat damage to a player" loses its own verb.
+                 Recorded trap: "a trigger clause does not end at the first
+                 comma".
+      too LATE   `trigger_clause` walks PAST the condition when the condition's
+                 verb is not in the derived verb set, and picks up a verb from
+                 the EFFECT. Heart of Bogardan ("When a player doesn't PAY this
+                 enchantment's cumulative upkeep, this enchantment DEALS X
+                 damage to target player or planeswalker") is the worked case.
+
+    The cut used here needs NO verb list, which is why it survives a verb the
+    CR does not enumerate. An English enumeration closes with a coordinating
+    conjunction on its FINAL element -- "A, B, and C" / "A, B, and/or C" /
+    "A, B, or C" -- so a comma is a LIST separator exactly while some LATER
+    segment still opens with `and` / `or` / `and/or`. The first comma with no
+    such continuation ahead of it is the condition/effect boundary.
+
+    Periods end it unconditionally: a trigger condition never spans sentences.
+    """
+    clause = clause.split(".")[0]
+    parts = clause.split(",")
+    if len(parts) == 1:
+        return clause
+    out = [parts[0]]
+    for i in range(1, len(parts)):
+        # Is this comma still inside an enumeration? It is if this segment, or
+        # any later one, opens with a coordinating conjunction.
+        if any(_ENUM_CONT.match(p) for p in parts[i:]):
+            out.append(parts[i])
+            continue
+        break
+    return ",".join(out)
+
+
 def build_trigger_verbs(actions: dict) -> None:
     """Compile the trigger-CONDITION event-verb test from the CR term list."""
     global TRIGGER_VERB
@@ -526,6 +691,13 @@ def build_keyword_homes(ratified: dict) -> None:
     if _twin is not sys.modules[__name__]:
         _twin.SELF_NOUN_RX = SELF_NOUN_RX
         _twin.KEYWORD_HOME = None
+        # Every derived global must be synced, not just the two that existed
+        # when this was written. The CR 120.1/400.1 enumerations were added
+        # 2026-08-05 and crashed here immediately -- loudly, which is the
+        # house style working: a silent default would have been a fallback,
+        # and a fallback is what this whole pass exists to remove.
+        _twin.CR_DAMAGE_RECIPIENTS = CR_DAMAGE_RECIPIENTS
+        _twin.CR_ZONES = CR_ZONES
     kws = k7.load_702(k7.CR_PATH)
     homes = {}
     for num, kw in kws.items():
@@ -1153,7 +1325,20 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 return mark("to-graveyard-from-library-trigger", "to-graveyard-from-library")
             if re.search(r"\bfrom (a |your |their )?hand\b", clause):
                 return mark("to-graveyard-from-hand-trigger", "to-graveyard-from-hand")
-            if re.search(r"\bfrom (a |your |their )?exile\b|\bfrom the stack\b", clause):
+            # CR 400.1 NAMES SEVEN ZONES; this branch named two of them. The
+            # ratified token is `-from-other-zone-trigger`, and "other" means
+            # every CR 400.1 zone that is not one of the three with their own
+            # token (battlefield -> `dies`, library, hand) -- so it is derived
+            # by SUBTRACTION from the parsed enumeration, never re-listed.
+            # `command` and `ante` were the two the old pair omitted; both
+            # measure 0 lines today, as do exile and the stack, which makes
+            # `to-graveyard-from-other-zone-trigger` a RATIFIED TOKEN WITH ZERO
+            # MEMBERS. That is reported here rather than hidden: zero members
+            # is a hypothesis (the `is-attacked-trigger` battle precedent), and
+            # the token now has correct scaffolding for all four of its zones.
+            other_zones = sorted(CR_ZONES - {"battlefield", "library", "hand", "graveyard"})
+            if re.search(r"\bfrom (?:a |an |the |your |their )?(?:"
+                         + "|".join(other_zones) + r")\b", clause):
                 return mark("to-graveyard-from-other-zone-trigger", "to-graveyard-from-other-zone")
             # No zone printed. CR 110.1 makes a PERMANENT necessarily on the
             # battlefield, so "a permanent you control is put into a graveyard"
@@ -1181,10 +1366,66 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # It IS a combat claim, so it takes combat-damage-to-player; only a
         # non-combat "deals damage to an opponent" takes any-damage-to-player
         # per DAMAGE-DELIVERY-RULING-2026-08-02.
-        if re.search(r"combat damage to (a |an |target )?\s*(player|opponent)", clause):
-            return msub("combat-damage-to-player", "combat-damage-player")
-        if re.search(r"combat damage to (a|target)?\s*creature", clause):
-            return mark("combat-damage-to-creature", "combat-damage-creature")
+        # CR 120.1 IS A CLOSED RECIPIENT ENUMERATION AND THE SOURCE SIDE NOW
+        # READS IT, rather than naming two of the four and defaulting the rest.
+        # "Objects can deal damage to BATTLES, CREATURES, PLANESWALKERS, AND
+        # PLAYERS", sealed by 120.1a. The RECIPIENT side was ratified against
+        # that full enumeration on 2026-08-04; the source side never was, and
+        # the gap was not merely unrouted -- the old `any-` arm ENDED in a bare
+        # `deals? damage to` fallback that returned `any-damage-to-creature`
+        # for ANY recipient that was not a player. Hooded Blightfang ("deals
+        # damage to a PLANESWALKER") was therefore asserted to trigger on
+        # damage to a creature: a WRONG RATIFIED TOKEN, which no gap census can
+        # report. Captain-ratified 2026-08-05.
+        #
+        # `_damage_recipient` returns the CR 120.1 recipient the clause names,
+        # or None -- and None is REPORTED, never defaulted onto a neighbour.
+        # CR 113.3c: the trigger's EVENT lives in its CONDITION, and the
+        # condition comes FIRST -- "[Trigger condition], [effect]". So the
+        # damage phrase is looked for only in the clause's first comma segment.
+        #
+        # This is the file's NINTH whole-line-vs-clause instance and the first
+        # to bite a change of mine. Heart of Bogardan reads "When a player
+        # doesn't pay this enchantment's cumulative upkeep, this enchantment
+        # DEALS X DAMAGE TO TARGET PLAYER OR PLANESWALKER" -- an UPKEEP
+        # trigger whose EFFECT deals damage. `trigger_clause` walks PAST the
+        # condition here because "pay" is not in the derived trigger-verb set
+        # (the recorded trap: a missing verb makes the clause end LATER, not
+        # earlier), so without this cut the effect was read as the event and
+        # the line moved OFF `upkeep-trigger`.
+        head = trigger_condition(clause)
+        m_dmg = re.search(r"\bdeals?\b([^,]{0,30}?)\bdamage to\b(.{0,40})", head)
+        if m_dmg and not re.search(r"\b(?:is|are) dealt\b", clause):
+            qual, recip = m_dmg.group(1), _damage_recipient(m_dmg.group(2), card)
+            # `combat-` is a RESTRICTION, not decoration
+            # (DAMAGE-DELIVERY-RULING-2026-08-02), and so is its NEGATION --
+            # the recipient side already carries all three
+            # (`is-dealt-damage-trigger` / `-combat-` / `-noncombat-`), and
+            # completing the source side means mirroring all three, not two.
+            # `\bcombat\b` does not match inside "noncombat" (no word boundary
+            # after the "n"), which is what exposed Taii Wakeen and Crude
+            # Abattoir sitting on `combat-damage-to-creature` while printing
+            # "deals NONCOMBAT damage to a creature".
+            fam = ("noncombat" if re.search(r"\bnoncombat\b", qual)
+                   else "combat" if re.search(r"\bcombat\b", qual) else "any")
+            if recip is None:
+                return None, f"{fam}-damage-recipient-unstated"
+            tok = f"{fam}-damage-to-{recip}"
+            # §2a's SUBJECT prefix composes onto `combat-damage-to-player`
+            # ONLY, and that restriction is not stylistic -- it is a NAME
+            # COLLISION the routing diff caught on the first run.
+            #
+            # `any-` means two different things in this codebase: §2's damage
+            # rows use it for "no COMBAT restriction" (`any-damage-to-player`),
+            # while §2a uses it as the SUBJECT prefix for "source included".
+            # Applying msub to the any- arm produced `any-any-damage-to-player`
+            # on 39 lines -- a token that reads as a doubled prefix and asserts
+            # neither sense cleanly. The pre-existing code used `mark` here for
+            # exactly this reason, and the reason was not written down.
+            # It is now: THE SUBJECT PREFIX IS ONLY SAFE ON A TOKEN WHOSE NAME
+            # DOES NOT ALREADY BEGIN WITH ONE OF ITS VALUES.
+            use_msub = recip == "player" and fam == "combat"
+            return (msub if use_msub else mark)(tok, f"{fam}-damage-{recip}")
         # RECIPIENT-side damage: "«X» is dealt damage". This is the mirror of the
         # source-side `*-damage-to-*` tokens above, exactly as
         # `is-attacked-trigger` mirrors `attack-trigger`. CR 120.1 is a CLOSED
@@ -1211,10 +1452,6 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             if re.search(r"\bcombat\b", qual):
                 return msub("is-dealt-combat-damage-trigger", "is-dealt-combat-damage")
             return msub("is-dealt-damage-trigger", "is-dealt-damage")
-        if re.search(r"\bdeals? damage to\b.{0,24}\bplayer\b", clause):
-            return mark("any-damage-to-player", "any-damage-player")
-        if re.search(r"\bdeals? damage to\b", clause):
-            return mark("any-damage-to-creature", "any-damage-creature")
         if re.search(r"\bupkeep\b", clause):
             return mark("upkeep-trigger", "upkeep")
         if re.search(r"\bend step\b", clause):
