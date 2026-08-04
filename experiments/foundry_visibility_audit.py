@@ -60,9 +60,19 @@ OPTION_FORMS = [
     ("CR 700.2  bulleted mode",   re.compile(r"^\s*•\s*")),
     ("CR 700.2i pawprint mode",   re.compile(r"^\s*(?:\{P\})+\s*—\s*")),
     ("CR 700.2h spree mode",      re.compile(r"^\s*\+\s*\{[^}]*\}[^—]*—\s*")),
-    ("CR 706.3b die-roll row",    re.compile(r"^\s*\d+(?:—\d+)?\s*\|\s*")),
+    # all three printed range separators -- see foundry_common._DIE_ROW_RE
+    ("CR 706.3b die-roll row",    re.compile(r"^\s*\d+(?:\s*[-–—]\s*\d+)?\s*\|\s*")),
     ("CR 721.2  station striation", re.compile(r"^\s*\d+\+\s*\|\s*")),
 ]
+
+
+# Forms whose governing CONTEXT is printed on the SAME LINE, so there is
+# nothing for a join to add and counting them as UNCONTEXTED is a probe defect.
+# CR 721.2's station marker and the abilities it governs share one line
+# (`9+ | Flying, first strike`) -- the condition is right there. I reported
+# these 49 as needing a join and was wrong; the test is corrected rather than
+# the code bent to match it. (Fourth probe defect this session.)
+INLINE_CONTEXT = {"CR 721.2  station striation"}
 
 
 def option_form(line: str):
@@ -164,7 +174,7 @@ def main():
                 continue
 
             # 3. UNCONTEXTED -- is it ever joined to a header?
-            if any(key in s for s in joined):
+            if label in INLINE_CONTEXT or any(key in s for s in joined):
                 ctx_ok[label] += 1
             else:
                 ctx_no[label] += 1

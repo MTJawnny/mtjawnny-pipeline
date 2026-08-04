@@ -229,6 +229,32 @@ _MODAL_HEADER_RE = re.compile(
     r"X|\d+|any number|up to \w+)\b", re.I)
 
 
+# CR 706.3b: a die-roll RESULTS TABLE row -- "1—9 | …", "20 | …", "5 | …".
+# THE RANGE SEPARATOR HAS THREE PRINTED FORMS. Measured 2026-08-06 across 106
+# rows: em-dash 75, plain HYPHEN 5 (Mathise, Surge Channeler prints `1-9 |`),
+# single number 26. An em-dash-only test silently dropped the hyphen rows --
+# the same "an inflection is not a shape" family that has now bitten this
+# project four times, wearing punctuation instead of a verb ending.
+_DIE_ROW_RE = re.compile(r"^\s*\d+(?:\s*[-–—]\s*\d+)?\s*\|")
+# The instruction that opens such a table. The CR names the shape ("an
+# instruction to roll one or more dice") and the corpus prints "roll a d20",
+# "roll two six-sided dice", "roll a d20 and add the number of cards in your
+# hand". Confirmed structurally: it only opens a block if rows follow.
+_ROLL_INSTRUCTION_RE = re.compile(
+    r"\broll\w*\b(?:[^.\n]{0,40}?)\b(?:d\d+|dice|die)\b", re.I)
+
+
+def _is_die_row(line: str) -> bool:
+    """A CR 706.3b results-table row, however it is printed.
+
+    Celebr-8000 prints its table with BULLETS (`• 2 — menace`) rather than the
+    `N |` bar. CR 706.3b says "the associated results table" without
+    prescribing typography, so a roll header claims either form -- otherwise
+    the five rows of a bulleted table are the only part of that one ability
+    that cannot reach its own trigger."""
+    return bool(_DIE_ROW_RE.match(line)) or is_mode_line(line)
+
+
 def is_mode_line(line: str) -> bool:
     """Is this line one of CR 700.2's options (a MODE)?
 
@@ -244,9 +270,21 @@ def is_mode_line(line: str) -> bool:
     Shared by BOTH consumers -- `expand_modal_bullets` (the DET preprocessing
     standard) and the extractor's `deliveries_for_lines` -- so the two cannot
     drift apart. Fixing one and not the other is the D8 semicolon lesson.
+
+    CR 700.2h is the third printed form: *"Some modal spells have one or more
+    modes with a COST LISTED BEFORE THE EFFECT of that mode."* Spree prints
+    `+ {2}{B} — Destroy target creature.` Its header carries the choose
+    instruction inside REMINDER text (`Spree (Choose one or more additional
+    costs.)`), which §6a strips for the classifier but which
+    `expand_modal_bullets` still sees, because that runs on the full oracle
+    text. So the DET side can join these and the routing side cannot -- and
+    that asymmetry is correct, not a bug: a spree spell's own delivery is
+    `spell-or-static` by CR 113.3a, so there is no timing for a mode to inherit.
     """
     s = line.lstrip()
-    return s.startswith("•") or bool(re.match(r"^(?:\{P\})+\s*—", s))
+    return (s.startswith("•")
+            or bool(re.match(r"^(?:\{P\})+\s*—", s))       # CR 700.2i
+            or bool(re.match(r"^\+\s*\{[^}]*\}[^—]*—", s)))  # CR 700.2h
 
 
 def _cardname_candidates(card: dict) -> list:
@@ -329,16 +367,46 @@ def expand_modal_bullets(text: str) -> list:
     scan-texts, one per bullet, each formed as
     '<header line>\\n<that bullet's line>' -- callers scan the original text
     PLUS these additions (never a replacement -- non-modal text is
-    unaffected and still scanned once via the original)."""
+    unaffected and still scanned once via the original).
+
+    EXTENDED 2026-08-06 on Captain's word to CR 706.3b's die-roll tables, which
+    are the same shape one rule over:
+
+    > *"An INSTRUCTION TO ROLL one or more dice, any instructions to modify
+    > that roll printed in the same paragraph, any additional instructions
+    > based on the result of the roll, and THE ASSOCIATED RESULTS TABLE are
+    > ALL PART OF ONE ABILITY."*
+
+    So `1—9 | Each player sacrifices a permanent…` is not a separate ability;
+    it belongs to `At the beginning of combat on your turn, roll two six-sided
+    dice…`, and without the join a pattern can see the row's EFFECT but never
+    the trigger that says when it happens. Measured 2026-08-06 by
+    `foundry_visibility_audit.py`: 101 rows, none joined.
+
+    STATION STRIATIONS ARE DELIBERATELY NOT JOINED. CR 721.2's marker and the
+    abilities it governs share ONE line (`9+ | Flying, first strike`), so the
+    context is already inline and there is nothing for a join to add. I
+    reported them as needing this and was wrong; the audit's own test has been
+    corrected rather than the code bent to match it.
+    """
     lines = text.split("\n")
     extra = []
     i = 0
     while i < len(lines):
-        if _MODAL_HEADER_RE.search(lines[i].strip()):
-            header = lines[i]
+        # (header test, option test) -- each pair is one CR rule about a unit
+        # of card text that is split across lines. Modality and the die table
+        # are both confirmed STRUCTURALLY: a header only opens a block if
+        # option lines actually follow it.
+        header = None
+        opt_test = None
+        if _MODAL_HEADER_RE.search(lines[i].strip()):        # CR 700.2/.2h/.2i
+            header, opt_test = lines[i], is_mode_line
+        elif _ROLL_INSTRUCTION_RE.search(lines[i]):          # CR 706.3b
+            header, opt_test = lines[i], _is_die_row
+        if header is not None:
             j = i + 1
             bullets = []
-            while j < len(lines) and is_mode_line(lines[j]):
+            while j < len(lines) and opt_test(lines[j]):
                 bullets.append(lines[j])
                 j += 1
             for b in bullets:
@@ -349,7 +417,7 @@ def expand_modal_bullets(text: str) -> list:
                 # every pattern using "[^\n]*" proximity (F2's own scoping
                 # fix).
                 extra.append(header + " " + b)
-            i = j
+            i = j if bullets else i + 1
         else:
             i += 1
     return extra

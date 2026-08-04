@@ -93,7 +93,7 @@ variable.
 | `loyalty` | planeswalker loyalty ability — is activated but always marked `loyalty`, never `activated` (b7 Ob Nixilis crack) | 606.1 |
 | `replacement` | "instead" / "skip" / "enters with/as" shapes | 614.1a–c |
 | ~~`delayed`~~ | **RETIRED from DELIVERY 2026-08-03 — moved to QUALIFIER (§1). See §2d.** | 603.7 |
-| `kicker` | kicked-conditional bonus | 601.2b |
+| ~~`kicker`~~ | **RETIRED from DELIVERY 2026-08-06 — CR 702.33a makes it a STATIC ability, so §2b already derives its delivery. See §2g.** | 702.33a |
 | `death-trigger` | triggered, graveyard from battlefield | 700.4 |
 | `becomes-targeted-trigger` | triggered, "becomes the target of a spell or ability" (Ward's family; walk-ratification Q2, 2026-07-31) | 702.21a |
 | `becomes-tapped-trigger` | triggered on the STATE CHANGE untapped→tapped. Captain-ratified 2026-08-03. *"doesn't trigger if the permanent enters the battlefield in that state"* — so it is neither `enters-tapped` (a replacement, CR 614) nor a tapped-state check | 603.2e |
@@ -190,6 +190,46 @@ Rules:
   mechanisms for deck-building — an any-damage trigger fires off pingers, burn
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
+
+### 2g. `kicker` is RETIRED from DELIVERY (Captain-ratified 2026-08-06)
+
+Captain, 2026-08-06: *"go forward with … kicker's retirement from §2."*
+
+**The contradiction.** §2 listed `kicker` as a DELIVERY slot value. §2b, ratified
+2026-08-03, says a CR 702 keyword's delivery is **derived from its `702.Na`
+class** — and the CR states that class outright:
+
+> **CR 702.33a** — *"**Kicker is a static ability** that functions while the
+> spell with kicker is on the stack. 'Kicker [cost]' means 'You may pay an
+> additional [cost] as you cast this spell.'"*
+
+So `KEYWORD_HOME["kicker"]` is `static`, the router has always been right, and
+the `kicker` row predates §2b and was simply never retired.
+
+**Measured 2026-08-05 (`AUDIT-5` §1, emitter census):**
+
+| | |
+|---|--:|
+| axes using the token | **0** |
+| **emitters in the classifier** | **none** — no `mark()` or `msub()` ever produced it |
+| corpus lines printing `Kicker …` | **216**, all correctly routed to `static` |
+
+This is the standing trap *"a ratified token with no EMITTER looks exactly like
+one with no members"* — the token was unreachable, not merely unused.
+
+**The ruling.**
+
+- **`kicker` is REMOVED from §2's DELIVERY vocabulary**, struck through in the
+  table exactly as `delayed` was by §2d. The table is machine-parsed, and the
+  strikethrough is what removes it: `ratified_delivery_tokens()` rejects any
+  cell that is not `[a-z0-9-]+`, so `~~kicker~~` no longer parses as a token.
+- **Kicker is an ADDITIONAL COST (CR 601.2b), not a delivery.** A cost is
+  something you pay to cast; a delivery is *how the ability reaches the game*.
+  The two were conflated because the printed word looks like a keyword slot.
+- **Nothing in the classifier changes**, and that is the point — a retirement
+  with a routing diff would mean the token *was* load-bearing.
+
+**§2's DELIVERY vocabulary is 53 → 52 tokens.**
 
 ### 2f. Shapes REPORTED, never routed — and why this is not part of §2's table
 
