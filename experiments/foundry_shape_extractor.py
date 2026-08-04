@@ -1272,11 +1272,61 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         unq = unq[:a] + " " * (b - a) + unq[b:]
     if re.match(r"^as (?!an additional cost|long as)\b.{0,40}?"
                 r"\b(?:enters|is turned face up)\b", unq) or \
-       re.search(r"\benters as\b", unq) or \
+       re.search(r"\benters? as\b", unq) or \
        re.search(r"\bwould\b.*\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", unq):
         return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
     if re.search(r"^(enchant|equipped creature|enchanted )", low):
         return ("static", "static-aura") if "static" in ratified else (None, "static-aura")
+    # A line that GRANTS a quoted ability to a class of permanents is a static
+    # ability. CR 113.3d: static abilities "are written as statements. They're
+    # simply true." §2's created-ability rule then assigns the QUOTED ability
+    # to whatever it is granted to, and the grant itself to this card -- so
+    # `Creatures you control have "{T}: Add one mana of any color."` (Cryptolith
+    # Rite) is `static`, and the mana ability inside the quote is the creature's.
+    #
+    # Reached only at the TAIL, so the loyalty, activated, trigger and
+    # replacement branches have all already declined the line. That ordering is
+    # what makes this safe: `enters? as` is tested above, so the 57-card clone
+    # family ("You may have this creature ENTER AS a copy of ...") is claimed by
+    # `replacement` first and never reaches here.
+    #
+    # This is the FIRST piece of step 2, taken as a named shape rather than as
+    # a sweep. PRE-STEP-2-AUDIT stopped the blanket version because routing
+    # `spell-or-static` wholesale into `static` would turn 1,883 wrong answers
+    # into answers that READ as resolved.
+    # THE GRANT MUST BE THE LINE'S OWN STRUCTURE, NOT A CLAUSE INSIDE AN EFFECT.
+    # `[^.]*?` forbids a sentence break before the grant, and that single
+    # constraint is what separates the two:
+    #
+    #   Cryptolith Rite  `Creatures you control have "{T}: Add one mana ..."`
+    #                    -> static. The line IS the grant.
+    #   Ethereal Grasp   `Tap target creature. That creature perpetually
+    #                     gains "..."`
+    #                    -> an INSTANT whose effect grants. §1: a spell
+    #                       ability's delivery is the unmarked default.
+    #
+    # Without it this branch swept in 97 instants and sorceries -- Can't Stay
+    # Away, Corpsehatch, Make Mischief, Growth Spasm -- and would have UNDONE
+    # two of D5's nine created-ability corrections (Brokers' Safeguard, The
+    # Eighth Doctor). Eighth instance of the whole-line-vs-clause bug class in
+    # this file, and the first on the static side.
+    # ...and it must be CONTINUOUSLY TRUE. CR 113.3d: static abilities "are
+    # written as statements. They're simply true." A DURATION or a TARGET makes
+    # the grant a one-shot effect handed out by a resolving spell, not a static:
+    #
+    #   All Slivers have "{B}: Regenerate this permanent."      -> static
+    #   Until end of turn, lands you control gain "{T}: Add ..." -> an INSTANT
+    #                                    (Divergent Growth); §1, unmarked
+    #   Target creature card ... perpetually gains "..."         -> a SORCERY
+    #
+    # Measured: without this, 65 instants and sorceries leaked in -- Showstopper,
+    # Demonic Gifts, Warriors' Lesson, Shoving Match, Divergent Growth. The
+    # markers are checked only on the text BEFORE the grant, so a granted
+    # ability that itself says "until end of turn" inside its quote is unaffected.
+    m = re.match(r"^([^.]*?)\b(?:have|has|gain|gains)\s+[\"“]", low)
+    if m and not re.search(r"\buntil\b|\btarget\b|\bperpetually\b|\bthis turn\b",
+                           m.group(1)):
+        return ("static", "static-grant") if "static" in ratified else (None, "static-grant")
     return None, "spell-or-static"
 
 
