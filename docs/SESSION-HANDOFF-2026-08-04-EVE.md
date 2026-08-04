@@ -191,11 +191,21 @@ parent candidates — the S7 gate they have never been through.
 
 ## 6. BLOCKED ON CAPTAIN — one sheet, and one item came OFF it
 
-**Still blocked: ratify the 14 §2 rows** from `SESSION-HANDOFF-2026-08-04.md` §8
+**Ratify the 14 §2 rows** from `SESSION-HANDOFF-2026-08-04.md` §8
 (MAIN-PHASE · IS-DEALT-DAMAGE · TURNED-FACE-UP · GAIN-LIFE-TRIGGER ·
-TO-GRAVEYARD · COUNTER-PLACED · DRAW-STEP). DET is wired for every one. Three
-carry a real question — do not assume the answers. **Nothing changed there this
-session.**
+TO-GRAVEYARD · COUNTER-PLACED · DRAW-STEP). DET is wired for every one.
+
+**All three blocking questions are now ANSWERED (2026-08-04 EVE):**
+
+| # | question | Captain's answer |
+|---|---|---|
+| 1 | do `second-` / `postcombat-main-phase` stay split? | **YES, they stay split** (CR 505.1a) |
+| 2 | ordinal counter threshold — parameter or identity? | **BOTH, and they were two questions.** Threshold-vs-every-placement is identity (D3f); *which* ordinal is a parameter (batch-5). Resolved with **zero new vocabulary** as `<type>-counter-threshold-trigger` — `threshold` is already ratified (§14 Q5) and §8a's binding rule separates it from the four static `threshold` axes. See `COUNTER-PLACED-RULING-2026-08-04.md` §3a |
+| 3 | Tribute — static (702.104a) or replacement (614.1c)? | **RATIFIED: `replacement`, no code change.** The CR chains rather than opposes them (113.3d → 614.1), and this is the same reasoning that protects the other 15 keywords in that bucket — 282 lines total |
+
+**What remains is the single ratification word on the sheet itself**, plus
+whether §3a's `<type>-counter-threshold-trigger` name is accepted. Nothing else
+blocks.
 
 **UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 Foretell 54, Bestow 43 and 45 more keywords have no §2 home. I was going to ask.

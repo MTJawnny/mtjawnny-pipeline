@@ -68,9 +68,61 @@ on themselves; Midnight Clock accrues hour counters.
 
 This is a genuine `-conditional`-class distinction: the ability fires **once, at
 a threshold**, not on every placement. It is a §1 QUALIFIER and it changes WHEN
-the effect happens, which is the ratified split test (§2, D3f). Not folded;
-**logged for a Captain call** on whether the ordinal is a parameter (batch-5
-polarity precedent) or axis identity.
+the effect happens, which is the ratified split test (§2, D3f).
+
+### 3a. RESOLVED — the question was TWO questions (2026-08-04 EVE, RULED-NOT-RATIFIED)
+
+Captain asked for one more CR check to see whether this resolves cleanly. **It
+does, and it needs no new vocabulary.**
+
+**The two halves separate:**
+
+| | verdict | why |
+|---|---|---|
+| threshold **vs** every-placement | **AXIS IDENTITY** | fires once at a threshold vs on every placement — changes WHEN/WHETHER, the ratified D3f test |
+| **which** ordinal (3rd/4th/5th/6th/7th/10th/12th) | **PARAMETER** | magnitude only. Batch-5 is a fortiori: +1/+1 vs -1/-1 do *opposite* things and were still a parameter |
+
+**The corpus decides the second half.** Nine of the eleven lines are ONE card
+design — the plan-counter scheme cycle — printed with ordinals 3·4·4·4·4·5·6·7.
+Treating the number as identity mints **five axes for one mechanic**, which is
+the `scales-token-count-with-x` duplication class that design goal #1 forbids.
+
+**CR checks, all three clean:**
+
+- **CR 603.8 rules out a state trigger.** *"Some triggered abilities trigger
+  when a game state … is true, **rather than triggering when an event
+  occurs**."* A counter being put on IS an event, so this is an ordinary
+  CR 113.3c trigger whose condition names which instance.
+- **`threshold` is ALREADY RATIFIED vocabulary** — §14 Q5, walk-ratification
+  2026-07-31. No new token.
+- **No CR homograph.** The CR glossary: *"'Threshold' used to be a keyword
+  ability. **It is now an ability word and has no rules meaning.**"* Identical
+  disposition to `Inspired` in §2's `becomes-untapped-trigger` row.
+
+**The one real collision is inside the codebook, and §8a's ratified principle
+resolves it.** Four live axes use `threshold` in a STATIC sense
+(`transforms-on-graveyard-threshold`, `grants-ability-at-threshold-self`,
+`-board`, and the killed `grants-ability-at-counter-threshold`, whose definition
+reads *"as long as it has at least…"*). Ours fires once. §8a: **sense is carried
+by POSITION and BINDING, not by the bare token** — so `-trigger` binding
+disambiguates, exactly as it does for the `counters` homograph:
+
+| slug | sense |
+|---|---|
+| `<type>-counter-threshold-trigger` | fires **once**, on the Nth placement |
+| `<type>-counter-placed-trigger` | fires on **every** placement (§2 sheet row 6) |
+| `grants-ability-at-threshold` *(no `-trigger`)* | static, continuously true |
+
+**PROPOSED: `<type>-counter-threshold-trigger`, a sibling in row 6's §11
+family. N is a parameter. Zero new vocabulary.** RULED-NOT-RATIFIED.
+
+### 3b. Correction to this document's own count — it was RIGHT
+
+A 2026-08-04 EVE re-measurement reported **10**, not 11, and **the
+re-measurement was wrong**: its ordinal list omitted `eleventh`/`twelfth`, so
+Midnight Clock's *"When the **twelfth** hour counter is put on this artifact"*
+fell out. **11 stands.** Fourth Gate 4 firing of the session, and the same root
+cause as the landwalk defect — a hand-listed enumeration missing a member.
 
 ## 4. DET defect fixed
 
