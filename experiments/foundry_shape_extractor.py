@@ -171,6 +171,47 @@ def ability_lines(card: dict) -> list:
     return [l.strip() for l in txt.split("\n") if l.strip()]
 
 
+def deliveries_for_lines(card: dict, ratified: dict):
+    """(line, [(token, descriptor), ...]) for every ability line of `card`,
+    with D3's modal-mode inheritance applied.
+
+    A modal ability is printed as a HEADER line carrying the delivery, then one
+    `• ` line per mode:
+
+        When this creature enters, choose one —      <- etb
+        • Cure Wounds — You gain 2 life.             <- had NO delivery
+        • Dispel Magic — Destroy target enchantment. <- had NO delivery
+
+    Split on newlines, each bullet became its own ability line with no trigger
+    of its own, so 516 bullets under a delivery-bearing header routed nowhere.
+    Grammar §1 is explicit that this is wrong -- *"modal modes each earn their
+    axis"*, and Blizzard Specter is its worked case.
+
+    The mode's delivery IS the header's delivery, so it is INHERITED rather
+    than re-parsed from a joined string: re-parsing would hand `trigger_clause`
+    a header condition glued to a mode's effect text, which is the CR 113.3c
+    whole-line-vs-clause bug this file has now been bitten by six times.
+
+    The modal test is `foundry_common._MODAL_HEADER_RE`, the ratified DET
+    preprocessing standard v1 (2026-07-31) -- not a fresh one. Bullets under a
+    non-modal header are deliberately NOT inherited: Celebr-8000's
+    `• 2 — menace` is a die-roll RESULT table, not a set of modes.
+    """
+    lines = ability_lines(card)
+    header_deliveries, is_modal = None, False
+    for line in lines:
+        if line.lstrip().startswith("•"):
+            if is_modal and header_deliveries:
+                yield line, [(t, f"modal-mode:{d}") for t, d in header_deliveries]
+            else:
+                yield line, parse_deliveries(line, ratified, card)
+            continue
+        parsed = parse_deliveries(line, ratified, card)
+        header_deliveries = [(t, d) for t, d in parsed if t is not None]
+        is_modal = bool(fc._MODAL_HEADER_RE.search(line.strip()))
+        yield line, parsed
+
+
 def quoted_spans(line: str) -> list:
     """Character ranges inside double quotes -- granted or token ability text.
     §2's created-ability rule: a card does not deliver an ability it CREATES."""
@@ -1151,14 +1192,14 @@ def find_action(line: str, forms: list) -> tuple:
 def scan(cards: dict, ratified: dict, action_forms=None) -> list:
     rows = []
     for oid, card in cards.items():
-        for line in ability_lines(card):
+        for line, parsed in deliveries_for_lines(card, ratified):
             if action_forms is not None:
                 form, pos = find_action(line, action_forms)
                 if form is None:
                     continue
             else:
                 form = None
-            for tok, desc in parse_deliveries(line, ratified, card):
+            for tok, desc in parsed:
                 rows.append({
                     "oracle_id": oid, "name": card["name"], "line": line,
                     "delivery": tok, "descriptor": desc, "matched": form,
@@ -1243,14 +1284,14 @@ def cmd_rank(args, cards, ratified, actions):
     actions = {t: m for t, m in actions.items() if str(m["cr"]).startswith("701.")}
     stat = collections.defaultdict(lambda: {"cards": set(), "ready": 0, "blocked": 0})
     for oid, card in cards.items():
-        for line in ability_lines(card):
+        for line, line_parsed in deliveries_for_lines(card, ratified):
             parsed = None
             for term, meta in actions.items():
                 form, _ = find_action(line, meta["forms"])
                 if form is None:
                     continue
                 if parsed is None:
-                    parsed = parse_deliveries(line, ratified, card)
+                    parsed = line_parsed
                 s = stat[term]
                 s["cards"].add(oid)
                 for tok, _d in parsed:

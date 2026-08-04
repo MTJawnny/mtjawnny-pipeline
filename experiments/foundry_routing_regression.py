@@ -74,8 +74,9 @@ def route_all(cards: dict, ratified: dict) -> list:
     rows = []
     for oid in sorted(cards):
         card = cards[oid]
-        for i, line in enumerate(fse.ability_lines(card)):
-            for tok, desc in fse.parse_deliveries(line, ratified, card):
+        for i, (line, parsed) in enumerate(
+                fse.deliveries_for_lines(card, ratified)):
+            for tok, desc in parsed:
                 rows.append([oid, card["name"], i, line, tok, desc])
     return rows
 
