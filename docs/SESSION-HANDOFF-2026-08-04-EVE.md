@@ -1,5 +1,10 @@
 # SESSION HANDOFF — 2026-08-04 EVE
 
+> **SUPERSEDED by `docs/SESSION-HANDOFF-2026-08-05.md`. Go there.**
+> Its §6 sheet was ANSWERED: Captain ratified the 14 §2 rows on 2026-08-04.
+> §5's work order items 1 (D4) and 2 (D3) are DONE; item 3 (D5/D6/D8) is the
+> current next work item and its numbers there are still good.
+
 Supersedes `SESSION-HANDOFF-2026-08-04.md`. **Zero API calls. Arc spend
 unchanged at $90.51 / $140.** Six commits: `8a4bb31` · `fa68b4e` · `ef0559f` ·
 `f40e40d` · `e80c1e7` · `ed252a6`. All pushed.

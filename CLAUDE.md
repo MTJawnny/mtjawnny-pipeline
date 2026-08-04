@@ -164,10 +164,33 @@ encodes.
 - **A parent's children having ~zero overlap is the RIGHT answer**, not weak
   evidence — the parent exists to group cards that share no child ("Same Job,
   Different Words"). Same-card co-occurrence remains the wrong test.
+- **A ratified token with no EMITTER looks exactly like one with no members.**
+  Grammar §2 is parsed at run time, so ratifying a row closes its gap only if a
+  `mark()`/`msub()` call already produces that token. On 2026-08-04, 11 of 14
+  newly ratified tokens still emitted `None, "<descriptor>"`. Same shape as "a
+  ratified standard with no caller"; nothing gates either.
+- **A markdown table is an API.** §2's DELIVERY table is machine-parsed from the
+  `## 2.` heading to the **first `###`**. Any table placed under it — including
+  one listing shapes deliberately left UNratified — is ingested as ratified
+  vocabulary. Second instance of this exact trap; §2f now carries the rule.
+  Prose and bullet lists are safe, tables are not.
+- **`\d` in a `re.sub` REPLACEMENT string is a group escape**, not the character
+  class — use a lambda. Cousin of the `re.escape`-before-substitution trap.
+- **Set subtraction cannot answer "does X depend only on Y"** — it removes the
+  members present in both, so the tokens you are testing vanish from the control.
+- **A keyword matcher needs `\s+`, not `\s*`, before a non-cost parameter**
+  (`\s*` made "EQUIPPED Warriors…" match CR 702.6c's `Equip [quality]`), must
+  try the WHOLE line before splitting on commas (a parameter may contain them —
+  `Ward—{2}, Pay 2 life.`), and must REFUSE any form whose parameter is an
+  ABILITY (CR 702.178a `Max speed — [Ability]`) — matching the wrapper
+  overwrites the inner ability's correct delivery.
+- **`instantiated_members` in `grammars.json` asserts codebook AXES.** A
+  delivery-only slug is never an axis (`TRIAGE-BATCH-1.md` §1c), so a DELIVERY
+  grammar family lists its measured nodes elsewhere and leaves that field empty.
 
 ## Reference
 
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-04-EVE.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-05.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)
