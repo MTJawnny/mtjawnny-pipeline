@@ -59,9 +59,9 @@ is losing keywords the CR states **explicitly**.
 | **Equip** | **702.6a** | **567** |
 | Ninjutsu | 702.49a | 44 |
 | Level Up | 702.87a | 25 |
-| Fortify | 702.66a | 2 |
+| Fortify | 702.67a *(corrected — 702.66 is Delve)* | 2 |
 | Aura Swap | 702.65a | 1 |
-| Forecast | 702.56a | (0 bare lines) |
+| Forecast | 702.57a *(corrected — 702.56 is Replicate)* | (0 bare lines) |
 
 **Equip is §2b's own worked example.** The section quotes CR 702.6a verbatim —
 *"Equip is an ACTIVATED ability of Equipment cards"* — as the illustration of why
@@ -101,6 +101,17 @@ fallback bucket that is excluded from reporting is not a safe default, it is an
 unmonitored sink. **20,559 lines were in it and half were wrong.**
 
 ## 6. RECOMMENDED, NOT DONE
+
+> **STEP 1 IS DONE — 2026-08-04. `docs/KEYWORD-ROUTER-FIX-2026-08-04.md`.**
+> **824 lines moved, not the 757 predicted here.** The cause was not six
+> missing names: §2b's *"the class says which slot, the templated text says
+> which token in that slot"* was implemented backwards, and the same defect had
+> **misrouted Unearth (57 lines) onto `replacement`** — a wrong *ratified*
+> token, which no gap census can report. Landwalk came to 128 rather than 118,
+> because CR 702.14a states a **grammar**, not the five basic variants.
+> Permanent-side `spell-or-static` is now **9,178**, and steps 2–4 below stand
+> unchanged. Two CR citations in §4 above were wrong and are corrected in place.
+
 
 Diagnosed but deliberately **not fixed in this pass** — `find_home` in
 `foundry_cr702_classes.py` needs reading before I change it, and guessing at the

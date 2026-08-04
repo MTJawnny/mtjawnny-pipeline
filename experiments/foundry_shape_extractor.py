@@ -53,7 +53,31 @@ GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
 CR_CHECKS = REPO_ROOT.parent / "docs" / "cr-checks.json"
 
 REMINDER = re.compile(r"\([^)]*\)")
-ABILITY_WORD = re.compile(r"^\s*[A-Z][A-Za-z'’\- ]{2,40}(\s*—|\s*-)\s*")
+# CR 207.2c ability words are printed with an EM-DASH -- "Landfall —",
+# "Battalion —", "Parley —". The pattern also allowed a plain hyphen, and a
+# hyphen is a WORD character in Magic templating, so it matched across
+# hyphenated names and P/T minus signs and deleted the front of the line:
+#
+#     "When Spider-Ham enters, create a Food token."  -> "Ham enters, ..."
+#     "Whenever a non-Human creature ... attacks, ..." -> "Human creature ..."
+#     "Put a -1/-1 counter on target creature."       -> "1/-1 counter ..."
+#
+# Measured 2026-08-04 across the whole corpus: 556 lines were mutilated -- 333
+# minus signs, 223 hyphenated words, and ZERO legitimate ability words. All
+# 3,004 real ones use the em-dash. 90 of the 556 were triggers whose CR 113.3c
+# condition was decapitated, so they could not enter the trigger branch at all.
+#
+# Found by a METAMORPHIC test, not by reading: a card's DELIVERY cannot depend
+# on its NAME, so renaming every card to a neutral string must not change any
+# routing. 62 of the 63 violations were this one line.
+ABILITY_WORD = re.compile(r"^\s*[A-Z][A-Za-z'’\- ]{2,40}\s*—\s*")
+# CR 606.2: "An activated ability with a loyalty symbol in its cost is a
+# loyalty ability." The printed symbol IS the cost, so the shape is the test.
+# Sign mandatory except a bare `0`, which is what excludes CR 702.184 Station
+# tier bars ("20+ | {T}: …") that the old first-3-characters test swallowed.
+LOYALTY_COST = re.compile(r"^([+\u2212\-][0-9X]+|0)\s*:")
+
+
 CHAPTER = re.compile(r"^\s*[IVX]+\s*(,\s*[IVX]+\s*)*(—|-)\s*")
 
 # "this <noun>" is a SELF-reference, and the noun set is not guessable: a card
@@ -261,7 +285,17 @@ def trigger_clause(low: str) -> str:
     stopping at the first one yields "whenever a mutant" -- no event, so the
     line went unclassified. CR 113.3c says the condition is the half that
     carries the trigger EVENT, so extend across commas until an event verb is
-    present, then stop at that segment's end."""
+    present, then stop at that segment's end.
+
+    A clause may also never run into a QUOTED created ability. §2's ratified
+    created-ability rule -- "a card does not deliver an ability it CREATES" --
+    already says so, and without the guard a missing event verb walks the clause
+    straight into the quote: Benalish Knight-Counselor's "Whenever ~ ENLISTS a
+    creature, you get a one-time boon with 'When you CAST a creature spell...'"
+    was read as a cast-trigger off the boon's text. `enlist` and `unlock` are CR
+    702 keywords, not CR 701 keyword-ACTIONS, so the derived verb set cannot
+    contain them -- and hand-adding them is what the 2026-08-04 derivation
+    deliberately stopped doing. The structural guard needs no verb list."""
     cuts, depth = [], 0
     for i, ch in enumerate(low):
         if ch in "([":
@@ -270,12 +304,15 @@ def trigger_clause(low: str) -> str:
             depth -= 1
         elif ch == "," and depth == 0:
             cuts.append(i)
+    quote_at = min((a for a, _b in quoted_spans(low)), default=len(low))
     if not cuts:
-        return low
+        return low[:quote_at]
     for i in cuts:
+        if i > quote_at:
+            break
         if TRIGGER_VERB.search(low[:i]):
             return low[:i]
-    return low[:cuts[0]]
+    return low[:min(cuts[0], quote_at)]
 
 
 
@@ -321,16 +358,63 @@ def build_keyword_homes(ratified: dict) -> None:
         tok, _desc, _txt = k7.find_home(kw, ratified)
         if tok is None:
             # fall back to the CR-stated ability CLASS, exactly as --homes does
-            classes, _ev = k7.classify(kw)
-            eff = [k7.SUBSUMES.get(c, (None,))[0] or c for c in classes]
-            if eff == ["static"] and "static" in ratified:
+            if k7.effective_classes(kw) == ["static"] and "static" in ratified:
                 tok = "static"
         if tok:
             homes[kw["name"].lower()] = tok
     if "battle cry" not in homes:
         fc.halt("Keyword home map has no 'battle cry' — the CR 702 parse "
                 "failed. Refusing to run with a partial keyword vocabulary.")
+    if homes.get("equip") != "activated":
+        fc.halt("Equip is not routing to `activated`. CR 702.6a states it "
+                "outright and §2b quotes that rule as its worked example; a "
+                "map that loses it is not a §2b router.")
     KEYWORD_HOME = homes
+    build_landwalk_template(k7)
+
+
+# CR 702.14a: *"Landwalk is a generic term that appears within an object's
+# rules text as '[type]walk,' where [type] is usually a land type, but it can
+# also be the card type land plus any combination of land types, card types,
+# and/or supertypes."*
+#
+# So CR 702.14's own heading -- "Landwalk" -- is the one name NO card prints.
+# `landwalk` sat in KEYWORD_HOME and every variant a card actually prints was
+# absent, so Whispering Shade's bare "Swampwalk" line was not a keyword line at
+# all. The template is a GRAMMAR over CR 205's type lists, so it is derived the
+# same way, not enumerated: an enumeration would have to guess which of the 17
+# land types ever appear, and 702.14c's own examples span three shapes
+# ("artifact landwalk", "nonbasic landwalk", "snow swampwalk").
+LANDWALK_BASES = None      # what may sit immediately left of "walk"
+LANDWALK_MODIFIERS = None  # what may precede that base
+
+
+def build_landwalk_template(k7) -> None:
+    global LANDWALK_BASES, LANDWALK_MODIFIERS
+    v = k7.type_vocabulary()
+    LANDWALK_BASES = v["land_types"] | {"land"}
+    LANDWALK_MODIFIERS = v["land_types"] | v["card_types"] | v["supertypes"]
+    if not {"swamp", "island", "land"} <= LANDWALK_BASES:
+        fc.halt(f"CR 205.3i parse lost a basic land type: {sorted(LANDWALK_BASES)}")
+
+
+def landwalk_variant(part: str) -> bool:
+    """Is `part` a CR 702.14a '[type]walk' name?
+
+    Strict on purpose. `planeswalk` is not one -- CR 205.2a's card type is
+    `plane`, not `planes` -- and neither is Quagmire's "creatures with
+    swampwalk can be blocked as though they didn't have swampwalk", which ends
+    in the right seven letters and is a sentence, not a keyword."""
+    if LANDWALK_BASES is None or not part.endswith("walk"):
+        return False
+    words = part[:-len("walk")].split()
+    if not words or words[-1] not in LANDWALK_BASES:
+        return False
+    # CR 702.14c's "nonbasic landwalk" -- the `non` prefix negates a supertype
+    # rather than naming a new one.
+    return all(w in LANDWALK_MODIFIERS or
+               (w.startswith("non") and w[3:] in LANDWALK_MODIFIERS)
+               for w in words[:-1])
 
 
 COST_OR_PARAM = re.compile(r"\{[^}]*\}|\bN\b|\d+")
@@ -345,11 +429,12 @@ def keyword_line_tokens(line: str) -> list:
     if not core:
         return []
     parts = [p.strip() for p in core.split(",") if p.strip()]
-    if not parts or not all(p in KEYWORD_HOME for p in parts):
+    if not parts or not all(p in KEYWORD_HOME or landwalk_variant(p)
+                            for p in parts):
         return []
     out, seen = [], set()
     for p in parts:
-        t = KEYWORD_HOME[p]
+        t = KEYWORD_HOME[p] if p in KEYWORD_HOME else KEYWORD_HOME["landwalk"]
         if t not in seen:
             seen.add(t)
             out.append((t, f"keyword:{p}"))
@@ -460,14 +545,31 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         body = fc.canonicalize_self_reference(body, card)
     low = body.lower()
 
+    # loyalty (CR 606.1/606.2) -- MUST be tested before the generic activated
+    # branch, not inside it. It used to sit nested under the head-cost test
+    # below, which requires a mana symbol or one of six verbs left of the colon.
+    # A loyalty cost is `+1`. It has neither, so the outer gate rejected it and
+    # the loyalty branch was unreachable for exactly the cards it exists for:
+    # measured 2026-08-04, 900 planeswalker loyalty lines fell to
+    # `spell-or-static`, while the 7 lines that DID reach `loyalty` were all
+    # wrong -- Station tier bars (CR 702.184) printed "20+ | {T}: Add …", where
+    # `head.strip()[:3]` saw "20+" and `^[+\-−]?\d` matched the 2.
+    #
+    # CR 606.2 makes the printed symbol definitional: "An activated ability with
+    # a LOYALTY SYMBOL IN ITS COST is a loyalty ability." So anchor on the
+    # printed shape, with the sign mandatory except for a bare `0` -- which
+    # excludes "20+ |" by construction. Verified corpus-wide: 909 matches, 100%
+    # on planeswalkers, zero Station bars.
+    if ":" in body and LOYALTY_COST.match(body.strip()) and \
+       not in_created_ability(body, body.index(":")):
+        return _mark_top("loyalty", "loyalty-ability", ratified)
+
     # activated -- a cost left of a colon (CR 113.3b), colon not inside quotes
     if ":" in body:
         head = body.split(":")[0]
         if not in_created_ability(body, body.index(":")) and \
            re.search(r"[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b",
                      head, re.I):
-            if re.search(r"^[+\-−]?\d|loyalty", head.strip()[:3]) and "loyalty" in ratified:
-                return "loyalty", "loyalty-ability"
             return ("activated", "cost-colon") if "activated" in ratified else (None, "cost-colon")
 
     # CR 113.3c: "Triggered abilities have a TRIGGER CONDITION and an EFFECT.

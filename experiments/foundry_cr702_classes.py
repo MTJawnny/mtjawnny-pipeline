@@ -58,6 +58,14 @@ CR_PATH = Path.home() / "Projects" / "mtjawnny.github.io" / "docs" / "mtg-compre
 
 HEADER = re.compile(r"^702\.(\d+)\.\s+(.+?)\s*$")
 SUBRULE = re.compile(r"^702\.(\d+)([a-z])\s+(.*)$")
+# CR 205 is the authority on the type words CR 702.14a's "[type]walk" template
+# composes from. Parsed at run time, never hand-listed -- same discipline as
+# CLASS_RULE above and as parsing grammar §2's token table.
+TYPE_RULES = {
+    "card_types": re.compile(r"^205\.2a The card types are (.+?)\. See", re.M),
+    "land_types": re.compile(r"^205\.3i .*?The land types are (.+?)\. Of that", re.M),
+    "supertypes": re.compile(r"^205\.4a .*?The supertypes are (.+?)\.\s*$", re.M),
+}
 # CR 113.3a-d is the authority on which ability classes EXIST. Derived at run
 # time, never hand-listed -- same discipline as parsing §2's token table.
 CLASS_RULE = re.compile(r"^113\.3([a-d])\s+([A-Za-z-]+) abilit", re.M)
@@ -132,6 +140,30 @@ def load_702(path: Path) -> dict:
     return keywords
 
 
+def type_vocabulary(path: Path = CR_PATH) -> dict:
+    """{'card_types','land_types','supertypes'} -> sets, read from CR 205.
+
+    Required by CR 702.14a's landwalk template, which is stated as a GRAMMAR
+    over these three lists rather than as a list of keyword names."""
+    if not path.exists():
+        fc.halt(f"CR markdown not found at {path}.")
+    text = path.read_text(encoding="utf-8", errors="strict")
+    out = {}
+    for key, rx in TYPE_RULES.items():
+        m = rx.search(text)
+        if not m:
+            fc.halt(f"Could not parse {key} from the CR (rule 205). The CR's "
+                    f"wording has changed; fix the parser, do not fall back to "
+                    f"a remembered list.")
+        words = re.split(r",\s*|\s+and\s+", m.group(1))
+        out[key] = {w.strip().strip(".").lower() for w in words if w.strip()}
+    for key, least in (("card_types", 15), ("land_types", 17), ("supertypes", 5)):
+        if len(out[key]) < least:
+            fc.halt(f"parsed only {len(out[key])} {key} from CR 205 "
+                    f"(expected >= {least}): {sorted(out[key])}")
+    return out
+
+
 def classify(kw: dict) -> tuple:
     """Return (classes, evidence) read from the keyword's own sub-rules, where
     `classes` is the ORDERED list of every distinct class the CR states for it.
@@ -178,18 +210,68 @@ MULTI_HINT = re.compile(
 MEANS = re.compile(r"means\s+[“\"]([^”\"]+)[”\"]")
 
 
+def effective_classes(kw: dict) -> list:
+    """The keyword's CR-stated ability classes after the CR's own rollups."""
+    classes, _ev = classify(kw)
+    out, seen = [], set()
+    for c in classes:
+        e = SUBSUMES.get(c, (None,))[0] or c
+        if e not in seen:
+            seen.add(e)
+            out.append(e)
+    return out
+
+
 def find_home(kw: dict, ratified: dict) -> tuple:
     """(delivery_token, descriptor, cr_templated_text) for one keyword, or
-    (None, None, None) when the CR states no templated text to parse."""
+    (None, None, None) when the CR states no templated text to parse.
+
+    §2b, verbatim: *"A keyword's CLASS and its TRIGGER EVENT are separate
+    questions. The class says WHICH SLOT; the templated text says which token
+    in that slot."* This used to let the templated text decide the slot too,
+    and for the `activated` class that was wrong in both directions:
+
+      * DROPPED 6 keywords. CR 702.6a's templated text opens `"[Cost]: Attach
+        this permanent…"` -- a literal placeholder where a card prints a real
+        cost. `parse_delivery`'s activated branch requires a recognisable cost
+        left of the colon ({mana}, sacrifice, discard, tap, …), so `[Cost]`
+        matched nothing and Equip fell to `spell-or-static`. Cycling routed
+        only because its cost half happens to print the word "Discard".
+      * MISROUTED Unearth. CR 702.84a states `activated`, but its templated
+        EFFECT says "exile it instead", so the text parsed as `replacement` --
+        which §2's created-ability rule already forbids: the delivery belongs
+        to the ability that CREATES the replacement effect, not to it.
+
+    So for a keyword the CR states as `activated` and nothing else, the slot is
+    CR 113.3b's "[Cost]: [Effect]" outright and the templated text is not
+    consulted.
+
+    The other classes are deliberately untouched. A `static` keyword whose
+    templated text is a CR 614 replacement still routes to `replacement`,
+    because the CR chains the two rather than opposing them -- 113.3d: *"Static
+    abilities ... create continuous effects"*; 614.1: *"Some continuous effects
+    are replacement effects."* So `replacement` is the MORE SPECIFIC reading of
+    a static keyword, not a contradiction of it, and §2b's ratified table
+    already routes 16 keywords (Amplify, Bloodthirst, Dredge, Madness, Modular,
+    Riot …) exactly that way. Widening this to "the class always wins" would
+    have destroyed all 16."""
     import foundry_shape_extractor as fse
+    text = None
     for letter in sorted(kw["subrules"]):
         m = MEANS.search(kw["subrules"][letter])
-        if not m:
-            continue
-        text = m.group(1).strip()
-        tok, desc = fse.parse_delivery(text, ratified, None)
-        return tok, desc, text
-    return None, None, None
+        if m:
+            text = m.group(1).strip()
+            break
+    if effective_classes(kw) == ["activated"]:
+        if "activated" not in ratified:
+            fc.halt("grammar §2 no longer ratifies the `activated` DELIVERY "
+                    "token, which CR 113.3b's ability class requires. Refusing "
+                    "to route CR-stated activated keywords anywhere else.")
+        return "activated", "cr-class:activated (702.Na)", text
+    if text is None:
+        return None, None, None
+    tok, desc = fse.parse_delivery(text, ratified, None)
+    return tok, desc, text
 
 
 def cmd_homes(rows: list, keywords: dict) -> None:
@@ -272,12 +354,7 @@ def main() -> None:
     for num in sorted(named):
         kw = named[num]
         classes, ev = classify(kw)
-        effective, seen = [], set()
-        for c in classes:
-            e = SUBSUMES.get(c, (None,))[0] or c
-            if e not in seen:
-                seen.add(e)
-                effective.append(e)
+        effective = effective_classes(kw)
         blob = " ".join(kw["subrules"].values())
         rows.append({"cr": f"702.{num}", "keyword": kw["name"],
                      "cr_classes": classes, "effective_classes": effective,
