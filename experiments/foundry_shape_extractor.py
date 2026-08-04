@@ -492,6 +492,17 @@ def landwalk_variant(part: str) -> bool:
 
 COST_OR_PARAM = re.compile(r"\{[^}]*\}|\bN\b|\d+")
 
+# D8. A printed keyword list is joined by a comma OR a semicolon, and only the
+# comma was handled -- "Flying; banding", "Defender; reach", "Trample; rampage
+# 1", "Flying; trample; rampage 4". 34 lines. There is no CR question here:
+# both are ordinary list punctuation, and the semicolon carries no rules
+# meaning the comma does not. Shared by BOTH keyword paths so the two cannot
+# drift apart -- `keyword_line_tokens` now falls through to
+# `keyword_form_tokens`, and fixing only one would leave
+# "Protection from red; banding" (a §2b parameterized form beside a bare
+# keyword) split correctly on one path and not the other.
+KEYWORD_LIST_SPLIT = re.compile(r"[,;]")
+
 # ---------------------------------------------------------------------------
 # D4 -- PARAMETERIZED keyword lines, derived from each keyword's own CR form
 # ---------------------------------------------------------------------------
@@ -651,9 +662,24 @@ def build_keyword_forms(kws: dict, k7) -> None:
 
 
 def _keyword_by_form(part: str):
-    """The keyword whose CR printed form this whole part matches, else None."""
+    """The keyword this whole part names, by CR printed FORM or by bare name.
+
+    Both are checked here because a printed list may MIX the two, and the two
+    paths could not previously cooperate on one line: `Protection from red;
+    banding` has a parameterized form on the left (CR 702.16b's
+    "Protection from [quality]") and a bare keyword on the right. The
+    bare-name path rejected the line because of the left half, the form path
+    rejected it because of the right, and it routed nowhere -- while
+    `Protection from black; flanking` routed fine only because Flanking
+    happens to have a CR form too.
+    """
     if not KEYWORD_FORMS:
         return None
+    low = part.lower()
+    if low in KEYWORD_HOME:
+        return low
+    if landwalk_variant(low):
+        return "landwalk"
     for name, rxs in KEYWORD_FORMS.items():
         if name in KEYWORD_HOME and any(rx.match(part) for rx in rxs):
             return name
@@ -668,7 +694,7 @@ def keyword_line_tokens(line: str) -> list:
     core = re.sub(r"\s+", " ", core)
     if not core:
         return []
-    parts = [p.strip() for p in core.split(",") if p.strip()]
+    parts = [p.strip() for p in KEYWORD_LIST_SPLIT.split(core) if p.strip()]
     if parts and all(p in KEYWORD_HOME or landwalk_variant(p) for p in parts):
         out, seen = [], set()
         for p in parts:
@@ -701,7 +727,7 @@ def keyword_form_tokens(line: str) -> list:
     if whole:
         names = [whole]
     else:
-        parts = [p.strip() for p in text.split(",") if p.strip()]
+        parts = [p.strip() for p in KEYWORD_LIST_SPLIT.split(text) if p.strip()]
         if parts:
             got = [_keyword_by_form(p) for p in parts]
             if all(got):
