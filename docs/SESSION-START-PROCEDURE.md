@@ -106,6 +106,46 @@ overturns and why.
 
 For gating a script or a batch pass, `--strict` exits 1 on any ruled slug.
 
+### Gate 3b — PRIOR ART, for anything that is not a slug (added 2026-08-04)
+
+Gate 3 keys on a **slug**. On 2026-08-04 a session rediscovered four things the
+project had already decided, none of which is a slug:
+
+| rediscovered | already existed |
+|---|---|
+| modal-mode splitting | `expand_modal_bullets()`, **ratified 2026-07-31**, written and correct |
+| the whole preprocessing pipeline | `det_scan_texts()` — *DET preprocessing standard v1* |
+| "Ward is 206 cards and already served" | `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` §6 |
+| where bare keywords go | `KEYWORD-LEDGER-CANDIDATES.md` → Phase B ledger |
+
+**Before measuring a population, naming a defect, or writing a helper:**
+
+```
+python3 experiments/foundry_prior_art.py <topic> [<topic> …]
+python3 experiments/foundry_prior_art.py --orphans
+```
+
+It greps `docs/` and `docs/archive/` with spelling drift tolerated
+(`modal-bullet` / `modal_bullets` / `modal bullets` are one topic), separates
+ruling lines from prose, **and greps the code for a helper that already does
+it**. `--orphans` reports which consumers of card text bypass the ratified
+preprocessing pipeline — measured 2026-08-04: **4 use it, 19 bypass it**, and
+both classifiers that matter (`foundry_shape_extractor`, `foundry_definition_drift`)
+are bypassers.
+
+**Why this is a gate and not advice.** Every one of those four was findable by
+grep. None was findable *by the procedure*, because the procedure **pushes**
+context — a hand-written READING MANIFEST composed by the previous session —
+instead of letting the current task **pull** it. A manifest can only list what
+its author already knew mattered.
+
+**Corollary, and it bit on 2026-08-04:** `SESSION-HANDOFF-2026-08-04.md` has
+**no READING MANIFEST section at all**, though Gate 1 and CLAUDE.md both
+instruct a session to follow it. Every earlier handoff has one. **A gate that
+points at a missing artifact fails open silently** — which is the same failure
+shape as a ratified standard with no caller. If the handoff has no manifest,
+say so and run Gate 3b instead.
+
 ### Gate 4 — when your check disagrees with a ratified list, suspect the check
 
 This is not humility, it is the measured base rate. On 2026-08-02 a

@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **82 documents under docs/**
-- ruling references found: **580**
+- documents scanned: **86 documents under docs/**
+- ruling references found: **582**
 - distinct ruling ids: **126**
-- corroborated (appear in >1 doc): **82**
-- **sole-home (appear in exactly 1 doc): 44**
+- corroborated (appear in >1 doc): **83**
+- **sole-home (appear in exactly 1 doc): 43**
 
 ## Deletion gate — per document
 
@@ -44,6 +44,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 554 | 11 | 0 | yes |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `END-STEP-TRIGGER-RULING-2026-08-03.md` | 111 | 2 | 0 | yes |
+| `EXTRACTOR-REPAIR-LOG-2026-08-04.md` | 168 | 1 | 0 | yes |
 | `GAIN-LIFE-TRIGGER-RULING-2026-08-04.md` | 104 | 1 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
@@ -53,6 +54,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 142 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 7 | **NO** |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
+| `PRE-STEP-2-AUDIT-2026-08-04.md` | 327 | 1 | 0 | yes |
 | `RATIFIED-DIRECTIVES-BATCH-4-6.md` | 746 | 11 | 0 | yes |
 | `REAUDIT-TIER-0-1-2026-08-02.md` | 400 | 1 | 0 | yes |
 | `REAUDIT-TIER-2-2-2026-08-02.md` | 1878 | 2 | 0 | yes |
@@ -67,8 +69,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-04.md` | 178 | 1 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 152 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-04.md` | 218 | 1 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 192 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -81,12 +83,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-2.md` | 452 | 5 | 1 | **NO** |
 | `TRIAGE-BATCH-3.md` | 462 | 4 | 0 | yes |
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
-| `TRIAGE-BATCH-7.md` | 785 | 6 | 1 | **NO** |
+| `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TO-GRAVEYARD-RULING-2026-08-04.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`
+`C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CYCLING-RULING-2026-08-03.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TO-GRAVEYARD-RULING-2026-08-04.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`
 
 ## Sole-home rulings — these block their document
 
@@ -158,10 +160,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
 - `M2` (line 443) — slug that itself carries a KEEP verdict (M2's `etb-tutor-basic-land-to-hand`
-
-**`TRIAGE-BATCH-7.md`** — sole home for 1:
-
-- `D9` (line 764) — D9 — All remaining verdicts stand; process items
 
 **`WALK-RATIFICATION-EXECUTION-HANDOFF.md`** — sole home for 7:
 
@@ -481,7 +479,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
 - `SESSION-HANDOFF-2026-08-03-EVE.md:41` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
-- `SESSION-HANDOFF-2026-08-04.md:132` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
+- `SESSION-HANDOFF-2026-08-04.md:133` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
@@ -704,8 +702,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
-### `D9` — 1 reference(s) across 1 doc(s)
+### `D9` — 3 reference(s) across 3 doc(s)
 
+- `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
+- `PRE-STEP-2-AUDIT-2026-08-04.md:218` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 
 ### `F2` — 3 reference(s) across 2 doc(s)
