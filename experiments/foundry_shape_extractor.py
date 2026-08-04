@@ -1085,12 +1085,25 @@ LANDWALK_MODIFIERS = None  # what may precede that base
 
 
 def build_landwalk_template(k7) -> None:
-    global LANDWALK_BASES, LANDWALK_MODIFIERS
+    global LANDWALK_BASES, LANDWALK_MODIFIERS, TYPECYCLING_WORDS
     v = k7.type_vocabulary()
     LANDWALK_BASES = v["land_types"] | {"land"}
     LANDWALK_MODIFIERS = v["land_types"] | v["card_types"] | v["supertypes"]
     if not {"swamp", "island", "land"} <= LANDWALK_BASES:
         fc.halt(f"CR 205.3i parse lost a basic land type: {sorted(LANDWALK_BASES)}")
+
+    # CR 702.29e names its own vocabulary: "any card type, subtype, supertype,
+    # or combination thereof". Three closed CR 205 lists, unioned -- not the
+    # land-only set landwalk uses, because `slivercycling` and `wizardcycling`
+    # are creature types and `basic landcycling` mixes a supertype with a card
+    # type.
+    TYPECYCLING_WORDS = v["card_types"] | v["subtypes"] | v["supertypes"]
+    # Halt on CONTENT, never on cardinality -- a count cannot see a
+    # substitution (the `type_vocabulary` Oxford-comma trap).
+    for probe in ("plains", "mountain", "basic", "land", "sliver"):
+        if probe not in TYPECYCLING_WORDS:
+            fc.halt(f"CR 205 parse lost {probe!r}, which CR 702.29e's typecycling "
+                    f"forms are built from. Fix the parse, do not hand-list it.")
 
 
 def landwalk_variant(part: str) -> bool:
@@ -1110,6 +1123,41 @@ def landwalk_variant(part: str) -> bool:
     return all(w in LANDWALK_MODIFIERS or
                (w.startswith("non") and w[3:] in LANDWALK_MODIFIERS)
                for w in words[:-1])
+
+
+TYPECYCLING_WORDS = None      # CR 205, via build_landwalk_template
+
+
+def typecycling_variant(part: str) -> bool:
+    """Is `part` a CR 702.29e '[type]cycling' name?
+
+    CR 702.29e: *"Typecycling is a variant of the cycling ability. '[Type]cycling
+    [cost]' means ... This type is usually a subtype (as in 'mountaincycling')
+    but can be ANY CARD TYPE, SUBTYPE, SUPERTYPE, OR COMBINATION THEREOF (as in
+    'basic landcycling')."*  CR 702.29f then settles the delivery outright:
+    *"Typecycling abilities ARE cycling abilities"*, and 702.29a makes cycling
+    an activated ability. So these route exactly where `cycling` routes -- this
+    is not a new home, it is the same one.
+
+    Structurally identical to `landwalk_variant`, and derived from the same CR
+    205 parse for the same reason: the type list is a closed CR enumeration, so
+    writing out `plainscycling, mountaincycling, …` would be the hand-list this
+    repo keeps finding underneath its own defects. Measured 2026-08-07: 91 lines
+    were reaching `spell-or-static` unrouted, and the ground-truth fixture found
+    them because 91 Captain-ratified `rule:typecycling` seeds asserted otherwise.
+
+    Strict on purpose, like its landwalk sibling: the suffix alone is not the
+    test. `recycling` ends in the right seven letters and names no type.
+    """
+    if TYPECYCLING_WORDS is None or not part.endswith("cycling"):
+        return False
+    head = part[:-len("cycling")].strip()
+    if not head:
+        return False           # bare `cycling` is the keyword itself, not a variant
+    words = head.split()
+    # "basic landcycling" -- the LAST word carries the suffix, so it is the
+    # one that had `cycling` stripped off it; the rest are modifiers.
+    return all(w in TYPECYCLING_WORDS for w in words)
 
 
 COST_OR_PARAM = re.compile(r"\{[^}]*\}|\bN\b|\d+")
@@ -1317,10 +1365,16 @@ def keyword_line_tokens(line: str) -> list:
     if not core:
         return []
     parts = [p.strip() for p in KEYWORD_LIST_SPLIT.split(core) if p.strip()]
-    if parts and all(p in KEYWORD_HOME or landwalk_variant(p) for p in parts):
+    if parts and all(p in KEYWORD_HOME or landwalk_variant(p) or typecycling_variant(p)
+                     for p in parts):
         out, seen = [], set()
         for p in parts:
-            t = KEYWORD_HOME[p] if p in KEYWORD_HOME else KEYWORD_HOME["landwalk"]
+            if p in KEYWORD_HOME:
+                t = KEYWORD_HOME[p]
+            elif typecycling_variant(p):
+                t = KEYWORD_HOME["cycling"]     # CR 702.29f: they ARE cycling
+            else:
+                t = KEYWORD_HOME["landwalk"]
             if t not in seen:
                 seen.add(t)
                 out.append((t, f"keyword:{p}"))
