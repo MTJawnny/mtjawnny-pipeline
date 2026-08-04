@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **71 documents under docs/**
-- ruling references found: **574**
+- documents scanned: **72 documents under docs/**
+- ruling references found: **575**
 - distinct ruling ids: **126**
 - corroborated (appear in >1 doc): **82**
 - **sole-home (appear in exactly 1 doc): 44**
@@ -61,7 +61,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03-PM.md` | 191 | 2 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-EVE.md` | 184 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 134 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
@@ -379,7 +380,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02-EVE.md:108` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
 - `SESSION-HANDOFF-2026-08-02.md:109` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
-- `SESSION-HANDOFF-2026-08-03-PM.md:153` — CDR-01 · `begin-combat-trigger` + Saga-chapter vocabulary
+- `SESSION-HANDOFF-2026-08-03-PM.md:163` — CDR-01 · `begin-combat-trigger` + Saga-chapter vocabulary
 - `SESSION-HANDOFF-2026-08-03.md:89` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
 - `TIER-3-DECISION-PACKET-2026-08-02.md:57` — > packet's precedent (its four n=1 axes are all `active`). CDR-01 — which
 - `TIER-4-DECISION-PACKET-2026-08-02.md:130` — grammar-composable, but at n=1 CDR-01 would defer it anyway.
@@ -446,7 +447,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 27 reference(s) across 15 doc(s)
+### `CDR-09` — 28 reference(s) across 16 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -471,6 +472,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:8` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
 - `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
+- `SESSION-HANDOFF-2026-08-03-EVE.md:33` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
@@ -1066,7 +1068,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:210` — This is the seventh instance of the standing lesson** (§S4 154→90→44 · C4f ·
 - `PARENT-TREE-CANDIDATES.md:21` — S4. Multiple parents allowed when earned (stun-counter sits under both
-- `SESSION-HANDOFF-2026-08-03-PM.md:180` — Standing lesson, now on its fifth instance (§S4 154→90→44 · C4f · Roles 85% ·
+- `SESSION-HANDOFF-2026-08-03-PM.md:190` — Standing lesson, now on its fifth instance (§S4 154→90→44 · C4f · Roles 85% ·
 - `SESSION-HANDOFF-2026-08-03.md:82` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:358` — token's** printed text."* That rule was ratified against SYNTH misfiles; §S4
 - `TIER-4-DECISION-PACKET-2026-08-02.md:425` — Plus §S4, which is its own ruling and larger than all of the above combined.

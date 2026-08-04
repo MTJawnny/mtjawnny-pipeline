@@ -115,10 +115,21 @@ encodes.
 - `cards.sqlite` excludes token/plane layouts; corpus truth for foundry
   work is tier_engine's jsonl loader (38,233 cards).
 - The local CR markdown contains NO literal reminder-text strings.
+- **A trigger's EVENT lives in its CONDITION, never in its effect.** CR 113.3c:
+  *"Triggered abilities have a trigger condition and an effect. They are written
+  as '[Trigger condition], [effect]'."* Matching a verb against the whole
+  ability line over-counted **seven** families on 2026-08-03 (sacrifice 181→110,
+  end-of-combat 111→17, self-vs-other 1,921→1,558, …). Legion Warboss's "create
+  a Goblin **that attacks**" is an effect, not an attack trigger.
+- A trigger clause does **not** end at the first comma — "Whenever a Mutant**,**
+  Ninja, or Turtle you control enters" has commas inside the object phrase.
+- **A ground-truth set only validates the shapes it contains.** The 116
+  hand-verified Clue routings stayed byte-identical through every one of those
+  seven fixes. Keep the set; keep widening it.
 
 ## Reference
 
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-03-PM.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-03-EVE.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)

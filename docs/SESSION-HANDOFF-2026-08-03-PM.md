@@ -1,5 +1,15 @@
 # SESSION HANDOFF — 2026-08-03 PM
 
+> ## ⛔ SUPERSEDED — go to `docs/SESSION-HANDOFF-2026-08-03-EVE.md`
+>
+> This file is a snapshot from before the delivery-vocabulary batch was taken.
+> **Its live-state table and its §5 "NEXT WORK ITEM" are both stale**: §2 grew
+> from 19 tokens to 30, a codebook migration executed (sha `48e36cc7…` →
+> `5fa27b70…`), and the ~2,700-card batch it describes has been ruled.
+>
+> Its §8 numbers are also superseded — self-vs-other measured **1,558**, not
+> 1,921. See the EVE handoff §6.
+
 Supersedes `SESSION-HANDOFF-2026-08-03.md`. **Zero API calls all session.
 Cumulative arc spend unchanged at $90.51 / $140.** Captain has **$37** in the
 Claude Console, deliberately unspent — see §7.
