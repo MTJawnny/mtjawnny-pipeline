@@ -1,5 +1,12 @@
 # SESSION HANDOFF — 2026-08-04
 
+> **SUPERSEDED by `docs/SESSION-HANDOFF-2026-08-04-EVE.md`. Go there.**
+> Its §8 ratification sheet is still live and unchanged; §8a's work order
+> has been reworked — step 1 is done and step 2 was found UNSAFE as written
+> (`PRE-STEP-2-AUDIT-2026-08-04.md`). **This file also has no READING
+> MANIFEST**, which is the defect that cost the 2026-08-04 EVE session half
+> a day; the EVE handoff carries a task-indexed one.
+
 Supersedes `SESSION-HANDOFF-2026-08-03-EVE.md`. **Zero API calls all session.
 Cumulative arc spend unchanged at $90.51 / $140.** Captain's $37 still unspent.
 
