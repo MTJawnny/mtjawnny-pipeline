@@ -281,6 +281,27 @@ encodes.
   `_MODAL_HEADER_RE` reads the RAW line. The old behaviour was wrong somewhere
   nothing downstream could observe. Don't read "0 moved" as "no-op"; read it as
   "the guard was elsewhere".
+- **A PROBE THAT OVERLAPS ANOTHER PROBE reports a correlation as a finding.**
+  A `non-ASCII` punctuation class written as `[^\x00-\x7f]` also matches the
+  em-dash, the bullet and the curly apostrophe — so it silently re-measured
+  three classes already in the same table and scored 6,342 lines at ratio 1.55.
+  Restricted to letters: 33 lines, ratio 0.81. Cousin of "a probe must consume
+  the same preprocessing as the classifier": there it disagreed with the
+  classifier, here it agreed with itself twice.
+- **A CENSUS CANNOT ANSWER "did anything get LOST" — conservation can.** Assert
+  that what went in came back out: the strip returns a *suffix* of its input
+  (nothing deleted mid-line), `sentence_spans` reassembles character-for-
+  character, every ability line yields ≥1 delivery. `foundry_punctuation_audit.py`
+  runs all three; test A would have caught the 2026-08-04 hyphen disaster
+  (`"When Spider-Ham enters"` → `"Ham enters"`) *without knowing what an ability
+  word is*.
+- **An ability with NO SOURCE is not the keyword's ability.** CR 702.179a says
+  *"Start your engines! is a static ability"*, but `effective_classes` returns
+  `['static','triggered']` because it swept in 702.179d's inherent trigger —
+  which *"has no source"* and exists whether or not any permanent has the
+  keyword. The `== ["static"]` fallback then never fires and 46 lines go
+  unrouted. When a CR keyword entry describes a game rule alongside the
+  keyword, only the ability the keyword GRANTS is its class.
 - **A population count is not a yield count is not a routing claim.** AUDIT-5's
   121 unstrippable prefixes were 41 real ability/flavor words, of which 29
   changed delivery — three questions, three numbers. State which one you mean.
