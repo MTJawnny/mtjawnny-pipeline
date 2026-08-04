@@ -103,6 +103,19 @@ encodes.
   Nothing model-generated is load-bearing without Captain ratification.
 - **Determinism:** fixed seeds, explicit sort keys, x2 byte-identical
   gates on generated artifacts.
+- **NEVER TRANSCRIBE THE CR — DERIVE FROM IT AT RUN TIME.** Captain,
+  2026-08-04: *"every time consulting the CR is the answer."* Measured that
+  session: **every** finding traced to a CR rule, and **every** defect traced to
+  a hand-written list standing in for a closed list the CR already publishes —
+  landwalk (5 variants listed vs CR 702.14a's grammar over CR 205), trigger
+  verbs (24 curated vs CR 701), keyword classes (curated vs 702.Na), token types
+  (8 of 21 vs CR 111.10), and an ordinal recount that omitted `twelfth`.
+  A hand-list is not a shortcut, it is a defect with a delay. If the CR
+  enumerates it, parse the CR — with a halt-guard, so a parse failure stops the
+  run instead of silently truncating the vocabulary. **The rule is predictive:**
+  the two hand-lists still standing in `foundry_shape_extractor.py` (the
+  activated cost-head verbs, and the replacement templates vs CR 614.1a-c's
+  three) are exactly the two open defects D5 and D6.
 - **All-paragraph AND all-faces scanning** in every classifier/derivation.
 - **Evidence-quote-or-discard** on every per-card assignment; quotes come
   from oracle text only.
