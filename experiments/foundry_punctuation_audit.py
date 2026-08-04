@@ -286,7 +286,8 @@ def main():
                     tot[name] += 1
                     unr[name] += is_unrouted
     base = n_unrouted / n_lines if n_lines else 0
-    print(f"  corpus unrouted rate  {n_unrouted}/{n_lines} = {base:.3f}\n")
+    print(f"  corpus unrouted rate  {n_unrouted}/{n_lines} = {base:.3f}"
+          f"   (per LINE — the snapshot counts per delivery ROW and reads higher)\n")
     # RATIO is what this table has always printed. Z and FLOOR are new, and
     # they exist because the ratio flag's sensitivity was never stated:
     #

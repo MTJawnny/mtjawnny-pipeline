@@ -81,11 +81,30 @@ python3 experiments/foundry_definition_drift.py
 python3 experiments/foundry_ruling_registry.py
 python3 experiments/foundry_punctuation_audit.py     # conservation: nothing lost
 python3 experiments/foundry_visibility_audit.py      # can each option be SEEN
+python3 experiments/foundry_ground_truth.py          # is the token RIGHT
+python3 experiments/foundry_gate_audit.py            # what does Gate #0 hide
 ```
 
-The last two were added 2026-08-06 and both exit 1 on failure. They answer a
-question the other four cannot: the first four check that what EXISTS is
-consistent, these check that nothing was silently DROPPED or made unreachable.
+**Eight, and each answers a question none of the others can.** The first four
+check that what EXISTS is consistent. Conservation and visibility check that
+nothing was silently DROPPED or made unreachable (added 2026-08-06). The last
+two were added 2026-08-07:
+
+- **`foundry_ground_truth.py`** is the only positive-correctness check in the
+  repo. Everything else asks "did it change / get lost / depend on the name" —
+  none of them can see a token that has been WRONG since before the first
+  snapshot, and `diff --strict` scores `None → ratified` as pure profit. It
+  replays **534 Captain-ratified `class: human` seeds** from
+  `experiments/moves/*.json`, deriving every expected value at run time.
+- **`foundry_gate_audit.py`** reports what `load_corpus_gated()` removes.
+  Every other check on this list calls it, so the gate is ONE blind spot shared
+  by all eight, not eight separate ones.
+
+All eight exit 1 on failure. Conservation and visibility additionally compare
+against a **pinned baseline** (`experiments/out/foundry/audit-baseline.json`):
+movement in the worse direction is fatal, and accepting any movement takes an
+explicit `--update-baseline`. Without it, degradation exited 0 — uncontexted
+could go 33 → 900 and nothing would say so.
 
 Handoff numbers lag. Every hand-written number checked across two sessions on
 2026-08-02 was wrong in at least one direction — including the tier-3 scope

@@ -301,8 +301,10 @@ encodes.
   WHEN it happens, so a proximity pattern cannot span it). The routing
   regression compares tokens, the gap census counts vocabulary, and the
   conservation audit proves nothing was deleted — all three are blind to
-  layer 3. `foundry_visibility_audit.py` is the reporter; measured 2026-08-06,
-  0 dropped, 0 unscanned, **237 uncontexted** (die rows, spree, station).
+  layer 3. `foundry_visibility_audit.py` is the reporter. **Run it for the
+  number; do not read one here.** The 237 this line used to quote was stale one
+  commit after it was written (`3ff3afd` joined the die rows and spree), which
+  is the "carried-forward count is not a measurement" trap biting THIS FILE.
 - **A PROBE IS CODE AND GETS AUDITED LIKE CODE.** Three probe defects in one
   session, each of which would have been reported as a finding: a `non-ASCII`
   class that re-measured the em-dash, `{TK}` read as a CR 721 station symbol
@@ -369,6 +371,63 @@ encodes.
   side of the damage family covering 2 of CR 120.1's 4 recipients while the
   RECIPIENT side was ratified against all four — **one side of a family
   enumerated from a closed CR list, the other not.**
+- **AN AUDIT'S BOUNDARY IS UPSTREAM OF SOMETHING.** Conservation test A
+  measured from `ability_lines()` OUTPUT — and `ability_lines()` IS the
+  reminder strip plus a split, so the biggest text mutation in the pipeline
+  (19.2% of every oracle character, CR 207.2a) sat upstream of the boundary and
+  test A's own law was never applied to it. Ask what runs BEFORE the first
+  thing your audit reads.
+- **CONSERVATION IS STRUCTURAL AND CANNOT SEE CONTENT.** Interleave
+  conservation passes a GREEDY `\(.*\)` that eats every character between the
+  first `(` and the last `)` — kept + removed still reassembles perfectly. Only
+  the span's own CR definition catches it. Negative-control every guard against
+  a deliberately broken version of what it guards.
+- **THE HOUSE STYLE HAS NO POSITIVE-CORRECTNESS TEST — build the fixture from
+  ratified artifacts, never by hand.** Conservation asks "did anything get
+  lost", invariance "does it depend on the name", diff "did it change".
+  Nothing sees a token that was wrong before the first snapshot, and
+  `diff --strict` scores `None → ratified` as pure profit.
+  `experiments/moves/*.json` already hold **534 `class: human` seeds with
+  evidence quotes** — derive expected values from the slug against §2 / CR 702
+  at run time. `foundry_ground_truth.py` found 91 unrouted typecycling lines on
+  its first run.
+- **CR 201.5c's shortened name is LEGENDARY-ONLY, and the qualifier is in the
+  rule** (*"used in this manner"*). Ungated, the `" of "` / `" the "` head
+  heuristic erased CR 205 TYPE words from oracle text on 26 non-legendary
+  cards — `Destroy the Evidence` scanned as `~ target land`, `Knight of the New
+  Coalition` created a `~ token`. All 118 legendary hits were correct.
+- **EVERY STANDING CHECK SHARES ONE GATE, SO THE GATE IS ONE BLIND SPOT, NOT
+  EIGHT.** All of them call `load_corpus_gated()`. 114 CR 205 members are
+  attested ONLY outside it, including the six card types that caused the
+  self-reference defect. `foundry_gate_audit.py` is the reporter; all 5,676
+  gated-out cards parse, so the gate is a POPULATION decision, not a
+  capability limit — a CR enumeration can still be tested against all of it.
+- **A RATCHET NEEDS NO CONSTANT.** Both new audits exited 0 on any amount of
+  degradation, and a tolerance band would be exactly the tuning knob the engine
+  rules forbid. `foundry_audit_baseline.py` pins the numbers and makes movement
+  in the WORSE direction fatal, better-direction movement reported, and either
+  one accepted only by an explicit `--update-baseline`. Same standard as the
+  determinism ×2 gate.
+- **"UNROUTED" OVERSTATES THE WORK BY ~3×.** 93.7% of it is `spell-or-static`,
+  and CR 113.3a splits that bucket with no new vocabulary: **69.9% sits on
+  cards WITH an instant/sorcery face**, where grammar §1's unmarked default is
+  already correct. Only the decidably-static 30.1% is a queue. `--gaps` now
+  reports inside the bucket it excludes.
+- **A JOIN IS A CAPABILITY, AND CAPABILITIES CUT BOTH WAYS.** The joins that
+  let a mode reach its header could also let a pattern pair the FRONT face of a
+  DFC with the BACK — a co-occurrence that never exists in play (CR 712.8,
+  CR 709.3b). Currently zero, because house proximity scoping is `[^\n]*`; the
+  assertion ships WITH the joins, not after one breaks it.
+- **A PROBE DEFECT IS THE DEFAULT OUTCOME, NOT THE EXCEPTION.** Six more this
+  session on top of the previous four, every one in the same family — *asking
+  the question again instead of consuming what the classifier emitted*:
+  `parse_deliveries` instead of `deliveries_for_lines` (lost D3 inheritance);
+  `kw in [(tok, desc), …]` against tuples (scored a correct 304-member family
+  0/304); grading a family axis by string equality against a printed variant;
+  splitting type lines on whitespace (called 28 multiword/curly-apostrophe CR
+  subtypes unattested); a band boundary that stopped at any `roll … dice` line
+  (Barbarian Class's own level-2 ability); `_direction` reading only a dotted
+  key's LEAF, so every nested pinned metric silently resolved to neutral.
 
 ## Out of scope — check before raising a finding
 

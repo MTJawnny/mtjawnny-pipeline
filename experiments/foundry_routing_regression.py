@@ -99,7 +99,15 @@ def cmd_snapshot(args) -> None:
     Path(args.path).write_text(json.dumps(payload, indent=1), encoding="utf-8")
     print(f"wrote {args.path}")
     print(f"  routed lines {len(rows)}   keyword homes {len(fse.KEYWORD_HOME)}")
-    print(f"  lines with NO ratified token: {by_token.get('None', 0)}")
+    # PER DELIVERY ROW, not per line. 567 lines carry more than one delivery
+    # (grammar §1's multi-axis rule: "Whenever ~ enters OR attacks" earns
+    # both), so this number is ~90 higher than the conservation audit's
+    # per-LINE count of the same thing -- 15,993 vs 15,902 on 2026-08-07.
+    # Both are correct and they answer different questions; handoffs have
+    # quoted them interchangeably. "A population count is not a yield count is
+    # not a routing claim. State which one you mean."
+    print(f"  delivery ROWS with no ratified token: {by_token.get('None', 0)}"
+          f"   (rows, not lines — see the conservation audit for per-line)")
 
 
 def cmd_diff(args) -> None:
