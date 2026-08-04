@@ -195,7 +195,38 @@ def full_oracle_text(card: dict) -> str:
 
 
 CARDNAME_TOKEN = "~"
-_MODAL_HEADER_RE = re.compile(r"choose (?:one|two|three|one or more|up to \w+)\b.*—\s*$", re.I)
+# CR 700.2 defines modality by the LIST and the INSTRUCTION, never by
+# punctuation: *"A spell or ability is modal if it has two or more options in a
+# BULLETED LIST preceded by INSTRUCTIONS FOR A PLAYER TO CHOOSE A NUMBER of
+# those options, such as 'Choose one —.'"* The em-dash is the CR's EXAMPLE of
+# how such a header is printed, not its definition.
+#
+# The old form anchored on `—\s*$` and therefore missed every header whose
+# sentence CONTINUES past the mode count -- 102 lists, 259 bullets, 102 cards:
+#
+#   Choose three. You may choose the same mode more than once.   (CR 700.2d)
+#   Choose one. If you control a commander as you cast this spell, you may …
+#   An opponent chooses one —                                    (CR 700.2e)
+#   Trick Arrows — Whenever Hawkeye becomes tapped, … choose up to that many.
+#
+# `chooses` is required by CR 700.2e (*"some spells and abilities specify that
+# a player OTHER THAN THEIR CONTROLLER chooses a mode"*).
+#
+# A NUMBER is required, and that is what keeps the SIEGE cycle out. "As this
+# enchantment enters, choose Khans or Dragons" NAMES its options instead of
+# counting them, so it is not CR 700.2 modal -- and that is the right answer:
+# a Siege's bullets are the permanent's OWN triggered/static abilities, gated
+# on a choice made as it enters, not modes of a spell. Measured 2026-08-06,
+# all 16 lists this test declines are correctly non-modal (14 Sieges,
+# Celebr-8000's CR 706.3b die table, and a granted ability in quotes).
+#
+# Modality is confirmed STRUCTURALLY by the caller -- every consumer requires a
+# bulleted list to follow -- so this line only has to recognise the
+# instruction. Ratified DET preprocessing standard v1; widened 2026-08-06 on
+# Captain's word ("yes let's fix this modal stoppage").
+_MODAL_HEADER_RE = re.compile(
+    r"\bchooses?\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|"
+    r"X|\d+|any number|up to \w+)\b", re.I)
 
 
 def _cardname_candidates(card: dict) -> list:

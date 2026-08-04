@@ -165,7 +165,20 @@ def ability_word_prefix(raw: str):
         return None, raw
     if CHAPTER.match(raw):                                  # CR 714.2
         return None, raw
-    if fc._MODAL_HEADER_RE.search(raw.strip()):             # CR 700.2
+    # CR 700.2 modal header: the em-dash ENDS the line, because the options
+    # follow on their own lines (*"two or more options in a bulleted list"*).
+    # So there is no body to strip and the phrase IS the ability -- "When Kura
+    # dies, choose one —", "An opponent chooses one —".
+    #
+    # This used to test `_MODAL_HEADER_RE` against the whole line, and that was
+    # wrong twice over. A modal header may ALSO carry a flavor word (Hawkeye's
+    # `Trick Arrows — Whenever Hawkeye becomes tapped … choose up to that
+    # many.`), where stripping is exactly what lets the trigger be read; and
+    # "choose" in a line is not always a MODE instruction (Klaw's `Sonic Attack
+    # — When Klaw enters … You choose one of them.` chooses a CARD). Both lost
+    # a ratified trigger the moment the modal test was widened. The empty body
+    # is the structural fact and it has no false-positive surface.
+    if not body.strip():
         return None, raw
     if CR_KEYWORD_NAMES and re.search(r"\d", pre) and \
             pre.split()[0].lower() in CR_KEYWORD_NAMES:     # CR 702.Na
