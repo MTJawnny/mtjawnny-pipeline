@@ -295,6 +295,21 @@ encodes.
   Inheriting "no ratified token" is the right answer. Test whether the delivery
   is REACHABLE, not whether it is ratified — an unrouted rate alone called
   three correct constructs broken.
+- **AN OPTION CAN BE LOST AT THREE LAYERS, AND TWO HAVE NO OTHER REPORTER.**
+  DROPPED (no delivery row), UNSCANNED (effect text in no `det_scan_texts`
+  variant), UNCONTEXTED (readable, but never JOINED to the header that says
+  WHEN it happens, so a proximity pattern cannot span it). The routing
+  regression compares tokens, the gap census counts vocabulary, and the
+  conservation audit proves nothing was deleted — all three are blind to
+  layer 3. `foundry_visibility_audit.py` is the reporter; measured 2026-08-06,
+  0 dropped, 0 unscanned, **237 uncontexted** (die rows, spree, station).
+- **A PROBE IS CODE AND GETS AUDITED LIKE CODE.** Three probe defects in one
+  session, each of which would have been reported as a finding: a `non-ASCII`
+  class that re-measured the em-dash, `{TK}` read as a CR 721 station symbol
+  when it is Unfinity's ticket, and a visibility audit that called 165 options
+  unscannable because it compared un-canonicalized text against
+  `det_scan_texts` output. Run the system map's question on your own probe
+  before you run it on the code.
 - **A SHAPE TEST LOOKS LIKE A MEASUREMENT.** `{TK} — 1/5` is not a CR 721
   station symbol; `{TK}` is Unfinity's TICKET symbol on sticker cards
   (`unf`/`sunf`, type line `Stickers`). 192 lines nearly filed under the wrong

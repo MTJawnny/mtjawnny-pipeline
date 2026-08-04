@@ -176,3 +176,71 @@ and in every case the CR named both the separator's class and what followed it.
 | regressions | **0** |
 | lines appeared / vanished | **0 / 0** |
 | codebook | **untouched** — 565 axes, 8,740 members, lint clean |
+
+---
+
+## 9. THE MECHANISM — `foundry_visibility_audit.py` (added on Captain's ask)
+
+Captain: *"are you saying that these options are now invisible? if so we need
+to build out mechanisms to figure this out."*
+
+**Direct answer: no.** Hawkeye's and Klaw's regressions were caught by the
+routing harness and fixed *before* the commit; all three of Hawkeye's modes now
+carry `becomes-tapped-trigger`, and Klaw's `etb` is back. But that answer came
+from reasoning, and reasoning is what this project has repeatedly been wrong
+about. So it is now a measurement.
+
+The audit asks **three different questions**, because an option can be lost at
+three different layers and the existing tools see only the first:
+
+| layer | question | who else reports it |
+|---|---|---|
+| 1 **DROPPED** | does the line produce a delivery row at all? | conservation audit |
+| 2 **UNSCANNED** | does the effect text appear in *any* `det_scan_texts()` variant? | **nobody** |
+| 3 **UNCONTEXTED** | does the effect ever appear **joined to its header**, so a proximity pattern can reach its timing? | **nobody** |
+
+The routing regression compares tokens, the gap census counts missing
+vocabulary, and the conservation audit proves nothing was deleted — **all three
+are blind to an option whose effect is readable but whose timing is not.**
+
+### Result
+
+```
+1. DROPPED    0
+2. UNSCANNED  0        ✓ no option is invisible
+3. UNCONTEXTED  237 of 2,007 options carrying effect text
+```
+
+| form | joined | NOT joined |
+|---|--:|--:|
+| CR 700.2 bulleted mode | 1,755 | 36 |
+| CR 706.3b die-roll row | 0 | **101** |
+| CR 700.2h spree mode | 0 | **51** |
+| CR 721.2 station striation | 0 | **49** |
+| CR 700.2i pawprint mode | 15 | 0 |
+
+**Of the 36 bulleted ones, 28 are correct** — the Siege bullets are
+self-contained (`• Khans — At the beginning of your upkeep, …` carries its own
+trigger inline and needs no header). The remaining 8 are Celebr-8000's die rows
+and one granted ability.
+
+**So the real layer-3 gap is ~206 options** — die rows, spree modes and station
+striations — whose effect a DET pattern can match but whose *timing* it cannot
+reach, because `expand_modal_bullets` only joins CR 700.2 bullets and pawprints.
+Extending it to the other three forms is the fix, and it is a change to the
+ratified DET preprocessing standard v1, so it is **Captain's call**.
+
+### The audit found its own bug first, and that is the fourth this session
+
+The first run reported **165 options as UNSCANNABLE**. Every one was the probe's
+own defect: `det_scan_texts()` canonicalizes the card's name to `~` and
+`ability_lines()` does not, so `• Consuming Sinkhole deals 4 damage …` was
+searched for inside `• ~ deals 4 damage …`. The over-report landed exactly on
+cards that self-reference by name — disproportionately the legendaries.
+
+That is the recorded trap *"a measurement probe must consume the SAME
+preprocessing as the classifier it is measuring"*, and with the `non-ASCII`
+class and the `{TK}` misreading it is the **third probe defect in one session**.
+The audit now runs both sides through one `align()` helper. **A probe is code
+and gets audited like code** — and a mechanism that cannot find its own bugs is
+not a mechanism.
