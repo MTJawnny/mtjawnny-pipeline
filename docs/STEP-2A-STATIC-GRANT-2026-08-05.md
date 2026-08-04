@@ -10,8 +10,15 @@ as the blanket sweep `PRE-STEP-2-AUDIT-2026-08-04.md` stopped. **Zero API calls.
 
 `PRE-STEP-2-AUDIT` §6 stopped step 2 because routing `spell-or-static` wholesale
 into `static` would take **1,883 wrong answers and make them read as resolved**.
-That reasoning is unchanged and this pass does not touch it: **17,367 lines
-remain in `spell-or-static`** and 5,153 of those are permanent-side.
+That reasoning is unchanged and this pass does not touch it: **17,073 lines
+remain in `spell-or-static`**, 6,821 of those permanent-side.
+
+> **CORRECTED 2026-08-05 by `STEP-2B-STATIC-CONDITION-2026-08-05.md` §8.** This
+> line and §6 both read *"17,367 … 5,153 permanent-side"*. **17,367 was this
+> pass's BEFORE count** — its own 294 closures were never subtracted. The 5,153
+> is not reproducible under any partition tried. Boundary for the corrected
+> permanent-side figure: the type line names any of Creature / Artifact /
+> Enchantment / Land / Planeswalker / Battle / Kindred / Tribal.
 
 This closes two shapes that are individually decidable. Everything else stays
 reported.
@@ -119,7 +126,8 @@ spell's **resolution effect**, not a static that functions on the stack.
 
 ## 6. What remains of step 2
 
-**17,367 lines in `spell-or-static`, 5,153 of them permanent-side.** The method
+**17,073 lines in `spell-or-static`, 6,821 of them permanent-side** (corrected
+2026-08-05 — see the banner in §1). The method
 that worked here is the one to continue with: **name a shape, measure it, read
 its output, tighten until the leakage is zero or explained — then take the next
 shape.** Two tightenings were needed on a shape that looked obvious, and both

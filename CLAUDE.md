@@ -187,6 +187,22 @@ encodes.
 - **`instantiated_members` in `grammars.json` asserts codebook AXES.** A
   delivery-only slug is never an axis (`TRIAGE-BATCH-1.md` §1c), so a DELIVERY
   grammar family lists its measured nodes elsewhere and leaves that field empty.
+- **A measurement probe must consume the SAME preprocessing as the classifier
+  it is measuring**, or it under-reports silently. On 2026-08-05 a probe
+  matching `^as long as` on the raw line measured 400; the classifier matches
+  after `ABILITY_WORD.sub()` and moved **443**. The 43 were ability-word
+  statics (`Threshold — As long as…`, CR 207.2c) and all correct — but they
+  arrived as an unexplained surplus in the diff, not as an error. Same shape as
+  Gate 3b's `--orphans` finding (4 consumers use `det_scan_texts()`, 19 bypass
+  it), one layer down.
+- **A new tail branch in `parse_delivery` can only claim lines that already
+  reached `spell-or-static`** — which makes zero re-routes a structural
+  guarantee, not a lucky result. Prefer the tail when a shape does not need to
+  outrank an existing branch.
+- **`build_keyword_homes` runs `parse_delivery` over each keyword's CR
+  templated text**, so any change to the classifier can silently move
+  `keyword_homes`. Diff that count on every extractor change; a keyword whose
+  parameter is an ABILITY must stay refused by `build_keyword_forms`.
 
 ## Reference
 
