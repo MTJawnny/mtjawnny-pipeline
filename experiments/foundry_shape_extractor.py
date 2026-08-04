@@ -646,8 +646,12 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
                 return mark("upkeep-trigger", "upkeep")
             if re.search(r"\bend steps?\b", clause):
                 return mark("end-step-trigger", "end-step")
+            # Captain-ratified 2026-08-04 (§2 row 14). CR 504.1 -- the token
+            # names the STEP, not the draw: the draw itself is a turn-based
+            # action, not an ability, so a trigger on the draw EVENT is a
+            # different family.
             if re.search(r"\bdraw steps?\b", clause):
-                return None, "draw-step"
+                return mark("draw-step-trigger", "draw-step")
             # CR 505.1 names THREE printed main phases and 505.1a/b keep them
             # apart. Checked before the bare `combat` test: "precombat" and
             # "postcombat" contain no \b-delimited "combat", but the ordering
@@ -712,14 +716,18 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             # "from your library" is a mill shape and narrower still. Folding
             # them together would repeat the dies/leaves-battlefield error that
             # §2 calls "a hard boundary both directions".
+            # Captain-ratified 2026-08-04 (§2 rows 10-13). `mark`, not `msub`:
+            # the ruling measured the printed ZONE, and no §2a subject split
+            # was measured on this family. Under-marking is reportable;
+            # asserting an unmeasured prefix is not.
             if re.search(r"\bfrom anywhere\b", clause):
-                return None, "to-graveyard-from-anywhere"
+                return mark("to-graveyard-from-anywhere-trigger", "to-graveyard-from-anywhere")
             if re.search(r"\bfrom (a |your |their )?library\b", clause):
-                return None, "to-graveyard-from-library"
+                return mark("to-graveyard-from-library-trigger", "to-graveyard-from-library")
             if re.search(r"\bfrom (a |your |their )?hand\b", clause):
-                return None, "to-graveyard-from-hand"
+                return mark("to-graveyard-from-hand-trigger", "to-graveyard-from-hand")
             if re.search(r"\bfrom (a |your |their )?exile\b|\bfrom the stack\b", clause):
-                return None, "to-graveyard-from-other-zone"
+                return mark("to-graveyard-from-other-zone-trigger", "to-graveyard-from-other-zone")
             # No zone printed. CR 110.1 makes a PERMANENT necessarily on the
             # battlefield, so "a permanent you control is put into a graveyard"
             # is dies by CR 700.4 even unstated -- but a "card" is not, and the
@@ -763,16 +771,19 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             # CR 120.10 makes "excess damage" its own triggered-ability check:
             # "Some triggered abilities check whether a permanent has been
             # dealt EXCESS damage." A CR-defined qualifier, not prose.
+            # Captain-ratified 2026-08-04 (§2 rows 4-7). §2a applies and was
+            # MEASURED on this family -- source 74 · any- 38 · other- 0 -- so
+            # these take the subject prefix (msub), not a bare mark.
             if re.search(r"\bexcess\b", qual):
-                return None, "is-dealt-excess-damage"
+                return msub("is-dealt-excess-damage-trigger", "is-dealt-excess-damage")
             # `combat-` is a RESTRICTION, not decoration
             # (DAMAGE-DELIVERY-RULING-2026-08-02), and its negation is printed
             # too -- "noncombat damage" is a real, narrower claim.
             if re.search(r"\bnoncombat\b", qual):
-                return None, "is-dealt-noncombat-damage"
+                return msub("is-dealt-noncombat-damage-trigger", "is-dealt-noncombat-damage")
             if re.search(r"\bcombat\b", qual):
-                return None, "is-dealt-combat-damage"
-            return None, "is-dealt-damage"
+                return msub("is-dealt-combat-damage-trigger", "is-dealt-combat-damage")
+            return msub("is-dealt-damage-trigger", "is-dealt-damage")
         if re.search(r"\bdeals? damage to\b.{0,24}\bplayer\b", clause):
             return mark("any-damage-to-player", "any-damage-player")
         if re.search(r"\bdeals? damage to\b", clause):
@@ -791,7 +802,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\bend of combat\b", clause):
             return mark("end-combat-trigger", "end-combat")
         if re.search(r"\bdraw step\b", clause):
-            return None, "draw-step"
+            return mark("draw-step-trigger", "draw-step")
         if re.search(r"\bbecomes the target of\b", clause):
             return mark("becomes-targeted-trigger", "becomes-targeted")
         if re.search(r"\bblocks\b|\bbecomes blocked\b", clause):
@@ -825,8 +836,12 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return msub("becomes-untapped-trigger", "becomes-untapped")
         if re.search(r"\bbecomes? tapped\b", clause):
             return msub("becomes-tapped-trigger", "becomes-tapped")
+        # Captain-ratified 2026-08-04 (§2 row 8). §2a applies and was MEASURED
+        # -- source 94 · any- 18 · other- 9 -- so unlike the discard and
+        # is-dealt families the `other-` node is POPULATED here (Salt Road
+        # Ambushers). Hard-disjoint from `etb` by CR 708.8 / 702.37e.
         if re.search(r"\bis turned face up\b|\bturned face up\b", clause):
-            return None, "turned-face-up"
+            return msub("turned-face-up-trigger", "turned-face-up")
         # ORDER MATTERS, same reason as the cycling pair above. CR 701.9b
         # distinguishes a discard the AFFECTED PLAYER chooses from one that
         # "another player" directs. "When a spell or ability an opponent
@@ -876,9 +891,13 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # Descriptor is `gain-life`, NOT `lifegain`: grammar §14 Q5 excluded
         # the token `lifegain` as a synonym collision against the ratified §4
         # EFFECT verb `gain-life` (design goal #1).
+        # Captain-ratified 2026-08-04 (§2 row 9). `mark`, not `msub`: CR 119.9's
+        # trigger subject is a PLAYER ("Whenever [a player] gains life"), not a
+        # permanent, so §2a's source/other/any distinction does not arise. The
+        # ruling measured SCOPE instead -- you-control 83 · opponent 3.
         if re.search(r"\bgains? life\b|\bcauses?\b.{0,40}\bto gain life\b|"
                      r"\bgained\b", clause):
-            return None, "gain-life-trigger"
+            return mark("gain-life-trigger", "gain-life")
         # SIXTH whole-line-vs-clause instance. Afiya Grove ("When this
         # enchantment has no +1/+1 counters on it, SACRIFICE IT") and Ember
         # Swallower ("When this creature becomes monstrous, SACRIFICE three

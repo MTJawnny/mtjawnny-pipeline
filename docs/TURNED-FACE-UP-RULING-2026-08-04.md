@@ -5,8 +5,17 @@ Fourth item in the 2026-08-04 gap pass. **Zero API calls.**
 Gate-3 dossier on `turned-face-up`: **no prior ruling in any status; not in the
 codebook.** It appears in three decision packets only as a gap row.
 
-**STATUS: RULED, NOT RATIFIED.** One token proposed. One ratified-token defect
-found and fixed along the way, and it is the larger result of the two.
+**STATUS: RATIFIED 2026-08-04 (Captain).** `turned-face-up-trigger` entered
+`docs/CODEBOOK-NAMING-GRAMMAR.md` §2 as row 8 of the 14-row sheet.
+
+**§4's flagged §2b tension is ALSO ratified, and it was the larger question.**
+Captain's answer: **`replacement`, no code change** — the CR *chains* static and
+replacement rather than opposing them (CR 113.3d *"Static abilities … create
+continuous effects"* → CR 614.1 *"Some continuous effects are replacement
+effects"*), so "static ability" and "replacement effect" name the ability and the
+effect it creates, not two rival classifications of one object. The ruling
+governs **all 16 keywords in that bucket, 282 lines**, not Tribute alone, and is
+recorded as grammar **§2e**, which amends §2b.
 
 ---
 

@@ -7,8 +7,20 @@ Gate-3 dossier on `counter-placed`: no prior ruling, not in the codebook. **But
 checker that knows only one of them manufactures false defects. All four were
 read before writing this.
 
-**STATUS: RULED, NOT RATIFIED.** Proposed as a **§11 grammar family**, not as a
-list of tokens.
+**STATUS: RATIFIED 2026-08-04 (Captain) — §2's family, §3a's sibling NOT.**
+
+The **`<type>-counter-placed-trigger` §11 grammar family** (§2 below) was ratified
+as row 6 of the 14-row sheet and is recorded in `docs/grammars.json` and in
+grammar **§8b**. Its type facet is registered as **OPEN**, because §8 rule 1's
+`<name>` arm is unbounded — so the family's siblings are correctly reported as
+unenumerable rather than being generated as virtual nodes.
+
+**§3a's `<type>-counter-threshold-trigger` remains RULED-NOT-RATIFIED.** The
+sheet carried it as its *own* question — *"whether §3a's name is accepted"* —
+separate from the ratification word on the 14 rows, and only the latter was
+given. Its reasoning stands unchanged and needs zero new vocabulary; it is
+carried to the next decision sheet. It is deliberately **absent** from
+`grammars.json`.
 
 ---
 

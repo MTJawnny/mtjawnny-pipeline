@@ -57,6 +57,67 @@ DELIVERY_VOCAB = {
     # Q2 (walk-ratification 2026-07-31): becomes-targeted-trigger,
     # blocks-or-becomes-blocked-trigger added to the closed DELIVERY vocab.
     "becomes", "targeted", "blocks", "blocked",
+
+    # -- BACKFILL, 2026-08-04 -----------------------------------------------
+    # Eight sec.2 rows ratified between 2026-07-31 and 2026-08-03 never had
+    # their word-tokens encoded here, so slugs composed from ALREADY-RATIFIED
+    # delivery vocabulary failed `unknown_vocabulary`:
+    #
+    #   end-step-trigger           (Q7, 2026-08-03)  -> end, step
+    #   becomes-untapped-trigger   (2026-08-03)      -> untapped
+    #   cycled-trigger             (2026-08-03)      -> cycled
+    #   cycle-or-discard-trigger   (2026-08-03)      -> cycle
+    #   is-attacked-trigger        (2026-08-03)      -> is, attacked
+    #   begin-combat-trigger       (2026-08-03)      -> begin
+    #   end-combat-trigger         (2026-08-03)      -> end
+    #   chapter-trigger            (2026-08-03)      -> chapter
+    #
+    # This is the A15 failure shape the family sweep's check A5 was written
+    # for -- vocabulary ratified in the grammar and never encoded in the
+    # validator -- and it is the same class as "a ratified standard with no
+    # caller": nothing gated it, so nothing reported it.
+    "end", "step", "untapped", "cycled", "cycle", "is", "attacked", "begin",
+    "chapter",
+    # `for` is the connective in the ratified row `tapped-for-mana-trigger`
+    # (CR 106.12a, 2026-08-03). This module's own header comment already
+    # claims "for" is ratified structural vocabulary; it never was, and the
+    # slug validated only via the KEYWORD_VOCAB accident described below.
+    "for",
+
+    # -- THE 14 sec.2 ROWS RATIFIED 2026-08-04 ------------------------------
+    # CODEBOOK-NAMING-GRAMMAR.md sec.2. Grouped by the ruling that carries
+    # each row's CR anchors and measurements.
+    #
+    #   MAIN-PHASE-RULING       CR 505.1 / 505.1a / 505.1b
+    #     precombat- / second- / postcombat-main-phase-trigger
+    "precombat", "postcombat", "main", "phase", "second",
+    #   IS-DEALT-DAMAGE-RULING  CR 120.1 / 120.1a / 120.2a / 120.10
+    #     is-dealt-damage-trigger + -combat- / -excess- / -noncombat-
+    "dealt", "excess", "noncombat",
+    #   TURNED-FACE-UP-RULING   CR 708.7 / 708.8 / 702.37e
+    "turned", "face", "up",
+    #   TO-GRAVEYARD-RULING     CR 700.4
+    #     to-graveyard-from-{anywhere,library,hand,other-zone}-trigger
+    "anywhere", "zone",
+    #   DRAW-STEP-RULING        CR 504.1   (`step` supplied by the backfill)
+    #
+    # `gain-life-trigger` (GAIN-LIFE-TRIGGER-RULING, CR 119.3 / 119.9) needs
+    # no new token: `gain` and `life` are the ratified sec.4 EFFECT verb, which
+    # is precisely why sec.14 Q5 excluded `lifegain` as a synonym collision.
+    #
+    # sec.8b `<type>-counter-placed-trigger` (CR 122.6) -- the type slot is
+    # OPEN, so only the event word belongs in the DELIVERY set; the type words
+    # live in COUNTER_TOKEN_VOCAB below.
+    "placed",
+
+    # -- NO LONGER LEANING ON KEYWORD_VOCAB ---------------------------------
+    # `second` and `up` validated before this change ONLY because
+    # _load_keyword_vocab() splits the 193 CR-702 keyword names into tokens
+    # and happened to emit both. That is an accidental pass through a set
+    # built for the grants-<keyword> facet, and it evaporates whenever
+    # keyword-buckets.json has not been generated (the loader falls back to an
+    # empty set to stay standalone). Both are now ratified DELIVERY tokens in
+    # their own right, above.
 }
 
 EFFECT_VOCAB = {
@@ -95,6 +156,15 @@ COUNTER_TOKEN_VOCAB = {
     "plus1", "minus1", "charge", "stun", "loyalty", "counter", "counters",
     "treasure", "clue", "food", "blood", "gold", "powerstone", "mutagen",
     "lander", "producing",
+    # sec.8 rule 1's `<name>-counter` arm is OPEN -- a card may print any
+    # counter name -- so this list grows one name at a time as sec.11
+    # instantiates a node on a quote-verified member, never by opening the
+    # charset. Ratified 2026-08-04 with sec.8b's counter-placed family, each
+    # verified from FULL oracle text rather than from the trigger line:
+    #   plan  -- Political Triumph, Glorious Purpose (create plan counters
+    #            on themselves)
+    #   hour  -- Midnight Clock (accrues hour counters)
+    "plan", "hour",
 }
 
 # `delayed` moved here from DELIVERY_VOCAB by grammar §2d (Captain-ratified

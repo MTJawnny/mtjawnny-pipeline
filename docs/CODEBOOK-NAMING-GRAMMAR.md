@@ -109,6 +109,35 @@ variable.
 | `end-combat-trigger` | *"Abilities that trigger **'at end of combat'** trigger as the end of combat step begins."* Captain-ratified 2026-08-03. **17 cards, not 111** — see the `delayed` note below: 94 further cards print "at end of combat" as a *duration inside an effect*, which is a delayed trigger belonging to its creator | 506.1, 511.2 |
 | `chapter-trigger` | a Saga chapter ability. CR 714.2: *"A chapter symbol is a **keyword ability** that represents a **triggered ability** referred to as a chapter ability."* 714.2b gives the templated text: *"When one or more lore counters are put onto this Saga, if the number … was less than N and became at least N, [effect]."* Captain-ratified 2026-08-03. **N is a PARAMETER** — the final chapter's sacrifice is a STATE-BASED action (714.4), not part of the ability. `-conditional` is deliberately NOT marked: 714.2b makes the intervening-if definitional, so it would tag 100% of members and distinguish nothing. The Saga *progression* is a TURN-BASED ACTION (714.3c) and is not an ability — `rule:saga-chapter-progression` stays KILLED per `TRIAGE-BATCH-1.md` §1c. **Class level bars are NOT this**: CR 716.2 makes them activated + static, and they already take `activated` | 714.2, 714.2b |
 | `blocks-or-becomes-blocked-trigger` | triggered, a blocking/being-blocked event (Bushido/Flanking/Rampage/Afflict shape; walk-ratification Q2, 2026-07-31) | 509 |
+| `precombat-main-phase-trigger` | "at the beginning of [whose] **first** main phase". Captain-ratified 2026-08-04. **CR 505.1** makes "first" and "precombat" the same phase, and the corpus prints only one of the two — measured **63 of 63 lines print "first main phase"; ZERO print "precombat main phase."** The token is named for the CR's **category** word, matching `begin-combat-trigger` and `end-step-trigger`, which are also category-named. REQUIRES a §6 scope (`you-control` 97 · `each` 4 across the three main-phase tokens); Blinkmoth Urn prints *"each player's first main phase"* | 505.1, 505.1a |
+| `second-main-phase-trigger` | "at the beginning of [whose] **second** main phase" — a **COUNT**, not a category. Captain-ratified 2026-08-04. **CR 505.1b**: *"Phrases such as 'first main phase,' 'second main phase,' and so on **count the number of main phases that have occurred only in the current turn** unless that text specifies otherwise."* Always printed **singular** | 505.1b |
+| `postcombat-main-phase-trigger` | "at the beginning of each of [whose] **postcombat** main phase**s**" — a **CATEGORY**. Captain-ratified 2026-08-04. **`second-` and `postcombat-` are NOT synonyms, and CR 505.1a says so outright**: *"Only the first main phase of the turn is a precombat main phase. **All other main phases are postcombat main phases.** … an effect has caused an **additional combat phase and an additional main phase** to be created."* On an extra-combat turn the **third** main phase is postcombat but is **not** the second, so the two fire on different turns — §2's ratified D3f test asks *does the distinction change WHEN or WHETHER*, and this one does. **Split.** The corpus prints the distinction deliberately: postcombat cards print the **plural** (Sphinx of the Second Sun, Neheb the Eternal, Megatron — the fires-on-every-one reading) while "second main phase" is always singular. **The axis `rule:postcombat-main-phase-trigger` already existed** with a batch-6 KEEP ruling and is **under-populated at 2 of 10 cards**, so ratification here is a *membership* addition, not a new axis | 505.1a |
+| `is-dealt-damage-trigger` | the **RECIPIENT** side of the damage family — *"**X** is dealt damage"* — whose SOURCE side (`combat-damage-to-*`, `any-damage-to-*`, all four reading *"**~** deals damage to X"*) was already ratified, leaving 110 lines with no token. Captain-ratified 2026-08-04. Structurally identical to `is-attacked-trigger`, which named the defending side of a declaration whose attacking side was ratified. Takes the **§2a subject prefix** — source 74 · `any-` 38 · `other-` 0; the source form dominates here (unlike discard) because the archetypal card is *"Whenever **this creature** is dealt damage"* (Trapjaw Tyrant, Hornet Nest, Indoraptor). **CR 120.1 is a CLOSED recipient enumeration** — *"Objects can deal damage to **battles, creatures, planeswalkers, and players**"* — sealed by **120.1a**: *"Damage **can't** be dealt to an object that's not a battle, a creature, or a planeswalker."* Exactly as CR 506.3 sealed the `is-attacked-trigger` object slot. Measured creature 103 · player 6 · planeswalker 3 · **battle 0**, reserved by the enumeration and **not instantiated** (zero members is a hypothesis, per the is-attacked precedent). SCOPE mandatory from day one — Wrathful Red Dragon (*"a Dragon **you control**"*), Kazarov (*"an opponent controls"*), Grievous Wound (*"**enchanted player**"*, which has no §6 token — see `draw-step-trigger`) | 120.1, 120.1a |
+| `is-dealt-combat-damage-trigger` | the recipient-side restriction. `DAMAGE-DELIVERY-RULING-2026-08-02` ruled **`combat-` is a RESTRICTION, not decoration**, and it governs this side of the family too. Captain-ratified 2026-08-04 | 120.2a |
+| `is-dealt-excess-damage-trigger` | **`excess` is a CR term of art, not prose — the CR names this trigger family in its own sentence.** Captain-ratified 2026-08-04. **CR 120.10**: *"**Some triggered abilities check whether a permanent has been dealt excess damage.** … If those sources together dealt an amount of damage to a creature **greater than lethal damage**, excess damage equal to the difference was dealt to that creature."* Aegar the Freezing Flame, Toralf God of Fury, Fall of Cair Andros. Folding these into the base token would assert they fire on *any* damage, which is false — they fire only past lethal. §6a: the printed word is the claim | 120.10 |
+| `is-dealt-noncombat-damage-trigger` | the printed **negation** of the restriction — Chandra's Spitfire, Wildfire Elemental print *"is dealt **noncombat** damage"*. Captain-ratified 2026-08-04. A strictly narrower claim than the base token and a different deck-building mechanism; three separate shapes, never one axis | 120.2a (negation) |
+| `turned-face-up-trigger` | triggered when a face-down permanent is turned face up. Captain-ratified 2026-08-04. Takes the **§2a subject prefix** — source 94 · `any-` 18 · **`other-` 9** (Salt Road Ambushers, *"whenever **another** permanent you control is turned face up"*), so unlike discard and is-dealt-damage the `other-` node is **populated**. **Hard-disjoint from `etb` by CR, stated twice** — **708.8** and **702.37e** both read *"Any abilities relating to the permanent entering the battlefield **don't trigger** … because the permanent has already entered the battlefield."* Same kind of boundary as `death-trigger` vs `leaves-battlefield-trigger`, and it holds both directions. **Anchor on CR 708, NOT on morph**: 708.7 — *"The ability or rules that allow a permanent to be face down **may also allow the permanent's controller to turn it face up**"* — is what keeps morph (702.37), megamorph (702.37b), disguise (702.168), manifest (701.40), manifest dread (701.62) and cloak (701.58) in **one** token instead of five near-duplicates. ***"**As** [this permanent] is turned face up…" is NOT this token*** — **CR 708.11** applies it *"**while** that permanent is being turned face up, not afterward"*, which makes it a `replacement`; Hooded Hydra and Bubble Smuggler are therefore not members | 708.7, 708.8, 702.37e |
+| `gain-life-trigger` | "whenever [a player] gains life". Captain-ratified 2026-08-04. **NOT `lifegain-trigger`** — §14 Q5 explicitly excluded the token `lifegain` as a *"synonym-collision candidate against the ratified `gain-life` EFFECT verb, design goal #1"*, and minting it in the DELIVERY slot is where it would do the most damage, because DELIVERY composes with every §2a prefix. **CR 119.9 EQUATES the two phrasings by rule**: *"Some triggered abilities are written, 'Whenever [a player] gains life…' Such abilities are treated as though they are written, '**Whenever a source causes** [a player] to gain life…'"* So **Firesong and Sunspeaker** (*"whenever a white instant or sorcery spell **causes you to gain life**"*) is this token with a source restriction, **not** a separate family — **the exact opposite verdict to `discard-trigger`**, where CR 701.9b distinguishes who chooses and the "causes you to discard" shape is held out. Same surface English, opposite rulings, and the CR states both outright; not guessable from the wording, only from the rule. **0 life is not a life-gain event** (119.9's last sentence is a membership rule: *"If a player gains **0 life, no life gain event has occurred**, and these abilities won't trigger"*). Replacement sibling for the boundary — **CR 119.10** *"If [a player] would gain life…"* is `replacement`, not this. SCOPE required from day one: `you-control` 83 · `opponent` 3 (Kavu Predator, Punishing Fire — the punish-their-lifegain deck is a genuinely different card) | 119.3, 119.9 |
+| `to-graveyard-from-anywhere-trigger` | "put into a graveyard **from anywhere**". Captain-ratified 2026-08-04. **Strictly WIDER than `dies`, and must never take `death-trigger`** — **CR 700.4** defines the term narrowly (*"The term **dies** means 'is put into a graveyard **from the battlefield**.'"*), so "from anywhere" also covers hand, library, graveyard, exile and stack. Dread is the worked case. §2 already calls the dies / leaves-battlefield line *"a hard boundary both directions"*; this is the same discipline one level out | 700.4 |
+| `to-graveyard-from-library-trigger` | "put into your graveyard **from your library**" — **narrower** than dies; the mill shape. Captain-ratified 2026-08-04. §6a governs: the printed ZONE is the claim, so collapsing this into the `-anywhere` token would make the codebook assert that Dread and a mill payoff are the same mechanism | 700.4 |
+| `to-graveyard-from-hand-trigger` | "put into your graveyard **from your hand**". Captain-ratified 2026-08-04 | 700.4 |
+| `to-graveyard-from-other-zone-trigger` | the printed zone is exile or the stack. Captain-ratified 2026-08-04 | 700.4 |
+| `draw-step-trigger` | "at the beginning of [whose] draw step". Captain-ratified 2026-08-04. Completes the turn-structure family, which is now closed end to end: untap 502 (no card prints a trigger) · upkeep 503 · **draw 504** · precombat main 505.1 · begin combat 507 · end combat 511 · postcombat main 505.1a · end step 513. **CR 504.1** — *"First, **the active player draws a card**. This turn-based action doesn't use the stack."* The draw itself is a **turn-based action, not an ability** — the same structural note CR 714.3c supplies for Saga progression — which is why this token names the **step**, not the draw. **A card triggering on the draw EVENT is a different family and is not this token.** SCOPE required from day one: `each` 14 · `you-control` 14 · `opponent` 1. **2 lines have no available §6 scope token** — Curse of Obsession and Righteous Authority both key on *"**enchanted player's**"*; `enchanted-player` is PROPOSED §6 vocabulary (CR 303.4, 702.5) and is deliberately **not minted here**, because new vocabulary is a ratification | 504.1 |
+
+**Ratified 2026-08-04 — the 14 rows above.** Captain's word on the one decision
+sheet carried in `SESSION-HANDOFF-2026-08-04.md` §8, whose three flagged
+questions were answered first (see §2e). Each row's DET was already wired and
+reporting its shape honestly before ratification, so no token is approximated
+onto a neighbour. Records: `docs/MAIN-PHASE-RULING-2026-08-04.md` ·
+`docs/IS-DEALT-DAMAGE-RULING-2026-08-04.md` ·
+`docs/TURNED-FACE-UP-RULING-2026-08-04.md` ·
+`docs/GAIN-LIFE-TRIGGER-RULING-2026-08-04.md` ·
+`docs/TO-GRAVEYARD-RULING-2026-08-04.md` · `docs/DRAW-STEP-RULING-2026-08-04.md`.
+
+Three shapes from those rulings are deliberately **NOT** routed and stay
+reported — see **§2f**, which is a separate subsection **on purpose**: §2's
+table is machine-parsed, and an unratified shape listed in a table above the
+first `###` would be read as ratified vocabulary.
 
 Rules:
 - DELIVERY is determined by ability STRUCTURE, never by effect words (batch-4
@@ -153,6 +182,72 @@ Rules:
   mechanisms for deck-building — an any-damage trigger fires off pingers, burn
   and fight effects — so they never share an axis. Record:
   `docs/DAMAGE-DELIVERY-RULING-2026-08-02.md`.
+
+### 2f. Shapes REPORTED, never routed — and why this is not part of §2's table
+
+House style is *halt loudly, never best-guess*, so a shape with no ratified home
+is emitted under its own descriptor rather than approximated onto a neighbour.
+
+| emitted as | n | why it is not routed |
+|---|--:|---|
+| `main-phase-unqualified` | 1 | Carpet of Flowers, *"at the beginning of each of your main phase**s**"* — CR 505.1's **collective** sense, firing on **both** main phases. A real fourth shape at n=1; §6b rule 1 says per-shape axes are free, so this awaits a Captain call rather than being folded into `precombat-` |
+| `to-graveyard-zone-unstated` | 11 | Genju of the Realm, Aetherworks Marvel. **CR 110.1 makes a *permanent* necessarily on the battlefield**, so *"a permanent … is put into a graveyard"* **is** dies by CR 700.4 even with the zone unstated — but a *card* is not on the battlefield, and the printed words alone cannot tell the two apart |
+| `battle` on `is-dealt-damage-trigger` | 0 | reserved by CR 120.1's closed enumeration, **not instantiated**. Zero members is a hypothesis, not an absence (the `is-attacked-trigger` precedent) |
+
+**This subsection exists because of the trap it documents.** §2's table is parsed
+at run time by `foundry_shape_extractor.ratified_delivery_tokens()`, which reads
+**every table row between the `## 2.` heading and the first `###`**. The two
+descriptors above were first written into a note table directly under §2's
+table — and the extractor promptly ratified them, turning the two shapes this
+project had deliberately left open into vocabulary. It was caught the same pass
+by a routing diff, not by review.
+
+**This is the second instance of the same trap.** The parser's own comment
+records the first: reading to `## 3.` instead of to the first `###` ingested
+§2a's prefix-table cells and *"silently widening the vocabulary from 19 to 23."*
+**Standing rule: any table under `## 2.` that is not ratified DELIVERY
+vocabulary belongs in a `###` subsection.** Prose and bullet lists are safe; a
+table is not.
+
+### 2e. A static ability that GENERATES a replacement effect takes `replacement` (Captain-ratified 2026-08-04)
+
+The third of the three questions the 14-row sheet flagged, and the one that
+governs more than the card that raised it. **§2b says a CR 702 keyword's class
+picks its slot. For 16 keywords the CR names the class `static` and then prints
+a templated text that CR 614.1c calls a replacement effect.** The two readings
+gave opposite answers on 282 lines.
+
+> **CR 702.104a** — *"Tribute is a **static ability** that functions as the
+> creature with tribute is entering the battlefield. 'Tribute N' means '**As
+> this creature enters**, choose an opponent…'"*
+>
+> **CR 614.1c** — *"Effects that read '[This permanent] enters with . . . ,'
+> **'As [this permanent] enters . . . ,'** or '[This permanent] enters as . . .'
+> **are replacement effects**."*
+
+**The CR CHAINS these rather than opposing them, and that is the resolution.**
+CR 113.3d: *"Static abilities … **create continuous effects**."* CR 614.1:
+*"**Some continuous effects are replacement effects.**"* So "static ability" and
+"replacement effect" are not competing classifications of one object — they name
+the **ability** and the **effect it creates**, and §2's DELIVERY slot has always
+described the effect's shape.
+
+**RATIFIED: `replacement`, and no code change was needed** — the DET already
+routed these. Three further grounds, each independent:
+
+- §2's own `replacement` row already claims *"'enters with/as' shapes"* and
+  cites 614.1a–c, so the template was spoken for before Tribute was examined.
+- A replacement effect is not *"continuously true"*, which is §2's gloss on
+  `static` (CR 113.3d).
+- The **66** *"enters with"* lines were **already** `replacement`. Leaving
+  Tribute on `static` split **one CR template across two tokens** — the failure
+  §2 exists to prevent.
+
+**Scope of this ruling: all 16 keywords in that bucket, 282 lines**, not Tribute
+alone. This **amends §2b**, which is otherwise unchanged: a keyword's `702.Na`
+class still picks the slot, except that where the same sub-rule's templated text
+is a CR 614.1a–c replacement template, the template wins. Record:
+`docs/TURNED-FACE-UP-RULING-2026-08-04.md` §4.
 
 ### 2d. `delayed` is a QUALIFIER, not a DELIVERY (Captain-ratified 2026-08-03)
 
@@ -773,6 +868,82 @@ it's enchanted by a Monster Role", "sacrifice a Cursed Role" — this ruling is
 void and the seven become vocabulary. The finding is about the current corpus,
 not about the mechanic in principle. Re-run the check in §8.4a's evidence
 before assuming it still holds.
+
+### 8b. `<type>-counter-placed-trigger` — a §11 grammar family, not a token (Captain-ratified 2026-08-04)
+
+Row 6 of the 14-row §2 sheet. **It is deliberately not a §2 table row**, because
+§8 rule 1 is binding: the noun sense is **always typed**, and the bare noun
+"counter" never appears in a slug. So the ratified thing is a **grammar** whose
+type slot is filled per §8, and per §11 *"a virtual node instantiates the moment
+one quote-verified member arrives — no fresh ratification."*
+
+> **CR 122.6** — *"Some spells and abilities refer to **counters being put on an
+> object**. This refers to putting counters on that object **while it's on the
+> battlefield** and **also to an object that's given counters as it enters the
+> battlefield**."*
+
+**That second clause is the non-obvious part and is recorded so a later session
+does not "fix" it:** a counter-placed trigger **also fires on counters placed as
+the permanent enters**, so it is **not disjoint** from `etb` or from the
+CR 614.1c "enters with counters" replacement. §1's multi-axis rule applies — a
+card may hold both, and neither subsumes the other.
+
+**These five are DELIVERY nodes, not axes.** `TRIAGE-BATCH-1.md` §1c is binding —
+*"delivery-only slugs are parents, not axes"*, the same rule that keeps the bare
+axis `rule:end-step-trigger` KILLED while `end-step-trigger` is ratified §2
+vocabulary. An axis in this family is a **compound** (delivery + effect), and
+none exists yet, so the family record's `instantiated_members` is **empty**.
+Listing the five nodes there claimed five axes that do not and should not exist,
+and `foundry_family_sweep.py` check A2 reported it BLOCKING. The check was right.
+
+| measured DELIVERY node | lines | cards |
+|---|--:|--:|
+| `plus1-counter-placed-trigger` | 31 | 31 |
+| `plan-counter-placed-trigger` | 9 | 9 |
+| **`any-counter-placed-trigger`** | 2 | 2 |
+| `loyalty-counter-placed-trigger` | 1 | 1 |
+| `hour-counter-placed-trigger` | 1 | 1 |
+
+**`any-` here is §8a's ratified form, not a coinage.** §8a minted it for *"axes
+that genuinely span every counter type and therefore cannot be typed"* — Putrid
+Hexhag and Stalwart Successor print *"whenever **one or more counters** are put
+on"*, with no type word for §8a's left-binding rule to bind to. Naming those
+`counter-placed` bare would violate §8 rule 1 **and** §8a's own test.
+
+`plan` and `hour` are `<name>-counter` types per §8 rule 1, verified from **full
+oracle text**, not from the trigger line: Political Triumph and Glorious Purpose
+both *create* plan counters on themselves; Midnight Clock accrues hour counters.
+
+**The type facet is OPEN, and the family record says so.** §8 rule 1's `<name>`
+arm is unbounded — a card may print any counter name — so this family's siblings
+are **not enumerable**, and `foundry_family_sweep.py` correctly reports it as
+unenumerable rather than manufacturing a product of virtual nodes. Record:
+`docs/grammars.json`, family `<type>-counter-placed-trigger`.
+
+**One sibling is PROPOSED and stays RULED-NOT-RATIFIED:
+`<type>-counter-threshold-trigger`** — the 11 lines printing an **ordinal**
+(Political Triumph, *"the **fourth** plan counter"*; Midnight Clock, *"the
+**twelfth** hour counter"*). Its two halves were separated and both answered:
+**threshold-vs-every-placement is AXIS IDENTITY** (it fires once at a threshold
+rather than on every placement — the ratified D3f WHEN/WHETHER test) while
+**which ordinal is a PARAMETER** (magnitude only; batch-5 is a fortiori, having
+ruled +1/+1 vs −1/−1 a parameter though they do *opposite* things — and nine of
+the eleven lines are one card design, the plan-counter scheme cycle printed with
+ordinals 3·4·4·4·4·5·6·7, so treating N as identity would mint five axes for one
+mechanic). **It needs zero new vocabulary**: `threshold` was ratified in §14 Q5,
+and §8a's position-and-binding principle separates it from the four live axes
+using `threshold` in a **static** sense, because `-trigger` is the binder —
+
+| slug | sense |
+|---|---|
+| `<type>-counter-threshold-trigger` | fires **once**, on the Nth placement |
+| `<type>-counter-placed-trigger` | fires on **every** placement |
+| `grants-ability-at-threshold` *(no `-trigger`)* | static, continuously true |
+
+**Not ratified here** because the ratification word on the sheet covered the 14
+§2 rows and this family; whether that *name* is accepted was carried as its own
+question and has not been answered. It is not in `grammars.json`. Record:
+`docs/COUNTER-PLACED-RULING-2026-08-04.md` §3a.
 
 ### 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
 

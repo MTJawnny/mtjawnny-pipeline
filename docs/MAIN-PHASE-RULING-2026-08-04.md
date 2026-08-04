@@ -27,9 +27,16 @@ in the codebook.
 > started from.** All 15 names proposed across the 2026-08-04 pass have now been
 > checked against the codebook; this was the only collision.
 
-**STATUS: RULED, NOT RATIFIED.** Three tokens are proposed below. The DET pass
-already separates the three shapes and reports each honestly as its own gap —
-nothing is approximated onto a neighbour. Ratifying is three §2 rows.
+**STATUS: RATIFIED 2026-08-04 (Captain).** All three tokens entered
+`docs/CODEBOOK-NAMING-GRAMMAR.md` §2 as rows 1–3 of the 14-row sheet. Captain's
+prior answer to this document's blocking question — *do `second-` and
+`postcombat-` stay split?* — was **YES, they stay split (CR 505.1a)**, and §2's
+`postcombat-main-phase-trigger` row carries the reasoning. The DET pass already
+separated the three shapes and reported each honestly as its own gap, so
+ratification moved no line.
+
+**One shape from this document is NOT ratified and stays reported:**
+`main-phase-unqualified` (n=1, Carpet of Flowers) — see §2's post-table note.
 
 ---
 

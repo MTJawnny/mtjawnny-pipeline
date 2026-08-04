@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **86 documents under docs/**
-- ruling references found: **582**
-- distinct ruling ids: **126**
+- documents scanned: **87 documents under docs/**
+- ruling references found: **588**
+- distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **83**
-- **sole-home (appear in exactly 1 doc): 43**
+- **sole-home (appear in exactly 1 doc): 44**
 
 ## Deletion gate — per document
 
@@ -32,12 +32,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `BEGIN-COMBAT-RULING-2026-08-03.md` | 220 | 1 | 0 | yes |
 | `CDR-09-WALK-DERIVATION-2026-08-02.md` | 147 | 4 | 0 | yes |
 | `CDR-PROPOSALS.md` | 528 | 31 | 6 | **NO** |
-| `CODEBOOK-NAMING-GRAMMAR.md` | 1043 | 19 | 1 | **NO** |
+| `CODEBOOK-NAMING-GRAMMAR.md` | 1184 | 19 | 1 | **NO** |
 | `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
-| `COUNTER-PLACED-RULING-2026-08-04.md` | 90 | 1 | 0 | yes |
+| `COUNTER-PLACED-RULING-2026-08-04.md` | 154 | 2 | 0 | yes |
 | `CR-COVERAGE-PACKET-2026-08-02.md` | 134 | 2 | 0 | yes |
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 275 | 2 | 0 | yes |
@@ -45,7 +45,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `END-STEP-TRIGGER-RULING-2026-08-03.md` | 111 | 2 | 0 | yes |
 | `EXTRACTOR-REPAIR-LOG-2026-08-04.md` | 168 | 1 | 0 | yes |
-| `GAIN-LIFE-TRIGGER-RULING-2026-08-04.md` | 104 | 1 | 0 | yes |
+| `GAIN-LIFE-TRIGGER-RULING-2026-08-04.md` | 113 | 1 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
 | `MASTER-HANDOFF-ADDENDUM-3.md` | 308 | 10 | 1 | **NO** |
@@ -69,7 +69,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-04.md` | 218 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-04-EVE.md` | 287 | 4 | 1 | **NO** |
+| `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 192 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -127,7 +128,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`CODEBOOK-NAMING-GRAMMAR.md`** — sole home for 1:
 
-- `F3` (line 684) — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+- `F3` (line 757) — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
 
 **`MASTER-HANDOFF-ADDENDUM-3.md`** — sole home for 1:
 
@@ -156,6 +157,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`RULING-MANIFEST-2026-07-09.md`** — sole home for 1:
 
 - `F7` (line 94) — Swat evidence. F7 (Rhythm of the Wild / Surrak) is WITHDRAWN by Captain —
+
+**`SESSION-HANDOFF-2026-08-04-EVE.md`** — sole home for 1:
+
+- `D8` (line 207) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
@@ -304,7 +309,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `ADD-06` — 4 reference(s) across 4 doc(s)
 
 - `CDR-PROPOSALS.md:482` — ADD-06 — generated-numbers discipline.** Prose numbers must be pasted from
-- `CODEBOOK-NAMING-GRAMMAR.md:938` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
+- `CODEBOOK-NAMING-GRAMMAR.md:1079` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
 - `SESSION-HANDOFF-2026-08-01.md:205` — generator output (ADD-06).
 - `SESSION-HANDOFF-2026-08-02.md:206` — generator output (ADD-06).
 
@@ -316,9 +321,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:111` — Unblocked:** ADD-08 / Tier-0 bug 4 (the adjacency rule misfiled 17 of 33
 - `CDR-PROPOSALS.md:495` — ADD-08 (NEW) — position-aware canonicalization.** `canonicalize_label`'s
-- `CODEBOOK-NAMING-GRAMMAR.md:813` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
-- `CODEBOOK-NAMING-GRAMMAR.md:832` — the names, and both must be fixed before ADD-08 is implemented:
-- `CODEBOOK-NAMING-GRAMMAR.md:846` — be zero. ADD-08 stays blocked on §12a either way.
+- `CODEBOOK-NAMING-GRAMMAR.md:954` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
+- `CODEBOOK-NAMING-GRAMMAR.md:973` — the names, and both must be fixed before ADD-08 is implemented:
+- `CODEBOOK-NAMING-GRAMMAR.md:987` — be zero. ADD-08 stays blocked on §12a either way.
 - `SESSION-HANDOFF-2026-08-01.md:184` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
 - `SESSION-HANDOFF-2026-08-02-PM.md:114` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
 - `SESSION-HANDOFF-2026-08-02.md:86` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
@@ -421,7 +426,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:105` — the walk made it mechanically detectable. CDR-05's business, not a regression.
 - `CDR-PROPOSALS.md:265` — CDR-05 — Near-duplicate axes: merge, alias, or parent/child
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
-- `CODEBOOK-NAMING-GRAMMAR.md:950` — CDR-05.
+- `CODEBOOK-NAMING-GRAMMAR.md:1091` — CDR-05.
 - `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
 - `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 
@@ -458,13 +463,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:334` — CDR-09 (NEW) — The `counter` homograph (F-G)
 - `CDR-PROPOSALS.md:432` — Cost: ~15 renames — all already mandated by CDR-09. The ledger adds ZERO new
 - `CDR-PROPOSALS.md:497` — EFFECT even in noun slugs. CDR-09's typed prefixes make equality collision
-- `CODEBOOK-NAMING-GRAMMAR.md:477` — load-bearing distinction is the CDR-09 homograph failure — where
-- `CODEBOOK-NAMING-GRAMMAR.md:777` — 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
-- `CODEBOOK-NAMING-GRAMMAR.md:909` — by the CDR-09 walk below.**
-- `CODEBOOK-NAMING-GRAMMAR.md:911` — 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — **EXECUTED 2026-08-02**
-- `CODEBOOK-NAMING-GRAMMAR.md:919` — > `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
+- `CODEBOOK-NAMING-GRAMMAR.md:550` — load-bearing distinction is the CDR-09 homograph failure — where
+- `CODEBOOK-NAMING-GRAMMAR.md:918` — 8a. CDR-09 amendment — sense is carried by POSITION and BINDING, not by grammatical number (Captain-ratified 2026-08-02)
+- `CODEBOOK-NAMING-GRAMMAR.md:1050` — by the CDR-09 walk below.**
+- `CODEBOOK-NAMING-GRAMMAR.md:1052` — 12a. CDR-09 counter-homograph walk (Captain-ratified 2026-08-02) — **EXECUTED 2026-08-02**
+- `CODEBOOK-NAMING-GRAMMAR.md:1060` — > `docs/CDR-09-WALK-DERIVATION-2026-08-02.md`.
 - `COUNTER-PLACED-RULING-2026-08-04.md:6` — §8, §8a, §7 and batch-5 all govern counter tokens**, and per the CDR-09 lesson a
-- `COUNTER-PLACED-RULING-2026-08-04.md:80` — (§8 rule 1), never the printed glyphs. This is the same class as the CDR-09
+- `COUNTER-PLACED-RULING-2026-08-04.md:144` — (§8 rule 1), never the printed glyphs. This is the same class as the CDR-09
 - `CR-VOCABULARY-AUDIT.md:98` — `counter`/`counters` 33 axes (§8 rules exist, ~15 non-conforming — CDR-09) ·
 - `CR-VOCABULARY-AUDIT.md:135` — Cost, plainly: ~15 renames total — all already mandated by CDR-09. The ledger
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:12` — passes every existing check. The CDR-09 walk surfaced one instance by
@@ -479,7 +484,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
 - `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
 - `SESSION-HANDOFF-2026-08-03-EVE.md:41` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
-- `SESSION-HANDOFF-2026-08-04.md:133` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
+- `SESSION-HANDOFF-2026-08-04.md:140` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
 - `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
@@ -500,7 +505,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:371` — CDR-11 (NEW) — Predestined tags: derive axes from the CR top-down
 - `CDR-PROPOSALS.md:408` — Recommend: treat as CDR-11's first application after token types.** These are
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `CODEBOOK-NAMING-GRAMMAR.md:741` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
+- `CODEBOOK-NAMING-GRAMMAR.md:814` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
 - `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
 - `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
 - `SESSION-HANDOFF-2026-08-03.md:54` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
@@ -523,8 +528,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D1` — 21 reference(s) across 9 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
-- `CODEBOOK-NAMING-GRAMMAR.md:118` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
-- `CODEBOOK-NAMING-GRAMMAR.md:998` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
+- `CODEBOOK-NAMING-GRAMMAR.md:151` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
+- `CODEBOOK-NAMING-GRAMMAR.md:1139` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
 - `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
@@ -601,8 +606,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D2` — 14 reference(s) across 7 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:408` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
-- `CODEBOOK-NAMING-GRAMMAR.md:999` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
+- `CODEBOOK-NAMING-GRAMMAR.md:481` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
+- `CODEBOOK-NAMING-GRAMMAR.md:1140` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
@@ -618,11 +623,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D3` — 17 reference(s) across 7 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:561` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
-- `CODEBOOK-NAMING-GRAMMAR.md:672` — One connective, one order, closed stat list — RATIFIED (D-3):
-- `CODEBOOK-NAMING-GRAMMAR.md:689` — `lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
-- `CODEBOOK-NAMING-GRAMMAR.md:700` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
-- `CODEBOOK-NAMING-GRAMMAR.md:1000` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
+- `CODEBOOK-NAMING-GRAMMAR.md:634` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
+- `CODEBOOK-NAMING-GRAMMAR.md:745` — One connective, one order, closed stat list — RATIFIED (D-3):
+- `CODEBOOK-NAMING-GRAMMAR.md:762` — `lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
+- `CODEBOOK-NAMING-GRAMMAR.md:773` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
+- `CODEBOOK-NAMING-GRAMMAR.md:1141` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -647,9 +652,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1746` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `B-MIGRATION-DISCOVERY.md:641` — D4 standing rule; the grammar lane gains the killed/merged/renamed checks
 - `B-MIGRATION-DISCOVERY.md:804` — rule:temporary-keyword-grant per the b4-D4 standing rule (already
-- `CODEBOOK-NAMING-GRAMMAR.md:693` — parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
-- `CODEBOOK-NAMING-GRAMMAR.md:700` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
-- `CODEBOOK-NAMING-GRAMMAR.md:1002` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
+- `CODEBOOK-NAMING-GRAMMAR.md:766` — parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
+- `CODEBOOK-NAMING-GRAMMAR.md:773` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
+- `CODEBOOK-NAMING-GRAMMAR.md:1143` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
@@ -659,17 +664,18 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-5.md:318` — `rule:replacement-graveyard-to-exile-self` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- direct resurrection of batch-4's replacement-exile-instead-of-graveyard merge (D4), same self-protect…
 - `TRIAGE-BATCH-5.md:852` — D4 — OTHER-lane promotions ratified
 
-### `D5` — 7 reference(s) across 5 doc(s)
+### `D5` — 8 reference(s) across 6 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:763` — authored"; the ratified b4-D5 status exists for exactly this). They flip
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
-- `CODEBOOK-NAMING-GRAMMAR.md:1004` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
+- `CODEBOOK-NAMING-GRAMMAR.md:1145` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
 - `MASTER-HANDOFF-ADDENDUM-2.md:183` — 4. D5 follow-up (NEW, batch 4): Captain rules on
 - `MASTER-HANDOFF-ADDENDUM-3.md:166` — D5: two pump merges DEFERRED pending Captain review of
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:257` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
+- `SESSION-HANDOFF-2026-08-04-EVE.md:192` — D5 — `foundry_shape_extractor.py` line ~902.**
 
-### `D6` — 11 reference(s) across 5 doc(s)
+### `D6` — 12 reference(s) across 6 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:87` — batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
 - `MASTER-HANDOFF-ADDENDUM-3.md:151` — forced sac as effect) — now partially ratified via the D6 reversal
@@ -681,6 +687,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:185` — sole exclusion. Logged Captain-explicit, D6-style.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
+- `SESSION-HANDOFF-2026-08-04-EVE.md:199` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
 - `TRIAGE-BATCH-7.md:742` — D6 — Forsaken Crossroads rehome (SUP "no axis fits" overturned)
 
 ### `D67` — 1 reference(s) across 1 doc(s)
@@ -702,10 +709,15 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
-### `D9` — 3 reference(s) across 3 doc(s)
+### `D8` — 1 reference(s) across 1 doc(s)
+
+- `SESSION-HANDOFF-2026-08-04-EVE.md:207` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+
+### `D9` — 4 reference(s) across 4 doc(s)
 
 - `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:218` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
+- `SESSION-HANDOFF-2026-08-04-EVE.md:240` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 
 ### `F2` — 3 reference(s) across 2 doc(s)
@@ -716,13 +728,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `F3` — 2 reference(s) across 1 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:684` — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
-- `CODEBOOK-NAMING-GRAMMAR.md:1012` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:757` — the type matters), `opponent-tapped-creature-count` (F3, walk-ratification
+- `CODEBOOK-NAMING-GRAMMAR.md:1153` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 
 ### `F4` — 3 reference(s) across 2 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:1012` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
-- `CODEBOOK-NAMING-GRAMMAR.md:1029` — F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
+- `CODEBOOK-NAMING-GRAMMAR.md:1153` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:1170` — F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
 ### `F7` — 1 reference(s) across 1 doc(s)
@@ -879,8 +891,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q2` — 17 reference(s) across 11 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:340` — Opponent-controlled subjects follow the PRINTED word (Q2, ratified).** 62
-- `CODEBOOK-NAMING-GRAMMAR.md:1011` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `CODEBOOK-NAMING-GRAMMAR.md:413` — Opponent-controlled subjects follow the PRINTED word (Q2, ratified).** 62
+- `CODEBOOK-NAMING-GRAMMAR.md:1152` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:7` — > ## ✅ Q1 + Q2 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:15` — > Q2 ratified with it: opponent-controlled subjects follow the printed word.
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:295` — > **Q2.** For opponent-controlled subjects, follow the **printed** word (`any-`)
@@ -899,8 +911,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q3` — 16 reference(s) across 9 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:439` — Captain-ratified 2026-08-03, Q3. Required by "at the beginning of **the** end
-- `CODEBOOK-NAMING-GRAMMAR.md:1011` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
+- `CODEBOOK-NAMING-GRAMMAR.md:512` — Captain-ratified 2026-08-03, Q3. Required by "at the beginning of **the** end
+- `CODEBOOK-NAMING-GRAMMAR.md:1152` — Applied per `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` section 2 (Q2, Q3,
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:22` — > ## ✅ Q3, Q5, Q6, Q7 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:32` — > | **Q3** | **CR 102.1** — *"The **active player** is the player whose turn it is."* | `active-player` is the CR's own defined term, not a coinage. My cited 500.1/502.1 were **wrong** |
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:317` — > **Q3.** Ratify **`active-player`** as new §6 SCOPE vocabulary, anchored to
@@ -918,7 +930,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q4` — 8 reference(s) across 5 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:413` — "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
+- `CODEBOOK-NAMING-GRAMMAR.md:486` — "uncounterable" = adjective, "this spell can't be countered" (ratified Q4,
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:325` — 5. Q4 — `own` vs `owned`, parsed from the CR (Captain's ask, 2026-08-03)
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:402` — > **Q4 (revised). Two options, both CR-faithful. Recommend B.**
 - `TRIAGE-BATCH-1.md:237` — Q4 — Token-creation super-family.** creates-creature-token,
@@ -927,10 +939,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-2.md:451` — Q1–Q4, add `## CAPTAIN-AUTHORED` blocks for any new axes), then run
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:85` — Q4** `rule:cant-be-countered` → `rule:spell-uncounterable`;
 
-### `Q5` — 8 reference(s) across 5 doc(s)
+### `Q5` — 10 reference(s) across 6 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:238` — 2b. A CR 702 KEYWORD'S DELIVERY IS DERIVED, NOT RULED (Captain-ratified 2026-08-03, Q5)
-- `CODEBOOK-NAMING-GRAMMAR.md:1012` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:311` — 2b. A CR 702 KEYWORD'S DELIVERY IS DERIVED, NOT RULED (Captain-ratified 2026-08-03, Q5)
+- `CODEBOOK-NAMING-GRAMMAR.md:903` — mechanic). **It needs zero new vocabulary**: `threshold` was ratified in §14 Q5,
+- `CODEBOOK-NAMING-GRAMMAR.md:1153` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `COUNTER-PLACED-RULING-2026-08-04.md:108` — `threshold` is ALREADY RATIFIED vocabulary** — §14 Q5, walk-ratification
 - `CR-COVERAGE-PACKET-2026-08-02.md:86` — One batch ratification, the same shape as Q5's ~30-token batch.
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:22` — > ## ✅ Q3, Q5, Q6, Q7 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:36` — > | **Q5** | **CR 702.1** — the keyword is a name; *"reminder text **summarizes**"* | the CR rule, not the reminder text, is the definition — the same boundary §6a draws |
@@ -940,8 +954,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q6` — 7 reference(s) across 4 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:990` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
-- `CODEBOOK-NAMING-GRAMMAR.md:1012` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:1131` — Q6 (walk-ratification 2026-07-31):** 7 further idiomatic-leaf exemptions
+- `CODEBOOK-NAMING-GRAMMAR.md:1153` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `DEFINITION-DRIFT-AUDIT-2026-08-02.md:31` — Ratified exemptions encoded: the 11 idiomatic leaves (§12 + Q6), and
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:22` — > ## ✅ Q3, Q5, Q6, Q7 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:35` — > | **Q6** | **CR 201.5c** — *"Text printed on some cards refers to that card by a **shortened version of its name** … treated as though they used the card's **full name**."* | the canonicalizer isn't "a bug fix under a…
@@ -958,16 +972,16 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `Q8` — 4 reference(s) across 4 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:1033` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+- `CODEBOOK-NAMING-GRAMMAR.md:1174` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:170` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
 
 ### `Q8.5` — 5 reference(s) across 3 doc(s)
 
-- `CODEBOOK-NAMING-GRAMMAR.md:480` — Multi-word stem tokens are already ratified (§14 Q8.5, `cant-be-blocked`), and
-- `CODEBOOK-NAMING-GRAMMAR.md:1012` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
-- `CODEBOOK-NAMING-GRAMMAR.md:1033` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
+- `CODEBOOK-NAMING-GRAMMAR.md:553` — Multi-word stem tokens are already ratified (§14 Q8.5, `cant-be-blocked`), and
+- `CODEBOOK-NAMING-GRAMMAR.md:1153` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
+- `CODEBOOK-NAMING-GRAMMAR.md:1174` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:411` — > distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
 - `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 

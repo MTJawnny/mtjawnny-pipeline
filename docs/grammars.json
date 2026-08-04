@@ -328,6 +328,47 @@
         "cant-be-blocked-as-long-as-state"
       ],
       "notes": "Seeded by the pre-existing rule:cant-be-blocked-by-color (unchanged by this ruling). Ratifies the compound stem token 'cant-be-blocked' into the naming-grammar vocabulary (CODEBOOK-NAMING-GRAMMAR.md sec.14) -- 'blocked' has no counter-law ambiguity, the 'countered' ban (sec.10.2) is unaffected. FLAG for Captain (found during the Q8.4 quote-check migration, not auto-resolved): The Black Gate (rule:grants-unblockable-target member) reads \"Target creature can't be blocked by creatures that player controls this turn\" -- a genuine restriction rider per the terminology law above, so it does NOT belong in grants-unblockable-target's absolute scope, but it also does not fit any of the 4 closed restriction-vocab values here (not by-color, not by-power, not a numeric except-by-count, not an as-long-as-<state> condition -- it is a by-PLAYER restriction, a shape this ruling did not enumerate). Per G3 (no facet-leaf authoring without Captain ratification), this member was left in place on rule:grants-unblockable-target with an inline flag in that axis's rewritten definition rather than silently moved or force-fit into an existing restriction value -- genuine halt-loudly case, needs a Captain ruling on whether 'by-player' extends this closed vocab. RESOLVED 2026-07-31 (B1 ruling): 'by-controller' added to the closed vocab specifically for this shape; The Black Gate moved to the new rule:cant-be-blocked-by-controller (quote-verified). Corpus-verified 2 total by-controller-shaped hits (Black Gate + Rikku, Resourceful Guardian, \"can't be blocked by creatures your opponents control\") -- Rikku was NOT added as a member (B1 only ordered Black Gate's move; Rikku is flagged as an additional corpus candidate for a future SUP/DET pass, not silently added)."
+    },
+    "<type>-counter-placed-trigger": {
+      "status": "ratified",
+      "ratified_in": "2026-08-04 §2 decision sheet row 6 -- docs/COUNTER-PLACED-RULING-2026-08-04.md",
+      "stem": "counter-placed-trigger",
+      "delivery": "counter-placed-trigger",
+      "cr_anchor": "122.6 (counters being put on an object); 122.1 (a counter is a marker; a counter is not a token); 113.3c (trigger condition + effect)",
+      "facets": [
+        {
+          "slot": "type",
+          "closed_vocab": null,
+          "note": "OPEN BY RATIFICATION, and deliberately so. CODEBOOK-NAMING-GRAMMAR.md sec.8 rule 1 types the noun sense as plus1 / minus1 / charge / stun / loyalty / <name>, and the <name> arm is unbounded -- a card may print any counter name. 'any' is the sec.8a form for axes that genuinely span every counter type and therefore cannot be typed (Putrid Hexhag, Stalwart Successor print \"whenever one or more counters are put on\", with no type word for sec.8a's left-binding rule to bind to); naming those 'counter-placed' bare would violate sec.8 rule 1. Because this facet is open, family-completeness cannot enumerate this family's siblings and correctly reports it as unenumerable rather than guessing."
+        }
+      ],
+      "instantiated_members": [],
+      "note": "CR 122.6 carries a non-obvious boundary: \"This refers to putting counters on that object WHILE IT'S ON THE BATTLEFIELD and ALSO to an object that's given counters AS IT ENTERS the battlefield.\" So a counter-placed trigger is NOT disjoint from `etb` or from the CR 614.1c \"enters with counters\" replacement -- sec.1's multi-axis rule applies, a card may hold both, and neither subsumes the other. Recorded so a later session does not \"fix\" the overlap. `plan` and `hour` are <name>-counter types per sec.8 rule 1, verified from full oracle text (Political Triumph and Glorious Purpose create plan counters on themselves; Midnight Clock accrues hour counters). A PROPOSED sibling, <type>-counter-threshold-trigger, is RULED-NOT-RATIFIED and is NOT part of this family record -- see COUNTER-PLACED-RULING-2026-08-04.md sec.3a.",
+      "delivery_nodes_measured": {
+        "note": "These are DELIVERY vocabulary nodes measured corpus-wide by foundry_shape_extractor.py, NOT codebook axes -- which is why instantiated_members is empty. TRIAGE-BATCH-1.md sec.1c is binding: \"delivery-only slugs are parents, not axes\" (the same rule that keeps the bare axis rule:end-step-trigger KILLED while end-step-trigger is ratified sec.2 vocabulary). An axis in this family is a COMPOUND -- delivery + effect, e.g. rule:plus1-counter-placed-trigger-draw -- and none exists yet. Listing these five as instantiated_members claimed five axes that do not and should not exist, and foundry_family_sweep's check A2 reported it BLOCKING; the check was right.",
+        "nodes": {
+          "plus1-counter-placed-trigger": {
+            "lines": 31,
+            "cards": 31
+          },
+          "plan-counter-placed-trigger": {
+            "lines": 9,
+            "cards": 9
+          },
+          "any-counter-placed-trigger": {
+            "lines": 2,
+            "cards": 2
+          },
+          "loyalty-counter-placed-trigger": {
+            "lines": 1,
+            "cards": 1
+          },
+          "hour-counter-placed-trigger": {
+            "lines": 1,
+            "cards": 1
+          }
+        }
+      }
     }
   }
 }

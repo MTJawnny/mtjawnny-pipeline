@@ -6,8 +6,16 @@ Gate-3 dossier on `damage-received`, `is-dealt-damage-trigger`: **no prior rulin
 in any status; neither is in the codebook.** The census name `damage-received`
 appears in three decision packets only as a *gap row*, never as a verdict.
 
-**STATUS: RULED, NOT RATIFIED.** The DET pass already separates four shapes and
-reports each honestly. Ratifying is four §2 rows.
+**STATUS: RATIFIED 2026-08-04 (Captain).** All four tokens entered
+`docs/CODEBOOK-NAMING-GRAMMAR.md` §2 as rows 4–7 of the 14-row sheet. The DET
+pass already separated the four shapes and reported each honestly, so
+ratification moved no line.
+
+**`battle` stays reserved and uninstantiated** (0 members), per CR 120.1's closed
+enumeration and the `is-attacked-trigger` precedent — zero members is a
+hypothesis, not an absence. **The `enchanted player` scope gap this document
+surfaced (Grievous Wound) is NOT closed**; `enchanted-player` remains PROPOSED §6
+vocabulary — see `DRAW-STEP-RULING-2026-08-04.md` §3.
 
 ---
 

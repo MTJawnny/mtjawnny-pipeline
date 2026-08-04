@@ -5,7 +5,17 @@ Eighth and final item in the 2026-08-04 shape pass. **Zero API calls.**
 Gate-3 dossier on `draw-step`, `draw-step-trigger`: **no prior ruling in any
 status; neither is in the codebook.**
 
-**STATUS: RULED, NOT RATIFIED.**
+**STATUS: RATIFIED 2026-08-04 (Captain).** `draw-step-trigger` entered
+`docs/CODEBOOK-NAMING-GRAMMAR.md` §2 as row 14 — the last of the 14-row sheet —
+closing the turn-structure family end to end.
+
+**§3's `enchanted-player` scope token is NOT ratified.** New vocabulary is a
+ratification, not a typo fix, and Captain's word covered the 14 §2 DELIVERY rows,
+not §6. The two affected lines (Curse of Obsession, Righteous Authority) carry
+**no** scope token rather than a guessed one. The gap is not draw-step-specific —
+it recurs wherever Auras appear, and `IS-DEALT-DAMAGE-RULING-2026-08-04.md`
+independently hit it on Grievous Wound. **It is the top item on the next
+decision sheet.**
 
 ---
 

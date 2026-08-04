@@ -8,7 +8,16 @@ ruling — **but the dossier found what a bare grep would have missed.** An
 (n=8), itself a CDR-09 walk rename of `rule:lifegain-triggered-counter`. The
 census name and a ratified axis name collide, and that changes the answer.
 
-**STATUS: RULED, NOT RATIFIED.**
+**STATUS: RATIFIED 2026-08-04 (Captain).** `gain-life-trigger` entered
+`docs/CODEBOOK-NAMING-GRAMMAR.md` §2 as row 9 of the 14-row sheet, with §14 Q5's
+`lifegain` exclusion upheld — the token is `gain-life-trigger`, never
+`lifegain-trigger`.
+
+**§3's migration is still LOGGED, not executed.**
+`rule:lifegain-triggered-plus1-counter` → `rule:gain-life-trigger-plus1-counter`
+is a **codebook mutation** and needs Captain's word plus the backup law; §2 row 9
+being ratified does not authorize it. Verified 2026-08-04 that the target name
+now validates clean.
 
 ---
 
