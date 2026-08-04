@@ -141,10 +141,18 @@ diagnosed: permanents whose delivery is `static` but whose line does not match
 have …"* (Scion of Halaster, Master Chef, The Eighth Doctor). That branch is
 narrow in a way nothing has measured.
 
-### 2. Zero-token, unstarted
+### 2. The S7 gate — **NOT the one-liner three handoffs promised**
 
-`python3 experiments/measure/family_tree_evidence.py` against the five populated
-parent candidates — the S7 gate they have never been through.
+**READ `docs/S7-GATE-NOT-RUNNABLE-2026-08-05.md` FIRST.**
+`family_tree_evidence.py` is hardcoded to the DERIVED-TAG-LAYER-SPEC v1
+patterns: no arguments, no `argparse`, zero references to `parent`/`candidate`/
+`codebook`. It cannot be pointed at a candidate. And **deck co-play — the first
+named component of the substitute lens — has no data source in this repo**
+(`data/raw/` is oracle-cards, oracle-tags, rulings).
+
+**2 of the 3 components ARE available** (Tagger cross-reference over 35,550
+tagged cards; exemplar panels). The proposal is §4 of that document; the design
+question it turns on is §5 and is **on the decision sheet**.
 
 ### 3. Reviving `experiments/foundry_review.html`
 
@@ -165,6 +173,7 @@ Nothing here blocks the next work item. **Present as ONE decision sheet.**
 | 5 | **Widening `_MODAL_HEADER_RE`** (49 lines / 19 cards) | it is part of the **ratified** DET preprocessing standard v1 and is shared with `det_scan_texts()` — widening changes pattern scanning for every consumer |
 | 6 | Migrations **logged, not executed** | `rule:lifegain-triggered-plus1-counter` → `rule:gain-life-trigger-plus1-counter` (also closes §14 Q5, open since 2026-07-31), the §2a `other-` pair, the three `delayed` slot-order renames. **Each is a codebook mutation — needs Captain's word AND the backup law** |
 | 7 | `rule:postcombat-main-phase-trigger` under-populated | 2 of 10 cards; a membership addition |
+| 8 | **What replaces deck co-play in the S7 substitute lens?** | **A** — accept a 2/3 lens (Tagger + exemplars, deck co-play reported UNMEASURED), satisfiable today at zero cost; or **B** — acquire deck data, the only thing that measures actual substitution, but a new external data source that interacts with the locked rule *"no card data in git, ever."* **Recommendation: A now, B logged.** `docs/S7-GATE-NOT-RUNNABLE-2026-08-05.md` §5 |
 
 ---
 

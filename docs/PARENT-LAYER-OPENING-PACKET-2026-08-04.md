@@ -134,6 +134,13 @@ measurement attached, and none of them needs an API call to resolve.
 
 ## 6. THE ZERO-COST NEXT STEP
 
+> **CORRECTION 2026-08-05 — this section is WRONG and the item is not runnable.**
+> `family_tree_evidence.py` is hardcoded to the v1 derivation patterns (no
+> arguments, zero references to parent/candidate/codebook), and **deck co-play
+> has no data source in this repo.** Tagger cross-reference and exemplar panels
+> ARE available. Full finding and proposal:
+> `docs/S7-GATE-NOT-RUNNABLE-2026-08-05.md`.
+
 Run `experiments/measure/family_tree_evidence.py` against the five populated
 candidates. It already implements the substitute lens, the Tagger
 cross-reference and exemplar panels, it is fixed-seed and determinism-verified,
