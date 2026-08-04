@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **111 documents under docs/**
-- ruling references found: **597**
+- ruling references found: **598**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **83**
 - **sole-home (appear in exactly 1 doc): 44**
@@ -75,7 +75,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 217 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-07-EVE.md` | 304 | 1 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 223 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -94,7 +95,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`ABILITY-WORD-CR207-2026-08-06.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07-EVE.md`, `SESSION-HANDOFF-2026-08-07.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`
+`ABILITY-WORD-CR207-2026-08-06.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`
 
 ## Sole-home rulings — these block their document
 
@@ -1148,13 +1149,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
-### `T3` — 10 reference(s) across 8 doc(s)
+### `T3` — 11 reference(s) across 9 doc(s)
 
 - `KEYWORD-LEDGER-CANDIDATES.md:3` — Standing doc for keyword mechanics killed out of the T3 axis foundry's
 - `MASTER-HANDOFF.md:65` — T3." Growth path: engine-DERIVED structural rule: tags (generalizing the
 - `MASTER-HANDOFF.md:90` — Step 3: additive T3 term landed. Ratified: **DERIVED_WEIGHT = 0.5**
 - `MASTER-HANDOFF.md:119` — → **T3-AXIS-FOUNDRY-v3.md** (v1/v2 superseded): dual-source mining
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
+- `SESSION-HANDOFF-2026-08-07-EVE.md:80` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
 - `SUP-TRIAGE-PROTOCOL.md:5` — Ratified deviation from T3-AXIS-FOUNDRY-v3: SUP performs full-pass triage;
 - `T3-AXIS-FOUNDRY-v3.md:4` — T3-BUILDOUT-PLAYBOOK.md between Steps 5 and 6; inherits every standing
 - `T3-BUILDOUT-PLAYBOOK.md:230` — Captain each anchor's new T3 band for eyeball, punch-list style: findings

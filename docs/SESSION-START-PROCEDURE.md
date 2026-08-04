@@ -47,7 +47,13 @@ the pointer; update it when you write a new handoff.
 **Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*
 the bare-date file, so "newest `SESSION-HANDOFF-*.md`" selects the oldest
 same-day file. Every superseded handoff now carries a banner pointing forward,
-so if you landed on one of those, follow its banner. `ls -t` also works.
+so if you landed on one of those, follow its banner.
+
+**`ls -t` does not work either, and stopped working on 2026-08-07.** Writing a
+new handoff means EDITING the old one to add its banner, so the superseded file
+gets the newer mtime and sorts first. Both orderings — by name and by time —
+now point at the wrong file, and only the pointer on line 44 and the banners
+are reliable.
 
 **IF NO TASK WAS GIVEN, THE HANDOFF'S "NEXT WORK ITEM" *IS* YOUR INSTRUCTION.**
 Added 2026-08-04, because a `/clear` leaves the previous session's closing

@@ -1,7 +1,7 @@
 # SESSION HANDOFF — 2026-08-07 EVE
 
 Supersedes `SESSION-HANDOFF-2026-08-07.md`. **Zero API calls. Arc spend
-unchanged at $90.51 / $140.** Nine commits, `ff17cbf` .. `fb5051a`.
+unchanged at $90.51 / $140.** **12 commits**, `ff17cbf` .. `HEAD`.
 
 **The session in one line: an audit of the AUDITS. Nine structural escapes were
 named, measured and closed — and closing them turned up two live data
@@ -10,20 +10,87 @@ ratified law. Gate 2 goes from six commands to eight, and both older audits now
 fail on DEGRADATION instead of only on breakage.**
 
 **NEXT SESSION'S JOB IS STILL THE TRAP SWEEP. It is §4 of the superseded
-handoff and it is now §5 here. Start there.**
+handoff and it is now §6 here. Start there.**
 
 ---
 
 ## 0. START HERE
 
 `docs/SESSION-START-PROCEDURE.md` — five gates, **Gate 2 is now EIGHT
-commands.** If no task was given, §5's NEXT WORK ITEM is your instruction.
+commands.** If no task was given, §6's NEXT WORK ITEM is your instruction.
 Only two things need Captain's explicit word: **ratifying new vocabulary** and
 **mutating the codebook**.
 
 ---
 
-## 1. WHAT PROMPTED THIS
+## 1. READING MANIFEST — indexed by TASK
+
+*(Every path below was verified to exist at handoff. A gate that points at a
+missing artifact fails open silently — recorded 2026-08-04, and this section
+was itself missing from the first draft of this handoff, which is the third
+instance of that exact failure.)*
+
+### Always
+
+| | |
+|---|---|
+| **`python3 experiments/foundry_system_map.py`** | **RUN FIRST.** Five stages, and which of each stage's lists is CR-parsed vs heuristic. Generated, so it cannot go stale. Ends with the one question that finds defects here |
+| **`docs/OUT-OF-SCOPE.md`** | a DECLINE register, not a backlog. Attractions/`Visit`, art tags, Prototype. If it is there, report it *declined*, never *open* |
+| `docs/SESSION-START-PROCEDURE.md` | five gates, short. **Gate 2 is now EIGHT commands** |
+| `CLAUDE.md` | locked rules + traps (**11 new traps this session**) |
+| Gate 2, all eight | live state is measured, never recalled — §3 below |
+
+### If you are touching the DELIVERY EXTRACTOR (the current work)
+
+```
+python3 experiments/foundry_prior_art.py <your topic>      # ← FIRST, always
+python3 experiments/foundry_routing_regression.py snapshot experiments/out/foundry/regression/<name>.json
+python3 experiments/foundry_routing_regression.py diff <before> <after> --strict
+python3 experiments/foundry_routing_regression.py invariance --strict
+python3 experiments/foundry_ground_truth.py                # ← NEW, after every step
+```
+
+**`foundry_ground_truth.py` is the one to add to your habit.** It is the only
+check that notices the sweep handing out a *wrong* ratified token, and
+improving recall is exactly when that happens.
+
+| read | why |
+|---|---|
+| **`docs/AUDIT-5-2026-08-05.md`** | findings 3 and 5 are **still open** and are §6's job |
+| **`docs/IN-CARD-SEPARATION-CENSUS-2026-08-06.md`** | all eleven separation constructs, each against its own CR rule. §9 is the visibility mechanism — now covering 10 of the 11 |
+| **`docs/ABILITY-WORD-CR207-2026-08-06.md`** | CR 207.2c is a closed list; CR 207.2d licenses the one honest heuristic |
+| **`docs/MODE-NAMES-CR700-2026-08-06.md`** | a mode is not an ability; improving recall can hand out a WRONG token |
+| **`docs/PUNCTUATION-RESCAN-2026-08-06.md`** | conservation ≠ census; the two pre-existing recall gaps |
+| **`docs/REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`** | **NEW** — §6a vs `det_scan_texts`, 167 memberships, blocked on Captain (§8) |
+| `docs/CODEBOOK-NAMING-GRAMMAR.md` **§1, §2, §2a, §2b, §2e, §2f, §2g, §6, §6a, §9** | the DELIVERY law. §2 is **52 tokens**. **§6a is newly load-bearing** — it is what the reminder finding turns on |
+| `docs/STEP-2A-STATIC-GRANT-2026-08-05.md` · `-2B-STATIC-CONDITION-` · `-2C-SELF-STATEMENT-` | the three step-2 slices; the method that works |
+| `docs/LINKED-ABILITIES-CR607-2026-08-05.md` · `docs/VOCABULARY-COMPLETION-2026-08-05.md` · `docs/CR-LAW-AUDIT-2026-08-05.md` | prior passes |
+| `docs/DELIVERY-GAP-CENSUS-2026-08-03.md` | the census — and `--gaps` now reports **inside** `spell-or-static` too, see §5 |
+
+### Other tasks
+
+- **CODEBOOK / AXIS / SLUG** — `docs/CODEBOOK-NAMING-GRAMMAR.md` **WHOLE** ·
+  `docs/PARENT-TREE-CANDIDATES.md` · `docs/FAMILY-TREE-EVIDENCE.md` ·
+  `docs/TRIAGE-BATCH-1.md`..`-7.md` — and `experiments/foundry_slug_dossier.py`
+  on **the name you are about to WRITE**.
+- **KEYWORDS** — `docs/KEYWORD-LEDGER-CANDIDATES.md`; bare keywords are never
+  axes. Membership tests use `CR_KEYWORD_NAMES`, never `KEYWORD_HOME`.
+- **PARENT layer** — `docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md` · §6b ·
+  `docs/S7-GATE-NOT-RUNNABLE-2026-08-05.md`.
+- **T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
+
+### New mechanisms — read the file, they document their own reasoning
+
+| | |
+|---|---|
+| `experiments/foundry_ground_truth.py` | positive correctness, 534 ratified seeds |
+| `experiments/foundry_gate_audit.py` | what Gate #0 hides from all eight checks |
+| `experiments/foundry_audit_baseline.py` | the ratchet — why there is no tolerance band |
+| `experiments/foundry_reminder_conformance.py` | §6a reporter, exits 0 until ratified |
+
+---
+
+## 2. WHAT PROMPTED THIS
 
 Captain asked what could still escape the audit suite. Nine escapes were
 found; all nine are closed or reported. The finding that generalises:
@@ -36,7 +103,7 @@ found; all nine are closed or reported. The finding that generalises:
 
 ---
 
-## 2. GATE 2 — now EIGHT commands
+## 3. GATE 2 — now EIGHT commands
 
 ```
 python3 experiments/foundry_codebook.py lint
@@ -64,7 +131,7 @@ forbid.
 
 ---
 
-## 3. LIVE STATE — measured at handoff, not recalled
+## 4. LIVE STATE — measured at handoff, not recalled
 
 | | |
 |---|---|
@@ -79,14 +146,14 @@ forbid.
 | invariance | **0** (was **1** at the previous handoff, unreported) |
 | deliveries emitted | 61,952 |
 | **unrouted** | **15,993 rows / 15,902 lines** (was 16,082 / 15,991) |
-| `spell-or-static` | **14,898** — and see §4, it is not 14,898 gaps |
+| `spell-or-static` | **14,898** — and see §5, it is not 14,898 gaps |
 | DET expansions | **2,104** (was 1,930) |
 | keyword homes | 150 (unchanged) |
 | working tree | clean |
 
 ---
 
-## 4. THE NUMBER THAT WAS WRONG ALL ARC
+## 5. THE NUMBER THAT WAS WRONG ALL ARC
 
 `--gaps` excludes `spell-or-static` by construction — correctly, it is not
 missing vocabulary — but excluded had become **unreportable**, and 93.7% of all
@@ -100,12 +167,12 @@ unrouted lines live there. CR 113.3a splits it with no new vocabulary at all:
 **So "unrouted" has been overstating the remaining work by roughly 3×.** Most
 of it is the unmarked default for a spell ability, which is correct and
 finished. The decidably-static 4,485 is the real queue, and its top shapes are
-exactly what §5 already names: `creatures you control` 167 · `other creatures
+exactly what §6 already names: `creatures you control` 167 · `other creatures
 you` 72 · `each creature you` 59.
 
 ---
 
-## 5. NEXT WORK ITEM — the TRAP SWEEP, unchanged. Proceeds WITHOUT asking.
+## 6. NEXT WORK ITEM — the TRAP SWEEP, unchanged. Proceeds WITHOUT asking.
 
 Carried forward verbatim from the superseded handoff §4. Two AUDIT-5 findings
 remain open (`\b` after `as ` in the CR 614.1c branch, 25 lines; `\benters?\b`
@@ -122,7 +189,7 @@ Then, in order: CR 706.3b die-row ROUTING · the anthem group · `escapes with`.
 
 ---
 
-## 6. WHAT CHANGED — nine commits
+## 7. WHAT CHANGED — the nine substantive commits
 
 **`ff17cbf` conservation reaches the reminder strip (E1/E2/E2b).** Test A
 measured from `ability_lines()` OUTPUT, and `ability_lines()` IS the reminder
@@ -158,7 +225,7 @@ was built on. 0 lines moved, 0 memberships changed.
 reads ratio 1.04 and carries z = 2.9, and `comma` needs **+4,169** broken lines
 before the ratio flag says anything.
 
-**`27bbf43` read inside `spell-or-static` (E8).** §4 above.
+**`27bbf43` read inside `spell-or-static` (E8).** §5 above.
 
 **`11b7498` face isolation (E9).** The joins that reveal an option could also
 fuse a DFC's two faces (CR 712.8 / 709.3b). Zero today, because proximity
@@ -169,14 +236,14 @@ joins that build strings across lines.
 33, stale one commit after it was written. The snapshot's "unrouted" counts
 ROWS and the audit's counts LINES; both now say which. **11 new traps.**
 
-**`5d66813` §6a conformance (E1b).** See §7.
+**`5d66813` §6a conformance (E1b).** See §8.
 
 **`fb5051a` registry regenerate.** It was stale before this session started —
 nothing in Gate 2 notices a generated artifact drifting from its generator.
 
 ---
 
-## 7. BLOCKED ON CAPTAIN — one NEW item, plus the standing sheet
+## 8. BLOCKED ON CAPTAIN — one NEW item, plus the standing sheet
 
 ### NEW — `docs/REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`
 
@@ -203,7 +270,7 @@ logged migrations · `rule:postcombat-main-phase-trigger` under-populated ·
 
 ---
 
-## 8. WHAT THIS SESSION PROVES
+## 9. WHAT THIS SESSION PROVES
 
 **An audit's boundary is upstream of something.** Ask what runs BEFORE the
 first thing your audit reads. The largest text mutation in the pipeline sat one
