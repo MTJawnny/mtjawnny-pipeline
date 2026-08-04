@@ -78,10 +78,9 @@ their home. **This is what keeps D9's ~951 lines correctly unrouted.**
 | lint | clean |
 | family sweep | 6 blocking (the same 6) |
 | definition drift | 35 — C1b 1 · C2 16 · C3 7 · C4a 3 · C4e 5 · C4f 3 (unchanged) |
-| ruling registry | 93 docs · 127 ruling ids |
 | **§2 DELIVERY vocabulary** | **45 tokens** (was 31) |
 | routed ability lines | **61,907** (was 61,868 — +39, all dual-delivery, see D3 §5a / D8 §3) |
-| ruling registry | 95 docs |
+| ruling registry | **95 docs · 127 ruling ids** |
 | **lines with NO ratified token** | **18,162** (was 20,290 — **−2,128**) |
 | distinct ratified tokens in use | **64** (was 47) |
 | keyword homes | **148** (was 144 — 4 CR-confirmed, D6 §4) |

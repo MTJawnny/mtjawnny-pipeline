@@ -73,7 +73,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-05.md` | 231 | 4 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-05.md` | 242 | 4 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 192 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -547,7 +547,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:388` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
 - `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
-- `SESSION-HANDOFF-2026-08-05.md:129` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:137` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
 - `TIER-3-DECISION-PACKET-2026-08-02.md:42` — > 1. **The executor had no way to edit a scope field.** D1's ratified scope
@@ -618,7 +618,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
-- `SESSION-HANDOFF-2026-08-05.md:129` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:137` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
@@ -710,7 +710,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:110` — D7 — All other section-1 verdicts stand as written.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `SESSION-HANDOFF-2026-08-02-EVE.md:120` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
-- `SESSION-HANDOFF-2026-08-05.md:129` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:137` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TIER-3-DECISION-PACKET-2026-08-02.md:50` — > claim D7 ruled false. Caught on post-execution readback, corrected to
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
@@ -729,7 +729,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PRE-STEP-2-AUDIT-2026-08-04.md:9` — > **D9 is a Captain ruling (Phase B), not a fix. What remains of this audit is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
-- `SESSION-HANDOFF-2026-08-05.md:129` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-05.md:137` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 
 ### `F2` — 3 reference(s) across 2 doc(s)
