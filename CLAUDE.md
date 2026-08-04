@@ -252,6 +252,38 @@ encodes.
 - **"Reached `spell-or-static`" is NOT "is static."** It is a proxy, and it
   fails exactly when the first ability is a trigger that went unrouted for an
   unrelated reason. Gate on a positive test, never on "nothing else claimed it".
+- **A DERIVED MAP IS NOT THE LIST IT WAS DERIVED FROM.** `KEYWORD_HOME` is
+  keyed on CR 702 keyword names, so it reads like the keyword list — but
+  `build_keyword_homes` SKIPS any keyword whose home cannot be derived, and
+  `awaken`/`impending` are absent. Asking it *"is this a keyword?"* answered no,
+  and `Awaken 4—{4}{W}` was read as a flavor word. A membership test must use
+  the **membership list** (`CR_KEYWORD_NAMES`, parsed from `load_702`), never a
+  map that happens to be keyed on it. Same family as "a ratified token with no
+  emitter" and "a ratified standard with no caller".
+- **The CR enumerates ability words and REFUSES to enumerate flavor words.**
+  CR 207.2c publishes all 61 ability words in one sentence (`descend 4`,
+  `descend 8` carry DIGITS; `council’s dilemma` a curly apostrophe) — so the
+  strip is parsed, not shaped. CR 207.2d then says flavor words *"are not
+  listed in the Comprehensive Rules"* and are tailored per card. **A list the
+  CR declares un-enumerable is the ONE honest reason a heuristic may stand** —
+  declare it and cite the rule; everything else is a hand-list with a delay.
+- **An em-dash prefix is one of SIX things and the CR decides which.** Saga
+  chapter (714.2), die-roll row (706.3b), modal header (700.2), a cost
+  (601.2b), an activated cost (602.1), a keyword parameter (702.Na) — those
+  five carry rules meaning and must NOT be stripped; only 207.2c/207.2d words
+  may be. But the keyword refusal must stay NARROW: a keyword whose parameter
+  is an ABILITY (`Max speed —`, `Visit —`) is strippable **on purpose**, since
+  `build_keyword_forms` refuses those forms so the INNER ability reaches its
+  own branch.
+- **Zero movement can be the CORRECT result and still be a real fix.** 739
+  lines stopped being stripped (modal headers, Saga chapters) and routed
+  identically — because `CHAPTER` is tested before the strip and
+  `_MODAL_HEADER_RE` reads the RAW line. The old behaviour was wrong somewhere
+  nothing downstream could observe. Don't read "0 moved" as "no-op"; read it as
+  "the guard was elsewhere".
+- **A population count is not a yield count is not a routing claim.** AUDIT-5's
+  121 unstrippable prefixes were 41 real ability/flavor words, of which 29
+  changed delivery — three questions, three numbers. State which one you mean.
 - **When a rule names a card type, ask the CR which OTHER types it covers.**
   The attachment branch had Auras (CR 303.4) and Equipment (CR 301.5a) and
   omitted Fortifications, though CR 301.6 states the analogy outright

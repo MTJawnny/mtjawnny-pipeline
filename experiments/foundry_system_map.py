@@ -89,9 +89,12 @@ def main():
     row("lines yielding >1 delivery", multi, "CR 603.11/607.2h", CR_PARSED)
     row("  ...via a LINKED ability", linked, "CR 607.2h", CR_PARSED)
     print()
-    row("ability-word strip", "ABILITY_WORD", "hand-written regex", HEURISTIC)
-    print("        ↑ OPEN DEFECT: rejects a prefix with a digit or punctuation")
-    print("          ('Descend 4 —', 'Nitro-9 —', 'No One Dies! —'). 121 lines.")
+    row("ability words (CR 207.2c)", len(fx.CR_ABILITY_WORDS or ()),
+        "CR 207.2c", CR_PARSED)
+    row("  ...flavor-word residual", "_FLAVOR_WORD", "CR 207.2d (un-enumerable)",
+        HEURISTIC)
+    print("        ↑ DECLARED, not hidden: CR 207.2d states outright that flavor")
+    print("          words are NOT listed in the CR, so no source can hold them.")
     row("trigger condition cut", "trigger_condition", "CR 113.3c + grammar", CR_PARSED)
     row("trigger clause verbs", "TRIGGER_VERB", "CR 701 keyword actions", CR_PARSED)
     row("compound-trigger split", "PREDICATE", "hand-written verb list", HEURISTIC)
@@ -155,8 +158,9 @@ def main():
     print("        CR 611.2a says only \"such as 'until end of turn'\".")
     print("      · compound-trigger PREDICATE verbs — game EVENTS; the CR")
     print("        enumerates keyword ACTIONS (701) only.")
-    print("      · ABILITY_WORD's shape — CR 207.2c defines ability words but")
-    print("        does not enumerate them.")
+    print("      · CR 207.2d FLAVOR words — the CR says outright they are")
+    print("        \"not listed in the Comprehensive Rules\". Un-enumerable BY")
+    print("        RULE, which is the one honest reason a shape may stand.")
 
     # ---------------------------------------------------------------- stage 5
     rule("STAGE 5 — CODEBOOK.  Which AXIS does the card join?")
@@ -181,10 +185,13 @@ def main():
   NEW METHOD: parse the CR at run time, with a CONTENT halt-guard.
 
   Stage 1 corpus      — n/a, the corpus is data
-  Stage 2 segmentation— MIXED. Clause/condition/sentence cuts are CR-anchored;
-                        ABILITY_WORD and PREDICATE are not. ← the live frontier
+  Stage 2 segmentation— MIXED. Clause/condition/sentence cuts are CR-anchored,
+                        and so is the ability-word strip since 2026-08-06
+                        (CR 207.2c parsed; each refusal cites 714.2 / 706.3b /
+                        700.2 / 601.2b / 602.1 / 702.Na). PREDICATE is the last
+                        hand-list here. ← the live frontier
   Stage 3 classify    — CR-anchored throughout (113.3, 614, 603, 120, 400, 700)
-  Stage 4 vocabulary  — CR-parsed, except three DECLARED heuristics
+  Stage 4 vocabulary  — CR-parsed, except two DECLARED heuristics
   Stage 5 codebook    — ratified by Captain; parents legitimately derived
 
   THE QUESTION THAT FINDS DEFECTS, and it is the only one you need:

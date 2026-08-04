@@ -70,7 +70,93 @@ REMINDER = re.compile(r"\([^)]*\)")
 # Found by a METAMORPHIC test, not by reading: a card's DELIVERY cannot depend
 # on its NAME, so renaming every card to a neutral string must not change any
 # routing. 62 of the 63 violations were this one line.
-ABILITY_WORD = re.compile(r"^\s*[A-Z][A-Za-z'’\- ]{2,40}\s*—\s*")
+# THE LIST IS NOT A SHAPE. CR 207.2c publishes the ability words as a CLOSED
+# ENUMERATION in one sentence -- *"The ability words are adamant, addendum,
+# alliance, battalion, ... and will of the council."* -- so it is PARSED, like
+# CR 120.1's recipients and CR 205's type lists, and the character class below
+# is no longer asked to decide membership. It could not: two of CR 207.2c's own
+# members carry a DIGIT (`descend 4`, `descend 8`) and one a curly apostrophe
+# (`council’s dilemma`), and `[A-Za-z'’\- ]` admits neither.
+#
+# CR 207.2d is the reason a shape still exists at all: *"flavor words ... are
+# NOT LISTED in the Comprehensive Rules. While an ability word ties together
+# several abilities with similar functionality, each flavor word is tailored to
+# the specific ability it appears with."* An un-enumerable list is a DECLARED
+# heuristic, not a hand-list -- the CR states outright that no source can hold
+# it. Measured 2026-08-06, the old class excluded every flavor word carrying a
+# digit (`Nitro-9`), terminal punctuation (`No One Dies!`, `Exterminate!`), a
+# comma (`In You, All Things Are Possible`) or a non-ASCII letter
+# (`Pavitr's Sevā`) -- 121 unrouted lines.
+CR_ABILITY_WORDS = None    # CR 207.2c, built by build_cr_enumerations()
+
+# The em-dash phrase that OPENS a line. Every one of these is exactly one of
+# six things and the CR decides which, so each refusal below cites its rule
+# rather than guessing from characters.
+_DASH_PREFIX = re.compile(r"^\s*([^—]{1,40}?)\s*—\s*")
+# CR 207.2d residual: a flavor word is a printed PHRASE. Letters (any script),
+# digits, and the punctuation a title may carry. It must not be a cost, a
+# quote, or a table row -- those are refused by rule, not by class.
+_FLAVOR_WORD = re.compile(r"^[\w'’\-.,!?& ]{3,40}$", re.UNICODE)
+# CR 706.3b: a die-roll result table is ONE ability, and its rows open with the
+# result -- "5", "4 or 5", "1 or 2", "10—19". A row is entirely numeric.
+_DIE_ROW = re.compile(r"^\d+(?:\s*(?:or|through|thru|[-–|])\s*\d*)*$")
+
+
+def strip_ability_word(raw: str) -> str:
+    """`raw` with a CR 207.2c ability word / CR 207.2d flavor word removed."""
+    return ability_word_prefix(raw)[1]
+
+
+def ability_word_prefix(raw: str):
+    """(prefix, body) -- the leading em-dash phrase when it is an ability word
+    (CR 207.2c) or a flavor word (CR 207.2d), else (None, raw).
+
+    A phrase with NO rules meaning is the only kind that may be removed. The
+    other five things printed in this position all carry rules meaning and are
+    refused, each by the rule that owns it:
+
+      CR 714.2   a Saga chapter bar          `III —`, `II, IV —`
+      CR 706.3b  a die-roll result row       `5 —`, `1 | Trapped! —`
+      CR 700.2   a modal header              `When Kura dies, choose one —`
+      CR 601.2b  a cost                      `Prototype {1}{B} —`, `+ {R} —`
+      CR 602.1   an activated ability's cost `Sacrifice another Serpent: Choose one —`
+      CR 702.Na  a keyword's own parameter   `Awaken 2—{4}{W}`, `Impending 5—`
+
+    The keyword refusal is deliberately narrow. A CR 702 keyword whose
+    parameter is an ABILITY (`Max speed — [Ability]`, CR 702.178a; `Visit —`,
+    702.159a) is left strippable ON PURPOSE: `build_keyword_forms` refuses
+    those forms precisely so the INNER ability reaches its own branch, and
+    removing the wrapper is how it gets there. Only a keyword carrying a
+    NUMERIC parameter is refused, because there the text after the dash is a
+    cost and there is no inner ability to reach.
+    """
+    m = _DASH_PREFIX.match(raw)
+    if not m:
+        return None, raw
+    pre = m.group(1).strip()
+    body = raw[m.end():]
+    # CR 207.2c -- the parsed list wins outright, whatever characters it holds.
+    if CR_ABILITY_WORDS and pre.lower().replace("’", "'") in CR_ABILITY_WORDS:
+        return pre, body
+    if not _FLAVOR_WORD.match(pre):
+        return None, raw
+    # §2 quoted grant: the prefix is inside an ability this card GRANTS, so the
+    # em-dash belongs to the granted keyword ("Artifacts you control have
+    # \"Ward—Pay 2 life.\"") and the line's own delivery is the grant.
+    if '"' in pre or "“" in pre or "|" in pre:
+        return None, raw
+    if "{" in pre or ":" in pre or pre[0] in "+-−":   # CR 601.2b / 602.1
+        return None, raw
+    if _DIE_ROW.match(pre):                                 # CR 706.3b
+        return None, raw
+    if CHAPTER.match(raw):                                  # CR 714.2
+        return None, raw
+    if fc._MODAL_HEADER_RE.search(raw.strip()):             # CR 700.2
+        return None, raw
+    if CR_KEYWORD_NAMES and re.search(r"\d", pre) and \
+            pre.split()[0].lower() in CR_KEYWORD_NAMES:     # CR 702.Na
+        return None, raw
+    return pre, body
 # CR 606.2: "An activated ability with a loyalty symbol in its cost is a
 # loyalty ability." The printed symbol IS the cost, so the shape is the test.
 # Sign mandatory except a bare `0`, which is what excludes CR 702.184 Station
@@ -315,7 +401,7 @@ def build_cr_enumerations() -> None:
     lists and CR 113.3's ability classes. Each carries a content halt-guard,
     because a count guard cannot see a substitution (the CR 205 Oxford-comma
     lesson, 2026-08-05)."""
-    global CR_DAMAGE_RECIPIENTS, CR_ZONES
+    global CR_DAMAGE_RECIPIENTS, CR_ZONES, CR_ABILITY_WORDS
     import foundry_cr702_classes as k7
     txt = k7.CR_PATH.read_text(encoding="utf-8", errors="strict")
 
@@ -343,6 +429,30 @@ def build_cr_enumerations() -> None:
     CR_ZONES = enum(
         r"^400\.1\. .*?There are normally seven zones: (.+?)\.", "CR 400.1 zones",
         ("library", "hand", "battlefield", "graveyard", "stack", "exile", "command"))
+
+    # CR 207.2c: "The ability words are adamant, addendum, ... and will of the
+    # council." `enum()` is not reusable here -- it does `.rstrip("s")`, which
+    # is right for CR 205's type lists and wrong here (`pack tactics` ->
+    # `pack tactic`, `join forces` -> `join force`).
+    m = re.search(r"^207\.2c .*?The ability words are (.+?)\.\s*$", txt, re.M)
+    if not m:
+        fc.halt("Could not parse CR 207.2c's ability-word list. The wording "
+                "has changed; fix the parser, never fall back to a list.")
+    words = {w.strip().lower().replace("’", "'")
+             for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", m.group(1)) if w.strip()}
+    # CONTENT guard, not a count -- the CR 205 Oxford-comma lesson. Each probe
+    # is chosen to fail a DIFFERENT way the parse can break: `landfall` for the
+    # ordinary case, `will of the council` for the last member (the one an
+    # Oxford split drops), `descend 4` for the digit-bearing member that
+    # motivated this parse, and `council's dilemma` for the apostrophe the CR
+    # prints CURLY and Scryfall prints straight.
+    must = ("landfall", "threshold", "descend 4", "descend 8",
+            "council's dilemma", "will of the council")
+    missing = sorted(set(must) - words)
+    if missing or any(w.startswith("and ") for w in words):
+        fc.halt(f"CR 207.2c ability-word parse is incomplete or malformed: "
+                f"missing={missing} got={sorted(words)}")
+    CR_ABILITY_WORDS = words
 
 
 def _damage_recipient(tail: str, card: dict = None):
@@ -608,13 +718,18 @@ def linked_abilities(raw: str, low: str, ratified: dict, card, first):
     paragraph can hold three abilities.
     """
     # STRIP THE DASH PREFIX BEFORE SPLITTING, not after. `sentence_spans`
-    # breaks on `.` and `!`, and Spider-Man, To the Rescue prints the ability
+    # breaks on `.` and `!`, and Spider-Man, To the Rescue prints the flavor
     # word `No One Dies! —` -- so the "!" split the PREFIX into its own
     # sentence, leaving a harmless-looking first sentence and hiding the `When
     # Spider-Man enters` trigger in sentence two.
-    m_pre = re.match(r"^\s*([^—]{2,40})—\s*", raw)
-    prefix = (m_pre.group(1).strip().lower() if m_pre else "")
-    body = raw[m_pre.end():] if m_pre else raw
+    #
+    # This used to be a LOCAL, looser dash-strip, because widening the global
+    # one "would touch every classifier". Audit #5 called that what it was: the
+    # symptom fixed at one site while the cause stood. The global strip is now
+    # CR 207.2c-parsed with CR-cited refusals, so the local copy is gone and
+    # the two cannot drift apart.
+    pre, body = ability_word_prefix(raw)
+    prefix = pre.lower() if pre else ""
     # CR 702.159a makes an Attraction's `Visit —` a TRIGGERED ability outright:
     # *"'Visit — [Effect]' means 'WHENEVER you roll to visit your Attractions,
     # … [effect].'"* and 702.159b puts `Prize —` inside that same visit
@@ -802,11 +917,17 @@ def trigger_clause(low: str) -> str:
 # created-ability rule gives the delivery to the creator, not the created one.
 # Only a line that IS one or more keywords (with costs/params stripped) matches.
 KEYWORD_HOME = None
+# EVERY CR 702 keyword name, which is NOT the same set as KEYWORD_HOME's keys:
+# a keyword whose home cannot be derived is skipped below, so `awaken` and
+# `impending` are absent from the map while still being keywords. Asking the
+# home map "is this a keyword?" answered no for both, and `Awaken 4—{4}{W}`
+# was read as a flavor word. A membership test must use the membership list.
+CR_KEYWORD_NAMES = None
 
 
 def build_keyword_homes(ratified: dict) -> None:
     """keyword name -> §2 DELIVERY token, derived from the CR (§2b)."""
-    global KEYWORD_HOME
+    global KEYWORD_HOME, CR_KEYWORD_NAMES
     import foundry_cr702_classes as k7
     # k7 does `import foundry_shape_extractor`, which under `python3
     # foundry_shape_extractor.py` is a SECOND module instance whose globals are
@@ -823,7 +944,18 @@ def build_keyword_homes(ratified: dict) -> None:
         # and a fallback is what this whole pass exists to remove.
         _twin.CR_DAMAGE_RECIPIENTS = CR_DAMAGE_RECIPIENTS
         _twin.CR_ZONES = CR_ZONES
+        _twin.CR_ABILITY_WORDS = CR_ABILITY_WORDS
     kws = k7.load_702(k7.CR_PATH)
+    CR_KEYWORD_NAMES = {kw["name"].lower() for num, kw in kws.items()
+                        if kw["name"] and num != k7.PREAMBLE_RULE}
+    if _twin is not sys.modules[__name__]:
+        # AFTER the parse, not with the block above -- syncing it there would
+        # copy None and turn the CR 702.Na refusal off in the twin silently.
+        _twin.CR_KEYWORD_NAMES = CR_KEYWORD_NAMES
+    if not {"awaken", "impending", "ward"} <= CR_KEYWORD_NAMES:
+        fc.halt("CR 702 keyword-name parse lost a keyword that prints an "
+                "em-dash parameter; the ability-word strip would then read it "
+                f"as a flavor word. got {len(CR_KEYWORD_NAMES)} names.")
     homes = {}
     for num, kw in kws.items():
         if not kw["name"] or num == k7.PREAMBLE_RULE:
@@ -1157,7 +1289,7 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     kw = keyword_line_tokens(raw)
     if kw:
         return kw
-    body = ABILITY_WORD.sub("", raw)
+    body = strip_ability_word(raw)
     if card is not None:
         body = fc.canonicalize_self_reference(body, card)
     low = body.lower()
@@ -1261,7 +1393,7 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # "represents both an ACTIVATED ability and a STATIC ability". Only
         # Saga chapters are triggered (CR 714.2).
         return _mark_top("chapter-trigger", "saga-chapter", ratified)
-    body = ABILITY_WORD.sub("", raw)
+    body = strip_ability_word(raw)
     # Collapse the card's own name (and short forms) to `~` so a self-reference
     # is detectable without case or spelling games. This is the same helper the
     # DET pass uses, so the two agree by construction.
