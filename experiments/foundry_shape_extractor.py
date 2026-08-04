@@ -212,6 +212,24 @@ def deliveries_for_lines(card: dict, ratified: dict):
         yield line, parsed
 
 
+_SPELL_TYPE = re.compile(r"\b(Instant|Sorcery)\b")
+
+
+def _has_spell_face(card: dict) -> bool:
+    """Does ANY face of this card have an instant/sorcery type line?
+
+    CR 113.3a makes a spell ability possible only on an instant or sorcery, so
+    this is the test for "could a line on this card be an unmarked spell
+    ability at all". It is deliberately ALL-FACES and deliberately pessimistic:
+    `ability_lines` joins every face's text into one stream, so a line on the
+    creature half of a Creature // Sorcery card is indistinguishable here from
+    a line on the sorcery half. One instant/sorcery face disqualifies the whole
+    card rather than risking a spell ability being marked `static`."""
+    faces = [card.get("type_line") or ""]
+    faces += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
+    return any(_SPELL_TYPE.search(t) for t in faces)
+
+
 def quoted_spans(line: str) -> list:
     """Character ranges inside double quotes -- granted or token ability text.
     §2's created-ability rule: a card does not deliver an ability it CREATES."""
@@ -1270,6 +1288,33 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     unq = low
     for a, b in quoted_spans(low):
         unq = unq[:a] + " " * (b - a) + unq[b:]
+    # CR 614.1d states the GENERAL case that 614.1c's three templates are
+    # instances of: *"Continuous effects that read '[This permanent]
+    # enters . . .' … are replacement effects."* The alternation below is
+    # 614.1c's three named templates, and hand-listing them lost every OTHER
+    # way a card writes the same shape -- 35 lines, in three distinct ways:
+    #
+    #   `This creature enters PREPARED.`            24  (CR 722.3, no template)
+    #   `~ enters the battlefield TAPPED.`           7  (the Gates; old wording)
+    #   `~ enters UNDER THE CONTROL of an opponent.` 4  (Xantcha, Captive Audience)
+    #
+    # The seven Gates are the instructive ones: `\benters? tapped\b` requires
+    # ADJACENCY, and the pre-2024 templating prints "enters THE BATTLEFIELD
+    # tapped". Same defect class as `enters as` being tested plural-only
+    # (STEP-2A §2) and as D5's guessed `{0,60}` window -- a hand-list, or a
+    # hand-chosen distance, standing in for what the CR states generally.
+    #
+    # The SUBJECT test is `SELF_NOUN_RX`, which is DERIVED from the corpus's
+    # own type lines, not a list of permanent types. 614.1d's SECOND template
+    # ("[Objects] enter [the battlefield] . . .") is deliberately NOT taken
+    # here -- measured, it is not decidable by this shape: of 15 candidate
+    # lines only Vigorous Farming is a replacement effect, while 9 are
+    # Landfall/Trap INSTANTS whose "enter" sits inside a condition (§1's
+    # unmarked default) and 5 are "can't enter" PROHIBITIONS, which are
+    # continuous effects but not replacement ones. Reported, not routed.
+    m_self = re.match(r"^~|^" + SELF_NOUN_RX.pattern, unq)
+    if m_self and re.match(r"\s+enters\b", unq[m_self.end():]):
+        return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
     if re.match(r"^as (?!an additional cost|long as)\b.{0,40}?"
                 r"\b(?:enters|is turned face up)\b", unq) or \
        re.search(r"\benters? as\b", unq) or \
@@ -1369,6 +1414,47 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     #     is CR 603.2d, filed under triggered abilities, not under 614.
     if re.match(r"^as long as\b", low):
         return ("static", "static-condition") if "static" in ratified else (None, "static-condition")
+    # A line-initial SELF-REFERENCE statement, on a card that cannot carry a
+    # spell ability, is a static ability.
+    #
+    # CR 113.3 enumerates FOUR ability categories, and CR 113.3a seals the one
+    # that would otherwise compete: *"Spell abilities are abilities that are
+    # followed as instructions **while an instant or sorcery spell is
+    # resolving**."* So a spell ability can exist ONLY on an instant or sorcery.
+    # At the tail, loyalty (113.3b/606), activated (113.3b), every triggered
+    # family (113.3c) and replacement (614) have already declined the line --
+    # and if the card has no instant/sorcery FACE, 113.3a is unavailable too.
+    # The enumeration is closed, so `static` (113.3d) is what remains. This is
+    # a derivation from the CR's own category list, not a verb list.
+    #
+    # THE FACE TEST IS THE WHOLE SAFETY MARGIN, and it was not the first
+    # boundary tried. Measured on the unrouted population, 2,185 lines open
+    # with a self-reference -- and 738 of them are burn spells:
+    #
+    #   Chain of Plasma   `~ deals 3 damage to any target.`   <- CR 113.3a,
+    #                                                            unmarked (§1)
+    #   Marang River Prowler `This creature can't block and can't be blocked.`
+    #                                                         <- CR 113.3d
+    #
+    # Both open with a self-reference; no test on the SUBJECT separates them.
+    # The CR 113.3a cut does, exactly: after it, **ZERO** `deals` lines remain
+    # on the routable side (measured, all 91 surviving verb heads are state
+    # predicates -- can't / can / gets / has / is / doesn't / must / 's power).
+    # 760 lines on cards WITH an instant or sorcery face are left reported
+    # rather than routed, because attributing a line to a FACE is a different
+    # job than attributing it to a card, and `ability_lines` joins all faces.
+    #
+    # `escapes with` (12 lines, Phoenix of Ash) is HELD OUT deliberately. CR
+    # 113.6h -- *"An object's ability that modifies how that particular object
+    # enters the battlefield … **See rule 614.12**"* -- chains it into the
+    # replacement section, so its home is probably `replacement`, not `static`.
+    # That is a second shape and it gets its own pass; sweeping it in here
+    # would be the lumping this method exists to avoid.
+    m_self = re.match(r"^~|^" + SELF_NOUN_RX.pattern, low)
+    if m_self and card is not None and not _has_spell_face(card) and \
+       not re.match(r"\s+escapes\b", low[m_self.end():]):
+        return ("static", "static-self-statement") if "static" in ratified \
+            else (None, "static-self-statement")
     return None, "spell-or-static"
 
 

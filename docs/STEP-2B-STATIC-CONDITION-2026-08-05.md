@@ -204,6 +204,13 @@ The named shapes waiting: the **931-line `this creature …` group**, then the
 **~370-line anthem group** (`creatures you control get +N/+N`), then audit group
 F's remainder.
 
+> **CORRECTED 2026-08-05 by `STEP-2C-SELF-STATEMENT-2026-08-05.md` §0.** The
+> "931-line `this creature …` group" was carried forward from a session-closing
+> summary and existed in no measurement. Measured: **2,185** lines open with a
+> self-reference — and **738 of them are burn spells** (`~ deals 3 damage to any
+> target`), CR 113.3a's unmarked default. **It is not one shape**, and the name
+> described a *subject* rather than the rule that decides delivery.
+
 The method is unchanged and it earned its keep twice more this pass: **name a
 shape, measure it, read its output, tighten until leakage is zero or explained.**
 Step 2a needed two tightenings found only in the output. Step 2b needed none —

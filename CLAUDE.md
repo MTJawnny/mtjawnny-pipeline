@@ -203,6 +203,16 @@ encodes.
   templated text**, so any change to the classifier can silently move
   `keyword_homes`. Diff that count on every extractor change; a keyword whose
   parameter is an ABILITY must stay refused by `build_keyword_forms`.
+- **Name a shape by the CR rule that DECIDES it, never by the words that open
+  the line.** "The `this creature …` group" named a *subject*, and delivery is
+  never decided by the subject: 738 of those 2,185 lines were burn spells
+  (`~ deals 3 damage to any target`, CR 113.3a). The cut that works is
+  **CR 113.3a itself** — a spell ability exists only on an instant or sorcery,
+  so a card with no instant/sorcery face leaves CR 113.3's four-category
+  enumeration closed on `static`. Zero `deals` lines survive it.
+- **A carried-forward count in a handoff or a closing summary is not a
+  measurement.** "931 lines" existed in no artifact; the real number was 2,185
+  and the real shape was three shapes. Re-measure before naming the next slice.
 
 ## Reference
 
