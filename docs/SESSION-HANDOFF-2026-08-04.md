@@ -26,7 +26,8 @@ session and I still under-ran it** (§6 below). Read that first.
 | ruling registry | 82 docs scanned (was 72) · 126 ruling ids |
 | §2 DELIVERY vocabulary | **31 tokens** (was 30) |
 | `phase-trigger-unnamed` | **0** (was 11) |
-| commits | **0 — nothing committed; awaiting Captain's ask** |
+| commits | **3** — `b011a02` (rulings) · `82ca708` (procedure) · `71ed436` (audit) |
+| working tree | clean |
 
 **No codebook mutation, so no backup was required.** All work is grammar, DET and
 documents.
@@ -161,17 +162,56 @@ must now use the absolute site path** — `~/Projects/mtjawnny.github.io/docs/mt
 Every CR citation in this session's nine documents was verified against that
 byte-identical text.
 
-## 8. NEXT WORK ITEM
+## 8. BLOCKED ON CAPTAIN — one decision sheet, one word unblocks all of it
 
-1. **Ratify the 14 rows** from §4 — mechanical, one row each, DET already wired.
-2. **Audit `spell-or-static`** (§4a) — the census is blind there by construction.
-3. **Run `family_tree_evidence.py`** on the five populated parents (§5) — the S7
-   gate they have never been through.
-4. Four migrations still **logged, not executed** (carried from 2026-08-03), plus
-   one new: `rule:lifegain-triggered-plus1-counter` →
-   `rule:gain-life-trigger-plus1-counter`, which also closes §14 Q5's open
-   `lifegain` exclusion, unresolved since 2026-07-31.
-5. `rule:postcombat-main-phase-trigger` is under-populated: **2 of 10**.
+**Ratify the 14 §2 rows** ruled in §4. DET is already wired for every one, so
+ratification is mechanical — add the row, the token appears, the gap closes.
+
+| # | rows | doc |
+|---|--:|---|
+| 1 | `precombat-` / `second-` / `postcombat-main-phase-trigger` | MAIN-PHASE |
+| 2 | `is-dealt-damage` + `-combat` / `-excess` / `-noncombat` | IS-DEALT-DAMAGE |
+| 3 | `turned-face-up-trigger` | TURNED-FACE-UP |
+| 4 | `gain-life-trigger` (**not** `lifegain-`, §14 Q5) | GAIN-LIFE-TRIGGER |
+| 5 | `to-graveyard-from-` anywhere / library / hand / other-zone | TO-GRAVEYARD |
+| 6 | `<type>-counter-placed-trigger` as a §11 grammar family | COUNTER-PLACED |
+| 7 | `draw-step-trigger` | DRAW-STEP |
+
+**Three carry a real question — do not assume the answer:**
+
+- **Do `second-` and `postcombat-main-phase` stay split?** CR 505.1a says yes
+  (an extra combat phase makes a third main phase postcombat but not second).
+- **Is the ordinal counter threshold** (*"the **fourth** plan counter"*) a
+  parameter (batch-5 polarity precedent) or axis identity?
+- **§2b tension:** Tribute's CR 702.104a calls it a *static ability* while its
+  templated text is a CR 614.1c *replacement*. Resolved toward `replacement`
+  here; the general form governs more keywords than Tribute.
+
+## 8a. NEXT WORK ITEM — proceeds WITHOUT asking (Gate 1)
+
+Ordered cheapest and safest first. None of these needs ratification.
+
+1. **Fix §2b's keyword router** — `SPELL-OR-STATIC-AUDIT-2026-08-04.md` §6 step 1.
+   6 CR-stated `activated` keywords (**Equip, 567 lines**) + 5 landwalk variants
+   = **757 lines**. Pure derivation, ratified rule already in place.
+   **Read `find_home` in `foundry_cr702_classes.py` before changing it** — the
+   audit deliberately did not guess at the cause.
+2. **Route bare permanent statics to `static`** — audit §6 step 2, ~7,976 lines.
+   Large; use the same before/after line-diff discipline as the trigger-verb fix.
+3. **Stop excluding `spell-or-static` from the census** — audit §6 step 4 — or
+   report it with the instant/sorcery split applied, so the permanent-side
+   population stays visible instead of needing an audit to find it.
+4. **Run `experiments/measure/family_tree_evidence.py`** on the five populated
+   parents (§5) — the S7 gate they have never been through. Zero tokens.
+5. Migrations **logged, not executed** (four carried from 2026-08-03, plus
+   `rule:lifegain-triggered-plus1-counter` → `rule:gain-life-trigger-plus1-counter`,
+   which also closes §14 Q5's `lifegain` exclusion, open since 2026-07-31).
+   **Each is a codebook mutation — needs Captain's word AND the backup law.**
+6. `rule:postcombat-main-phase-trigger` is under-populated: **2 of 10 cards.**
+
+**Standing method that earned its keep three times today:** measure before
+ruling, quote the CR rule rather than the card, dossier the name you are about
+to WRITE, and diff every line a DET change moves — reading each one.
 
 **Open §2a question, logged not ruled:** §2a's three-way table does not name the
 `~ or another X` compound ("Whenever Giott **or** another Dwarf you control
