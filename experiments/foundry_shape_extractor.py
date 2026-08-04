@@ -2324,10 +2324,37 @@ def cmd_gaps(args, cards, ratified, actions):
     rows = scan(cards, ratified, None)
     gap = collections.Counter()
     cardset = collections.defaultdict(set)
+    inside = collections.defaultdict(collections.Counter)
+    inside_cards = collections.defaultdict(lambda: collections.defaultdict(set))
     for r in rows:
-        if r["delivery"] is None and r["descriptor"] not in ("spell-or-static",):
+        if r["delivery"] is not None:
+            continue
+        if r["descriptor"] not in ("spell-or-static",):
             gap[r["descriptor"]] += 1
             cardset[r["descriptor"]].add(r["name"])
+        else:
+            # THE CENSUS WAS BLIND HERE BY CONSTRUCTION, and this is where
+            # almost all of the unrouted mass lives: 14,898 of 15,902 lines,
+            # 93.7%. The exclusion is right -- these are not missing
+            # VOCABULARY, which is what the table above ranks -- but "excluded
+            # from this table" turned into "unreportable", and 236 CR 614.1c
+            # replacement effects hid in here indefinitely.
+            #
+            # CR 113.3a decides the split and needs no new vocabulary to do it:
+            # *"a spell ability ... is an ability that functions only while the
+            # spell is on the stack"*, and a spell is an instant or a sorcery.
+            # So a card with NO instant/sorcery face leaves CR 113.3's
+            # four-category enumeration closed on `static` -- the line is
+            # decidably a static ability that simply has no branch yet. A card
+            # WITH such a face is genuinely undecidable from its faces alone,
+            # and grammar §1 makes the unmarked default correct for it anyway.
+            key = ("CR 113.3a closes: decidably STATIC"
+                   if not _has_spell_face(cards[r["oracle_id"]])
+                   else "undecidable — has an instant/sorcery face (§1 default)")
+            shape = " ".join(re.sub(r"[^\w\s'’—•|+{}/-]", "", r["line"].strip())
+                             .split()[:3]).lower()
+            inside[key][shape] += 1
+            inside_cards[key][shape].add(r["name"])
     print(f"ratified DELIVERY tokens parsed from grammar §2: {len(ratified)}")
     print(f"  {', '.join(sorted(ratified))}\n")
     print(f"ability lines scanned: {len(rows)}   gate-passing cards: {len(cards)}\n")
@@ -2335,6 +2362,27 @@ def cmd_gaps(args, cards, ratified, actions):
     print("-" * 56)
     for desc, n in gap.most_common():
         print(f"{desc:38s} {n:7d} {len(cardset[desc]):7d}")
+
+    total_inside = sum(sum(c.values()) for c in inside.values())
+    print(f"\n{'=' * 68}")
+    print(f"INSIDE `spell-or-static` — {total_inside} lines the table above CANNOT see")
+    print(f"{'=' * 68}")
+    print("This bucket is excluded from the census because it is not missing")
+    print("VOCABULARY. But excluded became unreportable, and 236 CR 614.1c")
+    print("replacement effects once hid here indefinitely. CR 113.3a splits it")
+    print("with no new vocabulary at all:\n")
+    for key in sorted(inside, key=lambda k: -sum(inside[k].values())):
+        n = sum(inside[key].values())
+        print(f"  {key:52}{n:>7}  ({n / total_inside:.1%})")
+    print("\nSo the headline 'unrouted' number is not a gap count. Most of it is")
+    print("grammar §1's UNMARKED DEFAULT for a spell ability, which is correct")
+    print("and needs nothing. The decidably-static half is the real queue.\n")
+    for key in sorted(inside, key=lambda k: -sum(inside[k].values())):
+        print(f"--- {key} — top opening shapes ---")
+        print(f"  {'shape':34}{'lines':>7}{'cards':>7}")
+        for shape, n in inside[key].most_common(args.limit):
+            print(f"  {shape:34}{n:>7}{len(inside_cards[key][shape]):>7}")
+        print()
     if args.json:
         Path(args.json).write_text(json.dumps(
             {d: {"lines": n, "cards": sorted(cardset[d])} for d, n in gap.most_common()},
