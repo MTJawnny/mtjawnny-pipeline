@@ -110,6 +110,35 @@ INLINE_CONTEXT = {
 }
 
 
+_DET_PATTERNS = None
+
+
+def det_patterns():
+    """Every RATIFIED DET pattern, compiled, from the ratified batch files.
+
+    Read from the batch JSONs rather than re-typed, for the reason this repo
+    keeps relearning: a probe that re-derives the thing it is auditing can
+    disagree with it. `rule:kicker-conditional-bonus-effect` carries a null
+    pattern (the axis was retired in §2g) and is skipped rather than crashed on.
+    """
+    global _DET_PATTERNS
+    if _DET_PATTERNS is None:
+        docs = Path(__file__).resolve().parent.parent / "docs"
+        seen = {}
+        for name in ("det-patterns-v1.json", "det-patterns-v2.json",
+                     "det-patterns-cr-actions-v1.json"):
+            path = docs / name
+            if not path.exists():
+                fc.halt(f"ratified DET pattern batch missing: {path}")
+            for p in json.loads(path.read_text(encoding="utf-8")).get("patterns", []):
+                if isinstance(p.get("pattern"), str):
+                    seen[p["slug"]] = p["pattern"]
+        if not seen:
+            fc.halt("no ratified DET patterns parsed — do not silently pass.")
+        _DET_PATTERNS = [(s, re.compile(p, re.I)) for s, p in sorted(seen.items())]
+    return _DET_PATTERNS
+
+
 def option_form(line: str):
     for label, rx in OPTION_FORMS:
         m = rx.match(line)
@@ -300,6 +329,51 @@ def main():
     for r in (band_unscanned + band_uncontexted)[:args.limit]:
         print(f"     {r[0][:26]:28}{r[2]}")
 
+    # ------------------------------------------------------- FACE ISOLATION
+    # The join that makes options VISIBLE can also make two faces visible to
+    # each other, and that is the opposite error. `full_oracle_text()` newline-
+    # joins every face into one string and every DET pattern is matched against
+    # it, so a proximity pattern could pair a trigger on the front with an
+    # effect on the back -- a co-occurrence that never exists in play.
+    #
+    # CR 712.8: *"Each face of a double-faced card that isn't a meld card has
+    # its own set of characteristics."*  CR 709.3b says it again for split
+    # cards: *"While on the stack, only the characteristics of the half being
+    # cast exist. The other half's characteristics are treated as though they
+    # didn't exist."*
+    #
+    # Measured 2026-08-07 across 820 multi-face cards and every ratified DET
+    # pattern: ZERO matches span a boundary and ZERO modal expansions pair
+    # lines from different faces. The newline holds, because the house
+    # proximity scoping is `[^\n]*`. That was true and nothing asserted it --
+    # and the two joins added this session (CR 706.3b tables, CR 711.2/716.2
+    # striations) both build strings ACROSS lines, which is exactly the
+    # capability that would break it.
+    faces_checked = 0
+    face_spans = []
+    for oid, card in cards.items():
+        faces = [f["oracle_text"] for f in fc.te.get_raw_faces(card) if f["oracle_text"]]
+        if len(faces) < 2:
+            continue
+        faces_checked += 1
+        canon = fc.canonicalize_self_reference(fc.full_oracle_text(card), card)
+        bounds, pos = [], 0
+        for f in faces[:-1]:
+            pos += len(fc.canonicalize_self_reference(f, card))
+            bounds.append(pos)
+            pos += 1                       # the joining newline
+        for slug, rx in det_patterns():
+            for m in rx.finditer(canon):
+                if any(m.start() < b < m.end() for b in bounds):
+                    face_spans.append((card["name"], slug, m.group(0)[:60]))
+
+    rule("FACE ISOLATION — may a DET pattern span two faces? (CR 712.8 / 709.3b)")
+    print(f"  multi-face cards checked             {faces_checked:>7}")
+    print(f"  ratified DET patterns                {len(det_patterns()):>7}")
+    print(f"  matches SPANNING a face boundary     {len(face_spans):>7}")
+    for name, slug, txt in face_spans[:args.limit]:
+        print(f"     {name[:26]:28}{slug[:30]:32}{txt}")
+
     # UNCONTEXTED is non-fatal by design -- some of it is correct, a mode of an
     # instant has no timing to inherit. But it was also UNBOUNDED: nothing
     # noticed it going from 33 to 900. The pinned baseline is what bounds it,
@@ -314,14 +388,18 @@ def main():
         "band_content": sum(band_content.values()),
         "band_unscanned": len(band_unscanned),
         "band_uncontexted": len(band_uncontexted),
+        "face_spans": len(face_spans),
     }
     n_regressions = ab.report("visibility", metrics, args.update_baseline)
 
     rule("VERDICT")
     invisible = len(dropped) + len(unscanned) + len(band_unscanned)
-    fatal = invisible + n_regressions
+    fatal = invisible + len(face_spans) + n_regressions
     if invisible:
         print(f"  ✗ {invisible} option(s) are INVISIBLE — dropped or unscannable.")
+    if face_spans:
+        print(f"  ✗ {len(face_spans)} DET match(es) SPAN a face boundary — a")
+        print("    co-occurrence that never exists in play (CR 712.8 / 709.3b).")
     if n_regressions:
         print(f"  ✗ {n_regressions} pinned metric(s) moved the WRONG way.")
     if not fatal:
@@ -338,6 +416,7 @@ def main():
             "dropped": [list(r) for r in dropped],
             "unscanned": [list(r) for r in unscanned],
             "uncontexted": [list(r) for r in uncontexted],
+            "face_spans": [list(r) for r in face_spans],
         }, indent=2, sort_keys=True))
         print(f"\nwrote {args.json}")
     sys.exit(1 if fatal else 0)

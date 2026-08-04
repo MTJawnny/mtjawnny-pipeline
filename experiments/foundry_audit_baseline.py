@@ -46,7 +46,8 @@ BASELINE = Path(__file__).resolve().parent / "out" / "foundry" / "audit-baseline
 # negative control that pushed that class 621 lines the wrong way exited 0.
 # The nested metrics are the whole point of pinning -- a per-class unrouted
 # count, a per-descriptor histogram -- so they are the ones that must resolve.
-WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations")
+WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
+               "span", "crashed", "mismatch")
 WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  "options", "content", "passed", "graded")
 
