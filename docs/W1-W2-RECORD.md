@@ -407,3 +407,109 @@ uncontexted                      31     was 33
 
 **W4's target is now 4,375.**
 
+
+
+---
+
+# W2 ADDENDUM — Captain sent me back to the CR on Cone of Cold
+
+**Verdict: the Cone of Cold ruling STANDS, and the recheck was still worth it
+— it caught a defect in my own W2 work and surfaced a finding much larger than
+the card.**
+
+## 1. Cone of Cold — confirmed, on a better anchor than I had
+
+I had justified it from CR 706.3b + CR 113.3a + §2d. **CR 706.3a settles it
+more directly and I had not read it:**
+
+> *"Each list item or striation includes possible results and an effect
+> associated with those results. … **Each one means "If the result was in this
+> range, [effect]."**"*
+
+A results-table row **expands to a conditional EFFECT inside the one ability**.
+It is not an ability, so it has no delivery slot of its own — the question of
+whether the row "is a replacement" never arises. Cone of Cold's `20 |` row
+reads `replacement` only because its *effect text* contains "creatures your
+opponents control enter tapped" (CR 614.1d). The ability is the sorcery's
+spell ability; the replacement effect is **created on resolution**.
+
+`replacement → None` stands.
+
+## 2. What the recheck caught in my own work — CR 706.3a is a CLOSED LIST
+
+> *"The possible results indicated could be **a single number**, a range of
+> numbers with two endpoints in the form **"N1–N2,"** or a range with a single
+> endpoint in the form **"N+."**"*
+
+**Three forms, enumerated by the CR.** I had widened `_DIE_ROW_RE` from a
+corpus census instead of from the rule that publishes the answer — the
+**"NEVER TRANSCRIBE THE CR — DERIVE FROM IT AT RUN TIME"** failure, committed
+while writing a commit message criticising a census for being blind through
+its own filter.
+
+| form | measured | standing |
+|---|--:|---|
+| `N1–N2` | 80 | CR 706.3a |
+| `N+` | 49 | CR 706.3a |
+| single number | 26 | CR 706.3a |
+| `N or less` | **1** | **outside CR 706.3a → CR-LAG** |
+| `N or more` | **0** | **removed — I invented it** |
+
+- **`or more` removed.** Added on symmetry with `or less`, attested nowhere. A
+  member with no evidence is a hand-list defect however plausible it looks.
+  0 lines moved, which is the proof it was dead.
+- **`or less` kept and registered as CR-LAG** with its evidence, on the same
+  footing as `chorus`: Druid of the Emerald Grove, `9 or less | …`. It is that
+  table's **first** row, so excluding it costs all three. **Second CR-LAG
+  entry; second piece of evidence for W8 item 2 (refresh the CR snapshot).**
+- CR 706.3a prints `N1–N2` with an **en-dash** while the corpus prints em-dash
+  or hyphen — the CR-vs-Scryfall character split appearing in a **rule** rather
+  than a card name.
+
+## 3. THE FINDING — Cone of Cold was one symptom of a class · NOT FIXED, LOGGED
+
+CR 113.3a: *"Any text on an instant or sorcery spell is a spell ability
+**unless** it's an activated ability, a triggered ability, or a static ability
+that fits the criteria described in rule 113.6."*
+
+**The `replacement` branch has no spell-face gate at all.** W1 added that cut
+to `is_static` for the CR 603.11 split; the branch itself never got it.
+
+**147 lines on SINGLE-FACED instants and sorceries route to `replacement`:**
+
+| descriptor | n | verdict |
+|---|--:|---|
+| `replacement` | **117** | **suspect** — a spell ability that CREATES a replacement effect on resolution |
+| `keyword:madness` | 26 | **correct** — CR 702.35a's first ability is a static that functions **in hand** and reads *"…may exile it instead…"*. CR 113.6 exemption applies |
+| `keyword:dredge` | 4 | **correct** — CR 702.52a, a static functioning **in the graveyard**, worded *"if you would draw a card, you may instead…"* |
+
+So the keyword 30 are right *because CR 113.3a's own exception names them*,
+and the 117 are the real queue. Worked cases, all single-faced spells whose
+text describes an effect created on resolution:
+
+```
+Heroic Sacrifice   … all damage that would be dealt to you … instead
+Yamabushi's Flame  … if a creature dealt damage this way would die … exile it instead
+Carom              The next 1 damage that would be dealt … instead
+Fatigue            Target player skips their next draw step.
+Blood of the Martyr / Mirror Strike / Reflect Damage / Eye for an Eye
+Torch the Tower / Puncturing Blow / Narset's Rebuke / Due Respect
+```
+
+**Not all 117 resolve to `None`.** At least one is a CR 113.6 static that is
+simply mis-tokened rather than over-tokened — Glimpse the Cosmos (*"As long as
+you control a Giant, you may cast this card from your graveyard"*) is a static
+ability functioning in the graveyard, so its answer is `static`, not the §1
+default. **The 117 needs reading, not a blanket sweep** — the standing
+PRE-STEP-2 warning, and the same reason W4 is taken one named shape at a time.
+
+**The 218 figure from the first pass was wrong and is not the number.**
+`_has_spell_face` is CARD-level, so an MDFC like *Fell the Profane // Fell Mire*
+(Instant // Land) counts as spell-faced while the line belongs to the **land**
+face and is a perfectly good permanent replacement effect. Restricting to
+single-faced cards gives 147. **A per-FACE cut is what this fix actually
+needs**, and that is a real piece of design, not a one-line gate.
+
+**Boundary: this is outside W2** (inheritance only) and outside tier A's
+"no new anything" only in the sense that it is a fix worth its own packet.
+Logged, not started.
