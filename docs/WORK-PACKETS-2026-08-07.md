@@ -51,10 +51,10 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 
 | # | packet | tier | cost | blocked? |
 |---|---|---|---|---|
-| **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | ✅ **DONE** — `docs/W1-TRAP-SWEEP-RECORD.md` |
-| **W2** | CR 706.3b die-row routing | A | small | no |
-| **W3** | 988 `unclassified-trigger` → Batch API | — | $ not quota | no |
-| **W4** | The anthem group (4,481 decidably static) | B | 1–2 sessions | no |
+| **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
+| **W2** | CR 706.3b die-row routing | A | small | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
+| **W3** | **935** `unclassified-trigger` → Batch API | — | $ not quota | no |
+| **W4** | The anthem group (**4,375** decidably static — re-measured) | B | 1–2 sessions | no |
 | **W5** | `escapes with` (12 lines) | B | small | no |
 | **W6** | Family sweep — the standing 6 | C | 1 session | no |
 | **W7** | Definition drift — the standing 35 | C or Batch | 1 session | no |
@@ -66,7 +66,7 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 
 ## W1 — TRAP SWEEP  ·  TIER A  ·  ✅ DONE
 
-> **CLOSED. Full record: `docs/W1-TRAP-SWEEP-RECORD.md`.** Both findings
+> **CLOSED. Full record: `docs/W1-W2-RECORD.md`.** Both findings
 > fixed, all three sweep classes run and stated (class 1: one dead-code site,
 > 0 lines; class 2: three sites, 8 lines; class 3: nothing, and the
 > measurements proving it). 92 lines moved in total.
@@ -138,7 +138,25 @@ read, all gates green, committed.
 
 ---
 
-## W2 — CR 706.3b DIE-ROW ROUTING  ·  TIER A
+## W2 — CR 706.3b DIE-ROW ROUTING  ·  TIER A  ·  ✅ DONE
+
+> **CLOSED. Full record: `docs/W1-W2-RECORD.md`.** 119 rows now inherit;
+> 78 lines moved; uncontexted die rows 2 → 0.
+>
+> **The packet's "expect zero re-routes" was wrong, and the exceptions were
+> the point.** Two rows already carried a ratified token and BOTH were wrong
+> — Cone of Cold `replacement` (a sorcery's spell ability, §1 default) and
+> Delina `static-grant` (read off a granted ability in quotes). Cone of Cold
+> is a deliberate `ratified → None`. That is why the inheritance is
+> UNCONDITIONAL, unlike the modal branch.
+>
+> **Three further defects, none in the packet:** a bar row must outrank the
+> modal test (a bullet must not); the SAME bug was live in the ratified DET
+> join; and `_DIE_ROW_RE` knew three range forms when there are five —
+> `20+ |` and `9 or less |`. The old census could not have found the last one:
+> it counted only rows the regex already matched.
+
+**(original packet text retained below for reference)**
 
 **GOAL.** ~99 die-roll result rows parse alone and are unrouted. The DET *join*
 is already done (`3ff3afd`); this is the *routing* half.
@@ -174,7 +192,7 @@ batches.
 > **RE-MEASURED AFTER W1 — the table below is SUPERSEDED.** The 88-line top
 > shape WAS the plural-`enter` defect and **dissolved entirely**;
 > `unclassified-trigger` is now **935 lines** (was 988). Current top shapes
-> and the shape-key boundary are in `docs/W1-TRAP-SWEEP-RECORD.md` §6.
+> and the shape-key boundary are in `docs/W1-W2-RECORD.md` §6.
 > Re-measure again before costing — do not batch off either table.
 
 **THE TOP SHAPES, measured 2026-08-07 — SUPERSEDED, see above:**
@@ -384,7 +402,7 @@ codebook 565 axes / 359 active / 8,740 members — lint clean
 *A carried-forward count is not a measurement.* Every number here was live on
 2026-08-07; run the gates.
 
-**AFTER W1 — re-measured, and this block supersedes the one above:**
+**AFTER W1 + W2 — re-measured, and this block supersedes the one above:**
 
 ```
 ability lines scanned        61,961 · keyword homes 150 (never moved)
@@ -396,5 +414,5 @@ INSIDE spell-or-static       14,864   was 14,898
   decidably STATIC            4,451   29.9%      was 4,485  (−34)
 ```
 
-**W4's target is 4,451, not 4,481. W3's is 935, not 988.** Both were moved by
-W1 and neither should be read off the block above.
+**W4's target is 4,375, not 4,481. W3's is 935, not 988.** Both were moved by
+W1/W2 and neither should be read off the block above.

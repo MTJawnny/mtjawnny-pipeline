@@ -1,4 +1,6 @@
-# W1 — TRAP SWEEP: the record
+# W1 + W2 — the record
+
+# W1 — TRAP SWEEP
 
 **Packet:** `WORK-PACKETS-2026-08-07.md` § W1 · **tier A** (no vocabulary
 minted, no codebook mutation).
@@ -285,3 +287,123 @@ line count is comparable to the packet's 988.
 
 **W3 remains unstarted and still needs a fresh price check plus Captain
 go-ahead** — a separate wallet from the Claude Code quota.
+
+---
+
+# W2 — CR 706.3b DIE-ROW ROUTING · TIER A · DONE
+
+**The ruling, verbatim (CR 706.3b):** *"An instruction to roll one or more
+dice, any instructions to modify that roll printed in the same paragraph, any
+additional instructions based on the result of the roll, and **the associated
+results table** are **all part of one ability**."*
+
+So a row is **not an ability** and never earns a delivery of its own. D3
+inheritance, one rule over from the CR 700.2 modal case. **No vocabulary:** the
+token is the header's, unchanged; only the descriptor is annotated `die-row:`.
+Delivery-row count 61,961 → 61,961 — pure re-labelling.
+
+## Result
+
+| | |
+|---|--:|
+| rows inheriting a roll ability's delivery | **119** (was 0) |
+| lines moved in the routing diff | **78** |
+| uncontexted CR 706.3b rows | **2 → 0** |
+
+Inherited tokens, each verified against its own header: `activated` 25
+(`{T}: Roll a d20.`) · `etb` 21 · `attack-trigger` 17 · `begin-combat` 5 ·
+`cast` 3 · `upkeep` 3 · `death` 3 · `None` 42.
+
+## The packet predicted zero re-routes. It was wrong, and the two exceptions were the point.
+
+> *"Expect ~99 lines `None → <the roll ability's token>` and **zero**
+> re-routes."*
+
+**Two rows already carried a ratified token and BOTH were wrong.** A row's
+effect text parses perfectly well on its own and is still not its own ability:
+
+| card | was | why it was wrong |
+|---|---|---|
+| **Cone of Cold** `20 \| … creatures your opponents control ENTER TAPPED` | `replacement` | Real CR 614.1d shape, but the ability is a **SORCERY's spell ability** (CR 113.3a) — §1's unmarked default. The effect is *created by the resolving spell*, so §2d gives its delivery to the creator. Same cut as `46c7beb`. |
+| **Delina, Wild Mage** `1—14 \| … it has "At end of combat, exile this token."` | `static-grant` | read off a **granted ability in quotes** |
+
+Cone of Cold is therefore a **deliberate `ratified → None`** — the one
+direction `--strict` halts on. Read and accepted: removing a confidently wrong
+token is a correction, not a loss. Delina `static → attack-trigger` is a
+correction in the other direction.
+
+**This is why the inheritance is UNCONDITIONAL**, unlike the modal branch,
+which falls back to parsing the option alone when the header carries no
+ratified token. That fallback is precisely what produced both wrong answers.
+**42 rows inherit `spell-or-static` from a spell header and stay unrouted** —
+the recorded *"UNROUTED IS NOT STOPPED"* rule; inheriting no token is correct.
+
+## Three defects found while doing it, none of them in the packet
+
+**1. A bar row outranks the modal test; a bullet does not.** `N |` is
+typography only a results table uses, so it decides the block alone; a bullet
+is shared with CR 700.2, so there the modal header keeps precedence. Gating
+both on `not is_modal` suppressed a real table, because `_MODAL_HEADER_RE`
+matches *"**CHOOSE UP TO TWO** target permanent cards in your graveyard. Roll
+a d20 …"* (Song of Inspiration) on its `up to \w+` arm — a **targeting**
+instruction, not a mode list.
+
+**2. The same bug was live one layer down, in the ratified DET join.**
+`expand_modal_bullets` tested `_MODAL_HEADER_RE` first in its if/elif, handing
+the table `is_mode_line` as its option test, which no bar row satisfies. Fixed
+with the **same rule at both sites** so they cannot drift apart. **0 lines
+moved in the routing diff and that was not the measure** — the join is what
+makes an option *contexted*, and uncontexted die rows went **2 → 0**.
+
+**3. `_DIE_ROW_RE` knew three range forms; there are five.**
+
+```
+20+ | …          Druid of the Emerald Grove, Song of Inspiration (15+ |)
+9 or less | …    Druid of the Emerald Grove
+```
+
+An **unbounded** roll can exceed the die's face value (*"roll a d20 **and add**
+the number of cards in your hand"*), so a table's last row is open and its
+first may be too.
+
+**The old census could not have found this.** Its *"three printed forms,
+measured across 106 rows"* counted only rows the regex **already matched** — a
+recall measurement taken through the filter under test. It reported 106 of 106
+and was blind to the two missing forms **by construction**. Same family as the
+gap census being blind to `spell-or-static`, and as W1's `\bblocks\b` probe
+returning 0 on its own controls.
+
+Druid's table **opened** with `9 or less |`, so **all three** of its rows were
+unjoined and unrouted: a first-row form gap costs the whole table, not one row.
+
+**CR 721 safety, verified not assumed.** `9+ | Flying, first strike` is a
+station striation — same shape, different rule — and now matches this regex.
+It cannot be joined: both consumers test it only **after**
+`_ROLL_INSTRUCTION_RE` opens a block, and a station card prints no roll
+instruction. Measured live: **0 station rows joined, all 42 correctly left
+alone.**
+
+## Baselines
+
+Re-pinned twice, both onto measured improvement, neither reflexively:
+
+- `die-row:spell-or-static` 36 → 42 tripped the ratchet, but those 6 rows moved
+  **between two unrouted descriptors**, not from routed to unrouted; total
+  `unrouted_lines` **fell** 15,747 → 15,744. The new descriptor is strictly
+  more informative — it names *why* the row is unrouted.
+- `uncontexted` 33 → 31.
+
+## State after W2
+
+```
+unclassified-trigger            935     unchanged by W2
+die-row:spell-or-static          42     NEW — rows inheriting a spell header's
+                                        §1 default; correct, not a queue
+INSIDE spell-or-static       14,747     was 14,864
+  undecidable (§1 default)   10,372     70.3%
+  decidably STATIC            4,375     29.7%     was 4,451   (−76)
+uncontexted                      31     was 33
+```
+
+**W4's target is now 4,375.**
+
