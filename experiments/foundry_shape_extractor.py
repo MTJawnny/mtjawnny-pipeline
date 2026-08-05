@@ -1855,10 +1855,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # death-trigger. Third occurrence of this same bug class in this file
         # (self/other, then phase triggers, now this) -- when adding a branch
         # here, match the trigger condition, not the sentence.
-        if re.search(r"\bput into (a |their |your |its owner's )?graveyards?\b", clause) \
+        # THE DETERMINER SLOT IS DERIVED FROM THE CR'S OWN TEMPLATE, NOT LISTED.
+        # `(a |their |your |its owner's )?` was a hand-list of four English
+        # determiners standing where the template has an open noun phrase, and
+        # it lost every card printing a possessive it did not happen to
+        # contain: "an opponent's graveyard" (15 lines -- Bridge from Below,
+        # Bloodchief Ascension, Lazav, the Grim Feast/Lurking Skirge death
+        # family) and "a player's graveyard" (Liability). Recorded class: "a
+        # hand-list is not a shortcut, it is a defect with a delay."
+        #
+        # CR 400.7's zone-change wording and every CR 700.4-family template
+        # read "put into «DESTINATION» from «ORIGIN»", so `from` is what CLOSES
+        # the destination phrase. Matching the destination up to `from` needs
+        # no determiner list at all -- and it is the constraint that keeps
+        # Golgari Brownscale out: "put into your HAND from your graveyard" has
+        # its graveyard on the ORIGIN side, which a width-only widening
+        # (`.{0,24}graveyard`) would have wrongly claimed.
+        _TO_GY = r"\bput into (?:(?!from\b)[\w'’-]+\s+){0,3}graveyards?\b"
+        if re.search(_TO_GY, clause) \
                 and re.search(r"\bfrom the battlefield\b", clause):
             return msub("death-trigger", "dies")
-        if re.search(r"\bput into (a |their |your )?graveyards?\b", clause):
+        if re.search(_TO_GY, clause):
             # CR 700.4 defines `dies` NARROWLY -- "from the battlefield" -- and
             # that case is claimed above. Everything here is a DIFFERENT event,
             # so the printed ZONE is the claim (§6a) and is reported rather
@@ -1904,6 +1921,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # that player CAN'T ATTACK YOU") and Unstable Glyphbridge ("Whenever an
         # opponent casts a spell ..., they CAN'T ATTACK YOU") were both stolen
         # into is-attacked by their effect text.
+        # CR 506.3 IS A CLOSED ENUMERATION AND IT IS WRITTEN IN THE PASSIVE:
+        # *"Only a creature can attack or block. Only a player, a planeswalker,
+        # or a battle CAN BE ATTACKED."* The corpus prints that passive
+        # directly, and `\battacks?\b` cannot see it -- "attacked" has a word
+        # character after "attack", so the whole attack block below was skipped
+        # and 6 lines fell to the tail:
+        #   "whenever ENCHANTED PLAYER IS ATTACKED"         Curse of Opulence,
+        #     Curse of Bounty, Curse of Vitality, Curse of Verbosity,
+        #     Curse of Disturbance  -- the Curse cycle §6's `enchanted-player`
+        #     row was ratified FOR (CR 303.4b / 702.5a, 2026-08-05)
+        #   "whenever one or more of your opponents ARE ATTACKED"  Party Dude
+        # `are` as well as `is`: the plural subject takes the plural copula,
+        # which is W1 sweep class 2 reaching this branch too.
+        #
+        # Placed ABOVE the `attacks?` block rather than inside it, because the
+        # block's own gate is what refuses these lines. `mark`, not `msub`:
+        # §2's `is-attacked-trigger` row takes a §6 SCOPE (player /
+        # player-or-planeswalker / planeswalker / battle), not a §2a subject
+        # prefix.
+        if re.search(r"\b(?:is|are) attacked\b", clause):
+            return mark("is-attacked-trigger", "is-attacked")
         if re.search(r"\battacks?\b", clause):
             if re.search(r"\battacks? you\b|\battacks? a planeswalker\b", clause):
                 return mark("is-attacked-trigger", "is-attacked")
@@ -1944,9 +1982,39 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # (the recorded trap: a missing verb makes the clause end LATER, not
         # earlier), so without this cut the effect was read as the event and
         # the line moved OFF `upkeep-trigger`.
+        # `damage to` WAS REQUIRED, so a source-side clause naming NO recipient
+        # at all did not reach this branch and did not reach its own
+        # honest-gap descriptor either -- it fell to the tail as
+        # `unclassified-trigger`, which names nothing. 46 lines: "whenever this
+        # creature deals damage" (Exalted Angel, Doubtless One, Kiyomaro),
+        # "whenever ENCHANTED creature deals damage" (Armadillo Cloak, Spirit
+        # Loop, Vampiric Link), "whenever EQUIPPED creature deals combat
+        # damage" (Umezawa's Jitte, Banshee's Blade, Holy Avenger), "whenever a
+        # noncreature source you control deals damage" (Tamanoa).
+        #
+        # CR 120.1's recipient enumeration is CLOSED -- *"Objects can deal
+        # damage to battles, creatures, planeswalkers, and players"* -- and
+        # these cards name none of the four, so the recipient is genuinely
+        # UNSTATED rather than unrecognised. That is a real shape and it
+        # already has a descriptor here; it simply was not reachable.
+        # `_damage_recipient(None)` -> None -> the existing
+        # `{fam}-damage-recipient-unstated` gap. NO TOKEN IS EMITTED, so this
+        # is a REPORTING change: it moves lines between two unrouted
+        # descriptors onto the one that names the shape, which is what lets
+        # `--gaps` rank it. The recorded lesson is exactly this -- "excluded
+        # became unreportable, and 236 CR 614.1c replacements hid there".
+        #
+        # The `to`-less arm is tried SECOND so the recipient-bearing match
+        # keeps precedence, and both still read `head` (CR 113.3c), which is
+        # what keeps Heart of Bogardan's effect-side damage out.
         head = trigger_condition(clause)
-        m_dmg = re.search(r"\bdeals?\b([^,]{0,30}?)\bdamage to\b(.{0,40})", head)
-        if m_dmg and not re.search(r"\b(?:is|are) dealt\b", clause):
+        m_dmg = re.search(r"\bdeals?\b([^,]{0,30}?)\bdamage to\b(.{0,40})", head) \
+            or re.search(r"\bdeals?\b([^,]{0,30}?)\bdamage\b()", head)
+        # Same contracted copula as the recipient test below -- the two are one
+        # predicate ("does this clause read RECIPIENT-side?") and must not
+        # drift apart, which is the trap that put `\benters?\b` in one place
+        # and `\benters\b` in the next.
+        if m_dmg and not re.search(r"\b(?:is|are|'re) dealt\b", clause):
             qual, recip = m_dmg.group(1), _damage_recipient(m_dmg.group(2), card)
             # `combat-` is a RESTRICTION, not decoration
             # (DAMAGE-DELIVERY-RULING-2026-08-02), and so is its NEGATION --
@@ -1984,7 +2052,23 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # creatures, planeswalkers, and players" -- sealed by 120.1a: "Damage
         # can't be dealt to an object that's not a battle, a creature, or a
         # planeswalker." So the recipient slot is enumerable, not open.
-        m_recv = re.search(r"\b(?:is|are) dealt\b([^,]{0,60}?)\bdamage\b", clause)
+        # THE COPULA CAN BE CONTRACTED, and a player subject is where it
+        # happens: "Whenever YOU'RE dealt damage" (Sun Droplet, Darien King of
+        # Kjeldor, Angelheart Vial, Blood Hound, Living Artifact, Contested
+        # Game Ball, Swarmborn Giant). `is|are` alone lost all 7.
+        #
+        # MEASURED, not guessed at: across every ability line in the gated
+        # corpus the two words before `dealt` are `you're` on 7 lines and no
+        # other contraction appears at all -- no `'s dealt`, no `they're
+        # dealt`. The past tense (`was dealt` 28, `damage was dealt` 15) is
+        # deliberately NOT added: those are CONDITIONS about damage dealt
+        # earlier in the turn, not the trigger event (CR 113.3c), and routing
+        # them would be the recorded whole-line-vs-clause error in a new form.
+        #
+        # Straight apostrophe only. W1's class-3 addendum measured the corpus
+        # at 13,175 straight and ZERO curly -- the curly form belongs on
+        # CR-PARSED values compared against card data, not here.
+        m_recv = re.search(r"\b(?:is|are|'re) dealt\b([^,]{0,60}?)\bdamage\b", clause)
         if m_recv:
             qual = m_recv.group(1)
             # CR 120.10 makes "excess damage" its own triggered-ability check:
@@ -2046,7 +2130,29 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # CR 106.12a: "is tapped for mana" triggers when a MANA ABILITY resolves
         # and produces mana -- strictly narrower than becoming tapped, so it is
         # claimed first and is not a synonym of becomes-tapped (CR 603.2e).
-        if re.search(r"\bis tapped for mana\b|\btapped for mana\b", clause):
+        #
+        # THE ACTIVE VOICE IS THE SAME EVENT, AND CR 106.12 IS WHERE THE CR
+        # SAYS SO -- it defines the VERB PHRASE itself, one rule above the
+        # trigger rule this branch was written from:
+        #   106.12  *"To 'tap [a permanent] FOR MANA' is to activate a mana
+        #           ability of that permanent that includes the {T} symbol in
+        #           its activation cost."*
+        #   106.12a *"An ability that triggers whenever a permanent 'IS TAPPED
+        #           FOR MANA' ... triggers whenever such a mana ability
+        #           resolves and produces mana."*
+        # 106.12a names the PASSIVE printing and 106.12 defines the act; both
+        # printings are one event. Testing only the passive lost 32 lines --
+        # Mana Flare, Mirari's Wake, Vorinclex, Kinnan, Crypt Ghast, the whole
+        # "whenever you/a player taps a land for mana" family. Same class as
+        # W1's `enters?`/`blocks?` sweep, one step out from inflection to
+        # VOICE.
+        #
+        # `mark`, not `msub`: the pre-existing ruling used the bare mark, and
+        # in the active printing the grammatical subject is the PLAYER while
+        # §2a's prefix names the trigger's PERMANENT -- a different slot.
+        # Asserting an unmeasured prefix is not reportable; under-marking is.
+        if re.search(r"\bis tapped for mana\b|\btapped for mana\b|"
+                     r"\btaps? [^,]{0,40}?for mana\b", clause):
             return mark("tapped-for-mana-trigger", "tapped-for-mana")
         # CR 603.2e: "becomes tapped/untapped" is a STATE CHANGE and does not
         # trigger if the permanent enters the battlefield in that state -- so it
