@@ -1029,6 +1029,26 @@ def trigger_clause(low: str) -> str:
         if i > quote_at:
             break
         if TRIGGER_VERB.search(low[:i]):
+            # MEASURED AND REJECTED, 2026-08-07 -- recorded so it is not tried
+            # a third time. A VERB CAN APPEAR BEFORE THE ENUMERATION FINISHES:
+            # Keeper of Progenitus, *"Whenever a player TAPS a Mountain,
+            # Forest, or Plains FOR MANA"*, stops here at "taps a mountain" and
+            # loses the `for mana` that decides its token.
+            #
+            # The obvious cure is to reuse `trigger_condition`'s ratified
+            # enumeration rule -- a comma is a LIST separator while some later
+            # segment opens with `and`/`or`. IT IS NET HARMFUL HERE and the
+            # routing diff halted on it: 1 correct gain, 3 regressions.
+            #   `_ENUM_CONT` cannot tell "A, B, or C" (an OBJECT list) from
+            #   "when X, or when Y" (two CONDITIONS), and unlike
+            #   `trigger_condition` -- which runs on the already-cut clause --
+            #   this test sees the WHOLE LINE, whose effect half is full of
+            #   `and`/`or`.
+            # Lost `other-death-trigger` on *"Whenever another creature dies,
+            # OR a creature card is put into a graveyard from anywhere…"*, and
+            # walked two more clauses into their effects. Keeper of Progenitus
+            # stays an honest gap; the boundary needs a real condition-vs-list
+            # discriminator, not a conjunction test.
             return low[:i]
     return low[:min(cuts[0], quote_at)]
 
@@ -2252,8 +2272,15 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # in the active printing the grammatical subject is the PLAYER while
         # §2a's prefix names the trigger's PERMANENT -- a different slot.
         # Asserting an unmeasured prefix is not reportable; under-marking is.
+        # 106.12a HAS A SECOND CLAUSE and it names the typed form: an ability
+        # triggering whenever a permanent *"is tapped for mana OR IS TAPPED FOR
+        # MANA OF A SPECIFIED TYPE"*. The corpus prints that type as a mana
+        # SYMBOL, not as the word "mana" -- Forsaken Monument and Ultima,
+        # Origin of Oblivion both print *"whenever you tap a permanent/land for
+        # {C}"*. Requiring the literal word lost both.
         if re.search(r"\bis tapped for mana\b|\btapped for mana\b|"
-                     r"\btaps? [^,]{0,40}?for mana\b", clause):
+                     r"\btaps? [^,]{0,40}?for (?:mana\b|\{[wubrgc0-9x/]+\})",
+                     clause):
             return mark("tapped-for-mana-trigger", "tapped-for-mana")
         # CR 603.2e: "becomes tapped/untapped" is a STATE CHANGE and does not
         # trigger if the permanent enters the battlefield in that state -- so it
