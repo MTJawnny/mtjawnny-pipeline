@@ -1809,7 +1809,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             # trigger. Claim it here and report the phase honestly instead.
             return None, "phase-trigger-unnamed"
 
-        if re.search(r"\bland (you control )?enters\b", clause) or low.startswith("landfall"):
+        # THE PLURAL ARM MUST CARRY ITS OWN CONTROL SCOPE. The singular form
+        # excludes an opponent's land by ADJACENCY -- "a land AN OPPONENT
+        # CONTROLS enters" puts words between `land` and `enters`, so
+        # `land (you control )?enters` cannot match it. That trick does not
+        # survive the plural, because there the control clause moves AFTER the
+        # verb: "one or more lands ENTER UNDER YOUR CONTROL" vs Deep Gnome
+        # Terramancer's "...ENTER UNDER AN OPPONENT'S CONTROL". So the plural
+        # arm names the scope instead of relying on word order.
+        #
+        # Found auditing W1: `\benters?\b` in the etb branch below made
+        # Mythweaver Poq ("whenever one or more nontoken lands enter under your
+        # control") reachable for the FIRST time, and it landed on `any-etb` --
+        # a WRONG ratified token where there had been an honest gap, while the
+        # more specific branch one line up still could not see it. The recorded
+        # "improving recall can hand out a wrong ratified token" trap, caught
+        # only because the CR recheck went back over the gap-closes.
+        if re.search(r"\bland (you control )?enters\b", clause) \
+                or re.search(r"\blands? enters? under your control\b", clause) \
+                or low.startswith("landfall"):
             return mark("landfall", "landfall")
         # `enters?` — the SUBJECT of an etb trigger can be plural, and then the
         # verb is too: "Whenever one or more creatures you control ENTER".
