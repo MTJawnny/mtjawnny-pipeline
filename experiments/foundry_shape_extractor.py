@@ -1543,8 +1543,27 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     clause = trigger_clause(low)
     rest = low[len(clause):]
     # Split on or/and KEEPING the connective, so a bad split can be undone.
-    _toks = re.split(r"\s+(or|and)\s+", clause)
+    # AN `or` INSIDE A SUBORDINATE CONDITION IS NOT A SECOND TRIGGER.
+    # CR 603.4 gives the trigger's intervening-if its own rule, and `while` /
+    # `as long as` / `unless` introduce the same thing: a CONDITION on when
+    # the trigger applies, never a second event. CR 113.3c has already fixed
+    # what a trigger condition is -- "[Trigger condition], [effect]" -- and a
+    # subordinate clause is inside the condition, not beside it.
+    #
+    # Preacher of the Schism is the worked case: "Whenever this creature
+    # attacks WHILE you have the most life OR ARE TIED FOR MOST LIFE" is ONE
+    # attack trigger. Splitting on that `or` produced "are tied for most
+    # life", which PREDICATE accepts on its bare `are`, and the line emitted a
+    # SPURIOUS second delivery reported as missing vocabulary.
+    #
+    # The subordinate tail rides along on the last part rather than being
+    # dropped, so the text is conserved -- the conservation audit's own law.
+    m_sub = re.search(r"\s+(?:while|as long as|unless|if)\s+", clause)
+    splitable, sub_tail = ((clause[:m_sub.start()], clause[m_sub.start():])
+                           if m_sub else (clause, ""))
+    _toks = re.split(r"\s+(or|and)\s+", splitable)
     parts, seps = _toks[0::2], _toks[1::2]
+    parts[-1] = parts[-1] + sub_tail
     # "N OR GREATER" IS ONE CR QUANTITY PHRASE, NOT A COORDINATION.
     # The splitter treats every `or` as a possible second trigger predicate,
     # but CR templating uses "mana value 3 or greater", "power 4 or greater",

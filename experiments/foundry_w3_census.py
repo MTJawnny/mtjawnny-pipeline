@@ -212,6 +212,54 @@ CLASSES = [
      "a change of CONTROL as the trigger event",
      r"\bgains? control\b|\blose[s]? control\b"),
 
+    # CR 700.10-700.16 is a vein of NAMED MECHANICS that are neither keyword
+    # actions nor keywords, so neither closed list reaches them. `commit a
+    # crime` was nearly filed as CR-LAG on a failed exact-phrase grep -- the
+    # CR states it as the GERUND, "Some cards refer to COMMITTING a crime"
+    # (700.13). An inflection miss on a literal search is the same family as
+    # every other inflection defect this arc.
+    ("named-mechanic-700", "700.10 – 700.16",
+     "CR 700.13 committing a crime · 700.14 'Some abilities trigger \"Whenever "
+     "you expend N\"' (Bark-Knuckle Boxer is the CR's own example) · 700.11 "
+     "descended · 700.12 outlaw",
+     r"\bcommits? a crime\b|\bexpends? \d+\b|\bdescended\b"),
+
+    # CR 709.5 / 116.2m -- Rooms are split cards with locked/unlocked halves,
+    # and "unlock" is CR vocabulary, not a set-specific coinage.
+    ("room-unlock", "709.5 / 116.2m",
+     "a Room's door is UNLOCKED. CR 709.5c: 'left half unlocked' and 'right "
+     "half unlocked' are designations; 116.2m names the unlock cost",
+     r"\bunlocks?\b|\bfully unlock\b"),
+
+    ("monstrosity", "701.37",
+     "CR 701.37a: 'Monstrosity N means ... it BECOMES MONSTROUS.' The printed "
+     "word differs from the CR term name, which is why the 701 pass misses it",
+     r"\bbecomes? monstrous\b|\bmonstrosity\b"),
+
+    ("level-up", "711 / 716",
+     "a leveler (CR 711) or Class (CR 716) reaching a level. 711.2a keys on "
+     "level COUNTERS; the printed trigger is 'becomes level N'",
+     r"\bbecomes? level \d+\b"),
+
+    ("player-loses-game", "603.9 / 104.3",
+     "CR 603.9 gives this its own rule: 'Some triggered abilities trigger "
+     "SPECIFICALLY WHEN A PLAYER LOSES THE GAME'",
+     r"\bloses? the game\b|\bleaves? the game\b"),
+
+    ("phasing", "702.26",
+     "CR 702.26 phasing -- 'phases in' / 'phases out'",
+     r"\bphases? (?:in|out)\b"),
+
+    ("attach", "701.3 / 701.4",
+     "CR 701.3 attach / 701.4 unattach -- 'becomes attached to' / 'becomes "
+     "unattached from'",
+     r"\bbecomes? (?:un)?attached\b"),
+
+    ("dungeon", "701.49 / 309",
+     "CR 701.49 venture into the dungeon; CR 309 Dungeons. 'complete a "
+     "dungeon' is the completion event",
+     r"\bdungeon\b"),
+
     # --- the CR publishes a CLOSED LIST and the event is drawn from it -------
     # Tested LAST, deliberately -- see the note at the top of this list.
     ("cr701-keyword-action", "701", "the EVENT is a CR 701 keyword ACTION", None),
