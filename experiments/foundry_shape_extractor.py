@@ -2113,7 +2113,14 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
     m_self = re.match(r"^~|^" + SELF_NOUN_RX.pattern, unq)
     if m_self and re.match(r"\s+enters\b", unq[m_self.end():]):
         return ("replacement", "replacement") if "replacement" in ratified else (None, "replacement")
-    if re.match(r"^as (?!an additional cost|long as)\b.{0,40}?"
+    # NO `\b` AFTER `as ` — `~` IS NOT A WORD CHARACTER. Canonicalization
+    # rewrites the card's own name to `~`, so `as ~ enters` puts a space next
+    # to a `~` and the boundary can never match; 25 CR 614.1c replacements
+    # were lost (Stenn Paranoid Partisan, Pramikon Sky Rampart, Iona, Morophon
+    # …). The negative lookahead already does the discriminating work the `\b`
+    # looked like it was doing. THIRD site of this trap — see the two `(?:^|\s)~`
+    # rewrites above; a trap fixed at two sites and not swept is still live.
+    if re.match(r"^as (?!an additional cost|long as).{0,40}?"
                 r"\b(?:enters|is turned face up)\b", unq) or \
        re.search(r"\benters? as\b", unq) or \
        re.search(r"\bwould\b.*\binstead\b|\bskips?\b|\benters? with\b|\benters? tapped\b", unq):
