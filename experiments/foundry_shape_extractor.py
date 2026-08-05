@@ -1758,7 +1758,12 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
 
         if re.search(r"\bland (you control )?enters\b", clause) or low.startswith("landfall"):
             return mark("landfall", "landfall")
-        if re.search(r"\benters\b", clause):
+        # `enters?` — the SUBJECT of an etb trigger can be plural, and then the
+        # verb is too: "Whenever one or more creatures you control ENTER".
+        # Tested singular-only this lost 43 lines (Kotis Sibsig Champion,
+        # Builder's Talent, Anje Maid of Dishonor). Fourth instance in four
+        # sessions of an inflected verb tested in one inflection only.
+        if re.search(r"\benters?\b", clause):
             return msub("etb", "enters")
         if re.search(r"\bdies\b|\bdie\b", clause):
             if re.search(r"\bfrom (your |a )?(library|hand|anywhere)\b", clause):
