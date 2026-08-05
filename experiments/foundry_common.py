@@ -236,22 +236,39 @@ _MODAL_HEADER_RE = re.compile(
 # the same "an inflection is not a shape" family that has now bitten this
 # project four times, wearing punctuation instead of a verb ending.
 #
-# RE-MEASURED during W2: that census counted only rows this regex ALREADY
-# matched, so it could not see the two forms it was missing -- a recall
-# measurement taken with the very filter under test. An UNBOUNDED roll can
-# exceed the die's face value ("roll a d20 AND ADD the number of cards in your
-# hand"), so the table's last row is OPEN and the first may be too:
+# THE CR ENUMERATES THESE, so they are not measured -- CR 706.3a, verbatim:
+# *"The possible results indicated could be A SINGLE NUMBER, a range of numbers
+# with two endpoints in the form 'N1–N2,' or a range with a single endpoint in
+# the form 'N+.'"*  A closed list of three, and the earlier census missed two of
+# them because it counted only rows this regex ALREADY matched -- a recall
+# measurement taken through the very filter under test. `N+` is why: an
+# UNBOUNDED roll can exceed the die's face value ("roll a d20 AND ADD the number
+# of cards in your hand"), so a table's last row is open.
 #
-#   `20+ | …`        Druid of the Emerald Grove, Song of Inspiration (`15+ |`)
-#   `9 or less | …`  Druid of the Emerald Grove -- and it is the FIRST row,
-#                    so the whole table failed to open and all three of its
-#                    rows went unjoined and unrouted.
+# NOTE the CR prints `N1–N2` with an EN-DASH (U+2013) and the corpus prints an
+# EM-DASH or a hyphen -- the recorded CR-vs-Scryfall character split, here in a
+# rule rather than a card name. Measured: en-dash is 0 corpus-wide.
+#
+# Measured against CR 706.3a's three forms: N1-N2 80, N+ 49, single 26 -- 155 of
+# 156 rows. `or more` is attested ZERO times and is deliberately NOT here; a
+# member with no evidence is a hand-list defect regardless of how plausible.
+#
+# CR-LAG REGISTER ENTRY (see `_CR_LAG` in foundry_shape_extractor.py for the
+# same mechanism on CR 205.3 subtypes):
+#
+#   `N or less`  -- ONE row, Druid of the Emerald Grove ("9 or less | Put those
+#                   cards into your hand, then shuffle."). CR 706.3a's closed
+#                   list does NOT include it, and it is that table's FIRST row,
+#                   so excluding it costs all THREE rows -- a first-row form gap
+#                   loses the whole table. Recorded as a discrepancy between two
+#                   upstream sources with its evidence named, exactly as
+#                   `chorus` is. THE REAL FIX IS TO REFRESH THE CR SNAPSHOT.
 #
 # Widening cannot reach a CR 721 station row (`9+ | Flying, first strike`),
 # which is the same shape and a different rule: both consumers test this only
 # AFTER `_ROLL_INSTRUCTION_RE` has opened a block, and a station card prints no
 # roll instruction. Verified live -- 0 station rows joined.
-_DIE_ROW_RE = re.compile(r"^\s*\d+\s*(?:[-–—]\s*\d+|\+|or (?:less|more))?\s*\|")
+_DIE_ROW_RE = re.compile(r"^\s*\d+\s*(?:[-–—]\s*\d+|\+|or less)?\s*\|")
 # The instruction that opens such a table. The CR names the shape ("an
 # instruction to roll one or more dice") and the corpus prints "roll a d20",
 # "roll two six-sided dice", "roll a d20 and add the number of cards in your
