@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **114 documents under docs/**
-- ruling references found: **603**
+- documents scanned: **115 documents under docs/**
+- ruling references found: **604**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -75,7 +75,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-07-EVE.md` | 311 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-08.md` | 238 | 1 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 229 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -728,7 +729,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `SESSION-HANDOFF-2026-08-04-EVE.md:212` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
-### `D9` — 8 reference(s) across 7 doc(s)
+### `D9` — 9 reference(s) across 8 doc(s)
 
 - `D4-KEYWORD-FORMS-2026-08-04.md:141` — keyword with no §2 home stays unrouted: that is **D9** — 49 keywords, ~951
 - `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
@@ -736,6 +737,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:186` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:258` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 
@@ -1162,7 +1164,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF.md:90` — Step 3: additive T3 term landed. Ratified: **DERIVED_WEIGHT = 0.5**
 - `MASTER-HANDOFF.md:119` — → **T3-AXIS-FOUNDRY-v3.md** (v1/v2 superseded): dual-source mining
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
-- `SESSION-HANDOFF-2026-08-07-EVE.md:80` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
+- `SESSION-HANDOFF-2026-08-07-EVE.md:83` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
 - `SUP-TRIAGE-PROTOCOL.md:5` — Ratified deviation from T3-AXIS-FOUNDRY-v3: SUP performs full-pass triage;
 - `T3-AXIS-FOUNDRY-v3.md:4` — T3-BUILDOUT-PLAYBOOK.md between Steps 5 and 6; inherits every standing
 - `T3-BUILDOUT-PLAYBOOK.md:230` — Captain each anchor's new T3 band for eyeball, punch-list style: findings

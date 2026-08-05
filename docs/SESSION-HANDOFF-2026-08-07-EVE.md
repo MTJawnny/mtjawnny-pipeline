@@ -1,3 +1,6 @@
+> **SUPERSEDED — the current handoff is `docs/SESSION-HANDOFF-2026-08-08.md`.** W1, W2 and W3's DET half are
+> now DONE; this file's §6 trap sweep is closed.
+
 # SESSION HANDOFF — 2026-08-07 EVE
 
 Supersedes `SESSION-HANDOFF-2026-08-07.md`. **Zero API calls. Arc spend
