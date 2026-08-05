@@ -2369,6 +2369,21 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # lands") were counted as sacrifice triggers by their EFFECT text.
         if re.search(r"\bsacrifices?\b", clause):
             return msub("sacrifice-trigger", "sacrifice")
+        # CR 602.1/602.2 -- an ability is ACTIVATED. Captain-ratified
+        # 2026-08-07, W3 sheet D6. NOT §2's `activated`, which claims the
+        # printed line IS an activated ability; this claims the line fires when
+        # someone activates one. Both voices are printed and both are matched
+        # (the VOICE sweep class, applied at ratification rather than found
+        # later): active 30, passive "an ability of equipped creature IS
+        # ACTIVATED" 4.
+        #
+        # Tested BEFORE the keyword branches below because a clause naming a
+        # keyword's ability -- "whenever you activate a NINJUTSU ability" --
+        # is an activation event, not the keyword happening. The restriction is
+        # a §1 qualifier, never a second token.
+        if re.search(r"\bactivates?\b[^,]{0,60}?\babilit(?:y|ies)\b"
+                     r"|\babilit(?:y|ies)\b[^,]{0,60}?\bis activated\b", clause):
+            return mark("ability-activated-trigger", "ability-activated")
         # CR 400.1 -- a card LEAVES a graveyard. Captain-ratified 2026-08-07,
         # W3 sheet D5. §2 named four ways INTO a graveyard and none out of one.
         # Tested BEFORE the life/sacrifice branches for the same reason the
