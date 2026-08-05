@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **113 documents under docs/**
-- ruling references found: **601**
+- documents scanned: **114 documents under docs/**
+- ruling references found: **603**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -91,8 +91,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-3.md` | 462 | 4 | 0 | yes |
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
+| `W3-TRIGGER-VOCABULARY-2026-08-07.md` | 350 | 2 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
-| `WORK-PACKETS-2026-08-07.md` | 418 | 3 | 0 | yes |
+| `WORK-PACKETS-2026-08-07.md` | 454 | 3 | 0 | yes |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
@@ -461,7 +462,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 34 reference(s) across 21 doc(s)
+### `CDR-09` — 35 reference(s) across 22 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -496,7 +497,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
-- `WORK-PACKETS-2026-08-07.md:371` — vs energy counters. Same failure as CDR-09.
+- `W3-TRIGGER-VOCABULARY-2026-08-07.md:319` — 2. **`counters` (noun plural) read as CR 701.6's verb** — the CDR-09
+- `WORK-PACKETS-2026-08-07.md:407` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
 
@@ -726,7 +728,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `SESSION-HANDOFF-2026-08-04-EVE.md:212` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
-### `D9` — 7 reference(s) across 6 doc(s)
+### `D9` — 8 reference(s) across 7 doc(s)
 
 - `D4-KEYWORD-FORMS-2026-08-04.md:141` — keyword with no §2 home stays unrouted: that is **D9** — 49 keywords, ~951
 - `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
@@ -735,6 +737,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
+- `W3-TRIGGER-VOCABULARY-2026-08-07.md:258` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 
 ### `F2` — 3 reference(s) across 2 doc(s)
 
@@ -1094,7 +1097,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
-- `WORK-PACKETS-2026-08-07.md:344` — S1 — parents are DERIVED.** *"Union of ratified children computed at
+- `WORK-PACKETS-2026-08-07.md:380` — S1 — parents are DERIVED.** *"Union of ratified children computed at
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1122,7 +1125,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `S6` — 2 reference(s) across 2 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
-- `WORK-PACKETS-2026-08-07.md:355` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
+- `WORK-PACKETS-2026-08-07.md:391` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
 ### `S7` — 5 reference(s) across 5 doc(s)
 

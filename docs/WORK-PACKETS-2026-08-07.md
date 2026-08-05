@@ -53,7 +53,7 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 |---|---|---|---|---|
 | **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
 | **W2** | CR 706.3b die-row routing | A | small | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
-| **W3** | **935** `unclassified-trigger` → Batch API | — | $ not quota | no |
+| **W3** | `unclassified-trigger` → **DET half DONE**, vocabulary half is a decision sheet | A + C | — | ✅/**W8** |
 | **W4** | The anthem group (**4,375** decidably static — re-measured) | B | 1–2 sessions | no |
 | **W5** | `escapes with` (12 lines) | B | small | no |
 | **W6** | Family sweep — the standing 6 | C | 1 session | no |
@@ -182,6 +182,41 @@ right there — a bulleted mode under a modal header yields
 token>` and **zero** re-routes.
 
 ---
+
+## W3 — `unclassified-trigger`  ·  DET HALF DONE  ·  vocabulary half → W8
+
+> **THE BATCH WAS THE WRONG INSTRUMENT, and this packet's own sentence is
+> why: *"this is a CR-LOOKUP JOB, not a judgement job."* A CR-lookup job is
+> what a DET tool does. Full record:
+> `docs/W3-TRIGGER-VOCABULARY-2026-08-07.md`.**
+>
+> `experiments/foundry_w3_census.py` partitions the population by the CR rule
+> that decides each line, for **$0** and re-runnably. **87.9% of the remaining
+> 818 lines are decided by a CR rule**; the residual is 99 lines / 85 distinct
+> clauses and is a genuine long tail, not a withheld family.
+>
+> **Ten DET defects were found and fixed on the way, minting nothing** — 117
+> lines routed, corrected or re-labelled. Six were branches that could not see
+> the printed form of a token **they already had**; three were the compound
+> splitter treating a coordination inside one phrase as two triggers (two lost
+> real tokens, **one invented a gap**); one wrong ratified token was removed.
+> **A proposal set could not have found any of them** — it is shown shapes and
+> asked to name them, so a branch failing to see a form of its own token is
+> invisible to it.
+>
+> **What is left for Captain is a DECISION SHEET (§3 of the record), not a
+> batch:** draw 138 · CR 701/702 keyword events 181 (recommend **one grammar
+> family**, not 41 tokens, per §2b + §8b + §11) · CR 603.8 state triggers 50
+> (the cleanest — a closed CR category with a CR-supplied name) ·
+> leaves-graveyard 40 · ability-activated 34 · life-loss 20 · nine smaller
+> CR-named classes.
+>
+> **If a batch is still wanted, the honest scope is the 99-line residual** —
+> and it needs a fresh price check plus explicit go-ahead. Never remembered
+> prices.
+
+**(original packet text retained below for reference — its numbers are
+superseded twice over; re-measure with the census script)**
 
 ## W3 — 988 `unclassified-trigger` → BATCH API  ·  NOT a Claude Code session
 
@@ -333,6 +368,7 @@ Nothing below blocks W1–W7.
 | 7 | §2a prefix-stripping anchor | `any-` means two things; a blind stripper corrupts four names |
 | 8 | `start your engines!` / 43 homeless keywords | one ruling on the CLASS, not 43 fixes. Moves the pinned `keyword_homes = 150` guard |
 | 9 | **Tier A above** | may a no-naming extractor pass skip the whole-grammar read? |
+| **10** | **W3's decision sheet — `W3-TRIGGER-VOCABULARY-2026-08-07.md` §3** | **NEW, 9 items (D1–D9), 818 lines behind them.** Take **D4 (CR 603.8 state triggers)** first — a closed CR category with a CR-supplied name, 50 lines, and ratifying it shrinks the residual too. **D2/D3 recommend ONE grammar family, not 41 tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action |
 
 ---
 
