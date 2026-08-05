@@ -92,7 +92,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-3.md` | 462 | 4 | 0 | yes |
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
-| `W3-TRIGGER-VOCABULARY-2026-08-07.md` | 350 | 2 | 0 | yes |
+| `W3-TRIGGER-VOCABULARY-2026-08-07.md` | 391 | 2 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
 | `WORK-PACKETS-2026-08-07.md` | 454 | 3 | 0 | yes |
 
@@ -498,7 +498,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
-- `W3-TRIGGER-VOCABULARY-2026-08-07.md:319` — 2. **`counters` (noun plural) read as CR 701.6's verb** — the CDR-09
+- `W3-TRIGGER-VOCABULARY-2026-08-07.md:360` — 2. **`counters` (noun plural) read as CR 701.6's verb** — the CDR-09
 - `WORK-PACKETS-2026-08-07.md:407` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
@@ -739,7 +739,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `SESSION-HANDOFF-2026-08-08.md:209` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
-- `W3-TRIGGER-VOCABULARY-2026-08-07.md:258` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
+- `W3-TRIGGER-VOCABULARY-2026-08-07.md:299` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 
 ### `F2` — 3 reference(s) across 2 doc(s)
 

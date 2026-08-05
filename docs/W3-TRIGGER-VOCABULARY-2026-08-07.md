@@ -180,8 +180,49 @@ already lists a ratified *"draw-second/cast-second prefix scheme"* among the
 seeded grammar families — so this may be a grammar instantiation rather than
 a new token. **Recommend that be checked before anything is minted.**
 
-### D2 — CR 701 keyword ACTIONS as trigger events · 100 lines / 20 terms
-### D3 — CR 702 keyword EVENTS as trigger events · 81 lines / 21 terms
+### D2 / D3 — CR 701+702 keyword events · 181 lines · **ATTEMPTED, MEASURED, WITHDRAWN**
+
+> **STATUS 2026-08-07: the one-family recommendation below was RATIFIED,
+> IMPLEMENTED, MEASURED AND REVERTED. It is back on the sheet, and the reason
+> is a measurement, not a doubt.**
+>
+> Built as specified — a `### 2h` family whose member list derives at run time
+> from CR 701's keyword actions and CR 702's keywords, with three exclusions
+> from ratified law (`discard`/`sacrifice` already table rows; `cycle` per §2c;
+> `counter` per §8 rule 1). **It admitted 251 tokens.**
+>
+> ```
+> flying-trigger      deathtouch-trigger   hexproof-trigger   menace-trigger
+> reach-trigger       first-strike-trigger indestructible-trigger
+> defender-trigger    ← §6 BANS the bare word `defender` in slugs
+> kicker-trigger      ← §2g RETIRED kicker from DELIVERY in 2026-08-06
+> ```
+>
+> **The member source is wrong, and it is wrong in the way CLAUDE.md warns
+> about.** "Every CR 702 keyword" *looks* derived — it is parsed from the CR at
+> run time — but **most CR 702 keywords are STATIC abilities that never
+> "happen"**, so they can never be a trigger event. It is a hand-list wearing a
+> derivation's clothes, which is the exact failure the system map's question is
+> for: *can that source contain every member the CR names?* Here the problem is
+> the inverse — it contains far more.
+>
+> **And the CR does not publish the narrower list.** A keyword's `702.Na` class
+> does not decide it either: mutate is not a triggered ability, yet *"whenever
+> this creature mutates"* is a real event. **So which keywords can be a trigger
+> EVENT is a ruling, not a derivation** — which is precisely why it should not
+> be auto-instantiated.
+>
+> **Recommended replacement, for Captain:** ratify the family with an
+> **explicit member list** built from the 41 terms actually attested as trigger
+> events in the corpus (below), each carrying its CR anchor — accepting that
+> the list is a ratification and that a new keyword needs a new one. That keeps
+> §8b's per-node separation, which is the property that matters for search, and
+> drops only the auto-instantiation.
+>
+> **Nothing was shipped.** Reverted and verified byte-identical against the
+> pre-attempt snapshot.
+
+**(original recommendation retained below)**
 
 Top terms: `transform` 25 · `scry` 16 · `surveil` 8 · `proliferate` 6 ·
 `explore` 6 · `exert` 5 — and `mutate` 32 · `exploit` 25 · `crew` 12.
