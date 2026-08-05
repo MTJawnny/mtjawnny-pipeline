@@ -513,3 +513,103 @@ needs**, and that is a real piece of design, not a one-line gate.
 **Boundary: this is outside W2** (inheritance only) and outside tier A's
 "no new anything" only in the sense that it is a fix worth its own packet.
 Logged, not started.
+
+
+---
+
+# W1 AUDIT — every W1 fix rechecked against its CR entry
+
+Captain's instruction after the Cone of Cold recheck. **One real defect found,
+and it was one I introduced.** The other three classes came back clean, each
+with the measurement that says so.
+
+## 1. THE DEFECT — my own etb fix handed out a wrong token · FIXED
+
+`\benters?\b` made **Mythweaver Poq** — *"whenever one or more nontoken lands
+enter under your control"* — reachable for the **first time**, and it landed on
+`any-etb`. The more specific `landfall` branch sits **one line above** it and is
+still singular-only, so it could not see the line.
+
+**Before W1 that line was an honest gap; after W1 it carried a confidently
+wrong ratified token.** That is the recorded *"improving recall can hand out a
+WRONG ratified token"* trap — **which this very record quotes** — and the
+gap-close diff scored it as pure profit. I read the line during W1 and accepted
+it. Reading was not enough; what caught it was asking *"is there a more
+specific branch that should have claimed this?"*
+
+`any-etb` is wrong on **both** dimensions: §6a says `any-` must mean **any**,
+and these are lands entering under **your** control. `landfall` is CR 207.2c's
+ability word for exactly that shape.
+
+**The plural arm needs its own control scope.** The singular form excludes an
+opponent's land by **adjacency** — *"a land AN OPPONENT CONTROLS enters"* puts
+words between `land` and `enters`. That trick does not survive the plural, where
+the control clause moves **after** the verb. A naive `lands? … enters?` widening
+claimed **9** clauses, **8 of them opponent-scoped** (Polluted Bonds, Sire of
+Stagnation, Shattered Angel, Archaeomancer's Map, Confounding Conundrum,
+Spectrum Sentinel, Nightshade Harvester, Deep Gnome Terramancer) — all correctly
+`any-etb`. So the plural arm **names** the scope rather than relying on word
+order. **1 line moved, 0 lost.**
+
+## 2. Finding 3's branch vs CR 614.1c / 614.1e · CLEAN
+
+Two things were worth suspecting and both measured clean:
+
+| suspicion | measured |
+|---|--:|
+| the hand-chosen `{0,40}` window (the file's own comments call a guessed distance a defect class — D5's `{0,60}`) | **0 lines missed** at `{0,200}` |
+| `(?:enters\|is turned face up)` is singular-only, exactly finding 5's shape | **0** `As … enter` (plural) lines exist |
+
+CR 614.1c's template is *"[**This permanent**] enters"* — singular by
+construction — and CR 614.1d's `[Objects] enter` second template is
+**deliberately declined** by the existing code, with its own measurement. So
+the singular is correct here rather than merely untested.
+
+## 3. Class 2's block / target branches vs CR 509 and CR 115 · CLEAN
+
+CR 509.3e names a form the branch does not match — *"the ability triggers if the
+creature blocks or **is blocked by** that many creatures"* — so I measured every
+trigger clause containing `blocked` or `target` that the branches do **not**
+claim.
+
+| | n | shapes | verdict |
+|---|--:|--:|---|
+| `blocked` unmatched | 39 | 8 | **all correct** |
+| `target` unmatched | 105 | 15 | **all correct** |
+
+Every one is a clause whose **event** is something else and where the word sits
+in a *condition* or a *property* — CR 113.3c's "the event lives in the
+condition" rule doing its job:
+
+```
+whenever this creature attacks and isn't blocked      -> attack-trigger      (36)
+at end of combat, if this vehicle attacked or blocked -> end-combat-trigger
+whenever one or more creatures an opponent controls
+        attack you and aren't blocked                 -> is-attacked-trigger
+whenever you cast a spell that targets this creature  -> cast-trigger        (65)
+```
+
+Not matching these is the branch being **correctly scoped**, not a gap.
+
+## 4. Subject prefixes on the newly-reachable plurals · CLEAN
+
+The concern after §1: do the plural forms get the same subject prefix as their
+singular twins? Measured pairwise — **they do, exactly.**
+
+| clause | token | n |
+|---|---|--:|
+| `a creature you control enters` | `any-etb` | 37 |
+| `one or more creatures you control enter` | `any-etb` | 1 |
+| `another creature you control enters` | `other-etb` | 82 |
+| `one or more other creatures you control enter` | `other-etb` | 3 |
+
+## 5. LOGGED, NOT FIXED — `any-` may not mean any
+
+Falling out of §4: **`any-etb` is the token for `a creature YOU CONTROL
+enters`** (37 lines), alongside `a creature enters` (16 lines). §6a is explicit
+that **`any-` must mean any**, and "you control" is a scope, not "any".
+
+**This is pre-existing and W1 did not create it** — the plurals merely inherited
+it. It is an **axis-identity** question under §6a, which makes it **tier C**
+(naming), and it is adjacent to W7's C4 findings. Logged for the decision sheet;
+**not touched.**
