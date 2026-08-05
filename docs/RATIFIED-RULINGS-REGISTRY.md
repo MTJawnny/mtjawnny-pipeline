@@ -76,7 +76,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-08.md` | 238 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-08.md` | 261 | 1 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 229 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -737,7 +737,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
-- `SESSION-HANDOFF-2026-08-08.md:186` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
+- `SESSION-HANDOFF-2026-08-08.md:209` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:258` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 

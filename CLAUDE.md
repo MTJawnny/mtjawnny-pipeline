@@ -500,6 +500,15 @@ deck-building relevance, not textual frequency.**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)
+- **A STANDING WARNING'S NUMBER IS STILL A CARRIED-FORWARD COUNT.**
+  `PRE-STEP-2-AUDIT`'s *"1,883 wrong answers that READ as resolved"* gates
+  W4, and it was measured on 2026-08-04 against six enumerated causes that
+  have each since been fixed. Re-measured: **1,883 → 4**, and the 4 are the
+  Siege cycle behaving correctly (the CR 614.1c *choice* is the replacement;
+  the chosen `• Mode — <static>` must not inherit it).
+  `experiments/foundry_blanket_risk.py` is the reporter. **Re-measure the
+  warning, not just the work it guards** — but note a low number says the
+  ENUMERATED causes are gone, never that the rest is correct.
 - **W3's trigger-vocabulary decision sheet + the CR partition of the
   `unclassified-trigger` population: `docs/W3-TRIGGER-VOCABULARY-2026-08-07.md`.**
   Re-measure with `python3 experiments/foundry_w3_census.py` — it partitions

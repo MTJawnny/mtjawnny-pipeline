@@ -69,6 +69,7 @@ python3 experiments/foundry_ground_truth.py                # after EVERY step
 | | |
 |---|---|
 | **`experiments/foundry_w3_census.py`** | partitions every unrouted trigger line by the CR rule that decides it. Mints nothing, judges nothing, reports RESIDUAL rather than forcing a fit. `--residual`, `--class <name>` |
+| **`experiments/foundry_blanket_risk.py`** | re-measures the `PRE-STEP-2` blanket-sweep risk that gates W4. **1,883 → 4.** Measurement only; `--show <cause>` |
 
 ---
 
@@ -177,6 +178,28 @@ works: `STEP-2A-STATIC-GRANT-2026-08-05.md`, `-2B-`, `-2C-`.
 **The standing warning, from `PRE-STEP-2-AUDIT`:** routing `spell-or-static`
 wholesale into `static` *"would turn 1,883 wrong answers into answers that
 READ as resolved."* **Named shapes, one at a time. Never a blanket sweep.**
+
+> **BUT RE-MEASURE THE 1,883 FIRST — it is now 4, and the 4 are correct.**
+> `python3 experiments/foundry_blanket_risk.py` (new this session). The
+> 1,883 was a count taken on 2026-08-04 and breaks into six causes that have
+> each since been fixed: loyalty 900→0 · modal 504→4 · CR 702 keyword lines
+> 194→0 · replacement 165→0 · trigger-shaped 90→0 · activated 30→0. The
+> surviving 4 are the **Siege cycle**, and they are right: the CR 614.1c
+> *choice* is the replacement, while the chosen `• Mode — <static>` is a
+> static that must **not** inherit it.
+>
+> **This does not license a blanket sweep** — it says the six *enumerated*
+> causes are gone, not that every remaining line is a static, and the
+> ground-truth fixture does not cover this bucket. **But W4 is much cheaper
+> than its packet estimate**, and the reason to go shape-by-shape is now
+> positive correctness rather than a known 20% misroute rate.
+>
+> **A second finding fell out:** 16 further mode lines sit unrouted only
+> because their HEADER is unrouted for a W3 reason — Hylda (D9), Venser
+> (CR 701.34), Glorfindel (CR 701.22), Graviton (D1), Teval's Judgment (D5),
+> Putrid Warrior. **They route themselves the moment their decision-sheet item
+> is ratified.** W3's sheet reaches further than its own line count, which is
+> an argument for doing W8 before W4.
 
 ### B. W8 — Captain's decision sheet, now **10 items**
 
