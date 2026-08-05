@@ -486,7 +486,19 @@ def expand_modal_bullets(text: str) -> list:
         header = None
         opt_test = None
         consume = True
-        if _MODAL_HEADER_RE.search(lines[i].strip()):        # CR 700.2/.2h/.2i
+        # A BAR ROW OUTRANKS THE MODAL TEST; A BULLET DOES NOT. `N |` is
+        # typography only a CR 706.3b results table uses, so it decides the
+        # block on its own; a BULLET is shared with CR 700.2, so there the
+        # modal header keeps precedence. Without this, `_MODAL_HEADER_RE` wins
+        # the if/elif on Song of Inspiration -- "CHOOSE UP TO TWO target
+        # permanent cards in your graveyard. Roll a d20 and add …" matches its
+        # `up to \w+` arm, which is a TARGETING instruction and not a mode list
+        # -- and the table is then tested with `is_mode_line`, which no bar row
+        # satisfies, so the whole table goes unjoined.
+        _nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+        if _ROLL_INSTRUCTION_RE.search(lines[i]) and _DIE_ROW_RE.match(_nxt):
+            header, opt_test = lines[i], _is_die_row     # CR 706.3b
+        elif _MODAL_HEADER_RE.search(lines[i].strip()):      # CR 700.2/.2h/.2i
             header, opt_test = lines[i], is_mode_line
         elif _ROLL_INSTRUCTION_RE.search(lines[i]):          # CR 706.3b
             header, opt_test = lines[i], _is_die_row
