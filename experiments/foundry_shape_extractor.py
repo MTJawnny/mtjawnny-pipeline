@@ -2369,6 +2369,23 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # lands") were counted as sacrifice triggers by their EFFECT text.
         if re.search(r"\bsacrifices?\b", clause):
             return msub("sacrifice-trigger", "sacrifice")
+        # CR 400.1 -- a card LEAVES a graveyard. Captain-ratified 2026-08-07,
+        # W3 sheet D5. §2 named four ways INTO a graveyard and none out of one.
+        # Tested BEFORE the life/sacrifice branches for the same reason the
+        # cycling pair is tested before discard: "leave your graveyard" clauses
+        # routinely carry an effect verb the branches below would claim.
+        if re.search(r"\bleaves?\b[^,]{0,40}\bgraveyards?\b"
+                     r"|\bleave\b[^,]{0,40}\bgraveyards?\b", clause):
+            return msub("leaves-graveyard-trigger", "leaves-graveyard")
+        # CR 119.3 -- life LOSS, the mirror of CR 119.9's gain. Captain-ratified
+        # 2026-08-07, W3 sheet D7. `mark`, not `msub`: the subject is a PLAYER.
+        #
+        # DAMAGE IS NOT LIFE LOSS. CR 120.3 makes damage to a player CAUSE life
+        # loss, but they are different events and §2's four damage families
+        # already name the other one -- so this branch sits BELOW them all and
+        # can only see what they did not claim.
+        if re.search(r"\bloses? life\b|\blost life\b|\blose exactly\b", clause):
+            return mark("lose-life-trigger", "lose-life")
         # CR 121.1 DRAW -- Captain-ratified 2026-08-07, W3 sheet D1. §2's
         # `draw-step-trigger` row already predicted this family in its own
         # words: *"a card triggering on the draw EVENT is a different family
