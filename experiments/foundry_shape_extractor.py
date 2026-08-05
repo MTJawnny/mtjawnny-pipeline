@@ -2068,7 +2068,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # Straight apostrophe only. W1's class-3 addendum measured the corpus
         # at 13,175 straight and ZERO curly -- the curly form belongs on
         # CR-PARSED values compared against card data, not here.
+        # THE RECIPIENT SIDE HAS A THIRD PRINTING, WITH THE NOUN FIRST:
+        # *"whenever COMBAT DAMAGE IS DEALT TO YOU"* (Risona Asari Commander),
+        # *"whenever combat damage is dealt to you or a planeswalker you
+        # control"* (Vengeful Pharaoh), *"whenever damage is dealt to one of
+        # the chosen players"* (Sower of Discord). Same CR 120.1 event as
+        # "«X» is dealt damage"; only the word order differs, and both arms
+        # were tested `dealt` -> `damage` only.
+        #
+        # The qualifier moves with the noun -- it is "COMBAT damage is dealt",
+        # not "is dealt COMBAT damage" -- so this arm reads the words BEFORE
+        # `damage` where the arm above reads the ones after.
+        #
+        # Selfless Squire is the near-miss and it is correctly excluded:
+        # *"whenever damage that would be dealt to you IS PREVENTED"* is a
+        # CR 615 prevention event, not a damage event. It survives because the
+        # copula there attaches to `prevented`, not to `dealt` ("would BE
+        # dealt"), so `(?:is|are) dealt` cannot match it.
         m_recv = re.search(r"\b(?:is|are|'re) dealt\b([^,]{0,60}?)\bdamage\b", clause)
+        if not m_recv:
+            m_recv = re.search(r"\b((?:\w+\s+){0,2}?)damage\b[^,]{0,20}?"
+                               r"\b(?:is|are) dealt\b", clause)
         if m_recv:
             qual = m_recv.group(1)
             # CR 120.10 makes "excess damage" its own triggered-ability check:
@@ -2166,7 +2186,18 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # -- source 94 · any- 18 · other- 9 -- so unlike the discard and
         # is-dealt families the `other-` node is POPULATED here (Salt Road
         # Ambushers). Hard-disjoint from `etb` by CR 708.8 / 702.37e.
-        if re.search(r"\bis turned face up\b|\bturned face up\b", clause):
+        # THIRD SITE OF THE VOICE CLASS THIS SESSION (after CR 106.12's
+        # tap-for-mana and CR 506.3's is-attacked). §2's row anchors on
+        # CR 708.7, which prints the ACTIVE voice and licenses it outright:
+        # *"The ability or rules that allow a permanent to be face down may
+        # also allow the permanent's CONTROLLER TO TURN IT FACE UP."*
+        # 708.8 then prints the passive ("As a face-down permanent IS TURNED
+        # FACE UP"), and only that one was matched.
+        # Measured: exactly 1 line prints the active form -- Growing Dread,
+        # *"whenever you turn a permanent face up"*. Stated as 1 rather than
+        # widened speculatively; the value is closing the class, not the count.
+        if re.search(r"\bis turned face up\b|\bturned face up\b|"
+                     r"\bturns?\b[^,]{0,40}\bface up\b", clause):
             return msub("turned-face-up-trigger", "turned-face-up")
         # ORDER MATTERS, same reason as the cycling pair above. CR 701.9b
         # distinguishes a discard the AFFECTED PLAYER chooses from one that
