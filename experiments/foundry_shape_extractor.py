@@ -2369,6 +2369,31 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # lands") were counted as sacrifice triggers by their EFFECT text.
         if re.search(r"\bsacrifices?\b", clause):
             return msub("sacrifice-trigger", "sacrifice")
+        # CR 121.1 DRAW -- Captain-ratified 2026-08-07, W3 sheet D1. §2's
+        # `draw-step-trigger` row already predicted this family in its own
+        # words: *"a card triggering on the draw EVENT is a different family
+        # and is not this token."*
+        #
+        # THE THRESHOLD FORM IS TESTED FIRST AND IS A SEPARATE TOKEN. "Whenever
+        # you draw your SECOND card each turn" does not fire on the first draw
+        # at all, so on the ratified D3f test it changes WHETHER, not how much
+        # -- axis identity, exactly as §8b ruled for counter thresholds. It is
+        # also the larger population (60 lines vs 68), and it is the archetype
+        # a deck is actually built around, so folding it into the generic is
+        # the §6b rule 1 failure ("do not fold a shape into a near neighbour").
+        #
+        # THE ORDINAL IS COMPOSED, NOT LISTED. `draw-<ordinal>-card-trigger` is
+        # a §11 grammar slot; the captured word is substituted and `mark` lets
+        # §2's table decide which nodes are ratified. Carrying an ordinal list
+        # here is the recorded "recount that omitted `twelfth`" defect, and it
+        # would also need editing for every new printing.
+        m_drawn = re.search(r"\bdraws?\b[^,]{0,20}?"
+                            r"\b(?:your|their|his|her)\s+(\w+)\s+card\b", clause)
+        if m_drawn:
+            return mark(f"draw-{m_drawn.group(1)}-card-trigger",
+                        f"draw-{m_drawn.group(1)}-card")
+        if re.search(r"\bdraws?\b", clause):
+            return mark("draw-trigger", "draw")
         # CR 603.8 STATE TRIGGERS -- Captain-ratified 2026-08-07, W3 sheet D4.
         # *"Some triggered abilities trigger WHEN A GAME STATE ... IS TRUE,
         # rather than triggering when an event occurs. ... These are called
