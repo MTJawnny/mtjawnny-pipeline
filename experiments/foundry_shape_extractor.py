@@ -1458,7 +1458,32 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
         # 113.3a supplies the cut, exactly as it did for the self-statement
         # pass: a spell ability exists only on an instant or sorcery. Without
         # this, the split fired on 137 lines instead of 42 — 95 of them spells.
+        # A REPLACEMENT EFFECT IS A STATIC ABILITY, and CR 603.11 says "static",
+        # not "the token `static`". The chain is three rules and closes:
+        #   CR 614.1  — "Some CONTINUOUS EFFECTS are replacement effects."
+        #   CR 113.3d — "STATIC abilities create CONTINUOUS EFFECTS."
+        #   CR 113.3  — four categories; a permanent's replacement effect is
+        #               not spell/activated/triggered, so it is static.
+        # Gating on the TOKEN spelling instead of the CR CLASS meant every
+        # `replacement` line was refused the 603.11 split, so a linked trigger
+        # printed in the same paragraph was silently dropped. Predatory Sludge
+        # is the worked case: "As ~ enters the battlefield, choose a permanent
+        # you don't control. When the chosen permanent is put into a graveyard
+        # from the battlefield, ..." — CR 607.2h linkage, two abilities, and
+        # the death trigger had no delivery of its own.
+        # `replacement` takes the SAME CR 113.3a cut as `spell-or-static`, and
+        # for the same reason. On an instant/sorcery the replacement effect is
+        # created by the RESOLVING spell (CR 113.3a), so a later trigger is
+        # DELAYED (CR 603.7a) and belongs to its creator (§2d) — Heroic
+        # Sacrifice ("...is dealt to the chosen creature instead. When that
+        # creature dies this turn, ...") and Semester's End are the two this
+        # keeps out. Off a spell face there is no resolving ability, so CR
+        # 607.2h applies verbatim: "if an object has both a STATIC ability and
+        # one or more TRIGGERED abilities printed on it in the SAME PARAGRAPH,
+        # each of those triggered abilities is LINKED to the static ability."
         is_static = first[0] == "static" or (
+            first[0] == "replacement" and card is not None
+            and not _has_spell_face(card)) or (
             first[1] == "spell-or-static" and card is not None
             and not _has_spell_face(card))
         if is_static:
