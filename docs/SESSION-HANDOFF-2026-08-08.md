@@ -167,30 +167,47 @@ unchanged).
 
 ---
 
-## 6. NEXT WORK ITEM — **D8 first. It is half-finished and unblocked.**
+## 6. NEXT WORK ITEM — **D8a. And D8 had to be SPLIT first; see why.**
 
-### A. D8 — the nine smaller CR classes · ~90 lines · RATIFIED, NOT IMPLEMENTED
+### A. D8a — the five classes independent of D2/D3 · 79 lines · UNBLOCKED
 
-Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
-was not reached.** Nine CR rules, each with a printed shape and no token:
+**D8 as first written was invalid and was re-partitioned.** Five of its ten
+classes **are themselves CR 701/702 keyword terms** — the exact population
+D2/D3 was withdrawn over (§5a). Working them would mint `monstrosity-trigger`,
+`level-up-trigger`, `attach-trigger`, `phasing-trigger` and `dungeon-trigger`,
+which is precisely the set D2/D3's replacement (*"an explicit member list of
+the ~41 attested terms"*) would also produce — **design goal #1's duplication,
+or resolving a withdrawn decision by the back door.** Measured, not assumed:
+`cr_action_terms()` / `CR_KEYWORD_NAMES` return true for all five.
 
-| class | CR | lines |
-|---|---|--:|
-| Room doors unlocking | 709.5 / 116.2m | 43 |
-| monstrosity — *"it becomes monstrous"* | 701.37a | 19 |
-| leveler / Class levels | 711 / 716 | 13 |
-| exile from the battlefield | 400.1 / 700.4 | 12 |
-| attach / unattach | 701.3 / 701.4 | 12 |
-| day–night | 728.1 | 10 |
-| player loses the game | **603.9** (its own rule) | 7 |
-| phasing | 702.26 | 7 |
-| coin flip | 705.1 | 7 |
-| dungeon | 701.49 / 309 | 4 |
+**Ordered by DECK-BUILDING RELEVANCE, not by line count.** The first draft
+sorted by lines, which is the criterion Captain's own ratified rule names as
+the wrong one (*"judge by deck-building relevance, not textual frequency"*).
 
-**Follow the five that landed:** Gate 3 the name → add a §2 table row with the
+| class | CR | lines | why it earns a token |
+|---|---|--:|---|
+| **Room doors unlocking** | 709.5 / 116.2m | 43 | a whole build-around set mechanic; 41 cards currently cannot join ANY delivery-bearing axis |
+| **day–night** | 728.1 | 10 | the werewolf archetype — a deck, not a rules footnote |
+| **coin flip** | 705.1 | 7 | the Krark archetype |
+| exile from the battlefield | 400.1 / 700.4 | 12 | an LTB variant §2 named for the graveyard and not for exile |
+| player loses the game | **603.9** | 7 | CR 603.9 gives it its own rule; marginal for deck-building |
+
+**Recipe, from the five that landed:** Gate 3 the name → §2 table row with the
 CR quoted → wire the emitter → routing diff `--strict --lines`, read every
-moved line → the four audits → re-pin only onto improvement. Roughly 40
-minutes each.
+moved line → the four audits → re-pin only onto improvement.
+
+**Expect the count to under-state the gain.** An unrouted header keeps its
+MODES unrouted too: ratifying D5 routed Teval's Judgment and three bullets
+inherited for free, and `foundry_blanket_risk.py` measured 16 mode lines
+waiting on their headers.
+
+### A2. D8b — the five that are CR keyword terms · 55 lines · **BLOCKED on D2/D3**
+
+monstrosity (19, CR 701.37) · level-up (13, CR 702) · attach/unattach (12,
+CR 701.3/701.4) · phasing (7, CR 702.26) · dungeon (4, CR 701.49). **Do not
+mint these individually.** They belong to the explicit member list §5a
+recommends; ratifying that list routes all 55 at once and keeps one source
+for one name.
 
 ### B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
 

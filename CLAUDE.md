@@ -500,6 +500,23 @@ deck-building relevance, not textual frequency.**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)
+- **A WITHDRAWN DECISION LEAVES A SHADOW ON EVERY OTHER ITEM ON ITS SHEET.**
+  D2/D3 (CR 701/702 keyword events) was sent back to Captain; D8 was then
+  scoped as "nine smaller CR classes" and **five of them turned out to BE
+  CR 701/702 keyword terms** — monstrosity, level-up, attach, phasing,
+  dungeon, 55 of its 134 lines. Working it as written would have minted the
+  withdrawn family one token at a time, which is design goal #1's
+  duplication or a back-door ratification. **After withdrawing an item,
+  re-test every REMAINING item for overlap with it** — the sheet was
+  partitioned before the withdrawal, so its partition is stale by
+  construction.
+- **RANK A WORK QUEUE BY DECK-BUILDING RELEVANCE, NOT BY LINE COUNT.**
+  Captain's ratified criterion, and a queue sorted by lines silently
+  applies the one the rule names as wrong. Rooms (a build-around set
+  mechanic), day–night (werewolves) and coin flip (Krark) are archetypes;
+  `player loses the game` is marginal at any count. **And a line count
+  UNDER-states the gain**: an unrouted header keeps its MODES unrouted, so
+  ratifying D5 routed one header and three bullets inherited for free.
 - **A STANDING WARNING'S NUMBER IS STILL A CARRIED-FORWARD COUNT.**
   `PRE-STEP-2-AUDIT`'s *"1,883 wrong answers that READ as resolved"* gates
   W4, and it was measured on 2026-08-04 against six enumerated causes that
