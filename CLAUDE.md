@@ -496,6 +496,8 @@ deck-building relevance, not textual frequency.**
 
 ## Reference
 
+- **START HERE AFTER A BREAK: `docs/PICK-UP-HERE.md`** — undated, stably
+  named, says what to audit FIRST and what not to touch.
 - **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-08.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative

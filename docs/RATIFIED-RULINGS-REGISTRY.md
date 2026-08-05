@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **115 documents under docs/**
-- ruling references found: **606**
+- documents scanned: **116 documents under docs/**
+- ruling references found: **610**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -55,6 +55,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
+| `PICK-UP-HERE.md` | 157 | 2 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PUNCTUATION-RESCAN-2026-08-06.md` | 208 | 1 | 0 | yes |
@@ -77,7 +78,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-08.md` | 343 | 3 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 229 | 3 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 232 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -616,11 +617,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
-### `D2` — 16 reference(s) across 9 doc(s)
+### `D2` — 18 reference(s) across 10 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:558` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1238` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
+- `PICK-UP-HERE.md:87` — D2/D3 as a blanket grammar family.** It was built exactly as ratified and
+- `PICK-UP-HERE.md:151` — that landed the five ratifications last session. Do NOT touch D8b or D2/D3 —
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -635,7 +638,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
-### `D3` — 19 reference(s) across 9 doc(s)
+### `D3` — 21 reference(s) across 10 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:724` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
 - `CODEBOOK-NAMING-GRAMMAR.md:835` — One connective, one order, closed stat list — RATIFIED (D-3):
@@ -643,6 +646,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:863` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1239` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
+- `PICK-UP-HERE.md:87` — D2/D3 as a blanket grammar family.** It was built exactly as ratified and
+- `PICK-UP-HERE.md:151` — that landed the five ratifications last session. Do NOT touch D8b or D2/D3 —
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
