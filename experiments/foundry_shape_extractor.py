@@ -464,8 +464,34 @@ def deliveries_for_lines(card: dict, ratified: dict):
     `• 2 — menace` is a die-roll RESULT table, not a set of modes.
     """
     lines = ability_lines(card)
-    header_deliveries, is_modal = None, False
-    for line in lines:
+    header_parsed, header_deliveries = None, None
+    is_modal, is_roll = False, False
+    for i, line in enumerate(lines):
+        s = line.strip()
+        # CR 706.3b, verbatim: *"An instruction to roll one or more dice, any
+        # instructions to modify that roll printed in the same paragraph, any
+        # additional instructions based on the result of the roll, and THE
+        # ASSOCIATED RESULTS TABLE are ALL PART OF ONE ABILITY."*
+        #
+        # So a results-table row is NOT an ability and never earns a delivery
+        # of its own -- its delivery IS the roll ability's, exactly as a CR
+        # 700.2 mode's is its header's. This is D3 inheritance, one rule over,
+        # and it mints no vocabulary: the TOKEN is the header's, unchanged, and
+        # only the descriptor is annotated.
+        #
+        # UNCONDITIONAL, unlike the modal branch below, and the difference is
+        # load-bearing. The modal branch falls back to parsing the mode alone
+        # when the header carries no ratified token; for a die row that
+        # fallback is what PRODUCED the two wrong answers this fixes, because a
+        # row's effect text parses perfectly well on its own and is still not
+        # its own ability. Cone of Cold's `20 | … creatures your opponents
+        # control enter tapped` read as `replacement` (CR 614.1d) when the
+        # ability is a SORCERY's spell ability, grammar §1's unmarked default.
+        # "Inheriting no ratified token" is the right answer -- the recorded
+        # "UNROUTED IS NOT STOPPED" rule.
+        if is_roll and (fc._DIE_ROW_RE.match(s) or fc.is_mode_line(line)):
+            yield line, [(t, f"die-row:{d}") for t, d in header_parsed]
+            continue
         if fc.is_mode_line(line):
             if is_modal and header_deliveries:
                 yield line, [(t, f"modal-mode:{d}") for t, d in header_deliveries]
@@ -473,8 +499,30 @@ def deliveries_for_lines(card: dict, ratified: dict):
                 yield line, parse_deliveries(line, ratified, card)
             continue
         parsed = parse_deliveries(line, ratified, card)
+        header_parsed = parsed
         header_deliveries = [(t, d) for t, d in parsed if t is not None]
-        is_modal = bool(fc._MODAL_HEADER_RE.search(line.strip()))
+        is_modal = bool(fc._MODAL_HEADER_RE.search(s))
+        # A roll instruction opens a table only if a row actually FOLLOWS it.
+        # Barbarian Class's level-2 ability ("Whenever you ROLL one or more
+        # DICE, target creature you control gets +2/+0") matches the
+        # instruction pattern and has no table; without this lookahead it would
+        # claim whatever line came next. Same structural confirmation
+        # `expand_modal_bullets` already relies on, and the same card that
+        # broke the band boundary in an earlier session.
+        #
+        # A BAR ROW OUTRANKS THE MODAL TEST; A BULLET DOES NOT. `N |` is
+        # unambiguous typography that only a results table uses, so it decides
+        # on its own. A BULLET is shared with CR 700.2, so there the modal
+        # header keeps precedence. Gating both on `not is_modal` was wrong:
+        # `_MODAL_HEADER_RE` matches "CHOOSE UP TO TWO target permanent cards
+        # in your graveyard. Roll a d20 …" (Song of Inspiration) on the
+        # `up to \w+` alternative, which is a TARGETING instruction and not a
+        # mode list at all — and that suppressed a real table.
+        nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+        is_roll = bool(fc._ROLL_INSTRUCTION_RE.search(line)) and (
+            bool(fc._DIE_ROW_RE.match(nxt))
+            or (not is_modal and i + 1 < len(lines)
+                and fc.is_mode_line(lines[i + 1])))
         yield line, parsed
 
 
