@@ -230,12 +230,28 @@ _MODAL_HEADER_RE = re.compile(
 
 
 # CR 706.3b: a die-roll RESULTS TABLE row -- "1—9 | …", "20 | …", "5 | …".
-# THE RANGE SEPARATOR HAS THREE PRINTED FORMS. Measured 2026-08-06 across 106
+# THE RANGE HAS FIVE PRINTED FORMS, NOT THREE. Measured 2026-08-06 across 106
 # rows: em-dash 75, plain HYPHEN 5 (Mathise, Surge Channeler prints `1-9 |`),
 # single number 26. An em-dash-only test silently dropped the hyphen rows --
 # the same "an inflection is not a shape" family that has now bitten this
 # project four times, wearing punctuation instead of a verb ending.
-_DIE_ROW_RE = re.compile(r"^\s*\d+(?:\s*[-–—]\s*\d+)?\s*\|")
+#
+# RE-MEASURED during W2: that census counted only rows this regex ALREADY
+# matched, so it could not see the two forms it was missing -- a recall
+# measurement taken with the very filter under test. An UNBOUNDED roll can
+# exceed the die's face value ("roll a d20 AND ADD the number of cards in your
+# hand"), so the table's last row is OPEN and the first may be too:
+#
+#   `20+ | …`        Druid of the Emerald Grove, Song of Inspiration (`15+ |`)
+#   `9 or less | …`  Druid of the Emerald Grove -- and it is the FIRST row,
+#                    so the whole table failed to open and all three of its
+#                    rows went unjoined and unrouted.
+#
+# Widening cannot reach a CR 721 station row (`9+ | Flying, first strike`),
+# which is the same shape and a different rule: both consumers test this only
+# AFTER `_ROLL_INSTRUCTION_RE` has opened a block, and a station card prints no
+# roll instruction. Verified live -- 0 station rows joined.
+_DIE_ROW_RE = re.compile(r"^\s*\d+\s*(?:[-–—]\s*\d+|\+|or (?:less|more))?\s*\|")
 # The instruction that opens such a table. The CR names the shape ("an
 # instruction to roll one or more dice") and the corpus prints "roll a d20",
 # "roll two six-sided dice", "roll a d20 and add the number of cards in your
