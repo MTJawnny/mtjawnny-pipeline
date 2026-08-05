@@ -428,6 +428,62 @@ encodes.
   subtypes unattested); a band boundary that stopped at any `roll … dice` line
   (Barbarian Class's own level-2 ability); `_direction` reading only a dotted
   key's LEAF, so every nested pinned metric silently resolved to neutral.
+- **THE CR STATES THE SAME EVENT IN THE ACTIVE VOICE ONE RULE ABOVE THE
+  TRIGGER RULE — LOOK ONE RULE UP.** A branch written from the sub-rule that
+  describes the *trigger* inherits that sub-rule's voice and silently loses
+  every card printing the other one. Three sites in one session, all the same:
+  106.12a prints *"is tapped for mana"* while **106.12** defines the act
+  itself (*"to TAP [a permanent] FOR MANA is to activate a mana ability…"*) —
+  32 lines; 508 prints the attack while **506.3** prints the defence (*"only a
+  player, a planeswalker, or a battle CAN BE ATTACKED"*) — 6 lines, five of
+  them the exact Curse cycle §6's `enchanted-player` was ratified for; 708.8
+  prints *"is turned face up"* while **708.7** prints *"allow the permanent's
+  CONTROLLER TO TURN IT FACE UP"*. **VOICE is a sweep class beside W1's
+  INFLECTION class**, and word ORDER is a third: the CR 120.1 recipient side
+  also prints noun-first (*"combat damage IS DEALT TO YOU"*) and both arms
+  tested `dealt`→`damage` only.
+- **A DETERMINER SLOT IS NOT VOCABULARY — DERIVE IT FROM THE TEMPLATE.**
+  `put into (a |their |your |its owner's )?graveyard` was a hand-list of four
+  English determiners standing where the CR template has an open noun phrase,
+  and it lost every *"an opponent's graveyard"* (15 lines, incl. the Bridge
+  from Below / Lurking Skirge death family) and *"a player's graveyard"*. The
+  CR writes **"put into ‹DESTINATION› from ‹ORIGIN›"**, so `from` is what
+  CLOSES the destination — and that constraint is also what keeps Golgari
+  Brownscale out (*"put into your HAND from your graveyard"*), which a
+  width-only widening would have wrongly claimed.
+- **THE `or`/`and` SPLITTER CANNOT TELL A COORDINATION *INSIDE* ONE PHRASE
+  FROM ONE *BETWEEN* TWO TRIGGERS — three defects, and they point opposite
+  ways.** Inside an OBJECT phrase the event verb is stranded in a fragment the
+  PREDICATE filter then DISCARDS (part 0 has a re-join cure; later parts had
+  none — 4 lines lost real tokens). Inside a **CR quantity phrase** (`mana
+  value 3 or greater`, `one or more`) the same, and invisible to the re-join
+  because **`control` is in `_SUPPLEMENT_VERBS`**, so the scope phrase *"you
+  control"* satisfies `TRIGGER_VERB` on almost any clause. Inside a **`while`
+  condition** (CR 603.4) it INVENTS a trigger — Preacher of the Schism's
+  *"attacks WHILE you have the most life OR ARE TIED for most life"* emitted a
+  second delivery for an ability that does not exist. **A census scores a lost
+  token and an invented gap identically**, and the routing diff only sees the
+  first; the invented one needs the delivery-ROW count.
+- **A `--strict` DIFF IS BLIND TO A ROW-LEVEL LOSS ON A ROUTED LINE.** Every
+  splitter defect above emitted `[etb, unclassified-trigger]` — the line kept
+  a ratified token, so the diff scored it a re-route and the gap census saw
+  only "missing vocabulary". Watch `deliveries` and
+  `descriptor_unrouted.*`, not `unrouted_lines`, when the change touches how
+  rows are PRODUCED rather than classified.
+- **AN EXACT-PHRASE GREP OF THE CR IS THE INFLECTION TRAP AIMED AT THE CR.**
+  `commit a crime` returned **0** and was one step from being filed as a third
+  CR-LAG entry; the CR states it as a GERUND — *"Some cards refer to
+  COMMITTING a crime"* (CR 700.13). Same for `expend`, which is not a keyword
+  action at all but **CR 700.14**, itself a trigger rule. **CR 700.10–700.16
+  is a vein of named mechanics that neither closed keyword list reaches.**
+- **A `llm` PROPOSAL SET IS STRUCTURALLY BLIND TO A CLASSIFIER DEFECT.** W3
+  was scoped as a Batch API job on its own reasoning that it is *"a CR-LOOKUP
+  JOB, not a judgement job"* — which is the argument for a script, not a
+  batch. Deriving it instead cost $0 and found **ten defects**, six of them
+  branches that could not see a printed form of a token they ALREADY HAD.
+  A proposal set is shown *shapes* and asked to name them, so it can only ever
+  report gaps: **it names gaps; only reading the classifier finds the ones
+  that are not gaps.** Record: `docs/W3-TRIGGER-VOCABULARY-2026-08-07.md` §5.
 
 ## Out of scope — check before raising a finding
 
@@ -444,6 +500,12 @@ deck-building relevance, not textual frequency.**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)
+- **W3's trigger-vocabulary decision sheet + the CR partition of the
+  `unclassified-trigger` population: `docs/W3-TRIGGER-VOCABULARY-2026-08-07.md`.**
+  Re-measure with `python3 experiments/foundry_w3_census.py` — it partitions
+  every unrouted trigger line by the CR rule that decides it (87.9% of 818)
+  and mints nothing. D1–D9 are the pending ratifications; **D4 (CR 603.8
+  state triggers) is the cleanest and shrinks the residual too.**
 - **Corpus-wide SHAPE work is a script, not tokens.**
   `experiments/foundry_shape_extractor.py` parses every card's DELIVERY slot
   for free, deriving its vocabulary from grammar §2 at run time. Run it before
