@@ -15,10 +15,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **115 documents under docs/**
-- ruling references found: **604**
+- ruling references found: **613**
 - distinct ruling ids: **127**
-- corroborated (appear in >1 doc): **84**
-- **sole-home (appear in exactly 1 doc): 43**
+- corroborated (appear in >1 doc): **85**
+- **sole-home (appear in exactly 1 doc): 42**
 
 ## Deletion gate — per document
 
@@ -72,11 +72,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
+| `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-08.md` | 261 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-08.md` | 326 | 9 | 0 | yes |
 | `SESSION-START-PROCEDURE.md` | 229 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
@@ -165,10 +165,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 **`RULING-MANIFEST-2026-07-09.md`** — sole home for 1:
 
 - `F7` (line 94) — Swat evidence. F7 (Rhythm of the Wild / Surrak) is WITHDRAWN by Captain —
-
-**`SESSION-HANDOFF-2026-08-04-EVE.md`** — sole home for 1:
-
-- `D8` (line 212) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
@@ -536,7 +532,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02.md:89` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
 
-### `D1` — 22 reference(s) across 10 doc(s)
+### `D1` — 23 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:162` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
@@ -554,6 +550,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
 - `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
 - `TIER-3-DECISION-PACKET-2026-08-02.md:42` — > 1. **The executor had no way to edit a scope field.** D1's ratified scope
@@ -616,7 +613,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
-### `D2` — 15 reference(s) across 8 doc(s)
+### `D2` — 16 reference(s) across 9 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:558` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1238` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
@@ -625,6 +622,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:195` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
 - `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
 - `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
@@ -634,7 +632,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
-### `D3` — 18 reference(s) across 8 doc(s)
+### `D3` — 19 reference(s) across 9 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:724` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
 - `CODEBOOK-NAMING-GRAMMAR.md:835` — One connective, one order, closed stat list — RATIFIED (D-3):
@@ -647,6 +645,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:253` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
+- `SESSION-HANDOFF-2026-08-08.md:195` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:79` — Batch-6 D3 ruled this exact clause on the sibling axis: *"`rule:etb-pump-target-creature`:
 - `TIER-4-DECISION-PACKET-2026-08-02.md:84` — ✅ **Apply batch-6 D3's precedent verbatim** — drop the clause, keep all
 - `TIER-4-DECISION-PACKET-2026-08-02.md:393` — `rule:etb-pump-target-creature`** — all four ETB pumps. **Confirms batch-6 D3's dropped-ownership-clause ruling is holding at n=4.** Guac & Marshmallow Pizza's "Untap it." rider is a multi-facet note only.
@@ -659,7 +658,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 
-### `D4` — 17 reference(s) across 9 doc(s)
+### `D4` — 18 reference(s) across 10 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
@@ -674,12 +673,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:251` — D4 — All remaining verdicts stand
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 - `TIER-4-DECISION-PACKET-2026-08-02.md:69` — call: batch-4 D4 is a **standing rule** — "any `grants-temporary-<keyword>`
 - `TRIAGE-BATCH-5.md:208` — `rule:damage-then-exile-instead-of-die` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- same continuous-replacement-effect pattern as batch-4's replaces-death-with-exile merge (D4), just phras…
 - `TRIAGE-BATCH-5.md:318` — `rule:replacement-graveyard-to-exile-self` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- direct resurrection of batch-4's replacement-exile-instead-of-graveyard merge (D4), same self-protect…
 - `TRIAGE-BATCH-5.md:852` — D4 — OTHER-lane promotions ratified
 
-### `D5` — 8 reference(s) across 6 doc(s)
+### `D5` — 9 reference(s) across 7 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:763` — authored"; the ratified b4-D5 status exists for exactly this). They flip
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
@@ -689,8 +689,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:257` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
 - `SESSION-HANDOFF-2026-08-04-EVE.md:197` — D5 — `foundry_shape_extractor.py` line ~902.**
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 
-### `D6` — 12 reference(s) across 6 doc(s)
+### `D6` — 13 reference(s) across 7 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:87` — batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
 - `MASTER-HANDOFF-ADDENDUM-3.md:151` — forced sac as effect) — now partially ratified via the D6 reversal
@@ -703,13 +704,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:185` — sole exclusion. Logged Captain-explicit, D6-style.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `SESSION-HANDOFF-2026-08-04-EVE.md:204` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 - `TRIAGE-BATCH-7.md:742` — D6 — Forsaken Crossroads rehome (SUP "no axis fits" overturned)
 
 ### `D67` — 1 reference(s) across 1 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
-### `D7` — 9 reference(s) across 7 doc(s)
+### `D7` — 10 reference(s) across 8 doc(s)
 
 - `CORPUS-PASS-PLAN.md:136` — WIRED 2026-07-31** (walk-ratification session, batch-7 D7): `foundry_stage1b.py`'s
 - `CORPUS-PASS-PLAN.md:189` — (D7). Codebook now v0.7, 305 active axes. DET pattern set finalized at 42 ratified
@@ -718,6 +720,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `SESSION-HANDOFF-2026-08-02-EVE.md:120` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 - `TIER-3-DECISION-PACKET-2026-08-02.md:50` — > claim D7 ruled false. Caught on post-execution readback, corrected to
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
@@ -725,9 +728,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
-### `D8` — 1 reference(s) across 1 doc(s)
+### `D8` — 3 reference(s) across 2 doc(s)
 
 - `SESSION-HANDOFF-2026-08-04-EVE.md:212` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+- `SESSION-HANDOFF-2026-08-08.md:172` — A. D8 — the nine smaller CR classes · ~90 lines · RATIFIED, NOT IMPLEMENTED
+- `SESSION-HANDOFF-2026-08-08.md:174` — Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
 
 ### `D9` — 9 reference(s) across 8 doc(s)
 
@@ -737,7 +742,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
 - `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
 - `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
-- `SESSION-HANDOFF-2026-08-08.md:209` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
+- `SESSION-HANDOFF-2026-08-08.md:239` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:299` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 

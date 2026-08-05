@@ -9,8 +9,10 @@ the CR instead cost $0, routed 119 lines, found twelve defects including one
 wrong ratified token and one INVENTED trigger, and left a nine-item decision
 sheet where a 935-line batch job used to be.**
 
-**NEXT SESSION'S JOB: §6. Either W8 (Captain's sheet, now 10 items) or W4 —
-and W4 is the biggest remaining slice at 4,375.**
+**CAPTAIN RATIFIED THE W3 SHEET at the end of the session. FIVE of the nine
+are LANDED (D1, D4, D5, D6, D7 — §2 goes 52 → 58 tokens, 282 more lines
+routed). D2/D3 was built, measured and WITHDRAWN. D8 is NOT STARTED and is
+the next session's job — see §6.**
 
 ---
 
@@ -109,14 +111,15 @@ invariance          0
 |---|--:|
 | ability lines | 61,383 |
 | deliveries | **61,960** (was 61,961 — one FABRICATED row removed, §5) |
-| **`unclassified-trigger`** | **816** (was 935 at W1/W2, 988 at packet) |
-| …CR-classified by `foundry_w3_census.py` | **719 · 88.1%** |
-| …residual | 97 lines / 93 cards / ~85 distinct clauses |
+| **`unclassified-trigger`** | **534** (816 pre-ratification · 935 at W1/W2 · 988 at packet) |
+| …CR-classified by `foundry_w3_census.py` | **439 · 82.2%** |
+| …residual | 95 lines |
+| **§2 DELIVERY vocabulary** | **58 tokens** (was 52) |
 | `linked:unclassified-trigger` | 38 (unchanged) |
-| unrouted lines | **15,678** (was 15,744) |
+| unrouted lines | **15,401** (was 15,744) |
 | `spell-or-static` | 14,747 → undecidable 10,372 (70.3%) · **decidably STATIC 4,375** |
 | keyword homes | 150 — never moved |
-| codebook | **565 axes / 8,740 members — UNTOUCHED** |
+| codebook | **565 axes / 8,740 members — UNTOUCHED.** Vocabulary was ratified; MEMBERSHIP is a separate step under the backup law and was not run |
 
 ---
 
@@ -164,7 +167,34 @@ unchanged).
 
 ---
 
-## 6. NEXT WORK ITEM
+## 6. NEXT WORK ITEM — **D8 first. It is half-finished and unblocked.**
+
+### A. D8 — the nine smaller CR classes · ~90 lines · RATIFIED, NOT IMPLEMENTED
+
+Captain ratified the whole W3 sheet. D1, D4, D5, D6 and D7 are landed; **D8
+was not reached.** Nine CR rules, each with a printed shape and no token:
+
+| class | CR | lines |
+|---|---|--:|
+| Room doors unlocking | 709.5 / 116.2m | 43 |
+| monstrosity — *"it becomes monstrous"* | 701.37a | 19 |
+| leveler / Class levels | 711 / 716 | 13 |
+| exile from the battlefield | 400.1 / 700.4 | 12 |
+| attach / unattach | 701.3 / 701.4 | 12 |
+| day–night | 728.1 | 10 |
+| player loses the game | **603.9** (its own rule) | 7 |
+| phasing | 702.26 | 7 |
+| coin flip | 705.1 | 7 |
+| dungeon | 701.49 / 309 | 4 |
+
+**Follow the five that landed:** Gate 3 the name → add a §2 table row with the
+CR quoted → wire the emitter → routing diff `--strict --lines`, read every
+moved line → the four audits → re-pin only onto improvement. Roughly 40
+minutes each.
+
+### B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
+
+### C. W4 — the anthem group · 4,375
 
 **Take one of these two. Both are ready; neither is blocked.**
 
@@ -217,6 +247,41 @@ definition drift (the standing 35).
 sorceries routing to `replacement`** — the `replacement` branch has no
 spell-face gate (W2 addendum §3). It needs a per-FACE cut, which is real
 design, not a one-line gate.
+
+---
+
+## 5a. D2/D3 WAS BUILT, MEASURED AND WITHDRAWN — read this before retrying
+
+The sheet recommended ONE grammar family for the 181 CR 701/702 keyword-event
+lines instead of 41 tokens. Captain ratified it. It was built exactly as
+specified — a `### 2h` family deriving its members at run time from the CR,
+with three exclusions taken from ratified law (`discard`/`sacrifice` are
+already table rows; `cycle` per §2c; `counter` per §8 rule 1).
+
+**It admitted 251 tokens**, including `flying-trigger`, `deathtouch-trigger`,
+`hexproof-trigger`, `defender-trigger` (a word **§6 bans outright**) and
+`kicker-trigger` (**§2g retired kicker from DELIVERY**).
+
+**The member source is a hand-list wearing a derivation's clothes.** "Every
+CR 702 keyword" is parsed from the CR at run time and still wrong, because
+**most CR 702 keywords are STATIC abilities that never happen** and can never
+be a trigger event. The system map's question catches it — *can that source
+contain every member the CR names?* — with the failure inverted: it contains
+far more.
+
+**And the CR does not publish the narrower list.** A keyword's 702.Na class
+does not decide it either: mutate is not a triggered ability, yet *"whenever
+this creature mutates"* is a real event on 32 lines. **So which keywords can
+be a trigger EVENT is a RULING, not a derivation** — which is why it must not
+auto-instantiate. §11's "no fresh ratification" is safe only where the slot's
+vocabulary is genuinely closed by the CR; §8b's counter-TYPE slot is, and this
+one is not.
+
+**Recommended replacement:** ratify the family with an **explicit member
+list** of the ~41 terms actually attested as trigger events, each with its CR
+anchor. Keeps §8b's per-node separation — the property that matters for
+finding cards — and drops only the auto-instantiation. Nothing shipped;
+reverted and verified byte-identical.
 
 ---
 
