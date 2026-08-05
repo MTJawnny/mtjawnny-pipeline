@@ -51,7 +51,7 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 
 | # | packet | tier | cost | blocked? |
 |---|---|---|---|---|
-| **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | no — **do this first** |
+| **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | ✅ **DONE** — `docs/W1-TRAP-SWEEP-RECORD.md` |
 | **W2** | CR 706.3b die-row routing | A | small | no |
 | **W3** | 988 `unclassified-trigger` → Batch API | — | $ not quota | no |
 | **W4** | The anthem group (4,481 decidably static) | B | 1–2 sessions | no |
@@ -64,7 +64,20 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 
 ---
 
-## W1 — TRAP SWEEP  ·  TIER A  ·  DO THIS FIRST
+## W1 — TRAP SWEEP  ·  TIER A  ·  ✅ DONE
+
+> **CLOSED. Full record: `docs/W1-TRAP-SWEEP-RECORD.md`.** Both findings
+> fixed, all three sweep classes run and stated (class 1: one dead-code site,
+> 0 lines; class 2: three sites, 8 lines; class 3: nothing, and the
+> measurements proving it). 92 lines moved in total.
+>
+> **The packet missed a prerequisite, and it mattered.** Finding 3 applied on
+> its own DESTROYS a ratified `any-death-trigger` on Predatory Sludge while
+> `diff --strict` exits 0 — the CR 603.11 split gated on the token spelling
+> `static` instead of the CR class, so it refused every `replacement` line.
+> That fix (`46c7beb`) had to land first. See §2a of the record.
+
+**(original packet text retained below for reference)**
 
 **GOAL.** Two known defects, then sweep for their whole class. The sweep is the
 job; the two lines are the worked examples.
@@ -158,7 +171,13 @@ token>` and **zero** re-routes.
 singletons.** This is a CR-lookup job, not a judgement job — which is why it
 batches.
 
-**THE TOP SHAPES, measured 2026-08-07:**
+> **RE-MEASURED AFTER W1 — the table below is SUPERSEDED.** The 88-line top
+> shape WAS the plural-`enter` defect and **dissolved entirely**;
+> `unclassified-trigger` is now **935 lines** (was 988). Current top shapes
+> and the shape-key boundary are in `docs/W1-TRAP-SWEEP-RECORD.md` §6.
+> Re-measure again before costing — do not batch off either table.
+
+**THE TOP SHAPES, measured 2026-08-07 — SUPERSEDED, see above:**
 
 | n | shape | likely CR home |
 |--:|---|---|
@@ -364,3 +383,18 @@ codebook 565 axes / 359 active / 8,740 members — lint clean
 
 *A carried-forward count is not a measurement.* Every number here was live on
 2026-08-07; run the gates.
+
+**AFTER W1 — re-measured, and this block supersedes the one above:**
+
+```
+ability lines scanned        61,961 · keyword homes 150 (never moved)
+unclassified-trigger            935   was 988    (−53)
+linked:unclassified-trigger      38   was  34    (+4, rows that came into
+                                                  existence — see the record §2a)
+INSIDE spell-or-static       14,864   was 14,898
+  undecidable (§1 default)   10,413   70.1%      unchanged
+  decidably STATIC            4,451   29.9%      was 4,485  (−34)
+```
+
+**W4's target is 4,451, not 4,481. W3's is 935, not 988.** Both were moved by
+W1 and neither should be read off the block above.
