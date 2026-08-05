@@ -1952,9 +1952,14 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
             return mark("end-combat-trigger", "end-combat")
         if re.search(r"\bdraw step\b", clause):
             return mark("draw-step-trigger", "draw-step")
-        if re.search(r"\bbecomes the target of\b", clause):
+        # `becomes?` / `blocks?` — the subject of a combat or targeting trigger
+        # can be plural ("whenever one or more creatures you control BECOME
+        # BLOCKED", Hezrou), and `you` takes the plural form too ("whenever YOU
+        # BECOME THE TARGET of a spell", Amulet of Safekeeping, Dormant
+        # Gomazoa). Sweep class 2, same shape as the etb `enters?` fix.
+        if re.search(r"\bbecomes? the target of\b", clause):
             return mark("becomes-targeted-trigger", "becomes-targeted")
-        if re.search(r"\bblocks\b|\bbecomes blocked\b", clause):
+        if re.search(r"\bblocks?\b|\bbecomes? blocked\b", clause):
             return mark("blocks-or-becomes-blocked-trigger", "blocks")
         # --- Captain-ratified 2026-08-03, the six remaining trigger tokens ---
         # ORDER MATTERS: "whenever you cycle OR DISCARD a card" contains the
