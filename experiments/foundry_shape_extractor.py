@@ -1513,8 +1513,13 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     # "at least" is a QUANTIFIER, not a trigger. Kytheon's "if Kytheon and at
     # least two other creatures attacked this combat" split into a bogus second
     # delivery until this was excluded.
+    # `~(?:\s|'s|$)`, NOT `~\b` — same trap as the replacement branch, third
+    # site. After canonicalization a `~` is always followed by a space, `'s`
+    # or end-of-string, all non-word characters, so `~\b` could never match
+    # anything and the alternative was dead. Matches the shape already used at
+    # the two sites fixed earlier (`(?:^|\s)~(?:\s|$|'s)`), anchored here.
     PREDICATE = re.compile(
-        r"^(?:at (?!least\b)|when(?:ever)?\b|~\b|this \w+|"
+        r"^(?:at (?!least\b)|when(?:ever)?\b|~(?:\s|'s|$)|this \w+|"
         r"(?:enters?|attacks?|dies|die|leaves?|leave|becomes?|is|are|deals?|"
         r"blocks?|deals)\b)")
     if len(parts) > 1:
