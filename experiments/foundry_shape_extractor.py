@@ -1545,6 +1545,32 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
     # Split on or/and KEEPING the connective, so a bad split can be undone.
     _toks = re.split(r"\s+(or|and)\s+", clause)
     parts, seps = _toks[0::2], _toks[1::2]
+    # "N OR GREATER" IS ONE CR QUANTITY PHRASE, NOT A COORDINATION.
+    # The splitter treats every `or` as a possible second trigger predicate,
+    # but CR templating uses "mana value 3 or greater", "power 4 or greater",
+    # "one or more", "two or fewer" as SINGLE comparisons -- the same shape
+    # W2 found in CR 706.3a's range forms ("9 or less", "N+"). Splitting
+    # inside one strands the event verb in a fragment that the PREDICATE
+    # filter then discards, which is how Network Marauder's second trigger
+    # ("...with mana value 3 | greater ENTERS") lost its `enters` and reported
+    # a vocabulary gap it never had.
+    #
+    # `you control` MASKS THIS from the re-join loop below, and that is why it
+    # needs fixing HERE rather than there: `control` is in `_SUPPLEMENT_VERBS`,
+    # so the scope phrase every one of these clauses carries satisfies
+    # `TRIGGER_VERB.search` and the loop believes the part already has its
+    # event. Removing `control` from the verb set would move clause boundaries
+    # corpus-wide (the recorded "a missing trigger verb makes the clause end
+    # LATER" trap); re-joining the comparison touches only the comparison.
+    j = 0
+    while j < len(seps):
+        if seps[j] == "or" and re.match(r"^(?:greater|more|less|fewer)\b",
+                                        parts[j + 1].strip()):
+            parts[j] = f"{parts[j]} or {parts[j + 1]}"
+            del parts[j + 1]
+            del seps[j]
+            continue
+        j += 1
     # An `or`/`and` inside the SUBJECT phrase leaves part 0 a bare subject with
     # no event verb -- "Whenever Giott or another Dwarf you control enters"
     # split to "whenever ~", whose clause then ran on into the EFFECT and was
@@ -1570,6 +1596,42 @@ def parse_deliveries(line: str, ratified: dict, card: dict = None) -> list:
         r"^(?:at (?!least\b)|when(?:ever)?\b|~(?:\s|'s|$)|this \w+|"
         r"(?:enters?|attacks?|dies|die|leaves?|leave|becomes?|is|are|deals?|"
         r"blocks?|deals)\b)")
+    # A LATER PART LOSES ITS EVENT THE SAME WAY PART 0 DOES, AND ONLY PART 0
+    # HAD A CURE. The `while` loop above re-joins part 0 until it carries an
+    # event verb, because an `or`/`and` inside the SUBJECT phrase splits it.
+    # The identical thing happens inside a LATER part's own object or
+    # qualifier phrase, and there the tail is not merely unjoined -- it is
+    # DISCARDED by the PREDICATE filter below, which takes the event verb with
+    # it. Three worked cases, all "When ~ enters AND whenever «X»":
+    #
+    #   Network Marauder  "...another artifact you control with mana value 3 |
+    #                      greater ENTERS"        -> lost `other-etb`
+    #   Exuberant Fuseling "...another creature | artifact you control IS PUT
+    #                      INTO A GRAVEYARD FROM THE BATTLEFIELD"
+    #                                             -> lost `other-death-trigger`
+    #   Inspired Skypainter "...one | more creature tokens you control DEAL
+    #                      COMBAT DAMAGE to a player"
+    #                                             -> lost the damage token
+    #
+    # Each emitted `[etb, unclassified-trigger]`: the first half routed, the
+    # second half reported as a gap that was never a vocabulary gap at all.
+    # The cure is part 0's, applied symmetrically -- absorb the next segment
+    # until the part carries an event (CR 113.3c).
+    #
+    # STOP CONDITION: never absorb a segment that is ITSELF a trigger
+    # predicate. "whenever ~ enters or attacks" must stay two deliveries;
+    # only a non-predicate tail is a fragment of this part's own phrase.
+    i = 1
+    while i < len(parts):
+        if (PREDICATE.match(parts[i].strip())
+                and not TRIGGER_VERB.search(parts[i])
+                and i + 1 < len(parts)
+                and i < len(seps)
+                and not PREDICATE.match(parts[i + 1].strip())):
+            parts[i] = f"{parts[i]} {seps.pop(i)} {parts[i + 1]}"
+            del parts[i + 1]
+            continue
+        i += 1
     if len(parts) > 1:
         parts = [parts[0]] + [p for p in parts[1:] if PREDICATE.match(p.strip())]
     if len(parts) < 2:
