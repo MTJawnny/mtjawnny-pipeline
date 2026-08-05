@@ -2369,6 +2369,46 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # lands") were counted as sacrifice triggers by their EFFECT text.
         if re.search(r"\bsacrifices?\b", clause):
             return msub("sacrifice-trigger", "sacrifice")
+        # CR 603.8 STATE TRIGGERS -- Captain-ratified 2026-08-07, W3 sheet D4.
+        # *"Some triggered abilities trigger WHEN A GAME STATE ... IS TRUE,
+        # rather than triggering when an event occurs. ... These are called
+        # STATE TRIGGERS."* The CR names the category and supplies the term, so
+        # this is vocabulary the CR published rather than a coinage.
+        #
+        # PLACED LAST ON PURPOSE. A new tail branch can only claim lines that
+        # already reached the tail, which makes ZERO RE-ROUTES a structural
+        # guarantee rather than a lucky result -- the recorded rule, and it
+        # matters here because a stative phrase can sit inside an event clause.
+        #
+        # THE DISCRIMINATOR IS A STATEMENT OF BEING, and it needs no list of
+        # number words: a stative verb (`control` / `have` / `has` / `there
+        # are`) plus either a negation or a comparison. A quantity alone is NOT
+        # a state -- Rendmaw's *"whenever you PLAY a card with two or more card
+        # types"* and Psychic Battle's *"whenever a player CHOOSES one or more
+        # targets"* are events, and both are excluded because neither carries
+        # a stative verb.
+        #
+        # `mark`, not `msub`: 603.8 contrasts a state with an event precisely
+        # because there is no acting subject, so §2a's subject prefix -- which
+        # names WHOSE permanent triggered -- has nothing to bind to.
+        # A NEGATION is unambiguous; a COMPARISON is not, because `you control`
+        # is also the commonest SCOPE phrase in the game. Hero of Bretagard --
+        # *"whenever one or more cards are put into exile from your hand or a
+        # spell or ability YOU CONTROL EXILES ONE OR MORE cards"* -- has a
+        # stative verb and a comparison and is an EVENT. Third time `control`
+        # in `_SUPPLEMENT_VERBS` has masked something this session.
+        #
+        # The cut is DERIVED, not listed: if an event verb stands between the
+        # stative verb and the comparison, the comparison belongs to that verb.
+        # `TRIGGER_VERB` is parsed from CR 701's keyword actions, so `exiles`
+        # is caught without a hand-list.
+        if re.search(r"\b(?:controls?|have|has)\s+no\b"
+                     r"|\bthere (?:are|is) no\b", clause):
+            return mark("state-trigger", "state-trigger")
+        m_state = re.search(r"\b(?:controls?|have|has|there (?:are|is))\b"
+                            r"([^,]{0,40}?)\bor (?:more|fewer|less)\b", clause)
+        if m_state and not TRIGGER_VERB.search(m_state.group(1)):
+            return mark("state-trigger", "state-trigger")
         return None, "unclassified-trigger"
 
     # CR 614.1c names THREE replacement templates verbatim: "[This permanent]
