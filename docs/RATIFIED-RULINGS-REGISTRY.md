@@ -14,7 +14,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **112 documents under docs/**
+- documents scanned: **113 documents under docs/**
 - ruling references found: **601**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
@@ -92,11 +92,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
-| `WORK-PACKETS-2026-08-07.md` | 366 | 3 | 0 | yes |
+| `WORK-PACKETS-2026-08-07.md` | 418 | 3 | 0 | yes |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`ABILITY-WORD-CR207-2026-08-06.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`
+`ABILITY-WORD-CR207-2026-08-06.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`, `W1-W2-RECORD.md`
 
 ## Sole-home rulings — these block their document
 
@@ -496,7 +496,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
-- `WORK-PACKETS-2026-08-07.md:334` — vs energy counters. Same failure as CDR-09.
+- `WORK-PACKETS-2026-08-07.md:371` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
 
@@ -1094,7 +1094,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
-- `WORK-PACKETS-2026-08-07.md:307` — S1 — parents are DERIVED.** *"Union of ratified children computed at
+- `WORK-PACKETS-2026-08-07.md:344` — S1 — parents are DERIVED.** *"Union of ratified children computed at
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1122,7 +1122,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `S6` — 2 reference(s) across 2 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
-- `WORK-PACKETS-2026-08-07.md:318` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
+- `WORK-PACKETS-2026-08-07.md:355` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
 ### `S7` — 5 reference(s) across 5 doc(s)
 
