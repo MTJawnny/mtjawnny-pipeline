@@ -73,6 +73,12 @@ Everything else — measuring, ruling with CR anchors, DET fixes, auditing,
 writing the ruling doc — **proceed without asking.** A CR-anchored ruling
 document is not load-bearing until ratified, so writing one is always safe.
 
+**LOW-CONTEXT ROUTE.** `docs/WORK-PACKETS-2026-08-07.md` scopes every remaining
+item as a self-contained packet, each carrying its governing rulings quoted
+inline. It was written with full context loaded so that later sessions do not
+have to pay that cost. If your task is a packet, read the packet and skip to
+Gate 2 — and see the packet file's §0 for which tier of reading it needs.
+
 Read the current handoff and follow its READING MANIFEST.
 Read `docs/CODEBOOK-NAMING-GRAMMAR.md` **whole** — not the section that looks
 relevant. Three separate errors on 2026-08-02 came from reading one section

@@ -14,11 +14,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **111 documents under docs/**
-- ruling references found: **598**
+- documents scanned: **112 documents under docs/**
+- ruling references found: **601**
 - distinct ruling ids: **127**
-- corroborated (appear in >1 doc): **83**
-- **sole-home (appear in exactly 1 doc): 44**
+- corroborated (appear in >1 doc): **84**
+- **sole-home (appear in exactly 1 doc): 43**
 
 ## Deletion gate — per document
 
@@ -54,7 +54,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF-ADDENDUM-4.md` | 264 | 5 | 3 | **NO** |
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
-| `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 7 | **NO** |
+| `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PUNCTUATION-RESCAN-2026-08-06.md` | 208 | 1 | 0 | yes |
@@ -75,8 +75,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
 | `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-07-EVE.md` | 304 | 1 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 223 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-07-EVE.md` | 311 | 1 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 229 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
@@ -92,6 +92,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
+| `WORK-PACKETS-2026-08-07.md` | 366 | 3 | 0 | yes |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
@@ -150,7 +151,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `T0` (line 59) — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
 
-**`PARENT-TREE-CANDIDATES.md`** — sole home for 7:
+**`PARENT-TREE-CANDIDATES.md`** — sole home for 6:
 
 - `GRAMMAR-SS9` (line 379) — D4 GRAMMAR-SS9 quote-pull on rule:pay-life-cost-for-effect
 - `M1` (line 212) — rule:overwrites-creature-type (batch-3 M1, Captain): sibling boundary
@@ -158,7 +159,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `Q8.7` (line 398) — rule:evasion parent (Q8.7, walk-ratification 2026-07-31)** — CR
 - `S2` (line 15) — S2. Scoring: most-specific-shared-node only. Two cards sharing a child
 - `S3` (line 18) — S3. Depth is ratified PER FAMILY. Trigger families are depth-3 by
-- `S6` (line 64) — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
 
 **`RULING-MANIFEST-2026-07-09.md`** — sole home for 1:
 
@@ -461,7 +461,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
 - `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
 
-### `CDR-09` — 33 reference(s) across 20 doc(s)
+### `CDR-09` — 34 reference(s) across 21 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:748` — (corpus snapshot date, CDR-09).
 - `B-MIGRATION-DISCOVERY.md:799` — A9 (CDR-09):** `corpus_ref` = corpus snapshot date per assertion;
@@ -496,6 +496,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
+- `WORK-PACKETS-2026-08-07.md:334` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
 
@@ -1085,7 +1086,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
-### `S1` — 6 reference(s) across 6 doc(s)
+### `S1` — 7 reference(s) across 7 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
@@ -1093,6 +1094,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `WORK-PACKETS-2026-08-07.md:307` — S1 — parents are DERIVED.** *"Union of ratified children computed at
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1117,9 +1119,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `MASTER-HANDOFF-ADDENDUM-2.md:146` — ruling S5, needs thought); ~11 backlogged proposed parents from b1–b2;
 - `PARENT-TREE-CANDIDATES.md:57` — S5. Implication edges ("counts toward"): a superset-scoped tag counts
 
-### `S6` — 1 reference(s) across 1 doc(s)
+### `S6` — 2 reference(s) across 2 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
+- `WORK-PACKETS-2026-08-07.md:318` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
 ### `S7` — 5 reference(s) across 5 doc(s)
 

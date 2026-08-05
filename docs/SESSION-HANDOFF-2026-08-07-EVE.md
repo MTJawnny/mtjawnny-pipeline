@@ -174,6 +174,13 @@ you` 72 · `each creature you` 59.
 
 ## 6. NEXT WORK ITEM — the TRAP SWEEP, unchanged. Proceeds WITHOUT asking.
 
+> **→ `docs/WORK-PACKETS-2026-08-07.md` is the low-context route.** Every
+> remaining item is scoped there as a self-contained packet with its governing
+> rulings quoted inline, written while full context was loaded so later
+> sessions need not reload it. **W1 is this sweep.** If you are working from a
+> packet you do not need this section, and may not need the whole-grammar read
+> either — see the packet file's §0 tiering (Captain's call, item W8-9).
+
 Carried forward verbatim from the superseded handoff §4. Two AUDIT-5 findings
 remain open (`\b` after `as ` in the CR 614.1c branch, 25 lines; `\benters?\b`
 in the etb trigger test, 43 lines), **and the sweep is the job, not those two
