@@ -98,13 +98,70 @@ def anchor_line(card: dict, quote: str, ratified: dict):
     if not q:
         return None, None
     rows = list(fx.deliveries_for_lines(card, ratified))
-    for line, parsed in rows:
-        if q in norm(line):
-            return line, parsed
-    for line, parsed in rows:
-        if norm(line) and norm(line) in q:
-            return line, parsed
+
+    # FORWARD CONTAINMENT IS THE ONLY SOUND DIRECTION, AND IT IS TRIED ALONE
+    # FIRST. A ratified evidence quote is a verbatim excerpt of a printed
+    # ability line, so the line CONTAINS the quote. The reverse test
+    # (`line in quote`) was tried in the same pass and matched any SHORT line
+    # that happened to appear inside a long quote -- Seraph of the Scales
+    # anchored a `death-trigger` seed to the line `Flying`.
+    #
+    # Ties are NOT broken by "whichever line agrees with the axis". That rule
+    # would make the fixture self-confirming: a genuinely wrong membership
+    # would find the one line that vindicates it and grade green. Ambiguity is
+    # REPORTED instead, which is the only answer that cannot hide a defect.
+    fwd = [(l, pr) for l, pr in rows if q in norm(l)]
+    if len(fwd) == 1:
+        return fwd[0]
+    if len(fwd) > 1:
+        # Longest line wins ONLY when one is a superstring of the others --
+        # that is one ability re-read, not a choice between two abilities.
+        longest = max(fwd, key=lambda r: len(norm(r[0])))
+        if all(norm(l) in norm(longest[0]) for l, _ in fwd):
+            return longest
+        return "AMBIGUOUS", fwd
+    # Reverse containment is a LAST resort and must consume a whole line, not
+    # a fragment: the line has to be the longest one embedded in the quote.
+    rev = [(l, pr) for l, pr in rows if norm(l) and norm(l) in q]
+    if rev:
+        return max(rev, key=lambda r: len(norm(r[0])))
     return None, None
+
+
+PERMANENT_ONLY = {"activated", "etb", "death-trigger", "attack-trigger",
+                  "leaves-battlefield-trigger", "static", "loyalty",
+                  "blocks-or-becomes-blocked-trigger", "is-attacked-trigger"}
+
+
+def has_permanent_face(card: dict) -> bool:
+    """Does any face put a PERMANENT on the battlefield? (CR 110.1 / 205.2a)
+
+    Derived from the printed type line, never from a list of card names. CR
+    113.3a is what makes this decisive: a card with no permanent face has only
+    a spell ability, so §2's permanent-side DELIVERY tokens cannot apply to it.
+    """
+    faces = card.get("card_faces") or [card]
+    for f in faces:
+        tl = (f.get("type_line") or card.get("type_line") or "")
+        if re.search(r"\b(Creature|Artifact|Enchantment|Land|Planeswalker"
+                     r"|Battle|Kindred|Tribal)\b", tl):
+            return True
+    return False
+
+
+def grants_ability(line: str) -> bool:
+    """Does this line GRANT an ability rather than have one? (§2, CR 113.3d)
+
+    A granted ability is printed inside quotation marks -- CR 113.3d's static
+    abilities that give other objects abilities are templated that way. The
+    quoted span must contain a `:` (an activated ability, CR 602.1) or open a
+    trigger, or it is just quoted flavor.
+    """
+    for m in re.finditer(r'[\"\u201c]([^\"\u201d]{4,})[\"\u201d]', line):
+        inner = m.group(1)
+        if ":" in inner or re.match(r"(?i)\s*when(ever)?\b", inner):
+            return True
+    return False
 
 
 def claimed_keyword(axis: str) -> str:
@@ -244,6 +301,7 @@ def main():
     print(f"  {'TOTAL':46}{len(seeds):>6}")
 
     passed, mismatch, unanchored, missing, no_claim = 0, [], [], [], 0
+    ambiguous, spell_face, granted_delivery, head_ambiguous = [], [], [], []
     referenced = []
     by_axis = collections.defaultdict(lambda: [0, 0])
     for spec_name, s in seeds:
@@ -256,10 +314,45 @@ def main():
         if line is None:
             unanchored.append((spec_name, card["name"], axis, s["quote"][:70]))
             continue
+        if line == "AMBIGUOUS":
+            ambiguous.append((card["name"], axis, s["quote"][:64], len(parsed)))
+            continue
         got = [t for t, _ in parsed]
 
         want = expected_delivery(axis, ratified)
         if want is not None:
+            # --- THREE CR RULES THAT MAKE A SEED UNGRADABLE, NOT FAILING ----
+            # Each is a hard rule, not a heuristic, and none of them consults
+            # whether the answer would come out green.
+            #
+            # CR 113.3a / grammar §1 -- "DELIVERY is OMITTED for spell
+            # abilities". A card with NO permanent face has no activated,
+            # triggered or static ability to deliver: its resolution effect is
+            # a SPELL ability by CR 113.3a. Seismic Spike ("Destroy target
+            # land. Add {R}{R}") is a sorcery on `rule:activated-...`, so the
+            # slug's head cannot be §2's `activated` -- CR 602.1 requires
+            # "[Cost]: [Effect]" on an object that HAS the ability.
+            if want in PERMANENT_ONLY and not has_permanent_face(card):
+                spell_face.append((card["name"], axis, want))
+                continue
+            # §2's created-ability rule + CR 113.3d -- a card does not DELIVER
+            # an ability it GRANTS to something else. Acidic Sliver's line is
+            # `All Slivers have "{2}, Sacrifice this permanent: ..."`, a STATIC
+            # ability that grants an activated one. This is boundary B1, which
+            # this file already applies to KEYWORD claims and did not apply to
+            # DELIVERY claims.
+            if want not in got and grants_ability(line):
+                granted_delivery.append((card["name"], axis, want, line[:70]))
+                continue
+            # CR 614.1c -- `etb` is TWO WORDS in this codebook. §2's `etb` is
+            # an ETB TRIGGER; ~60 slugs use `etb-` colloquially for "on
+            # entering", whose real delivery is `replacement` ("enters as a
+            # copy", "enters with X counters"). The slug head is ambiguous, so
+            # the EXPECTATION is unsound -- not the routing. Ungradable until
+            # Captain rules which one keeps the prefix.
+            if want == "etb" and "replacement" in got:
+                head_ambiguous.append((card["name"], axis, line[:70]))
+                continue
             ok, claim = want in got, f"delivery {want!r}"
         else:
             kw = claimed_keyword(axis)
@@ -296,6 +389,10 @@ def main():
     print(f"  ...quote anchored to no ability line {len(unanchored):>7}   <- FATAL")
     print(f"  ...slug claims neither (§1 spell)    {no_claim:>7}   (not graded)")
     print(f"  ...line GRANTS the keyword (B1)      {len(referenced):>7}   (not graded)")
+    print(f"  ...spell face only (CR 113.3a)       {len(spell_face):>7}   (not graded)")
+    print(f"  ...line GRANTS the delivery (§2)     {len(granted_delivery):>7}   (not graded)")
+    print(f"  ...slug head ambiguous (CR 614.1c)   {len(head_ambiguous):>7}   (NEEDS A RULING)")
+    print(f"  ...quote matches >1 ability line     {len(ambiguous):>7}   (not graded)")
     print(f"  GRADED                               {graded:>7}")
     print(f"  ...as the ratified axis claims       {passed:>7}")
     print(f"  ...MISMATCH                          {len(mismatch):>7}   <- FATAL")
