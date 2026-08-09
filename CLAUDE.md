@@ -513,6 +513,37 @@ encodes.
   enumeration, the `noncombat-damage-to-planeswalker` pattern. **Let the corpus
   decide the split; do not carry a preference between rows.**
 
+- **A PROBE DEFECT WAS THE ONLY DEFECT CLASS GUARDED BY PROSE, WHICH IS WHY IT
+  WAS THE ONLY ONE STILL RECURRING.** Measured 2026-08-09
+  (`docs/SYSTEM-SELF-TEST-2026-08-09.md`): every class that got a TOOL stopped —
+  ruled slugs (Gate 3), prior art (Gate 3b), text loss (conservation),
+  unreachable options (visibility), wrong-since-forever tokens (ground truth),
+  baseline drift (the ratchet). Probe defects got a paragraph, and reached 21.
+  **And "the same cure" was a story**: they have at least FOUR causes —
+  re-implementation, assumed vocabulary, overlapping classes, over-narrow
+  filter — so one slogan could never prevent them. `experiments/foundry_probe.py`
+  is the mechanism: `p.corpus()` / `p.rows()` (A), `p.domain()` / `p.vocab()`
+  (B), `p.assert_disjoint()` (C), `p.must_capture()` (D). Every guard HALTS.
+  **Write probes with it** — it is shorter than hand-rolling, which is the only
+  thing that has ever worked here.
+- **A GUARD THAT HAS NEVER BEEN SHOWN TO FAIL IS NOT KNOWN TO BE A GUARD.** All
+  eight Gate 2 checks were broken on purpose 2026-08-09. Six caught it and
+  failed. **`foundry_definition_drift.py` and `foundry_ruling_registry.py`
+  DETECT AND EXIT 0** — they are reporters listed as gates, so never read their
+  exit code as a verdict. And **three of the eight negative controls were
+  mis-aimed**, each first reading as "this gate is broken": `C1a` cannot fire on
+  an axis naming neither a counter nor a token, and family sweep only reacts to
+  an axis a ratified family actually references. Aim a negative control at the
+  code path, not at the tool's name.
+- **THE ROUTING DIFF CORRECTS THE ROUTING; NOBODY CORRECTS THE NUMBER.**
+  `foundry_recorded_numbers.py` re-derives every count grammar §2 asserts and
+  found two wrong on its first run — `player-loses-game-trigger` 5→**7** and
+  `coin-flip-won-trigger` 6/5→**6/6** — both written into ratified law the same
+  session their probe defect was found and fixed. A stale number in a handoff is
+  a note; **a wrong number in §2 is a wrong premise inside the document the
+  extractor parses its vocabulary from at run time.** Only 7 of 64 rows carry a
+  checkable count, so this is a floor, not a clean bill.
+
 ## Out of scope — check before raising a finding
 
 **`docs/OUT-OF-SCOPE.md` is a DECLINE REGISTER, not a backlog.** Attractions /
