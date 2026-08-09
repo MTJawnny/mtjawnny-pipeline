@@ -20,6 +20,16 @@ This file does not replace it — it tells you what to do FIRST and why.
 
 ---
 
+## 0a. THE NEXT SESSION'S JOB IS WRITTEN AND SELF-CONTAINED
+
+**→ `docs/NEXT-SESSION-CR-NORMALIZATION.md`** — the CR refresh to the
+2026-08-07 edition, with the prompt, the format fact, the acceptance test and
+the mana blast radius all on one page. **The new CR is NOT a drop-in**: it uses
+bold rule markers and every parser here keys on the plain format. Ratified
+2026-08-09: **normalize at READ time, never translate the file.**
+
+---
+
 ## 1. DO THIS FIRST — read the audit's result, do NOT re-run it
 
 **The audit the previous version of this file demanded HAS BEEN RUN.**

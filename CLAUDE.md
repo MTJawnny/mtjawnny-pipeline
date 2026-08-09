@@ -632,6 +632,15 @@ deck-building relevance, not textual frequency.**
 
 ## Reference
 
+- **⚠ NEXT SESSION'S JOB: `docs/NEXT-SESSION-CR-NORMALIZATION.md`** — the CR
+  refresh, self-contained. **The 2026-08-07 CR is NOT a drop-in replacement**:
+  it uses bold rule markers (`**605.1a.**`) and every parser here keys on the
+  vendored plain format, so a file copy makes the enumerations return empty.
+  **Ratified 2026-08-09: normalize at READ time in ONE loader; never translate
+  the file** — translating the CR is transcribing it, which this file forbids,
+  and it would need its own conservation audit. The acceptance test is pinned
+  on that page (15 card types · 61 ability words · 193 keywords · 550 subtypes
+  · 7 zones · 4 damage recipients).
 - **⚠ OPEN: THE MANA-ABILITY RULES CHANGED — `docs/CR-REFRESH-MANA-ABILITIES.md`.**
   Captain, 2026-08-09. The vendored CR is *effective June 19, 2026* and a newer
   one exists. This is the first time the snapshot lag is known to affect a
