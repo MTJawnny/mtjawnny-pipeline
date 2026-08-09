@@ -2466,6 +2466,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # `\bcoin flip\b` is required, not a bare `\bcoin\b`: Athreos,
         # Shroud-Veiled triggers on a creature "with a COIN COUNTER on it",
         # which is a CR 122 counter type that merely shares the word.
+        # CR 400.1 -- a permanent leaves the battlefield FOR EXILE. Captain-
+        # ratified 2026-08-07, W3 sheet D8a item 4. §2 named the graveyard
+        # destination four ways (CR 700.4) and this one not at all.
+        #
+        # Tested BEFORE `leaves-battlefield-trigger` would see it and before
+        # the life branches, because these clauses carry effect verbs
+        # ("you GAIN life equal to its power") that a later branch would claim.
+        # `msub`: the subject is a PERMANENT, so §2a's prefix applies.
+        if re.search(r"\b(?:is|are)\s+exiled\s+from\s+the\s+battlefield\b", clause):
+            return msub("exiled-from-battlefield-trigger", "exiled-from-battlefield")
+        # CR 603.9 -- a player LOSES THE GAME. Captain-ratified 2026-08-07,
+        # W3 sheet D8a item 5. *"Some triggered abilities trigger specifically
+        # when a player loses the game. These abilities trigger when a player
+        # loses OR LEAVES the game, regardless of the reason."*
+        #
+        # `lose` is already in `_SUPPLEMENT_VERBS` under 104.3, so the clause
+        # cut is correct before this branch is reached. Tested BEFORE
+        # `lose-life-trigger` (CR 119.3), which is a different event that
+        # shares the verb -- losing the GAME is not losing LIFE.
+        if re.search(r"\bloses?\s+the\s+game\b", clause):
+            return mark("player-loses-game-trigger", "player-loses-game")
         m_flip = re.search(r"\b(wins?|loses?)\b[^,]{0,20}?\bcoin flip\b", clause)
         if m_flip:
             won = m_flip.group(1).startswith("win")
