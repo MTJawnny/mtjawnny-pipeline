@@ -14,11 +14,11 @@ accident; this is the systematic pass for the rest.
 
 Scope: 359 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**36 findings.**
+**35 findings.**
 
 | check | law | count |
 |---|---|--:|
-| C1a | §8 rule 3 — definition contradicts the name | 1 |
+| C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
 | C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
 | C3 | §4 — member effect contradicts the slug suffix | 7 |
@@ -44,16 +44,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 | `cast-trigger-` | 1 | 1 |
 
 **`etb-` accounts for 37 of 41.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
-
-## C1a — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
-
-### `rule:etb-create-token`
-
-**slug names a token; its definition names a counter and never a token**
-
-> definition: When this permanent enters, put a +1/+1 counter on it. Additional +1/+1 counters are placed for each artifact you control.
-
-*Proposed:* definition is stale or the name is wrong — reconcile against the members, then correct the DEFINITION (the name is ratified) or ratify a rename
 
 ## C1b — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
