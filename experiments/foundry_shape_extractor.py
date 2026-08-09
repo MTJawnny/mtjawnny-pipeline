@@ -274,12 +274,18 @@ _ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
 # entry must name its evidence. Anything printed that is neither in CR 205.3
 # nor here HALTS, so the register cannot quietly absorb a parse regression.
 #
-#   chorus -- a SPELL TYPE (CR 205.3k). The local CR lists five spell types
-#             (Adventure, Arcane, Lesson, Omen, Trap) and the corpus prints
-#             `Instant — Chorus` (Hymn to the Ages) and `Sorcery — Chorus`
-#             (Colossal Chorus). The CR snapshot is behind the printed cards.
-#             THE REAL FIX IS TO REFRESH `docs/mtg-comprehensive-rules.md`;
-#             this entry keeps the guard useful until that happens.
+#   chorus -- a SPELL TYPE (CR 205.3k). The corpus prints `Instant — Chorus`
+#             (Hymn to the Ages) and `Sorcery — Chorus` (Colossal Chorus), and
+#             the CR lists five spell types without it.
+#
+#             **RE-CONFIRMED AGAINST THE 2026-08-07 EDITION, 2026-08-09.** This
+#             entry used to say "the real fix is to refresh the CR snapshot".
+#             The refresh HAPPENED and 205.3k is byte-identical: *"The spell
+#             types are Adventure, Arcane, Lesson, Omen, and Trap."* So the lag
+#             is not a stale snapshot at all — the CR itself is behind the
+#             printed cards, and this entry is permanent until WotC catches up.
+#             A register entry that names a fix nobody has done reads as
+#             unstarted work; this one is finished and its answer is "no".
 _CR_LAG = {"chorus"}
 
 

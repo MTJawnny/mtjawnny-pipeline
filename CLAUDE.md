@@ -268,11 +268,13 @@ encodes.
 - **The CR prints a CURLY apostrophe (U+2019); Scryfall prints a straight one.**
   `Urza’s` ≠ `Urza's`, and the same hits `C’tan`, `Shi’ar`, `Serra’s Realm`.
   Any CR-parsed value compared against card data must emit both forms.
-- **The local CR is a VENDORED SNAPSHOT and can fall behind the corpus.**
+- **The CR and the corpus can each be ahead of the other, and BOTH have been.**
   Measured 2026-08-05: `Chorus` is a printed spell type absent from CR 205.3k's
-  five. Refreshing `docs/mtg-comprehensive-rules.md` is a real maintenance item;
-  known discrepancies live in a dated CR-LAG register that names its evidence,
-  and anything outside it halts.
+  five — and still absent after the 2026-08-07 refresh, so that is the CR
+  trailing the cards, not a stale snapshot. Measured 2026-08-09: CR 701.70
+  Recruit and CR 702.195 Storied have zero corpus lines, the CR leading. Known
+  discrepancies live in a dated CR-LAG register that names its evidence, and
+  anything outside it halts.
 - **A halt-guard must assert CONTENT, not cardinality.** `type_vocabulary`'s
   Oxford-comma split produced `and vanguard`, `and world`, `and urza's` — so
   the LAST member of every CR 205 list was missing while `len() >= 15` stayed
@@ -632,24 +634,41 @@ deck-building relevance, not textual frequency.**
 
 ## Reference
 
-- **⚠ NEXT SESSION'S JOB: `docs/NEXT-SESSION-CR-NORMALIZATION.md`** — the CR
-  refresh, self-contained. **The 2026-08-07 CR is NOT a drop-in replacement**:
-  it uses bold rule markers (`**605.1a.**`) and every parser here keys on the
-  vendored plain format, so a file copy makes the enumerations return empty.
-  **Ratified 2026-08-09: normalize at READ time in ONE loader; never translate
-  the file** — translating the CR is transcribing it, which this file forbids,
-  and it would need its own conservation audit. The acceptance test is pinned
-  on that page (15 card types · 61 ability words · 193 keywords · 550 subtypes
-  · 7 zones · 4 damage recipients).
-- **⚠ OPEN: THE MANA-ABILITY RULES CHANGED — `docs/CR-REFRESH-MANA-ABILITIES.md`.**
-  Captain, 2026-08-09. The vendored CR is *effective June 19, 2026* and a newer
-  one exists. This is the first time the snapshot lag is known to affect a
-  RULE rather than a card, which matters because this pipeline DERIVES from the
-  CR at run time — a refresh can move routing with no code edit at all. The
-  blast radius is measured in that file (`tapped-for-mana-trigger` 58 lines on
-  CR 106.12 · the CR 605.1a qualifier on 16 · `add-mana` and
-  `restricted-purpose-mana`, both ratified hours before the notice). **Do not
-  write a branch against a guess about the new rule.**
+- **✅ THE CR REFRESH IS DONE — `docs/CR-REFRESH-2026-08-09.md`.** The pipeline
+  reads the **2026-08-07** edition, tracked in THIS repo, through one
+  normalizing loader (`experiments/foundry_cr.py`); the file itself is
+  pristine, as ratified. **Never `path.read_text()` a CR — always
+  `foundry_cr.text()`**, or the bold rule markers (`**605.1a.**`) make every
+  enumeration return empty. **0 of 61,383 ability lines moved**; the only
+  movement was CR 702 keyword names 193 → **194** and keyword homes 150 →
+  **151**, both from the new CR 702.195 Storied. `MTJ_CR_PATH=<file>` runs
+  everything against another edition — that is how a refresh gets verified as
+  a comparison, and how the loader was proven a no-op on the June CR before the
+  diff was believed.
+- **THE MANA RULE IS CR 605.1a AND IT HAS NO CODE PATH HERE**
+  (`docs/CR-REFRESH-MANA-ABILITIES.md`, resolved 2026-08-09). A mana ability now
+  also requires that *"its cost and effect don't move any card to or from a
+  library"*. Nothing parses 605.1a — grammar §2 cites it to EXPLAIN a §1
+  qualifier that is matched as printed card text. CR 106.4 / 106.6 / 106.12 are
+  byte-identical across editions, so `tapped-for-mana-trigger` (58), `add-mana`
+  (1,746) and `restricted-purpose-mana` (217) did not move. **A prediction that
+  a rules change would move a branch's PREMISE was aimed at the right rule; the
+  premise just is not encoded anywhere.** Check that before building on it.
+- **THE CR-LAG REGISTER SURVIVED THE REFRESH, AND BOTH ENTRIES WERE LYING ABOUT
+  WHY.** `chorus` (CR 205.3k) and `N or less` (CR 706.3a) each said *"the real
+  fix is to refresh the CR snapshot"*; the refresh happened and both rules are
+  byte-identical. **The CR is behind the printed cards — the snapshot was never
+  behind the CR.** Both comments are corrected in place, because a register
+  entry naming a fix nobody has done reads as unstarted work. And the direction
+  now runs both ways: CR 701.70 Recruit and CR 702.195 Storied have **0**
+  attested corpus lines, so the corpus is older than the CR.
+- **A GENERATED ARTIFACT IS NOT THE CR, AND IT MADE A REFRESH DIFF READ CLEAN.**
+  `cr_action_terms()` reads `docs/cr-checks.json`, so the first post-refresh
+  routing diff never exercised the CR 701 change and its **0 moved lines** was
+  meaningless. Regenerating it moved 262 → 264 terms. **Re-run every generator
+  that caches a CR-derived list before believing a CR diff** — and then verify
+  the zero positively: `recruit` DID enter `TRIGGER_VERB`, and it moves nothing
+  only because all 3 corpus lines printing it carry it inside a CARD NAME.
 - **⚠ DEFERRED, CAPTAIN'S CALL: MEMBERSHIP EXCLUSIVITY.** Captain, 2026-08-09:
   *"membership should probably be exclusive… a deck that cares about gaining
   life will not care about losing life most of the time."* **Deferred until the
@@ -740,5 +759,10 @@ deck-building relevance, not textual frequency.**
 anything left there has no version history. On 2026-08-02 twelve
 load-bearing documents were moved here for that reason. Never author or
 leave pipeline/foundry/tier-engine documentation in `mtjawnny.github.io`.
-The only deliberate exceptions, both read by absolute path:
-`docs/mtg-comprehensive-rules.md` and `docs/PHASE-2-COMPLETION.md`.
+**One deliberate exception now, read by absolute path:
+`docs/PHASE-2-COMPLETION.md`.** The Comprehensive Rules used to be the other
+one; as of the 2026-08-07 refresh they are TRACKED HERE
+(`docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md`) and reached only through
+`experiments/foundry_cr.py`, which owns both the location and the formatting.
+The 2026-06-19 edition stays in the site repo as `foundry_cr.PRIOR_CR_PATH`,
+never read by the pipeline, so a refresh can be verified as a comparison.

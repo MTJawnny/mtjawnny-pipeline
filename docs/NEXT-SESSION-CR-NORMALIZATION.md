@@ -1,5 +1,22 @@
 # NEXT SESSION — CR REFRESH BY NORMALIZATION
 
+> ## ✅ DONE — 2026-08-09. **→ `docs/CR-REFRESH-2026-08-09.md`**
+>
+> Executed exactly as written, by normalization, with the file left pristine.
+> **0 of 61,383 ability lines moved.** Gate 2 green. 7 of 9 acceptance numbers
+> reproduced exactly; the 2 that moved are the new CR 702.195 **Storied**
+> (keyword names 193 → 194, keyword homes 150 → 151), which is a real WotC
+> change, not a loader defect.
+>
+> The mana rule is **CR 605.1a** and it has **no code path in this repo** —
+> read the record before assuming otherwise. Two items went to Captain: the new
+> file's **encoding damage in CR 206.3a** (7 characters, declared and guarded)
+> and whether 605.1a needs modelling at all.
+>
+> **This page is kept as the SPEC.** One correction: FACT 2's "vendored 2,167
+> rule-numbered lines" is wrong — measured 3,153. It changed nothing, because
+> the acceptance test is content-based rather than a count.
+
 **Written 2026-08-09 with full context loaded, so the next session does not
 have to pay that cost.** Everything needed is on this page.
 

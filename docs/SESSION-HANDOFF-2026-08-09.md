@@ -1,5 +1,14 @@
 # SESSION HANDOFF — 2026-08-09
 
+> **STILL CURRENT, with one addition made after it was written.** The **CR
+> REFRESH landed later the same day** — `2733326`, `675a58b`, recorded in
+> **`docs/CR-REFRESH-2026-08-09.md`**. Nothing on this page is invalidated: the
+> codebook was not touched, §2 is still 64 tokens, `unclassified-trigger` is
+> still 481, and **0 ability lines moved**. Two numbers on this page are now
+> stale by exactly the amount the new CR added — **CR 702 keyword names 193 →
+> 194** and **keyword homes 150 → 151** (CR 702.195 Storied). Read §0a of
+> `PICK-UP-HERE.md` before touching anything CR-shaped.
+
 Supersedes `SESSION-HANDOFF-2026-08-08.md`. **Zero API calls. Arc spend
 unchanged at $90.51 / $140.** 5 commits, `2bcaeb6` .. `1c88930`.
 

@@ -1,5 +1,27 @@
 # CR REFRESH — THE MANA-ABILITY RULES CHANGED
 
+> ## ✅ RESOLVED — 2026-08-09. **→ `docs/CR-REFRESH-2026-08-09.md`**
+>
+> The change is in hand and it is **CR 605.1a**. A mana ability now
+> additionally requires that *"its cost and effect don't move any card to or
+> from a library"*, with a self-replacement caveat.
+>
+> **Every number in the blast radius below held, re-verified by a rule-by-rule
+> edition diff rather than re-measured:** CR **106.4**, **106.6** and
+> **106.12** are byte-identical across the two editions, so
+> `tapped-for-mana-trigger` (58), `add-mana` (1,746) and
+> `restricted-purpose-mana` (217) did not move. **0 routing lines moved
+> corpus-wide.**
+>
+> **And 605.1a itself has no code path here.** Grammar §2 cites it to explain a
+> §1 qualifier that is matched as printed card text; nothing parses the rule.
+> The prediction that a restatement would move the branch's *premise* was aimed
+> at the right rule — the premise just is not encoded anywhere. That is
+> D-CR-2 on the decision sheet.
+>
+> This page is kept for its 2026-08-09 baseline, which is what made the
+> re-check a comparison. Everything below it is pre-refresh.
+
 **Opened 2026-08-09 on Captain's notice. BLOCKED: the change itself is not yet
 in hand.** Undated in the filename on purpose — this stays open until the
 vendored CR is refreshed and the blast radius below is re-checked.

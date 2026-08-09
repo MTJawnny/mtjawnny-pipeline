@@ -29,13 +29,33 @@ This file does not replace it — it tells you what to do FIRST and why.
 
 ---
 
-## 0a. THE NEXT SESSION'S JOB IS WRITTEN AND SELF-CONTAINED
+## 0a. THE CR REFRESH IS DONE — **→ `docs/CR-REFRESH-2026-08-09.md`**
 
-**→ `docs/NEXT-SESSION-CR-NORMALIZATION.md`** — the CR refresh to the
-2026-08-07 edition, with the prompt, the format fact, the acceptance test and
-the mana blast radius all on one page. **The new CR is NOT a drop-in**: it uses
-bold rule markers and every parser here keys on the plain format. Ratified
-2026-08-09: **normalize at READ time, never translate the file.**
+Landed 2026-08-09 (`2733326`, `675a58b`). The pipeline reads the **2026-08-07**
+edition through one normalizing loader (`experiments/foundry_cr.py`); the file
+itself is untouched, and it is **tracked in this repo now** rather than reached
+across into the site's gitignored `docs/`.
+
+**0 of 61,383 ability lines moved.** Two numbers did, both real WotC changes:
+CR 702 keyword names **193 → 194** and keyword homes **150 → 151**, from the new
+CR 702.195 **Storied**. Everything else on the acceptance test reproduced
+exactly.
+
+**Do not re-derive any of this.** Three things worth carrying:
+
+* **The mana rule is CR 605.1a** and it has **no code path here**. CR 106.4 /
+  106.6 / 106.12 are byte-identical across editions, so nothing mana-related
+  moved. `CR-REFRESH-MANA-ABILITIES.md` is resolved.
+* **The CR-LAG register did NOT shrink.** `chorus` and `N or less` both said
+  "the real fix is to refresh the snapshot"; the refresh happened and fixed
+  neither. Both comments are corrected in place — the CR is behind the printed
+  cards, not the snapshot behind the CR.
+* **`MTJ_CR_PATH=<file>` runs the whole pipeline against another edition.** That
+  is how the loader was proven a no-op on the June CR before the diff was
+  believed, and it is how the next refresh should be verified.
+
+**Two items are on Captain's sheet** (§4): the new file's encoding damage in
+CR 206.3a, and whether CR 605.1a needs modelling. Neither blocks anything.
 
 ---
 
@@ -67,7 +87,8 @@ scores `None → ratified` as pure profit, and strictly worse than a fixture.
 
 ## 2. THEN — the next work item
 
-**Take one. Both are ready; neither is blocked.**
+**The CR refresh is done (§0a), so take one of these. Both are ready; neither
+is blocked.**
 
 **A. W4 — the anthem group · 4,375 decidably-static lines · the big slice.**
 `python3 experiments/foundry_shape_extractor.py --gaps`, section headed
@@ -120,8 +141,12 @@ diagnosis; it needs a shared-object re-join, not a list entry.
 
 ## 4. CARRIED FORWARD — still open
 
-- **W8, Captain's sheet — now twelve items.** The ten standing ones, plus
-  CR 709.5i and the shared-object splitter.
+- **W8, Captain's sheet — now fourteen items.** The ten standing ones, plus
+  CR 709.5i, the shared-object splitter, and the two from the CR refresh
+  (`docs/CR-REFRESH-2026-08-09.md` §DECISION SHEET): **D-CR-1** the 7 mojibake
+  characters in CR 206.3a of the new file — declared and guarded, inert today,
+  three options costed; **D-CR-2** whether "is a mana ability" (CR 605.1a) needs
+  modelling at all — recommendation is no.
 - **117 single-faced instants/sorceries routing to `replacement`** — the
   branch has no spell-face gate. Needs a per-FACE cut; real design.
 - **10 `it becomes day AS THIS CREATURE ENTERS` lines** — CR 614.1c
@@ -157,10 +182,9 @@ Follow docs/SESSION-START-PROCEDURE.md, then read docs/PICK-UP-HERE.md and
 docs/SESSION-HANDOFF-2026-08-09.md.
 
 Do NOT re-run the six-token audit — §1 says it is done and what it left.
+Do NOT re-do the CR refresh — §0a says it is done and what it moved.
 
-THE NEXT JOB IS THE CR REFRESH — see §0a and
-docs/NEXT-SESSION-CR-NORMALIZATION.md, which is self-contained. If you are
-NOT doing that, take a work item from §2 instead.
+Take a work item from §2: W4 (the anthem group) or the 481-line residual.
 
 Standing rules apply: Gate 2 is `python3 experiments/foundry_gate2.py`, read
 every moved line in every routing diff, re-pin a baseline only onto improvement

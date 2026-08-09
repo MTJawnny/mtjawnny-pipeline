@@ -262,7 +262,15 @@ _MODAL_HEADER_RE = re.compile(
 #                   so excluding it costs all THREE rows -- a first-row form gap
 #                   loses the whole table. Recorded as a discrepancy between two
 #                   upstream sources with its evidence named, exactly as
-#                   `chorus` is. THE REAL FIX IS TO REFRESH THE CR SNAPSHOT.
+#                   `chorus` is.
+#
+#                   **RE-CONFIRMED AGAINST THE 2026-08-07 EDITION, 2026-08-09.**
+#                   This entry used to say "the real fix is to refresh the CR
+#                   snapshot". The refresh happened and 706.3a is byte-identical
+#                   — still *"a single number, a range … 'N1–N2,' or a range
+#                   with a single endpoint in the form 'N+.'"* The CR is behind
+#                   the printed card, not the snapshot behind the CR, so this
+#                   entry is permanent until WotC catches up.
 #
 # Widening cannot reach a CR 721 station row (`9+ | Flying, first strike`),
 # which is the same shape and a different rule: both consumers test this only
