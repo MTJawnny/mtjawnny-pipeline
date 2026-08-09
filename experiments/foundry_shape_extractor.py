@@ -2431,6 +2431,25 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # pending a ruling rather than being approximated onto this token.
         if re.search(r"(?<!fully )\bunlocks?\b", clause):
             return mark("door-unlocked-trigger", "door-unlocked")
+        # CR 731.1a -- the game's DAY/NIGHT designation changes. Captain-
+        # ratified 2026-08-07, W3 sheet D8a item 2. *"The phrases 'day becomes
+        # night' and 'night becomes day' refer to the game losing the first
+        # designation and gaining the second one."*
+        #
+        # THE SHEET'S CR ANCHOR WAS WRONG. It cited 728.1, which in the
+        # vendored snapshot is Rad Counters; Day and Night is CR 731. Verified
+        # against the CR rather than carried forward -- the same discipline
+        # that caught the stale line counts in this sheet.
+        #
+        # `mark`, not `msub`: CR 731.1's subject is the GAME ("designations
+        # that the game itself can have"), so §2a has no permanent to prefix.
+        #
+        # BOTH DIRECTIONS, ONE TOKEN. Every one of the 10 lines prints
+        # "day becomes night OR night becomes day" in a single clause, so a
+        # split could never separate the membership -- two axes, one member
+        # list, which is design goal #1's duplication.
+        if re.search(r"\bday becomes night\b|\bnight becomes day\b", clause):
+            return mark("day-night-changed-trigger", "day-night-changed")
         # CR 400.1 -- a card LEAVES a graveyard. Captain-ratified 2026-08-07,
         # W3 sheet D5. §2 named four ways INTO a graveyard and none out of one.
         # Tested BEFORE the life/sacrifice branches for the same reason the
