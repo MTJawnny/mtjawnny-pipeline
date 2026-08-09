@@ -49,20 +49,21 @@ sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
+import foundry_cr as fcr  # noqa: E402
 import validate_slug  # noqa: E402
 
 GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
 DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
 REPORT_PATH = fc.FOUNDRY_OUT_DIR / "family_sweep_report.json"
 
-# The Comprehensive Rules live in the SITE repo, not this one. They are the
-# only store in this system that is NOT a hand-maintained mirror -- every
-# other vocabulary here is copied by hand from somewhere and has been found
-# drifted at least once. Optional by design: this is a public repo whose CI
-# has no reason to hold the CR, so pass E reports itself unavailable rather
-# than failing when the file is absent. An unavailable pass is stated in the
-# report, never silently skipped.
-CR_PATH = REPO_ROOT.parent / "mtjawnny.github.io" / "docs" / "mtg-comprehensive-rules.md"
+# The Comprehensive Rules are the only store in this system that is NOT a
+# hand-maintained mirror -- every other vocabulary here is copied by hand from
+# somewhere and has been found drifted at least once. As of the 2026-08-07
+# refresh they are tracked in THIS repo; `foundry_cr` owns both the location
+# and the formatting. The optional handling below is kept: pass E reports
+# itself unavailable rather than failing, and an unavailable pass is stated in
+# the report rather than silently skipped.
+CR_PATH = fcr.CR_PATH
 
 # Severities. BLOCKING = a ratified thing is not where the record says it is,
 # or two axes cannot be told apart. ADVISORY = worth a human's eye, not a stop.
@@ -384,7 +385,9 @@ _CR_DEFINED_INSTANCE = re.compile(
 def load_cr():
     if not CR_PATH.exists():
         return None
-    return CR_PATH.read_text(encoding="utf-8")
+    # Normalized: `_CR_TERM_HEADING` and `_CR_DEFINED_INSTANCE` both anchor on
+    # a rule number at line start, which the 2026-08-07 edition writes in bold.
+    return fcr.text(CR_PATH)
 
 
 def cr_enumeration(cr_text, anchor):

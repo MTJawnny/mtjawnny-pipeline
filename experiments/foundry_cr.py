@@ -82,6 +82,15 @@ CR_PATH = REPO_ROOT.parent / "docs" / "MTG_Comprehensive_Rules_2026-08-07_LLM.md
 PRIOR_CR_PATH = (Path.home() / "Projects" / "mtjawnny.github.io" / "docs"
                  / "mtg-comprehensive-rules.md")
 
+# `MTJ_CR_PATH=<file>` runs the WHOLE pipeline against another edition. This is
+# what makes a CR refresh a measurement instead of a leap: the routing diff can
+# hold the code fixed and move only the rules, which is the one thing that
+# separates "the refresh moved this line" from "my edit moved this line". A CR
+# refresh is the only change in this system that can move routing with no code
+# edit at all, because the vocabulary is parsed at run time.
+if "MTJ_CR_PATH" in __import__("os").environ:
+    CR_PATH = Path(__import__("os").environ["MTJ_CR_PATH"]).expanduser()
+
 # ---------------------------------------------------------------------------
 # THE MARKUP THIS MODULE KNOWS ABOUT
 # ---------------------------------------------------------------------------

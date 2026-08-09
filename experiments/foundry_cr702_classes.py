@@ -51,10 +51,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
+import foundry_cr as cr  # noqa: E402
 
-# Deliberate absolute path: CLAUDE.md names the CR as one of exactly two
-# site-resident documents this repo reads by absolute path.
-CR_PATH = Path.home() / "Projects" / "mtjawnny.github.io" / "docs" / "mtg-comprehensive-rules.md"
+# The CR's LOCATION and its FORMATTING are both owned by `foundry_cr`. This
+# module is re-exported as the historical name because five other modules and
+# every ruling doc reference `k7.CR_PATH`.
+CR_PATH = cr.CR_PATH
 
 HEADER = re.compile(r"^702\.(\d+)\.\s+(.+?)\s*$")
 SUBRULE = re.compile(r"^702\.(\d+)([a-z])\s+(.*)$")
@@ -132,11 +134,11 @@ PREAMBLE_RULE = 1
 CR_CLASSES = set()
 
 
-def load_702(path: Path) -> dict:
-    if not path.exists():
-        fc.halt(f"CR markdown not found at {path}. CLAUDE.md names this as one "
-                f"of two documents read by absolute path; it must exist.")
-    text = path.read_text(encoding="utf-8", errors="strict")
+def load_702(path: Path = CR_PATH) -> dict:
+    # Read through the normalizing loader, never `path.read_text()`. The
+    # 2026-08-07 edition prints `**702.6a.**`, which HEADER/SUBRULE below do
+    # not match — parsing it raw returns zero keywords.
+    text = cr.text(path)
     lines = text.splitlines()
 
     global CR_CLASSES
@@ -175,9 +177,7 @@ def type_vocabulary(path: Path = CR_PATH) -> dict:
 
     `subtypes` is the union of the ten, provided so a caller never has to
     remember which ten they are."""
-    if not path.exists():
-        fc.halt(f"CR markdown not found at {path}.")
-    text = path.read_text(encoding="utf-8", errors="strict")
+    text = cr.text(path)
     out = {}
     for key, rx in TYPE_RULES.items():
         m = rx.search(text)

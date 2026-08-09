@@ -43,8 +43,9 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
+import foundry_cr as fcr  # noqa: E402
 
-CR_PATH = Path.home() / "Projects/mtjawnny.github.io/docs/mtg-comprehensive-rules.md"
+CR_PATH = fcr.CR_PATH        # location and formatting both owned by foundry_cr
 OUT = REPO_ROOT.parent / "docs" / "cr-checks.json"
 
 # Templating-era equivalences. Each entry is one CR object written two ways
@@ -73,11 +74,9 @@ SCOPE_TERMS = [
 
 
 def load_cr() -> str:
-    if not CR_PATH.exists():
-        fc.halt(f"Comprehensive Rules not found at {CR_PATH}. "
-                f"CLAUDE.md names this file by absolute path; if it moved, fix "
-                f"the contract rather than guessing a location.")
-    return CR_PATH.read_text(errors="replace")
+    # Normalized: `keyword_actions` and `keywords` below anchor on `^701.N. `
+    # and `^702.N. `, which the 2026-08-07 edition writes in bold.
+    return fcr.text(CR_PATH)
 
 
 def keyword_actions(cr: str) -> list:

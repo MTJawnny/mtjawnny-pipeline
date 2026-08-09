@@ -23,13 +23,14 @@ from datetime import date
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
+import foundry_cr as fcr  # noqa: E402
 
-# Cross-repo reference: the CR markdown lives in the site repo, not this one
-# (it is rules text, not Scryfall card data, so the "no card data in git"
-# rule does not apply -- this repo simply has no local copy and none is
-# created by this job). Verified byte-identical against ~/Downloads copy,
-# 2026-07-30 session (md5 7217ddfd5b4190603070352fd286228d).
-CR_PATH = Path.home() / "Projects" / "mtjawnny.github.io" / "docs" / "mtg-comprehensive-rules.md"
+# The CR is rules text, not Scryfall card data, so the "no card data in git"
+# rule never applied to it -- and as of the 2026-08-07 refresh it is TRACKED IN
+# THIS REPO rather than referenced across into the gitignored site `docs/`,
+# which means a future refresh is a diff instead of an act of faith. Its
+# location and its formatting are both owned by `foundry_cr`.
+CR_PATH = fcr.CR_PATH
 
 OUT_PATH = fc.FOUNDRY_OUT_DIR / "keyword-buckets.json"
 REPORT_PATH = fc.FOUNDRY_OUT_DIR / "keyword-buckets_report.md"
@@ -83,9 +84,10 @@ def slugify(name: str) -> str:
 
 
 def load_cr_text() -> str:
-    if not CR_PATH.exists():
-        fc.halt(f"CR markdown not found at {CR_PATH} -- cannot run a DET job without its source text")
-    return CR_PATH.read_text(encoding="utf-8")
+    # Normalized: HEADER_RE/SUBRULE_RE anchor on the plain shape, and
+    # `parse_subrules` drops examples by `startswith("Example:")` — which the
+    # 2026-08-07 edition writes as `> **Example:**`.
+    return fcr.text(CR_PATH)
 
 
 def find_cr_date(text: str) -> str:

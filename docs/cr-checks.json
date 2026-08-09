@@ -1,8 +1,8 @@
 {
- "generated_from_cr_lines": 10061,
- "n_terms": 262,
+ "generated_from_cr_lines": 10134,
+ "n_terms": 264,
  "schema": "cr-checks/1",
- "source": "/Users/jawnny/Projects/mtjawnny.github.io/docs/mtg-comprehensive-rules.md",
+ "source": "/Users/jawnny/Projects/mtjawnny-pipeline/docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
  "terms": [
   {
    "cr": "702.64",
@@ -1481,6 +1481,15 @@
    "term": "station"
   },
   {
+   "cr": "702.195",
+   "era_variants": [],
+   "kind": "keyword",
+   "printed_forms": [
+    "storied"
+   ],
+   "term": "storied"
+  },
+  {
    "cr": "702.40",
    "era_variants": [],
    "kind": "keyword",
@@ -2221,6 +2230,17 @@
     "proliferates"
    ],
    "term": "proliferate"
+  },
+  {
+   "cr": "701.70",
+   "era_variants": [],
+   "kind": "keyword-action",
+   "printed_forms": [
+    "recruit",
+    "recruites",
+    "recruits"
+   ],
+   "term": "recruit"
   },
   {
    "cr": "701.19",

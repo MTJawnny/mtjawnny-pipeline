@@ -539,8 +539,12 @@ def build_cr_enumerations() -> None:
     because a count guard cannot see a substitution (the CR 205 Oxford-comma
     lesson, 2026-08-05)."""
     global CR_DAMAGE_RECIPIENTS, CR_ZONES, CR_ABILITY_WORDS
-    import foundry_cr702_classes as k7
-    txt = k7.CR_PATH.read_text(encoding="utf-8", errors="strict")
+    import foundry_cr as fcr
+    # Normalized by the one loader that knows CR formatting. A raw read of the
+    # 2026-08-07 edition returns nothing for all three enumerations below,
+    # because each anchors `^120.1` / `^400.1` / `^207.2c` and that edition
+    # writes them as `**120.1.**`.
+    txt = fcr.text()
 
     def enum(rx, what, must):
         m = re.search(rx, txt, re.M)
