@@ -9,11 +9,20 @@ entry point. **Keep the name. Update the contents.**
 
 ## 0. THE ONE-LINE STATE
 
-W1, W2 and W3's DET half are DONE. Captain ratified the W3 sheet; **D1, D4,
-D5, D6, D7 landed 2026-08-08 and ALL FIVE D8a items landed 2026-08-09.**
-**D2/D3 was built, measured and WITHDRAWN; D8b stays blocked behind it.**
-§2 is **64 tokens**; `unclassified-trigger` is **481**. Codebook never
-mutated — 565 axes / 8,740 members.
+W1, W2 and W3's DET half are DONE. D1/D4/D5/D6/D7 landed 2026-08-08; **all five
+D8a items landed 2026-08-09**. D2/D3 was WITHDRAWN; D8b stays blocked behind it.
+§2 is **64 tokens**; `unclassified-trigger` is **481**.
+
+**2026-08-09 also rebuilt the safety net and then used it.** Gate 2 is **one
+command, 12 rows, every one negative-controlled** (`foundry_gate2.py`).
+Positive correctness went **488 → 1,248 graded assertions**. Two gates that
+could not fail now can.
+
+**THE CODEBOOK WAS MUTATED — 403 active axes / 8,810 members** (was 565/8,740),
+across three Captain-authorised specs under the backup law: one quote repair,
+44 new axes re-homing the `--wide` residual, and the 5-axis `etb` → `replacement-
+enters-…` rename. Every one backed up, dry-run, determinism ×2, conservation
+checked.
 
 **Canonical current handoff: `docs/SESSION-HANDOFF-2026-08-09.md`.**
 This file does not replace it — it tells you what to do FIRST and why.
@@ -149,11 +158,12 @@ docs/SESSION-HANDOFF-2026-08-09.md.
 
 Do NOT re-run the six-token audit — §1 says it is done and what it left.
 
-Take the next work item from PICK-UP-HERE §2 and work it one class at a time
-using the recipe given there. Do NOT touch D8b, D2/D3, or the two items §3
-names as measured-and-rejected.
+THE NEXT JOB IS THE CR REFRESH — see §0a and
+docs/NEXT-SESSION-CR-NORMALIZATION.md, which is self-contained. If you are
+NOT doing that, take a work item from §2 instead.
 
-Standing rules apply: read every moved line in every routing diff, run all
-four audits after each step, re-pin a baseline only onto improvement and only
-with the reason stated, and do not mutate the codebook. Commit as you go.
+Standing rules apply: Gate 2 is `python3 experiments/foundry_gate2.py`, read
+every moved line in every routing diff, re-pin a baseline only onto improvement
+and only with the reason stated, back up before any codebook mutation, and use
+`import foundry_probe as p` for anything that measures. Commit as you go.
 ```

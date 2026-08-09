@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **123 documents under docs/**
-- ruling references found: **611**
+- ruling references found: **609**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -56,7 +56,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
-| `PICK-UP-HERE.md` | 159 | 4 | 0 | yes |
+| `PICK-UP-HERE.md` | 169 | 2 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PUNCTUATION-RESCAN-2026-08-06.md` | 208 | 1 | 0 | yes |
@@ -538,7 +538,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
 - `SESSION-HANDOFF-2026-08-02.md:89` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
 
-### `D1` — 23 reference(s) across 11 doc(s)
+### `D1` — 22 reference(s) across 10 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:177` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
@@ -546,7 +546,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
 - `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
-- `PICK-UP-HERE.md:12` — W1, W2 and W3's DET half are DONE. Captain ratified the W3 sheet; **D1, D4,
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:27` — D1 — `rule:activated-tap-target-creature` (n=16): KEEP, member removals
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:170` — D1 — LEGALITY GATE (new standing ruling, brand-wide; EXPLICIT PARTIAL REVERSAL)
@@ -624,7 +623,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
-- `PICK-UP-HERE.md:95` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:104` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -647,7 +646,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
-- `PICK-UP-HERE.md:95` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:104` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -666,7 +665,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 
-### `D4` — 18 reference(s) across 10 doc(s)
+### `D4` — 17 reference(s) across 9 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
@@ -679,7 +678,6 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `D3-MODAL-MODES-2026-08-04.md:103` — the audit predates this session's 14 ratified §2 rows and D4, which gave several
 - `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
-- `PICK-UP-HERE.md:12` — W1, W2 and W3's DET half are DONE. Captain ratified the W3 sheet; **D1, D4,
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:251` — D4 — All remaining verdicts stand
 - `TIER-4-DECISION-PACKET-2026-08-02.md:69` — call: batch-4 D4 is a **standing rule** — "any `grants-temporary-<keyword>`
