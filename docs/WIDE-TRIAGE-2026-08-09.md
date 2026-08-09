@@ -173,3 +173,59 @@ remains** — derived, not listed:
 
 Remaining classes are 2–5: naming rulings and fixture anchoring, none of them a
 pipeline defect.
+
+
+---
+
+## UPDATE 2 — the 55 "broken quotes" were not broken
+
+**Captain authorised repairing all 55. Measuring first showed 54 needed no
+repair, so 54 were not touched.**
+
+| where the quote actually lives | |
+|---|--:|
+| verbatim in RAW oracle text | **54 of 55** |
+| …inside parentheses — **CR 207.2a reminder text** | 31 |
+| in neither (a real defect) | **1** |
+
+`strip_reminder` removes reminder text — **19.2% of every oracle character** —
+so a quote taken from it can never match an ability line. **Mire's Malice** is
+the worked case: its ratified quote is the *awaken* reminder, its printed line
+is `Awaken 3—{5}{B}`. Quote correct, membership correct, and the two could
+never meet because the fixture only ever saw the stripped view.
+
+I had reported this as *"a Captain-ratified evidence quote no longer matches
+the corpus"* — i.e. as drift needing 55 repairs. **That was wrong.** It is the
+recorded trap *"an audit's boundary is upstream of something"*, aimed at this
+file: the fixture's boundary sat downstream of the reminder strip.
+
+**Fix:** `anchor_line` now falls back to the raw oracle paragraph and maps it
+back to its ability line **through the extractor's own `strip_reminder`**,
+never by index — a line that is pure reminder text strips to nothing and would
+shift every index after it. **Unanchored 55 → 1.**
+
+### The one real defect, repaired
+
+**Blizzard Specter.** Its quote transcribed the em-dash as `--` and the bullet
+as `*` — the ASCII-for-Unicode trap, same family as the recorded curly-vs-
+straight apostrophe. It also spanned two ability lines.
+
+Repaired to the single mode line — `• That player returns a permanent they
+control to its owner's hand.` — which inherits `combat-damage-to-player` by D3
+and so proves **both** the delivery and the `forced-owner-bounce` effect on one
+line, satisfying *"evidence must prove its own axis"*.
+
+Executed through `foundry_membership_move.py` under the backup law: timestamped
+backup verified by readback, determinism ×2 byte-identical, member conservation
+8,740 → 8,740, active axes 359 → 359.
+
+### Where `--wide` stands
+
+| | at triage | now |
+|---|--:|--:|
+| unanchored | 55 | **0** |
+| mismatches | 201 | **89** |
+| passing | 1,075 | **1,092** |
+
+The 89 are real codebook errors (51 triggered abilities on `activated-` axes,
+11 Saga chapters, 4 modes). They stay fatal.

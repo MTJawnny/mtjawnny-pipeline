@@ -125,6 +125,36 @@ def anchor_line(card: dict, quote: str, ratified: dict):
     rev = [(l, pr) for l, pr in rows if norm(l) and norm(l) in q]
     if rev:
         return max(rev, key=lambda r: len(norm(r[0])))
+
+    # THE QUOTE MAY HAVE BEEN TAKEN FROM REMINDER TEXT, WHICH THE PIPELINE
+    # STRIPS. Measured 2026-08-09: of 55 seeds whose quote matched no ability
+    # line, **54 are verbatim present in the RAW oracle text and 31 of those
+    # sit inside parentheses** -- CR 207.2a reminder text, which
+    # `strip_reminder` removes and which is 19.2% of every oracle character.
+    #
+    # Mire's Malice is the worked case. Its ratified quote is *"put three
+    # +1/+1 counters on target land you control and it becomes a 0/0..."* --
+    # the AWAKEN reminder. The printed ability line is `Awaken 3—{5}{B}`. The
+    # quote is correct, the membership is correct, and the two could never
+    # meet because the fixture only ever saw the stripped view.
+    #
+    # This was first reported as "a Captain-ratified quote no longer matches
+    # the corpus", i.e. as DRIFT needing 55 quote repairs. It is not drift and
+    # nothing needed repairing: it is the recorded trap *"an audit's boundary
+    # is upstream of something"*, aimed at this file.
+    #
+    # The raw paragraph is mapped back to its ability line THROUGH THE
+    # EXTRACTOR'S OWN `strip_reminder`, never by index -- a line that is pure
+    # reminder text strips to nothing and would shift every index after it.
+    faces = card.get("card_faces") or [card]
+    by_stripped = {norm(l): (l, pr) for l, pr in rows}
+    for f in faces:
+        for para in (f.get("oracle_text") or "").split("\n"):
+            if not para.strip() or q not in norm(para):
+                continue
+            hit = by_stripped.get(norm(fx.strip_reminder(para)))
+            if hit:
+                return hit
     return None, None
 
 

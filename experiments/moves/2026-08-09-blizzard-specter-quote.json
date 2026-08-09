@@ -1,0 +1,10 @@
+{
+  "batch": "quote-repair-2026-08-09",
+  "ruling": "Captain-authorized 2026-08-09: repair the unanchored evidence quotes. MEASURED FIRST: 54 of the 55 needed NO repair — their quotes are verbatim correct against raw oracle text and 31 sit inside CR 207.2a reminder text, which the pipeline strips, so the fixture could never see them. That was an ANCHORING defect (fixed in foundry_ground_truth.py, 55 -> 1 unanchored) and not quote drift. This spec repairs the ONE genuine defect. Record: docs/WIDE-TRIAGE-2026-08-09.md.",
+  "source_ref": "foundry_ground_truth.py --wide, 2026-08-09",
+  "quote_edits": {
+    "rule:combat-damage-to-player-forced-owner-bounce": {
+      "b6f4148d-8511-46b3-93ec-2f5eb1e4ffad": "• That player returns a permanent they control to its owner's hand."
+    }
+  }
+}
