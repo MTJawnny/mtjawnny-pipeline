@@ -268,6 +268,22 @@ STATION_SYMBOL = re.compile(r"^\d+\+\s*\|")
 SELF_NOUN_RX = None          # compiled by build_self_noun_rx()
 _ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
 
+# W4's ANTHEM shape -- `<class of permanents> get(s) +N/+N`, CR 113.3d.
+# Matched against `low`, the ability-word-stripped and self-reference-
+# canonicalized body, because that is what the classifier's other branches
+# see; a probe reading the RAW line here measured 3 fewer (a station symbol,
+# a mode and a card whose own name is long enough to matter). Group 1 is the
+# SUBJECT, and `[^.,]` is CR 113.3c doing its job: a comma means a trigger
+# condition has been swallowed. See the branch at the tail of parse_delivery.
+# `Xx` BOTH CASES, and that is not belt-and-braces. This pattern is applied to
+# `low`, where CR 107.3's variable X has already been case-folded to `x` — an
+# uppercase-only class silently lost all 9 `get +X/+X, where X is …` lines
+# (Jodah, Meishin, Samut, Knowledge Is Power …). Found only by reconciling the
+# probe's 524 against the classifier's 515: two numbers that disagree are a
+# defect in one of them, and here the classifier was the wrong one.
+ANTHEM_SUBJECT = re.compile(
+    r"^([a-z~][^.,]*?)\s+gets?\s+[+-][0-9Xx*]+/[+-][0-9Xx*]+")
+
 # CR-LAG REGISTER (2026-08-05). Subtypes the CORPUS prints that the LOCAL CR
 # snapshot does not yet enumerate. This is NOT a hand-list of vocabulary -- it
 # is a dated record of a discrepancy between two upstream sources, and every
@@ -2883,6 +2899,61 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
        not is_mode and not re.match(r"\s+escapes\b", low[m_self.end():]):
         return ("static", "static-self-statement") if "static" in ratified \
             else (None, "static-self-statement")
+
+    # ------------------------------------------------------------------
+    # W4, FIRST SHAPE — THE ANTHEM.  `<class of permanents> get(s) +N/+N`
+    # ------------------------------------------------------------------
+    # The sibling of `static-self-statement`: same CR 113.3a closure, a
+    # different SUBJECT. Where that one states something about the card
+    # itself, this states it about a class of other permanents.
+    #
+    #   CR 113.3d  *"Static abilities are written as statements. They're
+    #              simply true."*
+    #   CR 604.1   *"Static abilities create continuous effects…"*
+    #
+    # `Creatures you control get +1/+1.` is such a statement. 524 lines /
+    # 494 cards, and 238 distinct subjects — every one of which was read.
+    #
+    # THE SUBJECT IS A NOUN PHRASE, NOT A CLAUSE, and that is the whole
+    # guard. CR 113.3c writes a trigger as *"[Trigger condition], [effect]"*,
+    # so a COMMA inside what this calls the subject means a trigger condition
+    # has been swallowed — `Whenever this creature attacks, it gets +1/+1`
+    # matched an earlier draft, and `foundry_probe.must_capture` is what
+    # caught it. `[^.,]` is therefore doing CR 113.3c's work, not saving
+    # characters. There is deliberately NO length cap: a character count is a
+    # tuning knob, and the one tried made Paliano Vanguard's fate depend on
+    # how long its own name is.
+    #
+    # Reached only at the TAIL, so loyalty, activated, every trigger family
+    # and `replacement` have already declined. A new tail branch can only
+    # claim lines that already reached `spell-or-static`, which makes zero
+    # re-routes a structural guarantee rather than a lucky result.
+    #
+    # Each refusal below is owned by a rule, and each was found by reading
+    # the output rather than by reasoning about the shape:
+    m_anthem = ANTHEM_SUBJECT.match(low)
+    if m_anthem and card is not None and not _has_spell_face(card) \
+       and not is_mode:
+        # CR 702.Na — the em-dash prefix that was stripped to reach `body`
+        # must have been a CR 207.2c ability word (no rules meaning), never a
+        # KEYWORD. `Visit — [Effect]` is CR 702.159a's TRIGGERED ability with
+        # its condition stripped off, and reads as a static once it is gone;
+        # `Solved —` (702.169a) is class-polymorphic by the CR's own words.
+        # Membership is tested against CR_KEYWORD_NAMES, the parsed list —
+        # never against KEYWORD_HOME, which SKIPS undecidable keywords and so
+        # answers "no" for a keyword it merely could not place.
+        pre = ability_word_prefix(raw)[0]
+        if pre and CR_KEYWORD_NAMES and pre.lower() in CR_KEYWORD_NAMES:
+            return None, "spell-or-static"
+        # §2 created-ability rule: a `gets +N/+N` inside a GRANTED quoted
+        # ability belongs to whatever the ability was granted to, not to this
+        # card. Criminal Past — `Commander creatures you own have menace and
+        # "This creature gets +X/+0, where X is …"` — is a static GRANT
+        # (STEP-2A shape B) that this branch would otherwise claim for a
+        # reason living inside someone else's ability.
+        if not in_created_ability(body, m_anthem.end(1)):
+            return ("static", "static-anthem") if "static" in ratified \
+                else (None, "static-anthem")
     return None, "spell-or-static"
 
 

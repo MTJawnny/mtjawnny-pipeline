@@ -90,11 +90,15 @@ scores `None → ratified` as pure profit, and strictly worse than a fixture.
 **The CR refresh is done (§0a), so take one of these. Both are ready; neither
 is blocked.**
 
-**A. W4 — the anthem group · 4,375 decidably-static lines · the big slice.**
-`python3 experiments/foundry_shape_extractor.py --gaps`, section headed
-`INSIDE spell-or-static`. Named shapes, one at a time, never a blanket sweep —
-but re-measure the warning first, the 1,883 is now 4
-(`experiments/foundry_blanket_risk.py`).
+**A. W4 — the static queue · 3,846 lines · the big slice. FIRST SHAPE DONE.**
+The **anthem** (`<class of permanents> get ±N/±N`) landed 2026-08-09 — **524
+lines, 0 re-routes**, `docs/W4-ANTHEM-2026-08-09.md`. **Read that record first;
+its §9 ranks what is left** and the `<class> have <keyword>` twin (~523 lines)
+is the obvious next shape. `python3 experiments/foundry_shape_extractor.py
+--gaps`, section headed `INSIDE spell-or-static`. Named shapes, one at a time,
+never a blanket sweep — the warning was re-measured 2026-08-09 and the 1,883 is
+still **4** (`experiments/foundry_blanket_risk.py`), all four the Siege cycle
+behaving correctly.
 
 **B. The 481-line residual.** `python3 experiments/foundry_w3_census.py`
 partitions it by the CR rule that decides it and mints nothing. Ranked by

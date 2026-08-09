@@ -242,6 +242,7 @@ against it is the only thing that can also adjudicate the 13 reworded rules,
 which no offline check can reach. Recorded, not urgent.
 
 ### D-CR-2 · CR 605.1a — do we model "is a mana ability" at all?
+### ✅ RULED 2026-08-09 — **no action.** Recorded and closed.
 
 Today: no, and nothing needs it. The new clause changes which real abilities
 are mana abilities; every mana-related token here is matched from printed text.

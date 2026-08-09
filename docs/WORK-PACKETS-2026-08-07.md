@@ -54,7 +54,7 @@ anything, it has left tier A. Stop, log the proposal, do not name it.
 | **W1** | Trap sweep — AUDIT-5 findings 3 & 5, then the sweep | A | 1 session | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
 | **W2** | CR 706.3b die-row routing | A | small | ✅ **DONE** — `docs/W1-W2-RECORD.md` |
 | **W3** | `unclassified-trigger` → **DET half DONE**, vocabulary half is a decision sheet | A + C | — | ✅/**W8** |
-| **W4** | The anthem group (**4,375** decidably static — re-measured) | B | 1–2 sessions | no |
+| **W4** | The anthem group — **FIRST SHAPE DONE 2026-08-09**, 524 lines (`docs/W4-ANTHEM-2026-08-09.md`). **3,846** decidably static remain; the 4,375/4,481 here were both carried forward, measured 4,370 | B | 1–2 sessions | no |
 | **W5** | `escapes with` (12 lines) | B | small | no |
 | **W6** | Family sweep — the standing 6 | C | 1 session | no |
 | **W7** | Definition drift — the standing 35 | C or Batch | 1 session | no |
@@ -272,6 +272,15 @@ go-ahead before submitting. **Never remembered prices.**
 ---
 
 ## W4 — THE ANTHEM GROUP  ·  TIER B  ·  the big one
+
+> **FIRST SHAPE LANDED 2026-08-09 — `docs/W4-ANTHEM-2026-08-09.md`.** The
+> anthem (`<class of permanents> get ±N/±N`) is done: **524 lines, 0
+> re-routes**. Read that record before starting; §9 ranks what is left and
+> the `have <keyword>` twin is the obvious next shape.
+>
+> **THE COUNTS BELOW ARE CARRIED FORWARD AND BOTH ARE WRONG.** Measured
+> 2026-08-09: the queue was **4,370**, not 4,481 or the summary table's
+> 4,375; it is **3,846** now.
 
 **GOAL.** The largest real slice: **4,481 lines that CR 113.3a decides are
 statics** and that simply have no branch yet.
