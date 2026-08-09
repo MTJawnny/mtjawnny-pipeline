@@ -10,6 +10,38 @@ Also home of the tier engine and the T3 axis foundry (derived-tag mining).
 This is a separate repo from mtjawnny.github.io — that repo's CLAUDE.md
 contract does not travel here. This file is this repo's own contract.
 
+## IF YOU HAVE NO CONTEXT, READ THESE SIX LINES
+
+**The traps list below is ~70 bullets and a cold session cannot hold it.** It
+is a reference, not a checklist. These six are the whole of it that you must
+act on before writing any code:
+
+1. **`python3 experiments/foundry_gate2.py`** — Gate 2, all of it, one exit
+   code. Never run the individual commands to "save time"; ten commands get
+   run as nine, which is why the runner exists.
+2. **Writing a probe, a script, a one-off measurement? `import foundry_probe as p`.**
+   `p.corpus()` · `p.rows()` · `p.domain()` · `p.assert_disjoint()` ·
+   `p.must_capture()` · `p.longest_match()`. **21 probe defects across five
+   sessions, and every one was somebody hand-rolling something this module
+   already does.** It is shorter than doing it by hand — that is the point.
+3. **Never guess a field's values.** `p.domain(records, "status", "active")`
+   halts if the value is absent. A filter on a value that does not exist
+   matches nothing and reads as a clean result.
+4. **Read EVERY moved line in a routing diff.** Not a sample. On 2026-08-09 a
+   fix moved 137 lines and **1 of them was a regression** (Field of the Dead);
+   the diff reports a correct re-route and a wrong one identically.
+5. **A count is not a measurement.** Re-derive it. Two counts written into
+   ratified §2 law the same day they were measured were both wrong.
+6. **Your probe is wrong before the code is.** When your check disagrees with a
+   ratified list, suspect the check — measured base rate, and 3 of 8 negative
+   controls on 2026-08-09 were mis-aimed and each first read as "this gate is
+   broken".
+
+**Everything else on this page is context for WHY.** Read it when you have room;
+act on the six above always.
+
+---
+
 ## FIRST: load full context before foundry/codebook work
 
 **Captain's finding, 2026-08-02: every drift this project has suffered was a

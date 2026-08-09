@@ -15,7 +15,7 @@ or naming.**
 
 | # | class | cases | what it is | verdict |
 |---|---|--:|---|---|
-| 1 | **`landfall` claims a land's OWN etb** | 15 seeds → **136 corpus lines** | **REAL EXTRACTOR DEFECT** | **fix** |
+| 1 | **`landfall` claims a land's OWN etb** | 15 seeds → **136 corpus lines** | **REAL EXTRACTOR DEFECT** | ✅ **FIXED** |
 | 2 | `etb` axis, `replacement` delivery | 60 | naming: `etb` used colloquially | ruling |
 | 3 | quote anchored to the WRONG line | ~50 | fixture defect | fix the fixture |
 | 4 | §2a prefix imprecision | 13 | `death-trigger` vs `any-death-trigger` | naming |
@@ -131,3 +131,45 @@ is naming work that belongs to Captain, not to a gate.
 
 **Order:** fix class 1 (real defect, 136 lines) → fix class 3 (fixture) →
 re-run `--wide` → then decide the gate.
+
+
+---
+
+## UPDATE — class 1 is FIXED (same day)
+
+136 lines re-routed `landfall` → `etb`. `landfall` 340 → 204; `etb` 5,176 →
+5,312. Gate 2 green, all 11 rows.
+
+**The guard is `SELF_NOUN_RX`**, built from CR 205.2a's closed card-type list,
+not a hand-written `this land` — so it covers every card type and stays correct
+if CR 205 gains one.
+
+### The first version of the fix was WRONG, and reading all 137 lines is what caught it
+
+Version 1 asked *"does the clause contain a self-reference?"* and moved **137**
+lines. One of them was **Field of the Dead** — *"Whenever **this land or
+another land you control** enters"* — the archetypal landfall payoff card. A
+compound subject contains a self-reference **and** a landfall subject, so the
+bare test got it exactly backwards and deleted the card the token exists for.
+
+**The routing diff reported that line identically to the 136 correct ones.**
+`ratified → ratified'` with no way to tell a fix from a regression. Only reading
+them separated the two.
+
+**Version 2 strips the self-reference and asks whether a landfall subject
+remains** — derived, not listed:
+
+```
+"this land"                              -> ""                              not landfall
+"this land or another land you control"  -> "another land you control ..."  landfall
+```
+
+### Effect on the fixture
+
+| | before | after |
+|---|--:|--:|
+| `--wide` mismatches | 201 | **186** |
+| passing | 1,075 | **1,090** |
+
+Remaining classes are 2–5: naming rulings and fixture anchoring, none of them a
+pipeline defect.

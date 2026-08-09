@@ -1955,9 +1955,47 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # more specific branch one line up still could not see it. The recorded
         # "improving recall can hand out a wrong ratified token" trap, caught
         # only because the CR recheck went back over the gap-closes.
-        if re.search(r"\bland (you control )?enters\b", clause) \
-                or re.search(r"\blands? enters? under your control\b", clause) \
-                or low.startswith("landfall"):
+        # A LAND'S OWN ETB IS NOT LANDFALL, AND `land enters` CANNOT TELL THEM
+        # APART. Found 2026-08-09 by `foundry_ground_truth.py --wide`, the
+        # first run of positive correctness over the codebook's own evidence:
+        # `\bland (you control )?enters\b` matches *"When THIS LAND enters"*, so
+        # a land's own ETB trigger was filed as landfall on **136 lines — 40%
+        # of the whole landfall population**, including the entire "gain 1 life
+        # when it enters" dual-land cycle (Aether Hub, Akoum Refuge, ...).
+        #
+        # THE CR SEPARATES THEM AND THE DIFFERENCE IS NOT COSMETIC:
+        #   CR 207.2c  landfall -- *"Whenever a land you control enters"*.
+        #              Fires for EVERY land, repeatedly, including other lands.
+        #   CR 603.6a  *"When this land enters"* -- that permanent's OWN etb.
+        #              Fires ONCE, for itself.
+        # Khalni Garden triggers once; Lotus Cobra triggers every time. Filing
+        # them together asserts a payoff engine and a tapland are one mechanism.
+        #
+        # THE GUARD IS `SELF_NOUN_RX`, NOT A HAND-WRITTEN `this land`. That
+        # regex is built from CR 205.2a's closed card-type list (the same parse
+        # that fixed the six missing types), so it covers `this land` without a
+        # list of its own and stays correct if CR 205 gains a type.
+        #
+        # NO ROUTING DIFF COULD HAVE FOUND THIS. The lines carried a ratified
+        # token from before the first snapshot, so `--strict` scored them
+        # settled and the gap census saw no gap. This is the exact failure
+        # positive correctness exists to catch.
+        # THE SUBJECT CAN BE COMPOUND, AND A BARE SELF-REFERENCE TEST GETS IT
+        # BACKWARDS. Field of the Dead prints *"Whenever THIS LAND OR ANOTHER
+        # LAND YOU CONTROL enters"* -- the archetypal landfall payoff -- and a
+        # guard that merely asks "does the clause contain a self-reference?"
+        # moves it to `etb`, losing the very card the token exists for. Caught
+        # by reading all 137 moved lines; it was 1 of 137, and the routing diff
+        # reports it as a re-route exactly like the 136 correct ones.
+        #
+        # The cut is derived, not listed: STRIP the self-reference phrase and
+        # ask whether a landfall subject still remains. "this land" alone
+        # leaves nothing; "this land or another land you control" leaves
+        # "another land you control enters" and is still landfall.
+        stripped = SELF_NOUN_RX.sub(" ", clause)
+        if (re.search(r"\bland (you control )?enters\b", stripped)
+                or re.search(r"\blands? enters? under your control\b", stripped)
+                or low.startswith("landfall")):
             return mark("landfall", "landfall")
         # `enters?` — the SUBJECT of an etb trigger can be plural, and then the
         # verb is too: "Whenever one or more creatures you control ENTER".
