@@ -302,3 +302,47 @@ control that is easy to skip.
   Pinned as the integer it was describing.
 
 **Gate 2 is now ten commands and every one of them can fail.**
+
+
+---
+
+## 8. GATE 2 IS ONE COMMAND, AND EVERY ROW IS NEGATIVE-CONTROLLED
+
+`python3 experiments/foundry_gate2.py` — eleven checks, one exit code.
+
+**Why a runner at all.** Gate 2 was a *list* of shell commands a session was
+trusted to run in full. That is the same shape as every failure measured on
+this page: **a control that depends on someone remembering is not a control**,
+and a skipped gate is indistinguishable from a passing one in a transcript.
+
+It re-implements nothing — each row shells out to the real tool, so there is
+one definition of every gate and the runner cannot drift from it.
+
+| verified exit path | |
+|---|---|
+| rigged failure (`--selftest`) | **1** |
+| clean subset | **0** |
+| known-failing (`family_sweep`, W6), excused | **0** |
+| same, with `--strict-all` | **1** |
+| unknown gate name | **2** |
+
+**Every row has now been shown capable of failing**, including the two added
+today:
+
+| check | injected defect | result |
+|---|---|---|
+| `probe_guards` | 11 guard cases, each rigged | halts on all |
+| `recorded_numbers` | changed a §2 count 30 → 31 | **exit 1**, names the drifted row, and reports RED through the runner |
+
+The known-failing row is **named, not silently excused** — `family_sweep`'s 6
+blocking findings are W6 and predate the runner.
+
+### The scorecard, end of day
+
+| | start of day | now |
+|---|---|---|
+| gates that can fail | 6 of 8 | **11 of 11** |
+| Gate 2 invocation | 8 commands, skippable | **1 command** |
+| probe defects with a mechanism | 0 | **4 guards, self-tested** |
+| §2 counts machine-checked | 0 | 7 of 64 (and gated) |
+| positive-correctness coverage | 6.7% | 6.7% gated, **~53% available behind `--wide`** |
