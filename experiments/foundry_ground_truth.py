@@ -185,6 +185,9 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json")
     ap.add_argument("--limit", type=int, default=20)
+    ap.add_argument("--wide", action="store_true",
+                    help="also grade the codebook's own human-class "
+                         "quoted assertions (4,194 across 355 axes)")
     args = ap.parse_args()
 
     cards, _, _ = fc.load_corpus_gated()
@@ -199,6 +202,36 @@ def main():
         for s in spec.get("seeds") or []:
             if s.get("class") == "human" and s.get("quote"):
                 seeds.append((path.name, s))
+
+    # THE FIXTURE WAS 6.7% OF THE CODEBOOK AND THE REST WAS ALREADY SITTING
+    # THERE. `moves/*.json` holds 534 quoted human seeds, but only 3 of the 16
+    # specs carry a `seeds` block at all -- the other 13 are renames, merges and
+    # scope edits. Meanwhile `codebook.json` carries the SAME kind of evidence
+    # on its own members: 4,194 `class: human` assertions with a verbatim quote,
+    # across 355 active axes. Those are Captain-ratified assignments with
+    # exactly the two properties this file needs (an axis claim and a quote),
+    # so grading them requires no new ratification -- only reading them.
+    #
+    # Kept behind a flag so the pinned 488 stays comparable run to run, and so
+    # a fixture that is 8x larger cannot silently redefine what "green" means.
+    if args.wide:
+        cbp = REPO_ROOT / "out" / "foundry" / "codebook.json"
+        cb = json.loads(cbp.read_text(encoding="utf-8"))
+        seen = {(s["to"], s["member"]) for _, s in seeds}
+        for slug, ax in sorted(cb["axes"].items()):
+            if ax.get("status") != "active":
+                continue
+            for m in ax.get("members") or []:
+                for a in m.get("assertions") or []:
+                    if a.get("class") != "human" or not a.get("quote"):
+                        continue
+                    key = (slug, m["oracle_id"])
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    seeds.append(("codebook.json", {
+                        "to": slug, "member": m["oracle_id"],
+                        "class": "human", "quote": a["quote"]}))
     if not seeds:
         fc.halt(f"no human-class seeds found under {MOVES}. This file's whole "
                 f"premise is that the ratified move specs ARE the fixture; if "
