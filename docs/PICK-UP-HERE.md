@@ -143,10 +143,11 @@ diagnosis; it needs a shared-object re-join, not a list entry.
 
 - **W8, Captain's sheet — now fourteen items.** The ten standing ones, plus
   CR 709.5i, the shared-object splitter, and the two from the CR refresh
-  (`docs/CR-REFRESH-2026-08-09.md` §DECISION SHEET): **D-CR-1** the 7 mojibake
-  characters in CR 206.3a of the new file — declared and guarded, inert today,
-  three options costed; **D-CR-2** whether "is a mana ability" (CR 605.1a) needs
-  modelling at all — recommendation is no.
+  (`docs/CR-REFRESH-2026-08-09.md` §DECISION SHEET): **D-CR-1 is RULED and
+  LANDED** — Captain 2026-08-09, repair the 7 mojibake characters in CR 206.3a
+  at read time; CR 206.3a is now byte-identical to the 2026-06-19 edition and
+  0 lines moved. **D-CR-2** whether "is a mana ability" (CR 605.1a) needs
+  modelling at all is open — recommendation is no.
 - **117 single-faced instants/sorceries routing to `replacement`** — the
   branch has no spell-face gate. Needs a per-FACE cut; real design.
 - **10 `it becomes day AS THIS CREATURE ENTERS` lines** — CR 614.1c

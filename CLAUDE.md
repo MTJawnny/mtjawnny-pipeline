@@ -644,7 +644,15 @@ deck-building relevance, not textual frequency.**
   **151**, both from the new CR 702.195 Storied. `MTJ_CR_PATH=<file>` runs
   everything against another edition — that is how a refresh gets verified as
   a comparison, and how the loader was proven a no-op on the June CR before the
-  diff was believed.
+  diff was believed. **The 2026-08-07 file is an LLM-reformatted DERIVATIVE and
+  it arrived with encoding damage** — 7 mojibake characters in CR 206.3a
+  (`Juzám` → `JuzÃ¡m`). Captain ruled 2026-08-09: **repaired at read time**, in
+  its own pass, DERIVED (`.encode("latin-1").decode("utf-8")` is the inverse of
+  the corruption) rather than typed, and pinned by the repaired rule coming out
+  **byte-identical to the 2026-06-19 edition**. A repair is a SUBSTITUTION and
+  normalization's law is PURE DELETION, so they cannot share a pass — and the
+  undeclared-damage guard must run BEFORE the repair, or it cannot tell "never
+  damaged" from "quietly repaired".
 - **THE MANA RULE IS CR 605.1a AND IT HAS NO CODE PATH HERE**
   (`docs/CR-REFRESH-MANA-ABILITIES.md`, resolved 2026-08-09). A mana ability now
   also requires that *"its cost and effect don't move any card to or from a

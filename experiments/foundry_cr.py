@@ -62,6 +62,7 @@ USAGE
 import re
 import sys
 import argparse
+import collections
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -169,19 +170,47 @@ _REQUIRED_ANCHORS = (
 #
 # This is handled the way CLAUDE.md already handles a vendored-CR discrepancy:
 # **a dated register that names its evidence, and anything outside it halts.**
-# Nothing in this pipeline parses CR 206, so the damage is inert today — but a
-# derivative that corrupts characters is exactly what "confirm the provenance"
+# A derivative that corrupts characters is exactly what "confirm the provenance"
 # was asking about, and an undeclared corruption in a future edition must stop
 # the run rather than become the source of a derived vocabulary.
 #
-# NOT REPAIRED HERE, on purpose. The mojibake is mechanically reversible and
-# the prior edition holds the correct text, but repairing it is a CONTENT
-# mutation at read time, and what was ratified 2026-08-09 was a FORMATTING
-# normalization. That is Captain's call, and it is on the decision sheet.
+# REPAIRED AT READ TIME — Captain's ruling, 2026-08-09 (decision D-CR-1 option
+# b). The file stays pristine; the repair is a third read-time pass beside the
+# formatting normalization, and it is confined to the rules named below. Damage
+# anywhere else still HALTS.
+#
+# THE REPAIR IS DERIVED, NOT TYPED. `"Ã¡".encode("latin-1").decode("utf-8")`
+# returns `"á"` — the corruption is its own inverse, so this is a mechanical
+# transformation of the damaged bytes, in the same family as emitting both
+# apostrophe forms for a CR-parsed value. A table of 7 characters typed by hand
+# would be a hand-list, and this repo has one rule about those.
+#
+# WHAT PINS IT IS GROUND TRUTH, NOT MY ARITHMETIC. Two independent assertions,
+# because a derivation still needs a positive-correctness test and this repo has
+# exactly one honest source of one — the 2026-06-19 edition, which is
+# WotC-derived and carries zero mojibake:
+#
+#   1. the derived repairs must match `repairs` below EXACTLY, both directions;
+#   2. when the prior edition is reachable, the whole repaired rule must come
+#      out byte-identical to it.
+#
+# (2) is the real check and (1) is what keeps this runnable on a machine
+# without the site repo. Neither is a count.
 _KNOWN_ENCODING_DAMAGE = {
-    "206.3a": ("CR 206.3a, City in a Bottle's Arabian Nights name list. 7 "
-               "characters, measured 2026-08-09 against the 2026-06-19 "
-               "edition. No rule this pipeline parses reads CR 206."),
+    "206.3a": {
+        "why": ("City in a Bottle's Arabian Nights name list (CR 206.3a). "
+                "7 characters, measured 2026-08-09 by "
+                "`foundry_cr_edition_diff.py` against the 2026-06-19 edition. "
+                "No rule this pipeline parses reads CR 206 — but the resolver "
+                "(3.11) exact-matches card NAMES, and `Juzám Djinn` is a name "
+                "it will eventually meet."),
+        # corrupt -> correct, and the count each appears with in CR 206.3a.
+        # Verified against the prior edition, not typed from the screen.
+        "repairs": {"Ã¡": ("á", 3),    # Ghazbán, Juzám, Khabál
+                    "Ã¢": ("â", 2),    # Dandân, El-Hajjâj
+                    "Ãº": ("ú", 1),    # Junún
+                    "Ã»": ("û", 1)},   # Ring of Ma’rûf
+    },
 }
 
 # `Ã`/`Â` followed by a character in the Latin-1 supplement is the signature of
@@ -284,6 +313,92 @@ def _assert_encoding(norm: str, path: Path) -> None:
             f"foundry_cr._KNOWN_ENCODING_DAMAGE with its evidence.")
 
 
+def _demojibake(s: str) -> str:
+    """Undo one UTF-8-read-as-Latin-1 run. Derived, never typed.
+
+    Halts rather than returning the input on a run it cannot decode: a repair
+    that silently no-ops leaves corrupted text wearing a repaired file's
+    credibility, which is worse than the corruption.
+    """
+    try:
+        return s.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError) as exc:
+        fc.halt(f"cannot reverse the encoding damage in {s!r}: {exc}. This is "
+                f"not the UTF-8-as-Latin-1 corruption the register describes; "
+                f"do not guess at a replacement.")
+
+
+def _repair_encoding(norm: str, path: Path) -> str:
+    """Repair the declared encoding damage, and prove the repair was right.
+
+    Captain's ruling 2026-08-09 (D-CR-1 option b). Runs AFTER `normalize`, as
+    its own pass, because the conservation law there is pure deletion and a
+    repair is a substitution — folding them together would mean neither law
+    could be stated. Two passes, two laws, both asserted.
+    """
+    if not _MOJIBAKE.search(norm):
+        return norm
+
+    out, rule, applied = [], "(before the first rule)", collections.Counter()
+    for line in norm.splitlines():
+        m = _ANY_RULE.match(line)
+        if m:
+            rule = m.group(1)
+        if rule in _KNOWN_ENCODING_DAMAGE and _MOJIBAKE.search(line):
+            for corrupt in _MOJIBAKE.findall(line):
+                applied[(rule, corrupt)] += 1
+            line = _MOJIBAKE.sub(lambda mm: _demojibake(mm.group(0)), line)
+        out.append(line)
+    repaired = "\n".join(out) + ("\n" if norm.endswith("\n") else "")
+
+    # ASSERTION 1 — the derived repairs are exactly the pinned ones, both
+    # directions. A repair that fires MORE than declared is scope creep; one
+    # that fires LESS means the damage moved and the register is stale.
+    for rule, decl in _KNOWN_ENCODING_DAMAGE.items():
+        want = {c: n for c, (_fixed, n) in decl["repairs"].items()}
+        got = {c: n for (r, c), n in applied.items() if r == rule}
+        if got != want:
+            fc.halt(
+                f"the declared encoding repair for CR {rule} in {path} does not "
+                f"match what this edition actually carries.\n"
+                f"    declared: {want}\n    found:    {got}\n"
+                f"  Re-measure with `foundry_cr_edition_diff.py` and update the "
+                f"register with its evidence. Never widen the repair to fit.")
+        for corrupt, (fixed, _n) in decl["repairs"].items():
+            derived = _demojibake(corrupt)
+            if derived != fixed:
+                fc.halt(f"the repair derived for {corrupt!r} is {derived!r}, "
+                        f"but the register pins {fixed!r}. One of the two is "
+                        f"wrong and this refuses to pick.")
+
+    # ASSERTION 2 — POSITIVE CORRECTNESS, and it is the one that matters. The
+    # 2026-06-19 edition is WotC-derived and carries zero mojibake, so a
+    # repaired rule must come out byte-identical to it. Skipped, loudly in the
+    # report rather than silently, when the prior edition is not on this
+    # machine — this is a public repo and its CI has no reason to hold it.
+    if path != PRIOR_CR_PATH and PRIOR_CR_PATH.exists():
+        prior = {}
+        for line in text(PRIOR_CR_PATH).splitlines():
+            m = _ANY_RULE.match(line)
+            if m and m.group(1) in _KNOWN_ENCODING_DAMAGE:
+                prior[m.group(1)] = line
+        for line in repaired.splitlines():
+            m = _ANY_RULE.match(line)
+            if m and m.group(1) in prior and line != prior[m.group(1)]:
+                rule = m.group(1)
+                where = next((i for i, (a, b) in
+                              enumerate(zip(line, prior[rule])) if a != b),
+                             min(len(line), len(prior[rule])))
+                fc.halt(
+                    f"CR {rule} does not match the 2026-06-19 edition after "
+                    f"repair, first difference at character {where}:\n"
+                    f"    repaired {line[max(0, where-40):where+40]!r}\n"
+                    f"    prior    {prior[rule][max(0, where-40):where+40]!r}\n"
+                    f"  Either the repair is wrong or WotC reworded the rule. "
+                    f"Read it before touching the register.")
+    return repaired
+
+
 def _assert_parseable(norm: str, path: Path) -> None:
     missing = [(a, why) for a, why in _REQUIRED_ANCHORS
                if not re.search(r"(?m)^" + re.escape(a), norm)]
@@ -312,7 +427,17 @@ def text(path: Path = None) -> str:
                     f"no fallback by design.")
         norm = normalize(path.read_text(encoding="utf-8", errors="strict"))
         _assert_parseable(norm, path)
+        # ORDER IS LOAD-BEARING. `_assert_encoding` halts on damage OUTSIDE the
+        # register, and it must run BEFORE the repair — afterwards it could not
+        # tell "never damaged" from "quietly repaired", which is the whole
+        # difference between a declared exception and a silent one.
         _assert_encoding(norm, path)
+        norm = _repair_encoding(norm, path)
+        if _MOJIBAKE.search(norm):
+            left = sorted(set(_MOJIBAKE.findall(norm)))
+            fc.halt(f"encoding damage survived the repair pass in {path}: "
+                    f"{left}. The register claims to cover every occurrence; "
+                    f"it does not.")
         _cache[key] = norm
     return _cache[key]
 
@@ -433,6 +558,46 @@ def _selftest() -> int:
         else:
             print(f"  [FAIL] {label} (halted={got}, wanted {want_halt})")
             bad += 1
+
+    # THE REPAIR (D-CR-1b). Every case is aimed at the code path, not at the
+    # feature's name — the three mis-aimed negative controls of 2026-08-09 each
+    # first read as "this gate is broken".
+    if _demojibake("JuzÃ¡m Djinn") == "Juzám Djinn":
+        print("  [ok] repair is DERIVED from the damage, not typed")
+    else:
+        print("  [FAIL] repair derivation is wrong")
+        bad += 1
+
+    def repairs(text_in):
+        try:
+            return _repair_encoding(text_in, PRIOR_CR_PATH)   # skips assert 2
+        except SystemExit:
+            return "<HALTED>"
+
+    rule = declared
+    repair_cases = [
+        ("declared damage is repaired",
+         f"{rule} Those names are DandÃ¢n, GhazbÃ¡n Ogre, JuzÃ¡m Djinn, "
+         f"KhabÃ¡l Ghoul, JunÃºn Efreet, Ring of Ma’rÃ»f, El-HajjÃ¢j.",
+         f"{rule} Those names are Dandân, Ghazbán Ogre, Juzám Djinn, "
+         f"Khabál Ghoul, Junún Efreet, Ring of Ma’rûf, El-Hajjâj."),
+        # A count that does not match the register means the damage MOVED.
+        # Widening the repair to fit is how a register stops being evidence.
+        ("a DIFFERENT amount of damage halts rather than being absorbed",
+         f"{rule} Those names are DandÃ¢n and JuzÃ¡m Djinn.", "<HALTED>"),
+        # Clean text must survive the pass untouched, or the repair is a
+        # rewrite wearing a repair's name.
+        ("already-correct text passes through unchanged",
+         f"{rule} Those names are Dandân, Juzám Djinn.",
+         f"{rule} Those names are Dandân, Juzám Djinn."),
+    ]
+    for label, src, want in repair_cases:
+        got = repairs(src)
+        if got == want:
+            print(f"  [ok] {label}")
+        else:
+            print(f"  [FAIL] {label}\n        got  {got!r}\n        want {want!r}")
+            bad += 1
     return bad
 
 
@@ -447,9 +612,21 @@ def _report() -> None:
     print(f"rule-numbered      {sum(1 for l in ls if rule_rx.match(l))}")
     print(f"lines normalized   {sum(1 for a, b in zip(raw, ls) if a != b)}")
     print(f"curly apostrophes  {txt.count(chr(0x2019))}")
-    print("\ndeclared encoding damage (anything outside this register halts):")
-    for rule, why in sorted(_KNOWN_ENCODING_DAMAGE.items()):
-        print(f"  CR {rule}  {why}")
+    print(f"mojibake remaining {len(_MOJIBAKE.findall(txt))}")
+    print("\nDECLARED ENCODING DAMAGE, repaired at read time (D-CR-1b, Captain "
+          "2026-08-09).\nAnything outside this register HALTS.")
+    for rule, decl in sorted(_KNOWN_ENCODING_DAMAGE.items()):
+        fixes = "  ".join(f"{c!r}->{f!r}×{n}"
+                          for c, (f, n) in sorted(decl["repairs"].items()))
+        print(f"  CR {rule}   {fixes}\n    {decl['why']}")
+    if PRIOR_CR_PATH.exists():
+        print("    verified byte-identical to the 2026-06-19 edition after "
+              "repair.")
+    else:
+        print("    ⚠ the 2026-06-19 edition is not on this machine, so the "
+              "repair was checked\n      against its pinned fixture ONLY — the "
+              "positive-correctness half did\n      not run. Stated, not "
+              "silently skipped.")
     print("\nanchors required by the parsers, all present:")
     for a, why in _REQUIRED_ANCHORS:
         print(f"  {a!r:44s} {why}")
@@ -468,7 +645,10 @@ def main() -> int:
     if not args.selftest:
         _report()
         print()
-    print("SELF-TEST — every guard shown to both pass and fail")
+    print("SELF-TEST — every guard shown to both pass and fail.")
+    print("Each negative control prints its guard's real STOP message to "
+          "stderr. Those\nare the controls WORKING; the verdict is the "
+          "[ok]/[FAIL] column below.")
     bad = _selftest()
     if bad:
         print(f"\n{bad} self-test failure(s)")

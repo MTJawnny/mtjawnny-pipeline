@@ -160,9 +160,10 @@ pipeline parses:
 
 ---
 
-## ⚠ DECISION SHEET — two items, and neither blocks anything
+## ⚠ DECISION SHEET — D-CR-1 is RULED and landed; D-CR-2 is open
 
 ### D-CR-1 · The new file is a DERIVATIVE and it has measured encoding damage
+### ✅ RULED 2026-08-09 — repair at read time. Landed. See the ruling inline below.
 
 The `_LLM.md` filename was flagged in the spec as *"possibly a derivative"*.
 Its own front matter settles it — `format: "LLM-optimized Markdown"`,
@@ -192,23 +193,53 @@ in the new file — the reformatter's own pattern misses two-letter subrules.
 
 **Handled the way CLAUDE.md already handles a vendored-CR discrepancy:** a
 declared register naming its evidence, and **anything outside it HALTS**
-(`foundry_cr._KNOWN_ENCODING_DAMAGE`, negative-controlled four ways). Nothing
-here parses CR 206, so the damage is inert today.
+(`foundry_cr._KNOWN_ENCODING_DAMAGE`).
 
-**Not repaired, on purpose.** The mojibake is mechanically reversible and the
-prior edition holds the correct text — but repairing it is a **content**
-mutation at read time, and what was ratified 2026-08-09 was a **formatting**
-one. Captain's call:
+### ✅ RULED — Captain, 2026-08-09: **repair the 7 characters at read time.**
 
-| | |
-|---|---|
-| **a. Leave it** | current state. Declared, guarded, inert. Costs nothing until something reads CR 206 — and the resolver (3.11) exact-matches card names, so `Juzám Djinn` is a name it will eventually meet. |
-| **b. Repair the 7 at read time** (recommended) | a declared table of 7 characters, each verified against the 2026-06-19 edition, applied by the loader. Small, evidenced, and it makes the CR trustworthy as ground truth for names. |
-| **c. Replace the file** | fetch WotC's official 2026-08-07 release and re-run the edition diff against it. Strictly the best answer, and the only one that also catches damage in the 14 rules this diff cannot adjudicate. Needs a download. |
+Option (b). Landed in `foundry_cr._repair_encoding()`. The file stays pristine;
+the repair is a **third read-time pass** beside the formatting normalization,
+confined to the rules in the register. Damage anywhere else still halts.
 
-**My read:** (c) is right if a download is easy, (b) if not. But this is a
-one-rule cosmetic defect in a file that is otherwise 99.6% verified, so it
-should not hold anything up.
+**The repair is DERIVED, not typed.** `"Ã¡".encode("latin-1").decode("utf-8")`
+returns `"á"` — the corruption is its own inverse, so this is a mechanical
+transformation of the damaged bytes, the same family as emitting both
+apostrophe forms for a CR-parsed value. A table of 7 characters typed off the
+screen would be a hand-list, and this repo has a rule about those.
+
+**It runs as its own pass because the two laws are different.** Normalization's
+conservation law is *pure deletion*; a repair is a *substitution*. Folding them
+together would mean neither could be stated. Two passes, two laws, both
+asserted — and the order is load-bearing: the undeclared-damage guard runs
+**before** the repair, because afterwards it could not tell "never damaged"
+from "quietly repaired".
+
+**Two assertions pin it, and neither is a count:**
+
+1. the derived repairs must match the register **exactly, both directions** —
+   firing more than declared is scope creep, firing less means the damage moved
+   and the register is stale;
+2. **positive correctness**: the repaired rule must come out **byte-identical
+   to the 2026-06-19 edition**. That is real ground truth, and it is the check
+   that matters. When the prior edition is not on the machine, assertion 1
+   still runs and the report says so out loud rather than skipping silently.
+
+**Verified:** CR 206.3a is now byte-identical to the WotC-derived edition,
+`mojibake remaining 0`, and the edition diff moves **3,130 → 3,131 identical /
+14 → 13 reworded** — 206.3a was never a rules change, only damage. Routing
+re-diffed: **0 lines moved**, keyword homes 151 → 151. Gate 2 green.
+
+Negative-controlled three ways beyond the four already on the guard: the repair
+is derived rather than typed, a *different* amount of damage **halts** instead
+of being absorbed, and already-correct text passes through unchanged. The first
+run of that fixture **failed, and the code was right** — I had written
+`El-HajjÃ¡j` where the real damage is `El-HajjÃ¢j`, and the count assertion
+caught my fixture. Gate 4 exactly: when your check disagrees, suspect the check.
+
+**Option (c) is still the better long-term answer** and is not foreclosed:
+fetching WotC's official 2026-08-07 release and re-running the edition diff
+against it is the only thing that can also adjudicate the 13 reworded rules,
+which no offline check can reach. Recorded, not urgent.
 
 ### D-CR-2 · CR 605.1a — do we model "is a mana ability" at all?
 
