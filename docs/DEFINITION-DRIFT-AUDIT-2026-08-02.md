@@ -14,13 +14,13 @@ accident; this is the systematic pass for the rest.
 
 Scope: 403 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**29 findings.**
+**28 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 10 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 9 |
 | C3 | §4 — member effect contradicts the slug suffix | 7 |
 
 Member tests are **double-gated**: a member is only reported when the
@@ -34,14 +34,14 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-19 misfiled member assignments across 10 axes:
+16 misfiled member assignments across 9 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
-| `etb-` | 9 | 18 |
+| `etb-` | 8 | 15 |
 | `draw-second-card-trigger-` | 1 | 1 |
 
-**`etb-` accounts for 18 of 19.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 15 of 16.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1b — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
@@ -132,16 +132,6 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 **slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 16 never do, in the cited quote or anywhere in their oracle text**
 
 - **Mystical Teachings** — "Search your library for an instant card or a card with flash, reveal it, put it into your hand, then shuffle."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:etb-with-counters`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 3 of 60 never do, in the cited quote or anywhere in their oracle text**
-
-- **Mire's Malice** — "also put three +1/+1 counters on target land you control"
-- **Clutch of Currents** — "also put three +1/+1 counters on target land you control"
-- **Rush of Ice** — "also put three +1/+1 counters on target land you control"
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 

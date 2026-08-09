@@ -1,0 +1,27 @@
+{
+ "batch": "etb-prefix-ruling-2026-08-09",
+ "ruling": "Captain-ratified 2026-08-09: `etb` means TWO THINGS in this codebook and the CR separates them. CR 603.6a — 'WHEN this permanent enters…' — is an ETB TRIGGERED ability, which is what §2's `etb` DELIVERY token means. CR 614.1c — '[This permanent] ENTERS WITH…' and 'enters AS…' — is a REPLACEMENT effect, and §2 already ratifies `replacement` as its own DELIVERY token. MEASURED: of 38 `etb-` axes, only these 5 are replacement-dominant (70 members); the other 33 are genuine ETB triggers and are untouched. The tell is printed in the slug — `-with-` / `-as-` is CR 614.1c, a bare verb is CR 603.6a. This clears all 60 `head_ambiguous` seeds that foundry_ground_truth.py --wide was parking ungraded. Naming follows §1's [DELIVERY]-[EFFECT] literally, Captain's call: 'clunkier, but I think it'll work'. Record: docs/WIDE-TRIAGE-2026-08-09.md.",
+ "source_ref": "foundry_ground_truth.py --wide + per-axis delivery census, 2026-08-09",
+ "renames": {
+  "rule:etb-with-counters": {
+   "to": "rule:replacement-enters-with-counters",
+   "why": "CR 614.1c '[This permanent] enters with…' — 54 of 61 member lines deliver `replacement`, not `etb`"
+  },
+  "rule:etb-with-negative-counters": {
+   "to": "rule:replacement-enters-with-negative-counters",
+   "why": "CR 614.1c; 0 of 3 member lines deliver `etb`"
+  },
+  "rule:etb-with-oil-counters": {
+   "to": "rule:replacement-enters-with-oil-counters",
+   "why": "CR 614.1c; 0 of 2 member lines deliver `etb`"
+  },
+  "rule:etb-self-tapped-with-stun-counters": {
+   "to": "rule:replacement-enters-tapped-with-stun-counters",
+   "why": "CR 614.1c; uses `enters-tapped`, the §4 EFFECT verb ratified 2026-08-09; 0 of 3 deliver `etb`"
+  },
+  "rule:etb-copy-your-permanent": {
+   "to": "rule:replacement-enters-as-copy-your-permanent",
+   "why": "CR 614.1c's OTHER template — 'enters AS a copy' — not 'enters with'; 0 of 2 deliver `etb`"
+  }
+ }
+}

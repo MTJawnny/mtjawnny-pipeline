@@ -338,3 +338,59 @@ is membership-is-not-exclusive, already ratified. It does not cover the cards
 here whose delivery is simply a different single event.
 
 **This is new vocabulary — ~50 axes — and stays a ratification.**
+
+
+---
+
+## UPDATE 5 — the `etb` prefix ruling. It was 5 axes, not 38.
+
+**Captain-ratified 2026-08-09.** `etb` meant two things and the CR separates
+them cleanly:
+
+| CR | printed form | delivery |
+|---|---|---|
+| **603.6a** | *"**WHEN** this permanent enters…"* | ETB **trigger** — §2's `etb` |
+| **614.1c** | *"enters **WITH**…"* / *"enters **AS**…"* | **replacement** — §2 already has the token |
+
+**The tell is printed in the slug**: `-with-` / `-as-` is CR 614.1c; a bare verb
+is CR 603.6a. Measured per-axis, only **5 of 38** `etb-` axes are
+replacement-dominant. The other 33 are genuine ETB triggers and were untouched.
+
+| renamed to | members | delivered `etb` | delivered `replacement` |
+|---|--:|--:|--:|
+| `replacement-enters-with-counters` | 60 | 7 | **54** |
+| `replacement-enters-tapped-with-stun-counters` | 3 | 0 | **3** |
+| `replacement-enters-with-negative-counters` | 3 | 0 | **3** |
+| `replacement-enters-as-copy-your-permanent` | 2 | 0 | **2** |
+| `replacement-enters-with-oil-counters` | 2 | 0 | **2** |
+
+`replacement-enters-tapped-…` uses `enters-tapped`, the §4 EFFECT verb ratified
+earlier the same day — the pattern paying off immediately.
+
+### Effect
+
+| | before | after |
+|---|--:|--:|
+| `head_ambiguous` (parked, ungraded) | 60 | **3** |
+| **graded** | 1,181 | **1,248** |
+| passing | 1,178 | **1,238** |
+| mismatches | 3 | 10 |
+
+**Mismatches rose, and that is not a regression.** 67 seeds that were parked
+ungraded are now graded: 60 pass, 7 fail. The baseline was re-pinned with that
+reason stated rather than accepted silently — the whole point of the ratchet
+requiring an explicit flag.
+
+---
+
+## WHERE `--wide` STANDS AT END OF DAY
+
+| | at triage | now |
+|---|--:|--:|
+| unanchored | 55 | **0** |
+| mismatches | 201 | **10** |
+| head-ambiguous | 60 | **3** |
+| graded | 1,276 | **1,248** |
+| passing | 1,075 | **1,238** |
+
+Gate 2: **12 rows, all green, all negative-controlled.**
