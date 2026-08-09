@@ -195,6 +195,12 @@ def grants_ability(line: str) -> bool:
     return False
 
 
+def tail_of(axis: str, head: str) -> str:
+    """The slug body after its DELIVERY head -- the EFFECT/OBJECT remainder."""
+    body = axis.split(":", 1)[1] if ":" in axis else axis
+    return body[len(head):].lstrip("-")
+
+
 def claimed_keyword(axis: str) -> str:
     """The CR 702 keyword an axis slug names, or None.
 
@@ -284,6 +290,10 @@ def main():
     fx.build_self_noun_rx(cards)
     ratified = fx.ratified_delivery_tokens()
     fx.build_keyword_homes(ratified)
+
+    cb_axes = {s for s, a in json.loads(
+        (REPO_ROOT / "out" / "foundry" / "codebook.json").read_text(
+            encoding="utf-8"))["axes"].items() if a.get("status") == "active"}
 
     specs = sorted(MOVES.glob("*.json"))
     seeds = []
@@ -386,6 +396,30 @@ def main():
             if want == "etb" and "replacement" in got:
                 head_ambiguous.append((card["name"], axis, line[:70]))
                 continue
+            # §1's SLOT LAW, APPLIED TO §2a's SUBJECT PREFIX. §1 says a slot is
+            # "omitted when the axis's scope= field carries it AND NO SIBLING
+            # DIFFERS ONLY BY SCOPE; REQUIRED the moment a scope-sibling
+            # exists." §2a's any-/other-/source- prefix is the same kind of
+            # slot, so an axis that omits it is not asserting the SOURCE form —
+            # it is leaving the slot unspecified, and a prefixed delivery
+            # satisfies it.
+            #
+            # Measured 2026-08-09: 27 of the 89 "errors" were exactly this, and
+            # for ALL 27 no prefixed sibling axis exists. Sigiled Sword of
+            # Valeron ("whenever EQUIPPED CREATURE attacks, create a 2/2")
+            # delivers `any-attack-trigger` on `rule:attack-trigger-create-
+            # token`, an axis with no `any-` sibling. The card is on the right
+            # axis; the grader was over-strict.
+            #
+            # The sibling test is what keeps this honest: the moment someone
+            # ratifies `rule:any-attack-trigger-create-token`, the unprefixed
+            # name starts meaning SOURCE-ONLY again and this stops applying.
+            if want not in got:
+                sibs = [f"rule:{pre}-{want}-{tail_of(axis, want)}"
+                        for pre in ("any", "other", "source")]
+                if not any(s in cb_axes for s in sibs):
+                    got = [re.sub(r"^(?:any|other|source)-", "", str(g))
+                           for g in got if g is not None]
             ok, claim = want in got, f"delivery {want!r}"
         else:
             kw = claimed_keyword(axis)

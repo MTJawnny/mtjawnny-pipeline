@@ -278,3 +278,63 @@ affected.**
 `etb-with-counters` and `etb-copy-your-permanent` mean "on entering" and route
 to `replacement` (CR 614.1c). One string, two meanings. Either the token or the
 prefix gives.
+
+
+---
+
+## UPDATE 4 — the 89 re-read. Captain was right: 27 already had homes.
+
+**Captain: *"I read them myself and it would be surprising if they didn't
+already have homes."* Correct, and my "0 of 89 have a home" was an
+over-narrow-filter defect** — I searched only for the exact string
+`rule:<actual-delivery>-<same tail>`. Guard D exists for precisely this and I
+did not use it on my own search.
+
+### The honest partition of the 89
+
+| | | |
+|---|--:|---|
+| **A** | **27** | **§2a PREFIX ONLY — the card is already on the right axis** |
+| B | 59 | a genuinely different delivery — needs a home |
+| C | 3 | no delivery at all (spell / unrouted) |
+
+### Class A is resolved, by §1's own stated law
+
+§1 already governs this for the SCOPE slot: *"Omitted when the axis's `scope=`
+field carries it **and no sibling differs only by scope**; REQUIRED the moment
+a scope-sibling exists."* §2a's `any-`/`other-`/`source-` prefix is the same
+kind of slot — so an axis omitting it is **not** asserting the SOURCE form, it
+is leaving the slot unspecified.
+
+**Measured: for all 27, no prefixed sibling axis exists.** Sigiled Sword of
+Valeron (*"whenever EQUIPPED CREATURE attacks, create a 2/2"*) delivers
+`any-attack-trigger` on `rule:attack-trigger-create-token`, an axis with no
+`any-` sibling. **The card was always on the right axis; the grader was
+over-strict.**
+
+The sibling test is what keeps it honest: the moment
+`rule:any-attack-trigger-create-token` is ratified, the unprefixed name means
+SOURCE-ONLY again and this stops applying.
+
+| | before | after |
+|---|--:|--:|
+| mismatches | 89 | **62** |
+| passing | 1,092 | **1,119** |
+
+Baseline re-pinned onto improvement. Gate 2 green, 12 rows.
+
+### What the remaining 62 are
+
+**59 + 3 that genuinely have no home.** They need 50-odd new axes, most of them
+singletons — `rule:etb-tap-target-creature` (2), `rule:chapter-trigger-create-
+token` (4), `rule:any-death-trigger-token-creation` (4)… Verified real by
+reading: Booby Trap, Frostfist Strider, Summon: Shiva, Nazahn and Dungeon
+Geists sit on `rule:activated-…` and **none has an activated ability** — the
+effect arrives by ETB, attack trigger, Saga chapter or clash.
+
+**Captain's gain/lose precedent applies to a subset**: a card whose ability
+carries two events joins BOTH single-event axes and a new compound axis. That
+is membership-is-not-exclusive, already ratified. It does not cover the cards
+here whose delivery is simply a different single event.
+
+**This is new vocabulary — ~50 axes — and stays a ratification.**
