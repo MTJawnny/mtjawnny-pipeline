@@ -183,31 +183,87 @@ the *pipeline*. **Nothing verifies the instrument.**
 | # | item | status |
 |---|---|---|
 | 1 | Negative-control the eight gates | ✅ **done** — 6 pass, 2 cannot fail |
-| 2 | Widen ground truth past 6.7% | ✅ **built and measured** (2.6× graded) — the 201-candidate triage is **not** done |
-| 3 | Install the four missing mechanisms | ❌ **not started** |
-| 4 | Re-run recorded findings through corrected probes | ❌ **not started** |
+| 2 | Widen ground truth past 6.7% | ✅ **built and measured** (2.6× graded) — the 201-candidate triage remains |
+| 3 | Install the four missing mechanisms | ✅ **done** — `foundry_probe.py`, 10/10 self-test |
+| 4 | Re-run recorded findings through corrected probes | ✅ **done** — and it found 2 wrong counts in ratified law |
 
-Items 3 and 4 were not attempted rather than attempted badly. Item 3 is the only
-one that stops the bleeding instead of measuring it.
+---
+
+## 5. ITEM 3 — the mechanism probe defects never had
+
+`experiments/foundry_probe.py`. Four causes, four guards, **each halting rather
+than warning** — a warned-about probe defect is the state of the last five
+sessions.
+
+| guard | closes | what it does |
+|---|---|---|
+| `corpus()` / `rows()` / `longest_match()` | **A** re-implementation | one canonical stand-up; yields tokens as *strings*, closing the `kw in [(tok,desc)]` defect that scored a correct family 0/304 |
+| `domain()` / `vocab()` / `active_axes()` | **B** assumed vocabulary | halts on a value the live data does not contain |
+| `assert_disjoint()` | **C** overlapping classes | halts when two patterns claim the same sample |
+| `must_capture()` | **D** over-narrow filter | halts when a known-positive is missed |
+
+**It is negative-controlled against itself** — the finding from §1, applied to
+the new tool before anything trusts it. `python3 experiments/foundry_probe.py`
+runs 10 cases: every guard is shown to pass on correct input *and* to halt on
+the real recorded defect. **10/10.**
+
+Two of this session's own defects are now reproduced and caught by it: the
+`^When` filter (guard D) and the guessed `retired`/`dropped` status (guard B).
+
+Verified against the live corpus, not just its own fixture: 61,383 lines,
+`door-unlocked-trigger` 30, `state-trigger` 50, active axes 359, §2 tokens 64 —
+every number matches the independently measured value.
+
+**The point is not that it exists. It is that it is shorter to use than to
+hand-roll**, which is the only thing that has ever worked here.
+
+---
+
+## 6. ITEM 4 — "most were caught before their numbers were used" was false
+
+`experiments/foundry_recorded_numbers.py` re-derives every line/card count that
+grammar **§2** claims, from the live corpus. §2 specifically, because a stale
+number in a handoff is a note — **a wrong number in §2 is a wrong premise inside
+the document the extractor parses its vocabulary from at run time.**
+
+It found two, **both from this session, both mine:**
+
+| §2 row | claimed | live |
+|---|---|---|
+| `player-loses-game-trigger` | 5 lines / 5 cards | **7 / 7** |
+| `coin-flip-won-trigger` | 6 lines / 5 cards | **6 / 6** |
+
+The first is the `^When` filter defect. The routing diff corrected the *routing*
+that day — **nobody corrected the number**, and it went into ratified law. That
+is the precise failure mode item 4 was hypothesised to catch, caught on the
+first run.
+
+Both rows are corrected, and the `player-loses-game-trigger` row now records
+*why* it was wrong so the correction cannot be re-derived as a fresh error.
+
+**Coverage stated honestly:** 7 of 64 §2 rows carry a machine-checkable count.
+The other 57 assert no count at all — that is a gap in the rows, not a pass.
+`--strict` exits 1 on drift, so it is gateable.
 
 ---
 
 ## RECOMMENDED NEXT, IN ORDER
 
 1. **Make the two reporters into gates** — or move them out of Gate 2 so the
-   list stops implying eight failures are possible when six are. Cheapest fix
-   on this page: pin `definition_drift`'s findings count to the existing
-   ratchet, exactly as conservation and visibility already are.
-2. **Build the probe library (item 3).** Make the right call *shorter to write*
-   than the wrong one. All three of this session's own probe defects were
-   hand-rolled versions of something that should have been an import.
-3. **Triage the 201**, then wire `--wide` into the gate. Coverage goes 6.7% →
-   ~53% on human-class evidence alone.
-4. **Then** item 4, and only then more card analysis.
+   list stops implying eight failures are possible when six are. Cheapest fix:
+   pin `definition_drift`'s findings count to the existing ratchet, exactly as
+   conservation and visibility already are. **Still open.**
+2. **Triage the 201 `--wide` candidates**, then wire `--wide` into the gate.
+   Coverage goes 6.7% → ~53% on human-class evidence alone. **Still open.**
+3. **Add a count to the other 57 §2 rows** so item 4's checker can see them.
+   Today it can check 7 of 64.
+4. **Then** more card analysis.
 
 ## THE ONE-SENTENCE VERSION
 
 The system works better than it could prove — six of eight gates are now
 verified capable of failing, the verification hole is one flag away from being
-8× smaller, and the recurring defect class is recurring for the ordinary reason
-that it is the only one guarded by prose instead of by a tool.
+8× smaller, and the one recurring defect class was recurring for the ordinary
+reason that it was the only one guarded by prose instead of by a tool. **It now
+has a tool, and the first thing that tool's sibling did was find two wrong
+numbers inside ratified law.**
