@@ -544,6 +544,21 @@ encodes.
   extractor parses its vocabulary from at run time.** Only 7 of 64 rows carry a
   checkable count, so this is a floor, not a clean bill.
 
+- **A REJECTED TERM IN BACKTICKS IS INGESTED AS RATIFIED VOCABULARY.** Third
+  instance of "a markdown document is an API", and the first one outside §2's
+  table. Every section parser (`foundry_probe.vocab`, the reparse, the synonym
+  checker) harvests backticked identifiers from PROSE, so writing *"NOT
+  `produce-mana`"* mints `produce-mana`. Caught within one run on 2026-08-09:
+  `foundry_synonym_collision.py` reported 21 members colliding against a
+  "ratified verb" that existed only inside its own rejection — **and the
+  sentence written to explain the trap re-introduced it the same way.**
+  **Rejected alternatives go in "quotes", never in `backticks`.** A regex
+  cannot reliably find these after the fact: a detector built for it flagged
+  13, of which several were real ratified values (`defending-player`,
+  `two-target`) that merely sit near the word BANNED, which applies to a
+  different term in the same sentence. The convention is the control; the
+  detector is not.
+
 ## Out of scope — check before raising a finding
 
 **`docs/OUT-OF-SCOPE.md` is a DECLINE REGISTER, not a backlog.** Attractions /

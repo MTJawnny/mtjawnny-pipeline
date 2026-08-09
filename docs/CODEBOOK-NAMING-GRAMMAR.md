@@ -592,7 +592,27 @@ One verb per mechanic, chosen once, used everywhere:
 
 - `destroy`, `exile`, `bounce` (return to hand), `tuck` (to library),
   `sacrifice`, `discard`, `mill`, `draw`, `loot` (draw-then-discard),
-  `scry`, `surveil`, `proliferate`, `tutor` (search library), `reanimate`
+  `scry`, `surveil`, `proliferate`, `tutor` (search library), `reanimate`,
+  `shuffle` (**Captain-ratified 2026-08-09** — **CR 701.24** files Shuffle as a
+  KEYWORD ACTION, exactly as it files `scry` 701.22, `surveil` 701.25 and
+  `mill`, so the bare stem is the CR's own word and this row adds no coinage.
+  Distinct from `tutor`: CR 701.23 Search and 701.24 Shuffle are separate rules
+  and a card may do either without the other), `add-mana` (**Captain-ratified
+  2026-08-09** — **CR 106.4** supplies the verb verbatim: *"When an effect
+  instructs a player to **add mana**, that mana goes into a player's mana
+  pool."* NOT "produce-mana" or "makes-mana" — §4's law is one verb per
+  mechanic and the CR already chose this one. **Rejected alternatives are
+  written in QUOTES, never in backticks**: every section parser harvests
+  backticked identifiers, so a rejected term in backticks is ingested as
+  ratified vocabulary. That happened on this very row twice — the first draft
+  backticked the rejected spelling and `foundry_synonym_collision.py`
+  immediately reported 21 members colliding against a "ratified verb" that
+  existed only inside its own rejection; the sentence written to EXPLAIN that
+  then re-introduced it the same way. **The mana RESTRICTION is a
+  separate slot, not part of this verb** — CR 106.6 mana *"that can be spent
+  only on certain types of costs"* is §3a's `restricted-purpose-mana`, and
+  folding the two would put a Llanowar Elves and a Cavern of Souls on one
+  axis)
   (graveyard → battlefield), `regrowth` (graveyard → hand, ratified b5 vocab),
   `create-token`, `pump` (+P/+T), `debuff` (−P/−T), `damage`, `gain-life`,
   `enters-tapped` (**Captain-ratified 2026-08-09** — **CR 614.1c** names the
