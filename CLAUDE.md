@@ -36,6 +36,17 @@ act on before writing any code:
    ratified list, suspect the check — measured base rate, and 3 of 8 negative
    controls on 2026-08-09 were mis-aimed and each first read as "this gate is
    broken".
+7. **BEFORE PROPOSING A MUTATION, MEASURE WHETHER THE THING IS BROKEN.**
+   Twice on 2026-08-09 a "defect" was not one. "Repair the 55 stale quotes"
+   would have **rewritten 54 correct Captain-ratified quotes** to make a
+   defective test pass — 54 were verbatim correct and the fixture was reading a
+   reminder-stripped view. "0 of 89 have a home" was an over-narrow string
+   search; 27 already had homes. **A null result from your own search is not a
+   fact about the data.**
+8. **A NUMBER GOING UP IS NOT AUTOMATICALLY A REGRESSION — READ THE
+   DENOMINATOR.** `--wide` mismatches went 3 → 10 and that was 67 seeds moving
+   from *ungraded* to *graded* (60 pass, 7 fail). State the reason in the
+   `--update-baseline` commit or the next session will read it as rot.
 
 **Everything else on this page is context for WHY.** Read it when you have room;
 act on the six above always.
@@ -590,6 +601,25 @@ encodes.
   `two-target`) that merely sit near the word BANNED, which applies to a
   different term in the same sentence. The convention is the control; the
   detector is not.
+
+- **SIZING A RATIFICATION BY THE SLUG PREFIX OVER-COUNTS IT, TWICE MEASURED.**
+  "38 `etb-` axes need a ruling" was really **5** — only those are
+  replacement-dominant, and the tell was printed in the slug all along
+  (`-with-`/`-as-` is CR 614.1c, a bare verb is CR 603.6a). "89 membership
+  errors" was really 27 prefix-imprecision + 59 needing a home + 3 spells.
+  **Measure per item before quoting a population to Captain**; a prefix is a
+  hypothesis about a population, not the population.
+- **A CODEBOOK MUTATION CAN PROPAGATE A PRE-EXISTING DEFECT INTO A NEW AXIS,
+  WHERE IT LOOKS ORIGINAL.** On 2026-08-09 a re-home moved a member whose
+  evidence quote was a TOKEN onto a new `-plus1-counter` axis (§8 rule 3).
+  The membership was already wrong on its SOURCE axis; the move would have
+  given the defect a fresh, innocent-looking home. `definition_drift` caught it
+  as `C1b 1 → 2` — **only because it was ratcheted into a real gate that same
+  morning; the day before it would have exited 0.** The mutation drill is:
+  backup → `--dry-run` and READ the conservation line → execute → **re-run
+  `foundry_gate2.py` and expect it to find something** → revert from the
+  verified backup if it does. The revert is free; that is what the backup law
+  buys.
 
 ## Out of scope — check before raising a finding
 
