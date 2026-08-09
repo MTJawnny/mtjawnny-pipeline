@@ -98,7 +98,26 @@ python3 experiments/foundry_punctuation_audit.py     # conservation: nothing los
 python3 experiments/foundry_visibility_audit.py      # can each option be SEEN
 python3 experiments/foundry_ground_truth.py          # is the token RIGHT
 python3 experiments/foundry_gate_audit.py            # what does Gate #0 hide
+python3 experiments/foundry_probe.py                 # are the probe GUARDS alive
+python3 experiments/foundry_recorded_numbers.py --strict   # do the docs' numbers hold
 ```
+
+**Ten now, and the last two were added 2026-08-09 after the gates were
+negative-controlled** (`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
+
+- **`foundry_probe.py`** is the probe LIBRARY's self-test. Guards A-D each
+  halt on a real recorded defect and pass on correct input; 10 cases. **Use
+  the library when you write a probe** — `p.corpus()`, `p.rows()`,
+  `p.domain()`, `p.assert_disjoint()`, `p.must_capture()`. 21 probe defects
+  happened because hand-rolling was shorter than doing it right.
+- **`foundry_recorded_numbers.py`** re-derives every line/card count grammar
+  §2 asserts. It found two wrong on its first run, both in ratified rows.
+
+**TWO OF THE EIGHT CANNOT FAIL.** Measured, not assumed:
+`foundry_definition_drift.py` moves 35 -> 36 findings on an injected defect and
+**exits 0**; `foundry_ruling_registry.py` notices a deleted ruling doc and
+**exits 0**. Both are REPORTERS listed as GATES. Read their output; do not
+read their exit code as a verdict.
 
 **Eight, and each answers a question none of the others can.** The first four
 check that what EXISTS is consistent. Conservation and visibility check that

@@ -8,8 +8,8 @@ Captain asked a question that turned out to be the right one:
 > arise? I think we need to figure out if the system works as it stands now
 > before analyzing more cards."*
 
-Four things were planned. **Two are done, two are not.** Status is stated
-honestly at the end rather than blurred.
+Four things were planned. **All four are done.** Items 3 and 4 were added in a
+second pass; §5 and §6 cover them.
 
 ---
 
@@ -28,6 +28,9 @@ honestly at the end rather than blurred.
 4. **The verification hole was much easier to close than anyone thought.**
    Ground truth covered 6.7% of the codebook. The missing 93% was already
    sitting inside the codebook itself.
+5. **Probe defects now have a tool** (`foundry_probe.py`, 10/10 negative-
+   controlled), and its sibling immediately found **two wrong counts inside
+   ratified §2 law** — both written this session, both from my own probes.
 
 ---
 
