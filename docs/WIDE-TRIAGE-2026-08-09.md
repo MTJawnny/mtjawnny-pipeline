@@ -229,3 +229,52 @@ backup verified by readback, determinism ×2 byte-identical, member conservation
 
 The 89 are real codebook errors (51 triggered abilities on `activated-` axes,
 11 Saga chapters, 4 modes). They stay fatal.
+
+
+---
+
+## UPDATE 3 — `--wide` IS GATED, on a ratchet
+
+**The 89 could not be a precondition, and measuring showed why:**
+`rule:<actual-delivery>-<same tail>` exists for **0 of 89**. Every one needs a
+NEW AXIS or a DROP — a ratification, not a fix. Waiting for that would keep
+**1,181 graded assertions ungated indefinitely**.
+
+So `--wide` gates the way the rest of Gate 2 already does: **any rise in
+mismatches or unanchored is fatal; any fall is reported and accepted only with
+an explicit `--update-baseline`.** The backlog can shrink and cannot grow.
+
+| | |
+|---|--:|
+| pinned `mismatch` | 89 |
+| pinned `unanchored` | **0** |
+| pinned `graded` / `passed` | 1,181 / 1,092 |
+| pinned `head_ambiguous` (CR 614.1c, needs a ruling) | 60 |
+
+**The narrow gate stays ABSOLUTE-ZERO** — 488 seeds that have reproduced
+exactly through every change this session. Loosening a proven invariant into a
+ratchet would trade it for a backlog; only the fixture that *carries* a backlog
+gates on movement.
+
+Negative-controlled: pinning mismatch at 88 and re-running gives
+`88 → 89 in the WORSE direction`, **exit 1**. Gate 2 is now **12 rows**.
+
+---
+
+## STILL NEEDS CAPTAIN — the two that are genuinely ratifications
+
+**1. The 89 memberships.** Cards sitting on an axis whose delivery they do not
+have. Verified real by reading: Booby Trap, Entangling Trap, Frostfist Strider,
+Summon: Shiva, Nazahn and Dungeon Geists are all on
+`rule:activated-…` and **none of them has an activated ability at all** — their
+effect arrives by ETB, attack trigger, Saga chapter or clash. `rule:activated-
+tap-target-creature` is 25 correct against 7 wrong, so the AXIS is right and
+the memberships are not.
+
+Each needs a new axis (`rule:etb-tap-target-creature`, …) or a drop. **35 axes
+affected.**
+
+**2. The `etb` prefix (60 seeds, 38 axes).** §2's `etb` is an ETB TRIGGER;
+`etb-with-counters` and `etb-copy-your-permanent` mean "on entering" and route
+to `replacement` (CR 614.1c). One string, two meanings. Either the token or the
+prefix gives.

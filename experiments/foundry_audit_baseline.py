@@ -51,7 +51,7 @@ WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
                # 2026-08-09: the two Gate 2 checks that were measured
                # INCAPABLE OF FAILING now ratchet here. A new drift finding is
                # worse; a lost ruling document is worse.
-               "findings", "sole_home")
+               "findings", "sole_home", "unanchored")
 WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  "options", "content", "passed", "graded",
                  # a ruling that stops being recorded anywhere, or a document

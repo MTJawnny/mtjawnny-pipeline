@@ -48,6 +48,8 @@ GATES = [
      "an option became unreachable"),
     ("ground_truth",     [f"{EXP}/foundry_ground_truth.py"],
      "a ratified assignment and the extractor disagree"),
+    ("ground_truth_wide", [f"{EXP}/foundry_ground_truth.py", "--wide"],
+     "the 1,181-assertion fixture regressed (ratcheted, not zero-based)"),
     ("gate_audit",       [f"{EXP}/foundry_gate_audit.py"],
      "the extractor crashes on what the corpus gate excludes"),
     ("probe_guards",     [f"{EXP}/foundry_probe.py"],
