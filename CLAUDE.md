@@ -570,6 +570,15 @@ deck-building relevance, not textual frequency.**
 
 ## Reference
 
+- **⚠ OPEN: THE MANA-ABILITY RULES CHANGED — `docs/CR-REFRESH-MANA-ABILITIES.md`.**
+  Captain, 2026-08-09. The vendored CR is *effective June 19, 2026* and a newer
+  one exists. This is the first time the snapshot lag is known to affect a
+  RULE rather than a card, which matters because this pipeline DERIVES from the
+  CR at run time — a refresh can move routing with no code edit at all. The
+  blast radius is measured in that file (`tapped-for-mana-trigger` 58 lines on
+  CR 106.12 · the CR 605.1a qualifier on 16 · `add-mana` and
+  `restricted-purpose-mana`, both ratified hours before the notice). **Do not
+  write a branch against a guess about the new rule.**
 - **START HERE AFTER A BREAK: `docs/PICK-UP-HERE.md`** — undated, stably
   named, says what to audit FIRST and what not to touch.
 - **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-09.md`**
