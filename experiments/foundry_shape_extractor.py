@@ -2413,6 +2413,24 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if re.search(r"\bactivates?\b[^,]{0,60}?\babilit(?:y|ies)\b"
                      r"|\babilit(?:y|ies)\b[^,]{0,60}?\bis activated\b", clause):
             return mark("ability-activated-trigger", "ability-activated")
+        # CR 709.5h -- a Room's DOOR is UNLOCKED. Captain-ratified 2026-08-07,
+        # W3 sheet D8a item 1. *"Some abilities trigger when a player unlocks a
+        # particular half of a permanent."*
+        #
+        # `mark`, not `msub`: 709.5h's subject is the acting PLAYER ("when YOU
+        # unlock"), as with CR 121.1's draw. Whose Room it is, is a §6 scope.
+        #
+        # CR 709.5i's "FULLY UNLOCK" IS A DIFFERENT EVENT AND IS EXCLUDED HERE
+        # ON PURPOSE. The CR gives it its own sub-rule -- it fires when a Room
+        # "has one of the two unlocked designations and gets the other", i.e.
+        # on the SECOND door, and on ANY Room rather than this one. Measured
+        # 2026-08-09: 17 lines, every one an `Eerie` ability-word card whose
+        # OTHER half already routes to `any-etb`. Folding the two would assert
+        # that a Room's own door and a board-wide second-door payoff are one
+        # mechanism, which §6b rule 1 forbids by name. It stays an honest gap
+        # pending a ruling rather than being approximated onto this token.
+        if re.search(r"(?<!fully )\bunlocks?\b", clause):
+            return mark("door-unlocked-trigger", "door-unlocked")
         # CR 400.1 -- a card LEAVES a graveyard. Captain-ratified 2026-08-07,
         # W3 sheet D5. §2 named four ways INTO a graveyard and none out of one.
         # Tested BEFORE the life/sacrifice branches for the same reason the
