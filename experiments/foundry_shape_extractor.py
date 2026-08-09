@@ -2450,6 +2450,27 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         # list, which is design goal #1's duplication.
         if re.search(r"\bday becomes night\b|\bnight becomes day\b", clause):
             return mark("day-night-changed-trigger", "day-night-changed")
+        # CR 705.2 -- the RESULT of a coin flip. Captain-ratified 2026-08-07,
+        # W3 sheet D8a item 3. *"If the call matches the result, the player
+        # WINS the flip. Otherwise, the player LOSES the flip."* The CR closes
+        # the outcome set at exactly two, so both rows are reserved by an
+        # enumeration -- the `noncombat-damage-to-planeswalker` pattern -- and
+        # `coin-flip-lost-trigger` having one member is not a one-card token.
+        #
+        # THE FLIP AS AN EFFECT IS NOT THIS TOKEN AND THAT IS THE WHOLE CUT.
+        # 103 of the 110 lines printing `flip` carry it in their EFFECT
+        # ("whenever this creature attacks, FLIP A COIN") and already route on
+        # their own event; CR 113.3c keeps them there. Requiring the
+        # win/lose VERB rather than the word `flip` is what separates them.
+        #
+        # `\bcoin flip\b` is required, not a bare `\bcoin\b`: Athreos,
+        # Shroud-Veiled triggers on a creature "with a COIN COUNTER on it",
+        # which is a CR 122 counter type that merely shares the word.
+        m_flip = re.search(r"\b(wins?|loses?)\b[^,]{0,20}?\bcoin flip\b", clause)
+        if m_flip:
+            won = m_flip.group(1).startswith("win")
+            tok = "coin-flip-won-trigger" if won else "coin-flip-lost-trigger"
+            return mark(tok, tok[:-len("-trigger")])
         # CR 400.1 -- a card LEAVES a graveyard. Captain-ratified 2026-08-07,
         # W3 sheet D5. §2 named four ways INTO a graveyard and none out of one.
         # Tested BEFORE the life/sacrifice branches for the same reason the
