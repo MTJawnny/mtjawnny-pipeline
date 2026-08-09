@@ -12,15 +12,15 @@ and ratified DEFINITION disagree, or whose MEMBERS contradict both,
 passes every existing check. The CDR-09 walk surfaced one instance by
 accident; this is the systematic pass for the rest.
 
-Scope: 359 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
+Scope: 403 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**35 findings.**
+**29 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
-| C2 | §1/§2 — member delivery contradicts the slug prefix | 16 |
+| C2 | §1/§2 — member delivery contradicts the slug prefix | 10 |
 | C3 | §4 — member effect contradicts the slug suffix | 7 |
 
 Member tests are **double-gated**: a member is only reported when the
@@ -34,22 +34,20 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## Where the drift concentrates
 
-41 misfiled member assignments across 16 axes:
+19 misfiled member assignments across 10 axes:
 
 | delivery prefix | axes | misfiled members |
 |---|--:|--:|
-| `etb-` | 13 | 37 |
-| `draw-second-card-trigger-` | 1 | 2 |
-| `attack-trigger-` | 1 | 1 |
-| `cast-trigger-` | 1 | 1 |
+| `etb-` | 9 | 18 |
+| `draw-second-card-trigger-` | 1 | 1 |
 
-**`etb-` accounts for 37 of 41.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
+**`etb-` accounts for 18 of 19.** The pattern is one-way: planeswalker loyalty abilities, Saga chapters, Room unlock triggers, instants/sorceries with no permanent to enter, activated abilities, megamorph turn-face-up, and even *leaves*-the-battlefield triggers have all been absorbed onto ETB axes. The reverse — a genuine ETB filed elsewhere — appears once (`upkeep-surveil`). That asymmetry suggests ETB is functioning as a default home when delivery is unclear, rather than a claim about delivery.
 
 ## C1b — grammar §8 rule 3 (CR 122.1 verbatim): a counter is not a token
 
 ### `rule:draw-second-card-trigger-plus1-counter`
 
-**slug names a counter; 2 of 4 members are evidenced by a token and carry no counter anywhere in their oracle text**
+**slug names a counter; 2 of 3 members are evidenced by a token and carry no counter anywhere in their oracle text**
 
 - **Rammas Echor, Ancient Shield** — "Whenever you cast your second spell each turn, draw a card, then create a 0/3 white Wall creature token with defender."
 - **Thopter Fabricator** — "Whenever you draw your second card each turn, create a 1/1 colorless Thopter artifact creature token with flying."
@@ -58,27 +56,10 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ## C2 — grammar §1/§2 — DELIVERY is closed vocabulary
 
-### `rule:attack-trigger-pump-each-attacker-you-control`
-
-**slug's delivery is 'attack-trigger', so members must say 'attacks'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
-
-- **Voltstorm Angel** — "Other creatures you control get +1/+1 until end of turn."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
-### `rule:cast-trigger-card-draw`
-
-**slug's delivery is 'cast-trigger', so members must say 'cast'; 1 of 15 never do, in the cited quote or anywhere in their oracle text**
-
-- **Avengers Assemble!** — "At the beginning of each end step, if you attacked with a Hero this turn or a Hero entered the battlefield under your control this turn, draw a card."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
 ### `rule:draw-second-card-trigger-plus1-counter`
 
-**slug's delivery is 'draw-second-card-trigger', so members must say 'draw(s) your/their second card'; 2 of 4 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'draw-second-card-trigger', so members must say 'draw(s) your/their second card'; 1 of 3 never do, in the cited quote or anywhere in their oracle text**
 
-- **Codespell Cleric** — "When this creature enters, if it was the second spell you cast this turn, put a +1/+1 counter on target creature."
 - **Rammas Echor, Ancient Shield** — "Whenever you cast your second spell each turn, draw a card, then create a 0/3 white Wall creature token with defender."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
@@ -91,25 +72,11 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-create-token`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 5 of 56 never do, in the cited quote or anywhere in their oracle text**
-
-- **Nahiri, Heir of the Ancients** — "Create a 1/1 white Kor Warrior creature token."
-- **Yotia Declares War** — "Create a 0/2 colorless Thopter artifact creature token with flying named Ornithopter."
-- **Alien Invasion** — "At the beginning of combat on your turn, create a 1/1 red Alien creature token with haste and "This token attacks each combat if able.""
-- **Howlsquad Heavy** — "At the beginning of combat on your turn, create a 1/1 red Goblin creature token."
-- **Grand Entryway // Elegant Rotunda** — "When you unlock this door, create a 1/1 white Glimmer enchantment creature token."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
 ### `rule:etb-create-token-creature`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 4 of 44 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 2 of 38 never do, in the cited quote or anywhere in their oracle text**
 
-- **Illustrious Historian** — "Create a tapped 3/2 red and white Spirit creature token."
 - **Tempt with Bunnies** — "Draw a card and create a 1/1 white Rabbit creature token."
-- **Rat King, Verminister** — "create a 1/1 black Rat creature token"
 - **Spiked Corridor // Torture Pit** — "When you unlock this door, create three 1/1 red Devil creature tokens with "When this token dies, it deals 1 damage to any target.""
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
@@ -122,22 +89,12 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-create-token-mutagen`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 5 never do, in the cited quote or anywhere in their oracle text**
-
-- **The Ooze** — "Create a Mutagen token."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
 ### `rule:etb-exile-graveyard-card`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 6 of 16 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 4 of 13 never do, in the cited quote or anywhere in their oracle text**
 
 - **Break Ties** — "Exile target card from a graveyard."
-- **Mastermind Plum** — "Whenever Mastermind Plum attacks, exile up to one target card from a graveyard."
 - **Shadow of the Enemy** — "Exile all creature cards from target player's graveyard."
-- **Tymaret, Chosen from Death** — "{1}{B}: Exile up to two target cards from graveyards."
 - **Cremate** — "Exile target card from a graveyard."
 - **Headstone** — "Exile target card from a graveyard."
 
@@ -160,40 +117,19 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-plus1-counter-on-target-creature`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 5 of 30 never do, in the cited quote or anywhere in their oracle text**
-
-- **Guardian Shield-Bearer** — "When this creature is turned face up, put a +1/+1 counter on another target creature you control."
-- **C.A.M.P.** — "put a +1/+1 counter on target creature you control"
-- **Kaya, Geist Hunter** — "Put a +1/+1 counter on up to one target creature token you control."
-- **Kami of Celebration** — "Whenever you cast a spell from exile, put a +1/+1 counter on target creature you control."
-- **Grand Entryway // Elegant Rotunda** — "When you unlock this door, put a +1/+1 counter on each of up to two target creatures."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
 ### `rule:etb-scry`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 4 of 14 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 3 of 13 never do, in the cited quote or anywhere in their oracle text**
 
 - **Voyage's End** — "Scry 1."
-- **Falcon, Joaquin Torres** — "put a +1/+1 counter on him and scry 1"
 - **Samut's Sprint** — "Scry 1."
 - **Coming In Hot** — "Scry 1."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
-### `rule:etb-self-plus1-counter`
-
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 12 never do, in the cited quote or anywhere in their oracle text**
-
-- **The Wandering Emperor** — "Put a +1/+1 counter on up to one target creature."
-
-*Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
-
 ### `rule:etb-tutor-to-hand`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 17 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 1 of 16 never do, in the cited quote or anywhere in their oracle text**
 
 - **Mystical Teachings** — "Search your library for an instant card or a card with flash, reveal it, put it into your hand, then shuffle."
 
@@ -201,13 +137,11 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:etb-with-counters`
 
-**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 5 of 68 never do, in the cited quote or anywhere in their oracle text**
+**slug's delivery is 'etb', so members must say 'enters' / 'put onto the battlefield' / 'return … to the battlefield'; 3 of 60 never do, in the cited quote or anywhere in their oracle text**
 
 - **Mire's Malice** — "also put three +1/+1 counters on target land you control"
 - **Clutch of Currents** — "also put three +1/+1 counters on target land you control"
-- **Molly Hayes, Runaway** — "Put two +1/+1 counters on Molly Hayes."
 - **Rush of Ice** — "also put three +1/+1 counters on target land you control"
-- **Mild-Mannered Librarian** — "Put two +1/+1 counters on it and you draw a card."
 
 *Proposed:* re-home these members onto the axis matching their real delivery (or ratify a new sibling if none exists)
 
@@ -215,7 +149,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:activated-ability-costs-self-sacrifice`
 
-**slug's effect is 'sacrifice', so members must show 'sacrifice'; 3 of 44 never do, in the cited quote or anywhere in their oracle text**
+**slug's effect is 'sacrifice', so members must show 'sacrifice'; 3 of 43 never do, in the cited quote or anywhere in their oracle text**
 
 - **Brittle Effigy** — "{4}, {T}, Exile this artifact: Exile target creature."
 - **Relic of Progenitus** — "{1}, Exile this artifact: Exile all graveyards. Draw a card."
@@ -225,7 +159,7 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 
 ### `rule:cast-trigger-draw-on-target-creature-spell-you-control`
 
-**slug's effect is 'draw', so members must show 'draw'; 3 of 5 never do, in the cited quote or anywhere in their oracle text**
+**slug's effect is 'draw', so members must show 'draw'; 3 of 4 never do, in the cited quote or anywhere in their oracle text**
 
 - **Mockingbird, Ace Agent** — "Whenever you cast a spell that targets a creature you control, put a +1/+1 counter on Mockingbird."
 - **Scolding Administrator** — "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature."

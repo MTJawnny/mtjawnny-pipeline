@@ -1,0 +1,639 @@
+{
+ "batch": "wide-62-rehome-2026-08-09",
+ "ruling": "Captain-authorised 2026-08-09: 'let's focus on the 62. remove from activated-, create new axis if need be.' These members sit on an axis whose DELIVERY head their ability does not have \u2014 verified by reading: Frostfist Strider, Summon: Shiva, Nazahn and Dungeon Geists are on rule:activated-* and NONE has an activated ability (CR 602.1 '[Cost]: [Effect]'); their effect arrives by ETB, attack trigger or Saga chapter (CR 113.3c / 714.2). Record: docs/WIDE-TRIAGE-2026-08-09.md. EXCLUDED 53d58401 (Codespell Cleric) from rule:cast-trigger-plus1-counter: definition_drift C1b caught it \u2014 its evidence quote is a TOKEN ('create a 0/3 white Wall creature token'), not a counter, so it does not belong on a -plus1-counter axis under \u00a78 rule 3. That membership was ALREADY wrong on its source axis; the move would have propagated the defect into a NEW axis. Left in place as a pre-existing tracked finding.",
+ "source_ref": "foundry_ground_truth.py --wide, 2026-08-09",
+ "new_axes": {
+  "rule:draw-trigger-ability-costs-self-sacrifice": {
+   "definition": "The 'ability costs self sacrifice' effect delivered by draw trigger. Split from rule:activated-ability-costs-self-sacrifice, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'draw-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When the chosen player draws a card with the chosen name, sacrifice th"
+  },
+  "rule:etb-tap-target-creature": {
+   "definition": "The 'tap target creature' effect delivered by etb. Split from rule:activated-tap-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'etb', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When this creature enters, tap target creature an opponent controls an"
+  },
+  "rule:chapter-trigger-tap-target-creature": {
+   "definition": "The 'tap target creature' effect delivered by chapter trigger. Split from rule:activated-tap-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: I, II \u2014 Heavenly Strike \u2014 Tap target creature an opponent controls. Pu"
+  },
+  "rule:attack-trigger-tap-target-creature": {
+   "definition": "The 'tap target creature' effect delivered by attack trigger. Split from rule:activated-tap-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever an equipped creature you control attacks, you may tap target "
+  },
+  "rule:cast-trigger-tap-target-creature": {
+   "definition": "The 'tap target creature' effect delivered by cast trigger. Split from rule:activated-tap-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'cast-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Flurry \u2014 Whenever you cast your second spell each turn, tap target cre"
+  },
+  "rule:etb-untap-target-creature": {
+   "definition": "The 'untap target creature' effect delivered by etb. Split from rule:activated-untap-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'etb', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When Sauron enters, gain control of target creature an opponent contro"
+  },
+  "rule:player-attack-trigger-pump-creature-you-control": {
+   "definition": "The 'pump creature you control' effect delivered by player attack trigger. Split from rule:attack-trigger-pump-creature-you-control, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'player-attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever you attack, target creature you control gets +1/+0 until end "
+  },
+  "rule:begin-combat-trigger-pump-each-attacker-you-control": {
+   "definition": "The 'pump each attacker you control' effect delivered by begin combat trigger. Split from rule:attack-trigger-pump-each-attacker-you-control, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'begin-combat-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: \u2022 Other creatures you control get +1/+1 until end of turn."
+  },
+  "rule:player-attack-trigger-pump-each-attacker-you-control": {
+   "definition": "The 'pump each attacker you control' effect delivered by player attack trigger. Split from rule:attack-trigger-pump-each-attacker-you-control, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'player-attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: \u2022 Attacking creatures you control get +1/+1 until end of turn."
+  },
+  "rule:player-attack-trigger-self-plus1-counter-growth": {
+   "definition": "The 'self plus1 counter growth' effect delivered by player attack trigger. Split from rule:attack-trigger-self-plus1-counter-growth, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'player-attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever you attack with one or more non-Gnome creatures, put a +1/+1 "
+  },
+  "rule:player-attack-trigger-untap-attacker": {
+   "definition": "The 'untap attacker' effect delivered by player attack trigger. Split from rule:attack-trigger-untap-attacker, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'player-attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever you attack, put a +1/+1 counter on target attacking creature "
+  },
+  "rule:end-step-trigger-card-draw": {
+   "definition": "The 'card draw' effect delivered by end step trigger. Split from rule:cast-trigger-card-draw, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'end-step-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: At the beginning of each end step, if you attacked with a Hero this tu"
+  },
+  "rule:etb-draw-on-target-creature-spell-you-control": {
+   "definition": "The 'draw on target creature spell you control' effect delivered by etb. Split from rule:cast-trigger-draw-on-target-creature-spell-you-control, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'etb', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever a nontoken creature you control enters, put a +1/+1 counter o"
+  },
+  "rule:loyalty-loot": {
+   "definition": "The 'loot' effect delivered by loyalty. Split from rule:combat-damage-to-player-loot, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'loyalty', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: +1: Whenever one or more creatures you control deal combat damage to a"
+  },
+  "rule:static-token-creation": {
+   "definition": "The 'token creation' effect delivered by static. Split from rule:death-trigger-token-creation, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'static', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Flying"
+  },
+  "rule:etb-plus1-counter": {
+   "definition": "The 'plus1 counter' effect delivered by etb. Split from rule:draw-second-card-trigger-plus1-counter, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'etb', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When this creature enters, if it was the second spell you cast this tu"
+  },
+  "rule:becomes-tapped-trigger-self-plus1-counter-growth": {
+   "definition": "The 'self plus1 counter growth' effect delivered by becomes tapped trigger. Split from rule:draw-trigger-self-plus1-counter-growth, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'becomes-tapped-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever Agent Maria Hill becomes tapped to pay a teamwork cost, put a"
+  },
+  "rule:loyalty-create-token": {
+   "definition": "The 'create token' effect delivered by loyalty. Split from rule:etb-create-token, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'loyalty', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: +1: Create a 1/1 white Kor Warrior creature token. You may attach an E"
+  },
+  "rule:chapter-trigger-create-token": {
+   "definition": "The 'create token' effect delivered by chapter trigger. Split from rule:etb-create-token, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: I \u2014 Create a 0/2 colorless Thopter artifact creature token with flying"
+  },
+  "rule:activated-create-token": {
+   "definition": "The 'create token' effect delivered by activated. Split from rule:etb-create-token, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: 12+ | {1}{R}, {T}, Sacrifice a land: Create a 2/2 colorless Robot arti"
+  },
+  "rule:begin-combat-trigger-create-token": {
+   "definition": "The 'create token' effect delivered by begin combat trigger. Split from rule:etb-create-token, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'begin-combat-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: At the beginning of combat on your turn, create a 1/1 red Alien creatu"
+  },
+  "rule:door-unlocked-trigger-create-token": {
+   "definition": "The 'create token' effect delivered by door unlocked trigger. Split from rule:etb-create-token, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'door-unlocked-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When you unlock this door, create a 1/1 white Glimmer enchantment crea"
+  },
+  "rule:chapter-trigger-create-token-creature": {
+   "definition": "The 'create token creature' effect delivered by chapter trigger. Split from rule:etb-create-token-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: I \u2014 Create two 3/3 green Dinosaur creature tokens."
+  },
+  "rule:activated-create-token-creature": {
+   "definition": "The 'create token creature' effect delivered by activated. Split from rule:etb-create-token-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: {5}, Exile this card from your graveyard: Create a tapped 3/2 red and "
+  },
+  "rule:end-step-trigger-create-token-creature": {
+   "definition": "The 'create token creature' effect delivered by end step trigger. Split from rule:etb-create-token-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'end-step-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Disappear \u2014 At the beginning of your end step, if a permanent left the"
+  },
+  "rule:activated-create-token-mutagen": {
+   "definition": "The 'create token mutagen' effect delivered by activated. Split from rule:etb-create-token-mutagen, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: {T}: Exile target card from a graveyard. Create a Mutagen token."
+  },
+  "rule:attack-trigger-exile-graveyard-card": {
+   "definition": "The 'exile graveyard card' effect delivered by attack trigger. Split from rule:etb-exile-graveyard-card, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever Mastermind Plum attacks, exile up to one target card from a g"
+  },
+  "rule:combat-damage-to-player-exile-graveyard-card": {
+   "definition": "The 'exile graveyard card' effect delivered by combat damage to player. Split from rule:etb-exile-graveyard-card, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'combat-damage-to-player', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever this creature deals combat damage to a player, exile up to tw"
+  },
+  "rule:activated-exile-graveyard-card": {
+   "definition": "The 'exile graveyard card' effect delivered by activated. Split from rule:etb-exile-graveyard-card, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: {1}{B}: Exile up to two target cards from graveyards. You gain 1 life "
+  },
+  "rule:activated-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by activated. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: {T}, Remove a counter from The Duke: Put a +1/+1 counter on another ta"
+  },
+  "rule:turned-face-up-trigger-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by turned face up trigger. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'turned-face-up-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When this creature is turned face up, put a +1/+1 counter on another t"
+  },
+  "rule:chapter-trigger-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by chapter trigger. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: II \u2014 Put a +1/+1 counter on target creature you control. It becomes a "
+  },
+  "rule:tapped-for-mana-trigger-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by tapped for mana trigger. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'tapped-for-mana-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever fortified land is tapped for mana, put a +1/+1 counter on tar"
+  },
+  "rule:loyalty-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by loyalty. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'loyalty', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: +1: Creatures you control gain deathtouch until end of turn. Put a +1/"
+  },
+  "rule:cast-trigger-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by cast trigger. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'cast-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever you cast a spell from exile, put a +1/+1 counter on target cr"
+  },
+  "rule:door-unlocked-trigger-plus1-counter-on-target-creature": {
+   "definition": "The 'plus1 counter on target creature' effect delivered by door unlocked trigger. Split from rule:etb-plus1-counter-on-target-creature, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'door-unlocked-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When you unlock this door, put a +1/+1 counter on each of up to two ta"
+  },
+  "rule:attack-trigger-scry": {
+   "definition": "The 'scry' effect delivered by attack trigger. Split from rule:etb-scry, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Battalion \u2014 Whenever Falcon and at least two other creatures attack, p"
+  },
+  "rule:loyalty-self-plus1-counter": {
+   "definition": "The 'self plus1 counter' effect delivered by loyalty. Split from rule:etb-self-plus1-counter, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'loyalty', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: +1: Put a +1/+1 counter on up to one target creature. It gains first s"
+  },
+  "rule:chapter-trigger-self-plus1-counter": {
+   "definition": "The 'self plus1 counter' effect delivered by chapter trigger. Split from rule:etb-self-plus1-counter, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: II \u2014 Put three +1/+1 counters on target creature you control."
+  },
+  "rule:chapter-trigger-tutor-to-hand": {
+   "definition": "The 'tutor to hand' effect delivered by chapter trigger. Split from rule:etb-tutor-to-hand, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: IV \u2014 Search your library for a Doctor card, reveal it, put it into you"
+  },
+  "rule:activated-with-counters": {
+   "definition": "The 'with counters' effect delivered by activated. Split from rule:etb-with-counters, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'activated', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: {3}{B}: Return this card from your graveyard to the battlefield tapped"
+  },
+  "rule:chapter-trigger-with-counters": {
+   "definition": "The 'with counters' effect delivered by chapter trigger. Split from rule:etb-with-counters, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'chapter-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: I, II \u2014 Put a +1/+1 counter on target creature or Vehicle you control."
+  },
+  "rule:death-trigger-with-counters": {
+   "definition": "The 'with counters' effect delivered by death trigger. Split from rule:etb-with-counters, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'death-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: When Ojer Pakpatiq dies, return it to the battlefield tapped and trans"
+  },
+  "rule:attack-trigger-with-counters": {
+   "definition": "The 'with counters' effect delivered by attack trigger. Split from rule:etb-with-counters, whose DELIVERY head these members do not satisfy: the extractor routes their ability to 'attack-trigger', not to the head that slug asserts.",
+   "scope": "self",
+   "source": "CAPTAIN",
+   "note": "Created 2026-08-09 from foundry_ground_truth.py --wide. Captain-authorised: 'remove from activated-, create new axis if need be'. Evidence: Whenever Drana attacks, defending player chooses a nonlegendary creatu"
+  }
+ },
+ "moves": [
+  {
+   "from": "rule:activated-ability-costs-self-sacrifice",
+   "to": "rule:draw-trigger-ability-costs-self-sacrifice",
+   "members": [
+    "3e46381a-7850-4e50-9213-e1a180299977"
+   ],
+   "why": "delivery is 'draw-trigger', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:activated-tap-target-creature",
+   "to": "rule:etb-tap-target-creature",
+   "members": [
+    "4e4a21a8-9332-4aeb-8519-949feb211294",
+    "ab5ebae2-cd77-4a7d-a93b-8042cd486429"
+   ],
+   "why": "delivery is 'etb', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:activated-tap-target-creature",
+   "to": "rule:chapter-trigger-tap-target-creature",
+   "members": [
+    "5846718c-7d31-4d2c-80a2-b1534e2aebc1"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:activated-tap-target-creature",
+   "to": "rule:attack-trigger-tap-target-creature",
+   "members": [
+    "a3a6c024-43de-4f5c-a1d6-c48a0c96a43b",
+    "ad6442c2-7aa2-4c24-8133-f679a3499bde"
+   ],
+   "why": "delivery is 'attack-trigger', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:activated-tap-target-creature",
+   "to": "rule:cast-trigger-tap-target-creature",
+   "members": [
+    "b93eaf66-91b3-44da-851c-79810901be0c"
+   ],
+   "why": "delivery is 'cast-trigger', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:activated-untap-target-creature",
+   "to": "rule:etb-untap-target-creature",
+   "members": [
+    "00b9d3a3-fd64-4757-9159-b3af06b5f5b1"
+   ],
+   "why": "delivery is 'etb', not the 'activated' the slug asserts"
+  },
+  {
+   "from": "rule:attack-trigger-pump-creature-you-control",
+   "to": "rule:player-attack-trigger-pump-creature-you-control",
+   "members": [
+    "f40cb1af-3db6-4e90-830f-86ff4b60e239"
+   ],
+   "why": "delivery is 'player-attack-trigger', not the 'attack' the slug asserts"
+  },
+  {
+   "from": "rule:attack-trigger-pump-each-attacker-you-control",
+   "to": "rule:begin-combat-trigger-pump-each-attacker-you-control",
+   "members": [
+    "836609f7-48b8-47b0-9af6-94150b048251"
+   ],
+   "why": "delivery is 'begin-combat-trigger', not the 'attack' the slug asserts"
+  },
+  {
+   "from": "rule:attack-trigger-pump-each-attacker-you-control",
+   "to": "rule:player-attack-trigger-pump-each-attacker-you-control",
+   "members": [
+    "a7e7059e-83f8-4124-9cc0-64ba150b5d96"
+   ],
+   "why": "delivery is 'player-attack-trigger', not the 'attack' the slug asserts"
+  },
+  {
+   "from": "rule:attack-trigger-self-plus1-counter-growth",
+   "to": "rule:player-attack-trigger-self-plus1-counter-growth",
+   "members": [
+    "05551d91-50c6-46d1-86a4-cd3d177d0923",
+    "2aac3575-4a06-452c-bb0f-68dc34086226"
+   ],
+   "why": "delivery is 'player-attack-trigger', not the 'attack' the slug asserts"
+  },
+  {
+   "from": "rule:attack-trigger-untap-attacker",
+   "to": "rule:player-attack-trigger-untap-attacker",
+   "members": [
+    "2aac3575-4a06-452c-bb0f-68dc34086226"
+   ],
+   "why": "delivery is 'player-attack-trigger', not the 'attack' the slug asserts"
+  },
+  {
+   "from": "rule:cast-trigger-card-draw",
+   "to": "rule:end-step-trigger-card-draw",
+   "members": [
+    "3477e1cc-46af-46f4-9ea2-bdf0bf1f880e"
+   ],
+   "why": "delivery is 'end-step-trigger', not the 'cast' the slug asserts"
+  },
+  {
+   "from": "rule:cast-trigger-draw-on-target-creature-spell-you-control",
+   "to": "rule:etb-draw-on-target-creature-spell-you-control",
+   "members": [
+    "78427103-9543-41fb-b6d4-72963fe87275"
+   ],
+   "why": "delivery is 'etb', not the 'cast' the slug asserts"
+  },
+  {
+   "from": "rule:combat-damage-to-player-loot",
+   "to": "rule:loyalty-loot",
+   "members": [
+    "d2341a16-ffde-42fa-9746-0d8888e812d4"
+   ],
+   "why": "delivery is 'loyalty', not the 'combat' the slug asserts"
+  },
+  {
+   "from": "rule:death-trigger-token-creation",
+   "to": "rule:static-token-creation",
+   "members": [
+    "4a3acbf7-0699-4d7c-b4fa-aa15c7cde189"
+   ],
+   "why": "delivery is 'static', not the 'death' the slug asserts"
+  },
+  {
+   "from": "rule:draw-second-card-trigger-plus1-counter",
+   "to": "rule:etb-plus1-counter",
+   "members": [
+    "4388af80-118f-4bf4-8fd7-e68c58398ee8"
+   ],
+   "why": "delivery is 'etb', not the 'draw' the slug asserts"
+  },
+  {
+   "from": "rule:draw-trigger-self-plus1-counter-growth",
+   "to": "rule:becomes-tapped-trigger-self-plus1-counter-growth",
+   "members": [
+    "a2d90efe-80f2-4069-b135-a8bd00ccd2b0"
+   ],
+   "why": "delivery is 'becomes-tapped-trigger', not the 'draw' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token",
+   "to": "rule:loyalty-create-token",
+   "members": [
+    "39bbc4cf-53fe-47dd-8ba3-1a59b1fa7dd1"
+   ],
+   "why": "delivery is 'loyalty', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token",
+   "to": "rule:chapter-trigger-create-token",
+   "members": [
+    "4ce785b9-aee0-4ac6-ab20-ee20d0551be4",
+    "6b3e1aaf-6909-400a-88f2-9e9fde9a0cf7",
+    "7398c8b2-373a-41c7-ac6c-7329f5944462",
+    "a4b37d16-95b3-4143-a0b2-ad9f2aba91f8"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token",
+   "to": "rule:activated-create-token",
+   "members": [
+    "4fa826ca-d361-4391-ad0d-989ebcfa4a91"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token",
+   "to": "rule:begin-combat-trigger-create-token",
+   "members": [
+    "7c854a07-e031-458e-a335-9c31865020b8",
+    "cd45a29f-73bc-435c-9d50-09a4ecaa77be"
+   ],
+   "why": "delivery is 'begin-combat-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token",
+   "to": "rule:door-unlocked-trigger-create-token",
+   "members": [
+    "f7574379-d10e-4bbf-b0b1-13feee753d8b"
+   ],
+   "why": "delivery is 'door-unlocked-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token-creature",
+   "to": "rule:chapter-trigger-create-token-creature",
+   "members": [
+    "2e6ed3e6-d2b8-4b75-b7e1-0773da4987a1",
+    "3f8f72d8-5c3a-4f31-8741-3c1a55d9b739",
+    "ae63fd5c-46ff-41fb-a1f6-6259336525c1",
+    "e5926e14-d30a-4f81-803c-f36542df2db3"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token-creature",
+   "to": "rule:activated-create-token-creature",
+   "members": [
+    "5a131407-c217-48fc-aa15-9e3392445768"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token-creature",
+   "to": "rule:end-step-trigger-create-token-creature",
+   "members": [
+    "a5656dab-5ce6-48fd-9eae-2c06969bb8df"
+   ],
+   "why": "delivery is 'end-step-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-create-token-mutagen",
+   "to": "rule:activated-create-token-mutagen",
+   "members": [
+    "82a6fa6f-13c2-4ea3-bec2-c51b56b2783b"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-exile-graveyard-card",
+   "to": "rule:attack-trigger-exile-graveyard-card",
+   "members": [
+    "4605d8b3-b714-4717-8ff3-155fabfc1999"
+   ],
+   "why": "delivery is 'attack-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-exile-graveyard-card",
+   "to": "rule:combat-damage-to-player-exile-graveyard-card",
+   "members": [
+    "5326381e-e5e7-4c3e-9565-4837b3ffaec0"
+   ],
+   "why": "delivery is 'combat-damage-to-player', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-exile-graveyard-card",
+   "to": "rule:activated-exile-graveyard-card",
+   "members": [
+    "64b4e91f-83a4-4b3f-87d4-8c48907e628d"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:activated-plus1-counter-on-target-creature",
+   "members": [
+    "1c55047d-badc-49bb-b791-e9759577e4eb"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:turned-face-up-trigger-plus1-counter-on-target-creature",
+   "members": [
+    "2bd8a6a4-d0ac-4da3-be1d-5f404ae4b614"
+   ],
+   "why": "delivery is 'turned-face-up-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:chapter-trigger-plus1-counter-on-target-creature",
+   "members": [
+    "7fbe9056-190f-40a1-bee9-59ebd6f981f5"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:tapped-for-mana-trigger-plus1-counter-on-target-creature",
+   "members": [
+    "9bf498ce-6d6d-462f-9ec3-b36a2184aff7"
+   ],
+   "why": "delivery is 'tapped-for-mana-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:loyalty-plus1-counter-on-target-creature",
+   "members": [
+    "e0edb2fc-2533-407c-85e5-4337f4233f05"
+   ],
+   "why": "delivery is 'loyalty', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:cast-trigger-plus1-counter-on-target-creature",
+   "members": [
+    "ecfabd06-c059-4f3d-9e5f-587364033cac"
+   ],
+   "why": "delivery is 'cast-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-plus1-counter-on-target-creature",
+   "to": "rule:door-unlocked-trigger-plus1-counter-on-target-creature",
+   "members": [
+    "f7574379-d10e-4bbf-b0b1-13feee753d8b"
+   ],
+   "why": "delivery is 'door-unlocked-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-scry",
+   "to": "rule:attack-trigger-scry",
+   "members": [
+    "46399b09-1b5c-4c28-9134-cc2ed573b6aa"
+   ],
+   "why": "delivery is 'attack-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-self-plus1-counter",
+   "to": "rule:loyalty-self-plus1-counter",
+   "members": [
+    "0c7f18d5-36cb-4bc6-a358-443b97666215"
+   ],
+   "why": "delivery is 'loyalty', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-self-plus1-counter",
+   "to": "rule:chapter-trigger-self-plus1-counter",
+   "members": [
+    "8c4da760-8913-46ca-b00c-bba6d877d482"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-tutor-to-hand",
+   "to": "rule:chapter-trigger-tutor-to-hand",
+   "members": [
+    "5ce47fb9-4e4f-4419-af75-309d2743f5f9"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-with-counters",
+   "to": "rule:activated-with-counters",
+   "members": [
+    "058dae67-807e-4542-ae51-f2b1216ffaed",
+    "580996d4-db9a-4b57-a0e1-a2dbb524121a",
+    "5eef3d70-ef16-4722-8c3d-21a0311597bd",
+    "e3f0a2a6-7a42-46bc-9736-d0f6a0ce0b37",
+    "fb7070ab-c234-4d54-8cdc-caf106bf24a6"
+   ],
+   "why": "delivery is 'activated', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-with-counters",
+   "to": "rule:chapter-trigger-with-counters",
+   "members": [
+    "096fbb51-be73-4edc-a051-770a12c09005"
+   ],
+   "why": "delivery is 'chapter-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-with-counters",
+   "to": "rule:death-trigger-with-counters",
+   "members": [
+    "34ef174e-1b3d-43d5-9f72-3d35befbdd7f"
+   ],
+   "why": "delivery is 'death-trigger', not the 'etb' the slug asserts"
+  },
+  {
+   "from": "rule:etb-with-counters",
+   "to": "rule:attack-trigger-with-counters",
+   "members": [
+    "3ae3b901-4d36-40e2-b861-26209fa1e823"
+   ],
+   "why": "delivery is 'attack-trigger', not the 'etb' the slug asserts"
+  }
+ ]
+}

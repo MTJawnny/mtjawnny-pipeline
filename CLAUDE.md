@@ -611,6 +611,21 @@ deck-building relevance, not textual frequency.**
   CR 106.12 · the CR 605.1a qualifier on 16 · `add-mana` and
   `restricted-purpose-mana`, both ratified hours before the notice). **Do not
   write a branch against a guess about the new rule.**
+- **⚠ DEFERRED, CAPTAIN'S CALL: MEMBERSHIP EXCLUSIVITY.** Captain, 2026-08-09:
+  *"membership should probably be exclusive… a deck that cares about gaining
+  life will not care about losing life most of the time."* **Deferred until the
+  tools exist and can be tested card by card**, not dropped. Measured before
+  deferring: **78.8% of cards are already on exactly one axis**; the 21.2% on
+  2+ are MULTI-ABILITY cards (Kayla's Command is on 5 — modal, fixed-lifegain,
+  tutor, create-token), so global exclusivity would force picking one of four
+  things a card genuinely does. **The tension is real but narrower than the
+  rule**: it is about a COMPOUND-EVENT ability ("gain or lose life") joining
+  both single-event axes, which was a suggestion of mine and not the 2026-08-02
+  ratification. And the two planned tools want opposite answers — a budget
+  swapper wants exclusivity (a compound card is a bad substitute), a
+  recommender wants inclusion (it genuinely synergises). **Do not implement
+  exclusivity globally; scope it within an effect family and measure the blast
+  radius first.**
 - **START HERE AFTER A BREAK: `docs/PICK-UP-HERE.md`** — undated, stably
   named, says what to audit FIRST and what not to touch.
 - **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-09.md`**

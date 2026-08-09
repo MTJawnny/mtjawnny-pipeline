@@ -43,7 +43,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CR-VOCABULARY-AUDIT.md` | 182 | 2 | 0 | yes |
 | `D3-MODAL-MODES-2026-08-04.md` | 157 | 1 | 0 | yes |
 | `D4-KEYWORD-FORMS-2026-08-04.md` | 168 | 1 | 0 | yes |
-| `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 275 | 2 | 0 | yes |
+| `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 209 | 2 | 0 | yes |
 | `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 554 | 11 | 0 | yes |
 | `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
 | `END-STEP-TRIGGER-RULING-2026-08-03.md` | 111 | 2 | 0 | yes |
