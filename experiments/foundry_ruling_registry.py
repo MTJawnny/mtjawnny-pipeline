@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import foundry_audit_baseline as base
 import json
 import re
 import sys
@@ -232,6 +233,8 @@ def write_markdown(reg: dict) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", metavar="DOC", help="is DOC safe to delete?")
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="pin the CURRENT registry counts as the baseline")
     args = ap.parse_args()
 
     reg = build()
@@ -280,7 +283,31 @@ def main() -> int:
     print("=" * 62)
     print(f"wrote {OUT_MD.relative_to(REPO_ROOT)}")
     print(f"wrote {OUT_JSON.relative_to(REPO_ROOT)}")
-    return 0
+
+    # THIS FILE NOTICED AND DID NOT GATE. Negative-controlled 2026-08-09
+    # (`docs/SYSTEM-SELF-TEST-2026-08-09.md`): a sole-home ruling document was
+    # hidden, the registry's own numbers MOVED (sole-home 43 -> 44), and it
+    # exited 0 with no complaint. A ruling document could be deleted and
+    # nothing in the repo would say so -- which is precisely the loss this
+    # registry exists to make impossible.
+    #
+    # Ratcheted on the same mechanism as conservation and visibility: a FALL in
+    # documents / distinct rulings / corroboration is a silent loss and is
+    # fatal; a RISE in sole-home means a ruling lost its corroborating home.
+    # `generated_from` is a DESCRIPTIVE STRING ("120 documents under docs/"),
+    # not a count. Pinning it made the ratchet compare strings: equal-or-not
+    # worked, but any real change would reach `b - a` on two strings and raise
+    # instead of reporting. Pin the integer the string is describing.
+    metrics = {"documents": len(reg["per_doc"]),
+               "ruling_ids": reg["distinct_rulings"],
+               "total_references": reg["total_references"],
+               "corroborated": reg["corroborated"],
+               "sole_home": reg["sole_home"]}
+    print("\n" + "=" * 62)
+    print("BASELINE — ruling registry")
+    print("=" * 62)
+    return 1 if base.report("ruling_registry", metrics,
+                            args.update_baseline) else 0
 
 
 if __name__ == "__main__":

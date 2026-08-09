@@ -39,6 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
+import foundry_audit_baseline as base  # noqa: E402
 
 REPORT_MD = REPO_ROOT.parent / "docs" / "DEFINITION-DRIFT-AUDIT-2026-08-02.md"
 REPORT_JSON = fc.FOUNDRY_OUT_DIR / "definition_drift_report.json"
@@ -554,6 +555,8 @@ def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="pin the CURRENT findings count as the baseline, on purpose")
     ap.add_argument("--no-corpus", action="store_true",
                     help="skip corpus load: no card names, quote-only gating")
     args = ap.parse_args()
@@ -584,6 +587,24 @@ def main():
     print(f"\nwrote {REPORT_MD}")
     print(f"wrote {REPORT_JSON}")
 
+    # THIS FILE DETECTED AND DID NOT GATE. Measured 2026-08-09 by negative
+    # control (`docs/SYSTEM-SELF-TEST-2026-08-09.md`): an axis definition
+    # replaced with an unrelated one moved findings 35 -> 36 and the tool
+    # STILL EXITED 0. It was listed in Gate 2 as one of eight gates while being
+    # incapable of failing, so a brand-new drift finding passed silently.
+    #
+    # The cure is the ratchet that conservation and visibility already use --
+    # not a new mechanism and not a tolerance band, which would be exactly the
+    # tuning knob the engine rules forbid. Any rise is fatal; any fall is
+    # reported and accepted only with an explicit --update-baseline.
+    metrics = {"findings": len(findings), "active_axes": n_active,
+               "findings_by_check": dict(counts)}
+    print("\n" + "=" * 62)
+    print("BASELINE — definition drift")
+    print("=" * 62)
+    return 1 if base.report("definition_drift", metrics,
+                            args.update_baseline) else 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

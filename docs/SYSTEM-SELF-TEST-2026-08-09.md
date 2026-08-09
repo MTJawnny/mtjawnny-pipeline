@@ -19,9 +19,9 @@ second pass; §5 and §6 cover them.
 
 1. **Six of the eight gates genuinely work.** They were broken on purpose and
    they caught it and failed. That is now proven, not assumed.
-2. **Two of the eight cannot fail at all.** `definition_drift` and
-   `ruling_registry` notice problems and then exit 0. They are *reporters*
-   listed as *gates*.
+2. ~~**Two of the eight cannot fail at all.**~~ **FIXED — see §7.** They were
+   *reporters* listed as *gates*; both now ratchet and both are
+   negative-controlled. **All eight of the original gates can now fail.**
 3. **"The same cure" was wrong.** The 21 probe defects have at least four
    different causes, and one slogan cannot prevent four things — which is
    exactly why they keep happening.
@@ -47,8 +47,8 @@ not "does it run" but **"can it fail?"**
 | `visibility` | dropped modal bullets | ✅ uncontexted 31 → 1,963 | ✅ exit 1 |
 | `ground_truth` | broke keyword recognition | ✅ 304 seeds failed by name | ✅ exit 1 |
 | `gate_audit` | made the extractor raise on a card | ✅ stopped loudly | ✅ exit 1 |
-| **`definition_drift`** | definition contradicting its own axis name | ✅ findings 35 → 36 | ❌ **exit 0** |
-| **`ruling_registry`** | hid a ruling document | ⚠️ count moved silently | ❌ **exit 0** |
+| `definition_drift` | definition contradicting its own axis name | ✅ findings 35 → 36 | ✅ **exit 1** — *fixed, see §7* |
+| `ruling_registry` | hid a ruling document | ✅ 3 metrics moved | ✅ **exit 1** — *fixed, see §7* |
 
 ### The good news is better than expected
 
@@ -270,3 +270,35 @@ verified capable of failing, the verification hole is one flag away from being
 reason that it was the only one guarded by prose instead of by a tool. **It now
 has a tool, and the first thing that tool's sibling did was find two wrong
 numbers inside ratified law.**
+
+
+---
+
+## 7. THE TWO HOLES ARE CLOSED (added later the same day)
+
+Both former reporters now ride the **existing** ratchet
+(`foundry_audit_baseline.py`) — not a second mechanism, and not a tolerance
+band, which would be the tuning knob the engine rules forbid. Any movement in
+the worse direction is fatal; better-direction movement needs an explicit
+`--update-baseline`.
+
+| check | pinned metrics | negative control | result |
+|---|--:|---|---|
+| `definition_drift` | 8 | a definition contradicting its own axis name | **exit 1** — `findings 35 → 36 in the WORSE direction` |
+| `ruling_registry` | 5 | hid a sole-home ruling document | **exit 1** — `documents 120→119`, `corroborated 84→83`, `sole_home 43→44` |
+
+Both pass again once the injection is reverted, which is the half of a negative
+control that is easy to skip.
+
+**Two defects were found in the wiring itself, both worth recording:**
+
+- `findings` and `sole_home` were in **no direction set**, so a rise would have
+  scored as neutral "change" rather than a regression — the gate would have
+  been pinned and still unable to fail. Same shape as the recorded `_direction`
+  leaf-key defect, one layer out.
+- `ruling_registry`'s `documents` was pinned as a **descriptive string**
+  (`"120 documents under docs/"`). Equality worked, but any real change would
+  have reached `b - a` on two strings and **raised instead of reporting**.
+  Pinned as the integer it was describing.
+
+**Gate 2 is now ten commands and every one of them can fail.**

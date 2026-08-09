@@ -113,11 +113,13 @@ negative-controlled** (`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
 - **`foundry_recorded_numbers.py`** re-derives every line/card count grammar
   §2 asserts. It found two wrong on its first run, both in ratified rows.
 
-**TWO OF THE EIGHT CANNOT FAIL.** Measured, not assumed:
-`foundry_definition_drift.py` moves 35 -> 36 findings on an injected defect and
-**exits 0**; `foundry_ruling_registry.py` notices a deleted ruling doc and
-**exits 0**. Both are REPORTERS listed as GATES. Read their output; do not
-read their exit code as a verdict.
+**ALL TEN CAN FAIL, AND THAT IS MEASURED RATHER THAN ASSUMED.** Two of the
+original eight could not: `foundry_definition_drift.py` moved 35 -> 36 findings
+on an injected defect and exited 0, and `foundry_ruling_registry.py` noticed a
+deleted ruling doc and exited 0. **Both now ride the ratchet
+(`foundry_audit_baseline.py`) and both are negative-controlled** — see
+`docs/SYSTEM-SELF-TEST-2026-08-09.md` §7. Each takes `--update-baseline` to
+accept movement ON PURPOSE, exactly as conservation and visibility do.
 
 **Eight, and each answers a question none of the others can.** The first four
 check that what EXISTS is consistent. Conservation and visibility check that

@@ -47,9 +47,17 @@ BASELINE = Path(__file__).resolve().parent / "out" / "foundry" / "audit-baseline
 # The nested metrics are the whole point of pinning -- a per-class unrouted
 # count, a per-descriptor histogram -- so they are the ones that must resolve.
 WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
-               "span", "crashed", "mismatch")
+               "span", "crashed", "mismatch",
+               # 2026-08-09: the two Gate 2 checks that were measured
+               # INCAPABLE OF FAILING now ratchet here. A new drift finding is
+               # worse; a lost ruling document is worse.
+               "findings", "sole_home")
 WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
-                 "options", "content", "passed", "graded")
+                 "options", "content", "passed", "graded",
+                 # a ruling that stops being recorded anywhere, or a document
+                 # that vanishes, is a SILENT loss -- the exact thing the
+                 # registry exists to prevent and could not report.
+                 "documents", "ruling_ids", "corroborated", "blocked")
 
 
 def load(section: str) -> dict:
