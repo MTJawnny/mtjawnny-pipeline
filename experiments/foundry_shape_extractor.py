@@ -775,6 +775,35 @@ _SUPPLEMENT_VERBS = {
     # off `any-cycled-trigger`, because the clause ran on into the effect and
     # picked up "another target permanent" / "the starting player".
     "cycle": "702.29c",
+    # CR 700.10-700.16 IS A VEIN OF NAMED MECHANICS THAT NEITHER CLOSED
+    # KEYWORD LIST REACHES -- not CR 701 keyword actions, not CR 702 keywords.
+    # Both of these were found by the 2026-08-09 audit of the six tokens
+    # ratified 2026-08-08, and both had the SAME shape: the verb is absent, so
+    # `trigger_clause` walks PAST the condition into the effect and the line is
+    # handed a ratified token taken from its EFFECT text (CR 113.3c). That is
+    # the recorded "a missing trigger verb makes the clause end LATER, not
+    # earlier" trap, and it produced a WRONG ratified token rather than a gap.
+    #
+    #   Duelist of the Mind  "Whenever you COMMIT A CRIME, you may DRAW a card"
+    #                        -> `draw-trigger`, off the effect
+    #   Meat Locker          "When you UNLOCK this door, DRAW three cards"
+    #                        -> `draw-trigger`, off the effect
+    #
+    # Meat Locker proves it internally: its OTHER face prints the same
+    # condition with an effect carrying no listed verb, and routes to
+    # `unclassified-trigger`. One event, two answers, decided by the effect.
+    #
+    # CR 700.13 states the crime as a GERUND (*"refer to committing a crime"*),
+    # which is why an exact-phrase grep of the CR returns zero -- the recorded
+    # inflection trap aimed at the CR itself.
+    "commit": "700.13",
+    # CR 709.5h is the trigger rule verbatim: *"Some abilities trigger when a
+    # player unlocks a particular half of a permanent."* 709.5i adds the
+    # "fully unlocks" form. This is D8a item 1's own CR rule, and the fix is a
+    # PREREQUISITE for it rather than a duplicate: the class is not uniformly
+    # unrouted today, part of it is mis-claimed, and a queue that reads
+    # "43 unrouted lines" cannot see that.
+    "unlock": "709.5h",
     # structural verbs with no single CR keyword-action home
     "enter": "603.6a", "die": "700.4", "leave": "700.4", "attack": "508.1",
     "block": "509.1", "cast": "601.2", "deal": "120.3", "become": "603.2e",
