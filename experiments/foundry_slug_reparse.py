@@ -97,7 +97,13 @@ def main():
     # boundary stated in prose and ignored in the arithmetic.
     objects = section_tokens(text, "5")
     counters = section_tokens(text, "8")
-    VOCAB = effects | scopes | objects | counters
+    # §3 is the RESTRICTION slot (§1, Captain-ratified 2026-08-09). It was
+    # ratified BEFORE this probe existed and the probe did not know to read it,
+    # which is why 896 restriction members first read as unhomed. A slot the
+    # grammar defines and the checker ignores is the "ratified standard with no
+    # caller" shape, one layer out.
+    restrictions = section_tokens(text, "3")
+    VOCAB = effects | scopes | objects | counters | restrictions
     cb = json.loads(CODEBOOK.read_text(encoding="utf-8"))
     axes = cb["axes"]
 
@@ -107,6 +113,7 @@ def main():
     print(f"  §5 OBJECT identifiers         {len(objects):>6}")
     print(f"  §6 SCOPE identifiers          {len(scopes):>6}")
     print(f"  §8 counter/token identifiers  {len(counters):>6}")
+    print(f"  §3 RESTRICTION identifiers    {len(restrictions):>6}")
     print(f"  CR 702 keyword names          {len(keywords):>6}")
     for name, s in (("§4", effects), ("§6", scopes)):
         if len(s) < 5:

@@ -24,7 +24,7 @@ Design goals, in priority order:
 Every axis slug is a hyphen-joined sequence of slots in this fixed order:
 
 ```
-[DELIVERY]-[EFFECT]-[OBJECT]-[SCOPE]-[QUALIFIER...]
+[DELIVERY]-[EFFECT]-[OBJECT]-[SCOPE]-[RESTRICTION]-[QUALIFIER...]
 ```
 
 - **DELIVERY** — how the ability happens (ability class / trigger family).
@@ -39,6 +39,15 @@ Every axis slug is a hyphen-joined sequence of slots in this fixed order:
   field carries it and no sibling differs only by scope; REQUIRED the moment a
   scope-sibling exists (the Q1/Q2 lesson: scope moved into the name for
   tap-or-untap because siblings differ there).
+- **RESTRICTION** — a limit on when or whether the ability may be used at
+  all (section 3). **Captain-ratified 2026-08-09.** A restriction is NOT a
+  QUALIFIER and the distinction is load-bearing: a qualifier modifies the
+  EFFECT (how much, how many, when it resolves), while a restriction
+  constrains the ability's **legality** and can stand as the WHOLE slug with
+  no delivery and no effect — `activation-restricted-to-sorcery-speed` is 565
+  members of exactly that shape. Measured 2026-08-09: **896 members** across 8
+  axes had no slot to sit in, of which §3's ratified family already covered
+  **649**; this row is what makes §3 a SLOT rather than one family.
 - **QUALIFIER** — closed modifiers: `-conditional`, **`delayed`** (the effect
   happens at a later stated timing point rather than on resolution — CR 603.7;
   moved here from DELIVERY by §2d, because the delivery of a card that creates a
@@ -545,6 +554,34 @@ templating) to the modern phrase (Lesson-1 both-polarity discipline applied to
 templating eras). Compound restrictions ("only during combat and only if...")
 get EVERY applicable tag (M8 logic applied to restrictions).
 
+### 3a. The other RESTRICTION classes (Captain-ratified 2026-08-09)
+
+§3 was written as the ACTIVATION-restriction family. The 2026-08-09 concept-axis
+audit measured 247 further members that are restrictions of a different kind and
+had no slot at all — so §1's RESTRICTION slot is served by this section, and the
+section is no longer activation-only. Each row is CR-anchored:
+
+| class | slug | CR | members |
+|---|---|---|--:|
+| mana usable only for a stated purpose | `restricted-purpose-mana` | **106.6** | 217 |
+| this creature can't block | `cannot-block-restriction` | **509.1a** | 21 |
+| this creature can't attack unless… | `conditional-attack-restriction` | **508.1a** | 5 |
+| a library search is limited | `restricts-library-search` | 701.19 | 3 |
+| a player's draws are capped | `limits-card-draws` | 121.1 | 1 |
+
+**CR 106.6 is the anchor for the mana row and it is explicit**: *"Some effects
+produce mana that can be spent only on certain types of costs, or that can't be
+spent on certain types of costs."* That is a restriction on the MANA, not an
+effect the card performs, which is why 217 members could never decompose into
+DELIVERY + EFFECT.
+
+**The `activation-` prefix stays on the activation rows and must not spread.**
+It names WHAT is restricted (CR 602's activation), and `restricted-purpose-mana`
+restricts a resource rather than an activation. Renaming these onto a common
+prefix would assert one mechanism where the CR names three.
+
+**Compound restrictions still take EVERY applicable tag** (M8), unchanged.
+
 The same enumeration discipline applies at the walk to any other closed CR
 family the codebook touches: keyword classes (CR 702 first lines — already the
 keyword-bucket job), replacement shapes (614.1a/b/c), casting-timing families.
@@ -558,6 +595,12 @@ One verb per mechanic, chosen once, used everywhere:
   `scry`, `surveil`, `proliferate`, `tutor` (search library), `reanimate`
   (graveyard → battlefield), `regrowth` (graveyard → hand, ratified b5 vocab),
   `create-token`, `pump` (+P/+T), `debuff` (−P/−T), `damage`, `gain-life`,
+  `enters-tapped` (**Captain-ratified 2026-08-09** — **CR 614.1c** names the
+  template verbatim: *"[This permanent] enters with . . ."* / *"As [this
+  permanent] enters . . ."*, so this is a REPLACEMENT effect and pairs with
+  §2's already-ratified `replacement` DELIVERY. **1,073 members** sat on four
+  axes with no effect verb to name; this needs no new slot at all. It is an
+  EFFECT, never a delivery — the delivery is `replacement`),
   `lose-life`, `drain` (damage/loss + symmetric gain), `tap`, `untap`,
   `tap-or-untap`, `transform`, `copy`, `counters` (verb — see section 8),
   `grants-<keyword>`, `taxes` (cost increase), `cost-reduction`.

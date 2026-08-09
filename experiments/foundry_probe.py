@@ -237,7 +237,7 @@ def vocab(section: str) -> set:
     return toks
 
 
-def longest_match(segments, vocabulary, window=4):
+def longest_match(segments, vocabulary, window=None):
     """GUARD A -- greedy longest-first over a HYPHEN SEQUENCE.
 
     Ratified vocabulary CONTAINS hyphens (`you-control`, `create-token`,
@@ -245,8 +245,18 @@ def longest_match(segments, vocabulary, window=4):
     vocabulary being measured against: that scored 24.1% coverage and listed
     `you`, `control`, `create` as unknown. Greedy: 42.9%.
 
+    THE WINDOW IS DERIVED FROM THE VOCABULARY, NOT A CONSTANT. It was
+    hardcoded to 4, and `activation-restricted-to-sorcery-speed` is FIVE
+    segments -- so the longest ratified restriction slug in the codebook could
+    never match itself, and 565 members read as unhomed immediately after the
+    slot covering them was ratified. A magic constant in a matcher is a
+    hand-list with one number in it; the vocabulary already knows how wide it
+    needs to be.
+
     Yields (matched_term_or_None, n_segments_consumed).
     """
+    if window is None:
+        window = max((t.count("-") + 1 for t in vocabulary), default=1)
     i = 0
     while i < len(segments):
         for j in range(min(len(segments), i + window), i, -1):
@@ -311,6 +321,13 @@ def selftest():
     got = [m for m, _ in longest_match(segs, {"you-control", "create-token"})]
     (ok if got == ["you-control", "create-token"] else bad).append(
         f"A longest_match: multiword terms survive ({got})")
+
+    # A 5-segment term must match itself. The window was hardcoded to 4 and
+    # `activation-restricted-to-sorcery-speed` (565 members) could not.
+    long_term = "activation-restricted-to-sorcery-speed"
+    got5 = [m for m, _ in longest_match(long_term.split("-"), {long_term})]
+    (ok if got5 == [long_term] else bad).append(
+        f"A longest_match: window derived from vocabulary, not a constant ({got5})")
 
     print("=" * 74)
     print("PROBE LIBRARY SELF-TEST — every guard shown capable of FAILING")
