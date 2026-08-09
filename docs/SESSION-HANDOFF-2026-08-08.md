@@ -1,3 +1,7 @@
+> **SUPERSEDED — go to `docs/SESSION-HANDOFF-2026-08-09.md`.**
+> D8a is COMPLETE (all five items landed). §2 is 64 tokens, not 58.
+> §6's NEXT WORK ITEM here is DONE; the current one is in the 08-09 file.
+
 # SESSION HANDOFF — 2026-08-08
 
 Supersedes `SESSION-HANDOFF-2026-08-07-EVE.md`. **Zero API calls. Arc spend

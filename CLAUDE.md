@@ -485,6 +485,34 @@ encodes.
   report gaps: **it names gaps; only reading the classifier finds the ones
   that are not gaps.** Record: `docs/W3-TRIGGER-VOCABULARY-2026-08-07.md` §5.
 
+- **A TOKEN-SCOPED AUDIT IS BLIND TO ITS OWN NEIGHBOURS.** Reading all 280
+  lines of the six tokens ratified 2026-08-08 found 2 defects; the routing
+  diff on the fix found **4**. The other two had the identical cause —
+  `trigger_clause` walking past the condition — but had been handed
+  `cast-trigger`, a token outside the audit's scope. Meat Locker proves the
+  shape on ONE card: its two faces print the SAME condition and got different
+  tokens, decided by their EFFECT text (CR 113.3c). **Read the population,
+  then run the diff and read that too.** Neither one alone is the check.
+- **A SPECIFICATION IS A CARRIED-FORWARD COUNT WITH A CR NUMBER ATTACHED.**
+  All five D8a items had a defective spec, and none was wrong in a way a line
+  count could show: three wrong counts (43→30, 12→3, and one right by
+  accident), **one wrong CR anchor** (the sheet cited 728.1 for day–night;
+  CR 728 is Rad Counters and Day and Night is CR 731), and **one hidden second
+  CR rule** (Room doors is 709.5h "unlock this door" AND 709.5i "FULLY unlock
+  a Room" — a different event on different cards). Every wrong count came from
+  counting the PHRASE instead of the EVENT: 103 of 110 `flip` lines and 23 of
+  26 `is exiled` lines carry the words in their effect. **Re-measure the
+  anchor and the partition, not just the number.**
+- **THE SAME RATIFIED TEST GIVES OPPOSITE ANSWERS, AND THAT IS IT WORKING.**
+  D3f produced ONE token for day–night — every line prints "day becomes night
+  **or** night becomes day" in a single clause, so a split yields two axes with
+  identical membership — and TWO for coin flip, because Karplusan Minotaur
+  prints win and lose as separate abilities that do different things. CR 705.2
+  closing the outcome set at two is also what lets `coin-flip-lost-trigger`
+  stand at ONE member without being a one-card token: it is reserved by an
+  enumeration, the `noncombat-damage-to-planeswalker` pattern. **Let the corpus
+  decide the split; do not carry a preference between rows.**
+
 ## Out of scope — check before raising a finding
 
 **`docs/OUT-OF-SCOPE.md` is a DECLINE REGISTER, not a backlog.** Attractions /
@@ -498,7 +526,7 @@ deck-building relevance, not textual frequency.**
 
 - **START HERE AFTER A BREAK: `docs/PICK-UP-HERE.md`** — undated, stably
   named, says what to audit FIRST and what not to touch.
-- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-08.md`**
+- **Current state + READING MANIFEST: `docs/SESSION-HANDOFF-2026-08-09.md`**
   — start here, always. It lists every markdown a session needs, tiered by
   what you are about to touch. (This line goes stale; the authoritative
   pointer is Gate 1 of `docs/SESSION-START-PROCEDURE.md`.)

@@ -44,7 +44,7 @@ ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 **→ START AT `docs/PICK-UP-HERE.md`.** Undated and stably named on purpose;
 it says what to do FIRST and what NOT to do. Then the handoff below.
 
-**Current handoff: `docs/SESSION-HANDOFF-2026-08-08.md`.** ← this line is
+**Current handoff: `docs/SESSION-HANDOFF-2026-08-09.md`.** ← this line is
 the pointer; update it when you write a new handoff.
 
 **Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*
