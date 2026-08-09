@@ -90,6 +90,20 @@ while §7, §12a or a batch ruling governed the same slug.
 ### Gate 2 — verify live state, never recall it (always)
 
 ```
+python3 experiments/foundry_gate2.py     # ← RUN THIS. It is all of them.
+```
+
+**One command, one exit code, and it cannot be run as nine.** A list of shell
+commands is a control that depends on someone remembering, and a skipped gate
+is indistinguishable from a passing one in a transcript. The runner shells out
+to each real tool, so there is exactly one definition of each gate and the
+runner cannot drift from it. `--selftest` proves the runner itself can report a
+failure; `--only a,b` narrows it; `--strict-all` refuses to excuse even the
+standing `family_sweep` failure (the 6 blocking W6 findings).
+
+The individual commands, for when one goes red and you need to read it:
+
+```
 python3 experiments/foundry_codebook.py lint
 python3 experiments/foundry_family_sweep.py --strict
 python3 experiments/foundry_definition_drift.py

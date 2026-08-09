@@ -79,7 +79,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
 | `SESSION-HANDOFF-2026-08-08.md` | 347 | 3 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 251 | 3 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 253 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
 | `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
 | `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
