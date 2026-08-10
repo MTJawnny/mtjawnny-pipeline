@@ -47,6 +47,17 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    is a genuine defect** (*"shuffles it into their library"* — a tuck, not a
    destroy). Gate 2 going RED after a mutation is the drill working.
 
+   **THE PASS IS RATIFIED TO RUN BUT DOES NOT RUN YET, and the blocker is
+   NOT this ruling.** 2a halts on its own premise guards, all stale because the
+   codebook moved three times since 2a was computed on 2026-08-02. Two were
+   re-derived with fully isolated causes (`EXPECTED_NODE_TOTAL` 95 → 92,
+   `EXPECTED_CLEAN_NODES` 90 → 87 — four nodes became real axes in this
+   morning's 44-axis re-home). **`EXPECTED_R5_ROWS` 141 → 166 was NOT
+   re-derived, deliberately**: it predates this session (the rename *lowered*
+   it 166 → 163), it is unattributed, and R5 is the lane CDR-03 routes to human
+   review. **Attributing that drift is the next action** — it is now the only
+   thing between here and the 18,059-row pass.
+
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
 
