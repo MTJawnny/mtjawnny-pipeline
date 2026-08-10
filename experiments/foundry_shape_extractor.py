@@ -284,6 +284,23 @@ _ALWAYS_SELF_NOUNS = {"creature", "permanent", "card", "token", "aura", "case"}
 ANTHEM_SUBJECT = re.compile(
     r"^([a-z~][^.,]*?)\s+gets?\s+[+-][0-9Xx*]+/[+-][0-9Xx*]+")
 
+# W4's KEYWORD GRANT -- `<subject> have/has <CR 702 keyword list>`, the anthem's
+# twin. Same subject discipline (`[^.,]`, CR 113.3c); the predicate grants
+# KEYWORDS instead of power and toughness. Group 1 is the subject, group 2 the
+# granted text, which `_granted_keywords` then tests against the CR.
+KEYWORD_GRANT = re.compile(r"^([a-z~][^.,]*?)\s+(?:have|has)\s+(.+)$")
+
+# A printed keyword list joined by comma, semicolon OR `and`. KEYWORD_LIST_SPLIT
+# is deliberately NOT reused: it is shared by both keyword-line paths, and
+# widening it there would move existing routing. `and` is safe to add HERE
+# because a parameter containing it (CR 702.11f's "hexproof from [A] and from
+# [B]") simply fails the all-parts test and the line is left reported.
+_GRANT_LIST_SPLIT = re.compile(r"[,;]|\band\b")
+
+# The marker set that says group 1 is a CLAUSE and not a subject. See the
+# branch for the full derivation and the declaration that this is a heuristic.
+CLAUSE_NOT_SUBJECT = re.compile(r"\bas though\b|\bis\b|\bif\b")
+
 # CR-LAG REGISTER (2026-08-05). Subtypes the CORPUS prints that the LOCAL CR
 # snapshot does not yet enumerate. This is NOT a hand-list of vocabulary -- it
 # is a dated record of a discrepancy between two upstream sources, and every
@@ -1452,6 +1469,43 @@ def build_keyword_forms(kws: dict, k7) -> None:
             fc.halt(f"No CR printed form derived for {anchor!r}. The 702 parse "
                     f"has degraded; refusing to run with a partial form set.")
     KEYWORD_FORMS = forms
+
+
+def _granted_keywords(text: str) -> bool:
+    """Is `text` entirely CR 702 keywords -- the thing a grant grants?
+
+    MEMBERSHIP, NOT HOME. The test is `CR_KEYWORD_NAMES`, the list parsed from
+    `load_702`, plus CR 702.14a's composed landwalk, CR 702.29e's typecycling
+    and each keyword's own CR PRINTED FORM. It is deliberately NOT
+    `_keyword_by_form`, which gates on `KEYWORD_HOME` -- that map SKIPS any
+    keyword whose home could not be derived, so asking it "is this a keyword?"
+    answers no for `awaken` and `impending`. Whether a keyword has a §2 home is
+    a different question from whether it IS one, and this branch only needs the
+    second: the delivery of the GRANT is `static` regardless of where the
+    granted keyword would live on a card that printed it bare.
+
+    KNOWN GAP, measured 2026-08-09 and costing exactly ONE line (Tam, Mindful
+    First-Year): `cr_printed_forms` does not derive CR 702.11d's *"'Hexproof
+    from [quality]' is a VARIANT of the hexproof ability"* -- a published form
+    in the same family as landwalk and typecycling, stated in a sentence shape
+    the form parser does not read. Left as an honest gap rather than patched
+    around here, because widening `cr_printed_forms` moves `keyword_form_tokens`
+    too and that is its own shape with its own diff.
+    """
+    parts = [x for x in _GRANT_LIST_SPLIT.split(text.rstrip(".")) if x.strip()]
+    if not parts:
+        return False
+    for part in parts:
+        part = part.strip().rstrip(".")
+        low = re.sub(r"\s+", " ", COST_OR_PARAM.sub("", part).strip().lower())
+        if low in (CR_KEYWORD_NAMES or ()) or landwalk_variant(low) \
+           or typecycling_variant(low):
+            continue
+        if any(rx.match(part) for rxs in (KEYWORD_FORMS or {}).values()
+               for rx in rxs):
+            continue
+        return False
+    return True
 
 
 def _keyword_by_form(part: str):
@@ -2954,6 +3008,63 @@ def parse_delivery(line: str, ratified: dict, card: dict = None) -> tuple:
         if not in_created_ability(body, m_anthem.end(1)):
             return ("static", "static-anthem") if "static" in ratified \
                 else (None, "static-anthem")
+
+    # ------------------------------------------------------------------
+    # W4, SECOND SHAPE — THE KEYWORD GRANT.  `<subject> have/has <keywords>`
+    # ------------------------------------------------------------------
+    # The anthem's twin: same CR 113.3d statement, same subject discipline,
+    # a different predicate. `Creatures you control have flying.` grants a
+    # CR 702 keyword instead of power and toughness.
+    #
+    # STEP-2A's shape B already claims the QUOTED grant (`Creatures you
+    # control have "{T}: Add one mana of any color."`), where §2 hands the
+    # quoted ability to whatever it was granted to. This is the UNQUOTED
+    # half — a bare keyword, which has no ability text to hand anywhere.
+    #
+    # The subject is deliberately NOT restricted to permanents. `Spells you
+    # cast have cascade` and `You have hexproof` are equally CR 113.3d
+    # statements, and the card having no instant/sorcery face is what closes
+    # CR 113.3's enumeration on `static` in all three cases. Naming the shape
+    # "class of permanents" would have been a claim about the subject, and
+    # delivery is never decided by the subject.
+    m_grant = KEYWORD_GRANT.match(low)
+    if m_grant and card is not None and not _has_spell_face(card) \
+       and not is_mode and _granted_keywords(m_grant.group(2)):
+        pre = ability_word_prefix(raw)[0]
+        if pre and CR_KEYWORD_NAMES and pre.lower() in CR_KEYWORD_NAMES:
+            return None, "spell-or-static"
+        # IS GROUP 1 A SUBJECT, OR A WHOLE CLAUSE? The branch's entire claim is
+        # that it is a subject, so that claim gets tested rather than assumed.
+        # A clause has its own finite main verb, and three markers give it away:
+        #
+        #   `as though`  CR 609.4 — *"Some effects state that a player may do
+        #                something 'as though' some condition were true."*
+        #                `Creatures with islandwalk can be blocked as though
+        #                they didn't have islandwalk` (16 lines) IGNORES a
+        #                keyword rather than granting one.
+        #   `is`         a copula, so what precedes is a predicate, not a noun
+        #                phrase — Aurification's `…is a Wall in addition to its
+        #                other creature types and has defender`.
+        #   `if`         a conditional — Pollywog Symbiote's `Each creature
+        #                spell you cast costs {1} less to cast IF IT has
+        #                mutate`, a CR 601.2f cost reduction, not a grant.
+        #
+        # DECLARED HEURISTIC, and the declaration is the point: the CR
+        # enumerates ability words and keywords, but it does not enumerate
+        # English clause markers, so no source can hold this list. It was
+        # derived by reading all 490 captured subjects, it excludes exactly the
+        # 2 that are clauses, and `are` is deliberately ABSENT — its only
+        # appearance is the legitimate relative clause `creatures you control
+        # that are enchanted or equipped`.
+        #
+        # All 18 excluded lines are genuine statics, so the TOKEN would have
+        # been right and only the descriptor wrong. That is precisely why they
+        # are excluded: *"a fallback is a wrong answer with a ratified name."*
+        if CLAUSE_NOT_SUBJECT.search(m_grant.group(1)):
+            return None, "spell-or-static"
+        if not in_created_ability(body, m_grant.end(1)):
+            return ("static", "static-keyword-grant") if "static" in ratified \
+                else (None, "static-keyword-grant")
     return None, "spell-or-static"
 
 

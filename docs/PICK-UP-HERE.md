@@ -90,12 +90,14 @@ scores `None → ratified` as pure profit, and strictly worse than a fixture.
 **The CR refresh is done (§0a), so take one of these. Both are ready; neither
 is blocked.**
 
-**A. W4 — the static queue · 3,846 lines · the big slice. FIRST SHAPE DONE.**
-The **anthem** (`<class of permanents> get ±N/±N`) landed 2026-08-09 — **524
-lines, 0 re-routes**, `docs/W4-ANTHEM-2026-08-09.md`. **Read that record first;
-its §9 ranks what is left** and the `<class> have <keyword>` twin (~523 lines)
-is the obvious next shape. `python3 experiments/foundry_shape_extractor.py
---gaps`, section headed `INSIDE spell-or-static`. Named shapes, one at a time,
+**A. W4 — the static queue · 3,358 lines · the big slice. TWO SHAPES DONE.**
+The **anthem** (`<subject> get ±N/±N`, **524**) and the **keyword grant**
+(`<subject> have <CR 702 keywords>`, **488**) both landed 2026-08-09 with
+**0 re-routes** — `docs/W4-ANTHEM-2026-08-09.md` and
+`docs/W4-KEYWORD-GRANT-2026-08-09.md`. **Read the second one's §9 first**; it
+ranks what is left, and **CR 601.2f cost reduction (~498) is next**.
+`python3 experiments/foundry_shape_extractor.py --gaps`, section headed
+`INSIDE spell-or-static`. Named shapes, one at a time,
 never a blanket sweep — the warning was re-measured 2026-08-09 and the 1,883 is
 still **4** (`experiments/foundry_blanket_risk.py`), all four the Siege cycle
 behaving correctly.
