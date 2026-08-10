@@ -215,3 +215,56 @@ API spend, and it now has a committed prediction set to be graded against:
 python3 experiments/foundry_wire_capability.py
 python3 experiments/foundry_wire_experiment.py --json
 ```
+
+## 8. DECISION SHEET — three items, one sheet
+
+Presented together per the standing rule (*"pending ratifications go in ONE
+decision sheet, not one question per token"*). **None blocks §9.2**; all three
+are consequences of the measurement rather than prerequisites for it.
+
+### D-W-1 — the Tier 3 tie-break *(a scoring constant → Captain)*
+
+Tier 3 sorts `(-score, name)`. Rampant Growth's shipped displayed top-10 is an
+alphabetical slice of a **44-row score tie**, headed by an `A-` Alchemy variant.
+This is live today at 19.3% coverage and does not improve as coverage rises —
+more members produce *more* ties at the same coverage score, not fewer.
+
+**Every scoring constant is a ratified ruling, not a tuning knob**, so I have
+not picked one. The candidate tie-breakers already exist as ratified facts
+elsewhere in the engine — `ci_relation_step`, `abs(mv_delta)` (already the
+Tier 1/2 tie-break), and the ratified paper-over-`A-` preference.
+**Recommendation: reuse the Tier 1/2 tie-break rather than mint a new term** —
+it is already ratified and already ordering the other tiers.
+
+### D-W-2 — `rule:reanimate-from-graveyard` is missing Dance of the Dead *(a codebook mutation → Captain)*
+
+The axis holds **Animate Dead** and not **Dance of the Dead**, which prints the
+same Aura template. The wire promoted the first to #2 and buried the second at
+#56 on that difference alone.
+
+**Not proposed as a fix yet, on purpose.** *"Before proposing a mutation,
+measure whether the thing is broken"* — one missing member found by one anchor
+is a sample of one, and the honest next step is to measure the axis's recall
+against its own CR-anchored definition before touching it. It is recorded here
+so it is not lost, and because it is evidence for D-W-3's shape: **membership
+gaps are the failure mode, and nothing in the repo audits for them.**
+
+### D-W-3 — 88 Alchemy memberships, 48 of them duplicate pairs *(a codebook mutation → Captain)*
+
+`A-` rebalance cards sit on **51 active axes**; in **48 cases both the `A-`
+variant and its paper twin are members of the same axis**. They inflate every
+affected axis's DF, which feeds `idf` **and** `DERIVED_QUALIFY_DF_CEILING`, and
+they duplicate rows in any displayed list (`A-Buy Your Silence` ranked one place
+above `Buy Your Silence`).
+
+The ratified rule already exists — *"paper rows preferred over A- (Alchemy)
+variants in sampling, resolution, and emit"* — so this is applying a standing
+ruling, not making a new one. **But it is still a codebook mutation** and rides
+the backup law: `foundry_membership_move.py` with a declared spec, backup →
+`--dry-run` → read the conservation line → execute → re-run `foundry_gate2.py`
+**expecting it to find something**.
+
+**Measure the blast radius first.** `rule:targeted-destruction` sits at DF=172
+against a ceiling of 172; removing Alchemy duplicates *lowers* DFs, which can
+push an axis **under** the ceiling and newly enable solo-qualification. A
+cleanup that looks like hygiene can change what qualifies.
