@@ -1,0 +1,10 @@
+{
+  "batch": "a15-vocab-01",
+  "ruling": "docs/A15-VOCAB-01-RULING-2026-08-09.md",
+  "renames": {
+    "rule:targeted-destruction": {
+      "to": "rule:targeted-destroy",
+      "why": "Captain-ratified 2026-08-09, unblocking A15-VOCAB-01. Grammar §4 ratifies `destroy` as the standardized EFFECT verb; `destruction` appears nowhere in §4, and CR 701.8 files the keyword action as Destroy. This COMPLETES the `destruction` -> `destroy` retirement Captain ratified and the project executed on 2026-08-02, recorded at grammar §6c line 838 (`mass-creature-destruction`), which stopped halfway on the one axis nobody re-checked. Name-only: no member, definition or scope changes. The axis itself is KEEP-ratified across triage batches 1-7 and is the M2 merge target; those verdicts ratified the AXIS, and this changes only its spelling onto the verb §4 already ratified for it. validate_slug fails the old name today and passes the new one; Gate 3 dossier on `rule:targeted-destroy` returns 0 hits and 0 rulings, so there is no prior art to overturn."
+    }
+  }
+}

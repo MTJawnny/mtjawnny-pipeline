@@ -28,18 +28,25 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    produced **zero** movement because its members already share verbatim text
    and the engine reaches them at Tier 2 for free. Re-run it after coverage
    moves: `python3 experiments/foundry_wire_experiment.py --json`.
-2. **HALF DONE — → `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never
-   ONE decision and never a vocabulary question. The **21-row `except` half was
-   a transcription bug** in `validate_slug` against grammar §13 Q8.5 (ratified
-   2026-07-31) — **landed** (`6fecac9`), parsed from the ratified line rather
-   than hand-listed, four guards negative-controlled, blast radius 178 → 177
-   with the one flip verified correct. The **188-row `destruction` half is a §4
-   naming violation whose rename Captain already ratified and the project
-   already executed on a sibling** (§6c line 838, 2026-08-02) — it stopped
-   halfway. **ONE decision is open: rename `rule:targeted-destruction` →
-   `rule:targeted-destroy` (172 members).** A codebook mutation, so it rides the
-   backup law. **Not started** — no backup, no spec, `codebook.json` untouched.
-   The full pass behind it is **18,059 rows over all 32,557 gated cards**.
+2. ~~**Unblock `A15-VOCAB-01`**~~ — **BOTH HALVES LANDED 2026-08-09. →
+   `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
+   never a vocabulary question. The **21-row `except` half was a transcription
+   bug** in `validate_slug` against grammar §13 Q8.5 (ratified 2026-07-31),
+   fixed by PARSING the ratified line; four guards negative-controlled. The
+   **188-row `destruction` half completed a rename Captain ratified and the
+   project executed on a sibling 2026-08-02** (§6c line 838) and stopped
+   halfway: `rule:targeted-destruction` → **`rule:targeted-destroy`**, 172
+   members, Captain-ratified and executed under the backup law.
+   **`STOPPED_FOR_CAPTAIN` is cleared — the 18,059-row pass is ratified to
+   proceed and has NOT been run yet.** That is the next action.
+
+   **The rename ended a CHECK-EVASION, and this is the transferable lesson:**
+   `definition_drift`'s C3 keys on grammar §4 EFFECT verbs, so an axis spelled
+   with a non-§4 word is invisible to it **by construction**. Renaming put 172
+   members into C3's scope for the first time — 171 pass, and **Audacious Swap
+   is a genuine defect** (*"shuffles it into their library"* — a tuck, not a
+   destroy). Gate 2 going RED after a mutation is the drill working.
+
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
 

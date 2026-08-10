@@ -14,14 +14,14 @@ accident; this is the systematic pass for the rest.
 
 Scope: 403 active axes. Corpus loaded (38233 cards) for card names and full-oracle-text gating.
 
-**28 findings.**
+**29 findings.**
 
 | check | law | count |
 |---|---|--:|
 | C1a | §8 rule 3 — definition contradicts the name | 0 |
 | C1b | §8 rule 3 — member evidence contradicts the name | 1 |
 | C2 | §1/§2 — member delivery contradicts the slug prefix | 9 |
-| C3 | §4 — member effect contradicts the slug suffix | 7 |
+| C3 | §4 — member effect contradicts the slug suffix | 8 |
 
 Member tests are **double-gated**: a member is only reported when the
 cited evidence quote *and* the card's full oracle text (all faces, all
@@ -197,3 +197,11 @@ axes naming both a counter and a token, which §7 ratifies as legitimate
 - **Goro-Goro, Disciple of Ryusei** — "{3}{R}{R}: Create a 5/5 red Dragon Spirit creature token with flying."
 
 *Proposed:* these members do not perform 'sacrifice' — re-home onto the axis matching their real effect, or ratify a sibling
+
+### `rule:targeted-destroy`
+
+**slug's effect is 'destroy', so members must show 'destroy'; 1 of 172 never do, in the cited quote or anywhere in their oracle text**
+
+- **Audacious Swap** — "The owner of target nonenchantment permanent shuffles it into their library"
+
+*Proposed:* these members do not perform 'destroy' — re-home onto the axis matching their real effect, or ratify a sibling
