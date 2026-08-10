@@ -41,7 +41,28 @@ OUT_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_classification.json"
 PARSED_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_parsed_final.json"
 GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
 
-EXPECTED_NODE_TOTAL = 95
+EXPECTED_NODE_TOTAL = 92
+# RE-DERIVED 2026-08-09 (was 95). The guard HALTED rather than letting a moved
+# premise through, which is it working -- the number is stale, not wrong, and
+# every one of the three is accounted for. Same discipline as a ratchet
+# re-pin: movement is accepted only with the reason recorded.
+#
+# FOUR nodes left the set, all for the same correct reason: they are now REAL
+# ACTIVE AXES, instantiated by the 44-axis re-home earlier on 2026-08-09, so
+# they are no longer "new virtual nodes":
+#   rule:create-token-clue                 active, 34 members
+#   rule:etb-create-token-clue             active, 35 members
+#   rule:death-trigger-create-token-clue   active,  5 members
+#   rule:activated-create-token-creature   active,  1 member
+# ONE node joined: rule:cant-be-blocked-except-by-count, which now VALIDATES
+# because grammar §13 Q8.5's closed restriction vocabulary is parsed rather
+# than transcribed (A15-VOCAB-01 half 1). 95 - 4 + 1 = 92.
+#
+# ISOLATED, not assumed. Against the verified pre-rename backup the count is
+# also 92, so the rename is not the cause; against the pre-fix validator it is
+# 91, so the +1 is exactly the vocabulary fix. The -4 predates this session
+# entirely.
+#
 # A14 measured 95 - 2 collisions = 93. That count was computed with a
 # STRING existence test, which cannot see that a proposed node is an
 # existing axis spelled differently. Testing on canonical form (F-D fix,
@@ -52,7 +73,12 @@ EXPECTED_NODE_TOTAL = 95
 # So 93 -> 90 clean instantiations, 3 reclassified as join-existing /
 # collision-node-duplicate. No node is lost; membership routes to the axis
 # that already exists.
-EXPECTED_CLEAN_NODES = 90          # A14's 93, minus 3 canonical duplicates
+# RE-DERIVED 2026-08-09 (was 90), by the SAME four-out/one-in accounting as
+# EXPECTED_NODE_TOTAL above: 90 - 4 + 1 = 87. Every other node category is
+# unchanged -- join-existing 2, collision-killed 1, collision-renamed 1,
+# collision-node-duplicate 1 -- so the whole movement is in this bucket and
+# 87 + 2 + 1 + 1 + 1 = 92 closes against the total.
+EXPECTED_CLEAN_NODES = 87          # was A14's 93, minus 3 canonical duplicates, minus the 4 now-live axes, plus the except node
 EXPECTED_A15_ROWS = 213            # A15 / R6
 EXPECTED_R5_ROWS = 141             # R5
 
@@ -107,6 +133,29 @@ A15_CLUSTER_NAMES = (
     "etb-create-token-clue",
     "activated-tap-opponent-artifact",
 )
+
+# A15-VOCAB-01 option B (Captain-ratified 2026-08-09,
+# docs/A15-VOCAB-01-RULING-2026-08-09.md): "rename the target slugs to
+# compositions using existing ratified vocabulary, then re-validate."
+#
+# THE CLUSTER NAME AND THE TARGET SLUG ARE TWO DIFFERENT THINGS, and conflating
+# them is what makes this look like a one-word edit. The cluster name is an
+# IDENTITY in run-1's free pool -- `canonicalize_label` turns it into the key
+# the rows are looked up under, and those rows carry the model's own 2026-08-01
+# spelling. Renaming the tuple entry would change the LOOKUP as well as the
+# target, find no rows, and trip the halt-guard below. That guard is correct;
+# the fix is to leave identity alone and redirect only what gets created.
+#
+# Only clusters whose ratified name violates the grammar appear here. Everything
+# else keeps `rule:<cluster>` as before.
+A15_TARGET_SLUG_OVERRIDE = {
+    # grammar §4 ratifies `destroy`; `destruction` appears nowhere in §4 and
+    # CR 701.8 files the keyword action as Destroy. Completes the
+    # `destruction` -> `destroy` retirement executed 2026-08-02 on
+    # `mass-creature-destruction` (grammar §6c line 838) and finished on
+    # `rule:targeted-destruction` -> `rule:targeted-destroy` on 2026-08-09.
+    "targeted-destruction-creature": "rule:targeted-destroy-creature",
+}
 
 # R8 revivals. A2: a revived axis enters `deferred`, never active-at-n=0; it
 # flips to active when its ratified DET pattern lands its first membership
@@ -363,7 +412,7 @@ def classify_a15(discovery: dict, result: dict) -> tuple:
                     f"the ratified promotion set and the measured data disagree")
         # Same F-D fix as classify_nodes: existence is a CANONICAL question.
         # `active` here is already active-only, so no rename-shell ambiguity.
-        target = f"rule:{name}"
+        target = A15_TARGET_SLUG_OVERRIDE.get(name, f"rule:{name}")
         active_canon = build_canonical_axis_index(active)
         node_canon_index = {fcon.canonicalize_label(s): s for s in sorted(nodes)}
         canon_target = fcon.canonicalize_label(target)
