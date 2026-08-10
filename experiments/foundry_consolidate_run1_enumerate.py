@@ -384,6 +384,49 @@ def gate_merge_collisions(ex: dict) -> None:
                 f"`merge_assertion` halts on that, mid-apply, in session 3.")
 
 
+def gate_every_row_has_an_axis(ex: dict) -> None:
+    """Every planned row must land on an axis that will EXIST when session 3
+    applies it — an active one, or one this plan instantiates.
+
+    THIS GATE EXISTS BECAUSE ITS ABSENCE SHIPPED AN UNAPPLIABLE PLAN. A15's
+    `instantiate` clusters name a target slug that is not yet an axis, and
+    `expand()` step 3's else-branch builds their member rows without ever
+    adding the axis to `new_axes` — 189 rows on 2 axes that the plan does not
+    create. Nothing else caught it:
+
+    * `gate_counts` compares `new_axes_instantiated` against 2a's expectation,
+      and BOTH sides count only `classify_nodes` instantiations. A closed loop
+      closed on a quantity that both sides compute the same wrong way proves
+      the two computations agree, not that either is right.
+    * `gate_merge_collisions` walks `merges` only; all 189 are additions.
+    * `expected_final_counts` derives `axes_active_after` from
+      `len(ex["new_axes"])`, so it inherits the omission and stays
+      self-consistent.
+
+    An axis record needs a definition and a scope, and 2a's
+    `a15_cluster_summary` carries neither — so this halts rather than
+    inventing them. Directive §1: a gap in 2a is a defect in 2a, fixed by
+    ruling on it, never by exercising judgment here.
+    """
+    active = ex["result"]["active"]
+    planned = {a["slug"] for a in ex["new_axes"]}
+    orphans = Counter()
+    for bucket in (ex["additions"], ex["merges"]):
+        for (slug, _oid) in bucket:
+            if slug not in active and slug not in planned:
+                orphans[slug] += 1
+    if orphans:
+        lines = "\n".join(f"    {slug}: {n} row(s)"
+                          for slug, n in sorted(orphans.items()))
+        fc.halt(
+            f"{sum(orphans.values())} planned row(s) target {len(orphans)} axis/axes "
+            f"that neither exist nor are instantiated by this plan:\n{lines}\n"
+            f"  These are A15 clusters 2a classified `instantiate`. An axis "
+            f"record needs a definition and a scope; 2a's a15_cluster_summary "
+            f"carries neither, and 2b has no judgment to supply them. The fix "
+            f"is a ruling that authors the axis record, not a change here.")
+
+
 def expected_final_counts(ex: dict) -> dict:
     """The exact post-apply numbers session 3 must match. No tolerances (A14)."""
     axes = ex["result"]["axes"]
@@ -422,6 +465,7 @@ def main() -> int:
     ex = expand(ctx)
     got = gate_counts(ex, ctx["a2a"])
     gate_merge_collisions(ex)
+    gate_every_row_has_an_axis(ex)
 
     overlap = set(ex["additions"]) & set(ex["merges"])
     if overlap:

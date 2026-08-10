@@ -87,8 +87,43 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    recall, median axis 4". Re-run `foundry_wire_experiment.py` after an apply;
    the predictions are already committed.
 
-   **← NEXT: SESSION 3 (APPLY) — TAKE IT AS A FRESH SESSION. Preflight in
-   ruling doc §11.** Two things a session must not rediscover: the governing
+   **⛔ SESSION 3 RAN AND HALTED — THE PLAN IS UNAPPLIABLE. →
+   `docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md`.** The applier
+   (`experiments/foundry_consolidate_run1_apply.py`) was built and stopped the
+   plan on its own pre-mutation verifier. **Nothing was written** — codebook
+   still `b4197e94…`, plan still `b545d2bf…`, no backup consumed.
+
+   **189 of the 13,565 member additions target 2 axes the plan never
+   creates**: `rule:targeted-destroy-creature` (188) and
+   `rule:activated-tap-opponent-artifact` (1). Both are A15 clusters 2a
+   classified `instantiate`; 2b's `expand()` step 3 builds their member rows
+   and never adds the axis, because `new_axes` is fed only by
+   `classify_nodes()`. **All five 2b gates passed** — `gate_counts` compares
+   `new_axes_instantiated` against 2a's expectation and **both sides count
+   only the node route**, so the closed loop closed on a quantity computed the
+   same wrong way twice. 403+87=490 and 8,982+13,565=22,547 are each correct
+   and jointly impossible.
+
+   **Fixed in the producer:** `gate_every_row_has_an_axis()` now halts a
+   regeneration rather than emitting an unappliable plan. It halts instead of
+   instantiating because an axis record needs a definition and a scope, and
+   2a's `a15_cluster_summary` carries neither.
+
+   **The rest of the plan is clean, and that was measured** — the whole
+   verifier re-run against a patched copy: 15,371/15,371 rows correct,
+   15,371/15,371 quotes verbatim, R5 163 + A15 194 promotions folded with lane
+   fields intact. **One defect, not the first of a queue.**
+
+   **NEXT IS CAPTAIN'S, not a work item:** two axis records to ratify
+   (decision sheet, halt doc §3, with proposed definitions and the measured
+   35-card overlap with `rule:targeted-destroy`). Then regenerate — **the plan
+   sha changes, which voids the current go** — then `--dry-run`, then
+   `--go-sha256 <new hash>`. Note `grammars.json` names
+   `targeted-destruction-creature` a lattice candidate *"once member evidence
+   is checked … do not auto-rename"*, which is exactly the auto-route 2b took.
+
+   **← SUPERSEDED PREFLIGHT (ruling doc §11), kept for what it still gets
+   right.** Two things a session must not rediscover: the governing
    directive is at **`docs/archive/CONSOLIDATION-APPLY-DIRECTIVE.md`** (the 2b
    directive cites a path that does not exist) and it carries a **stale count —
    "the 93 instantiations", live number 87**; and **the applier does not

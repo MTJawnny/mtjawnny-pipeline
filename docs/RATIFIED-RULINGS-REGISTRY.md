@@ -14,17 +14,17 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **130 documents under docs/**
-- ruling references found: **628**
+- documents scanned: **131 documents under docs/**
+- ruling references found: **632**
 - distinct ruling ids: **127**
-- corroborated (appear in >1 doc): **84**
-- **sole-home (appear in exactly 1 doc): 43**
+- corroborated (appear in >1 doc): **85**
+- **sole-home (appear in exactly 1 doc): 42**
 
 ## Deletion gate — per document
 
 | document | lines | rulings | sole home for | deletable |
 |---|---:|---:|---:|---|
-| `A15-VOCAB-01-RULING-2026-08-09.md` | 457 | 5 | 0 | yes |
+| `A15-VOCAB-01-RULING-2026-08-09.md` | 610 | 6 | 0 | yes |
 | `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
 | `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
@@ -32,11 +32,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `BECOMES-TAPPED-RULING-2026-08-03.md` | 141 | 1 | 0 | yes |
 | `BEGIN-COMBAT-RULING-2026-08-03.md` | 220 | 1 | 0 | yes |
 | `CDR-09-WALK-DERIVATION-2026-08-02.md` | 147 | 4 | 0 | yes |
-| `CDR-PROPOSALS.md` | 528 | 31 | 6 | **NO** |
+| `CDR-PROPOSALS.md` | 528 | 31 | 5 | **NO** |
 | `CODEBOOK-NAMING-GRAMMAR.md` | 1351 | 19 | 1 | **NO** |
 | `CONCEPT-AXIS-HOMES-2026-08-09.md` | 242 | 1 | 0 | yes |
 | `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
 | `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
+| `CONSOLIDATION-APPLY-HALT-2026-08-09.md` | 260 | 3 | 0 | yes |
 | `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
 | `COUNTER-PLACED-RULING-2026-08-04.md` | 154 | 2 | 0 | yes |
@@ -57,7 +58,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
-| `PICK-UP-HERE.md` | 305 | 6 | 0 | yes |
+| `PICK-UP-HERE.md` | 361 | 6 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PRODUCT-REALITY-AUDIT-2026-08-09.md` | 182 | 2 | 0 | yes |
@@ -130,13 +131,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `R13` (line 692) — R13 — Record corrections (OQ10) executed** in this commit set:
 - `R8` (line 646) — R8 — Nonsense-rule audit ratified; Category-2 items 1–5 ALL ALLOWED,**
 
-**`CDR-PROPOSALS.md`** — sole home for 6:
+**`CDR-PROPOSALS.md`** — sole home for 5:
 
 - `ADD-03` (line 455) — re-patched lanes, which is how the grammar lane was missed. Requires ADD-03
 - `ADD-04` (line 477) — ADD-04 — enumerate and route the 23 grammar-lane DET contradictions**
 - `ADD-05` (line 480) — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
 - `ADD-07` (line 489) — ADD-07 (NEW) — every-row-one-disposition count contract.** Adopt the external
-- `AG-EQUIV-01` (line 281) — Recommend:** run the auditor's AG-EQUIV-01 five-test pass over surviving
 - `AG-NODE-01` (line 313) — existing axis** per its AG-NODE-01 disposition — never "deferred". Deferred
 
 **`CODEBOOK-NAMING-GRAMMAR.md`** — sole home for 1:
@@ -364,10 +364,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:490` — auditor's AG-COUNT-01 shape as a named gate. Category-sum totals drop rows that
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:41` — (AG-COUNT-01), each classified into the closed vocabulary:
 
-### `AG-EQUIV-01` — 2 reference(s) across 1 doc(s)
+### `AG-EQUIV-01` — 3 reference(s) across 2 doc(s)
 
 - `CDR-PROPOSALS.md:281` — Recommend:** run the auditor's AG-EQUIV-01 five-test pass over surviving
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
+- `CONSOLIDATION-APPLY-HALT-2026-08-09.md:209` — Recommendation: instantiate, and flag the pair** for the AG-EQUIV-01
 
 ### `AG-NODE-01` — 1 reference(s) across 1 doc(s)
 
@@ -379,7 +380,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
 - `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
-### `B-02` — 9 reference(s) across 5 doc(s)
+### `B-02` — 10 reference(s) across 6 doc(s)
 
 - `B-MIGRATION-DIRECTIVE.md:76` — 3. Independent verifier (A13 / B-02 — the audit's core demand)
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
@@ -387,6 +388,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:127` — The model had nowhere correct to put it.** This reframes part of blocker B-02
 - `CDR-PROPOSALS.md:287` — created by two routes in one session — neither the B-02 review nor rev 1's
 - `CDR-PROPOSALS.md:526` — remaining work item is the B-02 semantic repair of the 93 nodes, gated on
+- `CONSOLIDATION-APPLY-HALT-2026-08-09.md:202` — > single-member axes created by two routes in one session — neither the B-02
 - `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
 - `SESSION-HANDOFF-2026-08-01.md:171` — the B-02 semantic repair.
 - `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
@@ -439,13 +441,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:478` — alongside CDR-03's 6.
 - `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
 
-### `CDR-04` — 3 reference(s) across 3 doc(s)
+### `CDR-04` — 4 reference(s) across 4 doc(s)
 
+- `A15-VOCAB-01-RULING-2026-08-09.md:504` — resolve the pair. CDR-04's "keep both quotes in one assertion" is a *proposal*,
 - `CDR-PROPOSALS.md:226` — CDR-04 — Duplicate same-run quotes: one assertion or a linked artifact
 - `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
 - `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
-### `CDR-05` — 8 reference(s) across 6 doc(s)
+### `CDR-05` — 9 reference(s) across 7 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:104` — delivery — resolve together, see CDR-05"). The old inconsistent names hid it;
@@ -453,6 +456,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:265` — CDR-05 — Near-duplicate axes: merge, alias, or parent/child
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
 - `CODEBOOK-NAMING-GRAMMAR.md:1258` — CDR-05.
+- `CONSOLIDATION-APPLY-HALT-2026-08-09.md:210` — near-duplicate pass CDR-05 already recommends. A one-member axis reserved by a
 - `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
 - `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 
@@ -638,7 +642,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
-- `PICK-UP-HERE.md:236` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:292` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -661,7 +665,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
-- `PICK-UP-HERE.md:236` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:292` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
