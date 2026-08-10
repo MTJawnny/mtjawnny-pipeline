@@ -271,7 +271,11 @@ go-ahead before submitting. **Never remembered prices.**
 
 ---
 
-## W4 — THE ANTHEM GROUP  ·  TIER B  ·  the big one
+## W4 — THE ANTHEM GROUP  ·  TIER B  ·  **PAUSED 2026-08-09**
+
+> **⛔ Do not take this.** `docs/PRODUCT-REALITY-AUDIT-2026-08-09.md`:
+> the foundry does not reach a shipped card. Two shapes landed and moved
+> nothing a user can see. Wire the codebook into `tier_engine` first.
 
 > **TWO SHAPES LANDED 2026-08-09, 1,012 lines, 0 re-routes.** The anthem
 > (`<subject> get ±N/±N`, 524) and the keyword grant (`<subject> have

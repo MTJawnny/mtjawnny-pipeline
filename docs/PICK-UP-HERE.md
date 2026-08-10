@@ -7,6 +7,29 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
+## 0Z. READ THIS BEFORE §2 — THE WORK QUEUE CHANGED
+
+**→ `docs/PRODUCT-REALITY-AUDIT-2026-08-09.md`.** Captain asked whether the
+work actually serves the tool. Measured answer: **the T3 foundry is not
+connected to the product.** `tier_engine.py` reads no foundry output at all and
+emits one self-derived `rule:` tag; all 13 importers of the delivery classifier
+are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
+2026-08-01 touched `pipeline/` zero times.
+
+**W4 is PAUSED — do not take §2A.** The ordered queue is now:
+
+1. **Wire the codebook into `tier_engine`** — the missing link, and the fastest
+   way to learn whether 7,930 memberships help neighbours at all.
+2. **Unblock `A15-VOCAB-01`** — one Captain decision, open since 2026-08-02,
+   gating the full-corpus pass. Recommendation on file: option B.
+3. **Revive `foundry_review.html`** — dark since 2026-07-17.
+4. **A green pipeline build** — last one 2026-07-05.
+
+Everything below this section is still ACCURATE; it is the queue's PRIORITY
+that changed, not its facts.
+
+---
+
 ## 0. THE ONE-LINE STATE
 
 W1, W2 and W3's DET half are DONE. D1/D4/D5/D6/D7 landed 2026-08-08; **all five
@@ -87,8 +110,14 @@ scores `None → ratified` as pure profit, and strictly worse than a fixture.
 
 ## 2. THEN — the next work item
 
-**The CR refresh is done (§0a), so take one of these. Both are ready; neither
-is blocked.**
+> **⛔ SUPERSEDED BY §0Z.** Both items below are shape/vocabulary work inside
+> the foundry, and the foundry does not reach a shipped card. They are kept
+> because they are correctly scoped and will matter **after** the codebook is
+> wired into `tier_engine` — not before. Do not start either without saying out
+> loud which shipped artifact changes.
+
+**The CR refresh is done (§0a). Both items below are ready and unblocked —
+and both are PAUSED pending §0Z.**
 
 **A. W4 — the static queue · 3,358 lines · the big slice. TWO SHAPES DONE.**
 The **anthem** (`<subject> get ±N/±N`, **524**) and the **keyword grant**

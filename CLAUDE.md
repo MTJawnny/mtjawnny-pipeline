@@ -10,11 +10,49 @@ Also home of the tier engine and the T3 axis foundry (derived-tag mining).
 This is a separate repo from mtjawnny.github.io — that repo's CLAUDE.md
 contract does not travel here. This file is this repo's own contract.
 
+## 0. BEFORE ANYTHING ELSE — DOES THIS WORK REACH A CARD?
+
+**→ `docs/PRODUCT-REALITY-AUDIT-2026-08-09.md`. Read it before taking any
+foundry work item.** Measured 2026-08-09, and it governs whether the rest of
+this page matters:
+
+- **The T3 foundry is NOT CONNECTED to the product.** `tier_engine.py` reads
+  **no** foundry output — no `codebook.json`, no `det-patterns-v2.json`, no
+  axes — and emits exactly **one** `rule:` tag, which it derives itself. All
+  **13** importers of `foundry_shape_extractor` are audits, censuses, probes or
+  regression harnesses. The delivery classifier's output is consumed only by
+  tools that check the delivery classifier.
+- **19.3% of the corpus carries any derived tag** (6,275 of 32,557). The
+  full-corpus pass has been `STOPPED_FOR_CAPTAIN` since 2026-08-02 on **one**
+  decision, `A15-VOCAB-01`.
+- **204 commits since 2026-08-01 touched `pipeline/` ZERO times.**
+
+**THE QUESTION TO ASK OF YOUR OWN WORK ITEM, AND IT IS THE ONLY NEW ONE:**
+
+> *Which shipped artifact changes if I finish this? If none, say so out loud
+> before starting, not after.*
+
+**Every gate in this repo answers "did I break anything?" NONE answers "does
+this reach a card?"** That is why routing 1,012 lines to `static` on 2026-08-09
+passed twelve green gates and moved nothing a user can see — and why it made
+the `--gaps` backlog look *smaller* while coverage stayed at 19.3%. **A shape
+routed to a ratified token leaves the gap census without tagging one card.**
+
+**W4 IS PAUSED.** Do not take the remaining 3,358 decidably-static lines; it is
+the same trade. The ordered queue is §9 of the audit: **wire the codebook into
+`tier_engine` first**, then unblock `A15-VOCAB-01`, then revive
+`foundry_review.html` (dark since 2026-07-17 and named "the highest-leverage
+unstarted work" the whole time), then get a green pipeline build (last one
+2026-07-05).
+
+---
+
 ## IF YOU HAVE NO CONTEXT, READ THESE SIX LINES
 
-**The traps list below is ~70 bullets and a cold session cannot hold it.** It
-is a reference, not a checklist. These six are the whole of it that you must
-act on before writing any code:
+**These govern HOW to work. §0 above governs WHETHER the work is worth doing —
+read it first.** The traps list below is ~70 bullets and a cold session cannot
+hold it. It is a reference, not a checklist. These six are the whole of it that
+you must act on before writing any code:
 
 1. **`python3 experiments/foundry_gate2.py`** — Gate 2, all of it, one exit
    code. Never run the individual commands to "save time"; ten commands get

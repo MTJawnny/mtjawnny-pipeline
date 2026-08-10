@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **126 documents under docs/**
-- ruling references found: **609**
+- documents scanned: **127 documents under docs/**
+- ruling references found: **612**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -56,9 +56,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
-| `PICK-UP-HERE.md` | 200 | 2 | 0 | yes |
+| `PICK-UP-HERE.md` | 229 | 3 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
+| `PRODUCT-REALITY-AUDIT-2026-08-09.md` | 182 | 2 | 0 | yes |
 | `PUNCTUATION-RESCAN-2026-08-06.md` | 208 | 1 | 0 | yes |
 | `RATIFIED-DIRECTIVES-BATCH-4-6.md` | 746 | 11 | 0 | yes |
 | `REAUDIT-TIER-0-1-2026-08-02.md` | 400 | 1 | 0 | yes |
@@ -96,7 +97,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
 | `W3-TRIGGER-VOCABULARY-2026-08-07.md` | 391 | 2 | 0 | yes |
 | `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
-| `WORK-PACKETS-2026-08-07.md` | 464 | 3 | 0 | yes |
+| `WORK-PACKETS-2026-08-07.md` | 468 | 3 | 0 | yes |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
@@ -226,7 +227,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1688` — A14** — killed-slug routing is a closed data vocabulary with every
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
 
-### `A15` — 14 reference(s) across 7 doc(s)
+### `A15` — 16 reference(s) across 9 doc(s)
 
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
@@ -241,6 +242,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:60` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `PICK-UP-HERE.md:23` — 2. **Unblock `A15-VOCAB-01`** — one Captain decision, open since 2026-08-02,
+- `PRODUCT-REALITY-AUDIT-2026-08-09.md:157` — 2. **Unblock `A15-VOCAB-01`** — ONE Captain decision, open since 2026-08-02,
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
 ### `A2` — 4 reference(s) across 4 doc(s)
@@ -501,7 +504,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:360` — 2. **`counters` (noun plural) read as CR 701.6's verb** — the CDR-09
-- `WORK-PACKETS-2026-08-07.md:417` — vs energy counters. Same failure as CDR-09.
+- `WORK-PACKETS-2026-08-07.md:421` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
 
@@ -623,7 +626,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
-- `PICK-UP-HERE.md:131` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:160` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -646,7 +649,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
-- `PICK-UP-HERE.md:131` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:160` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -1106,7 +1109,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
-- `WORK-PACKETS-2026-08-07.md:390` — S1 — parents are DERIVED.** *"Union of ratified children computed at
+- `WORK-PACKETS-2026-08-07.md:394` — S1 — parents are DERIVED.** *"Union of ratified children computed at
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1134,7 +1137,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `S6` — 2 reference(s) across 2 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
-- `WORK-PACKETS-2026-08-07.md:401` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
+- `WORK-PACKETS-2026-08-07.md:405` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
 ### `S7` — 5 reference(s) across 5 doc(s)
 
@@ -1164,12 +1167,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
 - `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
 
-### `T3` — 11 reference(s) across 9 doc(s)
+### `T3` — 12 reference(s) across 10 doc(s)
 
 - `KEYWORD-LEDGER-CANDIDATES.md:3` — Standing doc for keyword mechanics killed out of the T3 axis foundry's
 - `MASTER-HANDOFF.md:65` — T3." Growth path: engine-DERIVED structural rule: tags (generalizing the
 - `MASTER-HANDOFF.md:90` — Step 3: additive T3 term landed. Ratified: **DERIVED_WEIGHT = 0.5**
 - `MASTER-HANDOFF.md:119` — → **T3-AXIS-FOUNDRY-v3.md** (v1/v2 superseded): dual-source mining
+- `PRODUCT-REALITY-AUDIT-2026-08-09.md:11` — Verdict: the T3 foundry is well-built and is not connected to the product.**
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
 - `SESSION-HANDOFF-2026-08-07-EVE.md:83` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
 - `SUP-TRIAGE-PROTOCOL.md:5` — Ratified deviation from T3-AXIS-FOUNDRY-v3: SUP performs full-pass triage;
