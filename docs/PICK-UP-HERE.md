@@ -28,11 +28,18 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    produced **zero** movement because its members already share verbatim text
    and the engine reaches them at Tier 2 for free. Re-run it after coverage
    moves: `python3 experiments/foundry_wire_experiment.py --json`.
-2. **← START HERE. Unblock `A15-VOCAB-01`** — one Captain decision, open since
-   2026-08-02, gating the full-corpus pass. Recommendation on file: option B.
-   **Item 1 is now the measured argument for taking this**: the blocker is
-   coverage and axis recall, not plumbing. The plumbing is one call site and it
-   works.
+2. **HALF DONE — → `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never
+   ONE decision and never a vocabulary question. The **21-row `except` half was
+   a transcription bug** in `validate_slug` against grammar §13 Q8.5 (ratified
+   2026-07-31) — **landed** (`6fecac9`), parsed from the ratified line rather
+   than hand-listed, four guards negative-controlled, blast radius 178 → 177
+   with the one flip verified correct. The **188-row `destruction` half is a §4
+   naming violation whose rename Captain already ratified and the project
+   already executed on a sibling** (§6c line 838, 2026-08-02) — it stopped
+   halfway. **ONE decision is open: rename `rule:targeted-destruction` →
+   `rule:targeted-destroy` (172 members).** A codebook mutation, so it rides the
+   backup law. **Not started** — no backup, no spec, `codebook.json` untouched.
+   The full pass behind it is **18,059 rows over all 32,557 gated cards**.
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
 
