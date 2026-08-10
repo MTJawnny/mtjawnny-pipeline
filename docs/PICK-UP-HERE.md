@@ -47,16 +47,35 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    is a genuine defect** (*"shuffles it into their library"* — a tuck, not a
    destroy). Gate 2 going RED after a mutation is the drill working.
 
-   **THE PASS IS RATIFIED TO RUN BUT DOES NOT RUN YET, and the blocker is
-   NOT this ruling.** 2a halts on its own premise guards, all stale because the
-   codebook moved three times since 2a was computed on 2026-08-02. Two were
-   re-derived with fully isolated causes (`EXPECTED_NODE_TOTAL` 95 → 92,
-   `EXPECTED_CLEAN_NODES` 90 → 87 — four nodes became real axes in this
-   morning's 44-axis re-home). **`EXPECTED_R5_ROWS` 141 → 166 was NOT
-   re-derived, deliberately**: it predates this session (the rename *lowered*
-   it 166 → 163), it is unattributed, and R5 is the lane CDR-03 routes to human
-   review. **Attributing that drift is the next action** — it is now the only
-   thing between here and the 18,059-row pass.
+   **R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
+   `experiments/foundry_r5_attribution.py` replays `classify_r5` over every
+   codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
+   closing, every entering row a correct promotion. The harness is provably
+   faithful: at the classification's own recorded inputs it reproduces
+   **R5 = 141 exactly**.
+
+   **But `EXPECTED_A15_ROWS = 213` NEVER REPRODUCED.** Same replay, producer
+   checked out at both `cfc26fa` and `f09fe73`, gives **194** every time while
+   R5 gives 141 in the same run. One cluster carries it all —
+   `cant-be-blocked-except-by-count`, recorded 21 rows, reproducible 2. So
+   A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
+   grab bag" analysis rests on rows that do not reproduce. **Cause is not among
+   the four recorded inputs** — unresolved, and stated as such.
+
+   **`STOPPED_FOR_CAPTAIN` is a HARDCODED literal**, not a computed flag. The
+   audit page and CLAUDE.md §0 read it as proof the pass is blocked; it is
+   `true` with zero blockers. The real signal is `blocking_decisions` — **now
+   empty**.
+
+   **2a completed**, determinism ×2, old artifact preserved as
+   `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
+   15,371 rows for 2b** (was 18,059); routing 2 → 2,925, attributed to
+   `merged_slug_codebook_hits` 0 → 2,926 as renamed axes went 45 → 108.
+
+   **← NEXT: 2b / session 3 is NOT run, deliberately.** That is the codebook
+   mutation — **11,660 member additions, 87 new axes** — and its contract moved
+   −2,688 rows since Captain ratified the rename against an 18,059-row pass.
+   That is a fresh look, not a continuation.
 
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
