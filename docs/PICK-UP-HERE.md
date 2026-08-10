@@ -72,10 +72,25 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    15,371 rows for 2b** (was 18,059); routing 2 → 2,925, attributed to
    `merged_slug_codebook_hits` 0 → 2,926 as renamed axes went 45 → 108.
 
-   **← NEXT: 2b / session 3 is NOT run, deliberately.** That is the codebook
-   mutation — **11,660 member additions, 87 new axes** — and its contract moved
-   −2,688 rows since Captain ratified the rename against an 18,059-row pass.
-   That is a fresh look, not a continuation.
+   **2b IS RUN — the plan exists. → ruling doc §10.** The expander did not
+   exist (the directive says "commit the expander script"; nothing did);
+   `experiments/foundry_consolidate_run1_enumerate.py` is it. Zero mutation,
+   one artifact, determinism ×2.
+
+   **plan sha256 `b545d2bf2fbd9245950c9038c911d7f2ba01355d67c3c8c3736bf8a6f9e90188`**
+   — 13,565 member additions + 1,806 assertion merges = **15,371**, exactly
+   2a's `total_enumerated_rows`; 87 new axes. Every gate passed, including 2a's
+   `expected_counts` reproducing exactly in all ten categories.
+
+   **Applying it would take coverage 19.3% → 48.0% (+9,351 cards) and the
+   median axis size 4 → 10** — the direct answer to `WIRE-RESULT`'s "39% axis
+   recall, median axis 4". Re-run `foundry_wire_experiment.py` after an apply;
+   the predictions are already committed.
+
+   **← NEXT: SESSION 3 (APPLY). Not run, as the directive instructs** — it runs
+   only on Captain's explicit go naming that sha256. It is the codebook
+   mutation: 13,565 new member rows and 87 new axes against a codebook holding
+   8,982 today, so it rides the backup law.
 
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
