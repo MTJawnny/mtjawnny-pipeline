@@ -59,6 +59,13 @@ GATES = [
     ("invariance",       [f"{EXP}/foundry_routing_regression.py", "invariance",
                           "--strict"],
      "a delivery depends on the CARD NAME"),
+    # PRODUCT-REALITY-AUDIT-2026-08-09.md §10, added 2026-08-09. Every row
+    # above answers "did I break anything?"; this one answers "does this reach
+    # a card?" -- the question the audit found no gate could ask. It is
+    # ratcheted (WORSE_IF_DOWN on `reaching`) and negative-controlled
+    # (`--selftest`), so it is a gate rather than a reporter listed as one.
+    ("reachability",     [f"{EXP}/foundry_reachability.py"],
+     "a foundry artifact stopped reaching a shipped card"),
 ]
 
 # family_sweep has a STANDING failure (the 6 blocking findings) that predates

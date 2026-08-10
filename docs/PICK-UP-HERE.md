@@ -18,12 +18,44 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
 
 **W4 is PAUSED — do not take §2A.** The ordered queue is now:
 
-1. **Wire the codebook into `tier_engine`** — the missing link, and the fastest
-   way to learn whether 7,930 memberships help neighbours at all.
-2. **Unblock `A15-VOCAB-01`** — one Captain decision, open since 2026-08-02,
-   gating the full-corpus pass. Recommendation on file: option B.
+1. ~~**Wire the codebook into `tier_engine`**~~ — **MEASURED 2026-08-09, DO NOT
+   RE-RUN. → `docs/WIRE-RESULT-2026-08-09.md`.** The join was built offline and
+   graded against predictions committed before it existed. **It does not land:
+   1 of 3 criteria passed.** The join is a re-rank by codebook MEMBERSHIP —
+   across 33 hand-named correct neighbours, **every one on its axis was
+   promoted and every one not on it was demoted, no exceptions**. Axis recall
+   against those families is **13/33 = 39%**, and the one axis at 100% recall
+   produced **zero** movement because its members already share verbatim text
+   and the engine reaches them at Tier 2 for free. Re-run it after coverage
+   moves: `python3 experiments/foundry_wire_experiment.py --json`.
+2. **← START HERE. Unblock `A15-VOCAB-01`** — one Captain decision, open since
+   2026-08-02, gating the full-corpus pass. Recommendation on file: option B.
+   **Item 1 is now the measured argument for taking this**: the blocker is
+   coverage and axis recall, not plumbing. The plumbing is one call site and it
+   works.
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
+
+**Three findings the wire experiment produced that no foundry session could
+have** (all in `WIRE-RESULT-2026-08-09.md`):
+
+* **A codebook membership defect**: `rule:reanimate-from-graveyard` holds
+  **Animate Dead** and **not Dance of the Dead**, its Aura-template twin. The
+  wire promoted one to #2 and buried the other at #56. No Gate 2 check can see
+  this.
+* **A live `tier_engine` bug, unrelated to the codebook**: Rampant Growth's
+  displayed top-10 is **an alphabetical slice of a 44-row score tie**. Tier 3
+  sorts `(-score, name)`, so with one distinct score in the head the product
+  ships the alphabet. A tie-break is a ratified-constant question for Captain.
+* **88 Alchemy (`A-`) memberships across 51 active axes, 48 of them duplicate
+  pairs with their own paper twin.** They inflate every axis DF — which feeds
+  `idf` *and* the 172 `DERIVED_QUALIFY_DF_CEILING` — and duplicate displayed
+  rows, against the ratified *"paper rows preferred over A- variants"*.
+
+**Audit §10 is BUILT: `experiments/foundry_reachability.py`, Gate 2 row 13.**
+It parses the shipped entry points out of `.github/workflows/`, walks their
+import closure, and reports how many foundry artifacts reach a shipped card.
+**0 of 5**, every session, until that changes.
 
 Everything below this section is still ACCURATE; it is the queue's PRIORITY
 that changed, not its facts.

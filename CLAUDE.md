@@ -32,11 +32,33 @@ this page matters:
 > *Which shipped artifact changes if I finish this? If none, say so out loud
 > before starting, not after.*
 
-**Every gate in this repo answers "did I break anything?" NONE answers "does
+**Every gate in this repo answered "did I break anything?" NONE answered "does
 this reach a card?"** That is why routing 1,012 lines to `static` on 2026-08-09
 passed twelve green gates and moved nothing a user can see — and why it made
 the `--gaps` backlog look *smaller* while coverage stayed at 19.3%. **A shape
 routed to a ratified token leaves the gap census without tagging one card.**
+
+**ONE GATE NOW ASKS IT — `experiments/foundry_reachability.py`, Gate 2 row 13**
+(audit §10, built 2026-08-09). It parses the shipped entry points out of
+`.github/workflows/`, walks their import closure, and reports how many foundry
+artifacts reach a shipped card: **0 of 5**, while `codebook.json` carries **26**
+`experiments/` consumers. Ratcheted on `reaching` and negative-controlled by
+`--selftest`, so it is a gate and not a reporter listed as one.
+
+**AND ITEM 1 OF §9 IS ANSWERED — `docs/WIRE-RESULT-2026-08-09.md`. DO NOT
+RE-RUN IT.** The codebook→`tier_engine` join was built offline and graded
+against predictions committed before the harness existed. **It does not land —
+1 of 3 criteria passed.** The join is a re-rank by codebook MEMBERSHIP: across
+33 hand-named correct neighbours, **every one on its axis was promoted and
+every one not on it was demoted, without exception**, and displacement was
+uniform (every non-member fell by exactly the number of members inserted above
+it). **The derived term does not rank, it PARTITIONS — into "reviewed" and "not
+yet reviewed".** Axis recall against those families: **13/33 = 39%**, and the
+one axis at 100% recall moved nothing, because its members already share
+verbatim text and the engine reaches them at Tier 2 for free. **The codebook is
+complete exactly where the engine did not need help.** So the blocker is
+coverage, not plumbing — which makes this the measured argument for §9.2
+(`A15-VOCAB-01`), the next item.
 
 **W4 IS PAUSED.** Do not take the remaining 3,358 decidably-static lines; it is
 the same trade. The ordered queue is §9 of the audit: **wire the codebook into
@@ -660,6 +682,28 @@ encodes.
   `foundry_gate2.py` and expect it to find something** → revert from the
   verified backup if it does. The revert is free; that is what the backup law
   buys.
+
+- **A JOIN CAN BE PLUMBED CORRECTLY AND STILL BE THE WRONG SIGNAL, AND ONLY A
+  PRE-COMMITTED PREDICTION SET CAN TELL YOU WHICH.** The codebook wire works on
+  the first try — one call site, both controls byte-identical, the DF-ceiling
+  prediction exact. It still fails, because `derived_agreement` rewards
+  MEMBERSHIP and an absent member means *"nobody has reviewed this card yet"*,
+  not *"this card is unlike the anchor"*. Beast Within's three functional twins
+  (all printing *"Destroy target nonland permanent. Its controller creates…"*)
+  fell #5/#6/#7 → #19/#20/#21, displaced by a 172-member `targeted-destruction`
+  bucket that qualified past `DERIVED_QUALIFY_DF_CEILING=172` **by a margin of
+  exactly zero**. A broad axis is a WORSE discriminator than the verbatim text
+  it outranks. **Write the correct neighbours down before running** — every one
+  of those movements would have read as progress against a list written after.
+- **A DISPLAYED LIST CAN BE ALPHABETICAL AND LOOK LIKE A RANKING.** Tier 3
+  sorts `(-score, name)`, and Rampant Growth's shipped top-10 is a slice of a
+  **44-row score tie** — so the product shows the alphabet, `A-` prefixed
+  Alchemy variants first. Measure the TIE BLOCK, not just the order: a change
+  that "improves the ranking" of a tie block improved nothing that was ranked.
+  Cousin trap in the data: **88 Alchemy memberships sit on 51 active axes, 48
+  of them duplicate pairs with their own paper twin**, inflating every axis DF —
+  which feeds `idf` *and* the 172 ceiling — against the ratified "paper rows
+  preferred over A- variants".
 
 ## Out of scope — check before raising a finding
 

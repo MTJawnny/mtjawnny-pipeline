@@ -48,12 +48,24 @@ BASELINE = Path(__file__).resolve().parent / "out" / "foundry" / "audit-baseline
 # count, a per-descriptor histogram -- so they are the ones that must resolve.
 WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
                "span", "crashed", "mismatch",
+               # 2026-08-09, foundry_reachability.py: a foundry artifact that
+               # goes back to being read only by audits has lost its wire to
+               # the product. Checked UP-first, and "orphaned" is not a
+               # substring of "reaching", so the two arms cannot collide.
+               "orphaned",
                # 2026-08-09: the two Gate 2 checks that were measured
                # INCAPABLE OF FAILING now ratchet here. A new drift finding is
                # worse; a lost ruling document is worse.
                "findings", "sole_home", "unanchored")
 WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  "options", "content", "passed", "graded",
+                 # 2026-08-09: the count of foundry artifacts that reach a
+                 # SHIPPED card. It is 0 today, which is the product audit's
+                 # central finding; the ratchet exists so that once it is
+                 # non-zero, losing the wire again is fatal rather than
+                 # printed. Negative-controlled by
+                 # `foundry_reachability.py --selftest`.
+                 "reaching",
                  # a ruling that stops being recorded anywhere, or a document
                  # that vanishes, is a SILENT loss -- the exact thing the
                  # registry exists to prevent and could not report.

@@ -114,7 +114,19 @@ python3 experiments/foundry_ground_truth.py          # is the token RIGHT
 python3 experiments/foundry_gate_audit.py            # what does Gate #0 hide
 python3 experiments/foundry_probe.py                 # are the probe GUARDS alive
 python3 experiments/foundry_recorded_numbers.py --strict   # do the docs' numbers hold
+python3 experiments/foundry_reachability.py          # does any of it reach a CARD
 ```
+
+**`foundry_reachability.py` is the eleventh, added 2026-08-09**
+(`PRODUCT-REALITY-AUDIT-2026-08-09.md` §10). Every other row on this list
+answers *"did I break anything?"*; this one answers *"does this reach a shipped
+card?"* — the question the product audit found no gate could ask. It parses the
+build's entry points **out of `.github/workflows/`**, walks their import
+closure, and reports which foundry artifacts land inside it. **Today the answer
+is 0 of 5**, with `codebook.json` carrying 26 `experiments/` consumers and zero
+`pipeline/` ones. It rides the ratchet (`reaching` is WORSE_IF_DOWN) and is
+negative-controlled by `--selftest`, so it is a gate rather than a reporter
+listed as one.
 
 **Ten now, and the last two were added 2026-08-09 after the gates were
 negative-controlled** (`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
