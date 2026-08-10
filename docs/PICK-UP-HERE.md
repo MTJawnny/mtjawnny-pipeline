@@ -7,6 +7,78 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
+## 0AA. THE OBJECT LATTICE IS BUILT AND WAITING ON ONE RATIFICATION
+
+**→ `docs/OBJECT-LATTICE-2026-08-09.md`. Read it before §0Z.**
+
+Captain, 2026-08-09: *"it was weeks ago I said that cards that destroy multiple
+things need a one rule instance of each object it destroys. Like the card
+Putrefy."* **Correct, ratified in batch 6, and never applied to a single card.**
+
+`MASTER-HANDOFF-ADDENDUM-4.md` §4: *"**M8 generalized (b6 D3)** | Multi-class
+`targeted-<action>` cards get every applicable per-class tag, all action verbs,
+**never combo tags**."* Measured before this work: **0 cards** in the codebook
+carried two class siblings of one action family. Putrefy carried only
+`rule:prevents-regeneration` — the rider, not the spell.
+
+**The class axes need NO ratification.** `b6 §11.2`: *"Captain ratifies
+GRAMMARS (stem + closed facet slots); **virtual nodes instantiate on first
+quote-verified member, no fresh ratification**."* The decision sheet brought on
+`targeted-destroy-creature` was asking Captain to re-ratify one node of a
+grammar already ratified whole.
+
+**Built: `experiments/foundry_object_lattice.py`.** All vocabulary derived at
+run time — CR 701.8a (only permanents are destroyed), CR 110.4 (the six
+permanent types), CR 205.3g–q subtype→type consumed from
+`foundry_cr702_classes`, CR 110.1 (`<type> card` is not a permanent), every
+emitted class asserted against grammar §5's `OBJECT_VOCAB`.
+
+| | |
+|---|--:|
+| memberships across destroy · exile · bounce | **2,653** |
+| the same three families in the codebook today | **267** |
+| multi-class cards — the population M8 is about | **440** (was 0) |
+| **cards carrying no derived tag today that gain one** | **1,637** |
+| **coverage** | 19.3% → **24.3%** |
+
+Cost **$0.00**, re-runnable, `rule-derived` rather than `llm`. For scale the
+whole 15,371-row consolidation plan (a $57.63 LLM pass) reaches 48.0%.
+
+**← NEXT, AND IT IS CAPTAIN'S:** the DET **pattern** ratification — the axes
+are automatic, the pattern is not. `det-patterns-v2.json`'s standing condition
+is a fixed-seed sample review, and the sheet is written:
+`experiments/out/foundry/object_lattice_samples.{json,md}`
+(regenerate: `python3 experiments/foundry_object_lattice.py --report 12`).
+**That sheet caught a real defect on its first run** — Auriok Salvagers,
+*"Return target artifact card from your graveyard"*, claimed for bounce; CR
+110.1 fixed it and `destroy` did not move by one row, which is what confirmed
+the rule.
+
+Then one structural change: `det-patterns-v2.json` is `slug` + one regex → one
+axis, and a lattice pattern is one matcher → **N axes at match time**. Schema +
+`foundry_det_pass.py`, not a new JSON row.
+
+**Findings that fall out, in `OBJECT-LATTICE-2026-08-09.md` §4 and §6:**
+
+* **3 of the consolidation plan's 87 new axes are combo tags M8 forbids by
+  name** — `targeted-exile-artifact-or-creature`, `-artifact-or-enchantment`,
+  `targeted-bounce-artifact-or-enchantment`. Dossiered: no ruling anywhere. The
+  nine `activated-tap-or-untap-*` are **not** this (b6 D2 ratified that grammar;
+  the OR is between verbs, not object classes).
+* **2,923 redirect rows in the plan create no membership.** The lattice
+  re-derives the destroy ones from the corpus, but
+  `combat-trick-pump-creature-you-control` (375) and
+  `replacement-enters-with-counters` (318) are not lattice cases and still tag
+  nothing. Whether a rename redirect should mint a membership is a real ruling.
+* **Grammar §5 line 651 still spells the lattice `targeted-destruction-<class>`**
+  and `grammars.json`'s action facet still carries `"destruction"` with
+  `"destroy"` absent. Now load-bearing — G4 generator fix.
+* Unruled, reported not decided: CR 300.2 conjunctive targets (*"artifact
+  creature"*, one object, two types) and *"destroy target token"* (CR 111, no
+  ratified OBJECT token).
+
+---
+
 ## 0Z. READ THIS BEFORE §2 — THE WORK QUEUE CHANGED
 
 **→ `docs/PRODUCT-REALITY-AUDIT-2026-08-09.md`.** Captain asked whether the
