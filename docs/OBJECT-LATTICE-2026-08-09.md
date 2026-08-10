@@ -138,9 +138,9 @@ facet vocab is `destruction`(→`destroy`) · `bounce` · `exile` · `discard` �
 | action | printed as | cards | memberships | multi-class |
 |---|---|--:|--:|--:|
 | `destroy` | *destroy* | 1,226 | **1,579** | 313 |
-| `exile` | *exile* | 571 | **711** | 116 |
-| `bounce` | *return … to … hand* | 647 | **708** | 53 |
-| | | **2,423 distinct** | **2,998** | **482** |
+| `exile` | *exile* | 518 | **654** | 112 |
+| `bounce` | *return … to … hand* | 400 | **420** | 15 |
+| | | **2,131 distinct** | **2,653** | **440** |
 
 **`discard` and `damage` are deliberately excluded.** Discard targets a PLAYER
 and its object is a card in hand, not a permanent type. Damage has its own
@@ -160,21 +160,50 @@ is what makes the match correct.
 | | |
 |---|--:|
 | codebook coverage today | 6,278 / **19.3%** |
-| distinct cards the lattice tags | 2,423 |
-| **cards it tags that NOTHING tags today** | **1,875** |
-| **coverage after** | 8,153 / **25.0%** |
+| distinct cards the lattice tags | 2,131 |
+| **cards it tags that NOTHING tags today** | **1,637** |
+| **coverage after** | 7,915 / **24.3%** |
 
 For scale: the entire run-1 consolidation plan — 15,371 rows, the largest
 mutation in the project's history, an LLM pass that cost $57.63 — takes
 coverage to 48.0%. **This one ratified lattice family, at $0.00 and
-re-runnable, does a quarter of that**, and its memberships are rule-derived
+re-runnable, does roughly a fifth of that**, and its memberships are rule-derived
 rather than `llm`-class.
 
 Current state of those three families in the codebook: `targeted-destroy` 172 +
 `targeted-exile` 72 + `targeted-bounce-creature` 23 = **267 memberships**,
 against 2,998.
 
-### 3e. Two probe defects in this session's own work, both caught
+### 3e. THE SAMPLE SHEET CAUGHT A REAL DEFECT ON ITS FIRST RUN
+
+`--report` had barely finished before its own output showed **Auriok
+Salvagers** under `rule:targeted-bounce-artifact`, quoting *"Return target
+artifact **card** … **from your graveyard** to your hand."* That is graveyard
+recursion, not bounce.
+
+**CR 110.1 is the fix and it is exact**: *"A permanent is a card or token on
+the battlefield."* Card text names an object in a non-battlefield zone as a
+CARD and an object on the battlefield by its permanent type — so `creature
+card` is recursion and `creature` is the permanent. The class scan now refuses
+a type word followed by `card(s)`.
+
+**The correction validates the CR reasoning rather than just passing:**
+
+| action | before | after | why |
+|---|--:|--:|---|
+| `destroy` | 1,579 | **1,579** | unmoved — CR 701.8a says only a permanent can be destroyed, so no `<type> card` target can exist, and none did |
+| `exile` | 711 | **654** | −57, graveyard exiles |
+| `bounce` | 708 | **420** | −288, graveyard recursion — **over a third of the family** |
+
+Destroy not moving by a single row is the strongest evidence the rule is right.
+A broad first probe flagged 335 bounce and 9 destroy clauses; reading them
+showed the destroy nine were all `cards` inside a *comparison* ("mana value
+less than or equal to the number of cards in…") and the exile flags included
+flicker effects whose `card` sits in the RETURN clause, not the target. **The
+narrow lookahead is the fix; the broad probe was the over-flag** — one more
+instance of the finding below.
+
+### 3f. Three probe defects in this session's own work, all caught
 
 * **`_split_cr_list` shipped the Oxford-comma defect its docstring warned
   about.** The cardinality guard passed it; the content guard caught it.

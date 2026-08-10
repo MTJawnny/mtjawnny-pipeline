@@ -285,6 +285,15 @@ _CONJUNCTIVE_RE = re.compile(
 def classify_clause(clause: str, domain: set = None) -> dict:
     """The classes a target clause names.
 
+    **A `<type> card` IS NOT A PERMANENT (CR 110.1** — *"A permanent is a card
+    or token on the battlefield"*). Card text names an object in a
+    non-battlefield zone as a CARD and an object on the battlefield by its
+    permanent type, so `creature card` is graveyard recursion and `creature` is
+    the permanent. Found by the sample sheet on its first run: Auriok Salvagers,
+    *"Return target artifact card … from your graveyard to your hand"*, had been
+    claimed for the bounce lattice. The lookahead is what the DET standing
+    condition is for.
+
     `domain` is the closed set the action can reach — CR 110.4's permanents for
     destroy, CR 205.2a's card types for actions that leave the battlefield. It
     is passed in rather than inferred, so a caller cannot silently widen it.
@@ -305,7 +314,7 @@ def classify_clause(clause: str, domain: set = None) -> dict:
         if a in domain and b in domain:
             conj.append((a, b))
 
-    classes = {t for t in domain if re.search(rf"\b{t}s?\b", text)}
+    classes = {t for t in domain if re.search(rf"\b{t}s?\b(?!\s+cards?\b)", text)}
 
     # A broad permanent form OUTRANKS the per-type read of the same clause.
     # "destroy target nonland permanent" contains no type word, but "destroy
@@ -327,7 +336,8 @@ def classify_clause(clause: str, domain: set = None) -> dict:
             if len(parents) != 1:
                 continue
             parent = next(iter(parents))
-            if parent in domain and re.search(rf"\b{re.escape(sub)}s?\b", text):
+            if parent in domain and re.search(
+                    rf"\b{re.escape(sub)}s?\b(?!\s+cards?\b)", text):
                 classes.add(parent)
                 via_subtype[sub] = parent
 
@@ -466,6 +476,118 @@ def audit(stem: str, domain: set) -> dict:
             "nc3_quoted_only": quoted_only, "nc4_bad_slug": bad_slug}
 
 
+SAMPLE_REPORT_JSON = fc.FOUNDRY_OUT_DIR / "object_lattice_samples.json"
+SAMPLE_REPORT_MD = fc.FOUNDRY_OUT_DIR / "object_lattice_samples.md"
+
+
+def write_report(seed: int, n: int) -> dict:
+    """The ratification packet: `det-patterns-v2.json`'s standing condition is a
+    fixed-seed per-pattern sample, and ANY row failing its axis definition halts
+    the pass before provenance writes. This writes that sheet for every class of
+    every action.
+
+    **Quotes go in the FILE, never to console (A14).** The console gets counts.
+
+    It also emits the `det-patterns-v2.json` entries the lattice would need —
+    as a PROPOSAL inside the report, not written into the ratified file. A
+    `rule-derived` assertion may only cite `det-patterns-v2:<n>`
+    (`SOURCE_REF_FAMILIES`), so those entries are what makes the membership
+    legal, and minting them is Captain's."""
+    import random
+    cards, _, _ = fc.load_corpus_gated()
+    cb_axes = None
+    try:
+        import foundry_codebook as fcb
+        cb_axes = fcb.load_codebook()["axes"]
+    except BaseException:
+        pass
+
+    actions = {}
+    proposed_patterns = []
+    for idx, stem in enumerate(sorted(ACTION_VERBS)):
+        m = measure(stem, PERMANENT_TYPES)
+        rng = random.Random(seed)
+        by_class = defaultdict(list)
+        for oid, r in m["hits"].items():
+            for c in r["classes"]:
+                by_class[c].append((oid, r["quotes"][c]))
+        classes = {}
+        for cls in sorted(by_class):
+            pool = sorted(by_class[cls])
+            slug = slug_for(stem, cls)
+            exists = cb_axes.get(slug, {}).get("status") if cb_axes else None
+            classes[cls] = {
+                "slug": slug,
+                "members": len(pool),
+                "axis_status_today": exists or "ABSENT — self-instantiates per b6 §11.2",
+                "sample": [{"card": cards[o]["name"], "oracle_id": o, "quote": q}
+                           for o, q in rng.sample(pool, min(n, len(pool)))],
+            }
+        actions[stem] = {
+            "printed_verb": ACTION_VERBS[stem]["word"],
+            "cards": m["cards"], "memberships": m["memberships"],
+            "multi_class_cards": sum(v for k, v in m["n_classes"].items() if k > 1),
+            "residual": [{"card": c, "clause": q} for c, q in m["residual"]],
+            "conjunctive_cr300_2": m["conjunctive"],
+            "classes": classes,
+        }
+        proposed_patterns.append({
+            "slug": slug_for(stem),
+            "lattice": True,
+            "class_domain": "CR 110.4 permanent types + permanent/nonland/noncreature forms",
+            "pattern": _CLAUSE_RES[stem].pattern,
+            "status": "PROPOSED — not ratified, not written to det-patterns-v2.json",
+            "cr_anchor": {"destroy": "701.8a/701.8b", "exile": "406.1",
+                          "bounce": "zone change to hand"}.get(stem),
+            "note": "One matcher -> N axes. det-patterns-v2.json's schema is "
+                    "slug + one regex -> one axis; this needs the lattice "
+                    "extension before it can be an entry.",
+        })
+
+    report = {
+        "schema": "foundry-object-lattice-samples/1",
+        "generated_by": "experiments/foundry_object_lattice.py",
+        "law": "M8 generalized (b6 D3), MASTER-HANDOFF-ADDENDUM-4.md §4; "
+               "lattice grammars b6 §11.2 (virtual nodes self-instantiate on "
+               "first quote-verified member, no fresh ratification)",
+        "record": "docs/OBJECT-LATTICE-2026-08-09.md",
+        "seed": seed, "sample_size": n,
+        "cr_sources": {
+            "permanent_types_110_4": sorted(PERMANENT_TYPES),
+            "card_types_205_2a": len(CARD_TYPES),
+            "subtype_lists_205_3": "consumed from foundry_cr702_classes.type_vocabulary()",
+        },
+        "actions": actions,
+        "proposed_det_patterns": proposed_patterns,
+    }
+    fc.write_json(SAMPLE_REPORT_JSON, report)
+
+    lines = ["# OBJECT LATTICE — sample sheet for ratification", "",
+             f"Seed `{seed}`, {n} rows per class. Record: "
+             f"`docs/OBJECT-LATTICE-2026-08-09.md`.", "",
+             "Standing condition (`det-patterns-v2.json`): **any sample row "
+             "failing its axis definition halts the pass before provenance "
+             "writes.**", ""]
+    for stem, a in actions.items():
+        lines += [f"## `targeted-{stem}` — printed *{a['printed_verb']}*", "",
+                  f"{a['cards']:,} cards · **{a['memberships']:,} memberships** · "
+                  f"{a['multi_class_cards']} multi-class · "
+                  f"{len(a['residual'])} residual", ""]
+        for cls, c in a["classes"].items():
+            lines += [f"### `{c['slug']}` — {c['members']:,} members "
+                      f"({c['axis_status_today']})", ""]
+            for row in c["sample"]:
+                lines.append(f"- **{row['card']}** — {row['quote']}")
+            lines.append("")
+        if a["residual"]:
+            lines += ["**Residual (no class named):**", ""]
+            lines += [f"- {r['card']} — {r['clause']}" for r in a["residual"][:20]]
+            lines.append("")
+    SAMPLE_REPORT_MD.write_text("\n".join(lines), encoding="utf-8")
+    return {"json": str(SAMPLE_REPORT_JSON), "md": str(SAMPLE_REPORT_MD),
+            "actions": {k: v["memberships"] for k, v in actions.items()}}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -483,7 +605,20 @@ def main() -> int:
                     help="fixed-seed sample of N cards per class, for the DET "
                          "standing condition's per-pattern verification")
     ap.add_argument("--seed", type=int, default=20260809)
+    ap.add_argument("--report", type=int, default=0, metavar="N",
+                    help="write the ratification packet (N rows per class) to "
+                         "experiments/out/foundry/object_lattice_samples.{json,md}. "
+                         "Quotes go in the FILE, never to console (A14).")
     args = ap.parse_args()
+
+    if args.report:
+        r = write_report(args.seed, args.report)
+        print("wrote the ratification packet (quotes are in the files, not here)")
+        print(f"  {r['json']}")
+        print(f"  {r['md']}")
+        for stem, n in r["actions"].items():
+            print(f"  targeted-{stem}: {n:,} memberships")
+        return 0
 
     domain = PERMANENT_TYPES if args.domain == "permanent" else CARD_TYPES
     print(f"CR 110.4 permanent types : {sorted(PERMANENT_TYPES)}")
