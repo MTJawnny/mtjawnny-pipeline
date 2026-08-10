@@ -223,6 +223,106 @@ WALK_RATIFICATION_VOCAB_20260731 = {
 # family. Does not affect the 'countered' ban (sec.10.2) -- separate token.
 CANT_BE_BLOCKED_STEM_VOCAB = {"cant", "be", "blocked"}
 
+
+# ---------------------------------------------------------------------------
+# Q8.5's CLOSED RESTRICTION VOCAB -- PARSED from the grammar, not transcribed
+# ---------------------------------------------------------------------------
+#
+# THE BUG THIS FIXES, and why it is a bug rather than a ratification:
+# grammar §13 Q8.5 ratifies the stem tokens `cant`/`be`/`blocked` AND, in the
+# same bullet, the closed restriction vocab `by-color`, `by-power`,
+# `except-by-count`, `as-long-as-<state>`, `by-controller`. The transcription
+# above captured the stems and DROPPED the restriction list, so `except` --
+# ratified 2026-07-31 -- has read as unratified vocabulary ever since. That is
+# what blocked 21 of A15-VOCAB-01's 209 rows, and the blocker recorded it as a
+# question for Captain when the grammar had already answered it.
+#
+# So this list is PARSED. "A hand-list is not a shortcut, it is a defect with a
+# delay", and the delay here was one Captain decision left open since
+# 2026-08-02 on a token that was already ratified.
+#
+# THE SPAN IS NARROW ON PURPOSE. The same bullet writes the BANNED participle
+# `countered` in backticks, and two `rule:` slugs sit in the parenthetical
+# immediately after `by-controller`. Harvesting the whole section would ingest
+# a banned token as vocabulary -- the "a rejected term in backticks is ingested
+# as ratified vocabulary" trap, which CLAUDE.md records three times. The parse
+# therefore stops at the first "(" after the anchor phrase, and every guard
+# below asserts CONTENT rather than cardinality.
+_RESTRICTION_ANCHOR = "Closed restriction vocab:"
+
+
+def _load_q85_restriction_vocab() -> set:
+    """Tokens of grammar §13 Q8.5's closed restriction vocabulary.
+
+    HALTS rather than returning a short set: a silently-empty vocabulary here
+    would make every `cant-be-blocked-<restriction>` slug fail as unknown, which
+    reads as a catastrophic finding rather than a broken parse.
+    """
+    path = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
+    if not path.exists():
+        fc.halt(f"{path} not found — Q8.5's closed restriction vocabulary is "
+                f"parsed from it and cannot be recovered from anywhere else.")
+    text = path.read_text(encoding="utf-8")
+    i = text.find(_RESTRICTION_ANCHOR)
+    if i < 0:
+        fc.halt(f"grammar §13's {_RESTRICTION_ANCHOR!r} line is gone. Refusing "
+                f"to fall back to a hand-list: that is exactly the drift that "
+                f"left `except` unratified in this validator for 9 days.")
+    span = text[i + len(_RESTRICTION_ANCHOR):]
+    span = span.split("(", 1)[0]          # stop before the B1 parenthetical
+    families = re.findall(r"`([a-z][a-z0-9<>\-]*)`", span)
+
+    bad = [f for f in families if f.startswith("rule:") or "<" in f and ">" not in f]
+    if bad:
+        fc.halt(f"Q8.5 restriction parse picked up {bad!r}. A `rule:` slug or a "
+                f"malformed placeholder in this span means the span moved.")
+    tokens = set()
+    for fam in families:
+        for tok in fam.split("-"):
+            if tok.startswith("<"):        # `<state>` is a parameter, not a token
+                continue
+            tokens.add(tok)
+
+    # CONTENT guards. A count cannot see a substitution, and the whole reason
+    # this parse exists is that a transcription lost ONE member silently.
+    if "except" not in tokens:
+        fc.halt(f"Q8.5 restriction parse yielded {sorted(tokens)} — without "
+                f"`except`. That is the exact omission this parse replaces; a "
+                f"guard that cannot see it is not a guard.")
+    banned = tokens & {"countered", "scaled", "mass", "defender"}
+    if banned:
+        fc.halt(f"Q8.5 restriction parse ingested BANNED token(s) {sorted(banned)}. "
+                f"The span has widened past the ratified list into prose that "
+                f"names rejected vocabulary.")
+    return tokens
+
+
+# Cross-check against LIVE data, not against a second copy of the list: every
+# active `cant-be-blocked-<restriction>` axis must be spelled entirely out of
+# what the grammar publishes. A live ratified axis the parse cannot spell means
+# the parse is short, and that is the failure this whole block exists to catch.
+def _q85_covers_live_axes(tokens: set) -> None:
+    try:
+        codebook = json.loads(CODEBOOK_PATH.read_text())
+    except (OSError, ValueError):
+        return                              # standalone use; nothing to check
+    known = tokens | CANT_BE_BLOCKED_STEM_VOCAB
+    for slug, axis in codebook.get("axes", {}).items():
+        if axis.get("status") != "active":
+            continue
+        bare = slug.split(":", 1)[-1]
+        if not bare.startswith("cant-be-blocked-"):
+            continue
+        missing = [t for t in bare.split("-") if t not in known]
+        if missing:
+            fc.halt(f"active axis {slug!r} uses restriction token(s) {missing!r} "
+                    f"that grammar §13 Q8.5 does not publish. Either the axis is "
+                    f"unratified or the parse is short — both need a human.")
+
+
+Q85_RESTRICTION_VOCAB = _load_q85_restriction_vocab()
+_q85_covers_live_axes(Q85_RESTRICTION_VOCAB)
+
 # F4 (walk-ratification 2026-07-31): tokens that are ratified vocabulary (so
 # they do NOT fail unknown_vocabulary) but still deserve a non-blocking
 # reviewer warning ("grab-bag smell") rather than a silent clean pass.
@@ -250,7 +350,8 @@ KEYWORD_VOCAB = _load_keyword_vocab()
 CLOSED_VOCAB = (DELIVERY_VOCAB | EFFECT_VOCAB | OBJECT_VOCAB | SCOPE_VOCAB
                 | SCALING_STAT_VOCAB | COUNTER_TOKEN_VOCAB | QUALIFIER_VOCAB
                 | RESTRICTION_VOCAB | GLOSSARY_VOCAB | KEYWORD_VOCAB
-                | WALK_RATIFICATION_VOCAB_20260731 | CANT_BE_BLOCKED_STEM_VOCAB)
+                | WALK_RATIFICATION_VOCAB_20260731 | CANT_BE_BLOCKED_STEM_VOCAB
+                | Q85_RESTRICTION_VOCAB)
 
 # ---------------------------------------------------------------------------
 # sec.3 closed activation-restriction family -- exact enumeration
