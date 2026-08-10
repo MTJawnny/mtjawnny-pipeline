@@ -129,6 +129,70 @@ its own docstring warned about** (`and planeswalker`): the **cardinality** guard
 passed it (six members, one wrong) and the **content** guard caught it in one
 run. A count cannot see a substitution — demonstrated, not asserted.
 
+### 3c. ALL ACTION VERBS — M8's other half
+
+M8 says *"all action verbs"*. `grammars.json`'s `targeted-<action>` closed
+facet vocab is `destruction`(→`destroy`) · `bounce` · `exile` · `discard` ·
+`damage`. Three carry the permanent-type lattice:
+
+| action | printed as | cards | memberships | multi-class |
+|---|---|--:|--:|--:|
+| `destroy` | *destroy* | 1,226 | **1,579** | 313 |
+| `exile` | *exile* | 571 | **711** | 116 |
+| `bounce` | *return … to … hand* | 647 | **708** | 53 |
+| | | **2,423 distinct** | **2,998** | **482** |
+
+**`discard` and `damage` are deliberately excluded.** Discard targets a PLAYER
+and its object is a card in hand, not a permanent type. Damage has its own
+closed recipient list — **CR 120.1's four** — and the 2026-08-09 audit already
+found one arm of that family enumerated against it and the other not. Folding
+either into the permanent-type lattice would assert one closed list where the
+CR names two.
+
+**`bounce` requires its destination.** `return target creature` with no
+`to … hand` is reanimation, a different axis family; matching without the
+closing phrase would put every reanimation spell on the bounce lattice. Same
+shape as the `put into ‹DESTINATION› from ‹ORIGIN›` trap — the closing phrase
+is what makes the match correct.
+
+### 3d. What this reaches, which is the only question that matters
+
+| | |
+|---|--:|
+| codebook coverage today | 6,278 / **19.3%** |
+| distinct cards the lattice tags | 2,423 |
+| **cards it tags that NOTHING tags today** | **1,875** |
+| **coverage after** | 8,153 / **25.0%** |
+
+For scale: the entire run-1 consolidation plan — 15,371 rows, the largest
+mutation in the project's history, an LLM pass that cost $57.63 — takes
+coverage to 48.0%. **This one ratified lattice family, at $0.00 and
+re-runnable, does a quarter of that**, and its memberships are rule-derived
+rather than `llm`-class.
+
+Current state of those three families in the codebook: `targeted-destroy` 172 +
+`targeted-exile` 72 + `targeted-bounce-creature` 23 = **267 memberships**,
+against 2,998.
+
+### 3e. Two probe defects in this session's own work, both caught
+
+* **`_split_cr_list` shipped the Oxford-comma defect its docstring warned
+  about.** The cardinality guard passed it; the content guard caught it.
+* **NC1 keyed on the slug STEM, not the printed verb.** `bounce` is a ratified
+  stem no card prints — they print `return` — so the control flagged every
+  bounce card. A probe defect inside the negative control itself, which is the
+  default outcome here and the reason both notes stay in the code.
+* **exile and bounce both match exactly 760 cards.** Verified rather than
+  waved past: the sets share **6** members, so it is a real numerical
+  coincidence and not a stem mix-up. Same species as B-MIGRATION-DISCOVERY
+  §6(c)'s 28,889.
+
+**The residuals are not defects.** Exile's 189 and bounce's 113 are
+*"exile target card from a graveyard"* and *"return target instant or sorcery
+card from your graveyard to your hand"* — the `card-in-graveyard` object
+family, which grammar §5 lists **separately** from the permanent types. They
+belong to a different ratified family, not to this one.
+
 ---
 
 ## 4. A FINDING IN THE CONSOLIDATION PLAN — 3 axes M8 forbids

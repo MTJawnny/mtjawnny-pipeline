@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **131 documents under docs/**
-- ruling references found: **632**
+- documents scanned: **132 documents under docs/**
+- ruling references found: **637**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **85**
 - **sole-home (appear in exactly 1 doc): 42**
@@ -56,6 +56,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF-ADDENDUM-3.md` | 308 | 10 | 1 | **NO** |
 | `MASTER-HANDOFF-ADDENDUM-4.md` | 264 | 5 | 3 | **NO** |
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
+| `OBJECT-LATTICE-2026-08-09.md` | 208 | 5 | 0 | yes |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
 | `PICK-UP-HERE.md` | 361 | 6 | 0 | yes |
@@ -637,11 +638,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
-### `D2` — 17 reference(s) across 10 doc(s)
+### `D2` — 18 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
+- `OBJECT-LATTICE-2026-08-09.md:148` — action whose choice is the ability (b6 D2 ratified `activated-tap-or-untap-<scope>`
 - `PICK-UP-HERE.md:292` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
@@ -657,7 +659,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
 - `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
-### `D3` — 20 reference(s) across 10 doc(s)
+### `D3` — 21 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:793` — EXPLICIT PARTIAL REVERSAL — batch-6 D3.** That directive ruled, on
 - `CODEBOOK-NAMING-GRAMMAR.md:904` — One connective, one order, closed stat list — RATIFIED (D-3):
@@ -665,6 +667,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
+- `OBJECT-LATTICE-2026-08-09.md:41` — batch-6 D3)"*. `TIER-4-DECISION-PACKET-2026-08-02.md` §231 applies it —
 - `PICK-UP-HERE.md:292` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
@@ -884,8 +887,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:85` — (batch-2 M6 ruling): damage-scales-with-creature-count,
 
-### `M8` — 9 reference(s) across 3 doc(s)
+### `M8` — 10 reference(s) across 4 doc(s)
 
+- `OBJECT-LATTICE-2026-08-09.md:1` — THE OBJECT LATTICE — M8 was ratified in batch 6 and never implemented
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:51` — reconcile, per the ratified M8 per-object-class mixed-target rule.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:226` — rule:targeted-bounce-creature.** Ruled: **M8 GENERALIZES from damage to every
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:284` — 2. M8-generalized: multi-class targeted-<action> cards get every applicable per-class
@@ -1122,10 +1126,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
-### `S1` — 7 reference(s) across 7 doc(s)
+### `S1` — 8 reference(s) across 8 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
+- `OBJECT-LATTICE-2026-08-09.md:182` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
 - `PARENT-TREE-CANDIDATES.md:12` — S1. Parents are DERIVED: union of ratified children computed at
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
@@ -1160,9 +1165,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
 - `WORK-PACKETS-2026-08-07.md:405` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
-### `S7` — 5 reference(s) across 5 doc(s)
+### `S7` — 6 reference(s) across 6 doc(s)
 
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
+- `OBJECT-LATTICE-2026-08-09.md:182` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
 - `PARENT-TREE-CANDIDATES.md:68` — S7. Validation: proposed parents get the family-tree evidence check
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.

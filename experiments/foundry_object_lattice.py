@@ -220,12 +220,28 @@ PERMANENT_FORMS = (
 # instructions ("Destroy target creature; its controller loses 2 life").
 _CLAUSE_TAIL = r"([^.;]*)"
 
+# slug stem -> how the cards PRINT that action. Every stem is already in
+# `grammars.json`'s `targeted-<action>` closed facet vocab
+# (`destruction`->`destroy`, `bounce`, `exile`, `discard`, `damage`), so this
+# maps ratified stems to printed forms and mints no vocabulary.
+#
+# `discard` and `damage` are deliberately absent. Discard targets a PLAYER and
+# its object is a card in hand, not a permanent type. Damage has its own closed
+# recipient list — **CR 120.1's four** — which is a different enumeration the
+# grammar already tracks separately, and the 2026-08-09 audit found one arm of
+# that family enumerated against it and the other not. Folding either into the
+# permanent-type lattice would assert one closed list where the CR names two.
 ACTION_VERBS = {
-    # slug stem -> the printed verb form(s) that open the clause. Every stem is
-    # an EFFECT verb already in the ratified grammar §4 vocabulary; this maps a
-    # ratified stem to how the cards print it, and adds no new vocabulary.
-    "destroy": r"destroys?",
-    "exile": r"exiles?",
+    "destroy": {"verb": r"destroys?", "word": "destroy"},
+    "exile": {"verb": r"exiles?", "word": "exile"},
+    # CR 701.8a's counterpart for bounce is the zone change itself; the cards
+    # print it as `return … to … hand`, and the destination is REQUIRED —
+    # without it `return target creature` is reanimation (to the battlefield),
+    # a different axis family entirely. Same shape as the `put into ‹DEST›
+    # from ‹ORIGIN›` trap: the closing phrase is what makes the match correct.
+    "bounce": {"verb": r"returns?", "word": "return",
+               "tail": r"to (?:its|their) owner'?s? hand|to your hand|"
+                       r"to (?:its|their) owner'?s? hands"},
 }
 
 # "up to N target", "another target", "each target" — the quantity words that
@@ -235,11 +251,20 @@ ACTION_VERBS = {
 _TARGET_HEAD = r"(?:up to \w+ |another |each |all )?target"
 
 
-def _clause_re(verb_pattern: str) -> re.Pattern:
-    return re.compile(rf"\b{verb_pattern} {_TARGET_HEAD} {_CLAUSE_TAIL}", re.I)
+def _clause_re(spec: dict) -> re.Pattern:
+    """A clause the action opens, optionally required to CLOSE on a phrase.
+
+    The `tail` constraint is not cosmetic: `return target creature` with no
+    destination is reanimation, not bounce, and matching without it would put
+    every reanimation spell on the bounce lattice."""
+    body = rf"\b{spec['verb']} {_TARGET_HEAD} {_CLAUSE_TAIL}"
+    if spec.get("tail"):
+        body = (rf"\b{spec['verb']} {_TARGET_HEAD} ([^.;]*?)"
+                rf"(?:{spec['tail']})")
+    return re.compile(body, re.I)
 
 
-_CLAUSE_RES = {stem: _clause_re(v) for stem, v in ACTION_VERBS.items()}
+_CLAUSE_RES = {stem: _clause_re(spec) for stem, spec in ACTION_VERBS.items()}
 
 # A type word is a class only when it is the TARGET's own type. These strip the
 # phrases where a type word appears for another reason, before classes are read.
@@ -414,7 +439,11 @@ def audit(stem: str, domain: set) -> dict:
     qspan = re.compile(r"[\"“]([^\"”]*)[\"”]")
     dest = _CLAUSE_RES[stem]
     no_verb, quoted_only, silent, bad_slug = [], [], 0, []
-    verb_word = stem
+    # NC1 must test the PRINTED verb, not the slug stem. `bounce` is a ratified
+    # stem that no card prints -- they print `return` -- so keying this on the
+    # stem flagged every bounce card. A probe defect in the negative control
+    # itself, which is the default outcome and why this note stays.
+    verb_word = ACTION_VERBS[stem]["word"]
     for oid, card in cards.items():
         clauses = list(clauses_for(card, stem))
         if not clauses:
@@ -483,7 +512,8 @@ def main() -> int:
     if args.audit:
         a = audit(args.action, domain)
         print("\n--- negative controls " + "-" * 50)
-        print(f"  NC1 claimed without the word `{args.action}` (CR 701.8b): "
+        print(f"  NC1 claimed without the printed verb "
+              f"`{ACTION_VERBS[args.action]['word']}` (CR 701.8b): "
               f"{len(a['nc1_no_verb'])}   must be 0")
         print(f"  NC2 cards yielding nothing                   : "
               f"{a['nc2_silent']:,}")
