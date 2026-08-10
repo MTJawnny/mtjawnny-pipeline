@@ -79,8 +79,69 @@ EXPECTED_NODE_TOTAL = 92
 # collision-node-duplicate 1 -- so the whole movement is in this bucket and
 # 87 + 2 + 1 + 1 + 1 = 92 closes against the total.
 EXPECTED_CLEAN_NODES = 87          # was A14's 93, minus 3 canonical duplicates, minus the 4 now-live axes, plus the except node
-EXPECTED_A15_ROWS = 213            # A15 / R6
-EXPECTED_R5_ROWS = 141             # R5
+# RE-DERIVED 2026-08-09 (was 213) — and this one is NOT a drift. 213 NEVER
+# REPRODUCED, from its own recorded inputs, by its own producer.
+#
+# The classification artifact records the sha256 of all four inputs. Two are
+# byte-identical today (`corpus_pass_run1_parsed_final.json`,
+# `..._det_synth_check.json`), and the other two are recoverable —
+# codebook `61af1a1d` is a kept backup, grammars `9214e67b` is commit 0f6fbdf.
+# Replayed at that EXACT state, with the producer checked out at BOTH cfc26fa
+# (which wrote the artifact) and f09fe73 (whose message asserts "A15 (213)
+# unchanged"):
+#
+#     A15 = 194        every time, on every combination
+#     R5  = 141        every time — the recorded value, EXACTLY
+#
+# **R5 reproducing to the row is what makes this trustworthy**: the replay
+# harness is provably faithful, so A15's 19-row gap is a property of the
+# artifact, not of the replay. `foundry_consolidate_run1` reads exactly those
+# four paths and no others, so there is no fifth input to blame.
+#
+# The whole gap is ONE cluster: `cant-be-blocked-except-by-count` is recorded
+# at **21 rows** and reproduces at **2**. 188 + 2 + 2 + 1 + 1 = 194.
+#
+# CONSEQUENCES, because other documents reason from the unreproducible number:
+#   * A15-VOCAB-01's headline "209 rows blocked" reproduces as **190** (188+2).
+#   * CDR-02 reasons at length about "the A15 21-row cluster … DET captures
+#     only 5 of its 21 rows — the cluster is a grab bag". That analysis rests
+#     on 21 rows that do not reproduce.
+# Neither changes this session's ruling — the `destruction`/`except` questions
+# are decided by the GRAMMAR, not by cluster size — but both are recorded in
+# docs/A15-VOCAB-01-RULING-2026-08-09.md §9 rather than silently overwritten.
+EXPECTED_A15_ROWS = 194            # A15 / R6 — reproducible value; see above
+# RE-DERIVED 2026-08-09 (was 141). ATTRIBUTED ROW BY ROW, not accepted --
+# `experiments/foundry_r5_attribution.py` replays classify_r5 against every
+# codebook backup in tz-normalized chronological order and names the rows that
+# enter and leave at each step. The whole 141 -> 163 is eight ratified codebook
+# mutations, and every delta closes:
+#
+#   08-02 01:51  141   CDR-03's measured value reproduces exactly
+#   08-02 17:29  140   -1  cdr09 rename walk drops draw-trigger-self-counter-growth
+#   08-02 18:40  141   +1  lifegain-scales-with-target-color-count instantiated
+#   08-02 19:46  157  +16  THE TIER-3 PACKET -- rule:etb-surveil (15) + one more
+#   08-02 23:14  158   +1  prevents-damage-to-controller
+#   08-03 15:19  159   +1  rule:cycling
+#   08-09 13:49  156   -3  etb-bounce-own-land, grants-cascade-to-own-spells RENAMED
+#   08-09 14:48  166  +10  the 44-axis --wide re-home (attack-trigger-scry etc.)
+#   LIVE         163   -3  this session's targeted-destruction -> -destroy rename
+#
+# EVERY ENTERING ROW IS A CORRECT PROMOTION, verified rather than assumed: a
+# row enters R5 when a run-1 FREE-LANE label comes to equal an ACTIVE slug,
+# i.e. the codebook grew an axis under a name run-1 had already proposed.
+# `rule:etb-surveil` was ABSENT on 2026-08-02 and is active now; all 15 of its
+# cards print "When this ... enters, surveil N". Every LEAVING row left because
+# its axis was renamed, so the label no longer names an active slug.
+#
+# THE REAL DEFECT IS THE GUARD, NOT THE DATA. This number is a pure function of
+# WHICH SLUGS ARE ACTIVE -- a thing the project mutates deliberately and often.
+# CDR-03 measured 141 at ~13:23 on 2026-08-02 and the tier-3 packet added 16 at
+# ~19:45 THE SAME DAY, so the constant was stale within six hours and eight
+# mutations have landed since. Pinned as a literal it is a guaranteed false
+# alarm after every ratified mutation. See the ruling doc §9 for the durable
+# fix (pin it against the codebook sha the classification already records, so a
+# mismatch reads "the codebook moved, re-ratify" rather than "STOP, unknown").
+EXPECTED_R5_ROWS = 163             # R5
 
 NODE_CATEGORIES = ("instantiate", "join-existing", "redirect", "report-only",
                    "collision-killed", "collision-renamed",
