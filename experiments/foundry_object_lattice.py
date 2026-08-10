@@ -392,6 +392,51 @@ def measure(stem: str, domain: set) -> dict:
             "residual": residual, "hits": hits}
 
 
+def audit(stem: str, domain: set) -> dict:
+    """The negative controls. A guard that has never been shown to fail is not
+    known to be a guard, so each of these was run against the live corpus and
+    its output READ, card by card, before being written down here.
+
+    NC1  every claimed card prints the word `destroy` — CR 701.8b's first of
+         exactly two routes to destruction, and the only one this reads.
+    NC2  a card with no targeted clause yields nothing (the extractor cannot
+         invent a membership).
+    NC3  quoted grants are reported, not silently included. All 16 were read
+         2026-08-09: self-grants (Harmonic Sliver IS a Sliver) and Equipment
+         grants (Heartseeker). Both genuinely hand the player that removal, so
+         they are TAGGED — grammar §2's quoted-grant exclusion governs
+         DELIVERY, and the class slot is an EFFECT question. Captain's ratified
+         criterion is deck-building relevance.
+    NC4  no emitted slug may fall outside the ratified grammar — every one is
+         re-validated through `validate_slug`.
+    """
+    cards, _, _ = fc.load_corpus_gated()
+    qspan = re.compile(r"[\"“]([^\"”]*)[\"”]")
+    dest = _CLAUSE_RES[stem]
+    no_verb, quoted_only, silent, bad_slug = [], [], 0, []
+    verb_word = stem
+    for oid, card in cards.items():
+        clauses = list(clauses_for(card, stem))
+        if not clauses:
+            silent += 1
+            continue
+        full = fc.full_oracle_text(card)
+        if verb_word not in full.lower():
+            no_verb.append(card["name"])
+        spans = [m.span(1) for m in qspan.finditer(full)]
+        hits = [m.start() for m in dest.finditer(full)]
+        if hits and all(any(a <= h < b for a, b in spans) for h in hits):
+            quoted_only.append(card["name"])
+
+    for cls in sorted(domain | {f for f, _ in PERMANENT_FORMS}):
+        slug = slug_for(stem, cls)
+        v = vs.validate_slug(slug, definition=None, all_slugs=[])
+        if not v["ok"]:
+            bad_slug.append((slug, v.get("failures") or v.get("reason")))
+    return {"nc1_no_verb": no_verb, "nc2_silent": silent,
+            "nc3_quoted_only": quoted_only, "nc4_bad_slug": bad_slug}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -402,6 +447,13 @@ def main() -> int:
     ap.add_argument("--residual", action="store_true",
                     help="print the clauses that matched the action but named "
                          "NO class — where the defects are")
+    ap.add_argument("--audit", action="store_true",
+                    help="run the negative controls (NC1-NC4) and exit 1 on "
+                         "any hard failure")
+    ap.add_argument("--samples", type=int, default=0, metavar="N",
+                    help="fixed-seed sample of N cards per class, for the DET "
+                         "standing condition's per-pattern verification")
+    ap.add_argument("--seed", type=int, default=20260809)
     args = ap.parse_args()
 
     domain = PERMANENT_TYPES if args.domain == "permanent" else CARD_TYPES
@@ -427,6 +479,42 @@ def main() -> int:
     if args.residual:
         for name, clause in m["residual"][:60]:
             print(f"      {name}: {clause}")
+
+    if args.audit:
+        a = audit(args.action, domain)
+        print("\n--- negative controls " + "-" * 50)
+        print(f"  NC1 claimed without the word `{args.action}` (CR 701.8b): "
+              f"{len(a['nc1_no_verb'])}   must be 0")
+        print(f"  NC2 cards yielding nothing                   : "
+              f"{a['nc2_silent']:,}")
+        print(f"  NC3 clause only inside a quoted grant        : "
+              f"{len(a['nc3_quoted_only'])}   reported, tagged on purpose")
+        for n in a["nc3_quoted_only"]:
+            print(f"        {n}")
+        print(f"  NC4 emitted slugs failing validate_slug      : "
+              f"{len(a['nc4_bad_slug'])}   must be 0")
+        for slug, why in a["nc4_bad_slug"]:
+            print(f"        {slug}: {why}")
+        if a["nc1_no_verb"] or a["nc4_bad_slug"]:
+            print("\n  AUDIT FAILED")
+            return 1
+        print("\n  audit clean")
+
+    if args.samples:
+        import random
+        rng = random.Random(args.seed)
+        by_class = defaultdict(list)
+        for oid, r in m["hits"].items():
+            for c in r["classes"]:
+                by_class[c].append((oid, r["quotes"][c]))
+        print(f"\n--- fixed-seed samples (seed {args.seed}) " + "-" * 30)
+        cards, _, _ = fc.load_corpus_gated()
+        for cls in sorted(by_class):
+            pool = sorted(by_class[cls])
+            pick = rng.sample(pool, min(args.samples, len(pool)))
+            print(f"\n  {slug_for(args.action, cls)}  (n={len(pool)})")
+            for oid, q in pick:
+                print(f"      {cards[oid]['name']:<34} | {q[:78]}")
     return 0
 
 
