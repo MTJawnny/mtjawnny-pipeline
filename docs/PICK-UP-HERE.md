@@ -87,10 +87,16 @@ are audits. **19.3% of the corpus carries any derived tag.** 204 commits since
    recall, median axis 4". Re-run `foundry_wire_experiment.py` after an apply;
    the predictions are already committed.
 
-   **← NEXT: SESSION 3 (APPLY). Not run, as the directive instructs** — it runs
-   only on Captain's explicit go naming that sha256. It is the codebook
-   mutation: 13,565 new member rows and 87 new axes against a codebook holding
-   8,982 today, so it rides the backup law.
+   **← NEXT: SESSION 3 (APPLY) — TAKE IT AS A FRESH SESSION. Preflight in
+   ruling doc §11.** Two things a session must not rediscover: the governing
+   directive is at **`docs/archive/CONSOLIDATION-APPLY-DIRECTIVE.md`** (the 2b
+   directive cites a path that does not exist) and it carries a **stale count —
+   "the 93 instantiations", live number 87**; and **the applier does not
+   exist**, so session 3 is build + run, with a restore drill, a 500-row
+   fixed-seed spot verifier, determinism ×2 by applying twice from backup, and
+   four companion artifacts. The codebook grows **2.5× in one mutation**
+   (8,982 → 22,547 member rows, 403 → 490 axes). Both directives end "one
+   session, this work item only."
 
 3. **Revive `foundry_review.html`** — dark since 2026-07-17.
 4. **A green pipeline build** — last one 2026-07-05.
