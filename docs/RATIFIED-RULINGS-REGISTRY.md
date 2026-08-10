@@ -15,7 +15,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ## Summary
 
 - documents scanned: **130 documents under docs/**
-- ruling references found: **620**
+- ruling references found: **628**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **84**
 - **sole-home (appear in exactly 1 doc): 43**
@@ -24,7 +24,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 | document | lines | rulings | sole home for | deletable |
 |---|---:|---:|---:|---|
-| `A15-VOCAB-01-RULING-2026-08-09.md` | 349 | 3 | 0 | yes |
+| `A15-VOCAB-01-RULING-2026-08-09.md` | 457 | 5 | 0 | yes |
 | `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
 | `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
@@ -57,7 +57,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
-| `PICK-UP-HERE.md` | 286 | 5 | 0 | yes |
+| `PICK-UP-HERE.md` | 305 | 6 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PRODUCT-REALITY-AUDIT-2026-08-09.md` | 182 | 2 | 0 | yes |
@@ -228,12 +228,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1688` — A14** — killed-slug routing is a closed data vocabulary with every
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
 
-### `A15` — 20 reference(s) across 10 doc(s)
+### `A15` — 23 reference(s) across 10 doc(s)
 
 - `A15-VOCAB-01-RULING-2026-08-09.md:1` — A15-VOCAB-01 — RULING DOC, 2026-08-09
 - `A15-VOCAB-01-RULING-2026-08-09.md:16` — A15-VOCAB-01 was never one Captain decision, and it was never a vocabulary
 - `A15-VOCAB-01-RULING-2026-08-09.md:34` — `blocking_decisions = [A15-VOCAB-01]`, and halt-loudly stops the run rather
 - `A15-VOCAB-01-RULING-2026-08-09.md:289` — The ratification did what it was for.** Re-running session 2a's A15
+- `A15-VOCAB-01-RULING-2026-08-09.md:409` — A15-VOCAB-01's headline *"209 rows blocked"* reproduces as **190**.
+- `A15-VOCAB-01-RULING-2026-08-09.md:435` — `corpus_pass_run1_classification.PRE-A15-RULING-20260809.json` (`72d090d2…`,
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1350` — A15 — free-lane clusters whose canonical form matches a ratified grammar
@@ -248,6 +250,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:60` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `PICK-UP-HERE.md:32` — `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
+- `PICK-UP-HERE.md:71` — `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
 - `PRODUCT-REALITY-AUDIT-2026-08-09.md:157` — 2. **Unblock `A15-VOCAB-01`** — ONE Captain decision, open since 2026-08-02,
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
@@ -413,11 +416,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TIER-4-DECISION-PACKET-2026-08-02.md:155` — extension, not new territory. n=1 → CDR-01 would defer.
 - `TIER-4-DECISION-SHEET-2026-08-02.md:73` — recommend it — CDR-01 would park them as `deferred` anyway.)
 
-### `CDR-02` — 9 reference(s) across 6 doc(s)
+### `CDR-02` — 11 reference(s) across 8 doc(s)
 
+- `A15-VOCAB-01-RULING-2026-08-09.md:410` — CDR-02 argues that *"the A15 21-row cluster … DET captures only 5 of its 21
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
+- `PICK-UP-HERE.md:61` — A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:109` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
@@ -425,13 +430,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 - `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
-### `CDR-03` — 6 reference(s) across 5 doc(s)
+### `CDR-03` — 6 reference(s) across 4 doc(s)
 
 - `A15-VOCAB-01-RULING-2026-08-09.md:330` — R5 is the lane CDR-03 routes to DET–SYNTH contradiction review and human
+- `A15-VOCAB-01-RULING-2026-08-09.md:388` — CDR-03 measured 141 at ~13:23 on 2026-08-02; the tier-3 packet added 16 at
 - `B-MIGRATION-DISCOVERY.md:769` — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
 - `CDR-PROPOSALS.md:204` — CDR-03 — R5 revalidation method
 - `CDR-PROPOSALS.md:478` — alongside CDR-03's 6.
-- `PICK-UP-HERE.md:57` — it 166 → 163), it is unattributed, and R5 is the lane CDR-03 routes to human
 - `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
 
 ### `CDR-04` — 3 reference(s) across 3 doc(s)
@@ -633,7 +638,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
-- `PICK-UP-HERE.md:217` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:236` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -656,7 +661,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
-- `PICK-UP-HERE.md:217` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:236` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -1070,11 +1075,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:612` — R4 — reconcile FROZEN as the /1 legacy producer (OQ3).** The migration
 - `RULING-MANIFEST-2026-07-09.md:62` — R4 — MANA KINSHIP RUNS PARALLEL, NEVER REPLACES. Literal-text matching is
 
-### `R5` — 4 reference(s) across 4 doc(s)
+### `R5` — 7 reference(s) across 6 doc(s)
 
+- `A15-VOCAB-01-RULING-2026-08-09.md:365` — 9a. R5 141 → 163 is eight ratified codebook mutations
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1759` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
 - `B-MIGRATION-DISCOVERY.md:621` — R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:58` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
+- `PICK-UP-HERE.md:50` — R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
+- `PICK-UP-HERE.md:52` — codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
 - `RULING-MANIFEST-2026-07-09.md:68` — R5 — MANA-FACT SYSTEM (ratified). Extractors over mana-producing
 
 ### `R6` — 5 reference(s) across 3 doc(s)
