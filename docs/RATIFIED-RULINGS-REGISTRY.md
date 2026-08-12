@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **132 documents under docs/**
-- ruling references found: **638**
+- documents scanned: **133 documents under docs/**
+- ruling references found: **643**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **85**
 - **sole-home (appear in exactly 1 doc): 42**
@@ -25,6 +25,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | document | lines | rulings | sole home for | deletable |
 |---|---:|---:|---:|---|
 | `A15-VOCAB-01-RULING-2026-08-09.md` | 610 | 6 | 0 | yes |
+| `ARCHITECTURE-AUDIT.md` | 1237 | 2 | 0 | yes |
 | `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
 | `B-MIGRATION-DISCOVERY.md` | 851 | 57 | 13 | **NO** |
@@ -1127,8 +1128,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
-### `S1` — 8 reference(s) across 8 doc(s)
+### `S1` — 11 reference(s) across 9 doc(s)
 
+- `ARCHITECTURE-AUDIT.md:706` — S1–S7 and the naming grammar are both organized around axes.
+- `ARCHITECTURE-AUDIT.md:723` — re-open ratified structural law, S1–S7 and the naming grammar, on the strength
+- `ARCHITECTURE-AUDIT.md:1184` — Tradeoff:* the axis is ratified law, S1–S7 and the naming grammar are built on
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
 - `OBJECT-LATTICE-2026-08-09.md:275` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
@@ -1166,8 +1170,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
 - `WORK-PACKETS-2026-08-07.md:405` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
-### `S7` — 6 reference(s) across 6 doc(s)
+### `S7` — 8 reference(s) across 7 doc(s)
 
+- `ARCHITECTURE-AUDIT.md:723` — re-open ratified structural law, S1–S7 and the naming grammar, on the strength
+- `ARCHITECTURE-AUDIT.md:1184` — Tradeoff:* the axis is ratified law, S1–S7 and the naming grammar are built on
 - `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `OBJECT-LATTICE-2026-08-09.md:275` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
 - `PARENT-TREE-CANDIDATES.md:68` — S7. Validation: proposed parents get the family-tree evidence check

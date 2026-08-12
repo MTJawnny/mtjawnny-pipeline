@@ -75,6 +75,123 @@ RULED_AXISLESS_PATTERNS = {
 }
 
 
+# --------------------------------------------------------------------------
+# LATTICE ROWS (det-patterns schema /2, added 2026-08-12)
+#
+# Every other row in det-patterns-v2.json is `slug` + one regex -> ONE axis.
+# A lattice row is one MATCHER -> N AXES DECIDED AT MATCH TIME, because M8
+# (b6 D3) says a multi-class `targeted-<action>` card gets every applicable
+# per-class tag and never a combo tag. Putrefy is destroy-artifact AND
+# destroy-creature.
+#
+# The expansion happens HERE rather than in the lattice module so that the
+# rest of this pass sees ordinary per-axis entries and its ratified behaviour
+# for the 38 regex patterns is untouched. That was verified rather than
+# assumed: det_pass_full_hits.json is byte-identical across this change for
+# all 38, 3,697 hits.
+# --------------------------------------------------------------------------
+
+def is_lattice_pattern(p: dict) -> bool:
+    return isinstance(p.get("lattice"), dict)
+
+
+def expand_lattice_pattern(p: dict, cards: dict) -> dict:
+    """slug -> {oracle_id: proving clause}, for every class the lattice names.
+
+    The quote comes from the lattice's own `quotes` map, which is the clause
+    that proved THAT class -- not the card's first matching clause. Evidence
+    must prove ITS OWN axis (standing discipline); a card destroying an
+    artifact and exiling a creature must not cite one clause for both.
+    """
+    import foundry_object_lattice as ol
+    stems = p["lattice"]["stems"]
+    unknown = [s for s in stems if s not in ol.ACTION_VERBS]
+    if unknown:
+        fc.halt(f"lattice row names stem(s) {unknown!r} that "
+                f"foundry_object_lattice does not implement. Its ACTION_VERBS "
+                f"are {sorted(ol.ACTION_VERBS)}. A stem that does not exist "
+                f"matches nothing and reads as a clean empty result.")
+    out = {}
+    for stem in stems:
+        for oid in sorted(cards):
+            r = ol.classes_for_card(cards[oid], stem, ol.PERMANENT_TYPES)
+            for cls in sorted(r["classes"]):
+                quote = r["quotes"].get(cls)
+                if not quote:
+                    fc.halt(f"lattice claimed {ol.slug_for(stem, cls)} for "
+                            f"{oid} with no proving clause. Evidence-quote-or-"
+                            f"discard is not optional.")
+                out.setdefault(ol.slug_for(stem, cls), {})[oid] = quote
+    if not out:
+        fc.halt("lattice row produced ZERO axes. An empty result from a "
+                "ratified pattern is a defect, not a clean run.")
+    return out
+
+
+def lattice_axis_record(slug: str, parent_scope: dict) -> dict:
+    """A fresh axis record for a virtual node, per grammar sec.11.2.
+
+    Precedent is docs/CLUE-INSTANTIATION-2026-08-03.md, which self-instantiated
+    ten axes the same way. The definition is GENERATED from the stem and the
+    class rather than hand-written, so 24 axes cannot drift apart in wording;
+    the scope is INHERITED from the family's existing ratified parent rather
+    than chosen here, because the lattice decides an object class and makes no
+    scope claim of its own.
+    """
+    import foundry_object_lattice as ol
+    body = slug[len("rule:targeted-"):]
+    stem = next((s for s in ol.ACTION_VERBS if body.startswith(s + "-")), None)
+    if stem is None:
+        fc.halt(f"cannot derive a stem from lattice slug {slug!r}")
+    cls = body[len(stem) + 1:].replace("-", " ")
+    verb = {"destroy": "destroys", "exile": "exiles",
+            "bounce": "returns to its owner's hand"}[stem]
+    anchor = {
+        "destroy": "CR 701.8a: to destroy a permanent is to move it from the "
+                   "battlefield to its owner's graveyard.",
+        "exile": "CR 406.1: an exiled object is in the exile zone, which is "
+                 "why exile bypasses indestructible.",
+        "bounce": "CR 110.1: a permanent is a card or token on the "
+                  "battlefield, so the target is the permanent and not a card "
+                  "in another zone.",
+    }[stem]
+    return {
+        "definition": (
+            f"A spell or ability {verb} a target {cls}. {anchor} The class "
+            f"slot is CR 110.4's permanent-type list; a clause naming two "
+            f"types yields one membership per type (M8, b6 D3), never a combo "
+            f"axis. Instantiated as a virtual node under grammar sec.11.2 on "
+            f"its first quote-verified member."),
+        "scope": parent_scope[stem],
+        "source": "DET",
+        "parameterized": False,
+        "members": [],
+        "status": "active",
+        "merged_into": None,
+        "history": [],
+    }
+
+
+# The family parents whose ratified scope each lattice child inherits. Read
+# from the live codebook at run time, never typed, so a re-scoped parent
+# carries its children with it.
+LATTICE_SCOPE_PARENT = {"destroy": "rule:targeted-destroy",
+                        "exile": "rule:targeted-exile",
+                        "bounce": "rule:targeted-bounce-creature"}
+
+
+def lattice_parent_scopes(axes: dict) -> dict:
+    out = {}
+    for stem, parent in LATTICE_SCOPE_PARENT.items():
+        rec = axes.get(parent)
+        if rec is None or not rec.get("scope"):
+            fc.halt(f"lattice scope parent {parent!r} is absent or carries no "
+                    f"scope. A child cannot inherit what the parent does not "
+                    f"have, and guessing a scope is minting vocabulary.")
+        out[stem] = rec["scope"]
+    return out
+
+
 def load_axis_patterns():
     # Deliberately a raw json.load rather than the schema-checking /2 loader:
     # this reads axis STATUS only, never membership, so it is correct against
@@ -84,9 +201,15 @@ def load_axis_patterns():
     cb = json.loads(CODEBOOK_PATH.read_text())
     active = {s for s, e in cb["axes"].items() if e.get("status") == "active"}
     axis_patterns, prefilter_patterns = [], []
+    lattice_rows = []
     ruled_gaps, deferred_gaps = [], []
     for p in det["patterns"]:
         if p["status"] != "ratified":
+            continue
+        if is_lattice_pattern(p):
+            # Deliberately NOT slug-resolved here: its slugs do not exist yet
+            # and the axis-less halt below is correct for every OTHER row.
+            lattice_rows.append(p)
             continue
         slug = fc.pattern_slug(p)
 
@@ -130,7 +253,7 @@ def load_axis_patterns():
     for slug, st in sorted(deferred_gaps):
         print(f"NOTE: ratified pattern {slug!r} targets a {st!r} axis — "
               f"not applied (only active axes receive DET membership).")
-    return axis_patterns, prefilter_patterns
+    return axis_patterns, prefilter_patterns, lattice_rows
 
 
 def compute_full_hits(pattern_src: str, texts: dict) -> list:
@@ -212,10 +335,28 @@ def compute_special_hits(resolved_slug: str, texts: dict, cards: dict) -> tuple:
 
 
 def cmd_generate_samples():
-    axis_patterns, prefilter_patterns = load_axis_patterns()
+    axis_patterns, prefilter_patterns, lattice_rows = load_axis_patterns()
     cards, _, gated_out = fc.load_corpus_gated()
     print(f"corpus: {len(cards)} gate-passing cards ({gated_out} gated out)")
     texts = {oid: fc.det_scan_texts(c) for oid, c in cards.items()}
+
+    # Lattice rows expand into ordinary per-axis entries carrying their own
+    # hits and their own proving clauses, so everything downstream is uniform.
+    lattice_quotes = {}
+    for p in lattice_rows:
+        expanded = expand_lattice_pattern(p, cards)
+        print(f"lattice pattern_index={p['pattern_index']}: "
+              f"{len(expanded)} axes, "
+              f"{sum(len(v) for v in expanded.values())} memberships")
+        for slug, hits in sorted(expanded.items()):
+            lattice_quotes[slug] = hits
+            axis_patterns.append(dict(
+                p, resolved_slug=slug, is_lattice=True,
+                pattern=f"(lattice) {slug}",
+                # per-AXIS count, not the row's family total. Reporting 2,653
+                # against each of 24 axes would be a carried-forward count
+                # wearing a per-axis label.
+                corpus_hits=len(hits)))
 
     full_hits = {}
     samples_report = {"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -225,7 +366,9 @@ def cmd_generate_samples():
     special_slugs = {"rule:enters-tapped", "rule:enters-tapped-conditional", "rule:imposes-enters-tapped"}
     for p in axis_patterns:
         slug = p["resolved_slug"]
-        if slug in special_slugs:
+        if p.get("is_lattice"):
+            hits = sorted(lattice_quotes[slug])
+        elif slug in special_slugs:
             hits, _ = compute_special_hits(slug, texts, cards)
         else:
             hits = compute_full_hits(p["pattern"], texts)
@@ -272,8 +415,30 @@ def cmd_apply(verdicts_path: str):
     if not HITS_CACHE_PATH.exists():
         fc.halt(f"{HITS_CACHE_PATH} not found -- run generate-samples first")
     verdicts = json.loads(Path(verdicts_path).read_text())
-    axis_patterns, _ = load_axis_patterns()
+    axis_patterns, _, lattice_rows = load_axis_patterns()
     full_hits = json.loads(HITS_CACHE_PATH.read_text())
+
+    # Re-expand the lattice rather than trusting the cache for QUOTES: the
+    # cache holds oracle_ids only, and a rule-derived assertion needs the
+    # clause that proves its own axis. Re-deriving also means a lattice whose
+    # code changed since generate-samples cannot silently apply stale hits --
+    # the reconciliation below halts on any disagreement.
+    cards_for_lattice, _, _ = fc.load_corpus_gated()
+    lattice_quotes = {}
+    for p in lattice_rows:
+        for slug, hits in expand_lattice_pattern(p, cards_for_lattice).items():
+            lattice_quotes[slug] = hits
+            axis_patterns.append(dict(p, resolved_slug=slug, is_lattice=True,
+                                      pattern=f"(lattice) {slug}"))
+    for slug, hits in sorted(lattice_quotes.items()):
+        cached = set(full_hits.get(slug, []))
+        if cached != set(hits):
+            fc.halt(
+                f"lattice axis {slug!r} re-derives {len(hits)} hits but the "
+                f"cache from generate-samples holds {len(cached)}. The sample "
+                f"sheet Captain ratified was drawn from the cached set, so "
+                f"applying the new one would write membership nobody reviewed. "
+                f"Re-run generate-samples and re-review.")
 
     missing_verdicts = [p["resolved_slug"] for p in axis_patterns if p["resolved_slug"] not in verdicts]
     if missing_verdicts:
@@ -305,6 +470,30 @@ def cmd_apply(verdicts_path: str):
     texts = {oid: fc.det_scan_texts(c) for oid, c in cards.items()}
 
     fcb.backup_codebook("pre-det-pass")
+
+    # Virtual-node instantiation, grammar sec.11.2: "virtual nodes instantiate
+    # on first quote-verified member, no fresh ratification". Captain ratifies
+    # the GRAMMAR (stem + closed facet slots); the nodes are automatic. This is
+    # the same route docs/CLUE-INSTANTIATION-2026-08-03.md took for ten axes.
+    parent_scopes = lattice_parent_scopes(axes)
+    instantiated = []
+    for slug in sorted(lattice_quotes):
+        if slug in axes:
+            continue
+        axes[slug] = lattice_axis_record(slug, parent_scopes)
+        axes[slug]["history"] = [{
+            "batch": BATCH_LABEL, "action": "created",
+            "note": ("virtual node self-instantiated under grammar sec.11.2 on "
+                     "its first quote-verified member; object lattice, "
+                     "docs/OBJECT-LATTICE-2026-08-09.md, DET pattern_index=45 "
+                     "ratified 2026-08-12. Definition generated from stem+class; "
+                     "scope inherited from the family parent."),
+        }]
+        instantiated.append(slug)
+    if instantiated:
+        print(f"instantiated {len(instantiated)} virtual node(s) under "
+              f"grammar sec.11.2")
+
     applied = []
     for p in axis_patterns:
         slug = p["resolved_slug"]
@@ -312,12 +501,19 @@ def cmd_apply(verdicts_path: str):
         before_n = len(fcb.member_ids(e))
         removal = fcb.remove_det_assertions(e)
         source_ref = f"{fcb.DET_SOURCE_REF_PREFIX}{p['pattern_index']}"
-        compiled = re.compile(quote_pattern_src(p), re.I)
+        compiled = None if p.get("is_lattice") else re.compile(
+            quote_pattern_src(p), re.I)
         for oid in full_hits[slug]:
             if oid not in texts:
                 fc.halt(f"DET hit {slug}/{oid} is not in the Gate #0 corpus — hit list and corpus "
                         f"disagree; nothing written")
-            clause = matched_clause(compiled, texts[oid])
+            if p.get("is_lattice"):
+                # The lattice's own proving clause for THIS class, not a
+                # re-scan: a re-scan would hand every class on a multi-class
+                # card the same first-matching clause.
+                clause = lattice_quotes[slug].get(oid)
+            else:
+                clause = matched_clause(compiled, texts[oid])
             if clause is None:
                 fc.halt(f"DET hit {slug}/{oid} produced no matched clause on re-scan — the recorded hit "
                         f"list and the ratified pattern disagree; nothing written")

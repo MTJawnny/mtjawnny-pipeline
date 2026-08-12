@@ -1,10 +1,10 @@
 {
-  "schema": "foundry-det-patterns/1",
+  "schema": "foundry-det-patterns/2",
   "version": "v2",
   "generated": "2026-08-01",
   "ruling_basis": "docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.5 (final arithmetic) and sec.3 step 6 (assembly). Supersedes experiments/out/foundry/det_patterns_probe.json as the RATIFIED pattern set -- that file remains the raw measurement tool/log, this file is the versioned, Captain-ratified artifact.",
   "arithmetic": "The walk's own prose claimed '41/306 DET-able' but its own sec.2.4 table (and the committed foundry_det_patterns_probe.py PATTERNS list, verified against a pre-session backup) only ever had 39 rows -- a pre-existing internal inconsistency in the original walk output, not introduced this session (B2 ruling, 2026-07-31: 39 is authoritative, annotated not silently corrected in the source doc). 39 (original) - 1 (rule:kicker-conditional-bonus-effect, withdrawn per Q9) + 4 (new rule:cant-be-blocked-<restriction> family patterns, Q8.5/Q8.8) + 1 (rule:cant-be-blocked-by-controller, B1 follow-on ruling) + 1 (rule:imposes-enters-tapped, captain-authored per the B3/B4 follow-on ruling) = 44 ratified patterns. The 4 pre-existing unblockable-family patterns (rule:innate-unblockable, rule:activated-grants-self-unblockable, rule:grants-unblockable, rule:grants-unblockable-target) were REBUILT in place (same slug, corrected regex per Q8.8's restriction-boundary) -- not counted as net removed/added since the axis structure itself wasn't consolidated (Q8.4 minimal-churn ruling).",
-  "final_ratified_count": 44,
+  "final_ratified_count": 45,
   "withdrawn_count": 1,
   "preprocessing_standard": "DET preprocessing standard v1 (2026-07-31 follow-on, B3/B4): every pattern below runs against foundry_common.det_scan_texts(card), not full_oracle_text() directly -- CARDNAME canonicalization (a card's own printed name/short-form self-reference replaces to the '~' token before matching) and modal-mode bullet splitting (each 'Choose one -- * ...' bullet scans as its own synthetic unit alongside the header), joining the existing polarity/templating-era/all-faces rules into one standing pipeline. Re-probing all patterns under this standard changed 5 hit counts (see session diff): rule:innate-unblockable (161->183, CARDNAME), rule:activated-grants-self-unblockable (22->25, CARDNAME), rule:enters-tapped (685->686, a per-clause G2 fix landing alongside this work), rule:landfall-gain-life (13->15, modal) and rule:landfall-self-pump (38->41, modal); all other patterns unchanged.",
   "standing_condition": "sec.2.5: at DET-pass time each ratified pattern emits a fixed-seed 20-hit sample sheet (seed = 20260731 + pattern_index, this file's 'seed' field per entry). ANY sample row failing its axis definition halts the pass before provenance writes. Patterns are versioned like scoring constants -- never silently tuned. This file WAS updated in place once, 2026-07-31, for the B1/B3/B4 follow-on rulings issued in the same session as v1's original assembly (pre-launch iteration, not post-launch tuning -- no DET pass had run yet). Any future change AFTER Captain's step-4 go-ahead requires a new docs/det-patterns-v2.json, not an in-place edit.",
@@ -548,8 +548,29 @@
       "corpus_hits": 24,
       "codebook_n_members_at_probe": 24,
       "note": "Root Maze class sibling of rule:enters-tapped; seeded via the G2 guard's own exclusion list"
+    },
+    {
+      "slug": "rule:targeted-<action>-<class> (lattice)",
+      "pattern_index": 45,
+      "seed": 20260812,
+      "lattice": {
+        "module": "foundry_object_lattice",
+        "stems": [
+          "destroy",
+          "exile",
+          "bounce"
+        ],
+        "class_domain": "CR 110.4 permanent types, plus the grammar sec.5 OBJECT broad forms (permanent / nonland-permanent / noncreature-permanent)"
+      },
+      "pattern": null,
+      "status": "ratified",
+      "cr_anchor": "CR 701.8a (only a permanent can be destroyed, so the class slot is the permanent-type list and not the card-type list); CR 110.4 (the six permanent types, parsed with its own stated cardinality); CR 205.3g-q (subtype -> permanent type, consumed from foundry_cr702_classes.type_vocabulary); CR 300.2 (multi-type objects, AND-shaped vs OR-shaped); CR 110.1 (a permanent is a card or token ON THE BATTLEFIELD, so `<type> card` is a different zone and a different family)",
+      "def_anchor": "A spell or ability names a target of a given permanent type and destroys, exiles, or returns it to its owner's hand. One clause naming two types yields one membership per type (M8/b6 D3), never a combo axis.",
+      "corpus_hits": 2653,
+      "codebook_n_members_at_probe": 267,
+      "note": "OBJECT LATTICE, docs/OBJECT-LATTICE-2026-08-09.md. Every piece of vocabulary derived at run time; nothing typed. 2,653 memberships across 2,131 cards over 24 axes, 23 of which self-instantiate under grammar sec.11.2 (virtual nodes instantiate on first quote-verified member, no fresh ratification). `discard` and `damage` are deliberately excluded: discard's object is a card in hand, and damage has its own closed recipient list, CR 120.1's four. `bounce` REQUIRES its `to ... hand` destination or every reanimation spell joins the lattice."
     }
   ],
   "supersedes": "docs/det-patterns-v1.json",
-  "v2_changelog": "2026-08-01, during full-corpus DET-pass generate-samples review (standing_condition fixed-seed sample gate), 2 corrections found and applied, zero codebook.json writes at time of fix: (1) rule:grants-unblockable-target pattern regex -- closed the KNOWN RESIDUAL GAP (The Black Gate still matching despite B1 ruling moving it out); guard extended, verified Black Gate now excluded, other 9 members unaffected. (2) rule:grants-double-strike-target def_anchor -- wording-only fix, 'An instant grants' corrected to delivery-agnostic phrasing; pattern/regex and membership unchanged. Per this file's own standing_condition ('Any future change AFTER Captain's step-4 go-ahead requires a new docs/det-patterns-v2.json, not an in-place edit'), v1 is left untouched as the historical record; this file is the one used for det_pass generate-samples re-run and apply."
+  "v2_changelog": "2026-08-01, during full-corpus DET-pass generate-samples review (standing_condition fixed-seed sample gate), 2 corrections found and applied, zero codebook.json writes at time of fix: (1) rule:grants-unblockable-target pattern regex -- closed the KNOWN RESIDUAL GAP (The Black Gate still matching despite B1 ruling moving it out); guard extended, verified Black Gate now excluded, other 9 members unaffected. (2) rule:grants-double-strike-target def_anchor -- wording-only fix, 'An instant grants' corrected to delivery-agnostic phrasing; pattern/regex and membership unchanged. Per this file's own standing_condition ('Any future change AFTER Captain's step-4 go-ahead requires a new docs/det-patterns-v2.json, not an in-place edit'), v1 is left untouched as the historical record; this file is the one used for det_pass generate-samples re-run and apply.  ||  2026-08-12 (schema /1 -> /2): added the LATTICE row type. Every row until now is `slug` + one regex -> ONE axis. A lattice row is one MATCHER -> N AXES DECIDED AT MATCH TIME, which is what M8 (b6 D3, MASTER-HANDOFF-ADDENDUM-4 sec.4) requires: a multi-class `targeted-<action>` card gets every applicable per-class tag. Putrefy is the worked case -- targeted-destroy-artifact AND targeted-destroy-creature, never a combo tag. A /1 reader sees an unknown row shape, so the schema bumps. Captain ratified the pattern 2026-08-12 against the fixed-seed sample sheet at experiments/out/foundry/object_lattice_samples.md, which is this file's own standing_condition sec.2.5 satisfied."
 }

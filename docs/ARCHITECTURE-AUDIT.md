@@ -293,6 +293,30 @@ summing them would be the overlapping-probe defect. Every number is reported as
 incremental reach over the union of the frames above it. Corpus is
 `load_corpus_gated()` (`experiments/foundry_common.py:133`), 32,557 cards.
 
+**⚠ THESE NUMBERS MOVED THE SAME DAY, AND THE TOOL IS WHY.** The table below
+is the measurement as first taken. Ratifying the object lattice later that day
+(AQ1) put its output through the DET standing condition, which found a real
+defect in `classify_clause`: the class was read from the whole clause tail
+rather than from the target's own noun phrase. Fixing it narrowed the scanning
+span, and because this census reuses `classify_clause`, the corrected run reads:
+
+| frame | first taken | corrected | note |
+|---|--:|--:|---|
+| T1 object lattice | 2,131 | **2,021** | the defect, corrected: 161 memberships were decided by a word outside the target phrase |
+| T2b untargeted | 14,364 | **8,229** | NOT the defect. T2b applies `classify_clause` to a frame with no printed `target`, so the narrowed span cuts it hardest. This arm was always the loosest |
+| **effect-bearing union** | **21,691 (66.6%)** | **19,298 (59.3%)** | |
+
+**Read the drop as a boundary change, not as a correction of a wrong number.**
+Both figures are honest reach under a stated boundary and the boundary moved.
+The load-bearing claim survives either way: the parser reaches **59.3%** against
+the shipped lattice's **6.2%**, so Option B's ceiling is roughly ten times what
+is wired today. What genuinely changed is confidence in the T2b arm, which is
+now known to be sensitive to a span decision made for a different frame.
+
+**This is the committed census earning its keep within hours.** Had it stayed a
+scratchpad script, the audit would still be quoting 66.6% and nobody could have
+known. That is the whole argument of AQ6, demonstrated rather than asserted.
+
 | frame | what fills the slots | cards | share | incremental |
 |---|---|--:|--:|--:|
 | T1 lattice as shipped | 3 grammar stems x CR 110.4 permanent types | 2,131 | 6.5% | baseline |

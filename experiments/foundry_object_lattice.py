@@ -204,10 +204,78 @@ AMBIGUOUS_SUBTYPES = {s for s, p in SUBTYPE_TO_TYPE.items() if len(p) > 1}
 # permanent" names one target of any nonland type — so it takes exactly its own
 # tag and never the per-type ones, which would assert a reach the card lacks.
 PERMANENT_FORMS = (
-    ("noncreature-permanent", re.compile(r"\bnoncreature permanents?\b", re.I)),
-    ("nonland-permanent", re.compile(r"\bnonland permanents?\b", re.I)),
-    ("permanent", re.compile(r"\bpermanents?\b", re.I)),
+    ("noncreature-permanent", "noncreature permanent"),
+    ("nonland-permanent", "nonland permanent"),
+    ("permanent", "permanent"),
 )
+
+
+# Where the TARGET's own noun phrase ends. Everything past this belongs to the
+# rest of the sentence and cannot supply the target's type.
+_NP_END = re.compile(
+    r"\b(?:from|in|into|onto|on|to|with|that|whose|unless|equal|where|"
+    r"until|for|if)\b", re.I)
+
+
+def target_noun_phrase(tail: str) -> str:
+    """The span that actually names the target, out of a clause tail.
+
+    **THE CLASS MUST COME FROM THE TARGET'S OWN NOUN PHRASE, NOT FROM ANYWHERE
+    AFTER THE VERB.** The tail runs to the end of the sentence, so without this
+    every type word downstream is a candidate class. Measured 2026-08-12 on the
+    DET sample gate, before any codebook write: 83 of 2,653 memberships were
+    decided by a word outside the target phrase, and fixing the two narrow
+    causes only took it to 35, because they were symptoms rather than the
+    cause.
+
+    Two boundaries, and both are needed:
+
+      * **the next printed `target`** starts a DIFFERENT target. Ragnarok,
+        Divine Deliverance prints `destroy target permanent and return target
+        nonlegendary permanent CARD`; it genuinely destroys a permanent, and
+        truncating here is what keeps its correct membership while the card-form
+        that follows stops being its business.
+      * **the first preposition or relative pronoun** ends the noun phrase.
+        Pharika's Mender prints `return target creature or enchantment CARD from
+        your graveyard`, where `card` distributes across BOTH coordinated arms,
+        so the whole phrase is graveyard recursion and neither arm is a
+        permanent. Reading to `from` is what sees that; a per-word lookahead
+        never can, because `creature` is followed by ` or`.
+    """
+    cut = re.search(r"\btarget\b", tail)
+    if cut:
+        tail = tail[:cut.start()]
+    end = _NP_END.search(tail)
+    return tail[:end.start()] if end else tail
+
+
+def names_type(text: str, word: str) -> bool:
+    """True iff this clause names `word` as a PERMANENT (CR 110.1).
+
+    **The FIRST occurrence decides, and a later bare occurrence must not
+    rescue a refused one.** Found 2026-08-12 by the DET standing condition,
+    before any codebook write, on 83 of 2,653 memberships:
+
+      * `exile target creature CARD from a graveyard and untap this CREATURE`
+        (Eater of the Dead) — the first `creature` is refused by CR 110.1, and
+        a plain `re.search` for an unrefused occurrence then found the SECOND
+        one, in `untap this creature`, which is not the target at all. 36 rows.
+      * `Exile up to five target permanent CARDS from your graveyard`
+        (Split the Spoils) — the per-type scan carried the `card` lookahead but
+        `PERMANENT_FORMS` did not, and a broad form OUTRANKS the per-type read,
+        so the refusal never got a chance to fire. 47 rows.
+
+    Both are the same shape one layer apart: the lookahead was written per
+    OCCURRENCE while the test was written per CLAUSE. `Ragnarok, Divine
+    Deliverance` is the case that proves first-occurrence is the right rule
+    rather than "refuse if any occurrence is a card-form": it prints
+    `destroy target permanent AND return target nonlegendary permanent card`,
+    genuinely destroys a permanent, and must keep its membership.
+    """
+    m = re.search(rf"\b{word}s?\b", text)
+    if not m:
+        return False
+    return not re.match(r"\s+cards?\b", text[m.end():])
 
 
 # --------------------------------------------------------------------------
@@ -304,9 +372,19 @@ def classify_clause(clause: str, domain: set = None) -> dict:
     not encode.
     """
     domain = domain if domain is not None else PERMANENT_TYPES
-    text = clause.lower()
+    text = target_noun_phrase(clause.lower())
     for rx in _NOT_THE_TARGET:
         text = rx.sub(" ", text)
+
+    # CR 110.1 AT PHRASE LEVEL, NOT WORD LEVEL. `card` distributes across a
+    # coordination: `target creature or enchantment CARD from your graveyard`
+    # (Pharika's Mender) names a card in a graveyard for BOTH arms, so neither
+    # is a permanent. A per-word lookahead cannot see that, because `creature`
+    # is followed by ` or`. Once the span is the target's own noun phrase, one
+    # `card` anywhere inside it disqualifies the whole phrase.
+    if re.search(r"\bcards?\b", text):
+        return {"classes": set(), "broad": None, "via_subtype": {},
+                "conjunctive": [], "qualified": False}
 
     conj = []
     for m in _CONJUNCTIVE_RE.finditer(text):
@@ -314,15 +392,15 @@ def classify_clause(clause: str, domain: set = None) -> dict:
         if a in domain and b in domain:
             conj.append((a, b))
 
-    classes = {t for t in domain if re.search(rf"\b{t}s?\b(?!\s+cards?\b)", text)}
+    classes = {t for t in domain if names_type(text, t)}
 
     # A broad permanent form OUTRANKS the per-type read of the same clause.
     # "destroy target nonland permanent" contains no type word, but "destroy
     # target permanent that's an artifact or creature" would — and there the
     # types are a RESTRICTION on one broad target, not two targets.
     broad = None
-    for form, rx in PERMANENT_FORMS:
-        if rx.search(text):
+    for form, word in PERMANENT_FORMS:
+        if names_type(text, word):
             broad = form
             break
 
@@ -336,8 +414,10 @@ def classify_clause(clause: str, domain: set = None) -> dict:
             if len(parents) != 1:
                 continue
             parent = next(iter(parents))
-            if parent in domain and re.search(
-                    rf"\b{re.escape(sub)}s?\b(?!\s+cards?\b)", text):
+            # Same first-occurrence rule: without it, refusing `creature
+            # card` above just hands the clause to the SUBTYPE path, which
+            # re-adds creature from `Assassin creature card` (Altair).
+            if parent in domain and names_type(text, re.escape(sub)):
                 classes.add(parent)
                 via_subtype[sub] = parent
 
