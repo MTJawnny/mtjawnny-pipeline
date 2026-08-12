@@ -263,10 +263,20 @@ that touches the foundry pays that read again.
 ### 6.0 The three empirical inputs this phase needed, gathered
 
 The directive names three inputs and forbids guessing them. All three were
-measured this session, with no API calls. The measurement scripts live in the
-session scratchpad rather than in `experiments/`, because the zero-mutation
-constraint forbids adding a repository file; that is a real weakness and it is
-raised as question AQ6 in section 13.
+measured, with no API calls.
+
+**Update, same day, after Captain asked for the recommended next steps.** The
+reach measurement is now committed as `experiments/foundry_reach_census.py` and
+every number in 6.0a below is re-derivable by running it. It reproduces this
+table exactly. It is a REPORTER and its docstring says so in capitals, because
+two of the eight Gate 2 checks were reporters listed as gates and this
+repository has already paid for that once. It carries three negative controls,
+run with `--selftest`, and all three fire: a truncated CR 701 vocabulary halts,
+a vocabulary with one member SUBSTITUTED halts on content while the count still
+looks right, and an emptied object domain fails the `must_capture` fixture.
+That closes question AQ6 for the reach number only. The prompt economics of
+6.0b and the recyclability measurements of 6.0c are still scratchpad work and
+still carried-forward counts.
 
 #### 6.0a Templated reach, the measurement Option B's ceiling depends on
 
@@ -1049,8 +1059,11 @@ Added by the sections 6 to 13 pass:
   changes no conclusion here.
 - **Whether the four probe defects in this session's own measurement code are
   the whole set.** Four were caught by guards or fixtures. The base rate this
-  repository documents says the honest expectation is that there are more, and
-  the measurement scripts are not committed, so nobody can re-run them. See AQ6.
+  repository documents says the honest expectation is that there are more.
+  Partly closed the same day: the reach probe is now
+  `experiments/foundry_reach_census.py` and is re-runnable and
+  negative-controlled, so its numbers can be checked by anyone. The 6.0b and
+  6.0c measurements remain uncommitted. See AQ6.
 
 ---
 
@@ -1184,15 +1197,20 @@ audit built agreed with hand-scoring on roughly 16 of 30, so per-axis means 403
 hand rulings.
 
 **AQ6. Should this session's measurement scripts be committed?**
-The reach and economics probes live in the session scratchpad because the
-zero-mutation constraint forbade adding repository files. So **every number in
-section 6.0 is currently a carried-forward count that nobody can re-derive**,
-which is the exact trap `CLAUDE.md` names.
-*Tradeoff:* committing them as `experiments/foundry_reach_census.py` makes the
-66.6% re-measurable and ratchetable, and adds one more script to a repository
-whose §0 finding is that it has too many tools that reach no card. Leaving them
-out keeps the surface small and makes this document's central measurement
-unverifiable by the next session.
+**Partly answered by Captain's instruction to proceed, and acted on.** The reach
+probe is committed as `experiments/foundry_reach_census.py`, reproduces 6.0a
+exactly, and passes three negative controls. It is deliberately NOT wired into
+`foundry_gate2.py`.
+*What is still open:* whether it should be RATCHETED. It emits `--json` for
+`foundry_audit_baseline.py`, and pinning it would make it a real gate rather
+than a reporter, which is the only thing that stops the 66.6% decaying into
+another carried-forward count.
+*Tradeoff:* a ratchet on reach makes any change that narrows a frame fatal,
+which is correct when the frames are right and obstructive while they are still
+being widened. Left unpinned it is one more tool in a repository whose §0
+finding is that it has too many tools that reach no card.
+*Also still open:* the 6.0b prompt-economics and 6.0c recyclability probes are
+uncommitted, and their numbers are carried-forward counts today.
 
 **AQ7. Which consumer is first, and does that ruling come before or after AQ2?**
 Section 4 derived four consumer specs from tool descriptions because no consumer
