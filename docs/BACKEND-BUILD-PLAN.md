@@ -246,6 +246,13 @@ Scoring 30K candidates × 384 dims in a Worker is tens of milliseconds; this gen
 
 **5.1 — Schedule:** weekly cron (Scryfall: weekly is fine for gameplay data) + `workflow_dispatch` for on-demand (set-release days).
 
+> **⚠ AS-BUILT, 2026-08-13: THE CRON IS UNBUILT.** `build.yml` ships
+> `on: workflow_dispatch` only — no `schedule:` block — so 5.1 is a plan, not a
+> description. Every run in the repo's history is manual and the last green one
+> was **2026-07-05**. 5.2's keepalive guard is unbuilt with it and only becomes
+> relevant once a schedule exists. `CLAUDE.md` claimed the weekly run as fact
+> until this date; corrected there too.
+
 **5.2 — The 60-day trap:** scheduled workflows in public repos auto-disable after 60 days without repo activity, and **scheduled runs don't count as activity**. Guard: a keepalive step in the weekly workflow (e.g., `gautamkrishnar/keepalive-workflow`, which makes an empty commit only when needed). Set it and forget it.
 
 **5.3 — Failure = loud, stale = safe.** Actions failures already email you; validation failures leave last week's artifacts live. Add one line to the workflow that posts run status to a private channel in the Way of the Proxy Discord via webhook — your ops dashboard is a Discord channel, cost $0.

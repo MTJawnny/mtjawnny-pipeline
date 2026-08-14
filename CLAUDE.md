@@ -3,9 +3,19 @@
 ## What this is
 The data pipeline for mtjawnny.com's corpus tools (Magic Thesaurus, Similar
 Cards, Deck Finisher). Fetches Scryfall bulk data, merges a custom tag
-layer, builds SQLite/embedding/shard artifacts, uploads them to R2. Runs
-weekly via GitHub Actions (public repo = unlimited free Actions minutes).
+layer, builds SQLite/embedding/shard artifacts, uploads them to R2.
 Also home of the tier engine and the T3 axis foundry (derived-tag mining).
+
+**IT DOES NOT RUN WEEKLY. This line said it did until 2026-08-13, and that
+was never true of the as-built workflow.** `.github/workflows/build.yml`
+carries `on: workflow_dispatch` and **no `schedule:` block** — every run in the
+repo's history is manual, and `gh run list` shows the **last successful build
+was 2026-07-05**, preceded by five consecutive failures. The weekly cron is
+`docs/BACKEND-BUILD-PLAN.md` §5.1, which is a PLAN and is unbuilt; §5.2's
+60-day auto-disable guard is unbuilt with it. Adding the schedule is an
+operational decision about build cadence, not a documentation fix, so it is
+**deliberately not done here** — but nothing should read this page as evidence
+that a build has run since July.
 
 This is a separate repo from mtjawnny.github.io — that repo's CLAUDE.md
 contract does not travel here. This file is this repo's own contract.

@@ -80,6 +80,17 @@ GATES = [
     # resolver and requires the fixtures to catch it.
     ("locality",         [f"{EXP}/foundry_locality.py", "--gate"],
      "semantic-locality coverage fell, or the resolution law regressed"),
+    # Added 2026-08-13. THIS ROW PROTECTS REPRODUCIBILITY, NOT A NUMBER. The
+    # qualifier packet's evidence base previously lived only in a scratchpad
+    # that was thrown away, so a committed document pointed at figures nothing
+    # could re-derive. It deliberately pins NO rate: 49.3%, 2,110 and x9.7 are
+    # detector-sensitive and a tolerance band would be the tuning knob the
+    # engine rules forbid. What it pins is that the CR vocabulary still parses,
+    # the counting key's premise still holds, the base-class strip still
+    # prevents the double count, and a missing category still cannot move the
+    # rate. It ratifies no qualifier vocabulary and mints nothing.
+    ("qualifier_census", [f"{EXP}/foundry_qualifier_census.py", "--gate"],
+     "the qualifier census can no longer be re-derived as published"),
 ]
 
 # family_sweep has a STANDING failure (the 6 blocking findings) that predates

@@ -7,10 +7,21 @@ CANONICAL RULING: `docs/B-MIGRATION-DISCOVERY.md` sec.11 -- tracked, and it
 sits with sec.10's A1, the section that defines the assertion object this
 amends. Cite THAT for the law.
 
-Working packets, historical records rather than authority:
-`docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` (RATIFY WITH
-AMENDMENTS A1-A4) and
-`docs/SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` (PASS).
+**AMENDMENTS A1-A4 ARE RESTATED IN FULL AT sec.11.2 OF THAT SAME TRACKED
+DOCUMENT, AND THAT IS THE CITATION TO USE.** Every `A1`/`A2`/`A3`/`A4` below
+means sec.11.2. This was repointed 2026-08-14: the amendments were previously
+cited to the architecture-review packet, which is UNTRACKED, so on a fresh
+clone a Gate 2 module cited a path that does not exist -- the same fail-open
+shape as `SESSION-START-PROCEDURE.md` Gate 3b's missing-manifest corollary,
+and as a ratified standard with no caller.
+
+Working packets, historical records rather than authority -- and they differ in
+whether a fresh clone even has them:
+  * `docs/SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` (PASS) --
+    TRACKED, committed in 35f77b7. Safe to cite for detail.
+  * `docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` (RATIFY WITH
+    AMENDMENTS A1-A4) -- **UNTRACKED**. Do not cite it as authority; its
+    binding content is sec.11.2.
 
 THE PROBLEM THIS SOLVES, IN ONE CARD
 ------------------------------------

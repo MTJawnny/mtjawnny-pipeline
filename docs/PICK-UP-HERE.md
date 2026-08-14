@@ -7,6 +7,42 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
+## 0AC. THE NEXT CAPTAIN ARCHITECTURE DECISION IS CODEBOOK DURABILITY (P3)
+
+**Not a work item. A ruling, and it blocks honest Gate 2 CI.** Raised
+2026-08-13 alongside the qualifier census; nothing here is decided.
+
+`codebook.json` — **403 active axes, 7,930 assertions, 4,233 of them
+Captain-ratified `human`** — lives in `experiments/out/`, which
+`.gitignore` covers wholesale. So it **has no git history**, and the 88 MB of
+timestamped backups protecting it sit in *the same gitignored directory on the
+same disk*. `B-MIGRATION-DISCOVERY.md` §5.1 item 6 recorded this on 2026-08-01
+(*"codebook.json has no git history — backup discipline is the entire rollback
+story"*) and nothing has changed since.
+
+**Why it blocks CI, measured.** Gate 2 is 16 rows and ~142 s — runtime is not
+the obstacle. But **8 rows read the codebook** (`lint`, `family_sweep`,
+`definition_drift`, `ground_truth` ×2, `probe_guards`, `reachability`,
+`object_lattice`, `locality`), and CI has no copy of it. The corpus half is
+fine — `data/` is gitignored too, but `pipeline/fetch.py` re-fetches it from
+Scryfall, which is what `build.yml` already does. **The codebook has no such
+path: it cannot be re-fetched or regenerated, only restored.** A CI job that
+ran the 7 corpus-only rows and silently skipped the other 8 would be a gate
+that fails open — the shape `SESSION-START-PROCEDURE.md` Gate 3b exists to
+stop.
+
+**The tension is real and is why this is Captain's.** *"No card data in git,
+ever"* is a locked rule, and assertions carry oracle-text quotes. So the
+options are genuinely in conflict and none is obviously right: track the
+codebook and amend the locked rule; track a quote-stripped derivative and
+accept that CI grades something the repo does not hold; push backups off-disk
+outside git; or accept the risk and keep Gate 2 local-only, on the record.
+
+**Do not solve this by implementation.** Deciding it inside a CI wiring commit
+would be smuggling a durability ruling through plumbing.
+
+---
+
 ## 0AB. SEMANTIC LOCALITY IS DONE — ALL ELEVEN STEPS, INCLUDING THE BACKFILL
 
 **→ CANONICAL RULING: `docs/B-MIGRATION-DISCOVERY.md` §11.** Tracked, and it
@@ -16,12 +52,20 @@ authority. §11 carries the ratification text verbatim, amendments A1–A4, the
 as-built field names, and why AQ4/AQ5 stay open. **Resolves FL-2. Do NOT re-run
 any of it.**
 
-*Historical working packets, untracked by choice and NOT the authority:*
-`SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` (measurement tables,
-resolution matrix, the eleven pass criteria) ·
-`SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` (why A1–A4) ·
-`THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8 (where FL-2 was raised;
-its recommendation was **not** what was ratified).
+*Historical working packets, NOT the authority. **They differ in whether a
+fresh clone has them at all**, which this list got wrong until 2026-08-14 —
+it called all three "untracked by choice" and one of them is tracked:*
+
+| packet | tracked? | holds |
+|---|---|---|
+| `SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` | **TRACKED**, committed in `35f77b7` | measurement tables, resolution matrix, the eleven pass criteria |
+| `SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` | **untracked** | why A1–A4 |
+| `THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8 | **untracked** | where FL-2 was raised; its recommendation was **not** what was ratified |
+
+**Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
+ruling — cite that, never the review packet.** `experiments/foundry_locality.py`
+cited the untracked review for them until 2026-08-14, so a Gate 2 module named
+a path a fresh clone does not have; repointed there too.
 
 *(The implementation handoff `SEMANTIC-LOCALITY-IMPLEMENTATION-HANDOFF.md` was
 deleted 2026-08-13 once all eleven steps landed, per its own §9 item 4. Every
@@ -88,16 +132,47 @@ fresh clone it does not exist, and the rebuild path is
 **Still Captain's, untouched here:** AQ4 (the predicate row), AQ5 (`level`),
 qualifier vocabulary, child effects.
 
-**THE NEXT ARC IS THE QUALIFIER PACKET, AND ITS EVIDENCE BASE IS ALREADY
-CORRECTED — USE THE CORRECTED NUMBERS.**
-`docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md` is superseded on three
-points by `docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md`:
-**48.0% of 2,106 clauses** (not 2,389 — the original over-counted by 283, 11.8%,
-because `clauses_for` yields the same clause once per `det_scan_texts` variant
-and was not deduped by `(card, stem, clause)`), **×9.2 expansion**, and the
-original **lacked a CR 702 keyword-restriction category entirely** — add it.
-Quoting the original census's headline is the carried-forward-count trap with a
-verification pass already sitting next to it.
+**THE NEXT ARC IS THE QUALIFIER PACKET, AND ITS EVIDENCE BASE IS NOW A
+COMMAND, NOT A NUMBER IN A DOCUMENT.**
+
+```
+python3 experiments/foundry_qualifier_census.py          # the report
+python3 experiments/foundry_qualifier_census.py --json   # for the packet
+```
+
+**Do NOT quote 48.0%, 2,106 or ×9.2 from either census document.** Both are
+superseded as sources: the census
+(`FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md`) and its verification
+(`...-INDEPENDENT-VERIFICATION-2026-08-13.md`) are **untracked working
+packets**, and the verification's own §V records that its code *"was run from
+the session scratchpad and is not added to the repository."* A committed page
+pointing at numbers nothing could re-derive is the carried-forward-count trap
+aimed at the document that governs the next arc — which is why the tool exists.
+
+**The verification's counting key was wrong, and only re-deriving it showed
+that.** It deduped `(card, stem, clause)` **case-folded**, which merges
+**Seize the Soul**'s spell effect (paragraph 0) with the identical clause in
+its Haunt trigger (paragraph 2) — two units `foundry_locality.resolve` itself
+calls AMBIGUOUS. Counting **occurrences** gives **2,110**; the three rows above
+2,107 are Ugin, Eye of the Storms, Act of Authority, and Outland Liberator's
+two DFC faces — every one a second real ability.
+
+Reproduced exactly by an independently-built detector: raw yields **2,389**,
+base object axes **23**, upper bound **48.6%**, `targeted-exile-creature`
+**68.3%**, `targeted-destroy-artifact` **24.3%**. Live headline: **49.3% of
+2,110**, expansion **×9.7**, and **54 clauses carry a CR 702 keyword
+restriction** — the category the original census lacked entirely, now derived
+from `load_702` rather than hand-listed. The rate is **detector-sensitive and
+deliberately unpinned**; Gate 2's `qualifier_census` row protects the
+REPRODUCIBILITY, not the number.
+
+**Two false negatives the tool found in its own first draft**, both of which
+the residual method makes visible and a category-regex cannot: a **CR 205.3
+subtype is not a base class** (`destroy target Wall` lands on
+`targeted-destroy-creature`, which does not encode Wall — 60 clauses), and
+**`another target creature`** sits in the lattice's `_TARGET_HEAD`, outside the
+tail a residual method reads (58 clauses, 26 otherwise unqualified). `up to N`
+is cardinality, not eligibility, and is deliberately not counted.
 
 ---
 
