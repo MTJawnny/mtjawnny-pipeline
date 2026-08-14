@@ -95,6 +95,56 @@ def is_lattice_pattern(p: dict) -> bool:
     return isinstance(p.get("lattice"), dict)
 
 
+def assert_lattice_invariant(p: dict) -> None:
+    """THE RESIDUAL INVARIANT IS A PRECONDITION OF THE WRITE, not a report.
+
+    det-patterns-v2.json's own standing_condition is *"ANY sample row failing
+    its axis definition halts the pass before provenance writes"*, and the
+    sample sheet is a 12-row fixed-seed slice. A membership that is MISSING is
+    invisible to a sample of what was produced — which is how seven correct
+    memberships vanished in `e780842` past a green sample gate.
+
+    So the lattice's own invariant runs here, on BOTH sides of the two-phase
+    gate, and halts exactly where the standing condition says to halt. It is
+    the same shape as the cache-reconciliation halt below: a lattice whose
+    behaviour changed since review may not write.
+
+    Record: docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md.
+    """
+    import foundry_object_lattice as ol
+
+    # THE MEMBERSHIP FLOOR, and it must be the TRACKED one. The per-class
+    # ratchet in audit-baseline.json lives under experiments/out/, which is
+    # gitignored -- on a fresh clone its section is unpinned and
+    # `foundry_audit_baseline.report()` returns 0 without comparing anything.
+    # Enforcing that here would be enforcing nothing. The ratified row in
+    # det-patterns-v2.json IS tracked, so it is the floor a write must clear.
+    # Same shape as the hit-cache reconciliation below: what Captain reviewed
+    # and what is about to be written have to be the same population.
+    # A FALL halts; a RISE is corpus growth and is reported. `corpus_hits` is
+    # a measurement at probe time, not an equality invariant -- three ratified
+    # patterns have already drifted from theirs with Gate 2 green, and the
+    # sibling field is literally named `codebook_n_members_at_probe`.
+    floor_fatal, floor_notes = ol.assert_ratified_total()
+    for note in floor_notes:
+        print(f"NOTE: object lattice membership floor -- {note}")
+    for problem in floor_fatal:
+        fc.halt(f"object lattice membership floor FAILED: {problem}")
+
+    for stem in p["lattice"]["stems"]:
+        r = ol.residual_invariant(stem, ol.PERMANENT_TYPES)
+        if r["unexplained"]:
+            rows = "\n".join(
+                f"    {name}: arm {arm!r} -> {ol.slug_for(stem, cls)}"
+                for name, arm, cls, _q in r["unexplained"][:10])
+            fc.halt(
+                f"object lattice residual invariant FAILED for {stem!r}: "
+                f"{len(r['unexplained'])} residual clause(s) still carry a "
+                f"target arm resolving to a battlefield class, so the "
+                f"producer is dropping memberships nobody reviewed.\n{rows}\n"
+                f"  Run: python3 experiments/foundry_object_lattice.py --gate")
+
+
 def expand_lattice_pattern(p: dict, cards: dict) -> dict:
     """slug -> {oracle_id: proving clause}, for every class the lattice names.
 
@@ -344,6 +394,7 @@ def cmd_generate_samples():
     # hits and their own proving clauses, so everything downstream is uniform.
     lattice_quotes = {}
     for p in lattice_rows:
+        assert_lattice_invariant(p)
         expanded = expand_lattice_pattern(p, cards)
         print(f"lattice pattern_index={p['pattern_index']}: "
               f"{len(expanded)} axes, "
@@ -426,6 +477,7 @@ def cmd_apply(verdicts_path: str):
     cards_for_lattice, _, _ = fc.load_corpus_gated()
     lattice_quotes = {}
     for p in lattice_rows:
+        assert_lattice_invariant(p)
         for slug, hits in expand_lattice_pattern(p, cards_for_lattice).items():
             lattice_quotes[slug] = hits
             axis_patterns.append(dict(p, resolved_slug=slug, is_lattice=True,
@@ -540,7 +592,6 @@ def cmd_apply(verdicts_path: str):
     print(f"  sha256={digest}")
     for slug, old_n, new_n, dropped in applied:
         print(f"  {slug}: {old_n} -> {new_n} members ({dropped} dropped with no remaining assertion)")
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

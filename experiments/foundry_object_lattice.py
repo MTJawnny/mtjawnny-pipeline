@@ -216,6 +216,47 @@ _NP_END = re.compile(
     r"\b(?:from|in|into|onto|on|to|with|that|whose|unless|equal|where|"
     r"until|for|if)\b", re.I)
 
+# CR 608.2c — *"the spell or ability's controller follows the instructions in
+# the order written"*. `then` is how the CR's own templating writes the NEXT
+# instruction, and a later instruction's objects are not this target's. Cutting
+# here is what stops `exile target creature you control, THEN return those
+# CARDS` from reading as a card-form.
+_INSTRUCTION_END = re.compile(r",\s*then\b", re.I)
+
+# CR 601.2c — *"the player announces their choice of an appropriate object or
+# player for each target the spell requires"*. Only what falls under the
+# printed `target` is a target, so an `and`-conjunct carrying its OWN determiner
+# names a SECOND, untargeted object: Suspend Aggression's `exile target nonland
+# permanent AND THE top card of your library`. The determiner is what separates
+# it from a coordination INSIDE one target phrase (`artifact and/or enchantment
+# cards`), where the arms share the single `target`.
+_SECOND_OBJECT = re.compile(
+    r"\band\s+(?:the|a|an|each|all|both|that|those|up\s+to|its|their|your)\b",
+    re.I)
+
+# A zone ORIGIN is what makes a coordinated `card` distribute across every arm.
+# The recorded trap is the same shape one family over: the CR writes `put into
+# <DESTINATION> from <ORIGIN>`, and `from` is what CLOSES the phrase. Pharika's
+# Mender's `target creature or enchantment card FROM YOUR GRAVEYARD` names a
+# card in a graveyard for BOTH arms; Venser's Diffusion's `target nonland
+# permanent or suspended card` names no origin and its arms are independent.
+_ZONE_ORIGIN = re.compile(
+    r"\bfrom\b[^.;]*?\b(?:graveyard|exile|library|hand|stack|battlefield)\b",
+    re.I)
+
+
+def target_instruction(tail: str) -> str:
+    """The clause tail truncated to the instruction the TARGET belongs to.
+
+    **THE ZONE TEST BELOW MUST NOT READ A LATER INSTRUCTION'S ZONE.** Lukka,
+    Coppercoat Outcast prints `exile target creature you control, then reveal
+    cards FROM THE TOP OF YOUR LIBRARY`: that origin belongs to the reveal, not
+    to the exile, and reading the whole tail scored Lukka as graveyard
+    recursion. Measured 2026-08-13 — it is 1 of the 7.
+    """
+    end = _INSTRUCTION_END.search(tail)
+    return tail[:end.start()] if end else tail
+
 
 def target_noun_phrase(tail: str) -> str:
     """The span that actually names the target, out of a clause tail.
@@ -241,10 +282,27 @@ def target_noun_phrase(tail: str) -> str:
         so the whole phrase is graveyard recursion and neither arm is a
         permanent. Reading to `from` is what sees that; a per-word lookahead
         never can, because `creature` is followed by ` or`.
+
+    Two more, added 2026-08-13 after Captain's read of the sample sheet found
+    the boundary running PAST the target on seven cards — all seven regressions
+    from the 2026-08-12 noun-phrase fix, which removed 170 memberships while
+    verifying 83:
+
+      * **`, then` ends the instruction** (CR 608.2c), so a later instruction's
+        `cards` cannot refuse this target. Vengeful Pharaoh, Illusionist's
+        Stratagem, Displace, Lukka.
+      * **`and <determiner>` starts a SECOND object** (CR 601.2c), which the
+        single printed `target` does not reach. Suspend Aggression, Become
+        Anonymous. `and/or` is deliberately not matched — no determiner
+        follows, and those arms share the one target.
     """
+    tail = target_instruction(tail)
     cut = re.search(r"\btarget\b", tail)
     if cut:
         tail = tail[:cut.start()]
+    second = _SECOND_OBJECT.search(tail)
+    if second:
+        tail = tail[:second.start()]
     end = _NP_END.search(tail)
     return tail[:end.start()] if end else tail
 
@@ -382,10 +440,28 @@ def classify_clause(clause: str, domain: set = None) -> dict:
     # is a permanent. A per-word lookahead cannot see that, because `creature`
     # is followed by ` or`. Once the span is the target's own noun phrase, one
     # `card` anywhere inside it disqualifies the whole phrase.
+    # CR 110.1 AT ARM LEVEL WHEN THE ARMS ARE INDEPENDENT, AT PHRASE LEVEL WHEN
+    # THEY SHARE A HEAD — and a printed zone ORIGIN is what tells them apart.
+    #
+    # Refusing the whole phrase on any `card` was right for Pharika's Mender and
+    # wrong for Venser's Diffusion (`target nonland permanent or suspended
+    # card`), where one arm is a battlefield permanent and the other is a card
+    # in exile. Measured 2026-08-13 over all three actions: 50 residual clauses
+    # carry an arm that resolves to a class, and the origin test splits them
+    # 43 correct-residual / 7 false negatives with no overlap.
+    scan = text
     if re.search(r"\bcards?\b", text):
-        return {"classes": set(), "broad": None, "via_subtype": {},
-                "conjunctive": [], "qualified": False}
+        if _ZONE_ORIGIN.search(target_instruction(clause.lower())):
+            return {"classes": set(), "broad": None, "via_subtype": {},
+                    "conjunctive": [], "qualified": False}
+        arms = [a for a in re.split(r",|\band/or\b|\bor\b|\band\b", text)
+                if not re.search(r"\bcards?\b", a)]
+        scan = " , ".join(a.strip() for a in arms if a.strip())
+        if not scan:
+            return {"classes": set(), "broad": None, "via_subtype": {},
+                    "conjunctive": [], "qualified": False}
 
+    text = scan
     conj = []
     for m in _CONJUNCTIVE_RE.finditer(text):
         a, b = m.group(1).lower(), m.group(2).lower()
@@ -507,6 +583,375 @@ def measure(stem: str, domain: set) -> dict:
             "residual": residual, "hits": hits}
 
 
+def residual_invariant(stem: str, domain: set, selftest: bool = False) -> dict:
+    """THE RESIDUAL INVARIANT — Captain's, 2026-08-13.
+
+    *"After classification, inspect every residual clause again. If a residual
+    still contains a target branch that resolves through the ratified
+    type/subtype vocabulary to one of your recognized battlefield-object
+    classes, HALT."*
+
+    **A GUARD COMPUTED WITH THE CLASSIFIER'S OWN RESOLVER IS A NO-OP BY
+    CONSTRUCTION**, so this one is deliberately not that. It scans the RAW
+    clause tail — never `target_noun_phrase` — which makes it independent of
+    the boundary logic, and the boundary is exactly where the seven false
+    negatives came from. A future re-truncation cannot hide from it.
+
+    Being deliberately over-broad, it flags every coordinated `<type> or
+    <type> card` too. Those are CORRECT residual, and each is explained by a
+    printed CR zone ORIGIN, so a flagged row is accounted for in one of exactly
+    two ways:
+
+      * the classifier claimed the arm  -> not residual, nothing to explain;
+      * the instruction prints `from <zone>` -> CR 110.1 graveyard recursion,
+        the `card` distributes across the arms (Pharika's Mender).
+
+    Anything else is an UNEXPLAINED live arm and halts the pass before
+    provenance writes, which is the standing `det-patterns-v2.json` condition.
+
+    `selftest=True` disables the zone explanation, so every explained row
+    becomes unexplained. A guard that has never been shown to fail is not known
+    to be a guard.
+    """
+    cards, _, _ = fc.load_corpus_gated()
+    explained, unexplained = [], []
+    for oid, card in sorted(cards.items(), key=lambda kv: kv[1]["name"]):
+        if classes_for_card(card, stem, domain)["classes"]:
+            continue
+        for whole, tail in clauses_for(card, stem):
+            span = target_instruction(tail.lower())
+            for arm in re.split(r",|\band/or\b|\bor\b|\band\b", span):
+                arm = arm.strip()
+                if not arm or re.search(r"\bcards?\b", arm):
+                    continue
+                cls = None
+                for form, word in PERMANENT_FORMS:
+                    if names_type(arm, word):
+                        cls = form
+                        break
+                if cls is None:
+                    named = {t for t in domain if names_type(arm, t)}
+                    cls = "+".join(sorted(named)) if named else None
+                if cls is None:
+                    for sub, parents in SUBTYPE_TO_TYPE.items():
+                        if len(parents) == 1 and next(iter(parents)) in domain \
+                                and names_type(arm, re.escape(sub)):
+                            cls = next(iter(parents))
+                            break
+                if cls is None:
+                    continue
+                row = (card["name"], arm, cls, whole.strip()[:100])
+                if not selftest and _ZONE_ORIGIN.search(span):
+                    explained.append(row)
+                else:
+                    unexplained.append(row)
+    return {"explained": explained, "unexplained": unexplained}
+
+
+# --------------------------------------------------------------------------
+# grammar fixtures
+# --------------------------------------------------------------------------
+
+# THE FIXTURE IS THE GRAMMATICAL SHAPE, NEVER THE CARD NAME. Seven cards
+# regressed on 2026-08-12 and pinning those seven would leave the next card
+# printing the same shape unprotected. Each row is a clause TAIL — what
+# `classify_clause` actually receives — and the five categories are the five
+# ways the target expression's right edge can be got wrong.
+#
+# `foundry_probe.py`'s guard self-test is the precedent: fixtures inline in the
+# module they protect, replayed by a gate, every one derived from a defect that
+# really happened.
+GRAMMAR_FIXTURES = (
+    # A. INSTRUCTION TERMINATION (CR 608.2c) — a later instruction must not
+    #    contaminate this target's noun phrase.
+    ("A instruction-termination", "destroy",
+     "attacking creature, then put this card on top of your library",
+     {"creature"}),
+    ("A instruction-termination, plural", "exile",
+     "creatures you control, then return those cards to the battlefield",
+     {"creature"}),
+
+    # B. A SEPARATE LATER OBJECT (CR 601.2c) — the single printed `target` does
+    #    not reach a conjunct carrying its own determiner.
+    ("B second-object", "exile",
+     "nonland permanent and the top card of your library",
+     {"nonland-permanent"}),
+    ("B second-object, quantified", "exile",
+     "nontoken creature you own and the top two cards of your library",
+     {"creature"}),
+
+    # C. SHARED-HEAD DISTRIBUTIVE `card` — `card` applies across every arm, so
+    #    NO arm is a battlefield object. The dangerous direction: a naive arm
+    #    split turns each of these into a wrong ratified token.
+    ("C shared-head creature-or-land", "bounce",
+     "creature or land card from your graveyard to your hand", set()),
+    ("C shared-head aura-or-equipment", "bounce",
+     "aura or equipment card from your graveyard to your hand", set()),
+    ("C shared-head artifact-or-enchantment", "exile",
+     "artifact or enchantment card from your graveyard", set()),
+    # `and/or` is a coordination INSIDE one target phrase — no determiner
+    # follows, so rule B must not fire and the shared head must still hold.
+    ("C shared-head and/or", "bounce",
+     "instant and/or sorcery cards from your graveyard to your hand", set()),
+
+    # D. INDEPENDENT ALTERNATIVES — one arm is a battlefield object, the other
+    #    is a card in another zone, and no origin is printed for the target.
+    ("D independent-arms", "bounce",
+     "nonland permanent or suspended card to its owner's hand",
+     {"nonland-permanent"}),
+
+    # E. INSTRUCTION-LOCAL ZONE ORIGIN — an origin belonging to a LATER
+    #    instruction cannot retroactively make this target a card.
+    ("E zone-origin-is-instruction-local", "exile",
+     "creature you control, then reveal cards from the top of your library",
+     {"creature"}),
+
+    # NEGATIVE CONTROLS — the behaviour the repair must NOT have broken.
+    ("neg plain card-form", "bounce",
+     "creature card from your graveyard to your hand", set()),
+    ("neg plain permanent", "destroy", "creature", {"creature"}),
+    ("neg broad outranks per-type", "destroy",
+     "nonland permanent", {"nonland-permanent"}),
+)
+
+# The seven that regressed, kept as CORPUS fixtures beside the grammar ones.
+# They are a fixture, never a code path: nothing in the classifier reads a card
+# name, and each of these passes only because its SHAPE is handled.
+REGRESSION_CARDS = {
+    "Vengeful Pharaoh": ("destroy", {"creature"}),
+    "Venser's Diffusion": ("bounce", {"nonland-permanent"}),
+    "Illusionist's Stratagem": ("exile", {"creature"}),
+    "Displace": ("exile", {"creature"}),
+    "Lukka, Coppercoat Outcast": ("exile", {"creature"}),
+    "Suspend Aggression": ("exile", {"nonland-permanent"}),
+    "Become Anonymous": ("exile", {"creature"}),
+}
+
+
+# ONE ANCHOR PER RATIFIED CLASS — the only guard that sees a ZERO-SUM MOVE.
+#
+# Measured 2026-08-13: a compensating `exile-creature -7 / exile-artifact +7`
+# nets zero, so the tracked family total is silent by construction and the
+# per-class ratchet is unpinned on a fresh clone. Both count-based guards go
+# GREEN. A count cannot see a substitution either — a correct member leaving
+# and a wrong one arriving keeps every number identical.
+#
+# A per-card anchor sees both, because it names the CARD and the CLASS. It is
+# tracked (so it survives a fresh clone), and it is growth-tolerant (a new
+# Scryfall card cannot invalidate it), which is exactly the pair of properties
+# the count guards each have only one of.
+#
+# **These are FIXTURES, not a hand-list standing in for a derivation.** Nothing
+# in the classifier reads a card name; each anchor passes only because the
+# CR-derived grammar handles its shape. Every one was verified against full
+# oracle text, all faces, before being written here — classifier output is not
+# evidence for its own fixture.
+#
+# Chosen for stability: each names its type DIRECTLY ("Destroy target
+# artifact"), never through a CR 205.3 subtype, so a subtype-list refresh
+# cannot move an anchor. Single-class for their stem, so the expectation is
+# exact rather than a subset.
+CLASS_ANCHORS = (
+    ("bounce",  "artifact",              "Into Thin Air"),
+    ("bounce",  "creature",              "Flooded Shoreline"),
+    ("bounce",  "enchantment",           "Triton Cavalry"),
+    ("bounce",  "land",                  "Aven Fogbringer"),
+    ("bounce",  "nonland-permanent",     "Wail of the Forgotten"),
+    ("bounce",  "permanent",             "Surging Aether"),
+    ("destroy", "artifact",              "Goblin Trashmaster"),
+    ("destroy", "creature",              "Kalitas, Bloodchief of Ghet"),
+    ("destroy", "enchantment",           "Dawnbringer Cleric"),
+    ("destroy", "land",                  "Ogre Arsonist"),
+    ("destroy", "noncreature-permanent", "Nicol Bolas, Planeswalker"),
+    ("destroy", "nonland-permanent",     "Vraska the Unseen"),
+    ("destroy", "permanent",             "Angel of Despair"),
+    ("destroy", "planeswalker",          "Silumgar's Command"),
+    ("exile",   "artifact",              "Suplex"),
+    ("exile",   "creature",              "Astarion's Thirst"),
+    ("exile",   "enchantment",           "Erase"),
+    ("exile",   "land",                  "Sowing Mycospawn"),
+    ("exile",   "nonland-permanent",     "Kaya the Inexorable"),
+    ("exile",   "permanent",             "Karn Liberated"),
+)
+
+
+def anchor_coverage() -> dict:
+    """Which live classes have an anchor and which do not.
+
+    Reported, never fatal. A class with members and no anchor is a KNOWN blind
+    spot for zero-sum movement, and naming it is the difference between a gap
+    and an unknown. Zero members is a hypothesis, not an absence (the
+    `is-attacked-trigger` precedent), so an empty class needs no anchor.
+    """
+    have = {(s, c) for s, c, _ in CLASS_ANCHORS}
+    live, uncovered = set(), []
+    for stem in sorted(ACTION_VERBS):
+        for cls in measure(stem, PERMANENT_TYPES)["per_class"]:
+            live.add((stem, cls))
+            if (stem, cls) not in have:
+                uncovered.append(f"{stem}-{cls}")
+    return {"live": len(live), "anchored": len(have & live),
+            "uncovered": sorted(uncovered)}
+
+
+def fixtures() -> dict:
+    """Replay the grammar shapes, the seven regressions, and the class anchors."""
+    failed = []
+    for label, stem, tail, want in GRAMMAR_FIXTURES:
+        got = classify_clause(tail, PERMANENT_TYPES)["classes"]
+        if got != want:
+            failed.append((label, tail, sorted(want), sorted(got)))
+
+    cards, _, _ = fc.load_corpus_gated()
+    by_name = {}
+    for card in cards.values():
+        by_name.setdefault(card["name"], card)
+    for name, (stem, want) in sorted(REGRESSION_CARDS.items()):
+        card = by_name.get(name)
+        if card is None:
+            failed.append((f"corpus {name}", "absent from the gated corpus",
+                           sorted(want), ["CARD NOT FOUND"]))
+            continue
+        got = classes_for_card(card, stem, PERMANENT_TYPES)["classes"]
+        if got != want:
+            failed.append((f"corpus {name}", stem, sorted(want), sorted(got)))
+    for stem, cls, name in CLASS_ANCHORS:
+        card = by_name.get(name)
+        if card is None:
+            failed.append((f"anchor {stem}-{cls} {name}",
+                           "absent from the gated corpus", [cls], ["CARD NOT FOUND"]))
+            continue
+        got = classes_for_card(card, stem, PERMANENT_TYPES)["classes"]
+        if got != {cls}:
+            failed.append((f"anchor {stem}-{cls} {name}", stem, [cls], sorted(got)))
+    return {"n": len(GRAMMAR_FIXTURES) + len(REGRESSION_CARDS) + len(CLASS_ANCHORS),
+            "failed": failed}
+
+
+DET_PATTERNS_PATH = REPO.parent / "docs" / "det-patterns-v2.json"
+
+
+def ratified_total() -> int:
+    """The membership total the RATIFIED, TRACKED pattern row asserts.
+
+    **THE LOCAL RATCHET CANNOT BE THE MEMBERSHIP FLOOR, BECAUSE IT IS NOT
+    TRACKED.** Measured 2026-08-13: `experiments/out/` is gitignored, so
+    `audit-baseline.json` is per-machine; `foundry_audit_baseline.report()`
+    returns 0 when a section is unpinned, and `--gate` on a fresh clone printed
+    `object lattice gate GREEN` having compared nothing. A guard that is absent
+    by default on every new checkout is a local diagnostic, not a standing
+    regression gate.
+
+    `docs/det-patterns-v2.json` is tracked, reviewed and ratified, and its
+    lattice row already carries the reviewed population as `corpus_hits`. So
+    the floor is read from there rather than duplicated: one source of truth,
+    already in git, already the thing Captain ratified.
+
+    **`foundry_recorded_numbers.py` is the precedent** — Gate 2 row 11 does
+    exactly this for the counts grammar §2 asserts, on the same reasoning:
+    *"a wrong count there is not a stale note in a handoff, it is a wrong
+    premise inside the document the extractor parses at run time."*
+    """
+    row = None
+    doc = json.loads(DET_PATTERNS_PATH.read_text(encoding="utf-8"))
+    for p in doc.get("patterns", []):
+        if isinstance(p.get("lattice"), dict):
+            row = p
+            break
+    if row is None:
+        fc.halt(f"{DET_PATTERNS_PATH.name} carries no lattice row, so the "
+                f"ratified membership total cannot be read. The lattice's "
+                f"floor is the RATIFIED number, never a locally pinned one; "
+                f"a missing row halts rather than falling back.")
+    stems = set(row["lattice"]["stems"])
+    if stems != set(ACTION_VERBS):
+        fc.halt(f"the ratified lattice row covers {sorted(stems)} but this "
+                f"module implements {sorted(ACTION_VERBS)}. The asserted total "
+                f"counts a different population than the one measured here.")
+    total = row.get("corpus_hits")
+    if not isinstance(total, int):
+        fc.halt(f"the ratified lattice row's corpus_hits is {total!r}, not an "
+                f"integer. It is the membership floor and cannot be absent.")
+    return total
+
+
+def assert_ratified_total() -> tuple:
+    """Live memberships vs the ratified total. A FALL is fatal; a RISE reports.
+
+    Returns `(fatal, notes)`.
+
+    **`corpus_hits` IS A MEASUREMENT AT PROBE TIME, NOT AN EQUALITY
+    INVARIANT**, and an earlier version of this function got that wrong. Three
+    independent pieces of repository evidence, measured 2026-08-13:
+
+      * **three ratified patterns have already drifted from their recorded
+        `corpus_hits` and Gate 2 is green** — `grants-unblockable-target` 35→34,
+        `innate-unblockable` 183→184, `activated-grants-self-unblockable`
+        25→26. Nothing in the repo asserts equality on this field, and never
+        has. (`enters-tapped` and `imposes-enters-tapped` look far more drifted
+        and are NOT: they are decided by `compute_special_hits`'s G2 subject
+        split, so reading their `pattern` field measures the wrong thing.)
+      * the sibling field is named **`codebook_n_members_at_probe`** — the
+        `_at_probe` suffix is the schema saying point-in-time out loud.
+      * the file's own `preprocessing_standard` records these counts BEING
+        UPDATED on re-probe: *"Re-probing all patterns under this standard
+        changed 5 hit counts … innate-unblockable (161->183)"*.
+
+    So equality would freeze normal corpus growth: measured, a mere **+12 new
+    cards** joining `destroy-creature` turned the gate RED on a fresh
+    environment, which is a false alarm on the pipeline's ordinary weekly job.
+
+    The direction is what carries the meaning, and that is not invented here —
+    it is `foundry_audit_baseline`'s own ratchet semantics (`WORSE_IF_DOWN`
+    fatal, better-direction movement reported) applied to a number that lives
+    in git instead of in an ignored file. A FALL is the 2026-08-13 incident. A
+    RISE is the corpus growing, and it is reported so a session states it
+    rather than carrying it forward.
+
+    **THIS TOTAL IS STRUCTURALLY BLIND TO REDISTRIBUTION.** A compensating
+    −7/+7 across two classes nets zero and passes here; measured, on a fresh
+    environment with no pinned section, the whole gate goes GREEN. That is the
+    per-class ratchet's job and it is LOCAL. See §8b of
+    docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md — the gap is recorded,
+    not silently closed, because per-class tracked counts would be exactly the
+    stronger invariant this docstring just disproved.
+    """
+    want = ratified_total()
+    live = sum(measure(stem, PERMANENT_TYPES)["memberships"]
+               for stem in sorted(ACTION_VERBS))
+    if live == want:
+        return [], []
+    msg = (f"det-patterns-v2.json lattice row asserts {want:,} memberships; "
+           f"the producer now yields {live:,} ({live - want:+,}). ")
+    if live < want:
+        return [msg + "MEMBERSHIPS WERE LOST. Re-review the sample sheet and "
+                      "re-ratify corpus_hits on purpose — never edit the "
+                      "number to match the code."], []
+    return [], [msg + "Corpus growth or a recall improvement; the ratified row "
+                      "is now stale. Re-review and re-pin corpus_hits when the "
+                      "growth is accounted for."]
+
+
+def baseline_metrics() -> dict:
+    """Per-class membership counts, residual, and unexplained residual.
+
+    **THE MEMBERSHIP COUNTS ARE PINNED SO THAT A REMOVAL IS FATAL.** They carry
+    the `memberships` marker, which `foundry_audit_baseline.WORSE_IF_DOWN`
+    reads, so a count that FALLS is a regression and has to be re-pinned on
+    purpose. That is the half of the diff nothing watched: `e780842` removed
+    170 memberships, verified 83, and the other 87 shipped unread.
+    """
+    memberships, residual, unexplained = {}, {}, {}
+    for stem in sorted(ACTION_VERBS):
+        m = measure(stem, PERMANENT_TYPES)
+        memberships[stem] = {cls: n for cls, n in sorted(m["per_class"].items())}
+        residual[stem] = len(m["residual"])
+        unexplained[stem] = len(
+            residual_invariant(stem, PERMANENT_TYPES)["unexplained"])
+    return {"memberships": memberships, "residual": residual,
+            "residual_unexplained": unexplained}
+
+
 def audit(stem: str, domain: set) -> dict:
     """The negative controls. A guard that has never been shown to fail is not
     known to be a guard, so each of these was run against the live corpus and
@@ -600,7 +1045,8 @@ def write_report(seed: int, n: int) -> dict:
                 "slug": slug,
                 "members": len(pool),
                 "axis_status_today": exists or "ABSENT — self-instantiates per b6 §11.2",
-                "sample": [{"card": cards[o]["name"], "oracle_id": o, "quote": q}
+                "sample": [{"card": cards[o]["name"], "oracle_id": o,
+                            "quote": q}
                            for o, q in rng.sample(pool, min(n, len(pool)))],
             }
         actions[stem] = {
@@ -681,6 +1127,24 @@ def main() -> int:
     ap.add_argument("--audit", action="store_true",
                     help="run the negative controls (NC1-NC4) and exit 1 on "
                          "any hard failure")
+    ap.add_argument("--gate", action="store_true",
+                    help="the Gate 2 entry: grammar fixtures + residual "
+                         "invariant + the pinned membership ratchet, one exit "
+                         "code. Never run the three separately to save time.")
+    ap.add_argument("--fixtures", action="store_true",
+                    help="replay the grammar-shape fixtures and the seven "
+                         "recorded regressions")
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="accept the current membership/residual counts ON "
+                         "PURPOSE. A membership count that FELL is a "
+                         "regression until it is re-pinned here.")
+    ap.add_argument("--invariant", action="store_true",
+                    help="the residual invariant: HALT if any residual clause "
+                         "still carries a target arm resolving to a battlefield "
+                         "class. Runs over ALL actions, not just --action.")
+    ap.add_argument("--selftest", action="store_true",
+                    help="negative control for --invariant: drop the zone "
+                         "explanation, so it must report a failure")
     ap.add_argument("--samples", type=int, default=0, metavar="N",
                     help="fixed-seed sample of N cards per class, for the DET "
                          "standing condition's per-pattern verification")
@@ -690,6 +1154,66 @@ def main() -> int:
                          "experiments/out/foundry/object_lattice_samples.{json,md}. "
                          "Quotes go in the FILE, never to console (A14).")
     args = ap.parse_args()
+
+    if args.gate or args.fixtures:
+        f = fixtures()
+        print(f"grammar fixtures: {f['n'] - len(f['failed'])}/{f['n']} pass")
+        cov = anchor_coverage()
+        print(f"class anchors   : {cov['anchored']}/{cov['live']} live classes"
+              + (f"  UNCOVERED (blind to zero-sum movement): "
+                 f"{', '.join(cov['uncovered'])}" if cov['uncovered'] else ""))
+        for label, ctx, want, got in f["failed"]:
+            print(f"    FAIL {label}: {ctx!r}")
+            print(f"         want {want}, got {got}")
+        if f["failed"] and not args.gate:
+            return 1
+        if not args.gate:
+            return 0
+
+    if args.gate:
+        import foundry_audit_baseline as ab
+        bad = len(fixtures()["failed"])
+        # THE TRACKED FLOOR RUNS FIRST, because it is the only one of the two
+        # membership checks that exists on a fresh clone.
+        floor_fatal, floor_notes = assert_ratified_total()
+        for note in floor_notes:
+            print(f"RATIFIED TOTAL (reported, not fatal): {note}")
+        for problem in floor_fatal:
+            print(f"RATIFIED TOTAL: {problem}")
+            bad += 1
+        for stem in sorted(ACTION_VERBS):
+            r = residual_invariant(stem, PERMANENT_TYPES)
+            if r["unexplained"]:
+                print(f"targeted-{stem}: {len(r['unexplained'])} UNEXPLAINED "
+                      f"residual arm(s)")
+                for name, arm, cls, _q in r["unexplained"]:
+                    print(f"    {name}: arm {arm!r} -> {slug_for(stem, cls)}")
+                bad += len(r["unexplained"])
+        bad += ab.report("object_lattice", baseline_metrics(),
+                         args.update_baseline)
+        if bad:
+            print(f"\n  OBJECT LATTICE GATE FAILED ({bad}). No provenance "
+                  f"write may proceed on this producer.")
+            return 1
+        print("\n  object lattice gate GREEN")
+        return 0
+
+    if args.invariant:
+        bad = 0
+        for stem in sorted(ACTION_VERBS):
+            r = residual_invariant(stem, PERMANENT_TYPES, selftest=args.selftest)
+            print(f"targeted-{stem}: {len(r['explained'])} explained by a "
+                  f"printed CR zone origin, {len(r['unexplained'])} UNEXPLAINED")
+            for name, arm, cls, quote in r["unexplained"]:
+                print(f"    {name}: arm {arm!r} -> {slug_for(stem, cls)}")
+                print(f"        {quote}")
+            bad += len(r["unexplained"])
+        if bad:
+            print(f"\n  RESIDUAL INVARIANT FAILED: {bad} live arm(s) in "
+                  f"residual. The pass HALTS before provenance writes.")
+            return 1
+        print("\n  residual invariant holds")
+        return 0
 
     if args.report:
         r = write_report(args.seed, args.report)

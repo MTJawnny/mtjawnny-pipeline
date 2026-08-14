@@ -66,6 +66,14 @@ GATES = [
     # (`--selftest`), so it is a gate rather than a reporter listed as one.
     ("reachability",     [f"{EXP}/foundry_reachability.py"],
      "a foundry artifact stopped reaching a shipped card"),
+    # OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md, added 2026-08-13 with the
+    # lattice's ratification. Three checks, one exit code: the grammar-shape
+    # fixtures, the independent residual invariant, and the pinned per-class
+    # membership ratchet. The ratchet is the row that makes a REMOVAL fatal --
+    # `e780842` removed 170 memberships, verified 83, and nothing on this list
+    # could see the other 87.
+    ("object_lattice",   [f"{EXP}/foundry_object_lattice.py", "--gate"],
+     "the object lattice lost memberships, or a residual went unexplained"),
 ]
 
 # family_sweep has a STANDING failure (the 6 blocking findings) that predates

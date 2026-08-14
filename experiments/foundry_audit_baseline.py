@@ -48,6 +48,12 @@ BASELINE = Path(__file__).resolve().parent / "out" / "foundry" / "audit-baseline
 # count, a per-descriptor histogram -- so they are the ones that must resolve.
 WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
                "span", "crashed", "mismatch",
+               # 2026-08-13, foundry_object_lattice.py: a clause the producer
+               # matched but could name no class for. Growing residual is the
+               # producer losing ground, and `residual_unexplained` carries the
+               # same marker on purpose -- both directions of the residual
+               # invariant ratchet the same way.
+               "residual",
                # 2026-08-09, foundry_reachability.py: a foundry artifact that
                # goes back to being read only by audits has lost its wire to
                # the product. Checked UP-first, and "orphaned" is not a
@@ -66,6 +72,17 @@ WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  # printed. Negative-controlled by
                  # `foundry_reachability.py --selftest`.
                  "reaching",
+                 # 2026-08-13: A DETERMINISTIC PRODUCER REGRESSES THROUGH
+                 # REMOVALS EXACTLY AS EASILY AS THROUGH ADDITIONS, and only
+                 # one of those directions was ever watched. `e780842` removed
+                 # 170 object-lattice memberships, verified 83 of them, and
+                 # shipped the other 87 unread; 7 were correct memberships that
+                 # silently vanished. A membership count that FALLS is now a
+                 # regression, so a removal has to be re-pinned ON PURPOSE with
+                 # a stated reason, exactly as an addition is reviewed against
+                 # the sample sheet. Record:
+                 # docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md.
+                 "memberships",
                  # a ruling that stops being recorded anywhere, or a document
                  # that vanishes, is a SILENT loss -- the exact thing the
                  # registry exists to prevent and could not report.

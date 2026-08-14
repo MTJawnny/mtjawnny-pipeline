@@ -44,9 +44,41 @@ emitted class asserted against grammar §5's `OBJECT_VOCAB`.
 Cost **$0.00**, re-runnable, `rule-derived` rather than `llm`. For scale the
 whole 15,371-row consolidation plan (a $57.63 LLM pass) reaches 48.0%.
 
-**← NEXT, AND IT IS CAPTAIN'S:** the DET **pattern** ratification — the axes
-are automatic, the pattern is not. `det-patterns-v2.json`'s standing condition
-is a fixed-seed sample review, and the sheet is written:
+**✅ RATIFIED 2026-08-13 — and the first ratification was on a DEFECTIVE
+sheet. → `docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md`.**
+Captain's card-by-card review found **7 correct memberships missing** from the
+2026-08-12 output. They were regressions from that same commit, which removed
+**170** memberships, verified **83**, and shipped the other **87** unread.
+Repaired at the grammar level (CR 608.2c · CR 601.2c · CR 110.1 at arm level),
+corpus-wide diff **+7 / −0**, re-ratified against the repaired sheet.
+`det-patterns-v2.json`'s lattice row now reads `corpus_hits: 2499`.
+
+**A 12-ROW SAMPLE OF WHAT WAS PRODUCED CANNOT SEE A MEMBERSHIP THAT IS
+MISSING**, which is why three protections ship with the ratification:
+`foundry_object_lattice.py --gate` (Gate 2 row 14) runs the grammar-shape
+fixtures, the **independent** residual invariant, the **tracked membership
+floor**, and a per-class ratchet. Both the invariant and the floor are
+preconditions of the write, asserted by
+`foundry_det_pass.assert_lattice_invariant` on both phases.
+
+**THE FLOOR IS THE TRACKED NUMBER, NOT THE PINNED ONE — audited 2026-08-13.**
+`experiments/out/` is gitignored, so `audit-baseline.json` is per-machine and
+`report()` returns 0 on an unpinned section: a fresh clone printed
+`object lattice gate GREEN` having compared nothing, and `det_pass apply` never
+consulted it. The floor is therefore re-derived from
+`det-patterns-v2.json`'s ratified `corpus_hits` (2,499), the way
+`foundry_recorded_numbers.py` re-derives grammar §2's counts. **It is
+DIRECTIONAL, not an equality invariant** — `corpus_hits` is a measurement at
+probe time (3 ratified patterns have already drifted from theirs with Gate 2
+green; the sibling field is named `codebook_n_members_at_probe`), so a FALL is
+fatal and a RISE is reported, and normal corpus growth does not turn the gate
+red. The per-class ratchet is kept as a **local diagnostic**.
+**Known open gap:** a compensating −7/+7 redistribution nets zero, so on a
+fresh unpinned environment nothing fires. Detail and why it was not closed:
+`OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md` §8a–§8c. **Still Captain's, and NOT decided here:** controller/ownership
+scope, and any `targeted-destroy-token` family.
+
+The sheet is written:
 `experiments/out/foundry/object_lattice_samples.{json,md}`
 (regenerate: `python3 experiments/foundry_object_lattice.py --report 12`).
 **That sheet caught a real defect on its first run** — Auriok Salvagers,
