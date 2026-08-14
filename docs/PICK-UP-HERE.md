@@ -44,26 +44,85 @@ them. **Their existence is NOT proof that a read-only path exists.** Provision
 separate read-only Foundry credentials; prefer that over reusing the
 production pair.
 
-### ⛔ THE REMAINING CUTOVER BLOCKER — R2 PRIVACY IS NOT YET PROVEN
+### ✅ THE PRIVACY BLOCKER IS CLOSED — PRIVATE FOUNDRY STORE PROVEN (2026-08-14)
 
-**Before ANY Oracle-bearing codebook snapshot is uploaded**, prove
-**anonymously** — no credentials, from outside — that the proposed authority
-location is **not publicly retrievable**: not via `r2.dev`, not via a custom
-domain, not via any other public-delivery configuration on the bucket.
+**Captain ruled `PRIVATE FOUNDRY STORE PROVEN`.** Do not re-run the privacy
+investigation and do not re-open the storage choice. Evidence:
+`docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md` **PART ELEVEN**.
 
-**A PREFIX IS NOT PRIVACY.** The bucket is not private merely because `rclone`
-listing needs credentials; `mtjawnny` already serves the shipped site's
-artifacts, so public delivery is plausible and must be disproven rather than
-assumed. **If the existing bucket is publicly readable, use genuinely private
-storage instead.** Uploading 345,587 characters of oracle text to a
-public-readable path would breach *"No card data in git, ever"* in spirit while
-technically honouring its letter — the rule's reason, not its wording, is what
-P3-1 was chosen to protect.
+**⛔ `mtjawnny` IS PUBLIC AND IS PERMANENTLY DISQUALIFIED as the Foundry
+authority store.** Anonymous HTTPS through the product's custom domain returns
+byte-exact objects across three `data/` prefixes — including
+`data/cache/embeddings.parquet`, an internal build artifact no shipped page
+references. **Delivery is bucket-level**, so `r2:mtjawnny/data/foundry/…`
+**MUST NOT be used.** *A PREFIX IS NOT PRIVACY* — that sentence stood here as a
+caution; it is now a measurement.
+
+**✅ The authority store is the separate private bucket `mtjawnny-foundry`:**
+
+- **r2.dev:** disabled · **Custom Domains:** none · **Bucket Lock:** none
+- **Lifecycle:** *no rule expires or transitions completed Foundry objects; the
+  default incomplete-multipart abort rule (7 days) remains enabled.* **Never
+  shorten this to "no lifecycle rules"** — the short form is false, and a later
+  session checking the Dashboard against it would read a normal Cloudflare
+  default as undeclared drift.
+- Those four are **Captain-verified in the Dashboard**, not machine-proven: the
+  Foundry tokens are object-scoped, so even `GetBucketVersioning` returns 403 —
+  which is itself evidence they are correctly narrow.
+
+**The capability boundary is proven behaviourally, not by label:**
+
+| remote | capability | measured |
+|---|---|---|
+| `r2foundry-rw:` | Object Read & Write, scoped to `mtjawnny-foundry` | GET ✅ · PUT ✅ · DELETE ✅ |
+| `r2foundry-ro:` | Object Read, scoped to `mtjawnny-foundry` | GET ✅ · LIST ✅ · PUT **403 `PutObject`** · DELETE **403 `DeleteObject`** · overwrite **403 `PutObject`** |
+| `r2:` | production, `mtjawnny` only | **separate — never reuse for Foundry authority** |
+
+Bucket existence was proven by a **byte-identical object round-trip, never by
+`rclone mkdir`**; an unsigned GET of the sentinel's real S3 endpoint returned
+**no bytes**; and no probe was ever written to `mtjawnny`.
 
 **First-snapshot procedure, per the ruling:** the first snapshot is a
-**CANDIDATE**, never an authority, until *all five* succeed — privacy proof,
-remote readback + hash match, fresh restore, Gate-equivalence on the restored
-copy, and a corrupt-byte negative control that must HALT.
+**CANDIDATE**, never an authority, until all five succeed — ~~privacy proof~~
+**(DONE)**, remote readback + hash match, fresh restore, Gate-equivalence on
+the restored copy, and a corrupt-byte negative control that must HALT.
+**Four remain.**
+
+### THREE TRANSPORT LAWS — read these before writing any C6 code
+
+**LAW A — EXIT STATUS IS NOT OBJECT INTEGRITY.** `rclone mkdir` returned
+**exit 0** while `CreateBucket` was denied and no bucket existed; `rclone
+copyto` of a **missing** object returns **exit 0 and creates no file**;
+`lsjson` of a missing key returns **`[]` at exit 0**. So **no restore, publish
+or bootstrap decision may rest on an exit code** — success means bytes verified
+against the tracked manifest, **exact SHA-256 and exact byte size** at minimum,
+and a restore yielding zero/wrong bytes **must HALT even at exit 0.**
+
+**LAW B — THE BUCKET PRECHECK MUST NOT MASK THE REAL OPERATION.** Without
+`--s3-no-check-bucket`, rclone's precheck returns **403 `CreateBucket`** before
+the intended GET/PUT/DELETE — which reads exactly like "this credential cannot
+write" and is not that. **All Foundry transport must bypass it**, and every
+write-denial control must be aimed past it or it proves nothing.
+
+**LAW C — THE PUBLISHER DOES NOT GUARANTEE IMMUTABILITY.** Object Read & Write
+includes `DeleteObject` and R2 offers nothing narrower. **C6 immutability is
+application discipline** — new immutable key per snapshot, refuse overwrite,
+never prune authority history, verify remote bytes after upload, Git manifest
+selects. **Do not claim storage-layer WORM.** Bucket Lock is unratified and
+disabled.
+
+### NEXT PHASE — C6 IMPLEMENTATION
+
+Not privacy investigation, not provisioning, not an architecture decision:
+those are all closed. The outstanding build is the tracked selector manifest,
+immutable candidate publication, remote readback, the bootstrap/restore
+verifier, and candidate-vs-authority status.
+
+**P3 IS NOT CLOSED.** C6 architecture approved · P3-6 done · private storage
+proven · credential separation proven — **and implementation, candidate,
+restore and cutover all outstanding.** The **local codebook remains the
+operational source**, no R2 snapshot is authoritative, and **no tracked
+authority manifest exists yet.**
 
 ---
 
@@ -102,8 +161,9 @@ hashes and metadata, never card text — which is why it was preferred over the
 otherwise-more-ergonomic "just track it".
 
 **Do not smuggle the remaining decisions through plumbing.** The architecture
-is ruled; the *cutover* is not finished, and the privacy proof above is a
-precondition, not a formality.
+is ruled and the storage foundation is proven; the *cutover* is not finished.
+The four remaining candidate criteria above — readback, restore,
+Gate-equivalence, corrupt-byte HALT — are preconditions, not formalities.
 
 ---
 

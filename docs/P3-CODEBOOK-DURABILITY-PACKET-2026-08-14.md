@@ -21,20 +21,38 @@
 > | **P3-5** | **RULED — Foundry CI is READ-ONLY.** The existing production Actions credentials are **known to be write-capable**; their existence is **not** proof a read-only path exists. Separate read-only Foundry credentials remain an implementation requirement/preference. |
 > | **P3-6** | **DONE and code-reviewed** (2026-08-14) — the structured, reason-bound W6 waiver. No ruling outstanding. |
 >
-> **⛔ CUTOVER BLOCKER — R2 PRIVACY IS UNPROVEN.** This packet asserts a
-> "private bucket" in several places. **That was never established.** Before
-> ANY Oracle-bearing snapshot is uploaded, prove **anonymously**, without
-> credentials, that the authority location is not publicly retrievable via
-> `r2.dev`, a custom domain, or any other public-delivery configuration. **A
-> prefix is not private** merely because `rclone` listing needs credentials.
-> If the bucket is publicly readable, use genuinely private storage.
+> **✅ CUTOVER BLOCKER RESOLVED — PRIVATE FOUNDRY STORE PROVEN (2026-08-14).**
+> This packet asserted a "private bucket" in several places and **that was an
+> assumption**; it was then tested, and the assumption was **false of the bucket
+> the packet proposed**. Both halves are now settled:
+>
+> - **`mtjawnny` is PUBLIC and is permanently DISQUALIFIED** as the Foundry
+>   authority store. Proven by retrieving existing objects **anonymously**
+>   through the product's custom domain, across **three** `data/` prefixes —
+>   including `data/cache/embeddings.parquet`, an internal build artifact no
+>   shipped page references. Delivery is **bucket-level**, so
+>   `r2:mtjawnny/data/foundry/…` **MUST NOT be used**: *a prefix is not privacy.*
+> - **The authority store is the separate private bucket `mtjawnny-foundry`.**
+>   Control plane verified by Captain in the Cloudflare Dashboard: **r2.dev
+>   disabled · zero custom domains · no Bucket Lock rule · no lifecycle rule
+>   that expires or transitions completed objects** (Cloudflare's *Default
+>   Multipart Abort Rule* — abort incomplete multipart uploads after 7 days —
+>   remains enabled; **do not restate this as "no lifecycle rules"**).
+>
+> **The capability boundary is proven behaviourally, not by label.** Publisher
+> (`r2foundry-rw:`, Object Read & Write, bucket-scoped) GETs, PUTs and DELETEs;
+> reader (`r2foundry-ro:`, Object Read, bucket-scoped) GETs and LISTs, and is
+> **denied at `PutObject`, at `DeleteObject`, and at `PutObject` again on
+> overwrite**. An unsigned request to the object's real S3 endpoint returns no
+> sentinel bytes. No probe was ever written to `mtjawnny`. Full evidence:
+> **PART ELEVEN**.
 >
 > **The first snapshot is a CANDIDATE, not an authority**, until all five
-> succeed: privacy proof · remote readback + hash match · fresh restore ·
-> Gate-equivalence on the restored copy · corrupt-byte negative control that
-> HALTS. **A local codebook may therefore be a not-yet-promoted candidate, and
-> future C6 tooling must EXPOSE a local-vs-authority mismatch rather than
-> silently choosing one.**
+> succeed: ~~privacy proof~~ **(DONE)** · remote readback + hash match · fresh
+> restore · Gate-equivalence on the restored copy · corrupt-byte negative
+> control that HALTS. **Four remain.** A local codebook may therefore be a
+> not-yet-promoted candidate, and future C6 tooling must EXPOSE a
+> local-vs-authority mismatch rather than silently choosing one.
 >
 > **C6 implementation has NOT begun** as of this banner.
 
@@ -356,8 +374,13 @@ correct and the API confirms it.
 > without a commit, which is exactly what P3-1 forbids. Authority is the
 > snapshot the **tracked manifest in the current git revision** selects; there
 > is no authoritative `latest.json` for the codebook. (2) "private bucket,
-> nothing published" was an **assumption, never verified** — R2 privacy is the
-> open cutover blocker. The scores are left as scored.
+> nothing published" was an **assumption, never verified** — and when tested
+> on 2026-08-14 it proved **FALSE**: `mtjawnny` is publicly delivered at bucket
+> level, so **the `r2:mtjawnny/data/foundry/codebook/…` path named below is
+> DISQUALIFIED and must not be used.** The authority store is the separate
+> private bucket **`mtjawnny-foundry`** (PART ELEVEN). The Law **A** score
+> below therefore rested on a false premise for the location as written; it is
+> now true only of the private bucket. The scores are left as scored.
 `codebook.json` + a manifest written to
 `r2:mtjawnny/data/foundry/codebook/<UTC-timestamp>/`, written-once under the
 existing immutability flag, with a small mutable `latest.json` pointer written
@@ -618,6 +641,91 @@ tracked.
 
 ---
 
+# PART ELEVEN — THE STORAGE FOUNDATION, PROVEN  ·  2026-08-14
+
+> **This part is NOT history. It is current law**, added after the disposition
+> banner and ruled by Captain the same day. Everything between PART ONE and
+> PART TEN predates it.
+
+## 11.1 — What was measured, and by which credential
+
+| claim | how it was established |
+|---|---|
+| `mtjawnny` is public | **anonymous** HTTPS GET through the product's custom domain returned byte-exact objects across three `data/` prefixes |
+| delivery is bucket-level | `data/cache/embeddings.parquet` — an internal build artifact referenced by no shipped page — retrieved anonymously, 63,267,280 bytes, `PAR1` magic |
+| `mtjawnny-foundry` exists | **real object round-trip**, never `mkdir`: PUT → authenticated metadata (145 B) → GET → `cmp` byte-identical |
+| buckets are separate | recursive scan of `mtjawnny` for the probe keys returns **NONE**; its top level unchanged throughout |
+| publisher can author | `r2foundry-rw:` GET ✅ · PUT ✅ · DELETE ✅ |
+| reader cannot author | `r2foundry-ro:` GET ✅ · LIST ✅ · PUT **403 at `PutObject`** · DELETE **403 at `DeleteObject`** · overwrite **403 at `PutObject`** |
+| no unsigned exposure | unsigned GET of the sentinel's **real** S3 endpoint → HTTP 400 `InvalidArgument/Authorization`, **zero sentinel bytes** |
+
+**The negative controls were aimed on purpose.** Each write-denial ran with
+`--s3-no-check-bucket`, so the 403 lands on the intended S3 operation. Without
+that flag every one of them fails at rclone's `CreateBucket` precheck instead —
+a control that "passes" for a reason unrelated to write permission, which is
+this repository's recorded *mis-aimed negative control* defect.
+
+**Sentinel** — `probes/private-storage-2026-08-14.txt`, 145 bytes,
+`e0c29f6661950d2bf82651ff4ae2248d510ae14adb06be795389a77b8b1eb6f9`, verified
+identical after upload, after the reader's DELETE attempt, and after cleanup.
+Retained. It contains no card data, no credentials and no identifiers.
+
+**Control-plane state is Captain-provided, not machine-proven**, and the
+distinction is kept deliberately: the Foundry tokens are *object*-scoped, so
+`GetBucketVersioning` returns 403 — which is itself evidence the credentials
+are correctly narrow, and the reason r2.dev, custom-domain, lifecycle and
+Bucket Lock state can only be read from the Dashboard.
+
+**Lifecycle, stated correctly:** *no lifecycle rule expires or transitions
+completed Foundry objects; the default incomplete-multipart abort rule (7 days)
+remains enabled.* Do not shorten this to "no lifecycle rules" — the shortened
+form is false, and a future session checking the Dashboard against it would
+read a normal default as undeclared drift.
+
+## 11.2 — LAW A · EXIT STATUS IS NOT OBJECT INTEGRITY
+
+**No C6 restore, publish or bootstrap decision may treat an rclone exit code as
+proof that an object exists or is correct.** Three misleading shapes were
+measured during provisioning:
+
+- `rclone mkdir` returned **exit 0** twice — including with the bucket precheck
+  forced — while `CreateBucket` had in fact been denied and no bucket existed;
+- `rclone copyto` of a **nonexistent** remote object returns **exit 0 and
+  creates no file**;
+- `rclone lsjson` of a missing key returns **`[]` at exit 0**, not an error.
+
+Success for an expected codebook object therefore requires **actual bytes
+verified against the tracked manifest — at minimum exact SHA-256 and exact byte
+size.** A restore that yields zero bytes, creates no file, or produces the
+wrong bytes **must HALT even when the transport returned 0.** This is the
+`mkdir`-returned-zero trap generalised, and it aims straight at the restore
+verifier: *the arm that looks most like diligence is the one that reads the
+return code.*
+
+## 11.3 — LAW B · THE BUCKET PRECHECK MUST NOT MASK THE REAL OPERATION
+
+The Foundry credentials are bucket-scoped and cannot perform account-level
+bucket creation or checks. Without `--s3-no-check-bucket` (or the equivalent
+persisted on the remote) rclone attempts its precheck first and returns
+**403 `CreateBucket`** *before* the intended GET/PUT/DELETE. **A denial there
+says nothing about object permissions** — read literally it reports a correctly
+provisioned publisher as unable to write, which is exactly how it first
+presented. **All Foundry transport must bypass that precheck.** Recorded as a
+transport requirement; rclone configuration was deliberately **not** changed in
+the documentation-only phase that recorded it.
+
+## 11.4 — LAW C · THE PUBLISHER CREDENTIAL DOES NOT GUARANTEE IMMUTABILITY
+
+R2's **Object Read & Write** includes `DeleteObject`, and there is no narrower
+object-write class. **C6 immutability is therefore enforced by architecture and
+application discipline, not by the storage layer**: a new immutable object key
+per snapshot · refuse overwrite · never prune authority history · verify remote
+bytes after upload · the Git manifest selects authority. **Do not claim
+storage-layer WORM semantics.** Bucket Lock is a possible later hardening
+measure; it is **not ratified and not enabled**.
+
+---
+
 # APPENDIX — REPRODUCING EVERY NUMBER
 
 ```
@@ -628,6 +736,17 @@ gh api repos/{owner}/{repo}/actions/permissions/artifact-and-log-retention
 gh api repos/{owner}/{repo} --jq '{visibility, private}'
 rclone lsf r2:mtjawnny/data/
 git log -S "experiments/out/" --oneline -- .gitignore     # -> 4eb2f1f, 2026-07-07
+#
+# PART ELEVEN — the storage proof. Note --s3-no-check-bucket on EVERY line
+# (LAW B); without it each one fails at CreateBucket instead of the real op.
+rclone lsl  r2foundry-rw:mtjawnny-foundry --s3-no-check-bucket
+rclone copyto r2foundry-ro:mtjawnny-foundry/probes/private-storage-2026-08-14.txt - \
+      --s3-no-check-bucket | shasum -a 256   # -> e0c29f66…b1eb6f9, 145 bytes
+rclone copyto /dev/null r2foundry-ro:mtjawnny-foundry/probes/nope.txt \
+      --s3-no-check-bucket --retries 1       # -> 403 AccessDenied at PutObject
+rclone lsf  r2:mtjawnny --recursive | grep -i probe        # -> empty, buckets separate
+# anonymous: the PUBLIC bucket still serves an internal build artifact
+curl -sI https://cdn.mtjawnny.com/data/cache/embeddings.parquet | head -1   # -> 200
 git show a75ea38:CLAUDE.md | grep -A2 "No card data"      # the rule as first written
 ls experiments/out/foundry/backups/                       # 31 files, 88 MB
 ```

@@ -60,10 +60,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
 | `OBJECT-LATTICE-2026-08-09.md` | 301 | 5 | 0 | yes |
 | `OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md` | 372 | 1 | 0 | yes |
-| `P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md` | 637 | 1 | 0 | yes |
+| `P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md` | 756 | 1 | 0 | yes |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 4 | **NO** |
-| `PICK-UP-HERE.md` | 710 | 10 | 0 | yes |
+| `PICK-UP-HERE.md` | 770 | 10 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PRODUCT-REALITY-AUDIT-2026-08-09.md` | 182 | 2 | 0 | yes |
@@ -204,9 +204,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:261` — This is an amendment to ratified A1 and needs ratifying as one.
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `PICK-UP-HERE.md:113` — sits with §10's A1 — the section that defines the assertion object FL-2 amends,
-- `PICK-UP-HERE.md:115` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
-- `PICK-UP-HERE.md:129` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
+- `PICK-UP-HERE.md:173` — sits with §10's A1 — the section that defines the assertion object FL-2 amends,
+- `PICK-UP-HERE.md:175` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
+- `PICK-UP-HERE.md:189` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
 - `SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md:259` — > **A1** no mode-path component — face + paragraph already separates modes;
 - `THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md:244` — > amendments A1–A4 from
 - `THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md:256` — > be a second source of truth (amendment A1). Modal grouping and selection
@@ -231,7 +231,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
 - `CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md:459` — A12. Reachability caveat** — `foundry_reachability.py` reports **0 of 5**
 - `OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md:209` — A 12-row sample of what WAS produced cannot see a membership that is
-- `PICK-UP-HERE.md:289` — A 12-ROW SAMPLE OF WHAT WAS PRODUCED CANNOT SEE A MEMBERSHIP THAT IS
+- `PICK-UP-HERE.md:349` — A 12-ROW SAMPLE OF WHAT WAS PRODUCED CANNOT SEE A MEMBERSHIP THAT IS
 - `SESSION-HANDOFF-2026-08-01.md:93` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
 
 ### `A13` — 2 reference(s) across 2 doc(s)
@@ -265,8 +265,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:60` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
 - `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `PICK-UP-HERE.md:369` — `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
-- `PICK-UP-HERE.md:408` — `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
+- `PICK-UP-HERE.md:429` — `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
+- `PICK-UP-HERE.md:468` — `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
 - `PRODUCT-REALITY-AUDIT-2026-08-09.md:157` — 2. **Unblock `A15-VOCAB-01`** — ONE Captain decision, open since 2026-08-02,
 - `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
@@ -293,8 +293,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `B-MIGRATION-DISCOVERY.md:921` — 11.2 Amendments A1–A4 (from the architecture review, RATIFY WITH AMENDMENTS)
 - `CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md:406` — A4. AQ4, verbatim** — `docs/ARCHITECTURE-AUDIT.md` §13: *"Is the axis the
-- `PICK-UP-HERE.md:115` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
-- `PICK-UP-HERE.md:129` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
+- `PICK-UP-HERE.md:175` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
+- `PICK-UP-HERE.md:189` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
 - `SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md:262` — > **A4** modal exclusivity is derived from the owning header, never stored.
 - `THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md:244` — > amendments A1–A4 from
 
@@ -458,7 +458,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
-- `PICK-UP-HERE.md:398` — A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
+- `PICK-UP-HERE.md:458` — A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
 - `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
 - `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
 - `SESSION-HANDOFF-2026-08-02-PM.md:109` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
@@ -677,8 +677,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
 - `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
 - `OBJECT-LATTICE-2026-08-09.md:241` — action whose choice is the ability (b6 D2 ratified `activated-tap-or-untap-<scope>`
-- `PICK-UP-HERE.md:331` — nine `activated-tap-or-untap-*` are **not** this (b6 D2 ratified that grammar;
-- `PICK-UP-HERE.md:629` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:391` — nine `activated-tap-or-untap-*` are **not** this (b6 D2 ratified that grammar;
+- `PICK-UP-HERE.md:689` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
@@ -702,7 +702,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
 - `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
 - `OBJECT-LATTICE-2026-08-09.md:41` — batch-6 D3)"*. `TIER-4-DECISION-PACKET-2026-08-02.md` §231 applies it —
-- `PICK-UP-HERE.md:629` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:689` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
@@ -1069,7 +1069,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:1320` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CODEBOOK-NAMING-GRAMMAR.md:1341` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:411` — > distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
-- `PICK-UP-HERE.md:371` — bug** in `validate_slug` against grammar §13 Q8.5 (ratified 2026-07-31),
+- `PICK-UP-HERE.md:431` — bug** in `validate_slug` against grammar §13 Q8.5 (ratified 2026-07-31),
 - `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 
 ### `Q8.7` — 1 reference(s) across 1 doc(s)
@@ -1125,8 +1125,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-CONSOLIDATION-REAUDIT-PACKET.md:1759` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
 - `B-MIGRATION-DISCOVERY.md:621` — R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
 - `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:58` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
-- `PICK-UP-HERE.md:387` — R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
-- `PICK-UP-HERE.md:389` — codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
+- `PICK-UP-HERE.md:447` — R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
+- `PICK-UP-HERE.md:449` — codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
 - `RULING-MANIFEST-2026-07-09.md:68` — R5 — MANA-FACT SYSTEM (ratified). Extractors over mana-producing
 
 ### `R6` — 5 reference(s) across 3 doc(s)
