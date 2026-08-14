@@ -93,7 +93,15 @@ RULED_AXISLESS_PATTERNS = {
 # --------------------------------------------------------------------------
 
 def is_lattice_pattern(p: dict) -> bool:
-    return isinstance(p.get("lattice"), dict)
+    """Delegates to `foundry_common`, which owns the single definition.
+
+    It moved there 2026-08-14 because `foundry_family_sweep` needs the same
+    concept and does not import this module -- so the sweep applied the
+    ordinary one-pattern/one-axis orphan law to a lattice record and minted a
+    false BLOCKING finding. Kept as a name here because this module's own
+    call site and its docs refer to it.
+    """
+    return fc.is_lattice_pattern(p)
 
 
 def assert_lattice_invariant(p: dict) -> None:

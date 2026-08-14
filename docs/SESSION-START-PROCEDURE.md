@@ -47,6 +47,13 @@ it says what to do FIRST and what NOT to do. Then the handoff below.
 **Current handoff: `docs/SESSION-HANDOFF-2026-08-09.md`.** ← this line is
 the pointer; update it when you write a new handoff.
 
+**⚠ THAT HANDOFF IS STALE — `docs/PICK-UP-HERE.md` IS AHEAD OF IT.** The
+object lattice, semantic locality (FL-2), the qualifier census and the P3
+packet all landed after 2026-08-09 and none of them is in it. Until a newer
+handoff is written, **`PICK-UP-HERE.md` is the current state** and this
+pointer names a historical record. Gate 1 still starts at `PICK-UP-HERE.md`,
+which is why the ordering on this page is the way it is.
+
 **Do not pick the handoff by filename sort.** `-EVE` and `-PM` sort *before*
 the bare-date file, so "newest `SESSION-HANDOFF-*.md`" selects the oldest
 same-day file. Every superseded handoff now carries a banner pointing forward,
@@ -99,25 +106,32 @@ is indistinguishable from a passing one in a transcript. The runner shells out
 to each real tool, so there is exactly one definition of each gate and the
 runner cannot drift from it. `--selftest` proves the runner itself can report a
 failure; `--only a,b` narrows it; `--strict-all` refuses to excuse even the
-standing `family_sweep` failure (the 6 blocking W6 findings).
+authorized standing debt.
 
-The individual commands, for when one goes red and you need to read it:
+**THE ROW INVENTORY IS NOT DUPLICATED HERE, ON PURPOSE.** This page used to
+carry a hand-typed list of the individual commands, and it went stale twice —
+it still said "ten" and "eight" while the runner had grown past both. A
+hand-maintained mirror of a ratified record is this repository's most
+expensive recurring defect, and an operator doc listing every gate is exactly
+that. **`GATES` in `experiments/foundry_gate2.py` is the list**, each row
+carrying the command and what a failure means. To read one that went red:
 
 ```
-python3 experiments/foundry_codebook.py lint
-python3 experiments/foundry_family_sweep.py --strict
-python3 experiments/foundry_definition_drift.py
-python3 experiments/foundry_ruling_registry.py
-python3 experiments/foundry_punctuation_audit.py     # conservation: nothing lost
-python3 experiments/foundry_visibility_audit.py      # can each option be SEEN
-python3 experiments/foundry_ground_truth.py          # is the token RIGHT
-python3 experiments/foundry_gate_audit.py            # what does Gate #0 hide
-python3 experiments/foundry_probe.py                 # are the probe GUARDS alive
-python3 experiments/foundry_recorded_numbers.py --strict   # do the docs' numbers hold
-python3 experiments/foundry_reachability.py          # does any of it reach a CARD
+python3 experiments/foundry_gate2.py --only <row>   # names the tool it shells to
 ```
 
-**`foundry_reachability.py` is the eleventh, added 2026-08-09**
+**THE `family_sweep` WAIVER IS STRUCTURED, NOT A ROW NAME (2026-08-14).** Its
+row runs `--gate`, which compares actual blocking findings against the
+authorized W6 set in `docs/family-sweep-known-debt.json` by
+`(kind, subject)` and exits **3** only on an exact match. Gate 2 accepts that
+one status for that one row; a new blocker, a vanished one (stale waiver /
+XPASS), a substitution at the same count, or any infrastructure failure exits
+1 and is **RED**. The previous row-name waiver excused *any* failure of that
+row, and on 2026-08-14 it excused a seventh blocker and a missing codebook
+alike. Use `--strict` when working W6 — it is waiver-blind and lists every
+blocker.
+
+**`foundry_reachability.py`, added 2026-08-09**
 (`PRODUCT-REALITY-AUDIT-2026-08-09.md` §10). Every other row on this list
 answers *"did I break anything?"*; this one answers *"does this reach a shipped
 card?"* — the question the product audit found no gate could ask. It parses the
@@ -128,8 +142,12 @@ is 0 of 5**, with `codebook.json` carrying 26 `experiments/` consumers and zero
 negative-controlled by `--selftest`, so it is a gate rather than a reporter
 listed as one.
 
-**Ten now, and the last two were added 2026-08-09 after the gates were
-negative-controlled** (`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
+*(Counts of "how many gates" are deliberately absent from this page now. Three
+separate ones — "the eleventh", "ten", "eight" — were stale simultaneously on
+2026-08-14 while the runner carried sixteen. Ask the runner.)*
+
+**Two were added 2026-08-09, after the gates were negative-controlled**
+(`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
 
 - **`foundry_probe.py`** is the probe LIBRARY's self-test. Guards A-D each
   halt on a real recorded defect and pass on correct input; 10 cases. **Use
@@ -139,7 +157,7 @@ negative-controlled** (`docs/SYSTEM-SELF-TEST-2026-08-09.md`):
 - **`foundry_recorded_numbers.py`** re-derives every line/card count grammar
   §2 asserts. It found two wrong on its first run, both in ratified rows.
 
-**ALL TEN CAN FAIL, AND THAT IS MEASURED RATHER THAN ASSUMED.** Two of the
+**EVERY ROW CAN FAIL, AND THAT IS MEASURED RATHER THAN ASSUMED.** Two of the
 original eight could not: `foundry_definition_drift.py` moved 35 -> 36 findings
 on an injected defect and exited 0, and `foundry_ruling_registry.py` noticed a
 deleted ruling doc and exited 0. **Both now ride the ratchet
@@ -147,7 +165,7 @@ deleted ruling doc and exited 0. **Both now ride the ratchet
 `docs/SYSTEM-SELF-TEST-2026-08-09.md` §7. Each takes `--update-baseline` to
 accept movement ON PURPOSE, exactly as conservation and visibility do.
 
-**Eight, and each answers a question none of the others can.** The first four
+**Each row answers a question none of the others can.** The earliest ones
 check that what EXISTS is consistent. Conservation and visibility check that
 nothing was silently DROPPED or made unreachable (added 2026-08-06). The last
 two were added 2026-08-07:
@@ -160,9 +178,9 @@ two were added 2026-08-07:
   `experiments/moves/*.json`, deriving every expected value at run time.
 - **`foundry_gate_audit.py`** reports what `load_corpus_gated()` removes.
   Every other check on this list calls it, so the gate is ONE blind spot shared
-  by all eight, not eight separate ones.
+  by all of them, not one per row.
 
-All eight exit 1 on failure. Conservation and visibility additionally compare
+All of them exit non-zero on failure. Conservation and visibility additionally compare
 against a **pinned baseline** (`experiments/out/foundry/audit-baseline.json`):
 movement in the worse direction is fatal, and accepting any movement takes an
 explicit `--update-baseline`. Without it, degradation exited 0 — uncontexted

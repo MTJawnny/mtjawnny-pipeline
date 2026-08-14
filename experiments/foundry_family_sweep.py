@@ -34,7 +34,9 @@ The four ratified stores it cross-reads:
   experiments/validate_slug.py     -- the naming validator's vocabularies
 
 Run:  python3 experiments/foundry_family_sweep.py
-      python3 experiments/foundry_family_sweep.py --strict   # exit 1 on BLOCKING
+      python3 experiments/foundry_family_sweep.py --strict   # exit 1 on ANY blocking
+      python3 experiments/foundry_family_sweep.py --gate     # 0 clean / 3 known debt / 1 mismatch
+      python3 experiments/foundry_family_sweep.py --selftest # rig the waiver red
 """
 import re
 import sys
@@ -90,13 +92,35 @@ def load_stores():
         slug = p["slug"].split(" (")[0].split(" ")[0]
         # A pattern whose slug text is marked "(pre-filter)" is Lane-1
         # machinery with no axis of its own; anything else is an axis pattern.
-        det[slug] = dict(p, is_prefilter=fc.is_prefilter_pattern(p))
+        det[slug] = dict(p, is_prefilter=fc.is_prefilter_pattern(p),
+                         is_lattice=fc.is_lattice_pattern(p))
     return grammars, det, codebook
 
 
 # --------------------------------------------------------------------------
 # A. mirror drift -- the class of defect that motivated this file
 # --------------------------------------------------------------------------
+
+def check_a1_orphans(det, codebook):
+    """A1, extracted so a negative control can rig it in isolation.
+
+    It is its own function because NC6 has to prove two things at once: that a
+    LATTICE record is not reported here, and that an ORDINARY orphan still is.
+    Testing that through a full sweep would need the live codebook and would
+    prove neither cleanly."""
+    out = []
+    for slug, p in sorted(det.items()):
+        if p["is_prefilter"] or p["is_lattice"] or slug in codebook:
+            continue
+        out.append(finding(
+            BLOCKING, "ratified-pattern-has-no-axis", slug,
+            f"det-patterns-v2.json ratifies this pattern (index {p['pattern_index']}, "
+            f"{p['corpus_hits']} corpus hits at ratification) but no codebook record exists "
+            f"under any status. foundry_det_pass.load_axis_patterns() demotes it to the "
+            f"prefilter list without a halt, so it has never been applied.",
+            pattern_index=p["pattern_index"], corpus_hits=p["corpus_hits"]))
+    return out
+
 
 def sweep_mirror_drift(grammars, det, codebook):
     out = []
@@ -126,16 +150,30 @@ def sweep_mirror_drift(grammars, det, codebook):
     # A1. A ratified axis pattern with no codebook record at all. This is the
     # orphan check. foundry_det_pass.load_axis_patterns() silently demotes
     # such a pattern to the prefilter list, so it never runs and never reports.
-    for slug, p in sorted(det.items()):
-        if p["is_prefilter"] or slug in codebook:
-            continue
-        out.append(finding(
-            BLOCKING, "ratified-pattern-has-no-axis", slug,
-            f"det-patterns-v2.json ratifies this pattern (index {p['pattern_index']}, "
-            f"{p['corpus_hits']} corpus hits at ratification) but no codebook record exists "
-            f"under any status. foundry_det_pass.load_axis_patterns() demotes it to the "
-            f"prefilter list without a halt, so it has never been applied.",
-            pattern_index=p["pattern_index"], corpus_hits=p["corpus_hits"]))
+    #
+    # A LATTICE RECORD IS NOT AN ORPHAN AND MUST NOT BE READ AS ONE. This
+    # check's whole premise is one pattern owning one axis; a lattice record
+    # is one matcher yielding N axes at match time, its slug is a grammar
+    # TEMPLATE carrying facet placeholders (`rule:targeted-<action>-<class>`),
+    # and `foundry_det_pass` routes it down a separate path
+    # (`if is_lattice_pattern(p): lattice_rows.append(p); continue`) so the
+    # demotion this finding warns about never happens to it. Reporting it here
+    # asserted that a virtual grammar node should be a concrete codebook axis,
+    # which grammar sec.1 forbids by construction.
+    #
+    # Added 2026-08-14 after the record showed up as a seventh BLOCKING
+    # finding and Gate 2 excused it anyway -- the row-name waiver could not
+    # tell a new finding from the six it was authorized to carry. Keyed on the
+    # record's SHAPE via the shared `foundry_common` predicate, never on the
+    # literal slug, so the next ratified lattice family is covered unedited.
+    #
+    # This suppresses nothing real: the lattice's own guards remain wholly
+    # responsible for it -- `foundry_object_lattice --gate` (Gate 2 row
+    # `object_lattice`) runs the grammar-shape fixtures, the independent
+    # residual invariant and the tracked membership floor, and
+    # `foundry_det_pass.assert_lattice_invariant` is a precondition of the
+    # write on both phases.
+    out += check_a1_orphans(det, codebook)
 
     # A2. grammars.json claims a member the codebook does not have, or has
     # under a non-live status. The family record is the mirror; the codebook
@@ -684,18 +722,248 @@ def run(include_proposed: bool):
     return report
 
 
+# --------------------------------------------------------------------------
+# the authorized-debt gate
+# --------------------------------------------------------------------------
+
+KNOWN_DEBT_PATH = REPO_ROOT / "docs" / "family-sweep-known-debt.json"
+
+# Exit statuses `--gate` produces. These are the machine-stable contract with
+# `foundry_gate2.py`, which reads NOTHING else -- not this file, not stdout.
+GATE_CLEAN, GATE_MISMATCH, GATE_KNOWN_DEBT = 0, 1, 3
+
+
+def blocker_fingerprints(report: dict) -> list:
+    """The structured identity of each blocking finding: `(kind, subject)`.
+
+    **NOT `detail`.** `detail` is an English sentence written for a human and
+    reworded whenever a check's message improves; keying a waiver on it would
+    turn a typo fix into a red gate. `kind` and `subject` are what the check
+    actually decided, and they are already in the report."""
+    return sorted((f["kind"], f["subject"]) for f in report["findings"]
+                  if f["severity"] == BLOCKING)
+
+
+def load_known_debt() -> list:
+    """The authorized W6 set, from its ONE tracked home.
+
+    Halts loudly if absent or malformed rather than defaulting to "no debt
+    authorized" -- a missing waiver file that silently meant "excuse nothing"
+    would be survivable, but one that silently meant "excuse everything" is
+    the defect this whole repair exists to remove, and the safe direction is
+    not obvious enough to guess at."""
+    if not KNOWN_DEBT_PATH.exists():
+        fc.halt(f"{KNOWN_DEBT_PATH} is missing. It is the tracked record of "
+                f"which blocking findings are authorized standing debt (W6); "
+                f"without it this gate cannot tell known debt from a new "
+                f"regression. Restore it, never proceed without it.")
+    doc = json.loads(KNOWN_DEBT_PATH.read_text(encoding="utf-8"))
+    if doc.get("fingerprint") != ["kind", "subject"]:
+        fc.halt(f"{KNOWN_DEBT_PATH} declares fingerprint "
+                f"{doc.get('fingerprint')!r}; this tool computes "
+                f"('kind', 'subject'). Reconcile them rather than assuming.")
+    return sorted((b["kind"], b["subject"]) for b in doc["blockers"])
+
+
+def gate(report: dict) -> int:
+    """Compare ACTUAL blocking findings against the AUTHORIZED set, by
+    structured identity, and return the status Gate 2 interprets.
+
+    WHY THIS LIVES HERE AND NOT IN THE RUNNER. `foundry_gate2.py` shells out
+    to the real tool precisely so there is exactly one definition of each
+    gate. If the runner held the six values it would be a second
+    implementation of this comparison and would drift -- the mirror-drift
+    class this sweep was built to detect, aimed at the sweep.
+
+    The four outcomes that are NOT ordinary green, each named rather than
+    collapsed into "fail":
+
+      * UNEXPECTED -- a blocker outside the authorized set. A regression.
+      * MISSING (stale waiver / XPASS) -- an authorized blocker is gone. This
+        is RED FOR REVIEW, never a silent celebration: the waiver no longer
+        describes reality and someone must retire the row. A substitution at
+        the same count shows up as one of each, which is exactly why a COUNT
+        can never be the check.
+      * clean-but-waived -- zero blockers while a waiver still lists some.
+        Same stale-waiver path.
+      * infrastructure failure -- handled by halt-loudly upstream, so it can
+        never arrive here wearing a known-debt status.
+    """
+    actual, authorized = blocker_fingerprints(report), load_known_debt()
+    unexpected = [f for f in actual if f not in authorized]
+    missing = [f for f in authorized if f not in actual]
+
+    print("\n" + "=" * 78)
+    print("FAMILY SWEEP — authorized-debt gate")
+    print("=" * 78)
+    print(f"  authorized standing debt (W6)   {len(authorized)}")
+    print(f"  actual blocking findings        {len(actual)}")
+    print(f"  record                          {KNOWN_DEBT_PATH.name}")
+
+    if not unexpected and not missing:
+        if not actual:
+            print("\n  ✓ CLEAN — no blocking findings and no authorized debt.")
+            return GATE_CLEAN
+        print("\n  ◐ KNOWN DEBT — the blocking set is exactly the authorized "
+              "W6, by (kind, subject):")
+        for kind, subject in actual:
+            print(f"      [{kind}] {subject}")
+        return GATE_KNOWN_DEBT
+
+    if unexpected:
+        print(f"\n  ✗ {len(unexpected)} UNEXPECTED blocking finding(s) — "
+              f"NOT authorized debt. This is a regression:")
+        for kind, subject in unexpected:
+            print(f"      [{kind}] {subject}")
+    if missing:
+        print(f"\n  ✗ {len(missing)} AUTHORIZED blocker(s) NO LONGER PRESENT "
+              f"— STALE WAIVER (XPASS).")
+        print("    Do not read this as good news without checking: either the "
+              "debt was fixed,\n    in which case delete the row from "
+              f"{KNOWN_DEBT_PATH.name} in the same commit, or a\n    check "
+              "stopped being able to see it, which is a broken check.")
+        for kind, subject in missing:
+            print(f"      [{kind}] {subject}")
+    print(f"\n  RED — see {REPORT_PATH}")
+    return GATE_MISMATCH
+
+
+def _fake_report(*fingerprints) -> dict:
+    """A report carrying exactly these blocking findings, plus one advisory to
+    prove severity is what selects them."""
+    findings = [finding(BLOCKING, k, s, "synthetic fixture")
+                for k, s in fingerprints]
+    findings.append(finding(ADVISORY, "name-subsumption", "x", "not blocking"))
+    return {"findings": findings,
+            "totals": {BLOCKING: len(fingerprints), ADVISORY: 1}}
+
+
+def selftest() -> int:
+    """THE WAIVER LOGIC, RIGGED RED. A guard never shown to fail is not a guard.
+
+    The defect this repairs was itself a passing gate: on 2026-08-14 the sweep
+    reported seven blockers and Gate 2 printed `[KNOWN]` and exited GREEN,
+    because the waiver matched a ROW NAME. So every control below changes the
+    structured identity of the debt and requires the status to move.
+    """
+    import tempfile
+    fails = []
+
+    def check(label, cond, detail=""):
+        print(f"  [{'ok' if cond else 'FAIL'}] {label}" +
+              (f"  -- {detail}" if detail and not cond else ""))
+        if not cond:
+            fails.append(label)
+
+    authorized = load_known_debt()
+    global KNOWN_DEBT_PATH
+    real_path = KNOWN_DEBT_PATH
+
+    def with_debt(rows, report):
+        """Run gate() against a TEMPORARY authorized set. The tracked record is
+        never written to -- rigging a control must not mutate the thing it
+        guards."""
+        global KNOWN_DEBT_PATH
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump({"fingerprint": ["kind", "subject"],
+                       "blockers": [{"kind": k, "subject": s} for k, s in rows]},
+                      fh)
+            tmp = Path(fh.name)
+        try:
+            KNOWN_DEBT_PATH = tmp
+            return gate(report)
+        finally:
+            KNOWN_DEBT_PATH = real_path
+            tmp.unlink(missing_ok=True)
+
+    print("NC1 — actual blockers EXACTLY equal the authorized W6")
+    check("gate() returns KNOWN_DEBT (3)",
+          with_debt(authorized, _fake_report(*authorized)) == GATE_KNOWN_DEBT)
+
+    print("\nNC2 — an unrelated blocker is injected alongside the authorized six")
+    extra = ("ratified-pattern-has-no-axis", "rule:totally-new-regression")
+    check("gate() returns MISMATCH (1), never KNOWN",
+          with_debt(authorized,
+                    _fake_report(*authorized, extra)) == GATE_MISMATCH)
+
+    print("\nNC3 — one authorized blocker DISAPPEARS (stale waiver / XPASS)")
+    check("gate() returns MISMATCH (1) — not silently celebrated",
+          with_debt(authorized,
+                    _fake_report(*authorized[1:])) == GATE_MISMATCH)
+
+    print("\nNC4 — a blocker is SUBSTITUTED, total count still six")
+    swapped = list(authorized[1:]) + [
+        ("family-members-contradict-template", "some-other-family-<slot>")]
+    check("count is unchanged", len(swapped) == len(authorized), f"{len(swapped)}")
+    check("gate() returns MISMATCH (1) — a COUNT cannot be the check",
+          with_debt(authorized, _fake_report(*swapped)) == GATE_MISMATCH)
+
+    print("\nNC5 — infrastructure failure (the authorized record is unreachable)")
+    KNOWN_DEBT_PATH = real_path.parent / "does-not-exist-selftest.json"
+    try:
+        load_known_debt()
+        check("load_known_debt() halts when its record is missing", False,
+              "it returned instead of halting")
+    except SystemExit:
+        check("load_known_debt() halts when its record is missing", True)
+    finally:
+        KNOWN_DEBT_PATH = real_path
+
+    print("\nNC5b — zero blockers while a waiver still lists six")
+    check("gate() returns MISMATCH (1) — stale waiver, not ordinary green",
+          with_debt(authorized, _fake_report()) == GATE_MISMATCH)
+
+    print("\nNC6 — a lattice matcher is not read as a one-pattern/one-axis orphan")
+    lattice = {"slug": "rule:some-<facet>-<class> (lattice)", "pattern": None,
+               "pattern_index": 999, "corpus_hits": 1, "status": "ratified",
+               "lattice": {"module": "foundry_object_lattice"}}
+    ordinary = {"slug": "rule:ordinary-orphan", "pattern": "x",
+                "pattern_index": 998, "corpus_hits": 1, "status": "ratified"}
+    check("foundry_common recognises the lattice record by SHAPE",
+          fc.is_lattice_pattern(lattice) and not fc.is_lattice_pattern(ordinary))
+    det = {fc.pattern_slug(p): dict(p, is_prefilter=fc.is_prefilter_pattern(p),
+                                   is_lattice=fc.is_lattice_pattern(p))
+           for p in (lattice, ordinary)}
+    got = {(f["kind"], f["subject"]) for f in check_a1_orphans(det, codebook={})}
+    check("the ORDINARY orphan is still BLOCKING (the law is not weakened)",
+          ("ratified-pattern-has-no-axis", "rule:ordinary-orphan") in got, f"{got}")
+    check("the LATTICE matcher is not reported as an orphan",
+          ("ratified-pattern-has-no-axis", "rule:some-<facet>-<class>") not in got,
+          f"{got}")
+
+    print()
+    if fails:
+        print(f"SELFTEST FAILED — {len(fails)} control(s): {fails}")
+        return 1
+    print("SELFTEST PASSED — every control fired on the path it guards.")
+    return 0
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--strict", action="store_true",
-                   help="exit 1 if any BLOCKING finding is present (for use as a gate)")
+                   help="exit 1 if ANY blocking finding is present (raw, waiver-blind)")
+    p.add_argument("--selftest", action="store_true",
+                   help="rig the waiver logic red (NC1-NC6)")
+    p.add_argument("--gate", action="store_true",
+                   help="compare blocking findings against the authorized W6 set "
+                        "(exit 0 clean / 3 known debt / 1 mismatch)")
     p.add_argument("--no-proposed", action="store_true",
                    help="sweep the codebook alone, ignoring proposed consolidation nodes")
     a = p.parse_args()
+    if a.selftest:
+        return selftest()
     report = run(include_proposed=not a.no_proposed)
+    if a.gate:
+        return gate(report)
     if a.strict and report["totals"].get(BLOCKING):
         fc.halt(f"{report['totals'][BLOCKING]} blocking finding(s) — see {REPORT_PATH}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    # `--gate`'s status IS the contract with foundry_gate2.py, so it must
+    # reach the shell. `main()` was called bare, which discarded every return
+    # value and would have made exit 3 indistinguishable from exit 0.
+    sys.exit(main())

@@ -45,6 +45,36 @@ def is_prefilter_pattern(pattern: dict) -> bool:
     return "pre-filter" in pattern["slug"]
 
 
+def is_lattice_pattern(pattern: dict) -> bool:
+    """True iff this ratified record is a LATTICE matcher -- one matcher that
+    yields N concrete axes at match time, rather than one pattern owning one
+    axis.
+
+    **ITS SLUG IS A GRAMMAR TEMPLATE, NOT AN AXIS NAME.**
+    `rule:targeted-<action>-<class>` carries facet placeholders and can never
+    be a concrete codebook axis; the axes it produces are
+    `rule:targeted-destroy-creature` and its siblings, instantiated under
+    `b6 sec.11.2` (*"virtual nodes instantiate on first quote-verified member,
+    no fresh ratification"*). A `pattern` of `null` is the other half of the
+    same shape: there is no single regex to run.
+
+    **THIS LIVES HERE SO THERE IS EXACTLY ONE DEFINITION.** It was
+    `foundry_det_pass.is_lattice_pattern` alone, and `foundry_family_sweep`
+    -- which does not import that module -- applied the ordinary
+    one-pattern/one-axis orphan law to the lattice record and reported a
+    BLOCKING `ratified-pattern-has-no-axis` for a slug that is virtual BY
+    DESIGN. That is this repository's most expensive recurring defect (*"a
+    hand-maintained MIRROR of a ratified record is trusted as the record"*)
+    aimed at the sweep that exists to catch it. `foundry_det_pass` now
+    delegates here; nothing re-derives the concept.
+
+    Deliberately keyed on the RECORD'S SHAPE, never on the literal slug: a
+    second lattice family ratified tomorrow is covered without an edit, which
+    is the sweep's own self-calibration rule.
+    """
+    return isinstance(pattern.get("lattice"), dict)
+
+
 def pattern_slug(pattern: dict) -> str:
     """The bare `rule:` slug, stripped of parenthetical/qualifier text."""
     return pattern["slug"].split(" (")[0].split(" ")[0]

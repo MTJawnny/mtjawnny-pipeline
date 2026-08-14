@@ -1,0 +1,51 @@
+{
+  "record": "family-sweep AUTHORIZED KNOWN DEBT (W6)",
+  "schema": "family-sweep-known-debt/1",
+  "established": "2026-08-14",
+  "authority": "docs/WORK-PACKETS-2026-08-07.md section W6, which lists these six verbatim. Corroborated by docs/TIER-3-DECISION-PACKET-2026-08-02.md ('one of its six BLOCKING findings') and docs/SESSION-HANDOFF-2026-08-01.md (5 blocking at that date: 3 orphaned patterns + 2 family-template contradictions, before pattern-misses-cardname-token joined).",
+  "fingerprint": ["kind", "subject"],
+  "why_this_file_exists": [
+    "Gate 2 excused foundry_family_sweep by ROW NAME. The row was authorized to carry six standing blocking findings; it carried SEVEN on 2026-08-14 and Gate 2 still printed [KNOWN] and still exited GREEN. A waiver keyed on a row name cannot tell a new failure from the one it forgave, and this is the end-to-end proof.",
+    "The identity of a blocking finding is its STRUCTURED semantics, never its prose. `detail` is an English sentence that gets reworded whenever the check's message improves; `(kind, subject)` is what the check actually decided. A waiver keyed on prose would go stale on a typo fix.",
+    "ONE source of truth. foundry_family_sweep reads this file and decides; foundry_gate2 reads nothing and only interprets the tool's exit status. Duplicating these six in the runner would recreate the mirror-drift defect the sweep itself was built to catch."
+  ],
+  "how_it_is_enforced": {
+    "tool": "python3 experiments/foundry_family_sweep.py --gate",
+    "exit_0": "no blocking findings AND no authorized debt -- fully clean",
+    "exit_3": "blocking findings exactly equal this authorized set -- KNOWN debt, the only excusable outcome",
+    "exit_1": "anything else: an unauthorized blocker, an authorized blocker that vanished (stale waiver / XPASS -- the waiver itself changed and needs review, never a silent celebration), a substitution at the same count, or any infrastructure failure such as a missing codebook"
+  },
+  "retirement": "When a W6 item is genuinely fixed, DELETE its row here in the same commit. The gate will go RED until you do, on purpose -- that is the stale-waiver check, and it is the half that stops this file from outliving the debt.",
+  "blockers": [
+    {
+      "kind": "family-members-contradict-template",
+      "subject": "activated-tap-or-untap-<scope>",
+      "note": "W6, tier C. Family-template contradiction; CDR-08 territory."
+    },
+    {
+      "kind": "family-members-contradict-template",
+      "subject": "targeted-<action>-<class>",
+      "note": "W6, tier C. Standing since before the object lattice existed -- present in the 2026-08-07 W6 list under this same template name, so it is NOT lattice fallout. Do not confuse it with the ratified-pattern-has-no-axis finding on the same subject, which WAS lattice fallout and was a false positive removed 2026-08-14."
+    },
+    {
+      "kind": "pattern-misses-cardname-token",
+      "subject": "rule:forced-attack-each-combat",
+      "note": "W6. Pattern anchors 'this creature' but never accepts the CARDNAME token, so cards that self-reference by name are missed -- disproportionately legendaries. Fixing it is a ratified-pattern change and rides the sample-sheet gate (NEW-02)."
+    },
+    {
+      "kind": "ratified-pattern-has-no-axis",
+      "subject": "rule:cant-be-blocked-as-long-as-state",
+      "note": "W6. One of the three orphaned patterns: ratified, axis-bearing, no codebook axis. The 'ratified standard with no caller' shape."
+    },
+    {
+      "kind": "ratified-pattern-has-no-axis",
+      "subject": "rule:cant-be-blocked-by-power",
+      "note": "W6. Orphaned pattern, and a MERGE question rather than a rename -- see docs/TIER-3-DECISION-PACKET-2026-08-02.md D13. Captain's, not a work item."
+    },
+    {
+      "kind": "ratified-pattern-has-no-axis",
+      "subject": "rule:cant-be-blocked-except-by-count",
+      "note": "W6. Orphaned pattern."
+    }
+  ]
+}

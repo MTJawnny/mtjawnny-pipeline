@@ -7,10 +7,67 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
-## 0AC. THE NEXT CAPTAIN ARCHITECTURE DECISION IS CODEBOOK DURABILITY (P3)
+## 0AC. P3 ARCHITECTURE IS APPROVED WITH AMENDMENTS — IMPLEMENTATION/CUTOVER IS NEXT
 
-**Not a work item. A ruling, and it blocks honest Gate 2 CI.** Raised
-2026-08-13 alongside the qualifier census; nothing here is decided.
+**Captain ruled P3-1 … P3-5 on 2026-08-14. P3-6 is DONE and reviewed.** This
+section is no longer a question. **Do not reopen the architecture and do not
+re-run the option comparison** — the packet
+(`docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md`) is the history; the
+rulings below are the law.
+
+| | ruling |
+|---|---|
+| **P3-1** | **C6.** The authoritative codebook is the **EXACT IMMUTABLE R2 SNAPSHOT SELECTED BY THE TRACKED MANIFEST IN THE CURRENT GIT REVISION.** |
+| **P3-2** | A tracked hash/metadata manifest: **YES.** |
+| **P3-3** | **Every ratified codebook mutation receives a durable snapshot.** |
+| **P3-4** | Architecture is approved **BEFORE the first snapshot exists.** The restore drill is a precondition to **AUTHORITY CUTOVER / P3 CLOSURE**, not to architecture approval. |
+| **P3-5** | **Foundry CI is READ-ONLY.** |
+| **P3-6** | **DONE** — the structured, reason-bound W6 waiver (this phase). |
+
+**P3-1 IS NOT "THE NEWEST R2 SNAPSHOT", AND THE DIFFERENCE IS THE WHOLE
+RULING.** Git selects; R2 stores. An uploaded R2 object that no committed
+manifest selects is **orphan and non-authoritative** — uploading does not
+confer authority. **There is no authoritative `latest.json` for the codebook**;
+do not create one and do not read one. (The `/data/v/<date>/` + `latest.json`
+discipline governs *shipped product artifacts*; it is deliberately NOT the
+model here, because a mutable pointer would move authority without a commit.)
+
+**P3-4, stated so it is not misread as a green light:** the architecture is
+authorized, but **until the restore drill succeeds, the current LOCAL codebook
+remains the operational source.** A snapshot that exists is not yet an
+authority.
+
+**P3-5, and do not shortcut this:** the existing production Actions
+credentials (`R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`) are **known to be
+write-capable** — `pipeline/upload.py` and `pipeline/embed.py` both write with
+them. **Their existence is NOT proof that a read-only path exists.** Provision
+separate read-only Foundry credentials; prefer that over reusing the
+production pair.
+
+### ⛔ THE REMAINING CUTOVER BLOCKER — R2 PRIVACY IS NOT YET PROVEN
+
+**Before ANY Oracle-bearing codebook snapshot is uploaded**, prove
+**anonymously** — no credentials, from outside — that the proposed authority
+location is **not publicly retrievable**: not via `r2.dev`, not via a custom
+domain, not via any other public-delivery configuration on the bucket.
+
+**A PREFIX IS NOT PRIVACY.** The bucket is not private merely because `rclone`
+listing needs credentials; `mtjawnny` already serves the shipped site's
+artifacts, so public delivery is plausible and must be disproven rather than
+assumed. **If the existing bucket is publicly readable, use genuinely private
+storage instead.** Uploading 345,587 characters of oracle text to a
+public-readable path would breach *"No card data in git, ever"* in spirit while
+technically honouring its letter — the rule's reason, not its wording, is what
+P3-1 was chosen to protect.
+
+**First-snapshot procedure, per the ruling:** the first snapshot is a
+**CANDIDATE**, never an authority, until *all five* succeed — privacy proof,
+remote readback + hash match, fresh restore, Gate-equivalence on the restored
+copy, and a corrupt-byte negative control that must HALT.
+
+---
+
+### The measured state the rulings rest on
 
 `codebook.json` — **403 active axes, 7,930 assertions, 4,233 of them
 Captain-ratified `human`** — lives in `experiments/out/`, which
@@ -21,25 +78,32 @@ same disk*. `B-MIGRATION-DISCOVERY.md` §5.1 item 6 recorded this on 2026-08-01
 story"*) and nothing has changed since.
 
 **Why it blocks CI, measured.** Gate 2 is 16 rows and ~142 s — runtime is not
-the obstacle. But **8 rows read the codebook** (`lint`, `family_sweep`,
-`definition_drift`, `ground_truth` ×2, `probe_guards`, `reachability`,
-`object_lattice`, `locality`), and CI has no copy of it. The corpus half is
-fine — `data/` is gitignored too, but `pipeline/fetch.py` re-fetches it from
+the obstacle. But **7 of the 16 rows read the codebook** — `lint`,
+`family_sweep`, `definition_drift`, `ground_truth`, `ground_truth_wide`,
+`recorded_numbers`, `locality` — and CI has no copy of it. The corpus half is
+fine: `data/` is gitignored too, but `pipeline/fetch.py` re-fetches it from
 Scryfall, which is what `build.yml` already does. **The codebook has no such
 path: it cannot be re-fetched or regenerated, only restored.** A CI job that
-ran the 7 corpus-only rows and silently skipped the other 8 would be a gate
-that fails open — the shape `SESSION-START-PROCEDURE.md` Gate 3b exists to
-stop.
+ran the other 9 rows and silently skipped these would be a gate that fails
+open — the shape `SESSION-START-PROCEDURE.md` Gate 3b exists to stop.
 
-**The tension is real and is why this is Captain's.** *"No card data in git,
-ever"* is a locked rule, and assertions carry oracle-text quotes. So the
-options are genuinely in conflict and none is obviously right: track the
-codebook and amend the locked rule; track a quote-stripped derivative and
-accept that CI grades something the repo does not hold; push backups off-disk
-outside git; or accept the risk and keep Gate 2 local-only, on the record.
+**That list is MEASURED, not grepped** — codebook moved aside, Gate 2 run, file
+restored and verified byte-identical. An import-grep first predicted 8 and
+named `probe_guards`, `reachability` and `object_lattice`; all three pass
+without the codebook (the lattice gate's floor comes from tracked
+`det-patterns-v2.json`), and `recorded_numbers` — which the grep missed —
+fails. **Do not restore the 8-row statement.**
 
-**Do not solve this by implementation.** Deciding it inside a CI wiring commit
-would be smuggling a durability ruling through plumbing.
+**The tension that P3-1 resolves.** *"No card data in git, ever"* is a locked
+rule and assertions carry oracle-text quotes, so tracking the codebook
+directly would have meant amending a first-commit rule and publishing card
+text from a **public** repo. **C6 keeps that rule intact** — git carries only
+hashes and metadata, never card text — which is why it was preferred over the
+otherwise-more-ergonomic "just track it".
+
+**Do not smuggle the remaining decisions through plumbing.** The architecture
+is ruled; the *cutover* is not finished, and the privacy proof above is a
+precondition, not a formality.
 
 ---
 
@@ -602,7 +666,9 @@ diagnosis; it needs a shared-object re-join, not a list entry.
   branch has no spell-face gate. Needs a per-FACE cut; real design.
 - **10 `it becomes day AS THIS CREATURE ENTERS` lines** — CR 614.1c
   replacements, found while landing D8a item 2, unrouted, logged not started.
-- **W5** `escapes with` (12) · **W6** family sweep (the standing 6) ·
+- **W5** `escapes with` (12) · **W6** family sweep (the standing 6, now a
+  machine record: `docs/family-sweep-known-debt.json`; **retire a row there in
+  the same commit that fixes it**, or the gate goes red on the stale waiver) ·
   **W7** definition drift (the standing 35).
 - **W9 parent layer** is blocked on W8; **W10 display** on W9.
 

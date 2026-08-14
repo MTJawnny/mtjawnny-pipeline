@@ -328,6 +328,15 @@ CR 113.6h chains to CR 614.12. Reasoning is already written up in
 
 ## W6 — FAMILY SWEEP, the standing 6  ·  TIER C
 
+> **THIS LIST IS NOW A MACHINE RECORD: `docs/family-sweep-known-debt.json`
+> (2026-08-14).** These six are its content verbatim, and this section is the
+> historical authority it cites. `foundry_family_sweep.py --gate` compares the
+> live blocking set against that file by `(kind, subject)`; Gate 2 excuses it
+> only on an exact match. **When you fix one, delete its row from the JSON in
+> the same commit** — otherwise the gate reds on the stale waiver, which is
+> the point. Do not maintain the two by hand in parallel; this section is
+> prose, the JSON is the contract.
+
 Unchanged for several sessions. `python3 experiments/foundry_family_sweep.py --strict`
 
 ```

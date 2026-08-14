@@ -36,7 +36,14 @@ EXP = "experiments"
 GATES = [
     ("lint",             [f"{EXP}/foundry_codebook.py", "lint"],
      "the codebook is structurally invalid"),
-    ("family_sweep",     [f"{EXP}/foundry_family_sweep.py", "--strict"],
+    # `--gate`, not `--strict`, since 2026-08-14. `--strict` is waiver-blind:
+    # it exits 1 on ANY blocking finding, which forced this runner to excuse
+    # the row by NAME -- and a name cannot tell the six authorized standing
+    # findings from a seventh. `--gate` makes the real tool compare actual
+    # blockers against the tracked authorized set by `(kind, subject)` and
+    # report the answer as an exit status. `--strict` is kept for humans
+    # working W6.
+    ("family_sweep",     [f"{EXP}/foundry_family_sweep.py", "--gate"],
      "a ratified family and its members contradict"),
     ("definition_drift", [f"{EXP}/foundry_definition_drift.py"],
      "an axis definition drifted from its name (ratcheted 2026-08-09)"),
@@ -93,11 +100,34 @@ GATES = [
      "the qualifier census can no longer be re-derived as published"),
 ]
 
-# family_sweep has a STANDING failure (the 6 blocking findings) that predates
-# this runner and is tracked as W6. Listing it here keeps the runner honest --
-# it is not silently excused, it is reported as a known-failing gate with the
-# reason, and `--strict-all` refuses to accept even that.
-KNOWN_FAILING = {"family_sweep": "the standing 6 blocking findings (W6)"}
+# ROW-NAME WAIVERS ARE GONE, AND THIS IS WHY.
+#
+# Until 2026-08-14 this dict read `{"family_sweep": "the standing 6 blocking
+# findings (W6)"}` and the runner excused ANY non-zero exit from that row. On
+# 2026-08-14 the sweep reported SEVEN blockers -- the six authorized ones plus
+# a new finding from the object-lattice work -- and Gate 2 printed
+# `[KNOWN] family_sweep exit=1 -> the standing 6 blocking findings (W6)` and
+# exited GREEN. The waiver was reason-blind by construction: it matched the
+# ROW, never the failure.
+#
+# The same shape was already measured from the other direction. With the
+# codebook moved aside, `family_sweep` exits 1 for a completely unrelated
+# infrastructure reason and this table would still have called it excused.
+#
+# So a row may now declare ONE exit status that its OWN TOOL defines as an
+# authorized outcome. Gate 2 does not know what the debt is, does not hold the
+# six values, and does not read the tool's prose -- it interprets a status the
+# tool computed by comparing structured `(kind, subject)` fingerprints against
+# `docs/family-sweep-known-debt.json`. Any other non-zero status, including
+# plain exit 1, is RED. That keeps the runner a thin interpreter of the real
+# tool rather than a second implementation of it, which is the whole reason it
+# shells out.
+#
+# `--strict-all` refuses even this.
+KNOWN_EXIT = {
+    "family_sweep": (3, "blocking findings exactly equal the authorized W6 set "
+                        "in docs/family-sweep-known-debt.json"),
+}
 
 
 def main():
@@ -132,14 +162,24 @@ def main():
                            capture_output=True, text=True)
         dt = time.time() - t0
         ok = r.returncode == 0
-        known = name in KNOWN_FAILING and not args.strict_all
+        # KNOWN only when the tool returned the EXACT status it defines as an
+        # authorized outcome. Not "this row is allowed to fail".
+        allowed = KNOWN_EXIT.get(name)
+        known = (allowed is not None and r.returncode == allowed[0]
+                 and not args.strict_all)
         if not ok and not known:
             unexpected += 1
         mark = "  ok  " if ok else ("KNOWN " if known else " FAIL ")
         print(f"  [{mark}] {name:20} exit={r.returncode}  {dt:5.1f}s")
         if not ok:
-            why = KNOWN_FAILING.get(name) if known else meaning
-            print(f"           -> {why}")
+            print(f"           -> {allowed[1] if known else meaning}")
+        if known:
+            # Show the tool's own one-line verdict so KNOWN is distinguishable
+            # from XPASS/regression without dumping the report.
+            for line in r.stdout.splitlines():
+                if "KNOWN DEBT" in line or "STALE WAIVER" in line:
+                    print(f"           -> {line.strip()[:88]}")
+                    break
         results.append((name, r.returncode, ok, known, r.stdout + r.stderr))
 
     print("\n" + "=" * 78)
