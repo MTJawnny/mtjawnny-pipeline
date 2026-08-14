@@ -296,8 +296,10 @@ encodes.
   after `ABILITY_WORD.sub()` and moved **443**. The 43 were ability-word
   statics (`Threshold — As long as…`, CR 207.2c) and all correct — but they
   arrived as an unexplained surplus in the diff, not as an error. Same shape as
-  Gate 3b's `--orphans` finding (4 consumers use `det_scan_texts()`, 19 bypass
-  it), one layer down.
+  Gate 3b's `--orphans` finding (**8** consumers use `det_scan_texts()`, **23**
+  bypass it — re-derived 2026-08-13; this line read 4/19 from 2026-08-04 and
+  was never re-measured, which is the carried-forward-count trap biting THIS
+  FILE for the second recorded time), one layer down.
 - **A new tail branch in `parse_delivery` can only claim lines that already
   reached `spell-or-static`** — which makes zero re-routes a structural
   guarantee, not a lucky result. Prefer the tail when a shape does not need to
@@ -704,6 +706,47 @@ encodes.
   of them duplicate pairs with their own paper twin**, inflating every axis DF —
   which feeds `idf` *and* the 172 ceiling — against the ratified "paper rows
   preferred over A- variants".
+
+- **A DISPLAY STRING READ AS DATA SILENTLY CHANGES THE CONCLUSION.**
+  `foundry_object_lattice.measure()["residual"]` **truncates its clause to 90
+  characters** — it exists to be printed. Consuming it as data drops the
+  trailing `from <zone>` and reclassifies the clause. Same family as "a
+  generated artifact is not the CR": ask what a field is FOR before joining on
+  it.
+- **A REMINDER-TEXT SEARCH FINDS THE OPPOSITE OF WHAT IT LOOKS FOR.** Spree
+  prints *"Spree (Choose one or more additional costs.)"*, so a naive
+  `choose one` search matches the REMINDER and files Spree cards as
+  **mutually exclusive modes** — the exact inverse of the truth, since Spree
+  modes are additive. Two cards were classified that way during the locality
+  arc. §6a strips reminder text; a modality test must run AFTER the strip, and
+  `IN-CARD-SEPARATION-CENSUS-2026-08-06.md` §6a-vs-CR-700.2 is the standing
+  tension.
+- **A BEFORE/AFTER DIFF CANNOT SEE A WRONG VALUE IN A FIELD THAT DID NOT EXIST
+  BEFORE.** The locality backfill's `verify()` checked added / removed /
+  **changed** addresses, and `changed` was **structurally dead**: the pre-state
+  carried zero addresses, so `set(was) & set(now)` is empty and no coordinate
+  can ever differ from a value that was never there. NC3 mutated a stored
+  coordinate by +99 and `verify` returned **clean** — added still equalled the
+  planned count, because a count cannot see a substitution (the `len() >= 15`
+  halt-guard, one layer up). **The cure is to compare against the DECLARATION,
+  not against the past**: the applied result must equal the plan
+  coordinate-by-coordinate. Generalises past this migration — **any additive
+  migration's `changed` arm is dead on arrival, and it is the arm that looks
+  most like real diligence.** The `changed` check is kept for the re-address
+  operation, which is unbuilt and would have a non-empty `was`.
+- **A MODULE RUN AS `__main__` IS A SECOND, SEPARATE COPY OF ITSELF, AND
+  MONKEYPATCHING THE WRONG ONE READS AS A PASSING TEST.** `foundry_locality.py`
+  run as `__main__` does `import foundry_det_pass`, which imports
+  `foundry_locality` **afresh** — so two live copies exist, and
+  `globals()["resolve"] = ...` patched the copy nobody calls. The write-boundary
+  fixture reported a **green** result it had never exercised. **Patch the module
+  the code under test actually reaches** (`fdp.fl.resolve`), never your own
+  globals, whenever the patch has to cross a module boundary. Note the asymmetry
+  that hides it: patching `fc.canonicalize_self_reference` in the same fixture
+  DID work, because `foundry_common` is never `__main__` and therefore has
+  exactly one instance — so a fixture file can have one working patch and one
+  silently dead patch side by side. Cousin of "a probe is code and gets audited
+  like code": here the probe agreed with itself twice.
 
 ## Out of scope — check before raising a finding
 

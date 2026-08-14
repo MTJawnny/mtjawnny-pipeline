@@ -62,7 +62,24 @@ WORSE_IF_UP = ("unrouted", "uncontexted", "dropped", "unscanned", "violations",
                # 2026-08-09: the two Gate 2 checks that were measured
                # INCAPABLE OF FAILING now ratchet here. A new drift finding is
                # worse; a lost ruling document is worse.
-               "findings", "sole_home", "unanchored")
+               "findings", "sole_home", "unanchored",
+               # 2026-08-13, foundry_locality.py: an assertion the resolver
+               # addresses to exactly one OWNER whose stored `locality` is
+               # ABSENT. Correct value 0, and a rise means addressable evidence
+               # lost its metadata.
+               #
+               # THE MARKER IS THE FULL METRIC NAME ON PURPOSE, not the bare
+               # word "missing". Markers match as substrings of the whole
+               # dotted key, and `foundry_family_sweep` already emits
+               # `missing_from_ratified` while `foundry_batch8_diff` emits
+               # `n_missing` and `n_excluded_missing`. None is pinned TODAY, so
+               # a bare marker would collide with nothing and then flip three
+               # other consumers' metrics from neutral to fatal the day someone
+               # pins them -- the `ambiguous` collision the locality handoff
+               # recorded, except deferred instead of immediate. A narrow
+               # marker cannot do that; the rename hole it opens in exchange is
+               # closed by `assert_ratchet_directions()` in foundry_locality.py.
+               "addressable_missing")
 WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  "options", "content", "passed", "graded",
                  # 2026-08-09: the count of foundry artifacts that reach a
@@ -83,6 +100,24 @@ WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  # the sample sheet. Record:
                  # docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md.
                  "memberships",
+                 # 2026-08-13, foundry_locality.py: assertions whose evidence
+                 # resolves to exactly one semantic owner. Coverage that FALLS
+                 # means the resolver, the corpus or the canonicaliser moved
+                 # under existing evidence, which is the one thing locality
+                 # must never do silently.
+                 #
+                 # `ambiguous` was DELIBERATELY NOT added as a marker: it
+                 # collides with the pre-existing `ground_truth_wide.
+                 # head_ambiguous`, and flipping that metric from neutral to
+                 # fatal would change another consumer's semantics as a side
+                 # effect. `locality.ambiguous` therefore stays neutral --
+                 # reported on any movement, which is enough.
+                 #
+                 # `locality.span` resolves to WORSE_IF_UP through the
+                 # pre-existing "span" marker. That is the correct direction
+                 # (more quotes crossing unit boundaries is worse) and is
+                 # accepted deliberately rather than by accident.
+                 "owned",
                  # a ruling that stops being recorded anywhere, or a document
                  # that vanishes, is a SILENT loss -- the exact thing the
                  # registry exists to prevent and could not report.

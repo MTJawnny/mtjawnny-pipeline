@@ -1203,6 +1203,17 @@ when the vocabulary is closed.
 measurement rather than on output. Against that, ruling AQ2 without it means
 choosing between a measured 77% and an unmeasured claim.
 
+> **NOTE ADDED 2026-08-13 — FL-2 IS RESOLVED AND DID NOT DECIDE AQ4 OR AQ5.**
+> Semantic locality was ratified and implemented (canonical ruling:
+> `docs/B-MIGRATION-DISCOVERY.md` §11). An assertion may now carry an optional
+> `locality: [face, paragraph]` address. **AQ4 and AQ5 below remain open and
+> are not pre-committed by it** — FL-2 addresses *where a fact lives*, AQ4
+> addresses *what a fact asserts*. The FL-2 packet had recommended folding the
+> two together for exactly that reason; ratification separated them instead,
+> which leaves AQ4 as open as it was. Nothing in AQ4's tradeoff below has
+> changed: the axis is still the primary object, S1–S7 still holds, and the
+> human assertions are still filed under it.
+
 **AQ4. Is the axis the right primary object, or is the predicate row?**
 Option F versus everything else.
 *Tradeoff:* the axis is ratified law, S1–S7 and the naming grammar are built on

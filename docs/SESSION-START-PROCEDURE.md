@@ -216,7 +216,8 @@ It greps `docs/` and `docs/archive/` with spelling drift tolerated
 (`modal-bullet` / `modal_bullets` / `modal bullets` are one topic), separates
 ruling lines from prose, **and greps the code for a helper that already does
 it**. `--orphans` reports which consumers of card text bypass the ratified
-preprocessing pipeline — measured 2026-08-04: **4 use it, 19 bypass it**, and
+preprocessing pipeline — **re-derived 2026-08-13: 8 use it, 23 bypass it**
+(was 4/19 on 2026-08-04, and the stale pair sat in two files at once), and
 both classifiers that matter (`foundry_shape_extractor`, `foundry_definition_drift`)
 are bypassers.
 

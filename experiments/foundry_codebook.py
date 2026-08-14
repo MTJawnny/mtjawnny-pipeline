@@ -66,9 +66,24 @@ TIERS = ("provisional", "corroborated")
 # json.dump preserves insertion order, so producers build dicts in exactly
 # this order and lint() re-checks it -- key order is part of the byte-identity
 # guarantee, not a cosmetic preference.
+#
+# `locality` (added 2026-08-13, SEMANTIC LOCALITY, resolving FL-2) is the
+# newest member and sits LAST on purpose. It is optional, so appending changes
+# the emission order of exactly nothing that already exists: every assertion
+# written before this change re-serializes byte-identically, which is what lets
+# the backfill assert "the only delta is an added key" rather than eyeball it.
+#
+# NO SCHEMA BUMP TO /3. `original_lane`, `effective_lane` and
+# `promotion_reason` are the precedent -- optional keys omitted entirely when
+# absent rather than emitted as null, because an absent lane is not the same
+# statement as an unknown lane. An absent ADDRESS is the same shape of claim:
+# "nothing here asserts where this fact lives", not "this fact lives nowhere".
+# A /2 reader that ignores an unknown key still reads every /2 fact correctly,
+# so the format is forward-compatible in the one direction that matters.
 ASSERTION_KEY_ORDER = (
     "class", "source_ref", "original_lane", "effective_lane",
     "promotion_reason", "quote", "corpus_ref", "evidence_status",
+    "locality",
 )
 MEMBER_KEY_ORDER = ("oracle_id", "tier", "assertions")
 
@@ -185,12 +200,44 @@ def member_by_id(entry: dict, oracle_id: str):
 # assertion construction / merge
 # --------------------------------------------------------------------------
 
+def normalize_locality(locality):
+    """The stored form of a semantic address: `[face_index, paragraph_index]`.
+
+    `foundry_locality.resolve()` returns its coordinate as a TUPLE, and JSON has
+    no tuple -- so an un-normalised address would be a tuple in memory and a
+    list on readback. Every determinism check in this module compares
+    serialized bytes and would not notice, but `write_codebook_atomic`'s
+    readback lint and any in-memory equality check would, and a producer that
+    stores one shape while the reader sees another is the "derived map is not
+    the list it was derived from" trap with a JSON round-trip in the middle.
+    So the conversion happens ONCE, here, and halts on anything else.
+    """
+    if isinstance(locality, tuple):
+        locality = list(locality)
+    if (not isinstance(locality, list) or len(locality) != 2
+            or any(isinstance(x, bool) or not isinstance(x, int) or x < 0
+                   for x in locality)):
+        fc.halt(f"locality {locality!r} is not a [face_index, paragraph_index] "
+                f"pair of non-negative integers. An address is a coordinate "
+                f"into the shared face reader's output; refusing to store a "
+                f"shape no resolver can read back.")
+    return [int(locality[0]), int(locality[1])]
+
+
 def build_assertion(cls: str, source_ref: str, quote: str, corpus_ref: str,
                     evidence_status: str = "quoted", original_lane: str = None,
-                    effective_lane: str = None, promotion_reason: str = None) -> dict:
+                    effective_lane: str = None, promotion_reason: str = None,
+                    locality=None) -> dict:
     """Builds one assertion with ASSERTION_KEY_ORDER insertion order. Optional
     keys are omitted entirely rather than emitted as null -- an absent lane is
-    not the same statement as an unknown lane."""
+    not the same statement as an unknown lane, and an absent ADDRESS is not the
+    same statement as an address at the origin.
+
+    `locality` is the semantic OWNER only. The evidence SPAN is deliberately
+    not stored (B-MIGRATION-DISCOVERY.md sec.11, amendment A2): it is a
+    pure function of
+    quote + corpus snapshot, and storing it would duplicate something that can
+    go stale on its own."""
     a = {"class": cls, "source_ref": source_ref}
     if original_lane is not None:
         a["original_lane"] = original_lane
@@ -201,6 +248,8 @@ def build_assertion(cls: str, source_ref: str, quote: str, corpus_ref: str,
     a["quote"] = quote
     a["corpus_ref"] = corpus_ref
     a["evidence_status"] = evidence_status
+    if locality is not None:
+        a["locality"] = normalize_locality(locality)
     return a
 
 
@@ -421,6 +470,25 @@ def lint(codebook: dict, path_label: str = "codebook") -> dict:
                 elif quote.strip() and ev == "legacy-captain-seed":
                     v.append(f"{slug}/{oid}: evidence_status is 'legacy-captain-seed' but a quote is "
                              f"present — the exemption means no quote was recorded; use 'quoted'")
+
+                # SEMANTIC LOCALITY (FL-2, ratified 2026-08-13). Shape-checked
+                # only: an address is SNAPSHOT-RELATIVE, so whether it still
+                # resolves is a question for the corpus-loading reporter
+                # (foundry_locality.py), not for a lint that reads one file and
+                # no cards. What lint CAN prove is that the coordinate is
+                # well-formed and that it is not making a claim its own
+                # assertion cannot support.
+                if "locality" in a:
+                    loc = a["locality"]
+                    if (not isinstance(loc, list) or len(loc) != 2
+                            or any(isinstance(x, bool) or not isinstance(x, int)
+                                   or x < 0 for x in loc)):
+                        v.append(f"{slug}/{oid}: locality {loc!r} is not a "
+                                 f"[face_index, paragraph_index] pair of non-negative integers")
+                    elif not (isinstance(quote, str) and quote.strip()):
+                        v.append(f"{slug}/{oid}: carries a locality address but no quote — an "
+                                 f"address is DERIVED from the evidence quote, so a quoteless "
+                                 f"assertion has nothing to resolve and cannot own one")
 
                 for lane_field in ("original_lane", "effective_lane"):
                     if lane_field in a and a[lane_field] not in LANES:

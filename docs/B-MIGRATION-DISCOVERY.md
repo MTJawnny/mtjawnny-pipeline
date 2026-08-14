@@ -849,3 +849,127 @@ post-consolidation scale. Accepted under the same reasoning as R2
 
 *Session spend: $0.00. Cumulative arc: $90.51. Headroom vs the $140
 ceiling: $49.49.*
+
+---
+
+## 11. SEMANTIC LOCALITY — CAPTAIN RATIFIED (2026-08-13), resolving FL-2
+
+**This section is the CANONICAL TRACKED HOME of the FL-2 ruling.** It lives
+here because §10's A1 defines the assertion object this amends, and
+`experiments/foundry_codebook.py` already names this document as its schema
+authority (*"B-MIGRATION-DISCOVERY.md sec.10 A1/A13, sec.9 R11"*). FL-2 adds
+**one optional key** to A1's assertion; it changes nothing else in A1, and A1
+otherwise stands.
+
+Promoted 2026-08-13 from
+`docs/SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` §12, which
+remains the historical working packet (measurement tables, the resolution
+matrix, the eleven pass criteria). **The packet is not the authority; this
+section is.** FL-2 was raised in
+`docs/THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8, whose recommendation
+(C — fold into AQ4) was **not** what was ratified; see "Relationship to AQ4/AQ5"
+below.
+
+### 11.1 The ratification text, verbatim
+
+> **SEMANTIC LOCALITY FOR FOUNDRY ASSERTIONS** — resolves FL-2.
+>
+> Existing axes, members and assertion stacks remain authoritative for direct
+> card facts. Nothing currently stored changes meaning.
+>
+> An assertion may optionally carry deterministic **semantic locality**: the one
+> structured card location that owns the fact the assertion proves, expressed
+> against the existing card key and the face/paragraph structure already
+> produced by the shared face reader.
+>
+> **No separate mode identifier is stored.** Measured 2026-08-13: every modal
+> bullet occupies its own paragraph (1,791 paragraphs with exactly one bullet,
+> zero with two or more), so the paragraph coordinate already separates modes.
+>
+> **Evidence location and semantic ownership are distinct.** A quote may cover
+> more text than the fact owns. Evidence span is **derived** from the quote and
+> the corpus snapshot, never stored.
+>
+> **Modal grouping and selection cardinality are derived** from the card's
+> printed structure — the owning header is the nearest preceding non-bullet
+> paragraph on the same face — and are never copied onto an assertion.
+>
+> **Representations are reconciled, not raced.** A quote resolves against every
+> supported text representation; the owner is accepted only when the combined
+> result identifies exactly one location. Conflict or multiplicity yields
+> unaddressed. Provenance class must not influence resolution.
+>
+> **Unaddressed assertions remain fully valid card-level evidence** and may not
+> establish that their fact co-occurs in the same semantic unit with another
+> fact.
+>
+> **Atomic child-effect decomposition remains deferred.** Reconsider only when a
+> consumer must distinguish two facts inside one paragraph.
+>
+> **Semantic locality does not certify semantic correctness**, and no existing
+> correctness guard is relaxed by it. Where locality analysis finds a membership
+> contradicting its axis definition, it is routed to the correctness path.
+>
+> **Addresses are snapshot-relative**, re-derived after corpus changes;
+> unresolved changes are reported, never silently reattached.
+>
+> **Parent law S1–S7 is unchanged.** Parent derivation remains card-level.
+>
+> Field names, serialization and helper names follow repository precedent at
+> implementation and are not fixed by this ruling.
+
+### 11.2 Amendments A1–A4 (from the architecture review, RATIFY WITH AMENDMENTS)
+
+Recorded in `docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` and
+binding alongside the text above.
+
+| | |
+|---|---|
+| **A1** | **No mode identifier is stored.** The paragraph coordinate *is* the mode path. |
+| **A2** | The address may name a **contiguous span**; 39 quotes legitimately cover a whole modal block. Such quotes resolve to SPAN and stay **unaddressed** — the span is reported, never stored. |
+| **A3** | **Reconciled, never raced.** Resolve against every representation; accept **iff the union of COORDINATES has exactly one element**. The union is over coordinates rather than strings, so two paragraphs whose distinct raw text collapses to identical canonical text still hold different coordinates and correctly yield AMBIGUOUS. Provenance class must never influence resolution. |
+| **A4** | **Exclusivity is derived, never stored** — from the owning header. |
+
+### 11.3 As implemented (field names, per the ruling's closing sentence)
+
+Field names were left to implementation by the ruling itself. As built:
+
+- **`locality`**, an OPTIONAL key on the A1 assertion object, holding
+  `[face_index, paragraph_index]` — two non-negative integers, the coordinate
+  produced by the shared face reader (`tier_engine.get_raw_faces`). No parallel
+  indexing is invented.
+- **No schema bump.** Still `foundry-codebook/2`. Precedent: `original_lane`,
+  `effective_lane` and `promotion_reason` are already optional keys omitted
+  entirely when absent. An absent lane is not an unknown lane, and an absent
+  address is not an address at the origin.
+- Appended **last** in `ASSERTION_KEY_ORDER`, so every pre-existing assertion
+  re-serializes byte-identically; `lint()` validates shape and key order, and
+  rejects an address on a quoteless assertion (an address is derived from a
+  quote).
+- The **span is not stored** (A2 / packet §13), and **no mode id is stored**
+  (A1).
+
+Measured at ratification, re-derivable via
+`python3 experiments/foundry_locality.py --census`:
+
+| | |
+|---|--:|
+| assertions on active axes | **7,930** |
+| addressed (semantic OWNER) | **7,808** |
+| unaddressed, by rule | **122** (40 AMBIGUOUS · 39 SPAN · 39 quoteless · 4 UNRESOLVED) |
+
+Tombstone (non-active) axes are **outside** the active-axis locality contract.
+
+### 11.4 Relationship to AQ4 and AQ5 — both REMAIN OPEN
+
+`ARCHITECTURE-AUDIT.md` §AQ4 (is the predicate row the right primary object?)
+and §AQ5 (a `level` field) are **not** decided by this ruling and are not
+pre-committed by it. FL-2 addresses **where a fact lives**; AQ4 addresses
+**what a fact asserts**. The FL-2 section in
+`THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8 recommended folding FL-2
+into AQ4 precisely to avoid pre-committing it; ratification took the opposite
+route and separated them, which leaves AQ4 exactly as open as it was.
+
+**Also unchanged by this ruling:** parent law S1–S7
+(`PARENT-TREE-CANDIDATES.md`), every existing correctness guard, and the
+membership-exclusivity question deferred 2026-08-09.

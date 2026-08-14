@@ -7,6 +7,100 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
+## 0AB. SEMANTIC LOCALITY IS DONE — ALL ELEVEN STEPS, INCLUDING THE BACKFILL
+
+**→ CANONICAL RULING: `docs/B-MIGRATION-DISCOVERY.md` §11.** Tracked, and it
+sits with §10's A1 — the section that defines the assertion object FL-2 amends,
+and the one `experiments/foundry_codebook.py` already names as its schema
+authority. §11 carries the ratification text verbatim, amendments A1–A4, the
+as-built field names, and why AQ4/AQ5 stay open. **Resolves FL-2. Do NOT re-run
+any of it.**
+
+*Historical working packets, untracked by choice and NOT the authority:*
+`SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md` (measurement tables,
+resolution matrix, the eleven pass criteria) ·
+`SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md` (why A1–A4) ·
+`THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8 (where FL-2 was raised;
+its recommendation was **not** what was ratified).
+
+*(The implementation handoff `SEMANTIC-LOCALITY-IMPLEMENTATION-HANDOFF.md` was
+deleted 2026-08-13 once all eleven steps landed, per its own §9 item 4. Every
+durable ruling, correction and trap it carried was moved into this section,
+`CLAUDE.md`'s traps list, `docs/SESSION-START-PROCEDURE.md`, §11 above, and the
+implementation files' own docstrings before it went.)*
+
+An assertion already carried the quote that proves it. It never carried **which
+part of the card** that quote came from — so the codebook knew Active Volcano
+destroys a permanent **and** bounces a land, and could not know they are two
+options you choose **between**. Locality is that address: one optional
+`locality: [face, paragraph]` key, derived from the quote.
+
+| | |
+|---|--:|
+| assertions on active axes | **7,930** |
+| **addressed** by the backfill | **7,808** |
+| left unaddressed, by rule | **122** |
+| new DET output born addressed | `foundry_det_pass.cmd_apply` |
+
+**THE REMAINDER IS 122, NOT 83.** The implementation handoff §6 enumerates
+*"the other 83 (40 ambiguous + 4 unresolved + 39 quoteless)"* and **omits the
+39 SPAN rows**, which `resolve()` equally declines to address. Span and
+quoteless are both 39, which is how one got read for both. The backfill RULE
+in that section — *address only where `resolve()` returns OWNER* — is correct
+and unchanged; only its arithmetic complement was wrong. Re-derive with
+`--report`, never quote the 83.
+
+**What is stored and what is deliberately not:** the semantic **OWNER** only.
+The evidence **span** is derived (§13), **no mode identifier** is stored
+(A1 — 1,791 paragraphs hold exactly one bullet, zero hold two), and
+**exclusivity is derived** from the owning header (A4).
+
+**Unaddressed is not a defect.** An unaddressed assertion is fully valid
+card-level evidence; it simply cannot prove same-unit co-occurrence. The
+working sheet is `python3 experiments/foundry_locality.py --report`
+(gitignored, local).
+
+**ROLLBACK POINT for the backfill mutation**, recorded here because
+`experiments/out/` is gitignored and this is the only durable place for it:
+codebook `b4197e94…` → **`6aa6193f…`**, backed up under the backup law to
+`experiments/out/foundry/backups/codebook.v0.7.pre-locality-backfill.20260814-015858.json`
+(readback-verified at the pre-mutation sha). To revert, copy that file over
+`experiments/out/foundry/codebook.json`. **The backup is per-machine** — on a
+fresh clone it does not exist, and the rebuild path is
+`foundry_locality_backfill.py --plan` then `--dry-run`, not a restore.
+
+**Three things a session must not undo:**
+
+* **Do NOT gate the write path on locality.** `foundry_det_pass` writes
+  unaddressed rows on purpose — blocking a write on address coverage would
+  make an unaddressable-but-valid membership unwritable, directly against the
+  ratification. `write_boundary_fixtures` WB3 goes red if anyone adds that
+  gate, and `--selftest` proves WB3 can fail.
+* **Do NOT quote the census as storage.** They are different questions and the
+  gap was measured: deleting all 7,808 stored addresses left every one of Gate
+  2's 15 rows **green**, because a census computed from quotes reproduces
+  itself perfectly on a file with the field stripped. `locality.stored_owned`
+  and `locality.stored_mismatch` now ride the ratchet and close it.
+* **Do NOT re-address.** The backfill ADDS and refuses to rewrite. Re-addressing
+  after a corpus change is a different operation with a different conservation
+  rule, and it is unbuilt.
+
+**Still Captain's, untouched here:** AQ4 (the predicate row), AQ5 (`level`),
+qualifier vocabulary, child effects.
+
+**THE NEXT ARC IS THE QUALIFIER PACKET, AND ITS EVIDENCE BASE IS ALREADY
+CORRECTED — USE THE CORRECTED NUMBERS.**
+`docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md` is superseded on three
+points by `docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md`:
+**48.0% of 2,106 clauses** (not 2,389 — the original over-counted by 283, 11.8%,
+because `clauses_for` yields the same clause once per `det_scan_texts` variant
+and was not deduped by `(card, stem, clause)`), **×9.2 expansion**, and the
+original **lacked a CR 702 keyword-restriction category entirely** — add it.
+Quoting the original census's headline is the carried-forward-count trap with a
+verification pass already sitting next to it.
+
+---
+
 ## 0AA. THE OBJECT LATTICE IS BUILT AND WAITING ON ONE RATIFICATION
 
 **→ `docs/OBJECT-LATTICE-2026-08-09.md`. Read it before §0Z.**
@@ -412,6 +506,16 @@ diagnosis; it needs a shared-object re-join, not a list entry.
 
 ## 4. CARRIED FORWARD — still open
 
+- **13 memberships on `rule:grants-trample-to-creatures-with-counters`
+  contradict the axis's own definition.** The axis claims the card *grants*
+  trample to counter-bearing creatures; Avatar of the Resolute prints
+  `Reach, trample` and simply **has** it, as does Bioessence Hydra. Found by
+  locality analysis 2026-08-13 and **routed, not fixed** — locality does not
+  certify semantic correctness (§11 of `B-MIGRATION-DISCOVERY.md`), so this
+  belongs to `foundry_definition_drift` / a membership ruling.
+  **No live gate reports it:** `definition_drift` returns zero matches on this
+  axis today, so the only thing keeping it visible is this line. Surfaced here
+  2026-08-13 because it previously existed **only** in two untracked packets.
 - **W8, Captain's sheet — now fourteen items.** The ten standing ones, plus
   CR 709.5i, the shared-object splitter, and the two from the CR refresh
   (`docs/CR-REFRESH-2026-08-09.md` §DECISION SHEET): **D-CR-1 is RULED and

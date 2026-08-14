@@ -1001,6 +1001,54 @@ def audit(stem: str, domain: set) -> dict:
             "nc3_quoted_only": quoted_only, "nc4_bad_slug": bad_slug}
 
 
+def _locality_of(card: dict, quote: str) -> dict:
+    """The semantic owner of one proving quote, for the review sheet.
+
+    Consumes `foundry_locality` rather than re-deriving coordinates -- a second
+    implementation of the resolution law is exactly the re-implementation
+    defect class this repository keeps paying for.
+    """
+    import foundry_locality as loc
+    r = loc.resolve(card, quote)
+    out = {"status": r["status"], "owner": list(r["owner"]) if r["owner"] else None}
+    if r["owner"]:
+        h = loc.owning_header(card, r["owner"])
+        if h["modal"]:
+            out["modal_header"] = list(h["header"])
+    return out
+
+
+def exclusivity_report(cards: dict) -> list:
+    """Cards whose lattice facts come from MUTUALLY EXCLUSIVE modes.
+
+    This is the 41-card flattening population the locality ratification exists
+    to fix, now reported with the owners that prove it. Reported, never
+    written: what a consumer does with exclusivity is a consumer decision.
+    """
+    import foundry_locality as loc
+    rows = []
+    for oid, card in sorted(cards.items(), key=lambda kv: kv[1]["name"]):
+        owned = {}
+        for stem in sorted(ACTION_VERBS):
+            r = classes_for_card(card, stem, PERMANENT_TYPES)
+            for cls in sorted(r["classes"]):
+                res = loc.resolve(card, r["quotes"][cls])
+                if res["status"] == loc.OWNER:
+                    owned[slug_for(stem, cls)] = res["owner"]
+        pairs = []
+        keys = sorted(owned)
+        for i, a in enumerate(keys):
+            for b in keys[i + 1:]:
+                if loc.mutually_exclusive(card, owned[a], owned[b]):
+                    pairs.append({"a": a, "b": b,
+                                  "owner_a": list(owned[a]),
+                                  "owner_b": list(owned[b])})
+        if pairs:
+            rows.append({"card": card["name"], "oracle_id": oid,
+                         "exclusive_pairs": pairs})
+    return rows
+
+
 SAMPLE_REPORT_JSON = fc.FOUNDRY_OUT_DIR / "object_lattice_samples.json"
 SAMPLE_REPORT_MD = fc.FOUNDRY_OUT_DIR / "object_lattice_samples.md"
 
@@ -1045,8 +1093,17 @@ def write_report(seed: int, n: int) -> dict:
                 "slug": slug,
                 "members": len(pool),
                 "axis_status_today": exists or "ABSENT — self-instantiates per b6 §11.2",
+                # SEMANTIC LOCALITY on NEW rule-derived output (roadmap step 3,
+                # ratified 2026-08-13). The lattice is the first producer to
+                # emit an address, and it emits into the REPORT only -- this
+                # sheet is a review artifact, not provenance. Wiring an address
+                # into the assertion payload `foundry_det_pass.cmd_apply`
+                # WRITES is the backfill migration, which is a codebook
+                # mutation under the backup law and is deliberately not done
+                # here.
                 "sample": [{"card": cards[o]["name"], "oracle_id": o,
-                            "quote": q}
+                            "quote": q,
+                            "locality": _locality_of(cards[o], q)}
                            for o, q in rng.sample(pool, min(n, len(pool)))],
             }
         actions[stem] = {
@@ -1084,6 +1141,7 @@ def write_report(seed: int, n: int) -> dict:
             "subtype_lists_205_3": "consumed from foundry_cr702_classes.type_vocabulary()",
         },
         "actions": actions,
+        "mutually_exclusive_facts": exclusivity_report(cards),
         "proposed_det_patterns": proposed_patterns,
     }
     fc.write_json(SAMPLE_REPORT_JSON, report)

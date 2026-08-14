@@ -74,6 +74,12 @@ GATES = [
     # could see the other 87.
     ("object_lattice",   [f"{EXP}/foundry_object_lattice.py", "--gate"],
      "the object lattice lost memberships, or a residual went unexplained"),
+    # SEMANTIC-ADDRESS ratification, 2026-08-13 (resolves FL-2). Fixtures for
+    # the six ratified negative controls plus a ratchet on owner coverage.
+    # Negative-controlled by `--selftest`, which swaps in a first-match-wins
+    # resolver and requires the fixtures to catch it.
+    ("locality",         [f"{EXP}/foundry_locality.py", "--gate"],
+     "semantic-locality coverage fell, or the resolution law regressed"),
 ]
 
 # family_sweep has a STANDING failure (the 6 blocking findings) that predates

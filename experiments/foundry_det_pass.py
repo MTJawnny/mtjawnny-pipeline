@@ -46,6 +46,7 @@ sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
 import foundry_det_patterns_probe as probe  # noqa: E402
+import foundry_locality as fl  # noqa: E402
 import re  # noqa: E402
 
 DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
@@ -462,6 +463,32 @@ def cmd_generate_samples():
     print(f"\n{len(axis_patterns)} patterns need per-sample verification against their def_anchor before `apply`.")
 
 
+def new_locality_stats() -> dict:
+    return {"OWNER": 0, "SPAN": 0, "AMBIGUOUS": 0, "UNRESOLVED": 0,
+            "no card": 0}
+
+
+def det_locality_owner(card, clause: str, stats: dict):
+    """The semantic owner coordinate for a DET clause, or None. NEVER RAISES.
+
+    Module-level rather than a closure inside `cmd_apply` so the write
+    boundary's behaviour can be exercised without performing a codebook
+    mutation. A guard reachable only by mutating the codebook is a guard nobody
+    will test twice.
+
+    The "never raises" part is the ratified rule, not a convenience:
+    `strict=False` means even a card whose CARDNAME canonicalisation reflows
+    paragraphs yields an unaddressed assertion instead of killing a
+    Captain-ratified write.
+    """
+    if card is None:
+        stats["no card"] += 1
+        return None
+    r = fl.resolve(card, clause, strict=False)
+    stats[r["status"]] += 1
+    return r["owner"] if r["status"] == fl.OWNER else None
+
+
 def cmd_apply(verdicts_path: str):
     if not HITS_CACHE_PATH.exists():
         fc.halt(f"{HITS_CACHE_PATH} not found -- run generate-samples first")
@@ -546,6 +573,27 @@ def cmd_apply(verdicts_path: str):
         print(f"instantiated {len(instantiated)} virtual node(s) under "
               f"grammar sec.11.2")
 
+    # SEMANTIC LOCALITY (FL-2, ratified 2026-08-13). New rule-derived output is
+    # born addressed: the clause below is the exact text that proves the
+    # assertion, so the one place that mints DET provenance is also the one
+    # place where the address is free and unambiguous.
+    #
+    # THIS IS NOT A GATE, AND MUST NOT BECOME ONE. An address is optional by
+    # ratification, and an unaddressed assertion stays fully valid card-level
+    # evidence -- so a quote that resolves to SPAN, AMBIGUOUS or UNRESOLVED is
+    # written WITHOUT an address rather than refused. Blocking a write on
+    # address coverage would make an unaddressable-but-valid membership
+    # unwritable, which is directly against the ratified unaddressed rule.
+    # `strict=False` carries that guarantee structurally: the resolver cannot
+    # halt this path even on a card whose canonicalisation reflows.
+    #
+    # Counted by outcome and reported below, never as a net number -- the
+    # unaddressed rows are the ones a human works down over time.
+    locality_stats = new_locality_stats()
+
+    def resolve_owner(oid, clause):
+        return det_locality_owner(cards.get(oid), clause, locality_stats)
+
     applied = []
     for p in axis_patterns:
         slug = p["resolved_slug"]
@@ -570,7 +618,8 @@ def cmd_apply(verdicts_path: str):
                 fc.halt(f"DET hit {slug}/{oid} produced no matched clause on re-scan — the recorded hit "
                         f"list and the ratified pattern disagree; nothing written")
             fcb.merge_assertion(e, oid, fcb.build_assertion(
-                "rule-derived", source_ref, clause, corpus_ref, "quoted"))
+                "rule-derived", source_ref, clause, corpus_ref, "quoted",
+                locality=resolve_owner(oid, clause)))
         e["source"] = "DET"
         after_n = len(fcb.member_ids(e))
         e["history"] = list(e["history"]) + [{
@@ -592,6 +641,21 @@ def cmd_apply(verdicts_path: str):
     print(f"  sha256={digest}")
     for slug, old_n, new_n, dropped in applied:
         print(f"  {slug}: {old_n} -> {new_n} members ({dropped} dropped with no remaining assertion)")
+
+    # ADDED AND UNADDRESSED REPORTED SEPARATELY, never as a coverage percentage
+    # standing in for both. The unaddressed rows are not failures -- they are
+    # the working queue foundry_locality.py --report enumerates.
+    total = sum(locality_stats.values())
+    if total:
+        print(f"\nsemantic locality on the {total} rule-derived assertion(s) written:")
+        print(f"  addressed (OWNER)   : {locality_stats['OWNER']}")
+        for k in ("SPAN", "AMBIGUOUS", "UNRESOLVED", "no card"):
+            if locality_stats[k]:
+                print(f"  unaddressed ({k:10}): {locality_stats[k]}")
+        print("  unaddressed assertions are fully valid card-level evidence "
+              "(ratified 2026-08-13);\n  they simply cannot prove same-unit "
+              "co-occurrence. Nothing was refused for lacking an address.")
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
