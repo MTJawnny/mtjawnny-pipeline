@@ -1,0 +1,18 @@
+{
+  "schema": "foundry-authority/1",
+  "snapshot_id": "codebook-20260814-locality-backfill",
+  "bucket": "mtjawnny-foundry",
+  "object_path": "foundry/codebook/sha256/6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c/codebook.json",
+  "sha256": "6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c",
+  "byte_size": 5066147,
+  "created_utc": "2026-08-15T00:46:10Z",
+  "codebook_schema": "foundry-codebook/2",
+  "codebook_version": "0.7",
+  "corpus_ref": "2026-07-04",
+  "active_axis_count": 403,
+  "assertion_count": 7930,
+  "human_assertion_count": 4233,
+  "rule_derived_assertion_count": 3697,
+  "mutation_review_id": "locality-backfill-plan-8cdbfa34",
+  "previous_snapshot_hash": null
+}
