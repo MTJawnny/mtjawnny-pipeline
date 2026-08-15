@@ -10,6 +10,31 @@ This is a DET job. No mutation of anything but its own outputs, no API
 calls, no card data. Deterministic: explicit sort keys everywhere, no
 reliance on set/dict iteration order (see CLAUDE.md traps).
 
+THE INPUT POPULATION IS GIT'S TRACKED SET, NOT THE FILESYSTEM.
+--------------------------------------------------------------
+Captain's ruling, 2026-08-15. `docs/RATIFIED-RULINGS-REGISTRY.md` is a
+TRACKED deletion-gate artifact, so its source population must be the
+repository's tracked documentation. Raw `DOCS.glob("*.md")` made it a
+function of one developer's worktree instead: on 2026-08-14 six untracked
+working papers added 38 references and one distinct id, and -- the reason
+this is a defect and not a cosmetic count -- an untracked incident paper
+mentioning `R8` STRIPPED SOLE-HOME STATUS from `B-MIGRATION-DISCOVERY.md`,
+the tracked document that actually carries that ruling. The deletion gate
+opened on a genuine ruling because of a file Git had never heard of.
+
+Note what did NOT catch it: the ratchet. `sole_home` held at 37 across that
+run, because a genuine sole home was lost and a FAKE one (an AQ4 benchmark
+label) was gained in the same pass. A count cannot see a substitution --
+the `len() >= 15` halt-guard trap, aimed at this file.
+
+An untracked working paper must never create or corroborate a ruling id,
+become a sole home, or move a deletion-gate count. Staging a document is
+the act that admits it. `git ls-files` (the index) is therefore the
+enumeration, which gives all three properties at once:
+  - tracked docs modified in the worktree are read as WORKING-TREE bytes;
+  - newly staged docs participate before they are committed;
+  - untracked docs are invisible until someone stages them.
+
 Outputs:
   docs/RATIFIED-RULINGS-REGISTRY.md    human-readable registry
   experiments/out/foundry/ruling_registry.json   machine-checkable
@@ -26,6 +51,7 @@ import argparse
 import foundry_audit_baseline as base
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -67,6 +93,60 @@ DEFINITION_POS = re.compile(
 NOISE = re.compile(r"^\s*(?:\||#{1,6}\s*$|-{3,}|={3,})")
 
 MAX_STATEMENT = 220
+
+
+def tracked_docs() -> list[Path]:
+    """The ONE canonical enumeration: markdown Git tracks directly under docs/.
+
+    Reads the INDEX (`git ls-files` defaults to `--cached`), so a staged
+    document participates before it is committed and an untracked one does
+    not participate at all. Content always comes from the working tree, so a
+    tracked doc edited but not staged is scanned as it currently reads.
+
+    No filename exclusion list, no mtime, no directory walk order: the
+    tracked set decides membership and the sort decides order. Any failure
+    to enumerate is fatal -- a registry built from a SILENTLY EMPTY or
+    SILENTLY PARTIAL tracked set would report rulings as uncorroborated and
+    block deletions that are in fact safe, or worse, report a document as
+    carrying nothing.
+    """
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "ls-files", "-z", "--", "docs"],
+            capture_output=True,
+            text=True,
+        )
+    except OSError as exc:  # git absent, not executable, ...
+        raise SystemExit(f"HALT: cannot run git to enumerate tracked docs: {exc}")
+    if r.returncode != 0:
+        raise SystemExit(
+            "HALT: `git ls-files` failed while enumerating tracked docs "
+            f"(exit {r.returncode}): {r.stderr.strip() or '(no stderr)'}"
+        )
+
+    # `-z` means NUL-separated and never quoted, so no unquoting step can go
+    # wrong on a non-ASCII name. The parent test reproduces the previous
+    # `DOCS.glob("*.md")` exactly: directly under docs/, never docs/archive/.
+    names = [n for n in r.stdout.split("\0") if n]
+    docs = sorted(
+        (REPO_ROOT / n for n in names
+         if Path(n).parent == Path("docs")
+         and Path(n).suffix == ".md"
+         and Path(n).name not in SELF_EXCLUDE),
+        key=lambda p: p.name,
+    )
+
+    # A tracked doc that is missing from the worktree means an unstaged
+    # deletion. Halting is the house style: skipping it would silently drop
+    # every ruling it is the sole home of, which is the exact loss this
+    # registry exists to make impossible.
+    missing = [p.name for p in docs if not p.is_file()]
+    if missing:
+        raise SystemExit(
+            "HALT: tracked under docs/ but absent from the worktree "
+            f"(unstaged deletion?): {', '.join(sorted(missing))}"
+        )
+    return docs
 
 
 def normalise_id(kind: str, num: str) -> str:
@@ -113,9 +193,9 @@ def harvest_file(path: Path) -> list[dict]:
 
 
 def build() -> dict:
-    docs = sorted(p for p in DOCS.glob("*.md") if p.name not in SELF_EXCLUDE)
+    docs = tracked_docs()
     if not docs:
-        raise SystemExit("HALT: no markdown found under docs/")
+        raise SystemExit("HALT: no TRACKED markdown found under docs/")
 
     all_hits: list[dict] = []
     for p in docs:
@@ -230,12 +310,213 @@ def write_markdown(reg: dict) -> None:
     OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
+def _selftest() -> int:
+    """Prove the tracked-doc boundary is a BOUNDARY, not a comment.
+
+    Five controls. NC1/NC2/NC4/NC5 run against a THROWAWAY git repository in
+    a temp dir -- this tool must never stage, unstage or write anything in
+    the real worktree to test itself. NC3 reads the real docs/ and mutates
+    nothing.
+
+    The temp repo is reached by rebinding this module's REPO_ROOT/DOCS.
+    `build()` and `tracked_docs()` resolve those from the module dict at call
+    time, and this function lives IN that module, so there is exactly one
+    instance to patch. (CLAUDE.md: patching your own globals is dead when the
+    patch has to cross a module boundary -- here it does not, and nothing is
+    re-imported.)
+    """
+    import shutil
+    import tempfile
+
+    global REPO_ROOT, DOCS
+    failures: list[str] = []
+
+    def check(name: str, ok: bool, detail: str) -> None:
+        if not ok:
+            failures.append(name)
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name}: {detail}")
+
+    def soles(reg: dict) -> dict:
+        return {n: list(d["sole_home_for"])
+                for n, d in reg["per_doc"].items() if d["sole_home_for"]}
+
+    def glob_docs() -> list[Path]:
+        """The pre-2026-08-15 enumeration, kept ONLY as the rigged control."""
+        return sorted((p for p in DOCS.glob("*.md")
+                       if p.name not in SELF_EXCLUDE), key=lambda p: p.name)
+
+    real_root, real_docs = REPO_ROOT, DOCS
+    tmp = Path(tempfile.mkdtemp(prefix="ruling-registry-selftest-"))
+    print("=" * 70)
+    print("SELFTEST — tracked-doc population boundary")
+    print("=" * 70)
+    try:
+        (tmp / "docs").mkdir()
+        for argv in (["init", "-q"],
+                     ["config", "user.email", "selftest@localhost"],
+                     ["config", "user.name", "selftest"]):
+            subprocess.run(["git", "-C", str(tmp)] + argv, check=True,
+                           capture_output=True, text=True)
+
+        # The fixture IS the 2026-08-14 incident in miniature: one tracked
+        # document that is the sole home of a genuine ruling, and one
+        # untracked working paper that both (a) restates that ruling, which
+        # would corroborate it away, and (b) defines a benchmark label shaped
+        # like a ruling id, which would become a sole home of its own.
+        home = tmp / "docs" / "T-HOME.md"
+        paper = tmp / "docs" / "U-PAPER.md"
+        home.write_text("# tracked\n\n- **R8** — genuine ruling, sole home here.\n",
+                        encoding="utf-8")
+        subprocess.run(["git", "-C", str(tmp), "add", "--", "docs/T-HOME.md"],
+                       check=True, capture_output=True, text=True)
+        subprocess.run(["git", "-C", str(tmp), "commit", "-qm", "fixture"],
+                       check=True, capture_output=True, text=True)
+
+        REPO_ROOT, DOCS = tmp, tmp / "docs"
+        base = build()
+
+        paper.write_text(
+            "# untracked working paper\n\n"
+            "- **R8** — restated here, which would corroborate it away.\n"
+            "- **F1** — fake benchmark label that would become a sole home.\n",
+            encoding="utf-8")
+
+        # ---- NC-RR1: an untracked doc changes nothing -------------------
+        after = build()
+        check("NC-RR1 untracked doc cannot move counts",
+              (after["distinct_rulings"], after["sole_home"],
+               after["total_references"]) ==
+              (base["distinct_rulings"], base["sole_home"],
+               base["total_references"]),
+              f"ids={after['distinct_rulings']} sole={after['sole_home']} "
+              f"refs={after['total_references']}")
+        check("NC-RR1 untracked doc cannot move homes",
+              soles(after) == soles(base), f"{soles(after)}")
+        check("NC-RR1 fake id absent", "F1" not in after["rulings"],
+              "F1 did not enter the registry")
+
+        # ---- NC-RR1-RIG: remove the boundary, the control must go red ---
+        real_enum = globals()["tracked_docs"]
+        globals()["tracked_docs"] = glob_docs
+        try:
+            rigged = build()
+        finally:
+            globals()["tracked_docs"] = real_enum
+        check("NC-RR1-RIG boundary removal is detected",
+              "F1" in rigged["rulings"] and soles(rigged) != soles(base),
+              f"rigged homes={soles(rigged)}")
+        check("NC-RR1-RIG restored", soles(build()) == soles(base),
+              "tracked-only enumeration back in force")
+
+        # ---- NC-RR5: aggregate equality hides a SUBSTITUTION ------------
+        # This is the control the real ratchet did not have. On 2026-08-14
+        # `sole_home` held at 37 while B-MIGRATION-DISCOVERY.md silently lost
+        # R8 and an AQ4 benchmark label silently gained F1. A count cannot
+        # see a substitution; only the population boundary can.
+        check("NC-RR5 aggregate sole_home is EQUAL across the substitution",
+              rigged["sole_home"] == base["sole_home"],
+              f"{base['sole_home']} == {rigged['sole_home']} — "
+              "a ratchet on this number is blind here")
+        check("NC-RR5 the substitution really happened",
+              soles(base) == {"T-HOME.md": ["R8"]}
+              and soles(rigged) == {"U-PAPER.md": ["F1"]},
+              f"genuine {soles(base)} -> fake {soles(rigged)}")
+        check("NC-RR5 boundary prevents it independently of the count",
+              soles(build()) == {"T-HOME.md": ["R8"]},
+              "R8 keeps its genuine home while the paper stays untracked")
+
+        # ---- NC-RR2: staging admits a document, pre-commit --------------
+        subprocess.run(["git", "-C", str(tmp), "add", "--", "docs/U-PAPER.md"],
+                       check=True, capture_output=True, text=True)
+        staged = build()
+        check("NC-RR2 staged doc participates before commit",
+              "F1" in staged["rulings"]
+              and len(staged["per_doc"]) == len(base["per_doc"]) + 1,
+              f"documents {len(base['per_doc'])} -> {len(staged['per_doc'])}")
+        paper.write_text("# edited after staging\n\n- **F2** — worktree bytes.\n",
+                         encoding="utf-8")
+        edited = build()
+        check("NC-RR2 worktree bytes beat index bytes",
+              "F2" in edited["rulings"] and "F1" not in edited["rulings"],
+              "the scan reads the file as it currently is")
+
+        # ---- NC-RR4: determinism x2 -------------------------------------
+        a = json.dumps(build(), indent=2, sort_keys=True, ensure_ascii=False)
+        b = json.dumps(build(), indent=2, sort_keys=True, ensure_ascii=False)
+        check("NC-RR4 determinism x2", a == b, f"{len(a)} bytes, twice")
+
+        # ---- halt guards ------------------------------------------------
+        home.unlink()  # tracked, now absent from the worktree
+        try:
+            build()
+            check("HALT on unstaged deletion", False, "did NOT halt")
+        except SystemExit as exc:
+            check("HALT on unstaged deletion", "T-HOME.md" in str(exc),
+                  str(exc)[:70])
+        # A SUBDIRECTORY OF THE REPO IS NOT A NEGATIVE CONTROL FOR "NOT A REPO".
+        # The first cut pointed this at `tmp/not-a-git-repo`, which is INSIDE
+        # the fixture repo -- `git ls-files` succeeded there and returned
+        # nothing, so it exercised the empty-set halt and merely LOOKED like a
+        # git-failure control. Aim it at a directory outside every repo.
+        (tmp / "empty-but-tracked").mkdir()
+        REPO_ROOT, DOCS = tmp / "empty-but-tracked", tmp / "empty-but-tracked"
+        try:
+            build()
+            check("HALT when the tracked set is empty", False, "did NOT halt")
+        except SystemExit as exc:
+            check("HALT when the tracked set is empty",
+                  "no TRACKED markdown" in str(exc), str(exc)[:70])
+
+        outside = Path(tempfile.mkdtemp(prefix="ruling-registry-nonrepo-"))
+        try:
+            REPO_ROOT, DOCS = outside, outside / "docs"
+            try:
+                build()
+                check("HALT when git enumeration fails", False, "did NOT halt")
+            except SystemExit as exc:
+                check("HALT when git enumeration fails",
+                      "ls-files` failed" in str(exc), str(exc)[:70])
+        finally:
+            shutil.rmtree(outside, ignore_errors=True)
+    finally:
+        REPO_ROOT, DOCS = real_root, real_docs
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    # ---- NC-RR3: the REAL repo's genuine rulings still resolve ----------
+    # Read-only. These are Captain-ratified references that the tracked-only
+    # boundary must not disturb: the locality amendments and two short ids
+    # that untracked papers were falsely corroborating.
+    reg = build()
+    for rid, doc in (("A1", "B-MIGRATION-DISCOVERY.md"),
+                     ("A2", "B-MIGRATION-DISCOVERY.md"),
+                     ("A3", "B-MIGRATION-DISCOVERY.md"),
+                     ("A4", "B-MIGRATION-DISCOVERY.md"),
+                     ("R5", "B-MIGRATION-DISCOVERY.md"),
+                     ("R8", "B-MIGRATION-DISCOVERY.md")):
+        occ = [o for o in reg["rulings"].get(rid, []) if o["doc"] == doc]
+        check(f"NC-RR3 genuine {rid} resolves in {doc}", bool(occ),
+              occ[0]["statement"][:64] if occ else "MISSING")
+
+    print("=" * 70)
+    if failures:
+        print(f"SELFTEST RED — {len(failures)} control(s) failed: {failures}")
+        return 1
+    print("SELFTEST GREEN — the boundary is negative-controlled, and NC-RR5")
+    print("shows it catches the substitution the aggregate ratchet cannot.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", metavar="DOC", help="is DOC safe to delete?")
+    ap.add_argument("--selftest", action="store_true",
+                    help="prove the tracked-doc population boundary can fail")
     ap.add_argument("--update-baseline", action="store_true",
                     help="pin the CURRENT registry counts as the baseline")
     args = ap.parse_args()
+
+    if args.selftest:
+        return _selftest()
 
     reg = build()
 
@@ -243,7 +524,11 @@ def main() -> int:
         name = Path(args.check).name
         d = reg["per_doc"].get(name)
         if d is None:
-            print(f"HALT: {name} not found under docs/", file=sys.stderr)
+            # Exit status unchanged (2). The wording names the real reason:
+            # since 2026-08-15 an UNTRACKED docs/*.md is not in the population,
+            # so "not found" alone would read as "no such file".
+            print(f"HALT: {name} is not a TRACKED document under docs/ "
+                  f"(stage it first, or check the name)", file=sys.stderr)
             return 2
         if not d["deletion_blocked"]:
             print(f"SAFE: {name} — {len(d['ruling_ids'])} ruling(s), all "
