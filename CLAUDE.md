@@ -769,6 +769,20 @@ deck-building relevance, not textual frequency.**
 
 ## Reference
 
+- **AQ4 (semantic architecture) IS NOT RATIFIED — a leading hypothesis
+  exists, a benchmark is pre-registered, and production is unchanged.**
+  Before ANY work on semantic occurrence identity, qualifiers/facets,
+  predicate normalization, cross-card comparison, "semantic IR", strict
+  Budget Swapper semantics, or any codebook semantic retrofit:
+  **→ read `docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md`
+  FIRST.** It is the current entry point; the dated AQ4-*.md and
+  SEMANTIC-IR-*.md papers are evidence/history, and where an older
+  statement conflicts with the contract's SUPERSESSION REGISTER (§8),
+  the register states the current design. Locality law
+  (`B-MIGRATION-DISCOVERY.md` §11) is ratified and is NOT extended by
+  AQ4. Do not implement production AQ4 changes before the benchmark
+  runs AND Captain rules. Do not revive anything the register marks
+  WITHDRAWN.
 - **✅ THE CR REFRESH IS DONE — `docs/CR-REFRESH-2026-08-09.md`.** The pipeline
   reads the **2026-08-07** edition, tracked in THIS repo, through one
   normalizing loader (`experiments/foundry_cr.py`); the file itself is

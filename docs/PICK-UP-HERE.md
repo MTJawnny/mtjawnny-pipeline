@@ -7,6 +7,13 @@ entry point. **Keep the name. Update the contents.**
 
 ---
 
+**AQ4 design is pre-registered but NOT production-ratified.** Current
+entry point: `docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md`
+— read its status taxonomy (§4) and supersession register (§8) before
+any semantic-retrofit or benchmark work. Dated AQ4 papers are history.
+
+---
+
 ## 0AC. P3 ARCHITECTURE IS APPROVED WITH AMENDMENTS — IMPLEMENTATION/CUTOVER IS NEXT
 
 **Captain ruled P3-1 … P3-5 on 2026-08-14. P3-6 is DONE and reviewed.** This

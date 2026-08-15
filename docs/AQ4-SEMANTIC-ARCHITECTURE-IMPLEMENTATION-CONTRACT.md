@@ -951,10 +951,10 @@ DO NOT infer that:
 - meeting the ratified reopening trigger for child effects authorizes
   implementing them — it authorizes *reconsideration* (§5).
 
-# 35. PROPOSED CLAUDE.md ROUTING BLOCK — **NOT YET INSTALLED**
+# 35. CLAUDE.md ROUTING BLOCK — **INSTALLED 2026-08-15**
 
-*(For Captain to paste after C6/P3 closure. This task did NOT edit
-CLAUDE.md.)*
+*(Installed at the head of CLAUDE.md's `## Reference` section, verbatim as
+below. Routing only: it mints no vocabulary and ratifies nothing.)*
 
 ```markdown
 - **AQ4 (semantic architecture) IS NOT RATIFIED — a leading hypothesis
@@ -973,10 +973,9 @@ CLAUDE.md.)*
   WITHDRAWN.
 ```
 
-# 36. PROPOSED PROJECT-HANDOFF POINTER — **NOT YET INSTALLED**
+# 36. PROJECT-HANDOFF POINTER — **INSTALLED 2026-08-15**
 
-*(2–5 lines for PICK-UP-HERE.md or the master handoff, at Captain's
-choice of location and timing.)*
+*(Installed in `docs/PICK-UP-HERE.md`, immediately above §0AC.)*
 
 ```markdown
 **AQ4 design is pre-registered but NOT production-ratified.** Current
