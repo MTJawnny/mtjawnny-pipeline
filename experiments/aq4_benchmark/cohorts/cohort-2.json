@@ -1,0 +1,235 @@
+{
+  "classes": [
+    {
+      "class_id": "c2.fight",
+      "derivation_class": "EXTRACT-2 CR 701.15a printed template",
+      "inclusion_reason": "prints CR 701.15's fight template as a FINITE VERB with a printed subject ('A fights B') — the Prey Upon two-participant class, and structurally unreachable from the object lattice (measured, packet 1 P3). Packet 1's instruction-boundary head test cannot see this shape by construction and returns 2 against 150",
+      "named_historical": false,
+      "oracle_ids": [
+        "00afc724-be09-4e92-a50c-88011bd10ccd",
+        "0e676904-17c3-40f2-9b5b-eb29cacc336f",
+        "2d0bd780-b754-44a3-894c-a9c8aa711f05",
+        "649e7237-b38b-43e9-83f4-763751fb1bea",
+        "ceba3d03-be5a-4dd7-b829-7db216a0f44e",
+        "e507df33-d150-4b21-8ddb-90799f412dd8"
+      ],
+      "qualifying_population": 149
+    },
+    {
+      "class_id": "c2.attach",
+      "derivation_class": "EXTRACT-2 CR 701.3a printed template",
+      "inclusion_reason": "prints CR 701.3's `attach` ACTION (participle excluded — `attached` is the static attachment state, not the action) — two-participant attachment, likewise outside the lattice",
+      "named_historical": false,
+      "oracle_ids": [
+        "2b6fa8b6-4865-4eb6-974b-00f6b16b6f0f",
+        "50de5faa-d22e-4909-a1ff-3810cfcfcb1a",
+        "51023277-5434-4913-b9dc-df2a3fde1652",
+        "5ec9f317-887a-4e08-a165-e7cf15eb071d",
+        "73b8adea-1786-44fc-b190-bf240b07f5b6",
+        "a07b8619-224d-46d0-a17a-38d04aba574e"
+      ],
+      "qualifying_population": 229
+    },
+    {
+      "class_id": "c2.two-printed-targets",
+      "derivation_class": "EXTRACT-0 fx.sentence_spans over fx.ability_lines",
+      "inclusion_reason": "one sentence carries 2+ printed `target` tokens (multiple targets)",
+      "named_historical": false,
+      "oracle_ids": [
+        "021b91ea-18d8-4b50-97da-dd003380cd68",
+        "34fe53c2-8909-4786-b5c0-331de997ff81",
+        "48a909b6-e6ee-4148-8b50-b35f11bc065f",
+        "e0aa6ce0-ca31-433b-ac6c-32b8675cdb71",
+        "e377059d-a918-462f-920a-6b062bd5fcfd",
+        "f6a6da20-52c8-4921-9884-29d3a3051b0d"
+      ],
+      "qualifying_population": 357
+    },
+    {
+      "class_id": "c2.multi-participant-lattice",
+      "derivation_class": "EXTRACT-4 packet-1 aq4p.participants",
+      "inclusion_reason": "packet-1 P3's own qualifier-bearing population: 2+ RESTRICTED participants in one lattice clause",
+      "named_historical": false,
+      "oracle_ids": [
+        "0e4150db-ac43-48b4-9791-0d874906acf5",
+        "45866598-4ee4-46b6-ade2-ffcdbe98e58f",
+        "a9e33138-e1c0-4b69-b868-1ce8493c073d",
+        "be83a518-cfab-46b1-9fe9-7e3d54311c37",
+        "ccab4509-f189-4610-9597-547e7f6b0775",
+        "d9f01177-2237-475e-ad91-114bfae077ce"
+      ],
+      "qualifying_population": 44
+    },
+    {
+      "class_id": "c2.multi-effect",
+      "derivation_class": "EXTRACT-4 packet-1 aq4p.effect_heads",
+      "inclusion_reason": "one sentence carries 2+ candidate effect heads in predicate position (the P2 MEC pressure class)",
+      "named_historical": false,
+      "oracle_ids": [
+        "06ea02f5-f296-4334-bb6f-9cb018e1e150",
+        "4f9942ee-d3fd-4c01-93eb-870d642ebd83",
+        "5c944bd7-0478-4002-a8dd-f9f03bd56ee7",
+        "ba6c3c72-c014-45c6-a0b4-59eb9a65303e",
+        "c5fc8e7c-a87e-4586-a13c-d30e0a3aafbf",
+        "f074c0d0-8455-484d-ae75-820fdfbc4740"
+      ],
+      "qualifying_population": 3269
+    },
+    {
+      "class_id": "c2.exile-and-return",
+      "derivation_class": "EXTRACT-4 packet-1 _FORM_TESTS",
+      "inclusion_reason": "exile followed by return inside one sentence — P2's dominant multi-effect form, and the blink test's own shape (§20 C2)",
+      "named_historical": false,
+      "oracle_ids": [
+        "096fbb51-be73-4edc-a051-770a12c09005",
+        "19ea326f-45ff-4bc0-a957-7d3f22dd8c6f",
+        "2588f348-d7a3-46c8-9ace-dca53ed5ef99",
+        "a8995df6-99a7-41a7-bd3e-f34643b27947",
+        "e49d745c-5130-4b54-bcbb-643b08528456",
+        "e71863a7-0de1-4ab5-95e8-c39e6810d899"
+      ],
+      "qualifying_population": 166
+    },
+    {
+      "class_id": "c2.repeated-identical-clause",
+      "derivation_class": "EXTRACT-0 fx.sentence_spans",
+      "inclusion_reason": "the same sentence text occurs 2+ times on one card — the Seize the Soul class, where a case-folded dedupe merges two real units",
+      "named_historical": false,
+      "oracle_ids": [
+        "30c3f88f-11d3-4b5f-8936-bab1c65bd693",
+        "45d49831-548a-4a0e-9a18-9f7397913895",
+        "7f59252f-3a37-4a22-938c-001f3208bd94",
+        "9fba3097-d53f-4ea4-b5d2-8adddaa09524",
+        "b6cebf8d-37e1-42de-b3f1-1c174ab17ac8",
+        "e9784eb4-96f2-409e-a7b5-eb6478644943"
+      ],
+      "qualifying_population": 128
+    },
+    {
+      "class_id": "c2.cr607-linkage",
+      "derivation_class": "EXTRACT-1 packet-1 cr607_referring_phrases",
+      "inclusion_reason": "carries a CR 607.2 published referring phrase (linked abilities)",
+      "named_historical": false,
+      "oracle_ids": [
+        "1857dc32-8ff1-4519-b1ca-480a5c2d3b3c",
+        "252d9b25-45a1-40ca-b563-4cdefc791a44",
+        "34841228-31ac-48ac-b6d6-486b5e1e07dd",
+        "648bd03d-247e-4d6f-87a9-12a67688cbf5",
+        "926ce6a2-7bdd-4380-ac65-bc902ba0c284",
+        "fce450a6-1a17-4315-9b2a-d9e7abf65aa6"
+      ],
+      "qualifying_population": 603
+    },
+    {
+      "class_id": "c2.delayed-effect",
+      "derivation_class": "EXTRACT-2 packet-1 _DELAYED",
+      "inclusion_reason": "carries a delayed-effect marker alongside a reference",
+      "named_historical": false,
+      "oracle_ids": [
+        "203b72d2-a273-49cc-bd10-2fbc07ed2fc8",
+        "324493fc-a205-4177-aa94-cf4672844c81",
+        "5e7586dd-d42e-4ac6-adb8-d46b6cdef923",
+        "6c3faf4f-83c1-4098-98b8-bae15d59b0de",
+        "c7ecaa1a-fbf7-436b-a1c9-d7810b0dc5dc",
+        "edd5b228-f19f-4b27-8b92-75545389da14"
+      ],
+      "qualifying_population": 2105
+    },
+    {
+      "class_id": "c2.coreference-cross-unit",
+      "derivation_class": "EXTRACT-4 packet-1 relation_candidates",
+      "inclusion_reason": "a coreference back-reference crosses a line or sentence boundary — the Cloudshift class",
+      "named_historical": false,
+      "oracle_ids": [
+        "0757c5a7-e51b-4c39-bb4d-b32657c10cb4",
+        "19b5c94b-b4fa-41a9-b649-51c4e6f03602",
+        "290faa28-450e-4797-9a8f-642d8af3f82a",
+        "51f17fe1-1cf7-4362-b9a2-8ec225d41b03",
+        "a71448ce-8d57-418e-b862-bd526726074d",
+        "da04b438-aa49-4736-b0ed-131bbe70b566"
+      ],
+      "qualifying_population": 9744
+    },
+    {
+      "class_id": "c2.this-way",
+      "derivation_class": "EXTRACT-4 packet-1 relation_candidates (kind-unclear)",
+      "inclusion_reason": "prints `this way`, packet 1 P4's largest KIND-UNCLEAR form (1,088 references). Included because it is MEASURED UNRESOLVED STRUCTURAL PRESSURE — packet 2 does not decide whether it is a fourth relation kind, and nothing here assigns it one",
+      "named_historical": false,
+      "oracle_ids": [
+        "0fac3187-9b86-4854-854b-a4c203526a64",
+        "3a532c2b-a08c-46ab-86f7-c6dee0d6985f",
+        "53d5d961-d6a3-49b1-b335-2c2b49972008",
+        "8a37ac5c-341b-48ab-9b0b-5ef8bf097aab",
+        "a88a1c53-7de3-423a-a95a-24ed5666ab96",
+        "b9bb1b0e-38ce-40f1-882b-85f6c95610ff"
+      ],
+      "qualifying_population": 1047
+    },
+    {
+      "class_id": "c2.kind-unclear-other",
+      "derivation_class": "EXTRACT-4 packet-1 relation_candidates (kind-unclear)",
+      "inclusion_reason": "carries a KIND-UNCLEAR reference form other than `this way` — the rest of P4's unresolved residue, kept separate so `this way` cannot stand in for it",
+      "named_historical": false,
+      "oracle_ids": [
+        "23a79523-4be0-4d17-80aa-5ea024cb3463",
+        "23e6df25-90db-42a4-8658-e592e67be15e",
+        "8e013e51-1684-4f58-8fe1-3588b6fbb5b5",
+        "946675f5-8998-4f1b-934b-85ffe6e2f002",
+        "cbd483b5-5554-43ed-a729-535d01b0d5d3",
+        "d55f6c70-321f-4fb4-bd33-0850ae1a7c36"
+      ],
+      "qualifying_population": 455
+    },
+    {
+      "class_id": "c2.modal",
+      "derivation_class": "EXTRACT-2 foundry_common._MODAL_HEADER_RE",
+      "inclusion_reason": "prints a CR 700.2 modal header (tested on reminder-STRIPPED lines)",
+      "named_historical": false,
+      "oracle_ids": [
+        "41cdeb52-e90f-44f8-94d2-23aa032c4870",
+        "45c55ddc-0aec-421c-9c72-75f968372b40",
+        "67f68a0f-bd3d-47ba-ad99-95c1a2acd170",
+        "73cbb4f0-90d6-4228-9341-791e3e9c4b48",
+        "e9795590-0918-49f9-b37c-1278c8616ab1",
+        "ff8f5a4b-112a-425e-b489-7ee26d1d9fb3"
+      ],
+      "qualifying_population": 928
+    },
+    {
+      "class_id": "c2.spree",
+      "derivation_class": "EXTRACT-2 printed keyword, reminder-stripped",
+      "inclusion_reason": "prints Spree — additive modes, which a `choose one` search run before the reminder strip files as mutually exclusive",
+      "named_historical": false,
+      "oracle_ids": [
+        "0db20037-35b3-4b1f-8dd6-3ee797c421ca",
+        "282dfeaa-6243-4f92-838a-5cb54fa85184",
+        "7c57d4aa-d221-4b36-a544-9fa89d63ffbe",
+        "7e7ec3d6-a84f-4cc3-93f4-4d181d41e126",
+        "ad3e705f-da57-4eff-84d7-2072522de988",
+        "d262f3e1-b5bc-4dab-86c2-cd89c2419e54"
+      ],
+      "qualifying_population": 21
+    },
+    {
+      "class_id": "c2.entity-context-triplet",
+      "derivation_class": "EXTRACT-2 printed forms, CR 109.2 / CR 110.1 anchored",
+      "inclusion_reason": "prints 2+ of the three CR 109.2/110.1 entity contexts — creature permanent vs creature spell vs creature card — on one card, where context-free type subsumption goes wrong",
+      "named_historical": false,
+      "oracle_ids": [
+        "18da85d4-2a51-45c0-a18c-bce9bc39fa64",
+        "37042a3e-c377-4282-80f9-068e4955f8a1",
+        "5e0bd136-e7e9-49f0-910b-a9fb0b9c481a",
+        "76b65b2a-9905-4857-806a-6dbcf195fc81",
+        "89599a64-19fc-47ad-a116-3ce0a10fa546",
+        "fdf0fba8-f335-419c-b96b-e99037727c43"
+      ],
+      "qualifying_population": 1102
+    }
+  ],
+  "cohort": 2,
+  "cohort_sha256": "bcfde28779adf15f060c9b2a5b7635668d4ce8922439e1af18155e5b0e2992c2",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open",
+  "title": "structural adversaries"
+}

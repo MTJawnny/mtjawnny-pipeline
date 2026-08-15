@@ -1,0 +1,95 @@
+{
+  "classes": [
+    {
+      "class_id": "c1.modal-flattening",
+      "derivation_class": "EXTRACT-3 foundry_object_lattice.exclusivity_report",
+      "inclusion_reason": "carries 2+ object-lattice facts whose proving quotes are owned by MUTUALLY EXCLUSIVE modes — the card-level bag cannot tell this from a card that genuinely does both",
+      "named_historical": false,
+      "oracle_ids": [
+        "45f91d6a-eaab-4179-ac1f-5dc9e647a3da",
+        "a11d8372-87fb-40a2-b638-314c6a5af03b",
+        "afb278f1-0e21-4f6d-96bb-c34aa3ef96b0",
+        "c2b5d847-f52a-43e3-a5d2-d53cae3d8936",
+        "ecbc234d-e1d3-4bcc-81d4-fffc2c7ea16a",
+        "fa99cf82-ebf1-4526-ab9c-b24eb2970f2a"
+      ],
+      "qualifying_population": 38
+    },
+    {
+      "class_id": "c1.active-volcano-named-case",
+      "derivation_class": "named historical failure (§21 seed)",
+      "inclusion_reason": "the named §21 historical failure, included transparently as historical evidence — it is also a member of c1.modal-flattening, which is the reproducible class; it is NOT a production exception",
+      "named_historical": true,
+      "oracle_ids": [
+        "205ffa76-ff8e-4405-b21a-42358a9883c2"
+      ],
+      "qualifying_population": 1
+    },
+    {
+      "class_id": "c1.nc-a-later-ability",
+      "derivation_class": "EXTRACT-4 over foundry_qualifier_census.population",
+      "inclusion_reason": "a lattice fact lives on a non-first ability line, so a reader that truncates loses it (NC-A class)",
+      "named_historical": false,
+      "oracle_ids": [
+        "93df61b5-6abe-4603-9a6e-cba90a834173",
+        "b49642f6-20bd-468d-9dac-e578f9ac3091",
+        "be7e220e-272e-45ca-8265-8d78da2cd2a7",
+        "bf1341dd-41a3-49f6-87ec-63170dde4324",
+        "d492eb9a-1f3b-4bf2-9a5d-0f4a4433f33f",
+        "e59d70a2-40ac-45b0-995d-65b9caa290c8"
+      ],
+      "qualifying_population": 940
+    },
+    {
+      "class_id": "c1.nc-b-multi-face",
+      "derivation_class": "EXTRACT-0 segmentation + EXTRACT-3 lattice",
+      "inclusion_reason": "multi-face card carrying a lattice fact — the face-loss class (NC-B); faces are judged by the locked DFC rule, never by card_faces presence",
+      "named_historical": false,
+      "oracle_ids": [
+        "12c71296-1243-49e6-a196-8b016a7b635c",
+        "6ba8e099-5871-4ee3-8a65-06fd8ccec340",
+        "7579e1a2-2747-4e37-9a7a-c13b62190195",
+        "b9ac4856-5cdb-479f-b0f5-7fa0b232a5ff",
+        "bcc6eece-75ea-494c-b33a-d4477d504e0b",
+        "d60e14b4-f750-40cc-85b5-17c87ae8a584"
+      ],
+      "qualifying_population": 68
+    },
+    {
+      "class_id": "c1.nc-c-context-strip",
+      "derivation_class": "EXTRACT-3 delivery classifier + lattice",
+      "inclusion_reason": "an activated ability owns a lattice fact, so deleting the activation cost changes the delivery token and leaves the object fact identical (NC-C: context stripped, payload intact)",
+      "named_historical": false,
+      "oracle_ids": [
+        "16a7895a-ca23-4112-a91f-4b1528e75cea",
+        "3055381a-fb6b-47a3-8e77-a44768808e27",
+        "74f361f8-a0d8-4824-9380-61469d6a19cf",
+        "7579e1a2-2747-4e37-9a7a-c13b62190195",
+        "d28b7c07-ef65-4187-a15e-2180bdc593d1",
+        "e5fbd5c8-7b0c-4740-9430-456e86267966"
+      ],
+      "qualifying_population": 438
+    },
+    {
+      "class_id": "c1.nc-e-cardname-drift",
+      "derivation_class": "EXTRACT-0 foundry_common.canonicalize_self_reference",
+      "inclusion_reason": "CARDNAME canonicalization changes the text, so a probe reading raw oracle text measures a different card than the pipeline does (NC-E), and carries a lattice fact so the drift is consequential",
+      "named_historical": false,
+      "oracle_ids": [
+        "07bc407e-7ba1-45aa-a562-0597ebe56044",
+        "2ee87667-ec9d-4ced-b7e6-df3fd18b0ed6",
+        "3260bede-d78d-41a6-8fe1-95ce14a2ba8c",
+        "5b356a01-900c-4fe5-93bd-45629528c484",
+        "9c8845d6-fa65-4731-b348-dc724fc2d285",
+        "c844cc98-b8b9-447d-92ee-64f4a4906e7c"
+      ],
+      "qualifying_population": 213
+    }
+  ],
+  "cohort": 1,
+  "cohort_sha256": "65071ee93e1e72591b892ad3701e554c8cafe82cac0171250fad13a39cd309ac",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open",
+  "title": "historical foundry failures"
+}

@@ -1,0 +1,70 @@
+{
+  "classes": [
+    {
+      "class_id": "c7.vanilla-creature",
+      "derivation_class": "EXTRACT-0 characteristics + oracle text",
+      "inclusion_reason": "a Creature with no oracle text at all — the mechanical floor, where every semantic dimension must be ABSENT-PROVEN or refused",
+      "named_historical": false,
+      "oracle_ids": [
+        "18202185-f9d4-446a-b34e-fae9800240f9",
+        "acc07d0d-141b-4169-9643-6f20739e91be",
+        "cf8aef54-3f43-413c-9f3f-d4a1b2090904",
+        "d7316cc6-a2c2-479c-80b5-53c86165e3d1",
+        "db145875-2a40-4fe3-b8ee-bf10ae8f7cd7",
+        "fd20576d-4abe-4af8-ac53-ab9356593fe7"
+      ],
+      "qualifying_population": 340
+    },
+    {
+      "class_id": "c7.cr113-3a-face-cut",
+      "derivation_class": "EXTRACT-1 CR 113.3a + EXTRACT-0 type line",
+      "inclusion_reason": "carries an ability but has NO instant/sorcery face, so CR 113.3a closes the ability-category enumeration without reading the text — the recorded cut that removed 738 burn spells from a mis-named shape",
+      "named_historical": false,
+      "oracle_ids": [
+        "0411aead-9f77-435d-a343-635f23221cf7",
+        "2d8635bd-ed96-4bb1-8718-6962a0eee3d5",
+        "3106ba15-08d7-474c-a384-6848b713ba8d",
+        "3160dada-d59f-4f23-8420-ba14f9df7514",
+        "90514aa5-84b6-4be7-b6d0-b05529c97140",
+        "a1399cb8-f22a-487e-b539-2db47b09a790"
+      ],
+      "qualifying_population": 24666
+    },
+    {
+      "class_id": "c7.dfc-two-image",
+      "derivation_class": "EXTRACT-0 locked DFC rule",
+      "inclusion_reason": "two-image DFC by the locked rule: card_faces[0].image_uris EXISTS",
+      "named_historical": false,
+      "oracle_ids": [
+        "35754a21-9fba-4370-a254-292918a777ba",
+        "372a01f7-6e58-4424-9405-0ee4acbb9346",
+        "522a4b02-24c7-45d2-9097-2803cc9fffad",
+        "727ca426-f4cc-4218-8ae5-8c427af2e816",
+        "8e4d0da0-c7d8-4a20-9bfd-02c1331a7a49",
+        "cf518f59-f083-42a0-9953-fac2757bf804"
+      ],
+      "qualifying_population": 487
+    },
+    {
+      "class_id": "c7.multi-face-one-image",
+      "derivation_class": "EXTRACT-0 locked DFC rule",
+      "inclusion_reason": "has card_faces but NO faces[0].image_uris — split / flip / adventure. The other arm of the locked DFC rule, and the reason 'has card_faces' is never the test",
+      "named_historical": false,
+      "oracle_ids": [
+        "043370fd-9cfe-47ce-8019-e915cee1ae95",
+        "27c366cf-00d7-47d4-9577-736bfc4a3b81",
+        "980f6341-3c13-4405-8550-b838b228f788",
+        "9a52c1ea-35ac-4028-8c1f-b7971c1df886",
+        "a371d035-488e-4b3d-81de-ee7859452c0e",
+        "cb3072c7-393c-43d9-a2c9-f918bd0fd7be"
+      ],
+      "qualifying_population": 336
+    }
+  ],
+  "cohort": 7,
+  "cohort_sha256": "90ecc514b6e5a48dce1c78ba6e1affc5adabe633690bef072dfc0bd7b2c9ec12",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open",
+  "title": "CR / characteristic-derived cases"
+}

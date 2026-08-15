@@ -1,0 +1,190 @@
+{
+  "classes": [
+    {
+      "class_id": "c8.residue-color",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `color` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "1b9c9083-62c3-46fd-a2a0-6de7de88a3c3",
+        "56f782b7-d46c-4aa1-ae16-66d6401c72ae",
+        "65e1558c-6b09-4ddc-b520-f19f4fb972af",
+        "a2fe1e2b-b621-4406-b5e0-f2eebd12c2ba",
+        "c4dee5fe-36f0-4155-9437-2c0504feba2c",
+        "d2cbdbf9-9b08-419e-bb3e-482972d58e74"
+      ],
+      "qualifying_population": 112
+    },
+    {
+      "class_id": "c8.residue-condition",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `condition` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "008d5896-6fc9-4aaa-8c6f-a44c2feb98bb",
+        "07159efc-c69f-4164-a8ca-9da641dbf702",
+        "5ae50388-7e36-4a83-a618-0148944c5099",
+        "b011d6b2-8930-4192-aa94-82869faa991b",
+        "dafd4385-e64f-4a4a-93c4-b0ac6bd30d41",
+        "e02e7239-304b-4755-b913-bb65bc693e86"
+      ],
+      "qualifying_population": 23
+    },
+    {
+      "class_id": "c8.residue-controller",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `controller` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "076584c8-ec58-4711-8f59-4839a4fa88ad",
+        "235e3231-c5e5-4696-a867-705b2c4158fe",
+        "2519ccc0-c206-41fb-aa15-2ef88025ff96",
+        "30c7e304-ecfe-44c1-88d1-f507df63c080",
+        "51042581-4add-4487-a1b6-85446539b975",
+        "aeb85786-16fc-45d8-9383-60054a878c40"
+      ],
+      "qualifying_population": 420
+    },
+    {
+      "class_id": "c8.residue-identity",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `identity` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "2317a33f-665e-4cbc-bb5c-16b912ac2eef",
+        "57d02dc8-e22e-4874-9f02-490a2528a28f",
+        "9fb901db-1ff7-4a8d-8233-fe7e3dee7fd1",
+        "b23a3d30-6b8e-4aad-890f-db0c3af43ace",
+        "d53fecd7-aa12-482e-8f45-5efe6348070d",
+        "da17da9b-f300-4613-978b-ba3026d4e275"
+      ],
+      "qualifying_population": 93
+    },
+    {
+      "class_id": "c8.residue-keyword",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `keyword` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "26e75f0b-3a02-4989-8429-b6276e98ac33",
+        "5ae50388-7e36-4a83-a618-0148944c5099",
+        "6bac1495-16cf-4e1e-9126-482f85322c78",
+        "722f2965-a1ec-4b97-a4bd-b99364f58b1e",
+        "72a0e0f1-e8be-441a-bcaf-029fb1bd1fd2",
+        "efcbca5a-743c-4b16-a7cf-b07335b31ced"
+      ],
+      "qualifying_population": 54
+    },
+    {
+      "class_id": "c8.residue-numeric",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `numeric` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "2cb98ca9-d7bb-416b-a17e-ee5f8e4d78f2",
+        "85fd04e9-b39c-4ce0-97a1-58f9670a298f",
+        "bde67dfb-706b-4942-a365-984ea6e97a2b",
+        "d8838e16-96ca-4f73-ad61-7e98a76c4baf",
+        "e6fb4f0d-ce49-4913-a2ef-88365e4916cf",
+        "f500f4cc-d5ee-4995-b7b5-96a5f63dfb47"
+      ],
+      "qualifying_population": 195
+    },
+    {
+      "class_id": "c8.residue-state",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `state` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "25443ea4-3177-4e29-a2b1-f3fee60b3205",
+        "26e75f0b-3a02-4989-8429-b6276e98ac33",
+        "4d00c44b-8953-4b18-af73-2944321b6cd1",
+        "4e3f89e2-2be6-4b96-b81c-007b6840af82",
+        "7938112a-3832-42b4-b123-27a42c06a290",
+        "a9aedd96-1aee-480d-87fe-3ed94bd64599"
+      ],
+      "qualifying_population": 166
+    },
+    {
+      "class_id": "c8.residue-supertype",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `supertype` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "6edd2a36-3d65-4bf9-bd82-b6d03a7e8fea",
+        "93953926-a644-49bb-9b5a-4c8f19114c7e",
+        "95c44f28-f7fa-4785-83b9-0d81be0db0c8",
+        "9cf65178-6408-46da-a940-f5cb0960b61f",
+        "d3df7128-31dd-4d71-90be-87e2e9ff51b4",
+        "d45a4924-daa0-4ac3-afd7-b66f636ce870"
+      ],
+      "qualifying_population": 46
+    },
+    {
+      "class_id": "c8.residue-type",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `type` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "08fc069e-7fdd-4726-aa08-a96bbd2bcaa3",
+        "3eae5419-b686-4321-a89d-cb602c487bfc",
+        "7dacc5aa-ea4d-414e-8324-6a7d24bb7671",
+        "9f3e1eef-31db-4e1a-b5a9-ac835f6a3eab",
+        "bc84a4e7-5f5f-4105-b0f8-c06ebcde6218",
+        "f73ba6ae-87c1-4e5d-ae52-59d11d7d6ba6"
+      ],
+      "qualifying_population": 145
+    },
+    {
+      "class_id": "c8.residue-uncategorized",
+      "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+      "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `uncategorized` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+      "named_historical": false,
+      "oracle_ids": [
+        "29a9aff7-184c-459d-8002-e0287d978764",
+        "610af0f7-b5e3-43fb-9d02-7c59bd99034c",
+        "78da7a38-0f08-4371-bda3-38f079f7724d",
+        "80d233cc-7748-41a2-bfd6-2189d0136900",
+        "98eac0f7-3f4d-46ef-9575-680c52e967cf",
+        "da2f0d16-3cb4-492d-8535-52a31dbae95e"
+      ],
+      "qualifying_population": 87
+    },
+    {
+      "class_id": "c8.kind-unclear-reference",
+      "derivation_class": "EXTRACT-4 packet-1 relation_candidates",
+      "inclusion_reason": "carries a reference form that reaches no CR-groundable relation kind (P4 KIND-UNCLEAR). The structural statement is that the printed form establishes no referent by any rule the CR publishes",
+      "named_historical": false,
+      "oracle_ids": [
+        "10e0b563-4dfc-4530-a010-0ba40bdf02ac",
+        "409e0a43-0e85-47ea-9d40-de0860b12952",
+        "58ad45fc-b625-4484-8d49-ebc42db9040a",
+        "8f167e2f-7b89-4ae2-8332-7c978f71522e",
+        "b6f61b77-d571-4508-a5e8-435b4e097f3a",
+        "d47e55a6-7a16-4ed9-a94b-f1575588ee9e"
+      ],
+      "qualifying_population": 1468
+    },
+    {
+      "class_id": "c8.splitter-territory",
+      "derivation_class": "EXTRACT-2 CR 603.4 + printed coordination",
+      "inclusion_reason": "a CR 603.4 `while` condition coordinated by or/and in one sentence — the recorded territory where the compound splitter INVENTS a trigger, and a census scores an invented gap and a lost token identically",
+      "named_historical": false,
+      "oracle_ids": [
+        "168f2fbb-8cf7-43e0-8bb6-5e4cc3c1e363",
+        "334fba11-e500-40fd-a142-41ff553642b5",
+        "3b319540-4db1-43d3-8f4d-f5a276ad78e4",
+        "649e7237-b38b-43e9-83f4-763751fb1bea",
+        "c95cebf7-c28c-4453-b5e4-e895d621f290",
+        "de19cc3f-e93c-4fde-94e6-398565e1d747"
+      ],
+      "qualifying_population": 42
+    }
+  ],
+  "cohort": 8,
+  "cohort_sha256": "4f5bd5e211e167ab8cac207e5f34107c56f79fa7fc8ee38a4a0d4f60fbd4f4db",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open",
+  "title": "negative / unresolved — correct output is refusal"
+}

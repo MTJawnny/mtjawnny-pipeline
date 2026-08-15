@@ -1,0 +1,24 @@
+{
+  "classes": [
+    {
+      "class_id": "c3.simple-control",
+      "derivation_class": "EXTRACT-4 over the ratified census + delivery classifier",
+      "inclusion_reason": "ONE ability line, ONE delivery token, ONE lattice clause occurrence with ZERO residue under packet-1 residue-honest claiming, no modality, no second face, no second effect head, no cross-occurrence reference and no second target. Every conjunct is a measured structural property, so no card is here because a candidate architecture handles it well",
+      "named_historical": false,
+      "oracle_ids": [
+        "00af96af-5eae-4044-a2f7-a08cd0699d1e",
+        "02da2145-0edb-44be-8622-360182a8c25a",
+        "29781b19-0917-4d8f-abe3-df0b7e96d8a6",
+        "5ffca600-5286-4086-9efe-c398babeb6ae",
+        "b775b83c-0c3d-437d-9d3c-1d5c9cd418a8"
+      ],
+      "qualifying_population": 31
+    }
+  ],
+  "cohort": 3,
+  "cohort_sha256": "e9132b19f7ea4e1b6114467e457b31c612ba386c8e25f53be5293396b0e42661",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open",
+  "title": "simple controls"
+}

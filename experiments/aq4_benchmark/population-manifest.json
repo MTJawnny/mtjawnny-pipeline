@@ -1,0 +1,5745 @@
+{
+  "answer_key": "NONE — §11 of the packet directive; keys are packet 3+",
+  "cohort_3_vs_8_contradiction": 0,
+  "cohort_4": {
+    "action_family_source": "CR 701 keyword actions parsed at run time (packet-1 cr701_keyword_actions)",
+    "delivery_token_source": "grammar §2 ratified table + §2 scope facet, via fx.deliveries_for_lines",
+    "drawn_total": 795,
+    "duplicate_ids": 0,
+    "requested_per_stratum": 1,
+    "selection_sha256": "36c2417c390d657d1dd02ee7e3a92e2d0d5308aa6ebc36b89b3fe435e93f4f42",
+    "short_strata": [],
+    "status": "DRAWN — IDENTITIES NOT EMITTED (uninspected until extractor freeze, §21)",
+    "strata_short": 0,
+    "strata_total": 795,
+    "stratum_definition": "delivery token x action family",
+    "stratum_summary": [
+      {
+        "action_family": null,
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 3544
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 19
+      },
+      {
+        "action_family": "airbend",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 18
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 847
+      },
+      {
+        "action_family": "clash",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "cloak",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 247
+      },
+      {
+        "action_family": "create",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 362
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 584
+      },
+      {
+        "action_family": "detain",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 159
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "double",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "exert",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 19
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 496
+      },
+      {
+        "action_family": "fateseal",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "fight",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "heal",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 15
+      },
+      {
+        "action_family": "learn",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 33
+      },
+      {
+        "action_family": "planeswalk",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "play",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 32
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 18
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 130
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 118
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 80
+      },
+      {
+        "action_family": "search",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 196
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 44
+      },
+      {
+        "action_family": "support",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 33
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "time travel",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "vote",
+        "delivery_token": null,
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "ability-activated-trigger",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "ability-activated-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "ability-activated-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1667
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 297
+      },
+      {
+        "action_family": "adapt",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 167
+      },
+      {
+        "action_family": "collect evidence",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 31
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 126
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 115
+      },
+      {
+        "action_family": "detain",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 400
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exert",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 262
+      },
+      {
+        "action_family": "forage",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 22
+      },
+      {
+        "action_family": "monstrosity",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 70
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 67
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 904
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 43
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "support",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 22
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "waterbend",
+        "delivery_token": "activated",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 72
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "any-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 23
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "waterbend",
+        "delivery_token": "any-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "any-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "any-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 19
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "any-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 63
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 19
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 17
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "any-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "any-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 115
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 26
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "learn",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "any-etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-exiled-from-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-is-dealt-combat-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-is-dealt-combat-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "any-is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-is-dealt-excess-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "any-is-dealt-excess-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-is-dealt-noncombat-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-leaves-graveyard-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "any-leaves-graveyard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-leaves-graveyard-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "any-leaves-graveyard-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "any-leaves-graveyard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "any-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "any-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "any-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "any-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "any-turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "any-turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 307
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 31
+      },
+      {
+        "action_family": "clash",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "collect evidence",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 61
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 36
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 35
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 18
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "becomes-tapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 39
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "airbend",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 38
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "becomes-targeted-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "becomes-untapped-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 78
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "collect evidence",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "forage",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "monstrosity",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "support",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "begin-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": null,
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 159
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "clash",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "blocks-or-becomes-blocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 451
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 78
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 95
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 23
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 64
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "open an attraction",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 20
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 20
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "time travel",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "cast-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 176
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "chapter-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "coin-flip-won-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "coin-flip-won-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": "combat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 44
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "cycle-or-discard-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "day-night-changed-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "day-night-changed-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "day-night-changed-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 156
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 69
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 23
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "discard-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "door-unlocked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "draw-second-card-trigger",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "draw-second-card-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "draw-second-card-trigger",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "draw-second-card-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "draw-step-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "draw-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "draw-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "draw-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "draw-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 15
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "draw-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "end-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "end-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "end-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "end-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "end-combat-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 91
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 53
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "waterbend",
+        "delivery_token": "end-step-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 957
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "adapt",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "airbend",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 44
+      },
+      {
+        "action_family": "behold",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 100
+      },
+      {
+        "action_family": "clash",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "cloak",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "collect evidence",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 474
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 86
+      },
+      {
+        "action_family": "detain",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 104
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 284
+      },
+      {
+        "action_family": "forage",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 15
+      },
+      {
+        "action_family": "learn",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 65
+      },
+      {
+        "action_family": "open an attraction",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 53
+      },
+      {
+        "action_family": "roll to visit your attractions",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 153
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 52
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 148
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "support",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 29
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 15
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": null,
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "gain-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "is-attacked-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "is-dealt-combat-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 26
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "is-dealt-damage-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 62
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "landfall",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "lose-life-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "lose-life-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "lose-life-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": null,
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 49
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 18
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 52
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "loyalty",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "noncombat-damage-to-creature",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "noncombat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "noncombat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-combat-damage-to-player",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "other-cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "other-cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "other-cycled-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 30
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "other-death-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 93
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "other-etb",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "other-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "other-leaves-battlefield-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "other-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "other-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "other-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "other-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "other-sacrifice-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "other-turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 24
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "player-attack-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "postcombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "postcombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "precombat-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 890
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 52
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 112
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 64
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 34
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 79
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exert",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 108
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "open an attraction",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "planeswalk",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 37
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 201
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 10
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "time travel",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "replacement",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "second-main-phase-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "state-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "state-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "state-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 6333
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 174
+      },
+      {
+        "action_family": "adapt",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "airbend",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "attach",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 202
+      },
+      {
+        "action_family": "blight",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "bolster",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 921
+      },
+      {
+        "action_family": "clash",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "cloak",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "collect evidence",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "connive",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 80
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 682
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 294
+      },
+      {
+        "action_family": "detain",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 366
+      },
+      {
+        "action_family": "discover",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 124
+      },
+      {
+        "action_family": "earthbend",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "exert",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 9
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 632
+      },
+      {
+        "action_family": "fateseal",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "forage",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "harness",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "incubate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 31
+      },
+      {
+        "action_family": "learn",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "manifest",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "manifest dread",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 69
+      },
+      {
+        "action_family": "monstrosity",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 14
+      },
+      {
+        "action_family": "open an attraction",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "planeswalk",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 37
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "proliferate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 23
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 81
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 136
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 634
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 64
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 116
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 52
+      },
+      {
+        "action_family": "support",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 47
+      },
+      {
+        "action_family": "suspect",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "time travel",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 46
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 16
+      },
+      {
+        "action_family": "waterbend",
+        "delivery_token": "static",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": null,
+        "delivery_token": "tapped-for-mana-trigger",
+        "drawn": 1,
+        "stratum_size": 18
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "tapped-for-mana-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "tapped-for-mana-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "tapped-for-mana-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "tapped-for-mana-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 3
+      },
+      {
+        "action_family": "venture into the dungeon",
+        "delivery_token": "to-graveyard-from-anywhere-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "to-graveyard-from-library-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "to-graveyard-from-library-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "to-graveyard-from-library-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "to-graveyard-from-library-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "shuffle",
+        "delivery_token": "to-graveyard-from-library-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 7
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "turned-face-up-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": null,
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 231
+      },
+      {
+        "action_family": "activate",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "amass",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "cast",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 12
+      },
+      {
+        "action_family": "counter",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "create",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 47
+      },
+      {
+        "action_family": "destroy",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 13
+      },
+      {
+        "action_family": "detain",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "discard",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "double",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "exchange",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "exile",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "goad",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "investigate",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "mill",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 8
+      },
+      {
+        "action_family": "play",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 4
+      },
+      {
+        "action_family": "populate",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "regenerate",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 2
+      },
+      {
+        "action_family": "reveal",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 25
+      },
+      {
+        "action_family": "sacrifice",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 174
+      },
+      {
+        "action_family": "scry",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 5
+      },
+      {
+        "action_family": "search",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 6
+      },
+      {
+        "action_family": "surveil",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 11
+      },
+      {
+        "action_family": "the ring tempts you",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 1
+      },
+      {
+        "action_family": "transform",
+        "delivery_token": "upkeep-trigger",
+        "drawn": 1,
+        "stratum_size": 17
+      }
+    ]
+  },
+  "cohort_5": {
+    "machinery": "draw_generic + assert_disjoint_from_development",
+    "seed": "NOT CHOSEN — §22 steps 1-2 belong to packet 3",
+    "status": "NOT DRAWN IN PACKET 2"
+  },
+  "cohort_6_split": {
+    "c6.add-mana": {
+      "open_half": 859,
+      "population": 1718,
+      "reserved_for_holdout_draw": 859
+    },
+    "c6.blink": {
+      "open_half": 83,
+      "population": 166,
+      "reserved_for_holdout_draw": 83
+    },
+    "c6.counterspell": {
+      "open_half": 227,
+      "population": 453,
+      "reserved_for_holdout_draw": 226
+    },
+    "c6.removal": {
+      "open_half": 1010,
+      "population": 2019,
+      "reserved_for_holdout_draw": 1009
+    }
+  },
+  "cohorts": [
+    {
+      "classes": [
+        {
+          "class_id": "c1.modal-flattening",
+          "derivation_class": "EXTRACT-3 foundry_object_lattice.exclusivity_report",
+          "inclusion_reason": "carries 2+ object-lattice facts whose proving quotes are owned by MUTUALLY EXCLUSIVE modes — the card-level bag cannot tell this from a card that genuinely does both",
+          "named_historical": false,
+          "qualifying_population": 38,
+          "selected": [
+            "45f91d6a-eaab-4179-ac1f-5dc9e647a3da",
+            "a11d8372-87fb-40a2-b638-314c6a5af03b",
+            "afb278f1-0e21-4f6d-96bb-c34aa3ef96b0",
+            "c2b5d847-f52a-43e3-a5d2-d53cae3d8936",
+            "ecbc234d-e1d3-4bcc-81d4-fffc2c7ea16a",
+            "fa99cf82-ebf1-4526-ab9c-b24eb2970f2a"
+          ]
+        },
+        {
+          "class_id": "c1.active-volcano-named-case",
+          "derivation_class": "named historical failure (§21 seed)",
+          "inclusion_reason": "the named §21 historical failure, included transparently as historical evidence — it is also a member of c1.modal-flattening, which is the reproducible class; it is NOT a production exception",
+          "named_historical": true,
+          "qualifying_population": 1,
+          "selected": [
+            "205ffa76-ff8e-4405-b21a-42358a9883c2"
+          ]
+        },
+        {
+          "class_id": "c1.nc-a-later-ability",
+          "derivation_class": "EXTRACT-4 over foundry_qualifier_census.population",
+          "inclusion_reason": "a lattice fact lives on a non-first ability line, so a reader that truncates loses it (NC-A class)",
+          "named_historical": false,
+          "qualifying_population": 940,
+          "selected": [
+            "93df61b5-6abe-4603-9a6e-cba90a834173",
+            "b49642f6-20bd-468d-9dac-e578f9ac3091",
+            "be7e220e-272e-45ca-8265-8d78da2cd2a7",
+            "bf1341dd-41a3-49f6-87ec-63170dde4324",
+            "d492eb9a-1f3b-4bf2-9a5d-0f4a4433f33f",
+            "e59d70a2-40ac-45b0-995d-65b9caa290c8"
+          ]
+        },
+        {
+          "class_id": "c1.nc-b-multi-face",
+          "derivation_class": "EXTRACT-0 segmentation + EXTRACT-3 lattice",
+          "inclusion_reason": "multi-face card carrying a lattice fact — the face-loss class (NC-B); faces are judged by the locked DFC rule, never by card_faces presence",
+          "named_historical": false,
+          "qualifying_population": 68,
+          "selected": [
+            "12c71296-1243-49e6-a196-8b016a7b635c",
+            "6ba8e099-5871-4ee3-8a65-06fd8ccec340",
+            "7579e1a2-2747-4e37-9a7a-c13b62190195",
+            "b9ac4856-5cdb-479f-b0f5-7fa0b232a5ff",
+            "bcc6eece-75ea-494c-b33a-d4477d504e0b",
+            "d60e14b4-f750-40cc-85b5-17c87ae8a584"
+          ]
+        },
+        {
+          "class_id": "c1.nc-c-context-strip",
+          "derivation_class": "EXTRACT-3 delivery classifier + lattice",
+          "inclusion_reason": "an activated ability owns a lattice fact, so deleting the activation cost changes the delivery token and leaves the object fact identical (NC-C: context stripped, payload intact)",
+          "named_historical": false,
+          "qualifying_population": 438,
+          "selected": [
+            "16a7895a-ca23-4112-a91f-4b1528e75cea",
+            "3055381a-fb6b-47a3-8e77-a44768808e27",
+            "74f361f8-a0d8-4824-9380-61469d6a19cf",
+            "7579e1a2-2747-4e37-9a7a-c13b62190195",
+            "d28b7c07-ef65-4187-a15e-2180bdc593d1",
+            "e5fbd5c8-7b0c-4740-9430-456e86267966"
+          ]
+        },
+        {
+          "class_id": "c1.nc-e-cardname-drift",
+          "derivation_class": "EXTRACT-0 foundry_common.canonicalize_self_reference",
+          "inclusion_reason": "CARDNAME canonicalization changes the text, so a probe reading raw oracle text measures a different card than the pipeline does (NC-E), and carries a lattice fact so the drift is consequential",
+          "named_historical": false,
+          "qualifying_population": 213,
+          "selected": [
+            "07bc407e-7ba1-45aa-a562-0597ebe56044",
+            "2ee87667-ec9d-4ced-b7e6-df3fd18b0ed6",
+            "3260bede-d78d-41a6-8fe1-95ce14a2ba8c",
+            "5b356a01-900c-4fe5-93bd-45629528c484",
+            "9c8845d6-fa65-4731-b348-dc724fc2d285",
+            "c844cc98-b8b9-447d-92ee-64f4a4906e7c"
+          ]
+        }
+      ],
+      "cohort": 1,
+      "selected_distinct": 30,
+      "status": "open",
+      "title": "historical foundry failures"
+    },
+    {
+      "classes": [
+        {
+          "class_id": "c2.fight",
+          "derivation_class": "EXTRACT-2 CR 701.15a printed template",
+          "inclusion_reason": "prints CR 701.15's fight template as a FINITE VERB with a printed subject ('A fights B') — the Prey Upon two-participant class, and structurally unreachable from the object lattice (measured, packet 1 P3). Packet 1's instruction-boundary head test cannot see this shape by construction and returns 2 against 150",
+          "named_historical": false,
+          "qualifying_population": 149,
+          "selected": [
+            "00afc724-be09-4e92-a50c-88011bd10ccd",
+            "0e676904-17c3-40f2-9b5b-eb29cacc336f",
+            "2d0bd780-b754-44a3-894c-a9c8aa711f05",
+            "649e7237-b38b-43e9-83f4-763751fb1bea",
+            "ceba3d03-be5a-4dd7-b829-7db216a0f44e",
+            "e507df33-d150-4b21-8ddb-90799f412dd8"
+          ]
+        },
+        {
+          "class_id": "c2.attach",
+          "derivation_class": "EXTRACT-2 CR 701.3a printed template",
+          "inclusion_reason": "prints CR 701.3's `attach` ACTION (participle excluded — `attached` is the static attachment state, not the action) — two-participant attachment, likewise outside the lattice",
+          "named_historical": false,
+          "qualifying_population": 229,
+          "selected": [
+            "2b6fa8b6-4865-4eb6-974b-00f6b16b6f0f",
+            "50de5faa-d22e-4909-a1ff-3810cfcfcb1a",
+            "51023277-5434-4913-b9dc-df2a3fde1652",
+            "5ec9f317-887a-4e08-a165-e7cf15eb071d",
+            "73b8adea-1786-44fc-b190-bf240b07f5b6",
+            "a07b8619-224d-46d0-a17a-38d04aba574e"
+          ]
+        },
+        {
+          "class_id": "c2.two-printed-targets",
+          "derivation_class": "EXTRACT-0 fx.sentence_spans over fx.ability_lines",
+          "inclusion_reason": "one sentence carries 2+ printed `target` tokens (multiple targets)",
+          "named_historical": false,
+          "qualifying_population": 357,
+          "selected": [
+            "021b91ea-18d8-4b50-97da-dd003380cd68",
+            "34fe53c2-8909-4786-b5c0-331de997ff81",
+            "48a909b6-e6ee-4148-8b50-b35f11bc065f",
+            "e0aa6ce0-ca31-433b-ac6c-32b8675cdb71",
+            "e377059d-a918-462f-920a-6b062bd5fcfd",
+            "f6a6da20-52c8-4921-9884-29d3a3051b0d"
+          ]
+        },
+        {
+          "class_id": "c2.multi-participant-lattice",
+          "derivation_class": "EXTRACT-4 packet-1 aq4p.participants",
+          "inclusion_reason": "packet-1 P3's own qualifier-bearing population: 2+ RESTRICTED participants in one lattice clause",
+          "named_historical": false,
+          "qualifying_population": 44,
+          "selected": [
+            "0e4150db-ac43-48b4-9791-0d874906acf5",
+            "45866598-4ee4-46b6-ade2-ffcdbe98e58f",
+            "a9e33138-e1c0-4b69-b868-1ce8493c073d",
+            "be83a518-cfab-46b1-9fe9-7e3d54311c37",
+            "ccab4509-f189-4610-9597-547e7f6b0775",
+            "d9f01177-2237-475e-ad91-114bfae077ce"
+          ]
+        },
+        {
+          "class_id": "c2.multi-effect",
+          "derivation_class": "EXTRACT-4 packet-1 aq4p.effect_heads",
+          "inclusion_reason": "one sentence carries 2+ candidate effect heads in predicate position (the P2 MEC pressure class)",
+          "named_historical": false,
+          "qualifying_population": 3269,
+          "selected": [
+            "06ea02f5-f296-4334-bb6f-9cb018e1e150",
+            "4f9942ee-d3fd-4c01-93eb-870d642ebd83",
+            "5c944bd7-0478-4002-a8dd-f9f03bd56ee7",
+            "ba6c3c72-c014-45c6-a0b4-59eb9a65303e",
+            "c5fc8e7c-a87e-4586-a13c-d30e0a3aafbf",
+            "f074c0d0-8455-484d-ae75-820fdfbc4740"
+          ]
+        },
+        {
+          "class_id": "c2.exile-and-return",
+          "derivation_class": "EXTRACT-4 packet-1 _FORM_TESTS",
+          "inclusion_reason": "exile followed by return inside one sentence — P2's dominant multi-effect form, and the blink test's own shape (§20 C2)",
+          "named_historical": false,
+          "qualifying_population": 166,
+          "selected": [
+            "096fbb51-be73-4edc-a051-770a12c09005",
+            "19ea326f-45ff-4bc0-a957-7d3f22dd8c6f",
+            "2588f348-d7a3-46c8-9ace-dca53ed5ef99",
+            "a8995df6-99a7-41a7-bd3e-f34643b27947",
+            "e49d745c-5130-4b54-bcbb-643b08528456",
+            "e71863a7-0de1-4ab5-95e8-c39e6810d899"
+          ]
+        },
+        {
+          "class_id": "c2.repeated-identical-clause",
+          "derivation_class": "EXTRACT-0 fx.sentence_spans",
+          "inclusion_reason": "the same sentence text occurs 2+ times on one card — the Seize the Soul class, where a case-folded dedupe merges two real units",
+          "named_historical": false,
+          "qualifying_population": 128,
+          "selected": [
+            "30c3f88f-11d3-4b5f-8936-bab1c65bd693",
+            "45d49831-548a-4a0e-9a18-9f7397913895",
+            "7f59252f-3a37-4a22-938c-001f3208bd94",
+            "9fba3097-d53f-4ea4-b5d2-8adddaa09524",
+            "b6cebf8d-37e1-42de-b3f1-1c174ab17ac8",
+            "e9784eb4-96f2-409e-a7b5-eb6478644943"
+          ]
+        },
+        {
+          "class_id": "c2.cr607-linkage",
+          "derivation_class": "EXTRACT-1 packet-1 cr607_referring_phrases",
+          "inclusion_reason": "carries a CR 607.2 published referring phrase (linked abilities)",
+          "named_historical": false,
+          "qualifying_population": 603,
+          "selected": [
+            "1857dc32-8ff1-4519-b1ca-480a5c2d3b3c",
+            "252d9b25-45a1-40ca-b563-4cdefc791a44",
+            "34841228-31ac-48ac-b6d6-486b5e1e07dd",
+            "648bd03d-247e-4d6f-87a9-12a67688cbf5",
+            "926ce6a2-7bdd-4380-ac65-bc902ba0c284",
+            "fce450a6-1a17-4315-9b2a-d9e7abf65aa6"
+          ]
+        },
+        {
+          "class_id": "c2.delayed-effect",
+          "derivation_class": "EXTRACT-2 packet-1 _DELAYED",
+          "inclusion_reason": "carries a delayed-effect marker alongside a reference",
+          "named_historical": false,
+          "qualifying_population": 2105,
+          "selected": [
+            "203b72d2-a273-49cc-bd10-2fbc07ed2fc8",
+            "324493fc-a205-4177-aa94-cf4672844c81",
+            "5e7586dd-d42e-4ac6-adb8-d46b6cdef923",
+            "6c3faf4f-83c1-4098-98b8-bae15d59b0de",
+            "c7ecaa1a-fbf7-436b-a1c9-d7810b0dc5dc",
+            "edd5b228-f19f-4b27-8b92-75545389da14"
+          ]
+        },
+        {
+          "class_id": "c2.coreference-cross-unit",
+          "derivation_class": "EXTRACT-4 packet-1 relation_candidates",
+          "inclusion_reason": "a coreference back-reference crosses a line or sentence boundary — the Cloudshift class",
+          "named_historical": false,
+          "qualifying_population": 9744,
+          "selected": [
+            "0757c5a7-e51b-4c39-bb4d-b32657c10cb4",
+            "19b5c94b-b4fa-41a9-b649-51c4e6f03602",
+            "290faa28-450e-4797-9a8f-642d8af3f82a",
+            "51f17fe1-1cf7-4362-b9a2-8ec225d41b03",
+            "a71448ce-8d57-418e-b862-bd526726074d",
+            "da04b438-aa49-4736-b0ed-131bbe70b566"
+          ]
+        },
+        {
+          "class_id": "c2.this-way",
+          "derivation_class": "EXTRACT-4 packet-1 relation_candidates (kind-unclear)",
+          "inclusion_reason": "prints `this way`, packet 1 P4's largest KIND-UNCLEAR form (1,088 references). Included because it is MEASURED UNRESOLVED STRUCTURAL PRESSURE — packet 2 does not decide whether it is a fourth relation kind, and nothing here assigns it one",
+          "named_historical": false,
+          "qualifying_population": 1047,
+          "selected": [
+            "0fac3187-9b86-4854-854b-a4c203526a64",
+            "3a532c2b-a08c-46ab-86f7-c6dee0d6985f",
+            "53d5d961-d6a3-49b1-b335-2c2b49972008",
+            "8a37ac5c-341b-48ab-9b0b-5ef8bf097aab",
+            "a88a1c53-7de3-423a-a95a-24ed5666ab96",
+            "b9bb1b0e-38ce-40f1-882b-85f6c95610ff"
+          ]
+        },
+        {
+          "class_id": "c2.kind-unclear-other",
+          "derivation_class": "EXTRACT-4 packet-1 relation_candidates (kind-unclear)",
+          "inclusion_reason": "carries a KIND-UNCLEAR reference form other than `this way` — the rest of P4's unresolved residue, kept separate so `this way` cannot stand in for it",
+          "named_historical": false,
+          "qualifying_population": 455,
+          "selected": [
+            "23a79523-4be0-4d17-80aa-5ea024cb3463",
+            "23e6df25-90db-42a4-8658-e592e67be15e",
+            "8e013e51-1684-4f58-8fe1-3588b6fbb5b5",
+            "946675f5-8998-4f1b-934b-85ffe6e2f002",
+            "cbd483b5-5554-43ed-a729-535d01b0d5d3",
+            "d55f6c70-321f-4fb4-bd33-0850ae1a7c36"
+          ]
+        },
+        {
+          "class_id": "c2.modal",
+          "derivation_class": "EXTRACT-2 foundry_common._MODAL_HEADER_RE",
+          "inclusion_reason": "prints a CR 700.2 modal header (tested on reminder-STRIPPED lines)",
+          "named_historical": false,
+          "qualifying_population": 928,
+          "selected": [
+            "41cdeb52-e90f-44f8-94d2-23aa032c4870",
+            "45c55ddc-0aec-421c-9c72-75f968372b40",
+            "67f68a0f-bd3d-47ba-ad99-95c1a2acd170",
+            "73cbb4f0-90d6-4228-9341-791e3e9c4b48",
+            "e9795590-0918-49f9-b37c-1278c8616ab1",
+            "ff8f5a4b-112a-425e-b489-7ee26d1d9fb3"
+          ]
+        },
+        {
+          "class_id": "c2.spree",
+          "derivation_class": "EXTRACT-2 printed keyword, reminder-stripped",
+          "inclusion_reason": "prints Spree — additive modes, which a `choose one` search run before the reminder strip files as mutually exclusive",
+          "named_historical": false,
+          "qualifying_population": 21,
+          "selected": [
+            "0db20037-35b3-4b1f-8dd6-3ee797c421ca",
+            "282dfeaa-6243-4f92-838a-5cb54fa85184",
+            "7c57d4aa-d221-4b36-a544-9fa89d63ffbe",
+            "7e7ec3d6-a84f-4cc3-93f4-4d181d41e126",
+            "ad3e705f-da57-4eff-84d7-2072522de988",
+            "d262f3e1-b5bc-4dab-86c2-cd89c2419e54"
+          ]
+        },
+        {
+          "class_id": "c2.entity-context-triplet",
+          "derivation_class": "EXTRACT-2 printed forms, CR 109.2 / CR 110.1 anchored",
+          "inclusion_reason": "prints 2+ of the three CR 109.2/110.1 entity contexts — creature permanent vs creature spell vs creature card — on one card, where context-free type subsumption goes wrong",
+          "named_historical": false,
+          "qualifying_population": 1102,
+          "selected": [
+            "18da85d4-2a51-45c0-a18c-bce9bc39fa64",
+            "37042a3e-c377-4282-80f9-068e4955f8a1",
+            "5e0bd136-e7e9-49f0-910b-a9fb0b9c481a",
+            "76b65b2a-9905-4857-806a-6dbcf195fc81",
+            "89599a64-19fc-47ad-a116-3ce0a10fa546",
+            "fdf0fba8-f335-419c-b96b-e99037727c43"
+          ]
+        }
+      ],
+      "cohort": 2,
+      "selected_distinct": 90,
+      "status": "open",
+      "title": "structural adversaries"
+    },
+    {
+      "classes": [
+        {
+          "class_id": "c3.simple-control",
+          "derivation_class": "EXTRACT-4 over the ratified census + delivery classifier",
+          "inclusion_reason": "ONE ability line, ONE delivery token, ONE lattice clause occurrence with ZERO residue under packet-1 residue-honest claiming, no modality, no second face, no second effect head, no cross-occurrence reference and no second target. Every conjunct is a measured structural property, so no card is here because a candidate architecture handles it well",
+          "named_historical": false,
+          "qualifying_population": 31,
+          "selected": [
+            "00af96af-5eae-4044-a2f7-a08cd0699d1e",
+            "02da2145-0edb-44be-8622-360182a8c25a",
+            "29781b19-0917-4d8f-abe3-df0b7e96d8a6",
+            "5ffca600-5286-4086-9efe-c398babeb6ae",
+            "b775b83c-0c3d-437d-9d3c-1d5c9cd418a8"
+          ]
+        }
+      ],
+      "cohort": 3,
+      "selected_distinct": 5,
+      "status": "open",
+      "title": "simple controls"
+    },
+    {
+      "classes": [
+        {
+          "class_id": "c6.add-mana",
+          "derivation_class": "EXTRACT-2 CR 106.4 template / grammar §4 ratified verb",
+          "inclusion_reason": "prints the CR 106.4 `add {mana}` template. NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim, and it is the objective stand-in for §21's 'ramp'. The two are NOT the same set — a Cavern of Souls adds mana and is fixing, not acceleration — and closing that gap needs a ratification this packet is not allowed to make",
+          "named_historical": false,
+          "qualifying_population": 859,
+          "selected": [
+            "106ae855-574b-411d-8689-cbb9eeb4f602",
+            "20b549e9-26db-40a5-8bcc-e8de6c559d32",
+            "4cc014f3-05e0-442e-9dee-03eab1aa65a3",
+            "5f2b3ea8-99ee-47a4-8a1c-4b27478d524c",
+            "82debe1c-31cb-411f-a353-98a952180666",
+            "867f0cdf-cf75-40f0-bf1e-ccb92e55e9a3",
+            "bc475376-54eb-4846-9cfc-5fa2e7908905",
+            "ef2bb4fa-f292-4d19-aaa4-cfbe445caf45"
+          ]
+        },
+        {
+          "class_id": "c6.blink",
+          "derivation_class": "EXTRACT-4 packet-1 _FORM_TESTS",
+          "inclusion_reason": "exile followed by return in one sentence — the §20 C2 blink test's own printed shape",
+          "named_historical": false,
+          "qualifying_population": 83,
+          "selected": [
+            "2e6ed3e6-d2b8-4b75-b7e1-0773da4987a1",
+            "33869ba6-13e5-4e48-8963-92f7965648fb",
+            "650ed75c-20b0-45b8-a4d4-813e0369aaf1",
+            "6879f5ce-7a1b-4606-bad1-885779b0d456",
+            "c3a46eb3-38d9-4f47-9b71-26c9ea7ef1ce",
+            "cd1eda60-53e4-44d0-9b2c-7a57395e291f",
+            "dfbd3afc-9905-4cff-a4f4-df08a4d0a7fa",
+            "e790f7e6-45f5-45df-b8e5-bcbda4f69f8a"
+          ]
+        },
+        {
+          "class_id": "c6.counterspell",
+          "derivation_class": "EXTRACT-1 CR 701 keyword action + packet-1 boundary test",
+          "inclusion_reason": "prints CR 701.5 `counter` as an effect head in PREDICATE position — the boundary test is what keeps '+1/+1 counter' out",
+          "named_historical": false,
+          "qualifying_population": 227,
+          "selected": [
+            "01da67a5-e3dc-44f4-8a93-513bfa4d8fbc",
+            "06424141-2c26-4ee8-83c2-dac62e3d3540",
+            "318f7f70-e374-40ef-8afb-3389c10461d8",
+            "5ad33099-0392-4f68-a4c5-7fa3ef2d473e",
+            "611bfaa6-b098-48d9-9e49-1e7dc8687f15",
+            "87837a94-05db-48fe-b810-26d8f92cfc58",
+            "93771480-2672-4bc7-81a8-011d3b8878b0",
+            "bd213210-42d1-49af-9959-08188abe692a"
+          ]
+        },
+        {
+          "class_id": "c6.removal",
+          "derivation_class": "EXTRACT-3 foundry_object_lattice",
+          "inclusion_reason": "carries an object-lattice class on destroy / exile / bounce — the ratified removal machinery, not a hand tag",
+          "named_historical": false,
+          "qualifying_population": 1010,
+          "selected": [
+            "076584c8-ec58-4711-8f59-4839a4fa88ad",
+            "1e46c709-5278-44f3-9f0e-f71bd9558339",
+            "2d400c01-d2d0-442a-bc3d-cf106a754dab",
+            "83917116-d2d8-4701-a79f-af17486706ae",
+            "84e89aac-439c-4e09-b7d9-2ee047c224c5",
+            "9ea58595-fcb9-455c-9558-b6a3fb2b83c5",
+            "a7c8d026-b5b0-4912-a4a0-4c35df5f8899",
+            "d8b3bcf2-1be1-46ed-9531-ca4ce98e3b3c"
+          ]
+        }
+      ],
+      "cohort": 6,
+      "selected_distinct": 32,
+      "status": "open-half",
+      "title": "consumer-critical families (OPEN HALF ONLY)"
+    },
+    {
+      "classes": [
+        {
+          "class_id": "c7.vanilla-creature",
+          "derivation_class": "EXTRACT-0 characteristics + oracle text",
+          "inclusion_reason": "a Creature with no oracle text at all — the mechanical floor, where every semantic dimension must be ABSENT-PROVEN or refused",
+          "named_historical": false,
+          "qualifying_population": 340,
+          "selected": [
+            "18202185-f9d4-446a-b34e-fae9800240f9",
+            "acc07d0d-141b-4169-9643-6f20739e91be",
+            "cf8aef54-3f43-413c-9f3f-d4a1b2090904",
+            "d7316cc6-a2c2-479c-80b5-53c86165e3d1",
+            "db145875-2a40-4fe3-b8ee-bf10ae8f7cd7",
+            "fd20576d-4abe-4af8-ac53-ab9356593fe7"
+          ]
+        },
+        {
+          "class_id": "c7.cr113-3a-face-cut",
+          "derivation_class": "EXTRACT-1 CR 113.3a + EXTRACT-0 type line",
+          "inclusion_reason": "carries an ability but has NO instant/sorcery face, so CR 113.3a closes the ability-category enumeration without reading the text — the recorded cut that removed 738 burn spells from a mis-named shape",
+          "named_historical": false,
+          "qualifying_population": 24666,
+          "selected": [
+            "0411aead-9f77-435d-a343-635f23221cf7",
+            "2d8635bd-ed96-4bb1-8718-6962a0eee3d5",
+            "3106ba15-08d7-474c-a384-6848b713ba8d",
+            "3160dada-d59f-4f23-8420-ba14f9df7514",
+            "90514aa5-84b6-4be7-b6d0-b05529c97140",
+            "a1399cb8-f22a-487e-b539-2db47b09a790"
+          ]
+        },
+        {
+          "class_id": "c7.dfc-two-image",
+          "derivation_class": "EXTRACT-0 locked DFC rule",
+          "inclusion_reason": "two-image DFC by the locked rule: card_faces[0].image_uris EXISTS",
+          "named_historical": false,
+          "qualifying_population": 487,
+          "selected": [
+            "35754a21-9fba-4370-a254-292918a777ba",
+            "372a01f7-6e58-4424-9405-0ee4acbb9346",
+            "522a4b02-24c7-45d2-9097-2803cc9fffad",
+            "727ca426-f4cc-4218-8ae5-8c427af2e816",
+            "8e4d0da0-c7d8-4a20-9bfd-02c1331a7a49",
+            "cf518f59-f083-42a0-9953-fac2757bf804"
+          ]
+        },
+        {
+          "class_id": "c7.multi-face-one-image",
+          "derivation_class": "EXTRACT-0 locked DFC rule",
+          "inclusion_reason": "has card_faces but NO faces[0].image_uris — split / flip / adventure. The other arm of the locked DFC rule, and the reason 'has card_faces' is never the test",
+          "named_historical": false,
+          "qualifying_population": 336,
+          "selected": [
+            "043370fd-9cfe-47ce-8019-e915cee1ae95",
+            "27c366cf-00d7-47d4-9577-736bfc4a3b81",
+            "980f6341-3c13-4405-8550-b838b228f788",
+            "9a52c1ea-35ac-4028-8c1f-b7971c1df886",
+            "a371d035-488e-4b3d-81de-ee7859452c0e",
+            "cb3072c7-393c-43d9-a2c9-f918bd0fd7be"
+          ]
+        }
+      ],
+      "cohort": 7,
+      "selected_distinct": 24,
+      "status": "open",
+      "title": "CR / characteristic-derived cases"
+    },
+    {
+      "classes": [
+        {
+          "class_id": "c8.residue-color",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `color` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 112,
+          "selected": [
+            "1b9c9083-62c3-46fd-a2a0-6de7de88a3c3",
+            "56f782b7-d46c-4aa1-ae16-66d6401c72ae",
+            "65e1558c-6b09-4ddc-b520-f19f4fb972af",
+            "a2fe1e2b-b621-4406-b5e0-f2eebd12c2ba",
+            "c4dee5fe-36f0-4155-9437-2c0504feba2c",
+            "d2cbdbf9-9b08-419e-bb3e-482972d58e74"
+          ]
+        },
+        {
+          "class_id": "c8.residue-condition",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `condition` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 23,
+          "selected": [
+            "008d5896-6fc9-4aaa-8c6f-a44c2feb98bb",
+            "07159efc-c69f-4164-a8ca-9da641dbf702",
+            "5ae50388-7e36-4a83-a618-0148944c5099",
+            "b011d6b2-8930-4192-aa94-82869faa991b",
+            "dafd4385-e64f-4a4a-93c4-b0ac6bd30d41",
+            "e02e7239-304b-4755-b913-bb65bc693e86"
+          ]
+        },
+        {
+          "class_id": "c8.residue-controller",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `controller` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 420,
+          "selected": [
+            "076584c8-ec58-4711-8f59-4839a4fa88ad",
+            "235e3231-c5e5-4696-a867-705b2c4158fe",
+            "2519ccc0-c206-41fb-aa15-2ef88025ff96",
+            "30c7e304-ecfe-44c1-88d1-f507df63c080",
+            "51042581-4add-4487-a1b6-85446539b975",
+            "aeb85786-16fc-45d8-9383-60054a878c40"
+          ]
+        },
+        {
+          "class_id": "c8.residue-identity",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `identity` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 93,
+          "selected": [
+            "2317a33f-665e-4cbc-bb5c-16b912ac2eef",
+            "57d02dc8-e22e-4874-9f02-490a2528a28f",
+            "9fb901db-1ff7-4a8d-8233-fe7e3dee7fd1",
+            "b23a3d30-6b8e-4aad-890f-db0c3af43ace",
+            "d53fecd7-aa12-482e-8f45-5efe6348070d",
+            "da17da9b-f300-4613-978b-ba3026d4e275"
+          ]
+        },
+        {
+          "class_id": "c8.residue-keyword",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `keyword` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 54,
+          "selected": [
+            "26e75f0b-3a02-4989-8429-b6276e98ac33",
+            "5ae50388-7e36-4a83-a618-0148944c5099",
+            "6bac1495-16cf-4e1e-9126-482f85322c78",
+            "722f2965-a1ec-4b97-a4bd-b99364f58b1e",
+            "72a0e0f1-e8be-441a-bcaf-029fb1bd1fd2",
+            "efcbca5a-743c-4b16-a7cf-b07335b31ced"
+          ]
+        },
+        {
+          "class_id": "c8.residue-numeric",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `numeric` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 195,
+          "selected": [
+            "2cb98ca9-d7bb-416b-a17e-ee5f8e4d78f2",
+            "85fd04e9-b39c-4ce0-97a1-58f9670a298f",
+            "bde67dfb-706b-4942-a365-984ea6e97a2b",
+            "d8838e16-96ca-4f73-ad61-7e98a76c4baf",
+            "e6fb4f0d-ce49-4913-a2ef-88365e4916cf",
+            "f500f4cc-d5ee-4995-b7b5-96a5f63dfb47"
+          ]
+        },
+        {
+          "class_id": "c8.residue-state",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `state` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 166,
+          "selected": [
+            "25443ea4-3177-4e29-a2b1-f3fee60b3205",
+            "26e75f0b-3a02-4989-8429-b6276e98ac33",
+            "4d00c44b-8953-4b18-af73-2944321b6cd1",
+            "4e3f89e2-2be6-4b96-b81c-007b6840af82",
+            "7938112a-3832-42b4-b123-27a42c06a290",
+            "a9aedd96-1aee-480d-87fe-3ed94bd64599"
+          ]
+        },
+        {
+          "class_id": "c8.residue-supertype",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `supertype` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 46,
+          "selected": [
+            "6edd2a36-3d65-4bf9-bd82-b6d03a7e8fea",
+            "93953926-a644-49bb-9b5a-4c8f19114c7e",
+            "95c44f28-f7fa-4785-83b9-0d81be0db0c8",
+            "9cf65178-6408-46da-a940-f5cb0960b61f",
+            "d3df7128-31dd-4d71-90be-87e2e9ff51b4",
+            "d45a4924-daa0-4ac3-afd7-b66f636ce870"
+          ]
+        },
+        {
+          "class_id": "c8.residue-type",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `type` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 145,
+          "selected": [
+            "08fc069e-7fdd-4726-aa08-a96bbd2bcaa3",
+            "3eae5419-b686-4321-a89d-cb602c487bfc",
+            "7dacc5aa-ea4d-414e-8324-6a7d24bb7671",
+            "9f3e1eef-31db-4e1a-b5a9-ac835f6a3eab",
+            "bc84a4e7-5f5f-4105-b0f8-c06ebcde6218",
+            "f73ba6ae-87c1-4e5d-ae52-59d11d7d6ba6"
+          ]
+        },
+        {
+          "class_id": "c8.residue-uncategorized",
+          "derivation_class": "EXTRACT-4 packet-1 P1 residue categorization",
+          "inclusion_reason": "a lattice clause leaves UNCLAIMED restriction text in the `uncategorized` family under packet-1 residue-honest claiming, so ABSENT-PROVEN is not available and the honest disposition is UNRESOLVED. Included because the residue is MEASURED, not because a detector currently fails",
+          "named_historical": false,
+          "qualifying_population": 87,
+          "selected": [
+            "29a9aff7-184c-459d-8002-e0287d978764",
+            "610af0f7-b5e3-43fb-9d02-7c59bd99034c",
+            "78da7a38-0f08-4371-bda3-38f079f7724d",
+            "80d233cc-7748-41a2-bfd6-2189d0136900",
+            "98eac0f7-3f4d-46ef-9575-680c52e967cf",
+            "da2f0d16-3cb4-492d-8535-52a31dbae95e"
+          ]
+        },
+        {
+          "class_id": "c8.kind-unclear-reference",
+          "derivation_class": "EXTRACT-4 packet-1 relation_candidates",
+          "inclusion_reason": "carries a reference form that reaches no CR-groundable relation kind (P4 KIND-UNCLEAR). The structural statement is that the printed form establishes no referent by any rule the CR publishes",
+          "named_historical": false,
+          "qualifying_population": 1468,
+          "selected": [
+            "10e0b563-4dfc-4530-a010-0ba40bdf02ac",
+            "409e0a43-0e85-47ea-9d40-de0860b12952",
+            "58ad45fc-b625-4484-8d49-ebc42db9040a",
+            "8f167e2f-7b89-4ae2-8332-7c978f71522e",
+            "b6f61b77-d571-4508-a5e8-435b4e097f3a",
+            "d47e55a6-7a16-4ed9-a94b-f1575588ee9e"
+          ]
+        },
+        {
+          "class_id": "c8.splitter-territory",
+          "derivation_class": "EXTRACT-2 CR 603.4 + printed coordination",
+          "inclusion_reason": "a CR 603.4 `while` condition coordinated by or/and in one sentence — the recorded territory where the compound splitter INVENTS a trigger, and a census scores an invented gap and a lost token identically",
+          "named_historical": false,
+          "qualifying_population": 42,
+          "selected": [
+            "168f2fbb-8cf7-43e0-8bb6-5e4cc3c1e363",
+            "334fba11-e500-40fd-a142-41ff553642b5",
+            "3b319540-4db1-43d3-8f4d-f5a276ad78e4",
+            "649e7237-b38b-43e9-83f4-763751fb1bea",
+            "c95cebf7-c28c-4453-b5e4-e895d621f290",
+            "de19cc3f-e93c-4fde-94e6-398565e1d747"
+          ]
+        }
+      ],
+      "cohort": 8,
+      "selected_distinct": 70,
+      "status": "open",
+      "title": "negative / unresolved — correct output is refusal"
+    }
+  ],
+  "corpus": {
+    "alchemy_dropped_paper_twin_present": 216,
+    "alchemy_kept_twinless": 0,
+    "alchemy_policy": "paper rows preferred over A- variants (ratified)",
+    "candidate_universe": 32341,
+    "corpus_ref": "2026-07-04",
+    "gate": "Gate #0 (ratified batch-6 D1) via load_corpus_gated",
+    "gated_cards": 32557
+  },
+  "development_population_distinct": 249,
+  "empty_classes_measured": [
+    {
+      "class_id": "c7.no-text-noncreature",
+      "cohort": 7,
+      "finding": "every card in the candidate universe with no oracle text is a Creature, so the no-text floor and the vanilla-creature class are the SAME population. c7.vanilla-creature covers it.",
+      "qualifying_population": 0
+    }
+  ],
+  "manifest_sha256": "e5401bb701204675bd85f3d584789517ff3973eead986700b6c4688417513c45",
+  "open_cohort_overlap_qualifying_population": {
+    "1x1": 1237,
+    "1x2": 863,
+    "1x3": 6,
+    "1x6": 636,
+    "1x7": 821,
+    "1x8": 671,
+    "2x2": 13997,
+    "2x3": 0,
+    "2x6": 1095,
+    "2x7": 10344,
+    "2x8": 2027,
+    "3x3": 31,
+    "3x6": 18,
+    "3x7": 31,
+    "3x8": 0,
+    "6x6": 2148,
+    "6x7": 1458,
+    "6x8": 609,
+    "7x7": 25340,
+    "7x8": 1507,
+    "8x8": 2479
+  },
+  "open_cohort_overlap_selected": {
+    "1x1": 30,
+    "1x2": 0,
+    "1x3": 0,
+    "1x6": 0,
+    "1x7": 0,
+    "1x8": 0,
+    "2x2": 90,
+    "2x3": 0,
+    "2x6": 0,
+    "2x7": 0,
+    "2x8": 1,
+    "3x3": 5,
+    "3x6": 0,
+    "3x7": 0,
+    "3x8": 0,
+    "6x6": 32,
+    "6x7": 0,
+    "6x8": 1,
+    "7x7": 24,
+    "7x8": 0,
+    "8x8": 70
+  },
+  "packet": "AQ4 packet 2 — population + sampling machinery",
+  "produced_by": "experiments/aq4_benchmark/aq4_population.py",
+  "ratifies": "nothing — AQ4 is UNRATIFIED; this is population only",
+  "sampling": {
+    "_law": "These values are the commitment. Changing one changes the pre-registered population, so it is a Captain-visible act and not an edit: regenerate, re-hash, and say in the commit which number moved and why.",
+    "_what": "Committed sampling parameters for the AQ4 benchmark population (contract §21). Packet 2 owns cohort 4's seed. Cohort 5's seed is NOT here and is NOT chosen — §22 steps 1-2 belong to packet 3.",
+    "candidate_universe": {
+      "corpus": "foundry_common.load_corpus_gated — Gate #0, ratified batch-6 D1",
+      "duplicate_prevention": "oracle_id is the only card key and the universe is a dict keyed on it, so a duplicate is structurally impossible; the draw reports duplicate_ids anyway rather than trusting that",
+      "exclusion": "Alchemy (A-) rows whose paper twin is present, implementing the ratified 'paper rows preferred over A- variants in sampling, resolution, and emit'",
+      "exclusion_is_a_preference": "a twinless A- row would be KEPT; the count of each is reported rather than assumed",
+      "gate_unchanged": "the benchmark does not alter corpus membership; Gate #0's Commander arm applies here exactly as in every other foundry stage"
+    },
+    "cohort_4": {
+      "per_stratum": 1,
+      "per_stratum_rule": "MINIMAL COMPLETE COVERAGE — one card per non-empty stratum. §21 pre-registers the stratification (delivery token × action family) and supplies no size, so the only draw rule with ZERO free parameters is one-per-cell. Any other rule (a fixed total, a size floor, proportional allocation) introduces a number the contract does not supply, and §10 of the packet directive forbids smuggling a population-size choice through implementation.",
+      "seed": "AQ4-C4-20260815",
+      "seed_sha256": "committed in population-manifest.json alongside the selection hash",
+      "short_stratum_behavior": "a stratum smaller than per_stratum yields everything it has and is REPORTED as short. Never merged into a neighbour, never dropped — collapsing a rare cell would silently change the pre-registered population.",
+      "stratum_definition": {
+        "action_family": "the FIRST CR 701 keyword action in PREDICATE position, printed order, using packet 1's cr701_keyword_actions (parsed from the CR at run time) and packet 1's effect-head boundary test. null when the card prints none.",
+        "delivery_token": "the FIRST delivery token in printed order from foundry_shape_extractor.deliveries_for_lines (grammar §2 ratified table, including §2's any-/other- scope facet). null when the card emits none.",
+        "null_is_not_vocabulary": "null is a JSON null and renders as (none). It is the absence of a value, not a coined stratum label."
+      }
+    },
+    "cohort_6": {
+      "blind_half": "never materialized and never printed by any packet-2 command",
+      "open_half_cap": 8,
+      "split_rule": "SHA-256 keyed order per family with label 'aq4-c6-split\\u0000<class_id>'; even index -> OPEN half, odd index -> reserved for the holdout draw. Pre-registered, deterministic, and independent of any holdout seed, so publishing the open half exposes nothing about the holdout."
+    },
+    "cross_cohort_overlap": {
+      "hard_rule": "holdout ∩ development MUST be empty. Enforced at DRAW time by draw_generic(exclude=...) — a check after the fact can only report a leak it cannot undo — and asserted by assert_disjoint_from_development.",
+      "policy": "OPEN cohorts may overlap. A card can structurally qualify as several kinds of adversary at once and forcing exclusivity would misrepresent it; membership is metadata and the overlap matrix is published."
+    },
+    "ordering": {
+      "before_sampling": "pool sorted by oracle_id",
+      "never": "dict insertion order, filesystem order, or card-name order — name order is a recorded defect (Tier 3's shipped top-10 is an alphabetical slice of a score tie, and A- Alchemy rows sort first)",
+      "on_disk": "selected ids sorted by oracle_id",
+      "selection": "SHA-256 keyed order (above)"
+    },
+    "packet": 2,
+    "prng": {
+      "algorithm": "SHA-256 keyed ordering — sorted(pool, key=lambda oid: (sha256(label + NUL + oid).hexdigest(), oid))",
+      "domain_separation": "every draw is keyed with its own label, so two classes drawing from the same pool cannot select the same cards by construction",
+      "stateful_prng": false,
+      "tie_break": "oracle_id, so the order is total even under a hash collision",
+      "why_not_random_Random": "A stateful PRNG reproduces only against a matching library. Cohort 4 must regenerate byte-identically at packet 9, months and possibly a Python version later, or §22 step 6 (audit the sampling procedure against the committed script) cannot pass. SHA-256 has no library-version surface."
+    },
+    "structural_classes": {
+      "cohort_3_max": 5,
+      "cohort_3_rule": "fixed by §21 — 'simple controls (≤5)'",
+      "k_per_class": 6,
+      "k_rule": "Six exemplars per derived structural class. More than one so no single odd card can define a class (the 'did a named exemplar become the cohort?' failure); small enough that the open cohorts stay hand-adjudicable at packet 3.",
+      "min_class_members": 2,
+      "min_class_rule": "a derived class with fewer qualifying members than this is a named exemplar with a derivation written around it; the builder HALTS rather than publishing one as structure. Classes declared named_historical are exempt and labeled."
+    }
+  },
+  "trap_coverage": [
+    {
+      "covered_by": [
+        "c1.modal-flattening",
+        "c1.active-volcano-named-case",
+        "c2.modal"
+      ],
+      "failure_mode": "two exclusive modes presented as one card-level bag",
+      "source": "CLAUDE.md traps / contract §28; NC-D",
+      "trap": "card-level union read as co-occurrence"
+    },
+    {
+      "covered_by": [
+        "c1.nc-a-later-ability"
+      ],
+      "failure_mode": "a fact on a non-first ability line is lost by a truncating reader",
+      "source": "NC-A (FULL-CARD-INFORMATION-CONSERVATION)",
+      "trap": "later ability dropped"
+    },
+    {
+      "covered_by": [
+        "c1.nc-b-multi-face",
+        "c7.dfc-two-image",
+        "c7.multi-face-one-image"
+      ],
+      "failure_mode": "a fact on a second face is lost when faces are not all scanned",
+      "source": "NC-B",
+      "trap": "face dropped"
+    },
+    {
+      "covered_by": [
+        "c1.nc-c-context-strip"
+      ],
+      "failure_mode": "deleting an activation cost leaves the object fact identical",
+      "source": "NC-C",
+      "trap": "context stripped, payload intact"
+    },
+    {
+      "covered_by": [
+        "c1.nc-e-cardname-drift"
+      ],
+      "failure_mode": "a CARDNAME pattern reads 0 on raw text and 1,478 through the pipeline",
+      "source": "NC-E",
+      "trap": "probe drift — raw text vs pipeline preprocessing"
+    },
+    {
+      "covered_by": [
+        "c2.spree",
+        "c2.modal"
+      ],
+      "failure_mode": "additive Spree modes filed as mutually exclusive — the inverse of truth",
+      "source": "CLAUDE.md trap (Spree / `choose one`)",
+      "trap": "reminder text searched before the strip"
+    },
+    {
+      "covered_by": [
+        "c2.multi-effect",
+        "c8.splitter-territory"
+      ],
+      "failure_mode": "a verb in the effect clause is matched as the trigger event",
+      "source": "CLAUDE.md trap (CR 113.3c)",
+      "trap": "trigger event read from the effect, not the condition"
+    },
+    {
+      "covered_by": [
+        "c8.splitter-territory"
+      ],
+      "failure_mode": "a coordination inside one phrase is split into two abilities",
+      "source": "CLAUDE.md trap (CR 603.4 `while`)",
+      "trap": "or/and splitter invents or loses a trigger"
+    },
+    {
+      "covered_by": [
+        "c8.residue-controller",
+        "c8.residue-numeric",
+        "c8.residue-state"
+      ],
+      "failure_mode": "text coverage read as representation",
+      "source": "contract §28 / §18.1 residue-honest claiming",
+      "trap": "open capture claims text — zero residue, lost restriction"
+    },
+    {
+      "covered_by": [
+        "c2.entity-context-triplet"
+      ],
+      "failure_mode": "a creature card treated as a creature permanent",
+      "source": "contract §28 (CR 109.2 / 110.1)",
+      "trap": "context-free type subsumption"
+    },
+    {
+      "covered_by": [
+        "c2.fight",
+        "c2.attach"
+      ],
+      "failure_mode": "fight and attach are structurally absent from the census population",
+      "source": "packet 1 P3",
+      "trap": "lattice-only population assumption"
+    },
+    {
+      "covered_by": [
+        "c8.kind-unclear-reference",
+        "c2.this-way",
+        "c2.kind-unclear-other"
+      ],
+      "failure_mode": "a dimension nothing extracted read as proven absent",
+      "source": "contract §28 / §18 consumer law",
+      "trap": "UNKNOWN treated as ABSENT"
+    },
+    {
+      "covered_by": [
+        "c2.repeated-identical-clause"
+      ],
+      "failure_mode": "two real ability units counted as one",
+      "source": "PICK-UP-HERE §0AB (Seize the Soul)",
+      "trap": "repeated identical clause merged by a case-folded key"
+    },
+    {
+      "covered_by": [
+        "__sampler__: hash order + Alchemy rows excluded from the universe"
+      ],
+      "failure_mode": "name-ordered selection over-picks Alchemy rows",
+      "source": "WIRE-RESULT-2026-08-09",
+      "trap": "alphabetical order read as a ranking; A- variants first"
+    }
+  ]
+}

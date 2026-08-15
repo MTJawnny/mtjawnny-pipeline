@@ -1,0 +1,78 @@
+{
+  "classes": [
+    {
+      "class_id": "c6.add-mana",
+      "derivation_class": "EXTRACT-2 CR 106.4 template / grammar §4 ratified verb",
+      "inclusion_reason": "prints the CR 106.4 `add {mana}` template. NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim, and it is the objective stand-in for §21's 'ramp'. The two are NOT the same set — a Cavern of Souls adds mana and is fixing, not acceleration — and closing that gap needs a ratification this packet is not allowed to make",
+      "named_historical": false,
+      "oracle_ids": [
+        "106ae855-574b-411d-8689-cbb9eeb4f602",
+        "20b549e9-26db-40a5-8bcc-e8de6c559d32",
+        "4cc014f3-05e0-442e-9dee-03eab1aa65a3",
+        "5f2b3ea8-99ee-47a4-8a1c-4b27478d524c",
+        "82debe1c-31cb-411f-a353-98a952180666",
+        "867f0cdf-cf75-40f0-bf1e-ccb92e55e9a3",
+        "bc475376-54eb-4846-9cfc-5fa2e7908905",
+        "ef2bb4fa-f292-4d19-aaa4-cfbe445caf45"
+      ],
+      "qualifying_population": 859
+    },
+    {
+      "class_id": "c6.blink",
+      "derivation_class": "EXTRACT-4 packet-1 _FORM_TESTS",
+      "inclusion_reason": "exile followed by return in one sentence — the §20 C2 blink test's own printed shape",
+      "named_historical": false,
+      "oracle_ids": [
+        "2e6ed3e6-d2b8-4b75-b7e1-0773da4987a1",
+        "33869ba6-13e5-4e48-8963-92f7965648fb",
+        "650ed75c-20b0-45b8-a4d4-813e0369aaf1",
+        "6879f5ce-7a1b-4606-bad1-885779b0d456",
+        "c3a46eb3-38d9-4f47-9b71-26c9ea7ef1ce",
+        "cd1eda60-53e4-44d0-9b2c-7a57395e291f",
+        "dfbd3afc-9905-4cff-a4f4-df08a4d0a7fa",
+        "e790f7e6-45f5-45df-b8e5-bcbda4f69f8a"
+      ],
+      "qualifying_population": 83
+    },
+    {
+      "class_id": "c6.counterspell",
+      "derivation_class": "EXTRACT-1 CR 701 keyword action + packet-1 boundary test",
+      "inclusion_reason": "prints CR 701.5 `counter` as an effect head in PREDICATE position — the boundary test is what keeps '+1/+1 counter' out",
+      "named_historical": false,
+      "oracle_ids": [
+        "01da67a5-e3dc-44f4-8a93-513bfa4d8fbc",
+        "06424141-2c26-4ee8-83c2-dac62e3d3540",
+        "318f7f70-e374-40ef-8afb-3389c10461d8",
+        "5ad33099-0392-4f68-a4c5-7fa3ef2d473e",
+        "611bfaa6-b098-48d9-9e49-1e7dc8687f15",
+        "87837a94-05db-48fe-b810-26d8f92cfc58",
+        "93771480-2672-4bc7-81a8-011d3b8878b0",
+        "bd213210-42d1-49af-9959-08188abe692a"
+      ],
+      "qualifying_population": 227
+    },
+    {
+      "class_id": "c6.removal",
+      "derivation_class": "EXTRACT-3 foundry_object_lattice",
+      "inclusion_reason": "carries an object-lattice class on destroy / exile / bounce — the ratified removal machinery, not a hand tag",
+      "named_historical": false,
+      "oracle_ids": [
+        "076584c8-ec58-4711-8f59-4839a4fa88ad",
+        "1e46c709-5278-44f3-9f0e-f71bd9558339",
+        "2d400c01-d2d0-442a-bc3d-cf106a754dab",
+        "83917116-d2d8-4701-a79f-af17486706ae",
+        "84e89aac-439c-4e09-b7d9-2ee047c224c5",
+        "9ea58595-fcb9-455c-9558-b6a3fb2b83c5",
+        "a7c8d026-b5b0-4912-a4a0-4c35df5f8899",
+        "d8b3bcf2-1be1-46ed-9531-ca4ce98e3b3c"
+      ],
+      "qualifying_population": 1010
+    }
+  ],
+  "cohort": 6,
+  "cohort_sha256": "9f3ddb98a147d40fe20048e7b29b504d5300e3e056aba1e9d7b8a847a3c50038",
+  "corpus_ref": "2026-07-04",
+  "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
+  "status": "open-half",
+  "title": "consumer-critical families (OPEN HALF ONLY)"
+}

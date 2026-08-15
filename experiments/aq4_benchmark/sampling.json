@@ -1,0 +1,54 @@
+{
+  "_what": "Committed sampling parameters for the AQ4 benchmark population (contract §21). Packet 2 owns cohort 4's seed. Cohort 5's seed is NOT here and is NOT chosen — §22 steps 1-2 belong to packet 3.",
+  "_law": "These values are the commitment. Changing one changes the pre-registered population, so it is a Captain-visible act and not an edit: regenerate, re-hash, and say in the commit which number moved and why.",
+  "packet": 2,
+  "prng": {
+    "algorithm": "SHA-256 keyed ordering — sorted(pool, key=lambda oid: (sha256(label + NUL + oid).hexdigest(), oid))",
+    "stateful_prng": false,
+    "why_not_random_Random": "A stateful PRNG reproduces only against a matching library. Cohort 4 must regenerate byte-identically at packet 9, months and possibly a Python version later, or §22 step 6 (audit the sampling procedure against the committed script) cannot pass. SHA-256 has no library-version surface.",
+    "tie_break": "oracle_id, so the order is total even under a hash collision",
+    "domain_separation": "every draw is keyed with its own label, so two classes drawing from the same pool cannot select the same cards by construction"
+  },
+  "ordering": {
+    "before_sampling": "pool sorted by oracle_id",
+    "selection": "SHA-256 keyed order (above)",
+    "on_disk": "selected ids sorted by oracle_id",
+    "never": "dict insertion order, filesystem order, or card-name order — name order is a recorded defect (Tier 3's shipped top-10 is an alphabetical slice of a score tie, and A- Alchemy rows sort first)"
+  },
+  "cohort_4": {
+    "seed": "AQ4-C4-20260815",
+    "seed_sha256": "committed in population-manifest.json alongside the selection hash",
+    "per_stratum": 1,
+    "per_stratum_rule": "MINIMAL COMPLETE COVERAGE — one card per non-empty stratum. §21 pre-registers the stratification (delivery token × action family) and supplies no size, so the only draw rule with ZERO free parameters is one-per-cell. Any other rule (a fixed total, a size floor, proportional allocation) introduces a number the contract does not supply, and §10 of the packet directive forbids smuggling a population-size choice through implementation.",
+    "short_stratum_behavior": "a stratum smaller than per_stratum yields everything it has and is REPORTED as short. Never merged into a neighbour, never dropped — collapsing a rare cell would silently change the pre-registered population.",
+    "stratum_definition": {
+      "delivery_token": "the FIRST delivery token in printed order from foundry_shape_extractor.deliveries_for_lines (grammar §2 ratified table, including §2's any-/other- scope facet). null when the card emits none.",
+      "action_family": "the FIRST CR 701 keyword action in PREDICATE position, printed order, using packet 1's cr701_keyword_actions (parsed from the CR at run time) and packet 1's effect-head boundary test. null when the card prints none.",
+      "null_is_not_vocabulary": "null is a JSON null and renders as (none). It is the absence of a value, not a coined stratum label."
+    }
+  },
+  "cohort_6": {
+    "split_rule": "SHA-256 keyed order per family with label 'aq4-c6-split\\u0000<class_id>'; even index -> OPEN half, odd index -> reserved for the holdout draw. Pre-registered, deterministic, and independent of any holdout seed, so publishing the open half exposes nothing about the holdout.",
+    "open_half_cap": 8,
+    "blind_half": "never materialized and never printed by any packet-2 command"
+  },
+  "structural_classes": {
+    "k_per_class": 6,
+    "k_rule": "Six exemplars per derived structural class. More than one so no single odd card can define a class (the 'did a named exemplar become the cohort?' failure); small enough that the open cohorts stay hand-adjudicable at packet 3.",
+    "cohort_3_max": 5,
+    "cohort_3_rule": "fixed by §21 — 'simple controls (≤5)'",
+    "min_class_members": 2,
+    "min_class_rule": "a derived class with fewer qualifying members than this is a named exemplar with a derivation written around it; the builder HALTS rather than publishing one as structure. Classes declared named_historical are exempt and labeled."
+  },
+  "candidate_universe": {
+    "corpus": "foundry_common.load_corpus_gated — Gate #0, ratified batch-6 D1",
+    "gate_unchanged": "the benchmark does not alter corpus membership; Gate #0's Commander arm applies here exactly as in every other foundry stage",
+    "exclusion": "Alchemy (A-) rows whose paper twin is present, implementing the ratified 'paper rows preferred over A- variants in sampling, resolution, and emit'",
+    "exclusion_is_a_preference": "a twinless A- row would be KEPT; the count of each is reported rather than assumed",
+    "duplicate_prevention": "oracle_id is the only card key and the universe is a dict keyed on it, so a duplicate is structurally impossible; the draw reports duplicate_ids anyway rather than trusting that"
+  },
+  "cross_cohort_overlap": {
+    "policy": "OPEN cohorts may overlap. A card can structurally qualify as several kinds of adversary at once and forcing exclusivity would misrepresent it; membership is metadata and the overlap matrix is published.",
+    "hard_rule": "holdout ∩ development MUST be empty. Enforced at DRAW time by draw_generic(exclude=...) — a check after the fact can only report a leak it cannot undo — and asserted by assert_disjoint_from_development."
+  }
+}
