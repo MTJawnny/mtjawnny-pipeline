@@ -30,7 +30,9 @@
   "cohort_6": {
     "split_rule": "SHA-256 keyed order per family with label 'aq4-c6-split\\u0000<class_id>'; even index -> OPEN half, odd index -> reserved for the holdout draw. Pre-registered, deterministic, and independent of any holdout seed, so publishing the open half exposes nothing about the holdout.",
     "open_half_cap": 8,
-    "blind_half": "never materialized and never printed by any packet-2 command"
+    "blind_half": "never materialized and never printed by any packet-2 command",
+    "ramp_family_split": "RAMP is ONE §21 family with three derived components, so its split is taken ONCE over the family UNION with label 'aq4-c6-split\\u0000c6.ramp' — not once per component. Three independent splits would let one card be OPEN in one component and RESERVED in another; that is not a leak (packet 3 excludes development before it draws) but it leaves no single answer to 'is this card reserved?'. Each component then takes its open_half_cap exemplars from INSIDE the family's open half, so every arm stays visible: a single draw over a union this lopsided could return eight nonland mana sources and show a reader no land ramp at all.",
+    "ramp_is_benchmark_only": "Captain ruled ramp a BENCHMARK family. No production ramp vocabulary is minted, no token is emitted, and no codebook axis is created. The components are named c6.ramp-* and exist only in this directory."
   },
   "structural_classes": {
     "k_per_class": 6,

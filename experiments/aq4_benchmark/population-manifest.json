@@ -4807,6 +4807,35 @@
       "population": 453,
       "reserved_for_holdout_draw": 226
     },
+    "c6.ramp": {
+      "components": [
+        "c6.ramp-land-to-battlefield",
+        "c6.ramp-nonland-mana",
+        "c6.ramp-predefined-mana-token"
+      ],
+      "note": "§21's consumer-critical family. The split is taken here, ONCE, over the union; the components draw exemplars from inside this open half so every arm stays visible.",
+      "open_half": 972,
+      "population": 1944,
+      "reserved_for_holdout_draw": 972
+    },
+    "c6.ramp-land-to-battlefield": {
+      "open_half": 194,
+      "population": 421,
+      "reserved_for_holdout_draw": 227,
+      "split_taken_at": "c6.ramp (family level)"
+    },
+    "c6.ramp-nonland-mana": {
+      "open_half": 583,
+      "population": 1151,
+      "reserved_for_holdout_draw": 568,
+      "split_taken_at": "c6.ramp (family level)"
+    },
+    "c6.ramp-predefined-mana-token": {
+      "open_half": 201,
+      "population": 386,
+      "reserved_for_holdout_draw": 185,
+      "split_taken_at": "c6.ramp (family level)"
+    },
     "c6.removal": {
       "open_half": 1010,
       "population": 2019,
@@ -5231,10 +5260,61 @@
             "a7c8d026-b5b0-4912-a4a0-4c35df5f8899",
             "d8b3bcf2-1be1-46ed-9531-ca4ce98e3b3c"
           ]
+        },
+        {
+          "class_id": "c6.ramp-land-to-battlefield",
+          "derivation_class": "EXTRACT-4 printed zone-change template + CR 205.2a/205.3 land vocabulary via the ratified lattice parse",
+          "inclusion_reason": "one sentence carries both the `put … onto the battlefield` zone change and a CR 205-anchored `‹land type› card` object. Search is NOT required — Settle the Wilds seeks and Arboreal Grazer plays from hand, and a search-gated arm would call neither one ramp",
+          "named_historical": false,
+          "qualifying_population": 194,
+          "selected": [
+            "1bd3e453-aa21-4ee6-95c2-d6d920ee8e7a",
+            "2a86b70b-34ca-45df-8aa1-c3fb2da72dc3",
+            "52b88034-bf0f-4d29-b776-40ce421f1107",
+            "5a57fba3-01e3-4852-8c45-7c910502bd03",
+            "6edd2a36-3d65-4bf9-bd82-b6d03a7e8fea",
+            "9cdc9f99-c6fa-40cd-90b0-e47d43a8cc3c",
+            "a0abd957-01a0-4aa9-8fc8-0e6840d21606",
+            "e4b32e47-5484-4ee9-bac3-4ba37558a56a"
+          ]
+        },
+        {
+          "class_id": "c6.ramp-nonland-mana",
+          "derivation_class": "EXTRACT-2 CR 106.4 template + CR 305.2 rate + EXTRACT-0 type line",
+          "inclusion_reason": "prints the CR 106.4 add-mana template — BOTH printed forms, the mana symbol and the noun — on a card with no Land type. CR 305.2 rations a player to one land per turn, so mana from a nonland source is mana that did not cost the rationed drop. This is the arm Captain's ruling names: an ordinary basic land is NOT ramp by its mana ability alone, and the nonland cut is what enforces that",
+          "named_historical": false,
+          "qualifying_population": 583,
+          "selected": [
+            "0158634a-08a3-4eb8-8216-bf85161fd168",
+            "25712827-626a-484d-bc52-f3bd6087857f",
+            "27348fe5-21d4-40f7-9feb-bba2c2321008",
+            "344cdec9-60b3-42ec-a3d5-41ee1d4f7c6c",
+            "40c1375b-1d15-4525-894a-16b7a0ac02b4",
+            "49f92c0b-16ac-4cf0-8ec3-e3638990ee75",
+            "8ad91f64-ccab-4edc-bd54-b2ee9267d614",
+            "95dc1f55-9dad-4a35-ac5e-abc53d442ffb"
+          ]
+        },
+        {
+          "class_id": "c6.ramp-predefined-mana-token",
+          "derivation_class": "EXTRACT-2 CR 111.10 closed list x CR 106.4 template",
+          "inclusion_reason": "creates a CR 111.10 predefined token whose CR-PRINTED ability itself matches the CR 106.4 add-mana template. Two CR rules meeting decide the membership, so the token set is derived and not named — it comes back as four, and the fourth is one no hand list here would have contained",
+          "named_historical": false,
+          "qualifying_population": 201,
+          "selected": [
+            "08dcda8e-704d-444e-a7ca-34586a7f42a7",
+            "09ecb8df-2a17-4e5a-814c-474bce54794d",
+            "1c63c4ca-5d5a-4ab9-af0d-ed1254b581cc",
+            "4ba37a9e-6b80-4099-bd79-736123d0554b",
+            "6d9ab641-ba99-4b27-a84e-8c2ae57a2fc1",
+            "734a5186-caa6-4811-b6d7-91b7b32fc403",
+            "da785227-cf8a-4d44-9e7c-fc909ea868f2",
+            "e16f79c1-ffbb-4893-b62a-d4e9d15e2b16"
+          ]
         }
       ],
       "cohort": 6,
-      "selected_distinct": 32,
+      "selected_distinct": 56,
       "status": "open-half",
       "title": "consumer-critical families (OPEN HALF ONLY)"
     },
@@ -5504,7 +5584,7 @@
     "gate": "Gate #0 (ratified batch-6 D1) via load_corpus_gated",
     "gated_cards": 32557
   },
-  "development_population_distinct": 249,
+  "development_population_distinct": 272,
   "empty_classes_measured": [
     {
       "class_id": "c7.no-text-noncreature",
@@ -5513,26 +5593,26 @@
       "qualifying_population": 0
     }
   ],
-  "manifest_sha256": "e5401bb701204675bd85f3d584789517ff3973eead986700b6c4688417513c45",
+  "manifest_sha256": "eba6b996e449de83aadc6320d994d9744bb9deef5d9cd94d23692ee8b381a5b3",
   "open_cohort_overlap_qualifying_population": {
     "1x1": 1237,
     "1x2": 863,
     "1x3": 6,
-    "1x6": 636,
+    "1x6": 646,
     "1x7": 821,
     "1x8": 671,
     "2x2": 13997,
     "2x3": 0,
-    "2x6": 1095,
+    "2x6": 1501,
     "2x7": 10344,
     "2x8": 2027,
     "3x3": 31,
     "3x6": 18,
     "3x7": 31,
     "3x8": 0,
-    "6x6": 2148,
-    "6x7": 1458,
-    "6x8": 609,
+    "6x6": 2913,
+    "6x7": 2109,
+    "6x8": 657,
     "7x7": 25340,
     "7x8": 1507,
     "8x8": 2479
@@ -5553,15 +5633,112 @@
     "3x6": 0,
     "3x7": 0,
     "3x8": 0,
-    "6x6": 32,
+    "6x6": 56,
     "6x7": 0,
-    "6x8": 1,
+    "6x8": 2,
     "7x7": 24,
     "7x8": 0,
     "8x8": 70
   },
   "packet": "AQ4 packet 2 — population + sampling machinery",
   "produced_by": "experiments/aq4_benchmark/aq4_population.py",
+  "ramp_family": {
+    "add_mana_template_gap": {
+      "c6_add_mana_symbol_only": 1718,
+      "cr106_4_both_forms": 2189,
+      "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — c6.add-mana is a PRE-REGISTERED family and was NOT widened here. The ramp arms use the corrected CR 106.4 template, so cohort 6 currently carries two mana tests. Reconciling them moves an already-committed population and is Manager/Captain's call.",
+      "missed_by_symbol_only": 471
+    },
+    "components": [
+      {
+        "anchor": "CR 106.4 add-mana template (both printed forms) + CR 305.2 one-land-per-turn rate + CR 205.2a type line",
+        "class_id": "c6.ramp-nonland-mana",
+        "component": "nonland_mana_acceleration",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "Captain's ruling is implemented by the NONLAND cut, not by the reminder strip. See RC3 — reminder-stripping alone leaks Wastes, which prints its mana ability as real text because it has no basic land TYPE for CR 305.6 to make intrinsic.",
+        "population": 1151
+      },
+      {
+        "anchor": "printed `put … onto the battlefield` zone change scoped to one sentence + CR 205.2a/205.3 land-card noun phrase",
+        "class_id": "c6.ramp-land-to-battlefield",
+        "component": "land_search_or_placement_onto_battlefield",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "search is not required and not sufficient; the arm is the zone change, which is what both Cultivate and Arboreal Grazer actually share.",
+        "population": 421
+      },
+      {
+        "anchor": "CR 111.10 closed predefined-token list x CR 106.4 template",
+        "class_id": "c6.ramp-predefined-mana-token",
+        "component": "treasure",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "generalized from Treasure to every CR 111.10 token whose CR-printed ability adds mana: ['Gold', 'Powerstone', 'Treasure', 'Vibranium']. Kept a SEPARATE class from the other two arms precisely so that a Captain ruling against delayed one-shot mana can drop it without touching the two required arms.",
+        "population": 386
+      },
+      {
+        "anchor": "CR 205.2a card type, inside the nonland arm",
+        "class_id": "c6.ramp-nonland-mana",
+        "component": "rituals",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "not a separate question — a CR 205.2a partition of the arm above. Same for mana_dorks and mana_rocks.",
+        "population": 79
+      },
+      {
+        "anchor": "CR 205.2a card type, inside the nonland arm",
+        "class_id": "c6.ramp-nonland-mana",
+        "component": "mana_dorks",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "the worded CR 106.4 form is what reaches these — the symbol-only test misses Birds of Paradise outright.",
+        "population": 570
+      },
+      {
+        "anchor": "CR 205.2a card type, inside the nonland arm",
+        "class_id": "c6.ramp-nonland-mana",
+        "component": "mana_rocks",
+        "disposition": "INCLUDED_OBJECTIVELY",
+        "note": "reported for completeness; carries no class of its own.",
+        "population": 371
+      },
+      {
+        "anchor": "CR 601.2f — cost CALCULATION",
+        "class_id": null,
+        "component": "cost_reduction",
+        "disposition": "EXCLUDED_OBJECTIVELY",
+        "note": "no mana is added and no land moves. CR 601.2f changes what a spell demands; CR 106.4 changes what a player has. The two are objectively distinguishable from the printed text, so this is an exclusion with a rule behind it and not a coverage gap.",
+        "population": 502
+      },
+      {
+        "anchor": "CR 305.2 — \"continuous effects may increase this number\"",
+        "class_id": null,
+        "component": "additional_land_play",
+        "disposition": "AMBIGUOUS_REQUIRES_CAPTAIN",
+        "note": "OBJECTIVELY DETECTABLE, and deliberately not forced. CR 305.2 is the same rule the nonland arm's rationale rests on, which is the argument FOR inclusion; but this grants PERMISSION and adds nothing by itself — a Burgeoning with no land in hand ramps nobody. Whether permission joins the same family as arrival is a family-boundary ruling, and the population is small enough that ruling it later costs one rebuild.",
+        "population": 34
+      },
+      {
+        "anchor": "CR 107.4 mana symbols / CR 305.2",
+        "class_id": null,
+        "component": "multi_mana_lands",
+        "disposition": "OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE",
+        "note": "NOT derivable with current primitives, and the measurement that looked like it was is the reason. Counting mana symbols in the add clause returns 388 lands — but 310 of those print `Add {R} or {G}`, which is ONE mana with a choice of color, not two. Only 73 print CR 107.4's adjacent conjunctive form, and even those need the ACTIVATION COST subtracted before 'accelerates' is true (a filter land pays mana to make mana). Net mana gain is a computation over cost and effect, not a printed template, so no honest population exists yet.",
+        "population": null
+      }
+    ],
+    "cr_anchors": [
+      "106.4 add mana",
+      "305.2 one land per turn",
+      "205.2a / 205.3 land vocabulary",
+      "111.10 predefined tokens",
+      "601.2f cost calculation"
+    ],
+    "predefined_mana_tokens": [
+      "Gold",
+      "Powerstone",
+      "Treasure",
+      "Vibranium"
+    ],
+    "predefined_tokens_total": 21,
+    "status": "DERIVED — benchmark family only (Captain: ramp is a BENCHMARK family; production ramp vocabulary is FORBIDDEN and none is minted here)"
+  },
   "ratifies": "nothing — AQ4 is UNRATIFIED; this is population only",
   "sampling": {
     "_law": "These values are the commitment. Changing one changes the pre-registered population, so it is a Captain-visible act and not an edit: regenerate, re-hash, and say in the commit which number moved and why.",
@@ -5588,6 +5765,8 @@
     "cohort_6": {
       "blind_half": "never materialized and never printed by any packet-2 command",
       "open_half_cap": 8,
+      "ramp_family_split": "RAMP is ONE §21 family with three derived components, so its split is taken ONCE over the family UNION with label 'aq4-c6-split\\u0000c6.ramp' — not once per component. Three independent splits would let one card be OPEN in one component and RESERVED in another; that is not a leak (packet 3 excludes development before it draws) but it leaves no single answer to 'is this card reserved?'. Each component then takes its open_half_cap exemplars from INSIDE the family's open half, so every arm stays visible: a single draw over a union this lopsided could return eight nonland mana sources and show a reader no land ramp at all.",
+      "ramp_is_benchmark_only": "Captain ruled ramp a BENCHMARK family. No production ramp vocabulary is minted, no token is emitted, and no codebook axis is created. The components are named c6.ramp-* and exist only in this directory.",
       "split_rule": "SHA-256 keyed order per family with label 'aq4-c6-split\\u0000<class_id>'; even index -> OPEN half, odd index -> reserved for the holdout draw. Pre-registered, deterministic, and independent of any holdout seed, so publishing the open half exposes nothing about the holdout."
     },
     "cross_cohort_overlap": {

@@ -14,7 +14,7 @@ stops there.
 | does NOT build | cohort 5 (packet 3) · any answer key (packet 3+) · any candidate encoding (packets 5–6) |
 | regenerate | `python3 experiments/aq4_benchmark/aq4_population.py --build` |
 | sizes only | `… --census` |
-| controls | `… --selftest` (NC-P2-1 … NC-P2-7) |
+| controls | `… --selftest` (NC-P2-1 … NC-P2-7, RC1 … RC6) |
 
 ---
 
@@ -225,16 +225,74 @@ Family derivations, all from objective existing primitives:
 | `c6.removal` | carries an object-lattice class on destroy / exile / bounce | EXTRACT-3, ratified lattice |
 | `c6.blink` | exile followed by return in one sentence | EXTRACT-4, packet-1 form test |
 | `c6.counterspell` | CR 701.5 `counter` as an effect head in predicate position | EXTRACT-1 + boundary test |
-| `c6.add-mana` | the CR 106.4 `add {mana}` template | EXTRACT-2 |
+| `c6.add-mana` | the CR 106.4 `add {mana}` **symbol** template | EXTRACT-2 |
+| `c6.ramp-nonland-mana` | CR 106.4 add-mana, **both printed forms**, on a card with no Land type | EXTRACT-2 + CR 305.2 + EXTRACT-0 |
+| `c6.ramp-land-to-battlefield` | `put … onto the battlefield` and a CR 205 `‹land type› card` in one sentence | EXTRACT-4 + ratified CR 205 parse |
+| `c6.ramp-predefined-mana-token` | creates a CR 111.10 token whose CR-printed ability is itself CR 106.4 add-mana | EXTRACT-2, two CR rules meeting |
 
-**`c6.add-mana` is named for the ratified primitive, not for §21's family
-label, and the gap is real.** Grammar §4's `add-mana` verb is Captain-ratified
-with CR 106.4 supplying the words verbatim, and it is the objective stand-in
-for "ramp". The two are **not** the same set — a Cavern of Souls adds mana and
-is fixing, not acceleration. Closing that gap means ruling what "ramp" is,
-which is a ratification this packet may not make and a hand tag it may not
-write. So the family is derived from the primitive, named after the primitive,
-and the limitation is recorded here instead of being hidden by the label.
+### 6a. RAMP — the gap this packet's first pass recorded, now closed
+
+The first pass shipped `c6.add-mana` in ramp's place and **recorded the gap
+rather than hiding it**: closing it needed a ruling packet 2 did not have.
+Captain has since supplied exactly two, and two is enough:
+
+- **ramp is a BENCHMARK family** — never production vocabulary. Nothing here
+  mints a term, emits a token or touches the codebook.
+- **an ordinary basic land is not ramp by its mana ability alone.**
+
+**The rate argument, stated as a rule and not a taste.** CR 305.2: *"A player
+can normally play one land during their turn; however, continuous effects may
+increase this number."* Mana from a **nonland** source is mana that arrives
+without spending the one thing the turn rations — which is both why the arm is
+acceleration and why Captain's ruling is satisfied by the **type-line cut**.
+
+**The cut is the type line, NOT the reminder strip, and RC3 exists because the
+plausible story is the false one.** Ten of the twelve basic lands print their
+mana ability as CR 207.2a reminder text, so `strip_reminder` appears to handle
+them. It does not handle **Wastes**: it has no basic land *type*, so CR 305.6
+makes nothing intrinsic and its `{T}: Add {C}.` is real printed text. Rigged,
+the strip-only story lets **1,038** lands into the arm.
+
+**`c6.add-mana` was NOT widened, and that is a finding, not an oversight.**
+CR 106.4 supplies the verb verbatim — *"instructs a player to **add mana**"* —
+and the corpus prints the object two ways: a symbol (`Add {G}`) or the noun
+(`Add one mana of any color`). The committed `c6.add-mana` matches only the
+symbol, so it misses **471 cards including Birds of Paradise and Chromatic
+Lantern**. The ramp arms use the corrected template; the pre-registered family
+was left exactly as committed, because widening it in place moves a population
+Captain has already seen. **Cohort 6 therefore carries two mana tests right
+now**, deliberately and visibly — `population-manifest.json` →
+`ramp_family.add_mana_template_gap` states it, and reconciling them is
+Manager/Captain's call.
+
+**Search is not the arm; the zone change is.** A search-gated cut loses Settle
+the Wilds (which *seeks*) and every "put a land card from your hand onto the
+battlefield" — 136 of the 420 members print no search or seek at all, and all
+136 were read individually. What they share is the CR zone-change instruction
+with a CR 205-anchored land **card** as its object; requiring the head noun
+`card` is what separates the object being moved from a land already on the
+battlefield (`Sacrifice a land:`).
+
+**No arm is a list of card names (RC4).** The land vocabulary is CR 205.2a's
+`land` plus the 18 CR 205.3 subtypes only a land carries, read from the
+ratified lattice parse; the coordination bridge admits CR 205.2a card types and
+CR 205.4a **supertypes** (`land and/or **legendary** permanent cards` — RC1
+turned red until the supertype arm existed); the token set is CR 111.10's
+closed list filtered by CR 106.4, which returns four, and the fourth is one
+this session did not know to look for.
+
+**What is deliberately NOT included** lives in
+`population-manifest.json` → `ramp_family.components`, every entry carrying one
+of four dispositions and its measured size. Two are worth reading here:
+`additional_land_play` is **AMBIGUOUS_REQUIRES_CAPTAIN** (CR 305.2 is the same
+rule the nonland arm rests on, but a Burgeoning with no land in hand ramps
+nobody — whether permission joins the family as arrival is a boundary ruling);
+`multi_mana_lands` is **OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE**, and the
+measurement that looked like it was not is why. Counting mana symbols in the
+add clause returns 388 lands — **310 of those print `Add {R} or {G}`, which is
+one mana with a choice of color, not two.** Only 73 print CR 107.4's adjacent
+conjunctive form, and even those need the activation cost subtracted before
+"accelerates" is true.
 
 ---
 
@@ -298,6 +356,22 @@ control at the **code path**, not at the tool's name.
 | NC-P2-5 | blind-cohort non-exposure | the `cohort_4` record carries 0 of 795 drawn ids; no cohort-5 seed |
 | NC-P2-6 | development/holdout exclusion | a synthetic overlap forced into the argument HALTS |
 | NC-P2-7 | no lattice-only regression | fight (149) and attach (229) exist, 366 of them **outside** the lattice population, and cohort 2 selects from both |
+| RC1 | classic land ramp is included | printed land-ramp templates captured, self-placement and non-land objects refused; a SEARCH-gated cut turns it red |
+| RC2 | nonland mana acceleration is included | both CR 106.4 printed forms captured; the symbol-only template loses 3 of the fixture's true positives |
+| RC3 | ordinary basic lands are excluded | 0 lands reach the mana arm; dropping the type-line cut lets **1,038** in, so the reminder strip was never the guard |
+| RC4 | no named-card hand-list | vocabulary re-derived from the CR and equal to what the module loaded; an injected card name is detected |
+| RC5 | deterministic open/reserved split | rebuild byte-identical, the family split partitions its union, an unkeyed split moves 950 assignments |
+| RC6 | holdout non-exposure | 972 reserved ramp cards reach 0 `c6.ramp` classes and appear in no split record |
+
+**All six were rigged red against the code path** (drill:
+`_LAND_CARD` without its head noun · the symbol-only template · the nonland cut
+removed · a card name injected into the vocabulary · unkeyed ordering ·
+the halves swapped). **RC6's first rig was mis-aimed** and is the fourth
+recorded instance of that: "make everything open" halted in `build_cohorts` on
+the partition guard *before RC6 ran*, which proved the partition guard and said
+nothing about RC6. Swapping the halves keeps the partition valid and reaches
+the control. RC1 also earned its keep before shipping — it was **red** until
+CR 205.4a supertypes entered the coordination bridge.
 
 **Two were mis-aimed first, and both misfires are instructive.** NC-P2-4 began
 as a grep of this file for a quoted `docs/` path and found **two** — its own
@@ -315,7 +389,16 @@ Twelve of 795, and the control now asserts exactly that identity.
 - **Whether `this way` is a fourth relation kind.** It is in cohort 2 because
   packet 1 measured it as the largest unresolved reference form (1,088
   references). Nothing here assigns it a kind.
-- **What "ramp" is** (§6).
+- **Whether `c6.add-mana` should be widened to CR 106.4's worded form.**
+  Measured here (471 cards, §6a) and deliberately not done: it moves a
+  pre-registered population.
+- **Whether a card that ramps an OPPONENT is ramp.** 41 of
+  `c6.ramp-land-to-battlefield`'s members name a non-`you` recipient and no
+  your-zone (Show and Tell, Hypergenesis, the Ghost Quarter cycle). The arm is
+  the zone change, which they genuinely print; controller scoping is a separate
+  dimension and cohort 8 already carries `c8.residue-controller` for it.
+- **Whether permission-to-play-a-land joins the family** (§6a,
+  `additional_land_play`, 34 cards).
 - **Cohort 4's size beyond the zero-free-parameter rule** (§4). Changing
   `per_stratum` in `sampling.json` and regenerating is the whole cost, so this
   stays cheap to rule on.

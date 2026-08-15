@@ -95,6 +95,7 @@ import foundry_object_lattice as ol    # noqa: E402
 import foundry_qualifier_census as fqc  # noqa: E402
 import foundry_codebook as fcb         # noqa: E402
 import foundry_aq4_probes as aq4p      # noqa: E402
+import foundry_cr as fcr               # noqa: E402
 
 COHORT_DIR = HERE / "cohorts"
 SAMPLING_JSON = HERE / "sampling.json"
@@ -225,6 +226,157 @@ _ENTITY_CONTEXTS = (
     ("creature-card", re.compile(r"\bcreature cards?\b", re.I)),
     ("creature-permanent", re.compile(r"\bcreatures?\b(?!\s+(?:spell|card))", re.I)),
 )
+
+
+# --------------------------------------------------------------------------
+# RAMP — §21's consumer-critical family, derived from the CR
+# --------------------------------------------------------------------------
+# §21 names the family "ramp"; packet 2's first pass shipped `c6.add-mana`
+# instead and RECORDED the gap (README §6) rather than closing it, because
+# closing it needed a ruling packet 2 did not have. Captain has now ruled that
+# ramp is a BENCHMARK family (never production vocabulary) and that an ordinary
+# basic land is not ramp by its mana ability alone. Those two rulings are
+# enough to derive the family objectively; everything below is a CR-closed
+# list or a printed CR template, and no arm is a list of card names.
+#
+# WHY A NONLAND MANA SOURCE IS ACCELERATION, STATED AS A RULE AND NOT A TASTE:
+# CR 305.2 — "A player can normally play one land during their turn; however,
+# continuous effects may increase this number." Mana from a NONLAND source is
+# therefore mana that arrives without consuming the one thing the turn rations.
+# That is the whole of the argument, and it is also exactly Captain's ruling:
+# a land's own mana ability is the rationed rate, not an acceleration of it.
+
+#: THE CR 106.4 TEMPLATE, BOTH PRINTED FORMS.
+#:
+#: `_ADD_MANA` above requires a mana SYMBOL, and that is narrower than the rule
+#: it is named for. CR 106.4 supplies the verb verbatim — "When an effect
+#: instructs a player to ADD MANA" — and grammar §4 ratifies `add-mana` by
+#: quoting that exact sentence. The corpus prints the object two ways and both
+#: are the same template: a symbol (`Add {G}`) or the noun itself (`Add one
+#: mana of any color`). Requiring the symbol drops **471 cards**, including
+#: Birds of Paradise and Chromatic Lantern — the archetypal mana accelerants —
+#: which is the recorded "a hand-shaped pattern is a defect with a delay".
+#:
+#: CR 202.3's `mana value` is a DIFFERENT term and is refused, so an "add …
+#: mana value" line cannot reach this template through the noun arm.
+_ADD_MANA_CR106 = re.compile(
+    r"\badds?\b[^.;]{0,40}?(?:\{[WUBRGCXSP0-9/]+\}|\bmana\b(?!\s+value))", re.I)
+
+#: CR 305.2's own words for the other way a turn's land rate moves.
+_ADDITIONAL_LAND = re.compile(
+    r"\bplay an additional land\b|\bplay \w+ additional lands\b", re.I)
+
+#: CR 601.2f cost calculation. Named here only so the disposition register can
+#: report it as MEASURED and EXCLUDED rather than as unconsidered.
+_COST_REDUCTION = re.compile(r"\bcosts?\s+\{[^}]+\}\s+less to cast\b", re.I)
+
+
+def land_card_nouns() -> set:
+    """CR 205.2a's `land` card type + every CR 205.3 subtype only a land carries.
+
+    Consumed from `foundry_object_lattice`'s CR parse, which is already
+    halt-guarded and already the ratified source for the lattice's own class
+    slot — re-parsing CR 205 here would be the recorded "re-implementation"
+    probe defect, and hand-typing the basic land types would be the hand-list
+    RC4 exists to forbid.
+
+    The guard asserts CONTENT: CR 205.3i's five basic land types must come back
+    land-only. A `len() >= N` guard cannot see a substitution.
+    """
+    land_only = {s for s, ts in ol.SUBTYPE_TO_TYPE.items() if ts == {"land"}}
+    missing = {"forest", "island", "swamp", "mountain",
+               "plains"} - land_only
+    if "land" not in ol.CARD_TYPES or missing:
+        fc.halt(
+            f"CR 205 land vocabulary did not come back from the ratified "
+            f"lattice parse: missing land-only subtype(s) {sorted(missing)!r}. "
+            f"Deriving the ramp family from a partial type list would silently "
+            f"lose every 'search for a Forest card' line.")
+    return {"land"} | land_only
+
+
+LAND_CARD_NOUNS = land_card_nouns()
+
+#: `put ‹object› onto the battlefield` — the zone-change instruction. Bounded
+#: to one clause (`[^.;]`) so it cannot span into the next instruction.
+_ONTO_BATTLEFIELD = re.compile(
+    r"\bputs?\b[^.;]{0,160}?\bonto the battlefield\b", re.I)
+
+#: `‹land type› card`. CR 400.x: an object in a library, hand or graveyard is a
+#: CARD, so the printed template names the moved object "<land> card" — and
+#: requiring the head noun is what separates the object being MOVED from a land
+#: already on the battlefield ("Sacrifice a land:"). Between the land noun and
+#: its head noun, CR 300.2 coordination may name further card types
+#: ("land and/or legendary permanent cards"), so the bridge alphabet is a
+#: CLOSED set — whitespace, list punctuation, a coordinator, `permanent`, a
+#: CR 205.2a card type, or a **CR 205.4a supertype**. It is deliberately NOT a
+#: character window: a window is a tuning knob, and this repository's rule is
+#: that a constant is a ruling.
+#:
+#: The supertype arm is here because RC1 turned red without it. CR 205.4a's
+#: five are ADJECTIVES — which is exactly why they can sit inside a noun phrase
+#: this pattern has to cross, and exactly why they are never land nouns
+#: themselves. Read from `foundry_qualifier_census.supertypes()`, the ratified
+#: CR 205.4a parse, rather than typed here.
+_SUPERTYPES = fqc.supertypes()
+if not {"legendary", "basic", "snow"} <= _SUPERTYPES:
+    fc.halt(f"CR 205.4a supertype parse came back as {sorted(_SUPERTYPES)!r}. "
+            f"Without `legendary` the land-card noun phrase cannot cross "
+            f"'land and/or legendary permanent cards' and the arm silently "
+            f"loses coordinated land placement.")
+
+_LAND_CARD = re.compile(
+    r"\b(?:" + "|".join(re.escape(n) for n in
+                        sorted(LAND_CARD_NOUNS, key=len, reverse=True)) +
+    r")\b(?:[\s,/]|\band\b|\bor\b|\bpermanent\b|\b(?:" +
+    "|".join(sorted(ol.CARD_TYPES | _SUPERTYPES, key=len, reverse=True)) +
+    r")\b)*\bcards?\b", re.I)
+
+#: CR 111.10 sub-rules are printed `111.10a ` with **NO period after the
+#: letter**, while top-level rules are `111.10. `. A parse written for
+#: `111.10a.` returns a clean zero — measured while writing this module, and
+#: the halt below exists so the next one is loud instead of empty.
+_CR_PREDEFINED_TOKEN = re.compile(
+    r"^111\.10[a-z] An? ([A-Z][A-Za-z ]*?) token is (.*)$", re.M)
+
+
+def predefined_mana_tokens() -> tuple:
+    """CR 111.10's closed predefined-token list, filtered to the mana ones.
+
+    The filter is the CR's own printed ability run through the CR 106.4
+    template above — so "which predefined tokens make mana" is DERIVED from two
+    CR rules meeting, never typed. That is what makes the Treasure arm survive
+    RC4: the list comes back as {Treasure, Gold, Powerstone, Vibranium}, and
+    the fourth is one this session did not know to look for.
+    """
+    t = fcr.text()
+    i = t.find("111.10.")
+    j = t.find("111.11", i + 1) if i >= 0 else -1
+    named = _CR_PREDEFINED_TOKEN.findall(t[i:j]) if i >= 0 < j else []
+    if not named:
+        fc.halt(
+            "CR 111.10 predefined-token parse returned NOTHING. Sub-rules are "
+            "printed `111.10a ` with no period after the letter; a pattern "
+            "written for `111.10a.` matches zero and reads as 'the CR has no "
+            "predefined tokens' instead of as a broken parse.")
+    mana = sorted({n for n, body in named if _ADD_MANA_CR106.search(body)})
+    if "Treasure" not in mana:
+        fc.halt(
+            f"CR 111.10a defines the Treasure token as carrying \"Add one mana "
+            f"of any color\", so it MUST come back from this filter. It did "
+            f"not; the mana set was {mana!r}. Either the CR 106.4 template no "
+            f"longer matches the CR's own worded form, or the sub-rule parse "
+            f"is reading the wrong block.")
+    return mana, sorted({n for n, _ in named})
+
+
+PREDEFINED_MANA_TOKENS, PREDEFINED_TOKENS = predefined_mana_tokens()
+
+#: `create` + a CR 111.10 mana token's name. `create` is CR 701.6a's keyword
+#: action and the token names are the CR's, so no arm of this is a card list.
+_CREATE = re.compile(r"\bcreates?\b", re.I)
+_MANA_TOKEN = re.compile(
+    r"\b(?:" + "|".join(re.escape(n) for n in PREDEFINED_MANA_TOKENS) + r")\b")
 
 
 def delivery_tokens_of(card: dict, ratified: dict) -> list:
@@ -372,7 +524,24 @@ def card_facts(oid: str, card: dict, ratified: dict) -> dict:
         "multi_face_one_image": bool(faces and not faces[0].get("image_uris")),
         "instant_or_sorcery_face": ("Instant" in tl or "Sorcery" in tl),
         "creature_type": "Creature" in tl,
+        "_artifact": "Artifact" in tl,
         "add_mana": bool(_ADD_MANA.search(base_nr)),
+        # -- ramp ----------------------------------------------------------
+        # `add_mana` above is LEFT EXACTLY AS IT WAS. It is the population of
+        # the already-committed `c6.add-mana` family, and widening it in place
+        # would move a pre-registered cohort silently. The corrected template
+        # gets its own fact, and the difference is reported, not absorbed.
+        "add_mana_cr106": bool(_ADD_MANA_CR106.search(base_nr)),
+        "is_land": "Land" in tl,
+        "ramp_nonland_mana": bool(_ADD_MANA_CR106.search(base_nr))
+                             and "Land" not in tl,
+        "ramp_land_to_battlefield": any(
+            _ONTO_BATTLEFIELD.search(s) and _LAND_CARD.search(s)
+            for s in sentences),
+        "ramp_predefined_mana_token": any(
+            _CREATE.search(s) and _MANA_TOKEN.search(s) for s in sentences),
+        "additional_land_play": bool(_ADDITIONAL_LAND.search(base_nr)),
+        "cost_reduction": bool(_COST_REDUCTION.search(base_nr)),
         "cardname_canonicalized": base != fc.full_oracle_text(card),
         "splitter_territory": any(_WHILE.search(s) and _COORD.search(s)
                                   for s in sentences),
@@ -436,6 +605,17 @@ class Cohort:
 
     def selected(self) -> set:
         return {o for c in self.classes for o in c["selected"]}
+
+
+def family_open_reserved(ordered: list) -> tuple:
+    """§21's pre-registered even/odd half split, as ONE named seam.
+
+    It is a function and not an inline slice so RC6 can be rigged red against
+    the code path that actually decides open-vs-reserved. A control that has
+    never been shown to fail is not known to be a control, and the recorded
+    lesson is to aim the rig at the path rather than at the tool's name.
+    """
+    return set(ordered[0::2]), set(ordered[1::2])
 
 
 def _assert_classes_are_classes(cohorts) -> None:
@@ -684,6 +864,68 @@ def build_cohorts(facts: dict, views: dict, cards: dict, name_index: dict):
                          "reserved_for_holdout_draw": len(blind_half)}
         c6.add(cid, reason, src, open_half, K_PER_FAMILY_OPEN)
 
+    # ---- RAMP: ONE §21 family, three derived components -------------------
+    # The split is taken ONCE over the family UNION, not once per component.
+    # Three independent splits would let a card land in the OPEN half of one
+    # component and the RESERVED half of another, which is not a leak — packet
+    # 3 excludes development before it draws — but it is a population that
+    # cannot answer "is this card reserved?" with one value. The components
+    # then take their own K exemplars from within the family's open half, so
+    # each arm is guaranteed visible: a single 8-card draw over a union this
+    # lopsided (1,151 vs 420 vs 386) could return eight nonland mana sources
+    # and show a benchmark reader no land ramp at all.
+    ramp_families = {
+        "c6.ramp-nonland-mana": (
+            "prints the CR 106.4 add-mana template — BOTH printed forms, the "
+            "mana symbol and the noun — on a card with no Land type. CR 305.2 "
+            "rations a player to one land per turn, so mana from a nonland "
+            "source is mana that did not cost the rationed drop. This is the "
+            "arm Captain's ruling names: an ordinary basic land is NOT ramp by "
+            "its mana ability alone, and the nonland cut is what enforces that",
+            "EXTRACT-2 CR 106.4 template + CR 305.2 rate + EXTRACT-0 type line",
+            where(lambda f: f["ramp_nonland_mana"])),
+        "c6.ramp-land-to-battlefield": (
+            "one sentence carries both the `put … onto the battlefield` zone "
+            "change and a CR 205-anchored `‹land type› card` object. Search is "
+            "NOT required — Settle the Wilds seeks and Arboreal Grazer plays "
+            "from hand, and a search-gated arm would call neither one ramp",
+            "EXTRACT-4 printed zone-change template + CR 205.2a/205.3 land "
+            "vocabulary via the ratified lattice parse",
+            where(lambda f: f["ramp_land_to_battlefield"])),
+        "c6.ramp-predefined-mana-token": (
+            "creates a CR 111.10 predefined token whose CR-PRINTED ability "
+            "itself matches the CR 106.4 add-mana template. Two CR rules "
+            "meeting decide the membership, so the token set is derived and "
+            "not named — it comes back as four, and the fourth is one no hand "
+            "list here would have contained",
+            "EXTRACT-2 CR 111.10 closed list x CR 106.4 template",
+            where(lambda f: f["ramp_predefined_mana_token"])),
+    }
+    ramp_union = sorted(set().union(*[set(v[2]) for v in
+                                      ramp_families.values()]))
+    ramp_ordered = hash_order("aq4-c6-split\x00c6.ramp", ramp_union)
+    ramp_open, ramp_reserved = family_open_reserved(ramp_ordered)
+    if ramp_open & ramp_reserved or len(ramp_open) + len(ramp_reserved) != len(ramp_union):
+        fc.halt("the ramp family's open/reserved split is not a partition of "
+                "its union — a card with two answers to 'is this reserved?' "
+                "makes the packet-3 exclusion ambiguous.")
+    for cid, (reason, src, pool) in sorted(ramp_families.items()):
+        open_half = sorted(set(pool) & ramp_open)
+        c6_split[cid] = {"population": len(pool),
+                         "open_half": len(open_half),
+                         "reserved_for_holdout_draw": len(pool) - len(open_half),
+                         "split_taken_at": "c6.ramp (family level)"}
+        c6.add(cid, reason, src, open_half, K_PER_FAMILY_OPEN)
+    c6_split["c6.ramp"] = {
+        "population": len(ramp_union),
+        "open_half": len(ramp_open),
+        "reserved_for_holdout_draw": len(ramp_reserved),
+        "components": sorted(ramp_families),
+        "note": "§21's consumer-critical family. The split is taken here, ONCE, "
+                "over the union; the components draw exemplars from inside this "
+                "open half so every arm stays visible.",
+    }
+
     # ---------------------------------------------------------------- 7
     c7 = Cohort(7, "CR / characteristic-derived cases", "open")
 
@@ -857,6 +1099,122 @@ EMPTY_CLASSES_MEASURED = [
                 "class are the SAME population. c7.vanilla-creature covers it."},
 ]
 
+#: The four dispositions a candidate ramp component may carry. A component the
+#: contract asked about and this packet did not include must say WHICH of these
+#: it is — "not included" alone reads later as "nobody considered it".
+RAMP_DISPOSITIONS = ("INCLUDED_OBJECTIVELY", "EXCLUDED_OBJECTIVELY",
+                     "OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE",
+                     "AMBIGUOUS_REQUIRES_CAPTAIN")
+
+
+def ramp_disposition_register(facts: dict) -> list:
+    """Every candidate ramp component, its disposition, and its MEASURED size.
+
+    Counts are re-derived here from the same facts the cohorts are built from,
+    never quoted from a previous session. A carried-forward count in a register
+    is the recorded failure this repository has hit in its own ratified law.
+    """
+    n = lambda key: sum(1 for f in facts.values() if f[key])
+    A = {o for o, f in facts.items() if f["ramp_nonland_mana"]}
+
+    reg = [
+        {"component": "nonland_mana_acceleration",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": len(A),
+         "class_id": "c6.ramp-nonland-mana",
+         "anchor": "CR 106.4 add-mana template (both printed forms) + CR 305.2 "
+                   "one-land-per-turn rate + CR 205.2a type line",
+         "note": "Captain's ruling is implemented by the NONLAND cut, not by "
+                 "the reminder strip. See RC3 — reminder-stripping alone leaks "
+                 "Wastes, which prints its mana ability as real text because it "
+                 "has no basic land TYPE for CR 305.6 to make intrinsic."},
+        {"component": "land_search_or_placement_onto_battlefield",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": n("ramp_land_to_battlefield"),
+         "class_id": "c6.ramp-land-to-battlefield",
+         "anchor": "printed `put … onto the battlefield` zone change scoped to "
+                   "one sentence + CR 205.2a/205.3 land-card noun phrase",
+         "note": "search is not required and not sufficient; the arm is the "
+                 "zone change, which is what both Cultivate and Arboreal "
+                 "Grazer actually share."},
+        {"component": "treasure",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": n("ramp_predefined_mana_token"),
+         "class_id": "c6.ramp-predefined-mana-token",
+         "anchor": "CR 111.10 closed predefined-token list x CR 106.4 template",
+         "note": f"generalized from Treasure to every CR 111.10 token whose "
+                 f"CR-printed ability adds mana: {PREDEFINED_MANA_TOKENS}. "
+                 f"Kept a SEPARATE class from the other two arms precisely so "
+                 f"that a Captain ruling against delayed one-shot mana can drop "
+                 f"it without touching the two required arms."},
+        {"component": "rituals",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": sum(1 for o in A if facts[o]["instant_or_sorcery_face"]),
+         "class_id": "c6.ramp-nonland-mana",
+         "anchor": "CR 205.2a card type, inside the nonland arm",
+         "note": "not a separate question — a CR 205.2a partition of the arm "
+                 "above. Same for mana_dorks and mana_rocks."},
+        {"component": "mana_dorks",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": sum(1 for o in A if facts[o]["creature_type"]
+                           and not facts[o]["instant_or_sorcery_face"]),
+         "class_id": "c6.ramp-nonland-mana",
+         "anchor": "CR 205.2a card type, inside the nonland arm",
+         "note": "the worded CR 106.4 form is what reaches these — the "
+                 "symbol-only test misses Birds of Paradise outright."},
+        {"component": "mana_rocks",
+         "disposition": "INCLUDED_OBJECTIVELY",
+         "population": sum(1 for o in A if facts[o]["_artifact"]
+                           and not facts[o]["creature_type"]
+                           and not facts[o]["instant_or_sorcery_face"]),
+         "class_id": "c6.ramp-nonland-mana",
+         "anchor": "CR 205.2a card type, inside the nonland arm",
+         "note": "reported for completeness; carries no class of its own."},
+        {"component": "cost_reduction",
+         "disposition": "EXCLUDED_OBJECTIVELY",
+         "population": n("cost_reduction"),
+         "class_id": None,
+         "anchor": "CR 601.2f — cost CALCULATION",
+         "note": "no mana is added and no land moves. CR 601.2f changes what a "
+                 "spell demands; CR 106.4 changes what a player has. The two "
+                 "are objectively distinguishable from the printed text, so "
+                 "this is an exclusion with a rule behind it and not a "
+                 "coverage gap."},
+        {"component": "additional_land_play",
+         "disposition": "AMBIGUOUS_REQUIRES_CAPTAIN",
+         "population": n("additional_land_play"),
+         "class_id": None,
+         "anchor": "CR 305.2 — \"continuous effects may increase this number\"",
+         "note": "OBJECTIVELY DETECTABLE, and deliberately not forced. CR 305.2 "
+                 "is the same rule the nonland arm's rationale rests on, which "
+                 "is the argument FOR inclusion; but this grants PERMISSION and "
+                 "adds nothing by itself — a Burgeoning with no land in hand "
+                 "ramps nobody. Whether permission joins the same family as "
+                 "arrival is a family-boundary ruling, and the population is "
+                 "small enough that ruling it later costs one rebuild."},
+        {"component": "multi_mana_lands",
+         "disposition": "OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE",
+         "population": None,
+         "class_id": None,
+         "anchor": "CR 107.4 mana symbols / CR 305.2",
+         "note": "NOT derivable with current primitives, and the measurement "
+                 "that looked like it was is the reason. Counting mana symbols "
+                 "in the add clause returns 388 lands — but 310 of those print "
+                 "`Add {R} or {G}`, which is ONE mana with a choice of color, "
+                 "not two. Only 73 print CR 107.4's adjacent conjunctive form, "
+                 "and even those need the ACTIVATION COST subtracted before "
+                 "'accelerates' is true (a filter land pays mana to make mana). "
+                 "Net mana gain is a computation over cost and effect, not a "
+                 "printed template, so no honest population exists yet."},
+    ]
+    bad = [r["component"] for r in reg
+           if r["disposition"] not in RAMP_DISPOSITIONS]
+    if bad:
+        fc.halt(f"ramp component(s) {bad!r} carry a disposition outside the "
+                f"declared set {RAMP_DISPOSITIONS!r}.")
+    return reg
+
+
 TRAP_MAP = [
     ("card-level union read as co-occurrence",
      "CLAUDE.md traps / contract §28; NC-D",
@@ -1022,6 +1380,32 @@ def build(write: bool = False, g: dict = None) -> dict:
             "machinery": "draw_generic + assert_disjoint_from_development",
         },
         "cohort_6_split": c6_split,
+        "ramp_family": {
+            "status": "DERIVED — benchmark family only (Captain: ramp is a "
+                      "BENCHMARK family; production ramp vocabulary is "
+                      "FORBIDDEN and none is minted here)",
+            "cr_anchors": ["106.4 add mana", "305.2 one land per turn",
+                           "205.2a / 205.3 land vocabulary",
+                           "111.10 predefined tokens", "601.2f cost calculation"],
+            "predefined_tokens_total": len(PREDEFINED_TOKENS),
+            "predefined_mana_tokens": PREDEFINED_MANA_TOKENS,
+            "components": ramp_disposition_register(g["facts"]),
+            "add_mana_template_gap": {
+                "c6_add_mana_symbol_only": sum(
+                    1 for f in g["facts"].values() if f["add_mana"]),
+                "cr106_4_both_forms": sum(
+                    1 for f in g["facts"].values() if f["add_mana_cr106"]),
+                "missed_by_symbol_only": sum(
+                    1 for f in g["facts"].values()
+                    if f["add_mana_cr106"] and not f["add_mana"]),
+                "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — c6.add-mana is a "
+                           "PRE-REGISTERED family and was NOT widened here. "
+                           "The ramp arms use the corrected CR 106.4 template, "
+                           "so cohort 6 currently carries two mana tests. "
+                           "Reconciling them moves an already-committed "
+                           "population and is Manager/Captain's call.",
+            },
+        },
         "empty_classes_measured": EMPTY_CLASSES_MEASURED,
         "open_cohort_overlap_selected": overlap,
         "open_cohort_overlap_qualifying_population": overlap_pop,
@@ -1197,11 +1581,182 @@ def selftest() -> int:
            f"fight={len(fight)} attach={len(attach)}, {len(outside)} of them "
            f"OUTSIDE the lattice population, and cohort 2 selects from both")
 
+    # ======================================================================
+    # RC1 .. RC6 — the RAMP controls. Each is rigged red below its assertion.
+    # ======================================================================
+    c6 = [co for co in cohorts if co.number == 6][0]
+    ramp_classes = {c["class_id"]: c for c in c6.classes
+                    if c["class_id"].startswith("c6.ramp-")}
+
+    # -- RC1 classic land ramp is INCLUDED ---------------------------------
+    # SHAPES, not card names (that is RC4's whole subject). Every string is a
+    # printed corpus template; the fixture is what `p.must_capture` wants.
+    land_pred = lambda s: bool(_ONTO_BATTLEFIELD.search(s)
+                               and _LAND_CARD.search(s))
+    RC1_CASES = [
+        ("Search your library for a basic land card, put that card onto the "
+         "battlefield tapped, then shuffle.", True),
+        ("Search your library for up to two basic land cards, reveal those "
+         "cards, put one onto the battlefield tapped and the other into your "
+         "hand, then shuffle.", True),
+        ("Search your library for a Forest card, put it onto the battlefield "
+         "tapped, then shuffle.", True),
+        ("Seek a basic land card and put it onto the battlefield tapped.", True),
+        ("You may put a land card from your hand onto the battlefield.", True),
+        ("You may put any number of land and/or legendary permanent cards with "
+         "mana value X or less from among them onto the battlefield.", True),
+        # TRUE NEGATIVES — the land is not the moved object.
+        ("If you do, put this land onto the battlefield.", False),
+        ("{T}, Sacrifice a land: Search your library for a Mercenary permanent "
+         "card, put it onto the battlefield, then shuffle.", False),
+        ("Put all land cards revealed this way into your hand.", False),
+    ]
+    rc1_ok = True
+    try:
+        p.must_capture(land_pred, RC1_CASES, name="RC1 land-ramp shape")
+    except BaseException:
+        rc1_ok = False
+    # RIG: require SEARCH, the obvious wrong cut. It must lose real ramp.
+    rigged = lambda s: bool(land_pred(s) and re.search(r"\bsearch", s, re.I))
+    rc1_rig = any(bool(rigged(t)) != w for t, w in RC1_CASES)
+    report("RC1", rc1_ok and rc1_rig
+           and ramp_classes["c6.ramp-land-to-battlefield"]["qualifying_population"] > 0,
+           f"land-ramp templates captured, self-placement and non-land objects "
+           f"refused; a SEARCH-gated cut turns the control red")
+
+    # -- RC2 nonland mana acceleration is INCLUDED -------------------------
+    RC2_CASES = [
+        ("{T}: Add {G}.", True),
+        ("Add {B}{B}{B}.", True),
+        ("{T}: Add one mana of any color.", True),           # symbol-only misses
+        ("{T}: Add two mana in any combination of colors.", True),
+        ("{T}: Add X mana of any one color, where X is the number of Elves on "
+         "the battlefield.", True),
+        ("Flying, vigilance", False),
+        ("This spell costs {1} less to cast for each artifact you control.", False),
+        # CR 202.3 is a different term and must not reach the noun arm.
+        ("Exile a card with mana value 3 or greater from your hand.", False),
+    ]
+    rc2_ok = True
+    try:
+        p.must_capture(lambda s: bool(_ADD_MANA_CR106.search(s)), RC2_CASES,
+                       name="RC2 CR 106.4 template")
+    except BaseException:
+        rc2_ok = False
+    # RIG: the symbol-only form — the defect this arm was corrected for.
+    rc2_rig = [t for t, w in RC2_CASES if w and not _ADD_MANA.search(t)]
+    report("RC2", rc2_ok and len(rc2_rig) >= 2
+           and ramp_classes["c6.ramp-nonland-mana"]["qualifying_population"] > 0,
+           f"both CR 106.4 printed forms captured; the symbol-only template "
+           f"loses {len(rc2_rig)} of the fixture's true positives, which is the "
+           f"RAMP.ADD_MANA_SYMBOL_ONLY finding in miniature")
+
+    # -- RC3 ordinary basic lands are EXCLUDED -----------------------------
+    # AIMED AT THE CODE PATH, and the aim MATTERS here. The obvious story is
+    # "reminder-stripping removes a basic land's mana ability", and it is FALSE
+    # for two of the twelve: Wastes has no basic land TYPE, so CR 305.6 makes
+    # nothing intrinsic and its "{T}: Add {C}." is printed as real text. The
+    # NONLAND CUT is what implements Captain's ruling; the strip is not.
+    basics = [f for f in facts.values() if f["is_land"]]
+    leak_strip = [f for f in basics if f["add_mana_cr106"]]
+    leak_cut = [f for f in basics if f["ramp_nonland_mana"]]
+    ramp_all = {o for o, f in facts.items()
+                if f["ramp_nonland_mana"] or f["ramp_land_to_battlefield"]
+                or f["ramp_predefined_mana_token"]}
+    lands_in_ramp_mana = [o for o in ramp_all if facts[o]["is_land"]
+                          and facts[o]["ramp_nonland_mana"]]
+    report("RC3", not leak_cut and not lands_in_ramp_mana and len(leak_strip) > 0,
+           f"0 lands reach the nonland mana arm; RIG — dropping the type-line "
+           f"cut and trusting the reminder strip alone lets "
+           f"{len(leak_strip)} land(s) in, so the strip is NOT the guard")
+
+    # -- RC4 no named-card hand-list dependency ----------------------------
+    # Aimed at the VOCABULARY, not at the source text: every term the ramp
+    # arms match on must come back from a CR parse. A grep of this file for
+    # card names would be the NC-P2-4 misfire again (this file NAMES cards in
+    # its prose on purpose, exactly as README §7 permits).
+    cr_land = land_card_nouns()
+    cr_tokens, cr_all_tokens = predefined_mana_tokens()
+    names = {c["name"] for c in universe.values()}
+    face_names = {f.strip() for n in names for f in n.split(" // ")}
+    vocab_terms = cr_land | set(cr_tokens)
+    borrowed = sorted(t for t in vocab_terms if t in face_names)
+    # RIG: a card name injected into the vocabulary must be detected.
+    rigged_vocab = vocab_terms | {sorted(face_names)[0]}
+    rc4_rig = bool(sorted(t for t in rigged_vocab if t in face_names))
+    report("RC4",
+           cr_land == LAND_CARD_NOUNS and cr_tokens == PREDEFINED_MANA_TOKENS
+           and len(cr_all_tokens) > len(cr_tokens) and rc4_rig
+           and set(borrowed) <= {"forest", "island", "swamp", "mountain",
+                                 "plains", "gate", "mine", "cave", "desert",
+                                 "sphere", "tower", "town", "lair", "locus",
+                                 "planet", "power-plant", "Treasure", "Gold"},
+           f"ramp vocabulary is {len(cr_land)} CR 205 land nouns + "
+           f"{len(cr_tokens)} of {len(cr_all_tokens)} CR 111.10 tokens, all "
+           f"re-derived from the CR here and equal to what the module loaded; "
+           f"injecting a card name into the set is detected")
+
+    # -- RC5 deterministic open/reserved split -----------------------------
+    again, split_again = build_cohorts(facts, g["views"], universe,
+                                       g["name_index"])
+    a6 = [co for co in again if co.number == 6][0]
+    same = sha256_of([[c["class_id"], c["selected"]] for c in c6.classes]) == \
+        sha256_of([[c["class_id"], c["selected"]] for c in a6.classes])
+    fam = split_again["c6.ramp"]
+    partitioned = fam["open_half"] + fam["reserved_for_holdout_draw"] == \
+        fam["population"]
+    comp_open = sum(split_again[cid]["open_half"] for cid in fam["components"])
+    # RIG: an unkeyed (name-ordered) split is a DIFFERENT split. Name order is
+    # the recorded defect the sampler law forbids, so this is the real wrong turn.
+    ramp_union_ids = sorted({o for o, f in facts.items()
+                             if f["ramp_nonland_mana"]
+                             or f["ramp_land_to_battlefield"]
+                             or f["ramp_predefined_mana_token"]})
+    keyed = set(hash_order("aq4-c6-split\x00c6.ramp", ramp_union_ids)[0::2])
+    unkeyed = set(ramp_union_ids[0::2])
+    report("RC5", same and partitioned and keyed != unkeyed and comp_open > 0,
+           f"rebuild is byte-identical; the family split partitions "
+           f"{fam['population']} into {fam['open_half']}/"
+           f"{fam['reserved_for_holdout_draw']}; an unkeyed split moves "
+           f"{len(keyed ^ unkeyed)} assignments, so the keying is load-bearing")
+
+    # -- RC6 holdout non-exposure for the reserved half --------------------
+    # SCOPED, or it misfires exactly as NC-P2-5 first did: a reserved ramp card
+    # may be independently published by ANOTHER cohort from the same universe,
+    # and that discloses nothing about the ramp split. The assertion is that no
+    # reserved id reaches a c6.ramp CLASS, and that no reserved LIST exists in
+    # any written artifact.
+    ramp_reserved = set(hash_order("aq4-c6-split\x00c6.ramp",
+                                   ramp_union_ids)[1::2])
+    published_ramp = {o for c in ramp_classes.values() for o in c["selected"]}
+    pool_ramp = {o for c in ramp_classes.values() for o in c["_all"]}
+    m6 = build(write=False, g=g)
+    blob6 = canonical_json(m6["cohort_6_split"]) + canonical_json(
+        m6["ramp_family"])
+    in_split_blob = [o for o in ramp_reserved if o in blob6]
+    incidental6 = sorted(ramp_reserved & set().union(
+        *[co.selected() for co in cohorts if co.number != 6]))
+    report("RC6",
+           not (published_ramp & ramp_reserved)
+           and not (pool_ramp & ramp_reserved)
+           and not in_split_blob
+           and len(ramp_reserved) > 0,
+           f"{len(ramp_reserved)} reserved ramp cards: 0 reach a c6.ramp class "
+           f"(selected or pool), 0 appear in the split/family records — while "
+           f"{len(incidental6)} are independently selected by another cohort, "
+           f"which is overlap policy and not a leak")
+
     print()
     print("  every control above was aimed at the CODE PATH, not at a tool "
           "name:")
     print("    NC-P2-3 rigs the stratum key itself, not the sampler's label;")
-    print("    NC-P2-6 rigs an overlap into the argument, not into the store.")
+    print("    NC-P2-6 rigs an overlap into the argument, not into the store;")
+    print("    RC3     rigs the TYPE-LINE cut, not the reminder strip, because")
+    print("            Wastes proves the strip was never the guard;")
+    print("    RC4     rigs the VOCABULARY, not a grep of this file, which")
+    print("            names cards in prose on purpose (README §7);")
+    print("    RC6     is scoped to the c6.ramp classes, because an open")
+    print("            cohort may republish a reserved card by coincidence.")
     return 0 if ok else 1
 
 
