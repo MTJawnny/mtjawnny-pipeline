@@ -961,8 +961,43 @@ def compare_manifest_to_codebook(manifest: dict, codebook_path: Path = None) -> 
     return v
 
 
+def describe_candidate(candidate: dict, transport: "RcloneTransport" = None) -> dict:
+    """Report an UNSELECTED snapshot without ever making it authority.
+
+    A candidate is a manifest a human handed us, describing an object that may
+    exist remotely. It becomes authority when — and only when — a manifest in
+    the tracked Git revision selects it. So this function:
+
+      * takes the candidate as an ARGUMENT; it cannot discover one,
+      * never lists, never sorts, never takes "the only object present",
+      * and stamps `authoritative: False` unconditionally, with the reason.
+
+    It is deliberately NOT a second source of truth: `status()` calls it for
+    reporting only, and no branch of authority resolution reads its output."""
+    out = {
+        "authoritative": False,
+        "classification": "ORPHAN_CANDIDATE",
+        "why_not_authority": (
+            "no manifest in the tracked Git revision selects this object. Uploading does "
+            "not confer authority; Git selects and R2 stores (P3-1)."),
+        "bucket": candidate.get("bucket"),
+        "object_path": candidate.get("object_path"),
+        "sha256": candidate.get("sha256"),
+        "byte_size": candidate.get("byte_size"),
+        "violations": validate_manifest(candidate, "candidate manifest"),
+    }
+    if transport is not None:
+        try:
+            meta = transport.stat(candidate["object_path"])
+        except TransportError as e:
+            out["remote"] = f"unreachable: {e}"
+        else:
+            out["remote"] = "absent" if meta is None else f"present, size={meta.get('size')}"
+    return out
+
+
 def status(manifest_path: Path = None, codebook_path: Path = None,
-           transport: "RcloneTransport" = None) -> dict:
+           transport: "RcloneTransport" = None, candidate: dict = None) -> dict:
     """Read-only. Distinguishes states A-E and NEVER repairs, publishes,
     overwrites or falls back to a listing."""
     manifest, violations = load_manifest(manifest_path)
@@ -973,10 +1008,17 @@ def status(manifest_path: Path = None, codebook_path: Path = None,
                 "detail": "the tracked manifest exists but is not parseable — this "
                           "NEVER degrades to selecting the newest remote object"}
     if manifest is None:
-        return {"state": STATE_NOT_INITIALIZED, "local": local,
-                "detail": "no tracked authority manifest in this Git revision. The local "
-                          "codebook is the operational source and is NOT an authority; "
-                          "any remote object is orphan until a manifest selects it."}
+        out = {"state": STATE_NOT_INITIALIZED, "local": local,
+               "detail": "no tracked authority manifest in this Git revision. The local "
+                         "codebook is the operational source and is NOT an authority; "
+                         "any remote object is orphan until a manifest selects it."}
+        # A published candidate is REPORTED here and changes nothing: the state
+        # above is computed before this line and is not revisited. An existing
+        # remote object must not be able to move the state, or "upload equals
+        # authority" would be true in the one place it is most tempting.
+        if candidate is not None:
+            out["candidate"] = describe_candidate(candidate, transport)
+        return out
     if violations:
         return {"state": STATE_MANIFEST_INVALID, "violations": violations, "local": local,
                 "manifest": manifest,
@@ -1020,6 +1062,156 @@ def status(manifest_path: Path = None, codebook_path: Path = None,
             f"overwritten, is not automatically published, and being newer does not "
             f"make it authority.")
     return result
+
+
+# ---------------------------------------------------------------------------
+# H. restore (P3 §7) -- THE ORDER IS THE SAFETY PROPERTY
+# ---------------------------------------------------------------------------
+#
+#     remote object -> STAGING -> exact sha+size -> codebook validation
+#                   -> atomic install
+#
+# and never remote -> operational -> verify afterward. The 2026-08-14 incident
+# was that second shape executed by accident: a staging fetch was pointed at the
+# live codebook, and because the fetch unlinks its destination first, the file
+# was destroyed before any byte was verified. Each step below therefore records
+# itself in a TRACE, and the trace is asserted -- an ordering that is only
+# documented is an ordering nobody checks.
+
+RESTORE_STEPS = ("fetch", "verify", "validate", "install")
+
+
+class RestoreError(RuntimeError):
+    pass
+
+
+def validate_codebook_payload(path: Path, manifest: dict) -> dict:
+    """Is this file a CODEBOOK, and is it the one the manifest describes?
+
+    Byte identity is not structural validity: a truncated-then-repadded file, a
+    different artifact of the same length, or a codebook from another schema can
+    all hash to whatever their bytes hash to. The manifest's sha proves WHICH
+    bytes; this proves the bytes are a codebook, and that its own contents agree
+    with what the manifest claims about them. Both are required before install.
+    """
+    try:
+        cb = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        raise RestoreError(
+            f"staged object is not parseable JSON ({e.__class__.__name__}: {e}) — it "
+            f"transported correctly and is still not a codebook. Refusing to install.")
+    if not isinstance(cb, dict) or not isinstance(cb.get("axes"), dict):
+        raise RestoreError(
+            "staged object parses as JSON but has no `axes` object — it is not a codebook. "
+            "Refusing to install.")
+    if cb.get("schema") != fcb.SCHEMA_V2:
+        raise RestoreError(
+            f"staged codebook schema is {cb.get('schema')!r}, expected {fcb.SCHEMA_V2!r}. "
+            f"Refusing to install an artifact this reader cannot claim to understand.")
+
+    # The repository's own linter, not a second opinion invented here. It RAISES
+    # LintError and returns stats on success -- and `lint_or_halt` is deliberately
+    # not used, because a restore must raise a catchable error its caller can
+    # report, not call sys.exit from inside a library path.
+    try:
+        stats = fcb.lint(cb, f"restored codebook ({path})")
+    except fcb.LintError as e:
+        raise RestoreError(f"staged codebook fails lint — {e}")
+
+    mismatches = compare_manifest_to_codebook(manifest, path)
+    if mismatches:
+        raise RestoreError(
+            "staged codebook does not match the manifest that selected it:\n  "
+            + "\n  ".join(mismatches) + "\nRefusing to install.")
+    return {"axes": len(cb["axes"]), "lint": stats}
+
+
+def install_atomic(staged: Path, dest: Path, expected_sha: str, expected_size: int,
+                   replace_existing: bool = False) -> str:
+    """Install VERIFIED staged bytes at `dest` atomically. Returns dest sha.
+
+    Re-verifies the staged bytes immediately before the rename: this function is
+    the last thing between a candidate and an operational file, so it does not
+    take a caller's word that verification happened earlier. The write is
+    temp+fsync+os.replace within the destination directory, so `dest` is never
+    observed half-written and a crash leaves the previous file intact."""
+    staged, dest = Path(staged), Path(dest)
+    ok, reason = verify_exact(expected_sha, expected_size, staged)
+    if not ok:
+        raise RestoreError(f"REFUSING TO INSTALL unverified bytes — {reason}")
+
+    if dest.exists():
+        current = sha256_of_file(dest)
+        if current == expected_sha:
+            return current                      # already installed; idempotent
+        if not replace_existing:
+            raise RestoreError(
+                f"{dest} already exists with different bytes (sha {current}). Refusing to "
+                f"replace an existing codebook without an explicit instruction; a restore "
+                f"that silently overwrites is the incident shape.")
+        fcb.backup_codebook("pre-restore-install", path=dest)
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".restore-tmp")
+    shutil.copyfile(staged, tmp)
+    with open(tmp, "rb") as f:
+        os.fsync(f.fileno())
+    ok, reason = verify_exact(expected_sha, expected_size, tmp)
+    if not ok:
+        tmp.unlink(missing_ok=True)
+        raise RestoreError(f"staged->temp copy did not reproduce the bytes — {reason}")
+    os.replace(tmp, dest)
+    final = sha256_of_file(dest)
+    if final != expected_sha:
+        raise RestoreError(
+            f"post-install sha {final} != expected {expected_sha} — filesystem-level "
+            f"corruption; do not trust {dest}")
+    return final
+
+
+def restore_snapshot(manifest: dict, transport: "RcloneTransport", staging_dir: Path,
+                     install_to: Path, replace_existing: bool = False) -> dict:
+    """The whole restore law, in order, with the order recorded and asserted.
+
+    `install_to` is REQUIRED and explicit. There is no default that quietly
+    resolves to the operational codebook."""
+    validate_or_halt(manifest, "restore manifest")
+    staging_dir, install_to = Path(staging_dir), Path(install_to)
+    staged = staging_dir / "codebook.staged.json"
+
+    if staged.resolve() == install_to.resolve():
+        raise RestoreError(
+            "staging path and install destination are the same file — the staging step "
+            "exists precisely so the destination is not written until the bytes are proven")
+
+    trace = []
+    key, sha, size = manifest["object_path"], manifest["sha256"], manifest["byte_size"]
+
+    # 1. FETCH to staging. get_verified categorically refuses the operational
+    #    codebook as a destination, on an arm no rig can rebind.
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    transport.get_verified(key, staged, sha, size)
+    trace.append("fetch")
+
+    # 2. VERIFY the staged bytes independently of the fetch that produced them.
+    ok, reason = verify_exact(sha, size, staged)
+    if not ok:
+        raise RestoreError(f"staged bytes failed verification — {reason}")
+    trace.append("verify")
+
+    # 3. VALIDATE that they are a codebook, and the one the manifest describes.
+    payload = validate_codebook_payload(staged, manifest)
+    trace.append("validate")
+
+    # 4. INSTALL atomically. Unreachable unless 1-3 all passed, because each of
+    #    them raises rather than returning a status nobody reads.
+    installed_sha = install_atomic(staged, install_to, sha, size, replace_existing)
+    trace.append("install")
+
+    if trace != list(RESTORE_STEPS):
+        raise RestoreError(f"restore executed steps {trace}, expected {list(RESTORE_STEPS)}")
+    return {"trace": trace, "installed": str(install_to), "sha256": installed_sha,
+            "byte_size": size, "staged": str(staged), "payload": payload}
 
 
 # ---------------------------------------------------------------------------
@@ -1650,6 +1842,219 @@ def selftest() -> int:
            f"derived={derived_ok} no_derived_params={no_derived_params} "
            f"bad_succession_halted={succ_refused}")
 
+    # ---- RESTORE CONTROLS (Tranche 2A). The property under test is that
+    # ---- INSTALL is unreachable unless fetch, verify and validate all passed.
+    # ---- Each control asserts the destination was never created, which is a
+    # ---- stronger statement than "an error was raised".
+    def _restore_fixture(td):
+        """A real little codebook, its manifest, and a runner serving it.
+
+        DERIVED FROM THE RATIFIED ARTIFACT, NEVER HAND-BUILT. A hand-written
+        codebook was tried first and could not survive `fcb.lint` -- it was
+        missing `source_ref` on its assertions -- which is the house rule
+        arriving on schedule: build the fixture from ratified artifacts, because
+        a hand-built one encodes what the author remembers of the schema. This
+        takes the smallest active axis out of the live codebook, so the fixture
+        is schema-correct by construction and stays correct as the schema moves.
+        """
+        live = fcb.load_codebook()
+        active = [(s, e) for s, e in live["axes"].items() if e.get("status") == "active"]
+        slug, entry = min(active, key=lambda kv: len(kv[1].get("members") or []))
+        mini = {k: v for k, v in live.items() if k != "axes"}
+        mini["axes"] = {slug: entry}
+        cbpath = Path(td) / "source-codebook.json"
+        cbpath.write_text(fcb._serialize(mini), encoding="utf-8")
+        m = build_manifest(snapshot_id="restore-fixture",
+                           created_utc="2026-08-14T12:00:00Z",
+                           mutation_review_id="selftest-restore",
+                           corpus_ref="2026-07-04",
+                           previous_snapshot_hash=None,
+                           codebook_path=cbpath)
+        return cbpath, m, cbpath.read_bytes()
+
+    # NC28 — the HAPPY PATH, so the controls below are known to be testing a
+    # path that otherwise works. Order is asserted, not described.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+        runner = FakeRunner(objects={m["object_path"]: good})
+        t = RcloneTransport("fake-remote", runner=runner)
+        dest = td / "installed" / "codebook.json"
+        res = restore_snapshot(m, t, td / "staging", dest)
+        nc28 = (res["trace"] == list(RESTORE_STEPS) and dest.exists()
+                and sha256_of_file(dest) == m["sha256"])
+    _check(r, "NC28 restore installs only after fetch->verify->validate", nc28,
+           f"trace={res['trace']} installed_sha_matches={dest.name}")
+
+    # NC29 — WRONG BYTES on the wire. Must halt at verify; nothing installed.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+        corrupt = bytearray(good)
+        corrupt[10] ^= 0xFF                      # same length, different content
+        runner = FakeRunner(objects={m["object_path"]: bytes(corrupt)})
+        t = RcloneTransport("fake-remote", runner=runner)
+        dest = td / "installed" / "codebook.json"
+        try:
+            restore_snapshot(m, t, td / "staging", dest)
+            nc29, why29 = False, "corrupt bytes reached installation"
+        except (TransportError, RestoreError) as e:
+            nc29, why29 = not dest.exists(), f"halted; destination created={dest.exists()}"
+    _check(r, "NC29 wrong bytes halt before install", nc29, why29)
+
+    # NC29b — THE INDEPENDENT VERIFY STEP, ACTUALLY EXERCISED.
+    #
+    # NC29 above does NOT test step 2, and rigging step 2 away proved it: bytes
+    # corrupted in transit are caught by the FETCH, which verifies before it
+    # returns, so NC29 passes whether or not the independent check exists. The
+    # step earns its place only against a staged file altered AFTER a successful
+    # fetch -- a staging directory is an ordinary file on disk, not a private
+    # buffer. That is what this control models, and it asserts the halt names
+    # VERIFICATION: with step 2 removed the same tampering is caught one step
+    # later by validation, which is a different guarantee at a different stage.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+
+        class _TamperingTransport(RcloneTransport):
+            def get_verified(self, key, dest, expected_sha, expected_size):
+                p = super().get_verified(key, dest, expected_sha, expected_size)
+                data = bytearray(Path(p).read_bytes())
+                data[5] ^= 0xFF                  # same length, different content
+                Path(p).write_bytes(bytes(data))
+                return p
+
+        runner = FakeRunner(objects={m["object_path"]: good})
+        t = _TamperingTransport("fake-remote", runner=runner)
+        dest = td / "installed" / "codebook.json"
+        try:
+            restore_snapshot(m, t, td / "staging", dest)
+            nc29b, why29b = False, "post-fetch tampering reached installation"
+        except RestoreError as e:
+            nc29b = "staged bytes failed verification" in str(e) and not dest.exists()
+            why29b = (f"halted at VERIFY; destination created={dest.exists()}"
+                      if nc29b else f"halted, but at the wrong step: {str(e)[:70]}")
+    _check(r, "NC29b staged file tampered after a good fetch is caught at verify",
+           nc29b, why29b)
+
+    # NC30 — WRONG SHA and WRONG SIZE in the manifest, separately. Same-size
+    # wrong content is NC29; these are the manifest-side mismatches.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+        runner = FakeRunner(objects={m["object_path"]: good})
+        t = RcloneTransport("fake-remote", runner=runner)
+
+        bad_sha = dict(m)
+        bad_sha["sha256"] = "e" * 64
+        bad_sha["object_path"] = object_key_for("e" * 64)
+        d1 = td / "i1" / "codebook.json"
+        try:
+            restore_snapshot(bad_sha, t, td / "s1", d1)
+            a = False
+        except (TransportError, RestoreError):
+            a = not d1.exists()
+
+        bad_size = dict(m)
+        bad_size["byte_size"] = m["byte_size"] + 1
+        d2 = td / "i2" / "codebook.json"
+        try:
+            restore_snapshot(bad_size, t, td / "s2", d2)
+            b = False
+        except (TransportError, RestoreError):
+            b = not d2.exists()
+    _check(r, "NC30 wrong sha and wrong byte size each halt before install", a and b,
+           f"wrong_sha_halted={a} wrong_size_halted={b}")
+
+    # NC31 — STRUCTURALLY INVALID PAYLOAD that transports perfectly. The bytes
+    # match the manifest's sha exactly; they are simply not a codebook. Byte
+    # verification CANNOT see this, which is why validation is its own step.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        junk = b'{"not": "a codebook"}\n'
+        junk_path = td / "junk.json"
+        junk_path.write_bytes(junk)
+        m = _valid_manifest(sha=sha256_of_bytes(junk), size=len(junk))
+        runner = FakeRunner(objects={m["object_path"]: junk})
+        t = RcloneTransport("fake-remote", runner=runner)
+        dest = td / "installed" / "codebook.json"
+        try:
+            restore_snapshot(m, t, td / "staging", dest)
+            nc31, why31 = False, "a non-codebook reached installation"
+        except RestoreError as e:
+            nc31 = "not a codebook" in str(e) and not dest.exists()
+            why31 = f"halted at validation; destination created={dest.exists()}"
+        except TransportError as e:
+            nc31, why31 = False, f"halted at the WRONG step (transport): {str(e)[:60]}"
+    _check(r, "NC31 byte-perfect non-codebook halts at validation, not install", nc31, why31)
+
+    # NC32 — UNREACHABLE REMOTE is reported as transport failure, and is not
+    # dressed up as an integrity or immutability finding.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+        runner = FakeRunner(objects={m["object_path"]: good}, lie_on_get=True)
+        t = RcloneTransport("fake-remote", runner=runner)
+        dest = td / "installed" / "codebook.json"
+        try:
+            restore_snapshot(m, t, td / "staging", dest)
+            nc32, why32 = False, "an unreachable object still installed something"
+        except TransportError as e:
+            msg = str(e)
+            nc32 = ("does not exist" in msg and "IMMUTABILITY" not in msg
+                    and "corrupt" not in msg.lower() and not dest.exists())
+            why32 = f"transport failure named as such; destination created={dest.exists()}"
+        except RestoreError as e:
+            nc32, why32 = False, f"misclassified as a restore/integrity failure: {str(e)[:60]}"
+    _check(r, "NC32 unreachable remote reported as transport failure", nc32, why32)
+
+    # NC33 — the staging boundary cannot be collapsed. A restore whose staging
+    # file IS the destination is refused: the whole point of staging is that the
+    # destination is not written until the bytes are proven.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath, m, good = _restore_fixture(td)
+        runner = FakeRunner(objects={m["object_path"]: good})
+        t = RcloneTransport("fake-remote", runner=runner)
+        dest = td / "staging" / "codebook.staged.json"     # == the staging file
+        try:
+            restore_snapshot(m, t, td / "staging", dest)
+            nc33a = False
+        except RestoreError as e:
+            nc33a = "staging path and install destination are the same" in str(e)
+        # And install_atomic refuses unverified bytes outright.
+        bogus = td / "bogus.json"
+        bogus.write_bytes(b"nope\n")
+        try:
+            install_atomic(bogus, td / "never.json", m["sha256"], m["byte_size"])
+            nc33b = False
+        except RestoreError as e:
+            nc33b = "REFUSING TO INSTALL" in str(e) and not (td / "never.json").exists()
+    _check(r, "NC33 staging cannot equal destination; install refuses unverified bytes",
+           nc33a and nc33b, f"collapse_refused={nc33a} unverified_install_refused={nc33b}")
+
+    # NC34 — PUBLICATION DOES NOT CONFER AUTHORITY. With no tracked manifest, a
+    # candidate that exists remotely must leave the state NOT_INITIALIZED and be
+    # classified an orphan — no newest-object, no only-object-present fallback.
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        cbpath = td / "codebook.json"
+        cbpath.write_text(json.dumps({"schema": fcb.SCHEMA_V2, "version": "0.7", "axes": {}}),
+                          encoding="utf-8")
+        cand = _valid_manifest()
+        runner = FakeRunner(objects={cand["object_path"]: FIXTURE_BYTES})
+        t = RcloneTransport("fake-remote", runner=runner)
+        st = status(manifest_path=td / "absent.json", codebook_path=cbpath,
+                    transport=t, candidate=cand)
+        c = st.get("candidate") or {}
+        nc34 = (st["state"] == STATE_NOT_INITIALIZED
+                and c.get("authoritative") is False
+                and c.get("classification") == "ORPHAN_CANDIDATE"
+                and "present" in str(c.get("remote", "")))
+    _check(r, "NC34 an existing remote candidate is still NOT authority", nc34,
+           f"state={st['state']} authoritative={c.get('authoritative')} "
+           f"remote={c.get('remote')!r}")
+
     # DET — serialization is deterministic and byte-stable.
     m = _valid_manifest()
     a, b = serialize_manifest(m), serialize_manifest(m)
@@ -1730,7 +2135,10 @@ def cmd_status(args) -> int:
     transport = None
     if args.check_remote:
         transport = RcloneTransport(read_remote(args.remote), bucket=args.bucket)
-    st = status(transport=transport)
+    candidate = None
+    if getattr(args, "candidate", None):
+        candidate, _ = load_manifest(Path(args.candidate))
+    st = status(transport=transport, candidate=candidate)
     if args.json:
         printable = {k: v for k, v in st.items()}
         print(json.dumps(printable, indent=2, ensure_ascii=False))
@@ -1758,8 +2166,113 @@ def cmd_status(args) -> int:
         print(f"    sha256        {sel['sha256']}")
     else:
         print(f"\n  selected authority  NONE — manifest {MANIFEST_PATH} absent")
+    cand = st.get("candidate")
+    if cand:
+        print(f"\n  candidate (REPORTED, never selected)")
+        print(f"    classification  {cand['classification']}")
+        print(f"    authoritative   {cand['authoritative']}")
+        print(f"    object_path     {cand['object_path']}")
+        print(f"    sha256          {cand['sha256']}")
+        if "remote" in cand:
+            print(f"    remote          {cand['remote']}")
+        print(f"    why not         {cand['why_not_authority']}")
     for line in st.get("violations") or []:
         print(f"    ! {line}")
+    return 0
+
+
+def cmd_publish(args) -> int:
+    """Build a candidate manifest FROM the codebook bytes and publish them
+    immutably. Writes the candidate to disposable output space only — creating
+    the tracked selector is a separate, Captain-authorised act (P3 §18)."""
+    cb_path = Path(args.codebook) if args.codebook else fcb.CODEBOOK_PATH
+    prior = None
+    if args.prior_manifest:
+        prior, pv = load_manifest(Path(args.prior_manifest))
+        if prior is None or pv:
+            fc.halt(f"--prior-manifest {args.prior_manifest} is missing or invalid: {pv}")
+
+    created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    manifest = build_manifest(
+        snapshot_id=args.snapshot_id,
+        created_utc=created,
+        mutation_review_id=args.mutation_review_id,
+        corpus_ref=args.corpus_ref or fcb.corpus_ref_current(),
+        previous_snapshot_hash=args.previous_snapshot_hash,
+        codebook_path=cb_path,
+        prior=prior,
+    )
+    out_path = Path(args.candidate_out) if args.candidate_out else (
+        fc.FOUNDRY_OUT_DIR / f"candidate-manifest.{manifest['snapshot_id']}.json")
+    if MANIFEST_PATH.resolve() == out_path.resolve():
+        fc.halt("--candidate-out names the TRACKED selector path. A candidate is not an "
+                "authority; creating that file is a separate authorised act.")
+
+    print(f"candidate manifest for {cb_path}")
+    print(serialize_manifest(manifest))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(serialize_manifest(manifest), encoding="utf-8")
+    print(f"wrote candidate (disposable, gitignored): {out_path}")
+
+    if args.dry_run:
+        print("\nDRY RUN — nothing uploaded.")
+        return 0
+
+    t = RcloneTransport(write_remote(args.remote), bucket=manifest["bucket"])
+    print(f"\npublishing to {t.remote}:{t.bucket}/{manifest['object_path']}")
+    outcome = t.put_immutable(manifest["object_path"], cb_path,
+                              manifest["sha256"], manifest["byte_size"])
+    print(f"result: {outcome}")
+    print("\nNOTE: this object is a CANDIDATE. No tracked manifest selects it, so it is "
+          "ORPHAN / NON-AUTHORITATIVE until Captain authorises the selector.")
+    return 0
+
+
+def cmd_verify_remote(args) -> int:
+    """Consumer-side proof, through the READ-ONLY remote: fetch the exact object
+    to staging, verify bytes, and validate that they are the codebook the
+    manifest describes. Installs nothing."""
+    manifest, v = load_manifest(Path(args.manifest))
+    if manifest is None or v:
+        fc.halt(f"{args.manifest} is missing or invalid: {v}")
+    t = RcloneTransport(read_remote(args.remote), bucket=manifest["bucket"])
+    with tempfile.TemporaryDirectory() as td:
+        staged = Path(td) / "codebook.staged.json"
+        t.get_verified(manifest["object_path"], staged, manifest["sha256"],
+                       manifest["byte_size"])
+        print(f"reader remote      : {t.remote}:{t.bucket}")
+        print(f"object             : {manifest['object_path']}")
+        print(f"sha256 (recomputed): {sha256_of_file(staged)}")
+        print(f"byte_size          : {staged.stat().st_size}")
+        payload = validate_codebook_payload(staged, manifest)
+        print(f"codebook validation: OK — {payload['lint']}")
+        local = describe_local(staged)
+        for f in ("active_axis_count", "assertion_count", "human_assertion_count",
+                  "rule_derived_assertion_count"):
+            print(f"  {f:32} {local[f]}")
+    return 0
+
+
+def cmd_restore(args) -> int:
+    """remote -> staging -> verify -> validate -> atomic install. In that order,
+    and the order is asserted rather than described."""
+    manifest, v = load_manifest(Path(args.manifest))
+    if manifest is None or v:
+        fc.halt(f"{args.manifest} is missing or invalid: {v}")
+    t = RcloneTransport(read_remote(args.remote), bucket=manifest["bucket"])
+    install_to = Path(args.install_to)
+    staging = Path(args.staging) if args.staging else install_to.parent / ".restore-staging"
+    try:
+        result = restore_snapshot(manifest, t, staging, install_to,
+                                  replace_existing=args.replace_existing)
+    except RestoreError as e:
+        print(f"RESTORE HALTED — {e}")
+        return 1
+    print(f"restore steps      : {' -> '.join(result['trace'])}")
+    print(f"staged at          : {result['staged']}")
+    print(f"installed          : {result['installed']}")
+    print(f"sha256             : {result['sha256']}")
+    print(f"byte_size          : {result['byte_size']}")
     return 0
 
 
@@ -1785,7 +2298,41 @@ def main() -> int:
     p.add_argument("--remote", default=None, help="rclone remote NAME (local config)")
     p.add_argument("--bucket", default=AUTHORITY_BUCKET)
     p.add_argument("--json", action="store_true")
+    p.add_argument("--candidate", default=None,
+                   help="report an UNSELECTED candidate manifest; cannot make it authority")
     p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser("publish", help="build a candidate manifest and publish immutably")
+    p.add_argument("--snapshot-id", required=True)
+    p.add_argument("--mutation-review-id", required=True,
+                   help="the ratified mutation these bytes came from")
+    p.add_argument("--previous-snapshot-hash", default=None,
+                   help="omit for genesis (null); otherwise the prior snapshot's sha256")
+    p.add_argument("--prior-manifest", default=None,
+                   help="the previously SELECTED manifest, for succession validation")
+    p.add_argument("--corpus-ref", default=None)
+    p.add_argument("--codebook", default=None)
+    p.add_argument("--candidate-out", default=None)
+    p.add_argument("--remote", default=None, help="rclone WRITE remote NAME")
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_publish)
+
+    p = sub.add_parser("verify-remote",
+                       help="read-only proof that the published object is exact and valid")
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--remote", default=None, help="rclone READ remote NAME")
+    p.set_defaults(func=cmd_verify_remote)
+
+    p = sub.add_parser("restore",
+                       help="remote -> staging -> verify -> validate -> atomic install")
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--install-to", required=True,
+                   help="explicit destination; there is no default that resolves to the "
+                        "operational codebook")
+    p.add_argument("--staging", default=None)
+    p.add_argument("--remote", default=None, help="rclone READ remote NAME")
+    p.add_argument("--replace-existing", action="store_true")
+    p.set_defaults(func=cmd_restore)
 
     p = sub.add_parser("verify", help="exact-byte verification of a local file")
     p.add_argument("path")
