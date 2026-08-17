@@ -262,6 +262,10 @@ evidence?
 | 13 | dimension-exclusivity registry (~10 bits) | (3) §E | **SUPERSEDED** | per-dimension semantic contracts (§14) | one bit cannot drive entailment; needs valued/exhaustive/hierarchy/contexts columns | yes |
 | 14 | consumer set PREQ-1–PREQ-12 | (2) §I | **SUPERSEDED** | §20's set (adds cross-card normalization + honesty questions) | Q-set predated the normalization analysis | yes |
 | 15 | extraction feasibility as final phase EXT-6 (external proposal) | proposal §27 | **SUPERSEDED** | co-equal with encoding, scored via fill matrix (§24) | this repo's measured history: extraction is where defects live | yes |
+| 16 | §14 row values UNWRITTEN; "participant_kind" as a typing coordinate; one `state` dimension; "historic_event_flags"; `entity_kind` exhaustive at three | §14, §12, §15, packet-3b proposals | **RATIFIED / WITHDRAWN / REJECTED — CAPTAIN 2026-08-16** | §14 minimum-useful v1 sheet (rows now written); participant stays a BARE INTEGER with mixed slots via §13 unions and `player` as a contracted sort value; `state` splits into CR 110.5's four; "historic_event_flags" rejected outright; `entity_kind` is a non-exhaustive CORE where absence is not proof | measured 2026-08-16: a single slot ranges over players AND objects on 1,528 cards (4.7%, CR 115.4/115.1), so a kind coordinate has a 4.7% exception rate; CR 110.5 enumerates four independent categories; no CR rule enumerates historic-event flags and §15's creep test rejects it | yes |
+| 17 | overlap inferable from absence of a contradictory dimension pair | §17 as written | **AMENDED — CAPTAIN 2026-08-16** | OVERLAP = PROVEN only on a corpus-ref-pinned positive WITNESS; DISJOINT = PROVEN-NOT only on a CR-contract contradiction; otherwise UNKNOWN. `proof_kind` recorded as §19 provenance, never a fourth verdict | non-contradiction is not nonempty intersection: measured 2026-08-16, **54.8%** of supertype × creature-subtype cells are empty while the CR forbids none (0 snow Soldiers of 61 × 1,078; 0 legendary Drakes of 3,406 × 107) | yes |
+| 18 | a fact-category → admissible-evidence-source registry; CR 110.5a status evidence-boundary amendment | packet-3b proposals | **DECLINED / WITHDRAWN — CAPTAIN 2026-08-16** | three evidence categories (ORACLE_TEXT · CANONICAL_CHARACTERISTIC · CR_DERIVED), register #12's two riders retained, nothing added | the registry was designed for a failure that does not exist: measured 2026-08-16, **zero of 69 card fields carry CR 110.5 status**, so status is never observed and is only ever referenced in oracle text — already inside the strictest boundary. Production evidence law unchanged | yes |
+| 19 | §20 cross-card questions had no instantiation (cohorts are flat id lists) | §20 / §21 | **CLOSED — CAPTAIN 2026-08-16** | frozen pairing protocol: PAIR_K_CHAIN + S0 + S1 + S2, unordered, `experiments/aq4_benchmark/aq4_pairing.py`, 486 unique pairs over 272/272 published open exemplars | B1–B4, C1, DISCOVERY-1 and E1 are phrased over two cards and nothing bound a card to a counterpart; PAIR_C deferred because only 3 of 20 recorded-trap cards fall in the open set | yes |
 
 Also historical, already banner-documented in the repo: FL-2's original
 recommendation (fold into AQ4) was **not** what was ratified — see
@@ -351,6 +355,20 @@ identically to both candidates** (register #3) — it discriminates nothing
 about ownership or nesting. It is adopted for the benchmark because the
 pre-registered questions already require it (Prey Upon, blink cohorts).
 
+**THE COORDINATE STAYS A BARE INTEGER. A "participant_kind" field was
+proposed and is WITHDRAWN (register #16)** — written in quotes, not
+backticks, per the house rule that a rejected term in backticks is
+ingested as ratified vocabulary. A single printed slot may range
+over players *and* objects at once: CR 115.4 — *"These targets may be
+creatures, players, planeswalkers, or battles"* — and CR 115.1 states the
+general case, *"The targets are object(s) and/or player(s)."* Measured
+2026-08-16: **1,528 corpus cards (4.7%)** carry such a slot (836 print
+`any target`). A typing coordinate with a 4.7% exception rate is not a
+typing coordinate. **Mixed-kind fillers are carried by §13's existing small
+unions** — printed `or` classes, DNF ≤ ~4 disjuncts — and CR 115.4's
+enumeration is exactly four. The filler *sort* is a constraint atom over a
+§14 dimension, never a coordinate on the participant.
+
 # 13. PREDICATE / NORMALIZATION MODEL — CANDIDATE
 
 **Attachment (occurrence identity) and comparison (normalization) are
@@ -397,10 +415,74 @@ single- vs multi-valued, exhaustive or not, hierarchy edges (subtype→type),
 whether CARD atoms apply, **applicable entity contexts** (§15), and static
 CR anchors.
 
-**CONTRACT SHAPE = CANDIDATE (benchmark subject). ACTUAL ROW VALUES =
-UNWRITTEN** — every cell requires implementation-time CR verification, and
-the completed sheet is a **Captain ratification** (~10 rows, one-time,
-zero growth exposure).
+**CONTRACT SHAPE = CANDIDATE (benchmark subject). ROW VALUES = RATIFIED
+FOR AQ4 as MINIMUM USEFUL v1, Captain 2026-08-16 (register #16).** The
+global equality-only escape was offered and **REJECTED**: a real sheet is
+what unlocks §18.4's ABSENT-PROVEN, and the blanket escape would have
+forfeited it everywhere — including on the four CR 110.5 status rows,
+where CR 110.5's own closing sentence makes absence proof free. Rows not
+earning ratification are **equality-only or UNKNOWN**, never guessed.
+**This ratification is for the AQ4 benchmark layer; it changes no
+production semantics and mints no production vocabulary.**
+
+`closed` = the CR enumerates every possible value. `must-have` = every
+object in an applicable context carries one. **The two are independent**,
+and conflating them is what turns a merely absent value into a false
+ABSENT-PROVEN.
+
+| dimension | CR anchor | closed | must-have | multi | context guard | v1 status |
+|---|---|---|---|---|---|---|
+| `card_type` | 205.2a | yes | yes | yes (300.2) | — | full |
+| `subtype` | 205.3c/d | yes | no | yes | kind/zone | full — subtype→type edge sound (measured: 0 of 460 subtypes map to >1 type) |
+| `supertype` | 205.4a | yes (5) | no | yes | — | full |
+| `color` | 105 | yes (5) | no (colorless) | yes | — | full; CARD atoms carry mono/multi/colorless |
+| `zone` | 400.1 | yes (7 + ante) | yes | no | — | full. **"Outside the game" is NOT a zone (CR 400.11) and is never a value** |
+| `entity_kind` | 109.1 | **no — core only** | yes | no | — | core `{permanent, card, spell}`; every other CR 109.1 shape is **UNKNOWN unless contracted**, and **absence from the core is not proof** |
+| `sort` (participant filler) | 102.1 / 109.1 / 115.4 | no | yes | no | — | **`player` is a contracted value** (register #16). Mixed slots are §13 unions, not a coordinate |
+| `owner_relation` | 108.3 | yes | yes | no | — | full — an owner exists in **every** zone |
+| `controller_relation` | 102.2 / 102.3 | yes | no | no | kind + zone | full, **complement inference FORBIDDEN** (below) |
+| `self_identity` | 109.2d | n/a (atom) | n/a | no | — | full |
+| `keyword_ability` | 702 | yes (194) | no | yes | kind | full |
+| `tapped_untapped` | 110.5 | yes (2) | yes *(permanent)* | no | permanent only | full |
+| `flipped_unflipped` | 110.5 | yes (2) | yes *(permanent)* | no | permanent only | full |
+| `face_up_face_down` | 110.5 | yes (2) | yes *(permanent)* | no | permanent only | full |
+| `phased_in_phased_out` | 110.5 | yes (2) | yes *(permanent)* | no | permanent only | full |
+| `selection_mode` | 115.1 | **no — conservative** | yes | no | — | required; **unhandled shapes are UNKNOWN**, never coerced |
+| `quantity` | 107.1 | `{min,max}` | no | no | — | interval only |
+| `numeric` | 107.1 | integers | no | no | — | interval only; **the cardinality-WORD list is `H2 HAND-LIST` (§24), not EXTRACT-1** |
+| `counter_kind` | 122.1 | **no — open** | no | yes | permanent/player | **equality-only** |
+| `combat_state` | 506.3 / 508 | yes | no | no | permanent only | **equality-only v1** |
+| `condition` | §17 v1 | no | no | yes | — | **equality-only** |
+| `timing_duration` | §17 v1 | no | no | no | — | **equality-only** |
+
+**CR 110.5 closes its own absence question.** *"There are four status
+categories, each of which has two possible values… Each permanent always
+has one of these values for each of these categories."* So on an applicable
+permanent these four are exhaustive **and** must-have — ABSENT-PROVEN is
+available on them without further machinery. They are four independent
+rows because one grab-bag `state` dimension cannot say which category a
+card constrains. Status is read from **oracle text**, never from a
+characteristic (CR 110.5a, and no card field carries it — §19).
+
+**CONTROLLER COMPLEMENT INFERENCE IS FORBIDDEN (Captain 2026-08-16 — the
+benchmark is Magic-general and assumes no player count).**
+`FORBIDS(controller, you)` does **not** entail `REQUIRES(controller,
+opponent)` and never rewrites to it. CR 102.2 scopes the simple complement
+to *two-player* games; CR 102.3 makes teammates *"all players not on their
+team"* — neither you nor opponents. Measured 2026-08-16: 1,575 corpus
+cards (4.9%) print one of the two forms and **only 6 print both**, so the
+distinction is almost entirely cross-card and will surface in comparison
+verdicts rather than in extraction. **Expect it to look like reduced
+recall. It is not — do not "fix" it.** `owner_relation` and
+`controller_relation` stay separate rows for the same reason: CR 108.3
+gives every object an owner in every zone, while a card in a graveyard has
+no controller at all.
+
+**"historic_event_flags" was proposed and is REJECTED** (register #16; in
+quotes, not backticks, for the reason §12 gives): no
+CR rule enumerates it, and §15's own test applies — a feature that exists
+only because a rules engine would need it is evidence against itself.
+Anything genuinely required is reachable as a `condition` (equality-only).
 
 **Hardcoded-intuition warnings (each is a measured or CR-verified trap):**
 
@@ -464,6 +546,33 @@ comparison, ChoiceGroup alternative-vs-cumulative (derived from the owning
 header per ratified A4; derived-and-materialized in generated artifacts,
 never codebook-stored).
 
+**OVERLAP AND DISJOINT ARE NOT SYMMETRIC, AND NON-CONTRADICTION PROVES
+NEITHER (Captain, 2026-08-16 — register #17).** Two constraints can
+contradict on no dimension whatsoever and still have an EMPTY intersection,
+so "no contradictory dimension pair" must never be read as OVERLAP:
+
+- **OVERLAP = `PROVEN` only on a positive WITNESS** — one card satisfying
+  both. Existential, so a single card settles it; but it is a claim about
+  the **corpus**, so the assertion carries `corpus_ref` (§19).
+- **DISJOINT = `PROVEN-NOT` only on a CR CONTRACT contradiction** —
+  contradictory values on a single-valued exhaustive §14 dimension.
+  **Never** on the absence of a witness.
+- **Everything else is `UNKNOWN`**, including *"searched and found
+  nothing"* — the standing house law that a null result from your own
+  search is not a fact about the data.
+
+A corpus witness is therefore **sufficient** for overlap, **necessary** in
+practice for most overlaps, and **inadmissible** for disjointness.
+Per-dimension contracts alone cannot establish a nonempty intersection:
+they describe a product space, and the printed pool is sparse inside it.
+Measured 2026-08-16 over CR-closed vocabulary: **54.8% of supertype ×
+creature-subtype cells are empty** while the CR forbids none of them —
+there are 61 snow creatures and 1,078 Soldiers and **zero** snow Soldiers;
+3,406 legendary creatures and 107 Drakes and **zero** legendary Drakes.
+This is the common case, not a corner. **No new verdict values are minted**
+— the rule maps onto the existing triple, and `proof_kind` is provenance
+(§19), not a fourth state.
+
 - **Every comparison returns `PROVEN / PROVEN-NOT / UNKNOWN`.**
 - **Derived relationships are NEVER canonical stored facts.**
   `blue permanent ⊂ permanent` is a consequence of monotonicity, not a
@@ -520,7 +629,8 @@ characteristic field / Oracle text
   → participant ordinal
   → canonical predicate row {dim, value/atom, disposition, extractor version,
                              derivation class, CR anchors, provenance class}
-  → derived relation {input row ids, per-dimension verdicts}   (recomputed, never stored)
+  → derived relation {input row ids, per-dimension verdicts,
+                      proof_kind, corpus_ref if CORPUS_WITNESS}  (recomputed, never stored)
   → index projection (regeneration-gated)
   → consumer answer (cites the verdicts)
 ```
@@ -534,6 +644,31 @@ replacement names its dimension, verdict, and both evidence rows. Human
 vs deterministic provenance classes remain distinct throughout. This is a
 contract, not a database design — do not build heavyweight provenance
 infrastructure to satisfy it.
+
+**`proof_kind` is PROVENANCE, never canonical semantic truth (Captain,
+2026-08-16 — register #17).** A §17 comparison verdict records **how** it
+was established: `CR_CONTRACT` (a contradiction on a single-valued
+exhaustive §14 dimension) or `CORPUS_WITNESS` (a named card satisfying
+both). A `CORPUS_WITNESS` assertion **must carry the `corpus_ref` it was
+established against**, because it is a claim about the printed pool and a
+later snapshot may add the card that was missing. `proof_kind` is a field
+on the derived relation — it is **not** a fourth verdict value, **not** a
+stored semantic fact, and nothing may branch on it except the audit trail.
+
+**Evidence categories — three, and no registry (Captain, 2026-08-16 —
+register #18).** The minimum the §20 questions actually require is
+`ORACLE_TEXT` (every constraint value, including CR 110.5 *status
+references*, §16 relation edges, selection mode and keyword restrictions),
+`CANONICAL_CHARACTERISTIC` (cohort 7 only — vanilla creatures, CR 113.3a
+face cuts, DFC layout; register #12's two riders already govern it), and
+`CR_DERIVED` (vocabulary, hierarchy edges, contract cells — contract-level,
+not per-card). **A generic fact-category → evidence-source registry was
+proposed and is declined:** it was designed for a failure that does not
+exist. Status looked like it needed one because CR 110.5a says *"Status is
+not a characteristic"* — but measured 2026-08-16, **zero of the 69
+available card fields carry CR 110.5 status.** A static corpus has no
+tapped permanents; status is never *observed*, only ever *referenced in
+oracle text*, and is therefore already inside the strictest boundary.
 
 **Characteristic evidence — status warning.** Production evidence law is
 RATIFIED as oracle-quote-or-discard and is **unchanged by AQ4**. The

@@ -452,6 +452,58 @@ Twelve of 795, and the control now asserts exactly that identity.
 
 ---
 
+## 8a. CROSS-CARD PAIRING — frozen, packet 3b
+
+§20's B1–B4, C1, DISCOVERY-1 and E1 are **cross-card** questions phrased over
+two cards, and the cohorts are flat id lists that bind no card to a counterpart.
+`aq4_pairing.py` freezes the Captain-ratified protocol that instantiates them.
+
+| tranche | rule | pairs | instantiates |
+|---|---|---|---|
+| `PAIR_K_CHAIN` | keyed order within each published class, adjacent | 138 | control (semantics-free) |
+| `S0` | same delivery token **and** action family | 105 | B1 |
+| `S1` | same delivery token, action family **differs** | 127 | B2, B3, C1 |
+| `S2` | same action family, delivery token **differs** | 122 | B4, DISCOVERY-1 |
+
+**486 unique unordered pairs covering 272/272 published open exemplars**, with
+no cap, top-N or threshold anywhere. The S tranches are mutually disjoint and
+`PAIR_K_CHAIN` shares only **6** pairs with them, so it stays a near-independent
+control rather than a subset — a verdict holding on K *and* S is not a
+stratification artifact.
+
+**Unordered storage.** C1 is directional, but both directions derive from one
+pair by recording a per-direction verdict on the *answer*; storing directed
+pairs would double the count for zero information.
+
+**The singleton is why S exists.** `c1.active-volcano-named-case` has one
+member and is unpairable within its class — the chain leaves it uncovered and a
+ring would emit a *self-pair*. A cross-class S tranche rescues it. That is the
+concrete argument for the stratified tranches, not an aesthetic one.
+
+**The keying salt is load-bearing and must not be tidied.** Greedy contrast
+matching takes the first eligible partner in keyed order, so a different salt
+gives a different, equally valid matching. Measured while freezing: normalizing
+the null key from `None` to `""` moved S1 127 → 126 and the K∩S overlap 6 → 4.
+
+**Reserved cohort-6 identities are never materialized** — not filtered out,
+*never computed*. `aq4_pairing` reads only the committed `cohort-*.json` files
+and never calls `build_cohorts` or `family_open_reserved`.
+
+**Blind extensibility is pinned, not assumed.** Both S coordinates come from
+frozen code, so a revealed holdout strata mechanically — but only if
+`corpus_ref`, the CR edition and the parsed §2 DELIVERY vocabulary are
+unchanged. All three are recorded in `pairs-open.json`. A CR refresh moved
+keyword names 193 → 194 last time; an unpinned rule is not reproducible at
+packet 9.
+
+Controls `PC1`–`PC6` (`--selftest`), each with a demonstrated rigged-red path.
+**PC4's rig is worth reading**: its first version capped at 4 and passed
+*vacuously*, because published classes hold 1/5/6/8 members so `floor(n/2)`
+never exceeds 4 and the cap removed nothing. A rig that cannot bite is
+indistinguishable from a rig that found nothing.
+
+---
+
 ## 9. WHAT THIS PACKET DELIBERATELY DID NOT DECIDE
 
 - **Whether `this way` is a fourth relation kind.** It is in cohort 2 because

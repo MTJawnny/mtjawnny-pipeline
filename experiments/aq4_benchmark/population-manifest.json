@@ -5599,7 +5599,7 @@
       "qualifying_population": 0
     }
   ],
-  "manifest_sha256": "5ff4a1b0ca64fd84ad821cbc38ef39c4eb4b8853f1717bb26054f7c379a0dff8",
+  "manifest_sha256": "03220af6bd60b2261629cf3effa8682575388b3dacaa1aaf38fd7a602ce249f1",
   "open_cohort_overlap_qualifying_population": {
     "1x1": 1237,
     "1x2": 863,
@@ -5803,6 +5803,28 @@
       "selection": "SHA-256 keyed order (above)"
     },
     "packet": 2,
+    "pairing": {
+      "PAIR_C": "DEFERRED. Only 3 of 20 recorded-trap cards fall in the published open set (272 of 32,341 cards), so a citation-grounded tranche would have needed a §21 population change, which packet 2 owned and closed.",
+      "_what": "Captain-ratified packet-3b cross-card pairing protocol (contract §20 B/C/E, §8 register #19). Implemented in aq4_pairing.py; the OPEN view is pairs-open.json.",
+      "blind_extensibility": "Both S coordinates are computed from card text by frozen code, so a revealed holdout strata mechanically with no new decision — PROVIDED the three pins below still hold.",
+      "coverage_rule": "every published OPEN exemplar appears in at least one pair. Achieved at 272/272 with no cap, top-N or threshold anywhere.",
+      "no_constants": "PAIR_K_CHAIN emits exactly sum(floor(n/2)) pairs over the published classes. That identity carries no constant of its own and is what control PC4 asserts; a cap is the only way to break it.",
+      "pin_note": "grammar §2 is pinned as the sha256 of the PARSED DELIVERY table, not of the raw markdown bytes: the parse is what pairing depends on, and a byte hash would churn on unrelated prose and teach the next session to ignore the pin.",
+      "reproducibility_pins": [
+        "corpus_ref",
+        "cr_edition",
+        "grammar_section_2_delivery_vocabulary"
+      ],
+      "reserved_c6": "FORBIDDEN to materialize. aq4_pairing reads identities only from the committed cohort-*.json files and never calls build_cohorts or family_open_reserved, so no reserved set exists in that process.",
+      "salt_is_load_bearing": "The keying salt strings in aq4_pairing.py are FROZEN VERBATIM. Greedy contrast matching walks the keyed order and takes the first eligible partner, so a different salt yields a different (equally valid) matching: normalizing the null key from `None` to the empty string moved S1 from 127 to 126 pairs and the K-vs-S overlap from 6 to 4. Tidying those strings silently re-draws the pair set.",
+      "storage": "unordered — C1's direction is a per-direction verdict on the ANSWER, never a second stored pair",
+      "tranches": [
+        "PAIR_K_CHAIN",
+        "S0",
+        "S1",
+        "S2"
+      ]
+    },
     "prng": {
       "algorithm": "SHA-256 keyed ordering — sorted(pool, key=lambda oid: (sha256(label + NUL + oid).hexdigest(), oid))",
       "domain_separation": "every draw is keyed with its own label, so two classes drawing from the same pool cannot select the same cards by construction",
