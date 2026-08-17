@@ -269,6 +269,10 @@ evidence?
 | 20 | qualifying residue could become a constraint on the extractor's own judgement | §13 / §18 | **RATIFIED — CAPTAIN 2026-08-16** | the facet boundary (§13): qualifying residue becomes a constraint atom **only** on a ratified §14 contract; otherwise it stays uncontracted residue; qualification never authorizes minting a production axis, predicate, dimension or vocabulary item | sibling of §18.4 — there no contract means no *absence* claim, here no contract means no *constraint*. A dimension invented at extraction time to hold something the text plainly says looks original rather than unratified, and makes the gap disappear without anything being decided | yes |
 | 21 | normalization/lowering could carry a fact forward while losing its evidence trace | §19 | **PRE-REGISTERED CONTROL CLASS — CAPTAIN 2026-08-16** | provenance conservation (§19): every surviving output fact keeps a deterministic trace to admissible source evidence, with a required rigged-red `DROP_OR_CORRUPT_TRACE` negative control per applicable transform. **Adds no canonical provenance field** | pre-registered while no such pass exists, because a control written after its transform is shaped by what that transform happens to do. Candidate-neutral: binds both candidates identically and prices neither | yes |
 | 22 | §22 step 9 required one independent adjudication of the blind key | §22 | **AMENDED — CAPTAIN 2026-08-16** | **independent dual adjudication**: two adjudicators answer separately, neither sees candidate output, they do not share initial answers, disagreement is rechecked independently and resolved only while outputs remain invisible, else the cell is AMBIGUOUS/UNRESOLVED. Candidate outputs may **never** reconcile the two | one adjudication has no error signal at all. Deliberately **not** called "double-blind": there is no treatment assignment and the adjudicators are blind to candidate outputs only, so the stronger name would overclaim the design | yes |
+| 23 | one semantic action-head detector, shared by Packet-2 population/pairing and by later ground-truth work | packet-1 `effect_heads` | **RATIFIED `CORRECT_BEFORE_OPEN_KEY` — CAPTAIN 2026-08-16** | **two explicit paths** (§27a): `effect_heads` is FROZEN Packet-2 history and keeps its exact behaviour; `semantic_action_heads` is the corrected path for ground-truth/projection. Authorized corrected classes are **P1 mode bullet (CR 700.2)** and **P2 instruction prefix (CR 714.2 / 606.2 / 700.2h / 700.2i)** only | an objective pre-key detector defect must be corrected before open-ground-truth adjudication, but the pairing is frozen benchmark history. Measured 2026-08-16: substituting the corrected detector into `action_family_of` moves the stratum coordinate on **1 of the 272** open exemplars under the authorized P1+P2 set (**7 of 272** if the deferred finite-subject class is included), so one shared detector cannot serve both | yes |
+| 24 | open ground truth would need the blind key's full independent dual adjudication | §22 / packet 3 | **RATIFIED `DUAL_HIGH_RISK_PLUS_SAMPLE` — CAPTAIN 2026-08-16** | independent dual adjudication on defined **high-risk** truth classes, one adjudication on ordinary truth, **plus** an independently adjudicated deterministic sample of the remainder to give an empirical disagreement signal. **Sample size, seed and procedure are deliberately NOT frozen here** and must be precommitted in their own task before adjudication | full dual adjudication of the open key is not affordable and not required; a sampled error signal is. High-risk classes at minimum: participant binding in multi-participant occurrences, C2 exile↔return / linked abilities, modal-exclusivity / C3 where the owning header matters, and occurrences touched by the register #23 detector correction | yes |
+| 25 | open benchmark truth would be stored as one large per-question answer store | packet 3 framing | **RATIFIED `FACT_PROJECTION` — CAPTAIN 2026-08-16** | open truth is frozen as an **ownership-neutral normalized fact/projection substrate** (§23), with consumer answers DERIVED from it. **Packet 4's projection schema precedes completion of Packet 3's open-key freeze** (§32) | a per-question store duplicates one fact across every question that reads it and cannot be checked for self-consistency. **This is benchmark EVALUATION law and not a production canonical-ownership ruling** — §23's models A–D stay open, and §22's blind timing is unchanged. No candidate encoder is authorized by it | yes |
+| 26 | E1 was an open-ended explanation question with no stated domain, and §18's absence obligations read as key-side | §20 E1 / §18 | **RATIFIED — CAPTAIN 2026-08-16** | **E1's domain is the 354 unique unordered pairs of S0 ∪ S1 ∪ S2** — not multiplied by comparison-question count, and never over K-only control pairs — and E1 is evaluated as a **§19 trace/provenance property**, not one hand-authored prose answer per comparison-question instance. For ABSENT-PROVEN the key records the underlying semantic absence, while **§18 obligations 1–3 are discharged by the CLAIMING CANDIDATE at scoring time**; obligation 4 stays benchmark-law | an unstated domain silently makes E1 the largest scoring surface in the benchmark; and a key that claimed pre-encoder ABSENT-PROVEN would be claiming residue-honesty and negative-control adequacy on behalf of encoders that do not exist yet. The symmetric false-precision veto (§6.2) is preserved on both sides | yes |
 
 Also historical, already banner-documented in the repo: FL-2's original
 recommendation (fold into AQ4) was **not** what was ratified — see
@@ -512,6 +516,14 @@ CR rule enumerates it, and §15's own test applies — a feature that exists
 only because a rules engine would need it is evidence against itself.
 Anything genuinely required is reachable as a `condition` (equality-only).
 
+**AN ACTION PREDICATE HEAD IS NOT A §14 DIMENSION (register #23).** The
+action/effect head of an occurrence — what the instruction *does* — is a
+**predicate**, and the rows above are **eligibility** dimensions describing
+*what an object must be*. §27a's detector work adds no row here, contracts
+no new dimension, and mints no vocabulary; its output is the CR 701 keyword
+action already parsed at run time. Keeping the two apart is what stops a
+detector improvement from arriving as a silent §14 ratification.
+
 **Hardcoded-intuition warnings (each is a measured or CR-verified trap):**
 
 - Card **types are NOT mutually exclusive** (CR 300.2 — artifact
@@ -632,6 +644,28 @@ flying with zero residue. This is the repository's recorded
    matched card MUST change the output (new fact or new residue).
 4. **Registered dimension contract** (§14) — no contract, no absence
    claims, ever.
+
+**WHO DISCHARGES WHICH OBLIGATION (Captain, 2026-08-16 — register #26).**
+The four obligations do **not** all sit on the same party, and reading them
+as key-side made the answer key responsible for properties of encoders that
+did not exist when it was written.
+
+- **The KEY records the underlying semantic ABSENCE** — that the text
+  places no constraint on that dimension for that occurrence. That is a
+  statement about the card, and the key can make it.
+- **Obligations 1–3 are discharged by the CLAIMING CANDIDATE at
+  scoring/evaluation time**, under *that claimant's own* rule: residue-honest
+  exhaustion, template/emission-schema adequacy, and a per-dimension negative
+  control that changes *that claimant's* output. A key cannot prove them on
+  behalf of a future encoder, and **the key never claims pre-encoder
+  ABSENT-PROVEN.**
+- **Obligation 4, the registered dimension contract, stays
+  benchmark-law/ground-truth-side** (§14). No contract, no absence claim, by
+  either party.
+
+This preserves the symmetric false-precision veto (§6.2) in both directions:
+a candidate claiming ABSENT-PROVEN it cannot discharge is confidently wrong,
+and a key asserting absence the card does not support is equally so.
 
 **Dispositions** (per occurrence × participant × dimension):
 `PRESENT(value) · ABSENT-PROVEN · UNRESOLVED · AMBIGUOUS ·
@@ -779,6 +813,18 @@ No rules-engine questions.
 - E1. Why did these cards match, and which part of each card produced the
   comparison (full §19 trace)?
 
+  **DOMAIN AND FORM, ratified Captain 2026-08-16 (register #26).** E1's
+  domain is the **354 unique unordered pairs of S0 ∪ S1 ∪ S2** — the
+  semantic tranches of the frozen pairing (§8a of the benchmark README).
+  It is **not** multiplied by the number of comparison questions asked of a
+  pair, and it does **not** apply to `PAIR_K_CHAIN`-only control pairs,
+  which are semantics-free by construction. E1 is scored as a **§19
+  trace/provenance property** — the derivation is producible and names the
+  semantic units that support the comparison — and explicitly **not** as one
+  hand-authored prose explanation string per pair. A prose gold answer would
+  be an unscoreable free-text surface and would smuggle native vocabulary
+  into a key that §6.1 requires to be architecture-neutral.
+
 **F. Honesty / unresolved behavior**
 - HONESTY-1. Which consumer-relevant dimensions are UNRESOLVED/AMBIGUOUS, and
   does that block a strict claim the facts would otherwise support?
@@ -887,6 +933,22 @@ the assumed canonical store. Both candidates export into it; each
 candidate's native answers MUST match its own projection's answers
 (self-consistency); exporter implementation cost is excluded from scoring;
 only a *lossy* projection is scoreable evidence.
+
+**`FACT_PROJECTION` — THE OPEN KEY'S SHAPE, ratified Captain 2026-08-16
+(register #25).** Open benchmark truth is frozen as this
+**ownership-neutral normalized fact/projection substrate**, with the
+per-question consumer answers of §20 **derived** from it. It is not stored
+as one large per-question answer store: that duplicates a single fact across
+every question that reads it, gives the key no self-consistency check, and
+makes a single corrected fact a multi-cell edit.
+
+**Read the scope narrowly, because the words invite over-reading.** This is
+**benchmark EVALUATION law only.** It does **not** rule that normalized fact
+rows are canonically owned in production — models A–D above stay open, that
+is the AQ4 decision itself, and §34's list of things a future model must not
+infer applies to this paragraph in particular. It authorizes **no** candidate
+encoder, mints no vocabulary, and changes **no** §22 blind timing: the blind
+key is still adjudicated after candidate freeze under §22's sequence.
 
 Ownership possibilities the benchmark must leave open:
 
@@ -1035,6 +1097,93 @@ yield a coreference edge candidate; a card with no pronouns MUST yield
 zero. DECISION USE: RUNG-5 scope; a proliferating kind inventory is
 evidence toward H5.
 
+# 27a. THE SEMANTIC ACTION-HEAD DETECTOR — TWO PATHS, ONE FROZEN
+
+**Ratified `CORRECT_BEFORE_OPEN_KEY`, Captain 2026-08-16 (register #23).**
+An objective defect in action-head detection is corrected **before**
+open-ground-truth adjudication. Packet-2 population and pairing are
+**frozen benchmark history** and are not redrawn to accommodate it.
+
+Those two requirements are only jointly satisfiable with two paths, and
+that is a measurement rather than a preference: `action_family_of` is one
+of cohort 4's two stratum coordinates and one of the S-tranche pairing
+coordinates, and re-running it with the corrected rules over the **272**
+published open exemplars moves the coordinate on **1** of them under the
+authorized P1+P2 set — and on **7** if the deferred finite-subject class is
+included. One moved coordinate is enough to redraw the frozen 486-pair
+artifact, so one shared detector cannot serve both purposes.
+
+| path | entry point | status | consumers |
+|---|---|---|---|
+| **legacy / frozen** | `foundry_aq4_probes.effect_heads` | **FROZEN Packet-2 history — do not "fix"** | `aq4_population.action_family_of`, `card_facts`, probe P2 |
+| **corrected / semantic** | `foundry_aq4_probes.semantic_action_heads` | corrected, ground-truth & projection use | open-key and projection work only |
+
+**Two explicit functions, never a boolean mode** — a `corrected=True`-style
+flag reads identically at both call sites and is exactly how the frozen path
+gets substituted by accident. The corrected path must never be routed into
+Packet-2 regeneration, and the legacy path must not be recommended for new
+ground-truth work.
+
+**Authorized corrected classes — these two and no others:**
+
+- **P1 MODE BULLET (CR 700.2).** *"two or more options in a bulleted
+  list … each of those options is a mode"* — the bullet is list
+  punctuation, so the mode's instruction begins after it. Applies to the
+  bulleted clause itself, **not** to follow-on sentences inside the mode.
+- **P2 INSTRUCTION PREFIX.** A CR 714.2 Saga chapter bar, a CR 606.2
+  loyalty cost, a CR 700.2h additional-cost marker or a CR 700.2i pawprint
+  marker prints a **marker or cost** before the instruction; the
+  instruction begins after the em-dash. A **CR 702.Na keyword prefix is
+  REFUSED** — CR 702.6b makes the body the keyword's own *cost*
+  ("Equip—Sacrifice a creature"), not an effect.
+
+Both are **structural and CR-grounded**: no vocabulary is minted, no
+subject-word list is involved, and neither depends on which text view the
+detector consumes.
+
+**Deliberately NOT adopted, and each is a real open question:**
+
+- **Finite-verb-with-printed-subject recovery is DEFERRED.** The audited
+  predicate rests on a subject-word list the CR does not enumerate; that
+  list is **not ratified** and must not be implemented.
+- **Which text view the corrected detector consumes is a PACKET 4
+  decision.** `ability_lines` does not canonicalize CARDNAME while
+  `det_scan_texts` does, and the two currently disagree about whether a
+  card-name subject is visible at all. P1 and P2 are unaffected by the
+  choice, which is why they could be authorized ahead of it.
+- **A CR 702 keyword's cost body contributing an effect head** is
+  unresolved; cost representation belongs to the projection work.
+
+**Classification is HIT-LEVEL, not occurrence-level, and this is ratified
+practice rather than an implementation detail (register #23).** A single
+occurrence may carry both a genuine missed action head and a vocabulary hit
+that is *correctly* rejected — measured on 5 occurrences of the open
+surface, e.g. *"Whenever a player casts a spell they don't own, that player
+creates a Treasure token"*, where `casts` sits in the CR 113.3c trigger
+condition and `creates` is the effect. **Do not force occurrence-level
+exclusivity**, and do not specify acceptance as disjoint occurrence counts.
+
+**The evidence base is a reproducible partition, not a remembered count.**
+The open surface is **782** occurrences over the 272 published open
+exemplars, addressed as `[oracle_id, face, paragraph, clause]` with the
+face/paragraph coordinate taken from the ratified locality resolver; the
+legacy path reaches **307** of them (39.3%) and the corrected path with P1
+and P2 reaches **364** (46.5%). Every class carries a SHA-256 over its
+sorted canonical id set, so a later session reproduces the partition rather
+than inheriting a number.
+
+**A CLASS SIZE IS NOT A RECOVERY COUNT, and conflating them is how the
+expected figure for this work was first written as 372.** The P1 *class* —
+occurrences opening with a CR 700.2 bullet — is **49**; the number P1
+*recovers* is **41**. The other 8 divide exactly: **5** need the deferred
+finite-subject rule (`• You draw three cards.`), and **3** must stay
+rejected and do (two CR 122.1 marker nouns, one participle in a subordinate
+clause). P2's class and recovery are both **16**. Any future scope statement
+about this work must say which of the two numbers it means. **An earlier, uncommitted read-only audit
+circulated a different sub-partition of the same surface; it was withdrawn
+as an acceptance contract on 2026-08-16 and is not law, not current
+evidence, and must not be reproduced or optimized toward.**
+
 # 28. HISTORICAL TRAPS — DO NOT REPEAT
 
 | trap | symptom | why wrong | protective rule |
@@ -1139,6 +1288,17 @@ red gate, any ratified-law conflict, any need to mint vocabulary.
 | **10** | evidence-packet generation | benchmark dir | 9 | one packet: matrices, verdicts, kills per §25, tier walk per §26 | — |
 | **11** | Captain decision checkpoint | none (document only) | 10 | one decision sheet | **always — this packet ends in Captain's hands** |
 | post-ratification | §29 / §30 / §31 tranches | per path | Captain ruling | per path | preamble item missing |
+
+**PACKET 4 MAY PRECEDE COMPLETION OF PACKET 3 (Captain, 2026-08-16 —
+register #25).** Packet 3 is holdout commitment **plus** the open-cohort
+answer-key freeze; under `FACT_PROJECTION` (§23) that key is frozen as a
+normalized fact substrate, so packet 4's projection schema must exist before
+the key can be frozen in it. The prerequisite column already permits this —
+both packets depend only on packet 2 — so **no prerequisite is changed**, and
+the sequencing note is recorded rather than the graph rewritten. Packet 3A
+(the §22 step 1–2 seed commitment) is unaffected and is already done.
+**§22's blind timing is untouched**: the blind key is still adjudicated after
+candidate freeze, and packets 5–6 still require packet 3 as well as 4.
 
 # 33. CAPTAIN-CONTROLLED DECISIONS
 

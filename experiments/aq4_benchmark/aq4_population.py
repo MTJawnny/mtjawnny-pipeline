@@ -441,9 +441,28 @@ def action_family_of(card: dict) -> str:
 
     Returns None when the card prints no keyword action. None is a NULL, not a
     coined label: it is serialized as JSON null and rendered "(none)".
+
+    ⛔ **THIS CALL IS FROZEN PACKET-2 HISTORY. DO NOT SWAP IN
+    `aq4p.semantic_action_heads`.**
+
+    This function is one of cohort 4's two stratum coordinates AND one of the
+    S-tranche pairing coordinates, so its output is baked into
+    `population-manifest.json`, `cohorts/*.json` and `pairs-open.json`.
+    Captain ruled `CORRECT_BEFORE_OPEN_KEY` on 2026-08-16 (AQ4 contract §27a,
+    register #23): the detector is corrected for ground-truth work while the
+    drawn population and pairing stay exactly as they were drawn.
+
+    Measured 2026-08-16, which is why the two paths exist at all: substituting
+    the corrected detector here moves this coordinate on **1 of the 272**
+    published open exemplars under the authorized P1+P2 set (cast -> exile), and
+    on 7 of 272 if the deferred finite-subject class is included. ONE moved
+    coordinate redraws strata and silently invalidates the frozen 486-pair
+    artifact, so the size of the number is not the safeguard.
+    `aq4p.effect_heads` is deliberately the less capable function; that is the
+    point of it. New ground-truth/projection work calls the corrected path.
     """
     base = fc.det_scan_texts(card)[0]
-    heads = aq4p.effect_heads(base, require_boundary=True)
+    heads = aq4p.effect_heads(base, require_boundary=True)   # FROZEN — see above
     for h in heads:
         if h in aq4p.CR701_ACTIONS:
             return h

@@ -576,12 +576,168 @@ _HEAD_RE = re.compile(
 
 
 def effect_heads(clause: str, require_boundary: bool = True) -> list:
-    """Every candidate effect head in predicate position, in printed order."""
+    """Every candidate effect head in predicate position, in printed order.
+
+    ⛔ **FROZEN PACKET-2 BENCHMARK HISTORY — DO NOT "FIX" THIS FUNCTION.**
+
+    Captain ruled `CORRECT_BEFORE_OPEN_KEY` on 2026-08-16 (AQ4 contract §27a,
+    supersession register #23): the detector defect is corrected for
+    ground-truth work while the Packet-2 population and pairing stay exactly
+    as drawn. `aq4_population.action_family_of` is one of cohort 4's two
+    stratum coordinates AND one of the S-tranche pairing coordinates, and it
+    calls THIS function. Measured that day: re-running it with the corrected
+    boundary rules moves the coordinate on **7 of the 272** published open
+    exemplars, which would silently redraw the frozen 486-pair artifact.
+
+    So this boundary rule is deliberately incomplete and its incompleteness
+    is load-bearing. It reaches **307 of 782** open occurrences (39.3%), and
+    that number is a committed benchmark fact, not a target to improve.
+
+    **The corrected path is `semantic_action_heads` below.** New
+    ground-truth, answer-key and projection work uses that one. Never route
+    it back into Packet-2 regeneration, and never add a boolean mode to this
+    function to reach it -- a flag reads identically at both call sites,
+    which is exactly how a frozen artifact gets substituted by accident.
+    """
     out = []
     for m in _HEAD_RE.finditer(clause):
         if require_boundary and not _BOUNDARY_WORD.search(clause[:m.start()]):
             continue
         out.append(m.group(1).lower())
+    return out
+
+
+# ==========================================================================
+# CORRECTED SEMANTIC ACTION HEADS — AQ4 contract §27a, register #23
+# ==========================================================================
+# Two authorized structural classes, both CR-grounded, both independent of
+# which text view the caller supplies (that is a packet-4 decision, §27a).
+#
+# P1 CR 700.2 -- *"two or more options in a BULLETED LIST preceded by
+#    instructions for a player to choose a number of those options … each of
+#    those options is a MODE"*. The bullet is LIST PUNCTUATION, so the mode's
+#    instruction begins after it. It marks the OPTION, so only the bulleted
+#    clause itself opens an instruction -- a follow-on sentence inside the
+#    same mode is an ordinary sentence and is left to the boundary rule.
+#: NOTE on anchoring: every prefix below is applied with `.match(clause, pos)`,
+#: which already anchors the attempt at `pos`. A literal `^` must NOT appear in
+#: them -- Python's `^` matches only the real start of the string even when a
+#: pos is supplied, so an anchored pattern silently stops composing after the
+#: first step. That is exactly how the CR 601.2b cost inside
+#: `• <mode name> — {0} — Destroy …` was missed on the first draft.
+_MODE_BULLET = re.compile(r"\s*•\s*")
+
+# P2 -- a printed MARKER or COST precedes the instruction, which begins after
+#    the em-dash. Each form cites the rule that puts it there; this is the
+#    recorded "an em-dash prefix is one of six things and the CR decides
+#    which" trap, so the forms are enumerated rather than pattern-guessed.
+_P2_PREFIXES = (
+    (re.compile(r"\s*(?:\{P\}\s*)+—\s*"),                     "CR 700.2i"),
+    (re.compile(r"\s*[IVXL]+(?:\s*,\s*[IVXL]+)*\s*—\s*"),     "CR 714.2"),
+    (re.compile(r"\s*[+\-−]?\s*(?:\{[^}]+\}\s*)+—\s*"),       "CR 606.2/700.2h"),
+)
+# CR 207.2d -- a flavor word may sit between the marker and the instruction
+# ("I, II — Jecht Beam — …"). It carries no rules meaning, so it is stripped
+# THROUGH, exactly as `foundry_shape_extractor.ability_word_prefix` rules.
+_P2_FLAVOR = re.compile(r"\s*[\w'’\-.,!?& ]{3,40}?\s*—\s*")
+# CR 702.Na -- a keyword prefix is REFUSED. CR 702.6b writes `Equip [cost]`,
+# so the body after the dash is the keyword's own COST, not an effect:
+# "Equip—Sacrifice a creature" must NOT promote `sacrifice` to an effect head.
+_P2_KEYWORD = re.compile(r"\s*([A-Za-z][A-Za-z '’\-]*?)\s*—")
+
+
+def _cr702_keyword_names() -> set:
+    """CR 702 keyword names, parsed at run time and halt-guarded on CONTENT.
+
+    NOT `foundry_shape_extractor.CR_KEYWORD_NAMES`: that global is populated
+    lazily by `build_keyword_homes` and is None on a bare import, which would
+    turn the CR 702.Na refusal off SILENTLY -- the recorded "a derived map is
+    not the list it was derived from" trap, one door over. A count cannot see
+    a substitution, so the guard asserts named members.
+    """
+    import foundry_cr702_classes as k7
+    names = {kw["name"].lower() for num, kw in k7.load_702(k7.CR_PATH).items()
+             if kw["name"] and num != k7.PREAMBLE_RULE}
+    if not {"equip", "awaken", "ward"} <= names:
+        fc.halt(f"CR 702 keyword-name parse lost a keyword that prints an "
+                f"em-dash parameter; the CR 702.Na cost refusal would then "
+                f"promote a cost body to an effect head. got {len(names)}.")
+    return names
+
+
+_CR702_KEYWORD_NAMES = _cr702_keyword_names()
+
+
+def _instruction_offset(clause: str) -> int:
+    """Offset at which the semantic instruction begins, else 0.
+
+    The prefixes COMPOSE, and they have to: a printed mode line of the form
+    `• <mode name> — {0} — Destroy target tapped creature.` carries a
+    CR 700.2 bullet, then a CR 207.2d flavor word, then a CR 601.2b cost,
+    before the instruction. So this advances a cursor while any recognized
+    prefix still matches, rather than testing one form once.
+
+    CLAUDE.md's ratified line is what licenses the flavor step through the
+    bullet: *"The bullet is CR 700.2 list punctuation, so a mode name must be
+    stripped through it"* -- and `foundry_shape_extractor._DASH_PREFIX`
+    already encodes the same `(?:•\\s*)?` allowance.
+
+    A CR 702.Na keyword prefix HALTS the cursor and is never consumed, at any
+    depth: CR 702.6b writes `Equip [cost]`, so the body is the keyword's own
+    cost and nothing in it is an effect head.
+    """
+    pos = 0
+    m = _MODE_BULLET.match(clause)          # CR 700.2, at most once
+    if m:
+        pos = m.end()
+    for _ in range(4):                      # bounded; deepest printed form is 3
+        kw = _P2_KEYWORD.match(clause, pos)
+        if kw and kw.group(1).strip().lower() in _CR702_KEYWORD_NAMES:
+            break                           # CR 702.6b -- the body is a COST
+        for rx, _rule in _P2_PREFIXES:
+            m = rx.match(clause, pos)
+            if m:
+                pos = m.end()
+                break
+        else:
+            fm = _P2_FLAVOR.match(clause, pos)   # CR 207.2d
+            if not fm or re.search(r"[{}:•]", fm.group(0)):
+                break
+            pos = fm.end()
+    return pos
+
+
+def semantic_action_heads(clause: str) -> list:
+    """Effect heads in predicate position, with the §27a corrections applied.
+
+    The corrected counterpart of `effect_heads`. **Distinct public semantics,
+    deliberately a separate function and not a mode of the frozen one.**
+
+    Adds exactly two CR-grounded instruction boundaries to the legacy rule:
+
+      P1  a CR 700.2 mode bullet opening the clause;
+      P2  a CR 714.2 / 606.2 / 700.2h / 700.2i marker-or-cost prefix,
+          with a CR 702.Na keyword prefix refused (CR 702.6b: cost, not effect).
+
+    Everything the legacy rule already rejects stays rejected -- noun-position
+    `counter` (CR 122.1 marker), the keyword-name fragment in `double strike`
+    (CR 702.4), the zone noun in `from exile` (CR 400.1), participles such as
+    "destroyed this way", and trigger-condition mentions (CR 113.3c) -- because
+    this only ever ADDS boundary positions and never relaxes the boundary test.
+
+    Finite-verb-with-printed-subject recovery is DEFERRED and is not here: it
+    needs a subject-word list the CR does not enumerate, and a text-view ruling
+    that belongs to packet 4. Returns heads in printed order, multi-head
+    preserved, no card-specific branch anywhere.
+    """
+    out = []
+    start = _instruction_offset(clause)
+    for m in _HEAD_RE.finditer(clause):
+        ok = bool(_BOUNDARY_WORD.search(clause[:m.start()]))
+        if not ok and start and clause[start:m.start()].strip() == "":
+            ok = True
+        if ok:
+            out.append(m.group(1).lower())
     return out
 
 
@@ -1409,6 +1565,109 @@ def selftest() -> int:
             x["restricted"] for x in _participants_no_head(r["clause"])))
     check("NC-P3c-RIG dropping the head-restriction argument turns NC-P3c RED",
           rig_zero > 0, f"rigged disagreements={rig_zero}")
+
+    # -------------------------------- §27a corrected semantic action heads
+    # Every fixture below is a PRINTED FORM, never a card-specific branch:
+    # the implementation never sees a name or an oracle_id. Active Volcano
+    # appears only as a historical positive control and is written as its two
+    # printed mode lines, which any modal card of that shape reproduces.
+    print("\n§27a SEMANTIC ACTION HEADS (P1 mode bullet + P2 instruction prefix)")
+    S = semantic_action_heads
+
+    check("ACTION.MODE_BULLET_GENERIC a CR 700.2 bullet opens an instruction",
+          S("• Destroy target artifact.") == ["destroy"], S("• Destroy target artifact."))
+    check("ACTION.MODE_BULLET_GENERIC-RIG without the bullet rule it is unreachable",
+          effect_heads("• Destroy target artifact.", True) == [])
+
+    av = ["• Destroy target blue permanent.", "• Return target Island to its owner's hand."]
+    check("ACTION.ACTIVE_VOLCANO_GENERIC both printed modes recover generically",
+          [S(x) for x in av] == [["destroy"], ["return"]], [S(x) for x in av])
+    check("ACTION.ACTIVE_VOLCANO_GENERIC-RIG legacy path reaches neither",
+          all(effect_heads(x, True) == [] for x in av))
+
+    # A follow-on sentence inside a mode is an ordinary sentence: the bullet
+    # marks the OPTION, so only the bulleted clause opens an instruction, and
+    # the head must be ADJACENT to the prefix rather than merely after it.
+    follow = "It can't be regenerated."
+    check("ACTION.MODE_FOLLOWON a follow-on sentence is not a new bullet boundary",
+          S(follow) == [] and S("• " + follow) == [],
+          f"{S(follow)} / {S('• ' + follow)}")
+
+    def _rig_nonadjacent(clause):
+        """The same rule with ADJACENCY dropped: any head after the prefix."""
+        start = _instruction_offset(clause)
+        return [m.group(1).lower() for m in _HEAD_RE.finditer(clause)
+                if _BOUNDARY_WORD.search(clause[:m.start()])
+                or (start and m.start() >= start)]
+    check("ACTION.MODE_FOLLOWON-RIG dropping adjacency claims the follow-on head",
+          _rig_nonadjacent("• " + follow) == ["regenerate"]
+          and S("• " + follow) == [],
+          _rig_nonadjacent("• " + follow))
+    check("ACTION.MODE_FOLLOWON-RIG adjacency also protects a real bulleted mode",
+          _rig_nonadjacent("• You draw three cards.") == ["draw"]
+          and S("• You draw three cards.") == [])
+
+    check("ACTION.SAGA_PREFIX CR 714.2 chapter bar exposes the instruction",
+          S("III — Destroy all other permanents.") == ["destroy"])
+    check("ACTION.SAGA_PREFIX-RIG legacy path cannot reach it",
+          effect_heads("III — Destroy all other permanents.", True) == [])
+
+    check("ACTION.LOYALTY_PREFIX CR 606.2 loyalty cost exposes the instruction",
+          S("+ {1}{U} — Counter target spell.") == ["counter"])
+    check("ACTION.LOYALTY_PREFIX-RIG legacy path cannot reach it",
+          effect_heads("+ {1}{U} — Counter target spell.", True) == [])
+
+    check("ACTION.ADDITIONAL_COST_PREFIX CR 700.2h marker exposes the instruction",
+          S("+ {3}{W}{W} — Destroy all creatures.") == ["destroy"])
+    check("ACTION.ADDITIONAL_COST_PREFIX-RIG legacy path cannot reach it",
+          effect_heads("+ {3}{W}{W} — Destroy all creatures.", True) == [])
+
+    check("ACTION.PAWPRINT_PREFIX CR 700.2i pawprint exposes the instruction",
+          S("{P}{P} — Exile target nonland permanent.") == ["exile"])
+    check("ACTION.PAWPRINT_PREFIX-RIG legacy path cannot reach it",
+          effect_heads("{P}{P} — Exile target nonland permanent.", True) == [])
+
+    # CR 702.6b writes `Equip [cost]`, so the body is the keyword's own cost.
+    check("ACTION.KEYWORD_COST_REFUSED a CR 702.Na body is a cost, not an effect",
+          S("Equip—Sacrifice a creature.") == [], S("Equip—Sacrifice a creature."))
+    check("ACTION.KEYWORD_COST_REFUSED-RIG treating it as a flavor word promotes it",
+          _P2_FLAVOR.match("Equip—Sacrifice a creature.") is not None)
+
+    # CR 122.1 marker noun / CR 702.4 keyword fragment / CR 400.1 zone noun.
+    for label, txt in (("noun counter", "• Put a +1/+1 counter on each creature you control."),
+                       ("keyword fragment", "IV — Creatures you control gain double strike."),
+                       ("zone noun", "III — Put two cards from exile into their owners' graveyards.")):
+        check(f"ACTION.NOUN_COUNTER {label} stays rejected", S(txt) == [], f"{txt} -> {S(txt)}")
+    check("ACTION.NOUN_COUNTER-RIG dropping the boundary test admits all three",
+          effect_heads("• Put a +1/+1 counter on each creature you control.", False) != [])
+
+    check("ACTION.PARTICIPLE a nonfinite participle stays rejected",
+          S("• A creature destroyed this way can't be regenerated.") == [],
+          S("• A creature destroyed this way can't be regenerated."))
+    check("ACTION.PARTICIPLE-RIG guard-off would claim it",
+          effect_heads("A creature destroyed this way can't be regenerated.", False) != [])
+
+    mh = "• Destroy target creature, then create a Treasure token."
+    check("ACTION.MULTI_HEAD multiple heads preserved in printed order",
+          S(mh) == ["destroy", "create"], S(mh))
+    check("ACTION.MULTI_HEAD determinism x2", S(mh) == S(mh))
+
+    src = Path(__file__).read_text(encoding="utf-8")
+    seg = src[src.index("# CORRECTED SEMANTIC ACTION HEADS"):
+              src.index("def p3(")]
+    check("ACTION.NO_CARD_EXCEPTION no oracle_id/name branch in the implementation",
+          "oracle_id" not in seg and "Volcano" not in seg and "Cross-Slash" not in seg)
+
+    # The frozen path must be untouched by everything above.
+    frozen = [("destroy target nonland permanent", ["destroy"]),
+              ("• Destroy target artifact.", []),
+              ("III — Destroy all other permanents.", []),
+              ("destroy target creature with a +1/+1 counter on it", ["destroy"])]
+    check("ACTION.LEGACY_FROZEN effect_heads output unchanged by the correction",
+          all(effect_heads(t, True) == e for t, e in frozen),
+          [(t, effect_heads(t, True)) for t, e in frozen if effect_heads(t, True) != e])
+    check("ACTION.LEGACY_FROZEN-RIG the two paths genuinely differ",
+          any(effect_heads(t, True) != S(t) for t, _e in frozen))
 
     # ------------------------------------------------------- determinism
     print("\nDETERMINISM x2 (probe outputs, no timestamps)")
