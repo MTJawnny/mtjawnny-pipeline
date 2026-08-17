@@ -22,6 +22,9 @@ stops there.
 
 | file | role |
 |---|---|
+| `aq4_projection.py` | **packet 4** — the ownership-neutral evaluation projection: schema validation, canonicalization, the semantic-surface regenerator, and the projection/surface controls. Never a candidate encoder |
+| `evaluation-projection-schema.json` | **packet 4** — the versioned schema both candidates must later export into. The single machine-readable vocabulary source |
+| `open-surface-manifest.json` | **packet 4** — the durable pin of the 782/307/364 semantic-occurrence surface: full digests plus the generation law. No oracle_id, no member list, no card text |
 | `aq4_population.py` | the machinery: universe, per-card structural facts, cohort construction, the sampler, and the seven negative controls |
 | `sampling.json` | **the commitment** — cohort-4 seed, the per-stratum rule, the ordering law, the K constants. Changing a value here changes the pre-registered population |
 | `cohorts/cohort-N.json` | the OPEN cohort lists — `oracle_id` only (§7) |
@@ -514,6 +517,112 @@ never exceeds 4 and the cap removed nothing. A rig that cannot bite is
 indistinguishable from a rig that found nothing.
 
 ---
+
+## 8b. THE EVALUATION PROJECTION — frozen, packet 4
+
+Contract §23a and supersession-register entries #27–#30. **Benchmark evaluation
+law only**: no production architecture is ratified, no canonical ownership is
+decided, no production vocabulary is minted, and no candidate encoder exists.
+
+```
+python3 experiments/aq4_benchmark/aq4_projection.py --census
+python3 experiments/aq4_benchmark/aq4_projection.py --selftest
+python3 experiments/aq4_benchmark/aq4_projection.py --validate-surface
+```
+
+### The semantic-occurrence surface is a CHAIN, not a view
+
+The surface must **not** be called "reminder-stripped". The strip is one pass of
+six, and naming the surface after one pass is what let the recorded counts
+depend on a choice no document stated. The chain, by implementation name and in
+order, is pinned in `open-surface-manifest.json`:
+
+| # | implementation | role | CR |
+|--:|---|---|---|
+| 1 | `tier_engine.get_raw_faces` | all-faces raw oracle text | — |
+| 2 | `foundry_common.canonicalize_self_reference` | optional **normalized detector view** — never evidence | 201.5c |
+| 3 | `foundry_locality.units` | paragraph split + locality reconciliation; halts on a reflow | 113.2c |
+| 4 | `foundry_shape_extractor.strip_reminder` | reminder strip + its separator repair | 207.2a |
+| 5 | `foundry_shape_extractor.quoted_spans` | created-ability spans blanked | 113.2c |
+| 6 | `foundry_shape_extractor.sentence_spans` | **owns the clause ordinal** | 113.2c |
+
+**Reminder text** stays in the raw evidence view and stays trace-visible, but it
+mints no semantic occurrence and is **never independently claim-admissible** — a
+fact supported only from inside a reminder parenthetical HALTS. The **rejected**
+unstripped surface is recorded with its own digests rather than quoted:
+**872 / 360 / 417**.
+
+**The raw-vs-CARDNAME-canonical question is closed as VIEW-INVARIANT**, measured
+rather than argued: 782 / 307 / 364 on both views, identical occurrence
+addresses, identical reached sets, 0 head-value deltas on either detector path.
+**The deferred-P3 exposure is preserved, not closed** — 57 occurrences differ
+textually and 32 of them across 22 cards are unreached by P1+P2. Re-audit the
+text view before any future P3 adoption; P3 is not implemented and no
+proper-name heuristic is adopted.
+
+### COST is a structural marker, and it is positional
+
+A COST region is `role: COST` plus a deterministic evidence span, owned by one
+existing semantic occurrence, derived from CR-grounded boundaries: CR 113.3b /
+602.1a (everything before the colon), CR 606.2 (loyalty), CR 702.6b (a keyword's
+em-dash body is the keyword's own cost). Every guard is the ratified helper —
+`fx.in_created_ability`, `fx.in_card_name`, `fx.LOYALTY_COST`, the CR 702
+keyword-name set — never a re-implementation.
+
+**Positional, not verb-based**, which is the whole safety property:
+
+| printed text | COST region? |
+|---|---|
+| `{2}, {T}: Draw a card.` | yes — CR 113.3b/602.1a |
+| `+1: ~ deals 2 damage to any target.` | yes — CR 606.2 |
+| `Equip—Sacrifice a creature.` | yes — CR 702.6b |
+| `Counter target spell unless that player pays {2}.` | **no** — discusses payment |
+| `You may sacrifice a creature. If you do, …` | **no** — discusses sacrifice |
+| `Equipped creature has "{T}: Draw a card."` | **no** — colon inside a created ability |
+
+There is **no positive EFFECT token in v1** and no unknown-role value: material
+not proven to occupy a structural cost position stays unmarked. Cost carries no
+dimension, no atoms and no absence claim, so it cannot reach the ABSENT-PROVEN
+machinery at all. **Uncontracted cost content stays residue, and residue is not
+free** — where it differs between two units and v1 cannot prove equality, it
+blocks a strict PROVEN equality rather than being ignored.
+
+Measured over the frozen surface before the schema was written: **113** COST
+regions (84 / 27 / 2 by arm), **0** crossing a clause boundary, **0**
+paragraph- or face-crossing, **0** ambiguous, max span 58 characters. So a COST
+marker is a sub-clause region owned by one occurrence and **no fifth identity
+coordinate is required**.
+
+The bare keyword-parameter form ("Equip {3}") is **out of v1 scope and recorded
+as such** — deriving it needs keyword-parameter parsing this packet is forbidden
+to build.
+
+### Dispositions
+
+Five, no sixth. `HUMAN-RESOLVED` is **key/adjudication-side only** and carries
+its semantic payload transparently, with the adjudication method as artifact
+metadata rather than as a disposition value. `ABSENT-PROVEN` is
+**claimant-side only**. Key absence is `HUMAN-RESOLVED(absent)` where a
+candidate would claim `ABSENT-PROVEN`, and a candidate earns that only under the
+§18 obligations — the key never discharges them on its behalf.
+
+A per-row party field was proposed and is **rejected** (written in quotes, never
+in backticks, because a rejected term in backticks is ingested as ratified
+vocabulary). Artifact identity already says whose rows these are.
+
+### Controls
+
+`--selftest`, 44 assertions, every rig demonstrated red: native-vocabulary and
+candidate-branch rejection, participant-kind rejection, per-row-party rejection,
+key-only and claimant-only disposition sides, method-not-a-disposition,
+unknown-is-not-absent, action-head-not-a-dimension, multi-action order
+preservation, the six COST cases above, cost-not-a-dimension, cost-no-absence,
+same-span-same-role, trace required / trace corrupted / normalization-as-evidence
+/ reminder-only support, derived verdicts and E1 prose refused, canonical
+ordering determinism, and the surface digests regenerating from live machinery
+with two independent rigs.
+
+Deliberately **not** wired into Gate 2 or CI.
 
 ## 9. WHAT THIS PACKET DELIBERATELY DID NOT DECIDE
 

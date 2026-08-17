@@ -1,0 +1,229 @@
+{
+  "_law": "Both candidates export into THIS schema. Neither may receive a privileged field, and no field here names or favours a candidate architecture. Ownership of the underlying rows is the AQ4 decision itself and is NOT decided by this file (contract 23, models A-D stay open).",
+  "_what": "AQ4 ownership-neutral EVALUATION PROJECTION schema. Packet 4. This is benchmark evaluation law only: it creates no production law, ratifies no architecture, mints no production vocabulary, and authorizes no candidate encoder. Production AQ4 architecture remains UNRATIFIED.",
+  "action_heads": {
+    "_law": "An action/predicate head is NOT a dimension (contract 14, register 23). It says what the occurrence DOES; dimensions say what an object must BE. Keeping them apart is what stops a detector improvement arriving as a silent dimension ratification.",
+    "disposition_when_empty": "UNRESOLVED",
+    "multiple_heads": "REQUIRED to be representable; printed order is semantic and is NEVER sorted",
+    "vocabulary_source": "CR 701 keyword actions parsed at run time, plus the object-lattice printed action words; never a hand-list",
+    "detector_entry_point": "foundry_aq4_probes.semantic_action_heads",
+    "forbidden": [
+      "encoding an action head as a dimension row",
+      "fabricating a head where the detector reaches none"
+    ]
+  },
+  "artifact_roles": {
+    "_law": "Declared ONCE at document level. Artifact identity already establishes whose rows these are, so no per-row party field exists or may be added (P4-R2). Storing it per row would create a second source of truth.",
+    "values": [
+      "KEY",
+      "CANDIDATE_EXPORT"
+    ]
+  },
+  "atom_operators": [
+    {
+      "contract": "13",
+      "meaning": "v in values(object, dim)",
+      "op": "REQUIRES"
+    },
+    {
+      "contract": "13",
+      "meaning": "v not in values(object, dim) -- NOT_HAS, never HAS-complement",
+      "op": "FORBIDS"
+    },
+    {
+      "contract": "13",
+      "meaning": "|values(object, dim)| op n",
+      "op": "CARD"
+    },
+    {
+      "contract": "13 / 14 quantity, numeric",
+      "meaning": "{min,max} interval",
+      "op": "INTERVAL"
+    },
+    {
+      "contract": "14 equality-only rows",
+      "meaning": "verbatim equality on an equality-only dimension",
+      "op": "EQUALITY"
+    }
+  ],
+  "canonical_serialization": {
+    "encoding": "UTF-8",
+    "ensure_ascii": false,
+    "json_separators": [
+      ",",
+      ":"
+    ],
+    "newline": "LF, exactly one at end of file",
+    "sort_keys": true,
+    "surface_id_digest": {
+      "_why": "Chosen as the Packet-4 canonical form because it reproduces two already-accepted historical digests exactly. The delimiter is safe: an oracle_id is a hyphenated UUID and the other three coordinates are integers, so no coordinate can contain the delimiter.",
+      "algorithm": "SHA-256, streaming",
+      "id_format": "<oracle_id>:<face>:<paragraph>:<clause>",
+      "sort": "lexicographic over the id string, unique",
+      "unit": "each id encoded UTF-8 and followed by exactly one LF, fed in sorted order"
+    }
+  },
+  "derivation_classes": [
+    "EXTRACT-0",
+    "EXTRACT-1",
+    "EXTRACT-2",
+    "EXTRACT-3",
+    "EXTRACT-4",
+    "H1",
+    "H2",
+    "U"
+  ],
+  "dimensions": [
+    {"cr_anchor": "CR 205.2a", "closed": true, "multi": true, "must_have": true, "name": "card_type", "v1_status": "full"},
+    {"cr_anchor": "CR 205.3c/d", "closed": true, "context_guard": "kind/zone", "multi": true, "must_have": false, "name": "subtype", "v1_status": "full"},
+    {"cr_anchor": "CR 205.4a", "closed": true, "multi": true, "must_have": false, "name": "supertype", "v1_status": "full"},
+    {"cr_anchor": "CR 105", "closed": true, "multi": true, "must_have": false, "name": "color", "v1_status": "full"},
+    {"cr_anchor": "CR 400.1", "closed": true, "multi": false, "must_have": true, "name": "zone", "note": "'Outside the game' is NOT a zone (CR 400.11) and is never a value", "v1_status": "full"},
+    {"cr_anchor": "CR 109.1", "closed": false, "multi": false, "must_have": true, "name": "entity_kind", "note": "core {permanent, card, spell}; absence from the core is NOT proof", "v1_status": "core only"},
+    {"cr_anchor": "CR 102.1 / 109.1 / 115.4", "closed": false, "multi": false, "must_have": true, "name": "sort", "note": "'player' is a contracted value; mixed slots are unions, never a coordinate on the participant", "v1_status": "contracted"},
+    {"cr_anchor": "CR 108.3", "closed": true, "multi": false, "must_have": true, "name": "owner_relation", "v1_status": "full"},
+    {"cr_anchor": "CR 102.2 / 102.3", "closed": true, "context_guard": "kind + zone", "multi": false, "must_have": false, "name": "controller_relation", "note": "complement inference FORBIDDEN; the benchmark assumes no player count", "v1_status": "full"},
+    {"cr_anchor": "CR 109.2d", "closed": null, "multi": false, "must_have": null, "name": "self_identity", "v1_status": "full"},
+    {"cr_anchor": "CR 702", "closed": true, "context_guard": "kind", "multi": true, "must_have": false, "name": "keyword_ability", "v1_status": "full"},
+    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "tapped_untapped", "v1_status": "full"},
+    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "flipped_unflipped", "v1_status": "full"},
+    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "face_up_face_down", "v1_status": "full"},
+    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "phased_in_phased_out", "v1_status": "full"},
+    {"cr_anchor": "CR 115.1", "closed": false, "multi": false, "must_have": true, "name": "selection_mode", "note": "unhandled shapes are UNRESOLVED, never coerced", "v1_status": "conservative"},
+    {"cr_anchor": "CR 107.1", "closed": null, "multi": false, "must_have": false, "name": "quantity", "v1_status": "interval only"},
+    {"cr_anchor": "CR 107.1", "closed": null, "multi": false, "must_have": false, "name": "numeric", "v1_status": "interval only"},
+    {"cr_anchor": "CR 122.1", "closed": false, "context_guard": "permanent/player", "multi": true, "must_have": false, "name": "counter_kind", "v1_status": "equality-only"},
+    {"cr_anchor": "CR 506.3 / 508", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": false, "name": "combat_state", "v1_status": "equality-only"},
+    {"cr_anchor": "contract 17 v1", "closed": false, "multi": true, "must_have": false, "name": "condition", "v1_status": "equality-only"},
+    {"cr_anchor": "contract 17 v1", "closed": false, "multi": false, "must_have": false, "name": "timing_duration", "v1_status": "equality-only"}
+  ],
+  "dimensions_provenance": "Contract section 14 minimum-useful v1 sheet, Captain 2026-08-16, register 16. This file is the machine-readable copy the validator reads; section 14 remains the ratifying text and the validator asserts containment (schema is a SUBSET of section 14) rather than re-parsing the markdown table as its vocabulary source.",
+  "dispositions": {
+    "_law": "Exactly five. No sixth disposition is created by Packet 4 (P4-R2).",
+    "candidate_only": [
+      "ABSENT_PROVEN"
+    ],
+    "key_only": [
+      "HUMAN_RESOLVED"
+    ],
+    "values": [
+      "PRESENT",
+      "UNRESOLVED",
+      "AMBIGUOUS",
+      "HUMAN_RESOLVED",
+      "ABSENT_PROVEN"
+    ]
+  },
+  "evidence": {
+    "_law": "Normalization may ASSIST deterministic detection, but it never becomes evidence. Every surviving projected semantic fact carries a deterministic trace to admissible source evidence in the RAW view (contract 19, register 21).",
+    "categories": [
+      "ORACLE_TEXT",
+      "CANONICAL_CHARACTERISTIC",
+      "CR_DERIVED"
+    ],
+    "reminder_text_rule": "CR 207.2a reminder text remains present in the raw evidence view and stays trace-visible, but it mints no semantic occurrence and is NOT independently claim-admissible. A fact whose only support is a span lying wholly inside a reminder parenthetical HALTS.",
+    "view": "RAW_ORACLE"
+  },
+  "forbidden_fields": {
+    "_law": "Each entry is refused by the validator wherever it appears in a projection object, at any depth. Written as data, never as prose vocabulary.",
+    "values": [
+      "participant_kind",
+      "record_party",
+      "historic_event_flags",
+      "B1_verdict",
+      "B2_verdict",
+      "B3_verdict",
+      "B4_verdict",
+      "C1_verdict",
+      "DISCOVERY_1",
+      "E1_explanation",
+      "e1_prose",
+      "part_role",
+      "UNKNOWN_PART_ROLE"
+    ]
+  },
+  "forbidden_native_vocabulary": {
+    "_law": "Candidate-native ownership/storage concepts and candidate names may not appear as schema branches or field names. Rejected terms are listed as DATA here so no document has to spell them in a position a vocabulary harvester would ingest.",
+    "values": [
+      "occ_facet",
+      "occfacet",
+      "min_ir",
+      "minir",
+      "canonical_owner",
+      "owning_artifact",
+      "ownership_model",
+      "storage_model",
+      "nested_unit",
+      "typed_unit",
+      "ir_node",
+      "derived_axis_store"
+    ]
+  },
+  "occurrence_address": {
+    "_law": "Four coordinates, no fifth. The clause ordinal is owned by the ratified segmentation, never minted by a matching extractor. The [face, paragraph] prefix equals the ratified locality of the assertion a fact refines.",
+    "coordinates": [
+      "oracle_id",
+      "face",
+      "paragraph",
+      "clause"
+    ],
+    "types": {
+      "clause": "integer >= 0",
+      "face": "integer >= 0",
+      "oracle_id": "string",
+      "paragraph": "integer >= 0"
+    }
+  },
+  "ordering": {
+    "_law": "Canonicalization may reorder and normalize representation. It may NEVER invent or drop a semantic fact, and it may never reorder something whose order is semantic.",
+    "action_heads": "PRINTED ORDER PRESERVED -- never sorted",
+    "facts": "sorted by (scope, participant, dimension, canonical atom)",
+    "occurrences": "sorted by (oracle_id, face, paragraph, clause)",
+    "relations": "sorted by canonical form",
+    "structural_regions": "sorted by (role, span.start, span.end)"
+  },
+  "participants": {
+    "_law": "A bare integer ordinal local to the occurrence. There is NO participant kind/type coordinate: a single printed slot may range over players AND objects at once (CR 115.4 / CR 115.1), measured on 1,528 cards. The filler's sort is a constraint atom over the 'sort' dimension, never a coordinate on the participant.",
+    "representation": "sorted list of non-negative integers; facts reference an ordinal",
+    "type": "integer >= 0"
+  },
+  "provenance_classes": [
+    "human",
+    "rule-derived",
+    "llm"
+  ],
+  "schema": "aq4-evaluation-projection",
+  "status": "PRE-REGISTERED benchmark evaluation law. Production AQ4 architecture remains UNRATIFIED; this schema decides no production canonical ownership and authorizes no candidate encoder.",
+  "relation_kinds": {
+    "_law": "Same-card references only. Edges name occurrences/participants, never game objects. An unresolvable reference stays UNRESOLVED and is never guessed. Runtime object binding is permanently out of scope.",
+    "values": [
+      "CR607_LINKAGE",
+      "COREFERENCE",
+      "CONDITIONALITY"
+    ]
+  },
+  "structural_regions": {
+    "_law": "P4-R1. COST is STRUCTURAL ability content, not an eligibility dimension. The marker is POSITIONAL and CR-grounded -- effect text that merely discusses paying or sacrificing is NOT a COST region. Material not proven to occupy a structural cost position stays unmarked.",
+    "cr_grounded_boundaries": [
+      "CR 113.3b / CR 602.1a -- activation cost is everything before the colon",
+      "CR 606.2 -- a loyalty symbol in the cost makes it a loyalty ability",
+      "CR 702.6b / 702.Na -- a keyword's em-dash body is the keyword's own COST, not an effect"
+    ],
+    "forbidden": [
+      "a positive EFFECT role as the complement of COST",
+      "an unknown-part-role value",
+      "a cost dimension in the dimension list",
+      "REQUIRES/FORBIDS/CARD atoms over cost",
+      "any absence claim over cost",
+      "cost payability semantics",
+      "cost comparison algebra",
+      "internal decomposition of a composite cost"
+    ],
+    "roles": [
+      "COST"
+    ],
+    "v1_composite_rule": "A composite activated cost (mana + tap + sacrifice) remains ONE COST region in v1.",
+    "v1_out_of_scope_reported": "The bare keyword-parameter form ('Equip {3}') is NOT derived in v1; deriving it needs keyword-parameter parsing of the kind this packet is forbidden to build. Recorded rather than silently omitted."
+  },
+  "version": "1.0.0"
+}

@@ -1,0 +1,144 @@
+{
+  "_law": "Counts are CONVENIENCE METADATA. The assertions are the full digests plus the deterministic generation law recorded here. A bare count is not a pin and a bare hash with no regenerator is not one either.",
+  "_what": "Durable pin of the AQ4 semantic-occurrence surface over the published open exemplars. Packet 4, P4-R3/P4-R4. Carries no oracle_id, no member list and no Oracle text.",
+  "corpus_ref": "2026-07-04",
+  "cost_span_probe": {
+    "_structural_note": "paragraph- and face-crossing are 0 BY CONSTRUCTION: a region is derived inside one paragraph, and a paragraph belongs to exactly one face. Reported so the zero is not read as a measurement that could have come out otherwise.",
+    "ambiguous_boundary_cases": 0,
+    "cost_regions_by_cr_arm": {
+      "CR 113.3b/602.1a": 84,
+      "CR 606.2": 27,
+      "CR 702.6b": 2
+    },
+    "cost_regions_total": 113,
+    "crossing_clause_boundary": 0,
+    "crossing_face_boundary": 0,
+    "crossing_paragraph_boundary": 0,
+    "max_cost_span_characters": 58,
+    "occurrences_carrying_cost": 113,
+    "paragraphs_inspected": 611,
+    "paragraphs_with_multiple_cost_regions": 0
+  },
+  "cr_edition": "MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+  "cr_sha256": "ca904dc900ce8e06c240960f937590df431aa2d97ec1569140cc910c56202d8b",
+  "detectors": {
+    "legacy_entry_point": "foundry_aq4_probes.effect_heads",
+    "semantic_class_scope": {
+      "P1_mode_bullet": "CR 700.2 -- ADOPTED",
+      "P2_instruction_prefix": "CR 714.2 / 606.2 / 700.2h / 700.2i -- ADOPTED; a CR 702.Na keyword prefix is REFUSED (CR 702.6b)",
+      "P3_finite_subject": "DEFERRED -- not implemented, and no proper-name heuristic is adopted"
+    },
+    "semantic_entry_point": "foundry_aq4_probes.semantic_action_heads"
+  },
+  "occurrence_id_format": "<oracle_id>:<face>:<paragraph>:<clause>",
+  "open_exemplars": 272,
+  "preprocessing_chain": [
+    {
+      "cr_anchor": null,
+      "impl": "tier_engine.get_raw_faces",
+      "role": "all-faces raw oracle text; the one shared face reader",
+      "step": 1
+    },
+    {
+      "cr_anchor": "CR 201.5c",
+      "impl": "foundry_common.canonicalize_self_reference",
+      "role": "optional NORMALIZED DETECTOR VIEW (CARDNAME -> self-reference); never evidence, and proven surface-invariant here",
+      "step": 2
+    },
+    {
+      "cr_anchor": "CR 113.2c",
+      "impl": "foundry_locality.units",
+      "role": "paragraph split and locality reconciliation; halts if canonicalization reflows a face's paragraph count",
+      "step": 3
+    },
+    {
+      "cr_anchor": "CR 207.2a",
+      "impl": "foundry_shape_extractor.strip_reminder",
+      "role": "reminder strip plus its separator repair (REMINDER.sub -> _SPACE_RUN -> _ORPHANED_SEPARATOR)",
+      "step": 4
+    },
+    {
+      "cr_anchor": "CR 113.2c / section 2 created-ability rule",
+      "impl": "foundry_shape_extractor.quoted_spans",
+      "role": "created-ability spans blanked so a granted ability's own punctuation cannot split the card's clause",
+      "step": 5
+    },
+    {
+      "cr_anchor": "CR 113.2c",
+      "impl": "foundry_shape_extractor.sentence_spans",
+      "role": "CLAUSE segmentation -- owns the clause ordinal; extractors resolve into it and never mint an ordinal",
+      "step": 6
+    }
+  ],
+  "raw_view_sets": {
+    "all": {
+      "count": 782,
+      "sha256": "48dd448ab672c2763b85bd43d90b840bb799e75ab7c3e93353b24fa349c04d50"
+    },
+    "legacy_reached": {
+      "count": 307,
+      "sha256": "6f03be37384eb70cbdaaf68e374be641edf4e0253dca7b09d5a5476a828cc008"
+    },
+    "semantic_reached": {
+      "count": 364,
+      "sha256": "76b80bbf331bd193181650b0c140aea52f0d82dbbf4c039331f35b4bd6605865"
+    }
+  },
+  "rejected_unstripped_surface": {
+    "_why_rejected": "CR 207.2a reminder text mints no semantic occurrence and is not independently claim-admissible, so a surface that segments it into occurrences is not the semantic surface.",
+    "all": {
+      "count": 872,
+      "sha256": "d454628bbf81d1d04120a56f7fd7a2f14948e3e92188d2c6c2d6d91e36611e39"
+    },
+    "legacy_reached": {
+      "count": 360,
+      "sha256": "437fc62804459f242e26f354462bf77135084dc768a0c5280cbfd4a767a37198"
+    },
+    "semantic_reached": {
+      "count": 417,
+      "sha256": "14752770b3960cce3878cf6730fef976e5c22d65f63d014414d27541cab1a576"
+    }
+  },
+  "schema": "aq4-open-surface-manifest",
+  "serialization": {
+    "_why_this_form": "It reproduces two already-accepted historical digests exactly, so adopting it makes the older evidence citable instead of orphaned.",
+    "algorithm": "SHA-256, streaming",
+    "delimiter": ":",
+    "encoding": "UTF-8",
+    "newline": "one LF after each id",
+    "sort": "lexicographic over the id string, unique"
+  },
+  "sets": {
+    "all": {
+      "count": 782,
+      "sha256": "48dd448ab672c2763b85bd43d90b840bb799e75ab7c3e93353b24fa349c04d50"
+    },
+    "legacy_reached": {
+      "count": 307,
+      "sha256": "6f03be37384eb70cbdaaf68e374be641edf4e0253dca7b09d5a5476a828cc008"
+    },
+    "semantic_reached": {
+      "count": 364,
+      "sha256": "76b80bbf331bd193181650b0c140aea52f0d82dbbf4c039331f35b4bd6605865"
+    }
+  },
+  "text_view_law": {
+    "current_result": "P1/P2 truth is VIEW-INVARIANT",
+    "deferred_p3_exposure": {
+      "cards_involved": 22,
+      "occurrences_textually_differing": 57,
+      "unreached_by_p1_p2": 32
+    },
+    "evidence_view": "RAW_ORACLE -- normalization never becomes evidence",
+    "raw_vs_canonical": {
+      "addresses_identical": true,
+      "head_value_deltas_legacy": 0,
+      "head_value_deltas_semantic": 0,
+      "legacy_sets_identical": true,
+      "semantic_sets_identical": true
+    },
+    "re_audit_trigger": "re-audit text-view behaviour before any future P3 finite-subject adoption",
+    "semantic_segmentation_view": "the ratified preprocessing chain above, in order; NOT to be named merely 'reminder-stripped' -- the strip is one pass of six and the chain is what reproduces the surface"
+  },
+  "version": "1.0.0"
+}

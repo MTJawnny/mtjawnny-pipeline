@@ -274,6 +274,21 @@ evidence?
 | 25 | open benchmark truth would be stored as one large per-question answer store | packet 3 framing | **RATIFIED `FACT_PROJECTION` — CAPTAIN 2026-08-16** | open truth is frozen as an **ownership-neutral normalized fact/projection substrate** (§23), with consumer answers DERIVED from it. **Packet 4's projection schema precedes completion of Packet 3's open-key freeze** (§32) | a per-question store duplicates one fact across every question that reads it and cannot be checked for self-consistency. **This is benchmark EVALUATION law and not a production canonical-ownership ruling** — §23's models A–D stay open, and §22's blind timing is unchanged. No candidate encoder is authorized by it | yes |
 | 26 | E1 was an open-ended explanation question with no stated domain, and §18's absence obligations read as key-side | §20 E1 / §18 | **RATIFIED — CAPTAIN 2026-08-16** | **E1's domain is the 354 unique unordered pairs of S0 ∪ S1 ∪ S2** — not multiplied by comparison-question count, and never over K-only control pairs — and E1 is evaluated as a **§19 trace/provenance property**, not one hand-authored prose answer per comparison-question instance. For ABSENT-PROVEN the key records the underlying semantic absence, while **§18 obligations 1–3 are discharged by the CLAIMING CANDIDATE at scoring time**; obligation 4 stays benchmark-law | an unstated domain silently makes E1 the largest scoring surface in the benchmark; and a key that claimed pre-encoder ABSENT-PROVEN would be claiming residue-honesty and negative-control adequacy on behalf of encoders that do not exist yet. The symmetric false-precision veto (§6.2) is preserved on both sides | yes |
 
+| 27 | cost had no representation: §14 contracts no cost dimension and §19's canonical predicate row is dim-keyed, while §20 ATTACH-3 pre-registers cost and §27a deferred "cost representation belongs to the projection work" | §14 / §19 / §20 / §27a | **RATIFIED — CAPTAIN 2026-08-17** | COST is a **derived STRUCTURAL MARKER**, never an eligibility dimension: a structural region carrying `role: COST`, owned by one existing semantic occurrence, with a deterministic evidence span, derived from CR-grounded structural boundaries (CR 113.3b/602.1a, CR 606.2, CR 702.6b). **No positive EFFECT token in v1**, no unknown-role value, no cost dimension, no atoms over cost, no absence claim over cost, no payability semantics, no cost comparison algebra, no decomposition of a composite cost. Unmarked material stays unmarked; uncontracted cost content stays residue and must BLOCK a strict PROVEN equality rather than be ignored (§23a) | ATTACH-3's cost arm was structurally unanswerable for both candidates, while a dimension would have unlocked §18.4 absence machinery nothing ratifies. Measured 2026-08-17 over the frozen 782-occurrence open surface: **113** derivable COST regions (84 CR 113.3b/602.1a · 27 CR 606.2 · 2 CR 702.6b), **0** crossing a clause boundary, **0** paragraph-crossing, **0** face-crossing, **0** ambiguous, max span 58 chars — so a COST marker is a sub-clause region owned by one occurrence and **no fifth identity coordinate is required** | yes |
+| 28 | HUMAN-RESOLVED meant, in effect, a Captain ruling | source (3) dispositions / §18 | **AMENDED — CAPTAIN 2026-08-17** | For AQ4 benchmark evaluation, `HUMAN-RESOLVED(x)` means *semantic content x resolved by human adjudication under the ratified AQ4 adjudication procedure*. The adjudication **method** (single · independent dual · deterministic sampled second · Captain ruling · disagreement-resolution status) is **metadata of the containing key/adjudication artifact, never a disposition value**. **Wrapper transparency:** the disposition carries payload `x`, so later comparison consumes `x` while the wrapper stays in provenance/audit. `HUMAN-RESOLVED` is **key/adjudication-side only** — a candidate export may never emit it — and `ABSENT-PROVEN` stays claimant-side, so key absence is `HUMAN-RESOLVED(absent)` against candidate `ABSENT-PROVEN`. **No sixth disposition.** A per-row party field was proposed and is **REJECTED** (§23a) | the Captain-only reading predates the ratified open-key adjudication protocol (register #24), which produces adjudicated truth through named adjudicators rather than through a Captain ruling per cell. Captain remains the final governance authority; what changed is who may *produce a key cell*, not who decides | yes |
+| 29 | the open semantic surface was described by a count and, informally, as "reminder-stripped" | §27a | **RATIFIED / CORRECTED — CAPTAIN 2026-08-17** | The surface is produced by a **named ratified preprocessing chain**, recorded in order in `experiments/aq4_benchmark/open-surface-manifest.json`: `tier_engine.get_raw_faces` → `foundry_common.canonicalize_self_reference` (optional normalized DETECTOR view) → `foundry_locality.units` (CR 113.2c paragraph split + locality reconciliation) → `foundry_shape_extractor.strip_reminder` (CR 207.2a) → `foundry_shape_extractor.quoted_spans` → `foundry_shape_extractor.sentence_spans` (owns the clause ordinal). **Reminder text** stays in the raw evidence view and stays trace-visible, but **mints no semantic occurrence and is never independently claim-admissible** — a fact supported only from reminder text HALTS. The **unstripped alternate surface is REJECTED and recorded**: 872 occurrences / 360 legacy / 417 semantic. **The raw-vs-CARDNAME-canonical item is CLOSED as view-invariant** — 782/307/364 on both views, identical occurrence addresses, identical reached sets, 0 head-value deltas — with the deferred-P3 exposure preserved at **57** textually differing occurrences, **32** unreached by P1+P2 across **22** cards | naming the surface after one of its six passes made the recorded counts depend on a view choice the contract never stated; the strip alone moves 872→782 and 360→307. P3 stays DEFERRED and no proper-name heuristic is adopted; the text-view behaviour must be **re-audited before any future P3 adoption** | yes |
+| 30 | benchmark surface facts were pinned by counts in prose, with per-class digests asserted but never committed | §27a | **RATIFIED — CAPTAIN 2026-08-17** | One durable manifest (`experiments/aq4_benchmark/open-surface-manifest.json`) and one deterministic validator (`experiments/aq4_benchmark/aq4_projection.py`). The manifest pins full SHA-256 digests plus the **generation law** — corpus ref, CR edition + hash, the preprocessing chain by implementation name, the canonical occurrence-id format, serialization, sort, encoding and delimiter — and carries **no oracle_id, no member list, no Oracle text, no hash prefix, no tolerance**. Counts are convenience metadata; the digests and the regenerator are the assertions. Deliberately **not** wired into Gate 2 or CI | a bare count is not a pin and a bare digest with no regenerator is not one either. §27a asserted per-class digests that existed nowhere in the repository, so the numbers lived only in a docstring — the carried-forward-count failure aimed at the benchmark's own evidence base | yes |
+
+**A note on labels, and it is load-bearing.** The Manager's packet-local ruling
+labels are deliberately **not reproduced anywhere under `docs/`**. Their
+letter-plus-digit tail is harvested by `foundry_ruling_registry.py`'s short-id
+grammar as a project ruling id, and the letter in question already names a
+**genuine existing repository ruling** — so spelling the label here would not
+merely mint a fake id, it would silently re-home a real one and corrupt the
+deletion gate's sole-home accounting. That is §1's recorded failure, arriving
+through a new door. The four Packet-4 rulings map to register **#27–#30 in
+order**, and those numbers are the citable form.
+
 Also historical, already banner-documented in the repo: FL-2's original
 recommendation (fold into AQ4) was **not** what was ratified — see
 `THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md` §8 banner and
@@ -524,6 +539,13 @@ no new dimension, and mints no vocabulary; its output is the CR 701 keyword
 action already parsed at run time. Keeping the two apart is what stops a
 detector improvement from arriving as a silent §14 ratification.
 
+**NEITHER IS A COST (register #27).** COST is **structural ability content** —
+a CR-grounded positional region (§23a), not an eligibility dimension and not a
+predicate. **There is deliberately no cost row in the table above, and none may
+be added by inference.** The consequence is the point: with no §14 contract over
+cost, §18.4 has nothing to key on, so **no absence claim about cost is available
+to either side** — structurally, rather than by a rule someone must remember.
+
 **Hardcoded-intuition warnings (each is a measured or CR-verified trap):**
 
 - Card **types are NOT mutually exclusive** (CR 300.2 — artifact
@@ -670,6 +692,26 @@ and a key asserting absence the card does not support is equally so.
 **Dispositions** (per occurrence × participant × dimension):
 `PRESENT(value) · ABSENT-PROVEN · UNRESOLVED · AMBIGUOUS ·
 HUMAN-RESOLVED`. Do not invent additional states.
+
+**`HUMAN-RESOLVED` FOR AQ4 EVALUATION (Captain, 2026-08-17 — register #28).**
+It means *semantic content x resolved by human adjudication under the ratified
+AQ4 adjudication procedure* — **not** "a Captain ruling", which is the older and
+now too narrow reading. The **method** (single · independent dual · deterministic
+sampled second · Captain ruling · disagreement-resolution status) is metadata of
+the containing key/adjudication artifact and **is never a disposition value**;
+encoding a method as a disposition is refused by the validator. **Captain remains
+the final governance authority** — what the amendment changes is who may
+*produce a key cell* under register #24's protocol, never who decides.
+
+**Wrapper transparency.** `HUMAN-RESOLVED(x)` carries `x`. Later comparison may
+consume the semantic payload while the wrapper stays in provenance/audit
+metadata.
+
+**Sides.** `HUMAN-RESOLVED` is **key/adjudication-side only**; a candidate
+export may never emit it. `ABSENT-PROVEN` is **claimant-side only**. So key
+absence is `HUMAN-RESOLVED(absent)` where a candidate would claim
+`ABSENT-PROVEN`, and **no sixth disposition is created**. Both directions are
+rigged-red controls in `aq4_projection.py`.
 
 **Consumer law (PRE-REGISTERED):** strict replacement relies only on
 PRESENT and ABSENT-PROVEN; UNRESOLVED on a consumer-critical dimension
@@ -967,6 +1009,70 @@ refresh behavior and canonical identity churn, mutation/ratification
 path, durability surface (P3/C6), projection/regeneration obligations,
 reversibility — tiers FIFTH and SIXTH.
 
+# 23a. THE FROZEN PACKET-4 PROJECTION (register #27–#30)
+
+**Artifacts.** `experiments/aq4_benchmark/evaluation-projection-schema.json`
+(schema `aq4-evaluation-projection`, version 1.0.0) ·
+`experiments/aq4_benchmark/open-surface-manifest.json` ·
+`experiments/aq4_benchmark/aq4_projection.py` (validator, canonicalizer and
+surface regenerator; **never** a candidate encoder, and it parses no Oracle
+text into semantic facts).
+
+**Benchmark evaluation law only.** It ratifies no production architecture,
+decides no canonical ownership (§23's models A–D stay open), mints no
+production vocabulary, authorizes no candidate encoder, and changes no §22
+blind timing.
+
+**Projected categories.** Occurrence address `[oracle_id, face, paragraph,
+clause]` (no fifth coordinate) · participants as **bare integers** · action
+heads (predicates, printed order preserved, multi-head required, no detected
+head represented as UNRESOLVED and never fabricated) · constraint facts over
+**ratified §14 dimensions only**, scoped to the occurrence or to a participant
+ordinal · quantity/numeric intervals · §16 relation edges (the three
+CR-groundable kinds, same-card only) · **COST structural regions** · evidence
+locators · the five §18 dispositions.
+
+**What the substrate must never contain**, each refused by a rigged-red
+control: a candidate-native ownership or storage concept; a participant kind
+coordinate; a per-row party field; an action head carrying a dimension; a
+structural region carrying a dimension, atom or disposition; a B1/B2/B3/B4/C1/
+DISCOVERY verdict; a hand-authored E1 explanation string; a fact with no
+evidence trace; normalization presented as evidence.
+
+**COST equality safety (register #27).** Uncontracted cost content remains
+residue, and residue is not free. **If relevant cost material differs between
+two semantic units and v1 has no contracted representation sufficient to prove
+equality, that residue BLOCKS a strict PROVEN equality** rather than being
+silently ignored; such cases stay `UNKNOWN`/`UNRESOLVED` for future B1/C1-style
+comparison. Cost is not a §14 dimension, so **no §14 contract exists over cost
+and neither side may make an absence claim about it** — that is structural
+rather than a rule to remember, because cost carries no dimension for §18.4 to
+key on.
+
+**The rejected alternative, recorded (register #28).** A per-row party field
+was proposed and is **REJECTED** — written in quotes, never in backticks, per
+the house rule that a rejected term in backticks is ingested as ratified
+vocabulary. Artifact identity already establishes whether rows belong to the
+frozen key or to a candidate export; storing it per row would be a second
+source of truth. The validator refuses the field by name.
+
+**Exporter contract (symmetric, and no exporter is written here).** Candidate A
+and Candidate B each export their native semantics into **this** schema at
+**this** version; neither receives a privileged field; a candidate's native
+answer and its exported projection must agree; the projection does not force
+either candidate to adopt the other's ownership model and decides no production
+ownership; exporter normalization may reorder and canonicalize representation
+but may **never** invent or drop a semantic fact, and every surviving fact keeps
+its evidence trace; **candidate exports may not emit `HUMAN-RESOLVED`**, and
+`ABSENT-PROVEN` stays claimant-side under §18's obligations; scoring later
+consumes the projection, never candidate internals; **exporter failure is a
+candidate failure, never permission to mutate the projection.**
+
+**HONESTY-2, recorded without implementing scoring.** A candidate's
+`ABSENT-PROVEN(dim, occurrence)` may match a key's `HUMAN-RESOLVED(absent)`
+**only if that candidate has satisfied the applicable §18 claimant-side
+obligations.** The key does not discharge them on the candidate's behalf.
+
 # 24. EXTRACTION TAXONOMY AND REPORTING — PRE-REGISTERED
 
 Every populated field/facet/edge carries exactly one class:
@@ -1146,13 +1252,22 @@ detector consumes.
 - **Finite-verb-with-printed-subject recovery is DEFERRED.** The audited
   predicate rests on a subject-word list the CR does not enumerate; that
   list is **not ratified** and must not be implemented.
-- **Which text view the corrected detector consumes is a PACKET 4
-  decision.** `ability_lines` does not canonicalize CARDNAME while
-  `det_scan_texts` does, and the two currently disagree about whether a
-  card-name subject is visible at all. P1 and P2 are unaffected by the
-  choice, which is why they could be authorized ahead of it.
-- **A CR 702 keyword's cost body contributing an effect head** is
-  unresolved; cost representation belongs to the projection work.
+- **✅ CLOSED 2026-08-17 (register #29) — the text-view choice is
+  VIEW-INVARIANT for P1+P2, measured rather than argued.** Over the frozen
+  open surface both views give **782** occurrences, **307** legacy and **364**
+  semantic, with **identical occurrence addresses**, **identical reached sets**
+  (full digests pinned in `open-surface-manifest.json`) and **0** head-value
+  deltas on either detector path. Normalization may therefore assist detection
+  while evidence stays raw. **The deferred-P3 exposure is preserved, not
+  closed:** **57** occurrences differ textually between the views and **32** of
+  them, across **22** cards, are unreached by P1+P2. **Re-audit text-view
+  behaviour before any future P3 finite-subject adoption.** P3 stays DEFERRED
+  and no proper-name heuristic is adopted.
+- **✅ CLOSED 2026-08-17 (register #27) — a CR 702 keyword's cost body.** It
+  contributes **no** effect head, and it is now positively represented instead
+  of merely refused: the body is a **COST structural region** (CR 702.6b),
+  carrying no dimension, no atom and no absence claim. The detector's existing
+  refusal is unchanged.
 
 **Classification is HIT-LEVEL, not occurrence-level, and this is ratified
 practice rather than an implementation detail (register #23).** A single
@@ -1341,7 +1456,23 @@ DO NOT infer that:
 - the characteristic-evidence boundary is ratified production law — it is
   an AQ4 candidate only (register #12; §19 warning);
 - meeting the ratified reopening trigger for child effects authorizes
-  implementing them — it authorizes *reconsideration* (§5).
+  implementing them — it authorizes *reconsideration* (§5);
+- the Packet-4 projection existing means production canonical ownership was
+  decided — §23's models A–D stay open and §23a is benchmark evaluation law
+  only;
+- COST being representable makes it a dimension, a predicate, or something
+  with payability or comparison semantics — it is a positional structural
+  region and nothing else (register #27);
+- an unmarked span is proven not to be a cost — unmarked means unmarked, and
+  no absence claim over cost exists on either side;
+- `HUMAN-RESOLVED` in a key cell means Captain ruled that cell — it means
+  adjudicated under register #24's procedure, with the method recorded as
+  metadata (register #28);
+- a candidate may emit `HUMAN-RESOLVED`, or a key may claim `ABSENT-PROVEN` —
+  neither is permitted, and both are rigged-red controls;
+- P1/P2 view-invariance settles the text view for P3 — it does not; the
+  exposure is measured and a re-audit is required before any P3 adoption
+  (register #29).
 
 # 35. CLAUDE.md ROUTING BLOCK — **INSTALLED 2026-08-15**
 
