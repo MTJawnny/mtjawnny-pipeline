@@ -1,0 +1,388 @@
+{
+  "_law": "This file is FROZEN BENCHMARK COMPARISON LAW. It describes which comparison operations exist, what each one may prove, and what forces UNKNOWN. It contains NO card answer, NO pair verdict, NO member list and NO candidate-specific data. Derived comparison results are external audit output and never become canonical projection facts (contract 17: store the smallest facts, derive relationships).",
+  "_what": "AQ4 shared candidate-neutral COMPARISON ALGEBRA. Packet 7. Benchmark evaluation law only: it creates no production law, ratifies no architecture, mints no production vocabulary, contracts no new dimension and authorizes no candidate encoder. Production AQ4 architecture remains UNRATIFIED.",
+  "schema": "aq4-comparison-algebra",
+  "version": "1.0.0",
+  "status": "PRE-REGISTERED benchmark evaluation law. Consumes the frozen Packet-4 evaluation projection and nothing else.",
+
+  "projection_dependency": {
+    "schema": "aq4-evaluation-projection",
+    "version": "1.0.0",
+    "_law": "The algebra consumes ONLY documents that validate under this exact schema at this exact version. It parses no Oracle text, reads no candidate-native field, and has no card-specific branch. A projection document that does not validate is REJECTED, never partially consumed."
+  },
+
+  "dependencies": {
+    "_why": "A universal verdict rests on CR-closed vocabularies and on the ratified subtype-to-type hierarchy; an existential verdict rests on the printed corpus. Both inputs move, so both are pinned. A CR refresh moved keyword names 193 -> 194 as recently as the last one.",
+    "corpus_ref": "2026-07-04",
+    "cr_edition": "MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+    "cr_sha256": "ca904dc900ce8e06c240960f937590df431aa2d97ec1569140cc910c56202d8b",
+    "hierarchy_source": "foundry_object_lattice.SUBTYPE_TO_TYPE -- the ratified EXTRACT-3 primitive, consumed and never re-derived",
+    "hierarchy_edges": 460,
+    "hierarchy_ambiguous_subtypes": 0,
+    "dimension_contract_source": "evaluation-projection-schema.json 'dimensions', which is itself asserted to be a subset of the ratified contract section 14 sheet"
+  },
+
+  "result_domain": {
+    "_law": "Exactly three. There is no fourth public comparison verdict, and no operation may return anything else. UNKNOWN is first-class and never means false, absent, incompatible, disjoint, or searched-and-not-found.",
+    "values": ["PROVEN", "PROVEN_NOT", "UNKNOWN"]
+  },
+
+  "proof_kinds": {
+    "_law": "Exactly two, and both are PROVENANCE on the derived relation (contract 19, register 17). A proof kind is never a verdict, never a canonical semantic fact, and nothing may branch on it except the audit trail. No third proof kind is created by Packet 7.",
+    "values": ["CR_CONTRACT", "CORPUS_WITNESS"],
+    "CR_CONTRACT": "Established from ratified contract law: a section 14 dimension contract, the section 13 atom semantics, a CR-closed vocabulary, or the ratified subtype-to-type hierarchy. The proof record names the dimension and the CR anchor.",
+    "CORPUS_WITNESS": "Established from one named printed card. The record MUST carry corpus_ref, the witness identity, the dimension/value assignments relied on, and an admissible evidence trace. It is a claim about the printed pool, so a later snapshot may change it."
+  },
+
+  "organizing_law": {
+    "_statement": "A UNIVERSAL claim is contract-provable; an EXISTENTIAL claim needs a corpus witness.",
+    "universal": "Every object satisfying X also satisfies Y. Provable from the dimension contracts, the atom semantics and the CR hierarchy -> proof_kind CR_CONTRACT.",
+    "existential": "There is an object satisfying X (and not Y). NOT provable from contracts, because non-contradiction is not nonempty intersection -- measured 2026-08-16, 54.8% of supertype x creature-subtype cells are empty while the CR forbids none. Requires a positive witness -> proof_kind CORPUS_WITNESS.",
+    "consequence": "Non-entailment, non-equality and overlap are existential and therefore need a witness. Entailment, equality and disjointness are universal and are contract-provable. This is why 'I could not prove equality' can never become PROVEN_NOT."
+  },
+
+  "closure_declaration": {
+    "_why": "Stated because leaving it unstated is how an open-world algebra quietly becomes a closed-world one.",
+    "statement": "A PROVEN verdict is a claim about the PROJECTED fact sets under comparison. It is NOT a claim that either projection is semantically complete.",
+    "missing_is_not_absent": "A dimension carrying no fact contributes no atom. It is never read as ABSENT, never yields an absence claim, and in the strict operations it is reported as a MISSING_FACT component that forces UNKNOWN.",
+    "who_polices_completeness": "The symmetric false-precision veto (contract 6.2), not the algebra. Every PROVEN verdict enumerates the exact facts it consumed, so an incomplete projection yields an auditable wrong verdict rather than a hidden one.",
+    "vacuity_guard": "Two units with no actionable facts at all do not compare equal. A vacuous proof is false precision and returns UNKNOWN."
+  },
+
+  "operations": [
+    {
+      "id": "OP_ENTAILS",
+      "name": "constraint-set entailment",
+      "contract_anchor": "17 per-dimension entailment; 13 atom semantics; 15 context guards",
+      "direction": "DIRECTIONAL",
+      "semantic_question": "Does every object satisfying the projected constraint set of A also satisfy the projected constraint set of B?",
+      "admissible_inputs": [
+        "projection facts with disposition PRESENT",
+        "projection facts with disposition HUMAN_RESOLVED, unwrapped to their semantic payload (KEY artifacts only)",
+        "projection facts with disposition ABSENT_PROVEN, only where the claimant-side obligations are represented as satisfied (CANDIDATE_EXPORT artifacts only)",
+        "the ratified subtype-to-type hierarchy",
+        "an optional DISTINGUISHING corpus witness for the negative arm"
+      ],
+      "result_domain": ["PROVEN", "PROVEN_NOT", "UNKNOWN"],
+      "proven_obligations": [
+        "every atom of the consequent is discharged by an atom of the antecedent under section 13 semantics, the dimension's section 14 contract, or a hierarchy edge",
+        "no participating scope is context-incompatible under section 15",
+        "no participating fact carries UNRESOLVED or AMBIGUOUS"
+      ],
+      "proven_not_obligations": [
+        "a CORPUS_WITNESS satisfying the antecedent and violating at least one atom of the consequent, with corpus_ref, witness identity, the relied-on assignments and an admissible evidence trace"
+      ],
+      "unknown_conditions": [
+        "any consequent atom not discharged and no distinguishing witness supplied",
+        "a consequent atom on a dimension the antecedent carries no fact for",
+        "an equality-only dimension asked for anything beyond verbatim equality",
+        "a value outside the dimension's closed vocabulary",
+        "entity-kind or zone incompatibility between the compared scopes",
+        "a disjunctive atom whose disjuncts are not uniformly decided"
+      ],
+      "allowed_proof_kinds": ["CR_CONTRACT", "CORPUS_WITNESS"]
+    },
+    {
+      "id": "OP_EQUALITY",
+      "name": "strict semantic equality of two occurrences",
+      "contract_anchor": "17 equality (mutual entailment); 23a cost residue; 18 disposition law; 20 B1",
+      "direction": "SYMMETRIC",
+      "semantic_question": "Are the two projected semantic units strictly equal -- mutually entailing on every comparable component, with no relevant uncontracted residue left unpriced?",
+      "admissible_inputs": [
+        "everything OP_ENTAILS admits, in both directions",
+        "action-head sequences, as a NECESSARY-CONDITION identity check only",
+        "structural COST regions, as a blocker only",
+        "relation edges, as a blocker only"
+      ],
+      "result_domain": ["PROVEN", "PROVEN_NOT", "UNKNOWN"],
+      "proven_obligations": [
+        "OP_ENTAILS is PROVEN in both directions",
+        "the participant ordinal sets are identical",
+        "every dimension carrying an actionable fact on one side carries one on the other",
+        "the action-head sequences are identical and both dispositions are PRESENT",
+        "neither side carries a structural COST region",
+        "neither side carries a relation edge",
+        "at least one actionable fact exists (no vacuous proof)"
+      ],
+      "proven_not_obligations": [
+        "OP_ENTAILS is PROVEN_NOT in at least one direction, which under this algebra means a CORPUS_WITNESS distinguishes the two"
+      ],
+      "unknown_conditions": [
+        "either entailment direction is UNKNOWN",
+        "an action head is missing, UNRESOLVED, or differs -- a missing head is never read as an equal action",
+        "either side carries a structural COST region: v1 has NO cost comparison algebra, so uncontracted cost residue BLOCKS the proof rather than being ignored (register 27)",
+        "either side carries a relation edge: section 17's closed table authorizes no relation comparison",
+        "any participating fact carries UNRESOLVED or AMBIGUOUS",
+        "a dimension is actionable on one side and missing on the other",
+        "the participant ordinal sets differ",
+        "both sides are empty of actionable facts"
+      ],
+      "allowed_proof_kinds": ["CR_CONTRACT", "CORPUS_WITNESS"]
+    },
+    {
+      "id": "OP_ELIGIBILITY_EQUALITY",
+      "name": "mutual entailment restricted to the projected constraint sets",
+      "contract_anchor": "17 equality; 20 B2 and B4 phrase their questions over ELIGIBILITY",
+      "direction": "SYMMETRIC",
+      "semantic_question": "Are the two projected constraint sets mutually entailing, leaving action heads, cost regions and relations out of scope?",
+      "admissible_inputs": ["everything OP_ENTAILS admits, in both directions"],
+      "result_domain": ["PROVEN", "PROVEN_NOT", "UNKNOWN"],
+      "proven_obligations": [
+        "OP_ENTAILS is PROVEN in both directions",
+        "the participant ordinal sets are identical",
+        "every dimension actionable on one side is actionable on the other",
+        "at least one actionable fact exists"
+      ],
+      "proven_not_obligations": ["OP_ENTAILS is PROVEN_NOT in at least one direction"],
+      "unknown_conditions": [
+        "either direction is UNKNOWN",
+        "a dimension is actionable on one side and missing on the other",
+        "the participant ordinal sets differ",
+        "both sides are empty of actionable facts"
+      ],
+      "allowed_proof_kinds": ["CR_CONTRACT", "CORPUS_WITNESS"],
+      "_why_separate_from_OP_EQUALITY": "Section 20 B1 asks about semantic equality of UNITS; B2 and B4 ask about ELIGIBILITY. Collapsing them would make every B4 answer UNKNOWN the moment either card printed an activation cost, which is a fact about B1's scope and not about B4's."
+    },
+    {
+      "id": "OP_INTERSECTION",
+      "name": "nonempty intersection of two projected constraint sets",
+      "contract_anchor": "17 overlap/disjointness as amended by register 17",
+      "direction": "SYMMETRIC",
+      "semantic_question": "Is there an object satisfying both projected constraint sets?",
+      "admissible_inputs": [
+        "the projected constraint sets of both units",
+        "an optional corpus witness offered with the comparison"
+      ],
+      "result_domain": ["PROVEN", "PROVEN_NOT", "UNKNOWN"],
+      "proven_obligations": [
+        "NONEMPTY_INTERSECTION_PROVEN: a CORPUS_WITNESS whose declared assignments satisfy EVERY atom of BOTH sides, carrying corpus_ref, witness identity and an admissible evidence trace"
+      ],
+      "proven_not_obligations": [
+        "EMPTY_INTERSECTION_PROVEN: a CR CONTRACT CONTRADICTION, being exactly one of -- REQUIRES(d,v) against FORBIDS(d,v) on the same dimension (section 13 atom semantics); two different REQUIRES values on a dimension that is closed AND single-valued AND must-have; CARD atoms with disjoint cardinality ranges on one dimension; INTERVAL atoms with disjoint ranges on one dimension"
+      ],
+      "unknown_conditions": [
+        "no witness offered -- absence of a witness is NOT disjointness",
+        "a witness was searched for and not found -- a null result from your own search is not a fact about the data",
+        "a witness offered but inadmissible: missing corpus_ref, missing evidence, or silent on a dimension some atom needs",
+        "a witness offered that violates an atom",
+        "the two sets are merely compatible -- compatibility is not overlap",
+        "no CR contract contradiction found -- non-contradiction is not disjointness",
+        "the compared scopes are context-incompatible under section 15"
+      ],
+      "allowed_proof_kinds": ["CR_CONTRACT", "CORPUS_WITNESS"],
+      "_one_proposition_two_poles": "OVERLAP and DISJOINT are the two poles of this single proposition, exposed as two named readers so they can never disagree. OVERLAP names the PROVEN pole (NONEMPTY_INTERSECTION_PROVEN); DISJOINT names the PROVEN_NOT pole (EMPTY_INTERSECTION_PROVEN). Modelling them as two independent operations is what would let a fourth state appear between them."
+    }
+  ],
+
+  "supporting_derivations": {
+    "_law": "These carry NO verdict of their own. They are the machinery the operations above are defined over, and they are listed so that the operation table is complete rather than merely short.",
+    "conjunction": "A unit's atoms are read conjunctively; this is the storage shape, not an operation (contract 13).",
+    "printed_unions": "A printed 'or' class is a small disjunction. An atom with a list value is entailed if ANY disjunct is entailed; a disjunctive antecedent discharges a consequent only if EVERY disjunct discharges it. Anything not uniformly decided is UNKNOWN (contract 13, DNF <= ~4 disjuncts).",
+    "hierarchy": "The ratified subtype-to-type edge only (CR 205.3, EXTRACT-3). REQUIRES(subtype, X) discharges REQUIRES(card_type, parent-of-X). No other hierarchy is asserted and none is invented.",
+    "single_valued_complement": "On a dimension that is closed AND single-valued AND must-have, REQUIRES(d,v) discharges FORBIDS(d,w) for every other value w. Applied ONLY to dimensions meeting all three properties.",
+    "cardinality": "CARD(d, op, n) compared as an integer range over |values(object, d)| (contract 13/17).",
+    "interval": "INTERVAL atoms compared as {min,max} ranges (contract 17 quantity comparison; CR 107.1).",
+    "context_guard": "Section 15. If both scopes carry a PRESENT entity_kind and the kinds differ, all cross-unit comparison for that scope is UNKNOWN -- cross-kind predicates are incomparable-by-kind (register 10). A hierarchy step and a contradiction claim are additionally refused across differing kinds.",
+    "participant_alignment": "Participants are bare integers local to the occurrence (contract 12). Alignment is BY ORDINAL and by nothing else. Differing ordinal sets force UNKNOWN rather than a best-effort pairing."
+  },
+
+  "forbidden_inferences": {
+    "_law": "Each of these looked reasonable and is measured or CR-verified as wrong. Every one is a rigged-red control.",
+    "controller_complement": "FORBIDS(controller_relation, you) NEVER entails REQUIRES(controller_relation, opponent), and never rewrites to it. CR 102.2 scopes the simple complement to two-player games and CR 102.3 makes teammates neither. The benchmark is Magic-general and assumes no player count. This dimension is additionally excluded from single_valued_complement by name.",
+    "owner_as_controller": "owner_relation and controller_relation are separate rows and never substitute. CR 108.3 gives every object an owner in every zone; a card in a graveyard has no controller at all.",
+    "complement_valued_storage": "A FORBIDS atom is NOT_HAS and is never rewritten as HAS-complement (register 7).",
+    "absence_from_a_core": "entity_kind is a non-exhaustive CORE. Absence from the core is not proof of anything.",
+    "corpus_absence_as_disjointness": "Corpus absence and unsuccessful search are inadmissible for disjointness, in every direction.",
+    "cost_comparison": "There is no cost equality, ordering, containment, overlap or disjointness in v1, and no absence claim over cost. COST is a structural region carrying no dimension, so section 18.4 has nothing to key on. Differing cost bytes NEVER yield PROVEN_NOT.",
+    "action_head_semantics": "Section 17's closed table authorizes NO action-head comparison. Head identity is used only as a necessary condition that can block a proof; it never produces a positive semantic verdict, and head difference never produces PROVEN_NOT.",
+    "relation_semantics": "Relation edges are consumed as blockers only. No transitive closure, no executable game semantics, and absence of an edge is never proof of no relation.",
+    "unknown_as_absent": "UNKNOWN and UNRESOLVED never become ABSENT, in any operation, at any depth."
+  },
+
+  "unknown_propagation": {
+    "_law": "Strong Kleene conjunction over components, with the false pole dominating. Stated as law so that no site is tempted to short-circuit differently.",
+    "rule": "PROVEN_NOT if any component is PROVEN_NOT; otherwise PROVEN if every component is PROVEN; otherwise UNKNOWN.",
+    "blockers": "A BLOCKER (uncontracted cost residue, a relation edge, a differing or missing action head, a non-actionable disposition, a missing counterpart fact, differing participant sets, vacuity) can only move a verdict toward UNKNOWN. A blocker never produces PROVEN and never produces PROVEN_NOT.",
+    "reason_classes": [
+      "NO_CONTRACTED_COMPARISON_LAW",
+      "UNCONTRACTED_COST_RESIDUE",
+      "ACTION_HEAD_NOT_COMPARABLE",
+      "NO_CORPUS_WITNESS",
+      "WITNESS_INADMISSIBLE",
+      "WITNESS_DOES_NOT_SATISFY",
+      "NO_CR_CONTRADICTION",
+      "DIMENSION_EQUALITY_ONLY",
+      "OPEN_DIMENSION_VALUE",
+      "CONTEXT_INCOMPATIBLE",
+      "DISPOSITION_NOT_ACTIONABLE",
+      "ABSENCE_NOT_EARNED",
+      "ADJUDICATION_PAYLOAD_UNREADABLE",
+      "MISSING_FACT",
+      "PARTICIPANT_SET_DIFFERS",
+      "DISJUNCTION_NOT_UNIFORM",
+      "NO_COMPARABLE_CONTENT"
+    ],
+    "_reason_classes_are_audit_metadata": "A reason class explains an UNKNOWN in the proof record. It is not a verdict, not a fourth state, and nothing branches on it except the audit trail."
+  },
+
+  "proof_record": {
+    "_law": "Derived audit material, never canonical semantic truth. A proof record may never be written back into a projection document; the projection schema refuses derived verdict fields by name.",
+    "required_fields": [
+      "operation",
+      "direction",
+      "result",
+      "proof_kind",
+      "inputs",
+      "components",
+      "evidence",
+      "algebra",
+      "projection"
+    ],
+    "conditional_fields": {
+      "corpus_ref": "REQUIRED whenever proof_kind is CORPUS_WITNESS",
+      "unknown_reason": "REQUIRED whenever result is UNKNOWN",
+      "witness": "REQUIRED whenever proof_kind is CORPUS_WITNESS"
+    },
+    "component_fields": [
+      "kind",
+      "dimension",
+      "scope",
+      "result",
+      "proof_kind",
+      "cr_anchor",
+      "unknown_reason",
+      "atoms_a",
+      "atoms_b",
+      "evidence",
+      "provenance"
+    ],
+    "trace_obligation": "A PROVEN or PROVEN_NOT record MUST carry at least one evidence reference reachable from a consuming component, and a CORPUS_WITNESS record MUST additionally pin its corpus_ref. An UNKNOWN record MUST carry a registered reason class. Normalization is never evidence, and reminder text never independently supports a claim.",
+    "trace_enforcement": "SELF-CHECKED ON EVERY RECORD, not at the call sites. A discipline that has to be remembered once per caller is the 'reporter listed as a gate' failure one layer up.",
+    "candidate_identity": "A proof record carries occurrence addresses, dimensions and evidence locators. It never carries a candidate-native identifier, and the forbidden-vocabulary check from the projection schema is applied to the record itself.",
+    "ordering": "Components sorted by (kind, scope kind, participant, dimension, canonical atom). Symmetric operations canonically order their two operands before comparing, so the record is byte-identical under operand reversal."
+  },
+
+  "derived_question_layer": {
+    "_law": "Consumer answers are DERIVED OUTPUT. They are not canonical projection facts, they are not an answer key, and nothing here adjudicates any card. This block records what the algebra can and cannot mechanically produce, which is the deliverable -- not the answers themselves.",
+    "B1": {
+      "question": "semantically equal under normalization despite different wording",
+      "operations": ["OP_EQUALITY"],
+      "input_facts": ["constraint facts", "action heads", "structural COST regions", "relation edges", "participants", "dispositions"],
+      "output_shape": "one three-valued verdict plus the component table",
+      "derivable": "YES",
+      "unknown_when": "any OP_EQUALITY unknown condition; in practice any COST region or relation edge on either side"
+    },
+    "B2": {
+      "question": "broader / narrower / overlapping / disjoint / UNKNOWN, and which per-dimension verdicts produce it",
+      "operations": ["OP_ENTAILS", "OP_ELIGIBILITY_EQUALITY", "OP_INTERSECTION"],
+      "input_facts": ["constraint facts", "participants", "dispositions"],
+      "output_shape": "a derived RELATION LABEL plus both directional verdicts, the intersection verdict, and the per-dimension component table",
+      "relation_labels": {
+        "_law": "These are DERIVED ANSWER LABELS for one consumer question, not comparison verdicts. The verdicts stay three.",
+        "EQUAL": "both directions PROVEN",
+        "NARROWER": "A entails B PROVEN, B entails A not PROVEN -- A's set is proven contained; strictness is NOT claimed",
+        "BROADER": "B entails A PROVEN, A entails B not PROVEN -- likewise",
+        "DISJOINT": "intersection PROVEN_NOT",
+        "OVERLAPPING": "intersection PROVEN and neither containment PROVEN",
+        "UNKNOWN": "everything else"
+      },
+      "derivable": "YES"
+    },
+    "B3": {
+      "question": "actions equivalent while eligibility differs",
+      "operations": ["OP_ENTAILS", "OP_INTERSECTION"],
+      "input_facts": ["action heads", "constraint facts"],
+      "output_shape": "the eligibility relation record, plus a STRUCTURAL action-head identity report, plus an explicit action-equivalence verdict that is always UNKNOWN in v1",
+      "derivable": "PARTIAL",
+      "blocked_arm": "ACTION EQUIVALENCE. Section 17's closed table names no action-head comparison, and an action head is expressly not a section 14 dimension (register 23). The algebra therefore returns UNKNOWN with reason NO_CONTRACTED_COMPARISON_LAW rather than minting the operator. The structural head-identity report is offered as evidence for a future ruling and is NOT a semantic claim.",
+      "decision_required": "whether a positive action-head comparison is authorized, and if so on what proof"
+    },
+    "B4": {
+      "question": "eligibility equal while destination / timing / quantity differs",
+      "operations": ["OP_ELIGIBILITY_EQUALITY", "OP_ENTAILS", "OP_INTERSECTION"],
+      "input_facts": ["constraint facts", "participants", "dispositions"],
+      "output_shape": "the full per-dimension verdict table, plus a summary keyed by the declared reading below",
+      "declared_reading": {
+        "_status": "DECLARED READING, not ratified law. It maps section 20's own words onto section 14's own row names and is reversible without touching any verdict.",
+        "destination": ["zone"],
+        "timing": ["timing_duration"],
+        "quantity": ["quantity", "numeric"]
+      },
+      "derivable": "YES for the verdict table; the summary depends on the declared reading above"
+    },
+    "C1": {
+      "question": "what exact fact prevents B from strictly replacing A",
+      "operations": ["OP_ENTAILS", "OP_EQUALITY"],
+      "input_facts": ["everything OP_EQUALITY consumes"],
+      "output_shape": "an ordered BLOCKER LIST of (component kind, dimension, scope, verdict, reason class, both evidence rows), with the direction named explicitly",
+      "direction_law": "C1 is directional and the frozen pair storage is UNORDERED. The direction is an argument to the answer, derived from the unordered pair at answer time; the pair store is never changed and no directed pair is ever written.",
+      "derivable": "YES",
+      "explicit_non_claim": "An EMPTY blocker list means 'no blocking fact is derivable under v1 law'. It is NOT a proof that B can strictly replace A: no positive strict-replacement relation is contracted, and asserting one would be exactly the false precision the veto punishes."
+    },
+    "C2": {
+      "question": "is A's exile linked to a return (blink test)",
+      "operations": [],
+      "input_facts": ["relation edges of kind CR607_LINKAGE or COREFERENCE", "action heads"],
+      "output_shape": "a within-card structural read of the projection; no comparison operation is involved",
+      "derivable": "YES, structurally -- but only over what a projection actually exports. Absence of an edge is NOT proof of no linkage (register: an unresolvable reference stays UNRESOLVED)."
+    },
+    "C3": {
+      "question": "are two units alternatives, cumulative, or independent",
+      "operations": [],
+      "input_facts": ["the OWNING HEADER's modality"],
+      "output_shape": "n/a in v1",
+      "derivable": "NO",
+      "why_not": "Section 17 authorizes ChoiceGroup alternative-vs-cumulative DERIVED FROM THE OWNING HEADER under ratified locality amendment 4. The frozen Packet-4 projection carries the occurrence ADDRESS but exports no header modality, so the input the ratified derivation requires is not present. This is reported, not fixed: proposing a projection field is outside this packet."
+    },
+    "DISCOVERY-1": {
+      "question": "which broad facts remain shared despite narrower predicates, answerable from indexes alone",
+      "operations": ["OP_ENTAILS"],
+      "input_facts": ["constraint facts", "the ratified subtype-to-type hierarchy"],
+      "output_shape": "the set of atoms alpha such that both units' constraint sets entail alpha with result PROVEN, each carrying its proof; plus an INDEX_SHAPED flag reporting whether every shared atom is a single (dimension, value) pair",
+      "candidate_atom_pool": "both units' own atoms, plus their hierarchy ancestors. No atom is invented and no vocabulary is minted.",
+      "derivable": "YES"
+    },
+    "E1": {
+      "question": "why did these cards match, and which part of each card produced the comparison",
+      "operations": [],
+      "input_facts": ["a derived comparison record and the evidence it consumed"],
+      "output_shape": "a validated section 19 TRACE object; never prose",
+      "domain": "the 354 unique unordered pairs of the semantic tranches of the frozen pairing -- never multiplied by the number of comparison questions asked of a pair, and never over the semantics-free control tranche",
+      "instancing": "ONE trace per unordered pair, not one per question instance",
+      "derivable": "YES, as a trace/provenance property",
+      "explicit_non_goal": "No hand-authored explanation string is produced. A prose gold answer would be an unscoreable free-text surface and would smuggle native vocabulary into a key required to be architecture-neutral."
+    },
+    "HONESTY-1": {
+      "question": "which consumer-relevant dimensions are UNRESOLVED or AMBIGUOUS, and does that block a strict claim",
+      "operations": ["OP_EQUALITY"],
+      "output_shape": "the non-actionable component list from a strict record, with the blocked strict claim named",
+      "derivable": "YES"
+    },
+    "HONESTY-2": {
+      "question": "demonstrate ABSENT-PROVEN by the section 18 contract, not by omission",
+      "operations": ["OP_ENTAILS"],
+      "output_shape": "n/a here -- scoring-time property",
+      "derivable": "NO in this packet",
+      "why_not": "Obligations 1-3 are discharged by the CLAIMING CANDIDATE at scoring time and no candidate exists. The algebra implements the consequence only: an ABSENT_PROVEN fact whose claimant obligations are not represented as satisfied cannot act as proven absence and degrades to UNKNOWN with reason ABSENCE_NOT_EARNED."
+    }
+  },
+
+  "forbidden": {
+    "_law": "Each is refused by the implementation, and each refusal is a rigged-red control.",
+    "values": [
+      "a comparison operation not registered in the operation table above",
+      "a fourth public comparison verdict",
+      "a third proof kind",
+      "a new dimension, or any dimension outside the frozen projection schema",
+      "a new static relation kind",
+      "any cost comparison, cost dimension, or cost absence claim",
+      "a participant kind coordinate or a per-row party field",
+      "writing a derived verdict into a projection document",
+      "a hand-authored explanation string",
+      "a candidate-native identifier anywhere in a proof record",
+      "a card-specific branch",
+      "Oracle-text parsing",
+      "a tolerance constant, threshold, cap or weight anywhere in the algebra"
+    ]
+  }
+}

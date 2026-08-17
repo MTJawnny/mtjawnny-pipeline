@@ -624,6 +624,115 @@ with two independent rigs.
 
 Deliberately **not** wired into Gate 2 or CI.
 
+## 8c. THE SHARED COMPARISON ALGEBRA — frozen, packet 7
+
+Contract §17a and supersession-register entry #31. **Benchmark evaluation law
+only**: it implements §17 and register #17 as they already stand, and mints no
+operator, verdict, proof kind, dimension or relation kind.
+
+```
+python3 experiments/aq4_benchmark/aq4_compare.py --census
+python3 experiments/aq4_benchmark/aq4_compare.py --selftest
+python3 experiments/aq4_benchmark/aq4_compare.py --validate-pins
+```
+
+| file | role |
+|---|---|
+| `comparison-algebra.json` | the frozen law — operation table, result domain, proof-kind vocabulary, per-operation obligations, UNKNOWN propagation and reason classes, the derived-question audit, and the dependency pins. **No pair answer, no member list, no candidate data** |
+| `aq4_compare.py` | the shared comparator, its proof records and its controls. Shared evaluation machinery, **never a candidate** |
+
+### Universal versus existential — the one law the table hangs on
+
+> **A universal claim is contract-provable. An existential claim needs a corpus
+> witness.**
+
+Entailment, equality and disjointness are universal, so they are proved from
+the §14 contracts, the §13 atom semantics and the ratified subtype→type
+hierarchy (`CR_CONTRACT`). Non-entailment, non-equality and OVERLAP assert that
+some object *exists*, so only a named printed card proves them
+(`CORPUS_WITNESS`). That is register #17 generalized past overlap — and it is
+why *"I could not prove equality"* is `UNKNOWN` and never `PROVEN_NOT`.
+
+Four operations, and `compare()` refuses anything the frozen file does not
+register: `OP_ENTAILS` (directional), `OP_EQUALITY`,
+`OP_ELIGIBILITY_EQUALITY`, `OP_INTERSECTION`. **OVERLAP and DISJOINT are two
+readers of ONE proposition**, so they cannot disagree and nothing can appear
+between them.
+
+### Blockers block; they never disprove
+
+| present | consequence | never |
+|---|---|---|
+| a structural COST region on either side | strict equality cannot be PROVEN | PROVEN_NOT from differing cost bytes |
+| a differing or missing action head | strict equality cannot be PROVEN | a missing head read as an equal action |
+| a projected relation edge | strict equality cannot be PROVEN | a claim that no relation exists |
+| a dimension actionable on one side, missing on the other | UNKNOWN, reason `MISSING_FACT` | any absence claim |
+
+The cost case is demonstrated rather than asserted: a synthetic pair with
+identical constraint facts and identical heads, one side carrying a cost
+region, is `PROVEN` if the region is ignored and `UNKNOWN` under the real
+algebra. The control prints both.
+
+### What is derivable, and what is honestly not
+
+`B1` · `B2` · `B4` · `C1` · `C2` · `DISCOVERY-1` · `E1` · `HONESTY-1` derive
+mechanically. Two do not, and **neither gap was filled from intuition**:
+
+- **`B3` is PARTIAL.** Its eligibility arm derives in full; its
+  action-equivalence arm returns `UNKNOWN` with reason
+  `NO_CONTRACTED_COMPARISON_LAW`, because §17's closed table authorizes no
+  action-head comparison and a head is expressly not a §14 dimension. Head
+  identity is reported as a **structural** fact — evidence for a future ruling,
+  never a semantic claim.
+- **`C3` is NOT derivable.** §17's ChoiceGroup derivation reads the *owning
+  header's* modality; the frozen projection exports the occurrence address and
+  no header modality. Reported, not fixed — proposing a projection field is
+  outside this packet.
+- **`HONESTY-2`** is a scoring-time property of a claiming candidate, and no
+  candidate exists. The algebra implements only its consequence: an
+  `ABSENT_PROVEN` row whose claimant obligations are not represented as
+  satisfied degrades to `UNKNOWN`, reason `ABSENCE_NOT_EARNED`.
+
+`C1` is directional over the **frozen unordered pair** — the direction is an
+argument at answer time and no directed pair is ever stored. An empty blocker
+list means *"no blocking fact is derivable under v1 law"*, **not** that the
+replacement holds.
+
+`E1`'s domain is the **354** unique unordered pairs of the semantic tranches,
+one trace per pair, never multiplied by question count and never over
+`PAIR_K_CHAIN`. It emits a validated §19 trace and no prose.
+
+### Two declared readings, flagged rather than smuggled
+
+The projection schema fixes an atom's `op` but not the payload shape of a
+`CARD` or `INTERVAL` value, so the comparator declares one. And §20's `B4` says
+"destination / timing / quantity" while §14's rows are named `zone`,
+`timing_duration`, `quantity` and `numeric`, so the mapping is recorded as a
+reading. **Neither is ratified law, neither is load-bearing, and both sit
+beside the full per-dimension verdict table**, which does not depend on them.
+
+### Controls
+
+`--selftest`, 67 assertions, every rig demonstrated red: unregistered-operator
+refusal · inability-to-prove staying UNKNOWN with its closed-world
+counterfactual printed · a distinguishing witness being the *only* route to
+PROVEN_NOT · missing-is-not-absent · residue and cost blocking a proof that
+ignoring them would grant · action-head blocking · overlap without a witness ·
+witness inadmissibility and non-satisfaction · disjointness needing a
+contradiction · the forbidden controller complement beside the zone complement
+that *is* taken · the context guard · wrapper transparency with the
+adjudication metadata surviving into the trace · claimant-side absence
+obligations · derived verdicts refused by the projection · native identifiers
+refused in a proof record · proof-trace and reason-class discipline · symmetry
+as **byte-identity** under operand reversal · explicit direction · determinism
+×2.
+
+Deliberately **not** wired into Gate 2 or CI.
+
+**No verdict over any real card is produced here.** There is no answer key, no
+candidate export and no scoring. Every fixture is synthetic and every
+`oracle_id` in this module is a zero-padded placeholder.
+
 ## 9. WHAT THIS PACKET DELIBERATELY DID NOT DECIDE
 
 - **Whether `this way` is a fourth relation kind.** It is in cohort 2 because

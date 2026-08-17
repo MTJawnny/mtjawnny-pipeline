@@ -278,6 +278,7 @@ evidence?
 | 28 | HUMAN-RESOLVED meant, in effect, a Captain ruling | source (3) dispositions / §18 | **AMENDED — CAPTAIN 2026-08-17** | For AQ4 benchmark evaluation, `HUMAN-RESOLVED(x)` means *semantic content x resolved by human adjudication under the ratified AQ4 adjudication procedure*. The adjudication **method** (single · independent dual · deterministic sampled second · Captain ruling · disagreement-resolution status) is **metadata of the containing key/adjudication artifact, never a disposition value**. **Wrapper transparency:** the disposition carries payload `x`, so later comparison consumes `x` while the wrapper stays in provenance/audit. `HUMAN-RESOLVED` is **key/adjudication-side only** — a candidate export may never emit it — and `ABSENT-PROVEN` stays claimant-side, so key absence is `HUMAN-RESOLVED(absent)` against candidate `ABSENT-PROVEN`. **No sixth disposition.** A per-row party field was proposed and is **REJECTED** (§23a) | the Captain-only reading predates the ratified open-key adjudication protocol (register #24), which produces adjudicated truth through named adjudicators rather than through a Captain ruling per cell. Captain remains the final governance authority; what changed is who may *produce a key cell*, not who decides | yes |
 | 29 | the open semantic surface was described by a count and, informally, as "reminder-stripped" | §27a | **RATIFIED / CORRECTED — CAPTAIN 2026-08-17** | The surface is produced by a **named ratified preprocessing chain**, recorded in order in `experiments/aq4_benchmark/open-surface-manifest.json`: `tier_engine.get_raw_faces` → `foundry_common.canonicalize_self_reference` (optional normalized DETECTOR view) → `foundry_locality.units` (CR 113.2c paragraph split + locality reconciliation) → `foundry_shape_extractor.strip_reminder` (CR 207.2a) → `foundry_shape_extractor.quoted_spans` → `foundry_shape_extractor.sentence_spans` (owns the clause ordinal). **Reminder text** stays in the raw evidence view and stays trace-visible, but **mints no semantic occurrence and is never independently claim-admissible** — a fact supported only from reminder text HALTS. The **unstripped alternate surface is REJECTED and recorded**: 872 occurrences / 360 legacy / 417 semantic. **The raw-vs-CARDNAME-canonical item is CLOSED as view-invariant** — 782/307/364 on both views, identical occurrence addresses, identical reached sets, 0 head-value deltas — with the deferred-P3 exposure preserved at **57** textually differing occurrences, **32** unreached by P1+P2 across **22** cards | naming the surface after one of its six passes made the recorded counts depend on a view choice the contract never stated; the strip alone moves 872→782 and 360→307. P3 stays DEFERRED and no proper-name heuristic is adopted; the text-view behaviour must be **re-audited before any future P3 adoption** | yes |
 | 30 | benchmark surface facts were pinned by counts in prose, with per-class digests asserted but never committed | §27a | **RATIFIED — CAPTAIN 2026-08-17** | One durable manifest (`experiments/aq4_benchmark/open-surface-manifest.json`) and one deterministic validator (`experiments/aq4_benchmark/aq4_projection.py`). The manifest pins full SHA-256 digests plus the **generation law** — corpus ref, CR edition + hash, the preprocessing chain by implementation name, the canonical occurrence-id format, serialization, sort, encoding and delimiter — and carries **no oracle_id, no member list, no Oracle text, no hash prefix, no tolerance**. Counts are convenience metadata; the digests and the regenerator are the assertions. Deliberately **not** wired into Gate 2 or CI | a bare count is not a pin and a bare digest with no regenerator is not one either. §27a asserted per-class digests that existed nowhere in the repository, so the numbers lived only in a docstring — the carried-forward-count failure aimed at the benchmark's own evidence base | yes |
+| 31 | §17's comparison algebra was a one-sentence CANDIDATE list of operation names: no operation table, no per-operation proof obligations, no UNKNOWN-propagation law, no proof-record shape and no implementation — while every §20 cross-card question was already phrased over it | §17 / §20 / §23a | **FROZEN — PACKET 7. Implements existing law; ratifies none, and two items stay open** | §17a: four registered operations over the frozen Packet-4 projection, the three verdicts and the two proof kinds unchanged, organized by *universal ⇒ `CR_CONTRACT`, existential ⇒ `CORPUS_WITNESS`*; uncontracted material (cost, action heads, relations, missing counterparts) BLOCKS toward UNKNOWN and never disproves; derived answers stay derived output | a named list of operations is not an operation table, and a §20 question phrased over an unimplemented algebra cannot be answered or shown to be unanswerable. **NOTHING WAS MINTED TO COMPLETE IT:** B3's action-equivalence arm returns UNKNOWN because §17's table authorizes no action-head comparison, and C3 is not derivable because the frozen projection exports no owning-header modality. Both are named as open decisions rather than filled from intuition | yes |
 
 **A note on labels, and it is load-bearing.** The Manager's packet-local ruling
 labels are deliberately **not reproduced anywhere under `docs/`**. Their
@@ -644,6 +645,96 @@ This is the common case, not a corner. **No new verdict values are minted**
 - Deliberately absent: formula negation, quantifier reasoning, theorem
   proving, "for each" resolution, timing/duration/condition entailment
   beyond equality (v1), any operation without a named consumer question.
+
+# 17a. THE FROZEN SHARED COMPARISON ALGEBRA (register #31)
+
+**Artifacts.** `experiments/aq4_benchmark/comparison-algebra.json` (schema
+`aq4-comparison-algebra`, version 1.0.0) ·
+`experiments/aq4_benchmark/aq4_compare.py` (the shared comparator, its proof
+records and its controls). **Shared benchmark evaluation machinery, never a
+candidate.** It parses no Oracle text, reads no candidate-native field,
+branches on no candidate identity, adjudicates no truth, writes no answer key
+and scores nothing.
+
+**Benchmark evaluation law only.** It ratifies no production architecture,
+decides no canonical ownership, mints no production vocabulary, contracts no
+dimension, authorizes no candidate encoder and changes no §22 blind timing.
+**No new operator, verdict, proof kind, dimension or relation kind is created**
+— the frozen table implements §17 and register #17 exactly as they already
+stand.
+
+**THE ORGANIZING LAW, and it is what makes the whole table decidable:**
+
+> **A UNIVERSAL claim is contract-provable. An EXISTENTIAL claim needs a
+> corpus witness.**
+
+Entailment, equality and disjointness are universal, so they are proved from
+the §14 contracts, the §13 atom semantics and the ratified subtype→type
+hierarchy — `CR_CONTRACT`. Non-entailment, non-equality and OVERLAP assert that
+some object *exists*, so they are proved only by a named printed card —
+`CORPUS_WITNESS`. This is register #17 generalized past overlap, and it is why
+*"I could not prove equality"* can never become `PROVEN-NOT`.
+
+**Four operations, and the table is closed.** `OP_ENTAILS` (directional
+constraint-set entailment) · `OP_EQUALITY` (strict semantic equality of two
+occurrences) · `OP_ELIGIBILITY_EQUALITY` (mutual entailment of the constraint
+sets alone, because §20's B2 and B4 are phrased over *eligibility* while B1 is
+phrased over the unit) · `OP_INTERSECTION`. **OVERLAP and DISJOINT are two
+named readers of ONE proposition** — nonempty intersection — so they can never
+disagree and no state can appear between them. `compare()` refuses any
+operation the frozen file does not register.
+
+**BLOCKERS CAN ONLY MOVE A VERDICT TOWARD UNKNOWN.** Uncontracted material is
+not comparable, so it never proves and never disproves:
+
+| blocker | why | never |
+|---|---|---|
+| a structural COST region on either side | register #27 gives COST no comparison algebra | `PROVEN-NOT` from differing cost bytes |
+| a differing or missing action head | §17's table authorizes no action-head comparison; a head is not a §14 dimension (register #23) | a missing head read as an equal action |
+| a projected relation edge | §16 admits relations only where the contract authorizes it, and §17 does not | a claim that no relation exists |
+| a dimension actionable on one side and missing on the other | missing is never absent | an absence claim of any kind |
+| `UNRESOLVED` / `AMBIGUOUS`, unearned `ABSENT-PROVEN`, differing participant sets, vacuity | §18 | a strict claim |
+
+**Head identity is a NECESSARY CONDITION, never a positive claim.** Two units
+printing the same head sequence merely fail to block; the algebra emits no
+action-equivalence verdict, and §20's **B3 is therefore PARTIAL by law** — its
+eligibility arm derives in full and its action arm returns `UNKNOWN` with the
+reason class naming the missing law. **The operator was not minted to complete
+the table.**
+
+**Derived answers are DERIVED OUTPUT.** B1, B2, B4, C1, C2, DISCOVERY-1, E1 and
+HONESTY-1 derive mechanically; **C3 does not**, because §17's ChoiceGroup
+derivation reads the *owning header's* modality and the frozen projection
+exports the occurrence address without it. That is reported, not fixed — a
+projection field is not this layer's to propose. **C1 is directional over the
+frozen UNORDERED pair**: the direction is an argument at answer time, the pair
+store is untouched, and an empty blocker list means *"no blocking fact is
+derivable under v1 law"*, **never** that the replacement holds.
+
+**E1 is a trace property with a fixed domain** — the 354 unique unordered pairs
+of the semantic tranches, one trace per pair, never multiplied by question
+count, never over the semantics-free control tranche, and never prose.
+
+**Two DECLARED READINGS, flagged rather than smuggled**, each reversible
+without touching a verdict: the projection schema fixes an atom's operator but
+not the payload shape of a cardinality or interval value, and the comparator
+declares one; and §20's B4 says *"destination / timing / quantity"* while §14's
+rows are named for zones, durations and quantities, so the mapping between them
+is recorded as a reading beside the full per-dimension verdict table. **Neither
+is ratified law and neither is load-bearing.**
+
+**Controls.** `--selftest`, 67 assertions, every rig demonstrated red:
+unregistered-operator refusal, inability-to-prove staying UNKNOWN with its
+closed-world counterfactual shown, missing-is-not-absent, residue and cost
+blocking a proof that ignoring them would grant, action-head blocking,
+overlap-without-witness, witness inadmissibility and non-satisfaction,
+disjointness needing a contradiction, the forbidden controller complement
+beside the zone complement that *is* taken, context guarding, wrapper
+transparency with the adjudication metadata surviving, claimant-side absence
+obligations, derived verdicts refused by the projection, native identifiers
+refused in a proof record, proof-trace and reason-class discipline, symmetry as
+byte-identity under operand reversal, explicit direction, and determinism ×2.
+Deliberately **not** wired into Gate 2 or CI.
 
 # 18. UNCERTAINTY AND ABSENT-PROVEN — LOAD-BEARING
 
@@ -1415,6 +1506,15 @@ the sequencing note is recorded rather than the graph rewritten. Packet 3A
 **§22's blind timing is untouched**: the blind key is still adjudicated after
 candidate freeze, and packets 5–6 still require packet 3 as well as 4.
 
+**PACKET 7 SPLITS, AND ONLY ITS FIRST HALF IS DONE (register #31).** The row
+above bundles *"comparison algebra + scoring harness"*, and the two halves have
+different prerequisites: the **algebra** depends only on packet 4 and is frozen
+(§17a), while the **scoring harness** and the *"verdict tables on open
+cohorts"* need packet 3's open key and packets 5–6's encodings, none of which
+exist. **No verdict table over any real card was produced, and none could
+honestly be.** Do not read the row as satisfied; read §17a for what is frozen
+and its two named open items for what is not.
+
 # 33. CAPTAIN-CONTROLLED DECISIONS
 
 MUST remain Captain's: benchmark implementation authorization (packet 0
@@ -1472,7 +1572,19 @@ DO NOT infer that:
   neither is permitted, and both are rigged-red controls;
 - P1/P2 view-invariance settles the text view for P3 — it does not; the
   exposure is measured and a re-audit is required before any P3 adoption
-  (register #29).
+  (register #29);
+- a comparison verdict being derivable means it may be stored — §17 derives
+  and never stores, and the projection refuses a derived verdict by name;
+- UNKNOWN means the two units differ, or are incompatible, or that a search
+  was run and found nothing — it means none of those, ever;
+- identical action heads mean the actions are proven equivalent — head
+  identity is a necessary condition that can only BLOCK, and no action
+  comparison is authorized (§17a, register #31);
+- an empty blocker list on the strict-replacement question means the
+  replacement holds — no positive strict-replacement relation is contracted;
+- the algebra's PROVEN means either projection is semantically complete — it
+  is a claim about the projected fact sets, and completeness is the
+  false-precision veto's subject (§6.2), not the algebra's.
 
 # 35. CLAUDE.md ROUTING BLOCK — **INSTALLED 2026-08-15**
 
