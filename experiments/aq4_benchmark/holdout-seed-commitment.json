@@ -1,0 +1,81 @@
+{
+  "_law": "This file is a CRYPTOGRAPHIC PRECOMMITMENT ONLY. It contains no seed plaintext, and no seed plaintext may ever be added to it. The plaintext PRIMARY and RESERVE seeds are held externally by the Captain; no session that wrote or verified this file has ever held them. Changing either recorded hash after this commit is not an edit — it voids the commitment, because a commitment that can be revised is not a commitment.",
+  "_what": "AQ4 benchmark, packet 3A: the Cohort-5 blind-holdout seed precommitment required by docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md §22 steps 1-2. Exactly one PRIMARY commitment and exactly one RESERVE commitment. Cohort 5 remains UNGENERATED and UNREVEALED; no identity, count, membership or answer key exists.",
+  "cohort": 5,
+  "cohort_5_state": {
+    "answer_key": "NONE",
+    "generated": false,
+    "identities_materialized": false,
+    "measured_by": "aq4_population.py --census reports 'COHORT 5 — blind holdout  NOT DRAWN, NO SEED CHOSEN'; population-manifest.json cohort_5.status is 'NOT DRAWN IN PACKET 2'; cohorts/cohort-5.json does not exist",
+    "revealed": false,
+    "seed_plaintext_in_repository": false,
+    "why_this_file_does_not_change_it": "A hash of a seed is not a seed. Nothing in this directory can derive a draw from a SHA-256 digest, so recording the commitment leaves the holdout exactly as sealed as it was before."
+  },
+  "commitments": {
+    "algorithm": "SHA-256",
+    "committed_on": "2026-08-16",
+    "count_primary": 1,
+    "count_reserve": 1,
+    "primary_sha256": "a80771039d27b4f2b846548990933f8f273c8da76f0bd155d9214e1f29a65b42",
+    "reserve_sha256": "0e47048ca54d95aef07b0e5bbacb973a90251e145cb2b2c2e374fc25b2679846",
+    "supplied_by": "Captain, via the packet-3A task contract. The worker recorded the two digests verbatim and derived neither.",
+    "these_are_the_only_two": "No third commitment exists and none may be added. §22 step 2 permits ONE optional reserve; a second reserve would be a redraw path wearing a procedural name."
+  },
+  "contract": {
+    "document": "docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md",
+    "packet_map_row": "§32 packet 3 — holdout commitment (§22 steps 1-2)",
+    "sections": [
+      "§21 — cohort 5 is the blind holdout; uninspected until evaluation",
+      "§22 steps 1-2 — precommit the primary seed hash, and optionally ONE reserve hash at the same moment",
+      "§22 — the temporal firewall and the reserve-activation rule",
+      "§8 register #9 / #9b — results-based redraw is WITHDRAWN; post-scoring key failure never redraws"
+    ]
+  },
+  "custody": {
+    "held_by": "Captain, externally",
+    "may_the_worker_request_it": false,
+    "seed_material_received_by_this_session": "the two SHA-256 digests above, and nothing else",
+    "why_external": "A precommitment whose plaintext sits beside it in the same repository proves only that the file was written; the temporal firewall (§22) requires that the value be unknowable to the parties who freeze the extractors, and unavailable to the parties who write this record."
+  },
+  "not_authorized_by_this_file": [
+    "generating cohort 5",
+    "materializing any cohort-5 identity, count or membership",
+    "any answer key, open or blind",
+    "candidate encoders or candidate outputs",
+    "any change to sampling.json, population-manifest.json, pairs-open.json, aq4_pairing.py, aq4_population.py or any existing cohort file",
+    "any production, codebook, authority, baseline or Gate 2 change",
+    "packet 4, the holdout reveal, or Stage F"
+  ],
+  "packet": "3A",
+  "redraw_law": {
+    "performance_may_never_trigger_redraw": true,
+    "post_scoring_key_failure": "recorded permanently; voids the affected card SYMMETRICALLY for both candidates, never the holdout. If the defects are severe enough that the run is untrustworthy, the verdict is INSUFFICIENT EVIDENCE / BENCHMARK COMPROMISED and the run is preserved — there is no silent fresh attempt inside the same evidence packet (§22, register #9b).",
+    "statement": "A valid holdout is NEVER redrawn because candidate performance was unexpectedly poor. Poor performance is EVIDENCE, not grounds for a second draw (§22 core principle; register #9).",
+    "withdrawn_path": "The '>2x open error' redraw of AQ4 paper (3) §K is WITHDRAWN (register #9) and must not be revived."
+  },
+  "reserve_eligibility": {
+    "eligible_only_if": "the PRIMARY draw fails §22 steps 5-8 — seed-vs-commitment verification, sampling-procedure audit against the committed script, corpus-snapshot sha verification, or zero-development-leakage — and only BEFORE any candidate scoring begins.",
+    "history_is_permanent": "Every draw, including an invalidated one, stays in the record, labeled. A discarded draw is not deleted.",
+    "never_eligible_for": [
+      "any performance result, on either candidate",
+      "any result observed after scoring begins",
+      "an inconvenient but procedurally valid holdout",
+      "an answer-key defect discovered after scoring (see redraw_law)"
+    ],
+    "once_scoring_begins": "the reserve is dead. No procedural finding after that point reopens it."
+  },
+  "seed_representation": {
+    "bits": 256,
+    "canonical_text": "exactly 64 lowercase hexadecimal characters",
+    "hash_input": "the UTF-8 bytes of those 64 characters exactly; no trailing newline, no surrounding whitespace, no quotes, no length prefix",
+    "why_not_stored_in_sampling_json": "sampling.json is packet 2's commitment and its own text states the cohort-5 seed is not there and is not chosen; the packet-3A contract denies sampling.json changes. The commitment therefore lives in its own artifact, and this file records only the representation — never a value.",
+    "why_recorded_here": "Reveal verification must be unambiguous. A digest alone does not say what was digested, and 'the seed' has at least four plausible encodings (with newline, uppercase hex, raw 32 bytes, a quoted JSON string) that each produce a different SHA-256 — so an unrecorded representation turns a correct reveal into an apparent commitment mismatch, and an incorrect one into an argument."
+  },
+  "task": "AQ4.P3A.SEED-COMMITMENT",
+  "verification_at_reveal": {
+    "primary_check": "sha256(seed_utf8_bytes).hexdigest() == commitments.primary_sha256",
+    "procedure": "At §22 step 4 the Captain reveals the plaintext seed. Step 5 recomputes SHA-256 over the UTF-8 bytes of its 64 canonical characters and compares against the digest recorded above. A mismatch is a §22 step-5 procedural failure and routes to reserve_eligibility — it is never resolved by adjusting this file.",
+    "reserve_check": "sha256(seed_utf8_bytes).hexdigest() == commitments.reserve_sha256, evaluated only on the reserve path",
+    "this_file_is_the_reference": "The digests above are the commitment of record. If any later document disagrees with them, this file wins and the disagreement is itself a procedural finding."
+  }
+}

@@ -26,6 +26,7 @@ stops there.
 | `sampling.json` | **the commitment** — cohort-4 seed, the per-stratum rule, the ordering law, the K constants. Changing a value here changes the pre-registered population |
 | `cohorts/cohort-N.json` | the OPEN cohort lists — `oracle_id` only (§7) |
 | `population-manifest.json` | counts, hashes, stratum summary, both overlap matrices, trap-coverage map, measured-empty classes |
+| `holdout-seed-commitment.json` | **packet 3A, not packet 2** — the cohort-5 seed precommitment (§22 steps 1–2). Hash-only: one PRIMARY and one RESERVE SHA-256, the canonical seed representation, and the reserve/redraw law. **No seed plaintext, here or anywhere in this repository** |
 
 Everything regenerates from the committed script plus the corpus. Nothing here
 was typed by hand except the constants in `sampling.json`, and each of those
@@ -206,6 +207,16 @@ Packet 3 owns the holdout. Packet 2 contributes:
 
 **No seed is chosen. No identity is generated. No answer key exists.** There is
 no code path in this directory that produces a holdout list.
+
+**Custody note, added by packet 3A.** The two sentences above are packet 2's
+statement about packet 2, and they stay true of it. `holdout-seed-commitment.json`
+now records §22 steps 1–2: **the SHA-256 of the primary seed and of the single
+reserve seed, and nothing else.** The plaintext seeds are held externally by the
+Captain and are not in this repository — no session that wrote or verified that
+file has ever held them. **A hash of a seed is not a seed**, so cohort 5 stays
+UNGENERATED and UNREVEALED and the sentences above still describe the machinery
+here. `sampling.json` is deliberately unchanged; it says the cohort-5 seed is
+not there, and it still is not.
 
 ---
 
