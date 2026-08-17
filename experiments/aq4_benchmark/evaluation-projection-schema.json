@@ -385,17 +385,23 @@
       "E1_explanation",
       "UNKNOWN_PART_ROLE",
       "alternative_or_cumulative",
+      "argument_slot",
       "choice_verdict",
+      "cross_card_ordinal",
       "e1_prose",
       "exclusivity_verdict",
+      "global_participant_id",
       "historic_event_flags",
       "mode_id",
       "mode_identifier",
       "mode_index",
       "mode_ordinal",
       "part_role",
+      "participant_id",
       "participant_kind",
-      "record_party"
+      "participant_role",
+      "record_party",
+      "semantic_role"
     ]
   },
   "forbidden_native_vocabulary": {
@@ -436,13 +442,40 @@
     "choice_groups": "sorted by (owning_header address, then canonical form); members sorted by occurrence address",
     "facts": "sorted by (scope, participant, dimension, canonical atom)",
     "occurrences": "sorted by (oracle_id, face, paragraph, clause)",
+    "participants": "sorted by canonical anchor (span start, span end); ordinals assigned 0..n-1 in that order",
     "relations": "sorted by canonical form",
     "structural_regions": "sorted by (role, span.start, span.end)"
   },
   "participants": {
-    "_law": "A bare integer ordinal local to the occurrence. There is NO participant kind/type coordinate: a single printed slot may range over players AND objects at once (CR 115.4 / CR 115.1), measured on 1,528 cards. The filler's sort is a constraint atom over the 'sort' dimension, never a coordinate on the participant.",
-    "representation": "sorted list of non-negative integers; facts reference an ordinal",
-    "type": "integer >= 0"
+    "_law": "A participant is a bare integer ORDINAL local to its occurrence, plus ONE canonical anchor to admissible RAW_ORACLE evidence. There is NO participant kind, role, argument slot, global id or fifth occurrence coordinate: a single printed slot may range over players AND objects at once (CR 115.4 / CR 115.1), measured on 1,528 cards, so a typing coordinate has a 4.7% exception rate. The filler's sort is a constraint atom over the 'sort' dimension, never a coordinate on the participant.",
+    "_record_keys_are_exhaustive": "A participant record carries THESE TWO KEYS AND NOTHING ELSE. The closed key set is what refuses a role, an argument slot or a global id by construction rather than by a blacklist that a new spelling would slip past.",
+    "anchor": {
+      "_law": "Exactly one canonical anchor per participant, identifying the participant's mention locally inside its own occurrence. It is EVIDENCE, so normalization can never be one.",
+      "evidence_view": "RAW_ORACLE -- a normalized or canonical detector view is REFUSED as an anchor",
+      "must_locate": "the anchor's occurrence address must equal the containing occurrence's address",
+      "uniqueness": "two distinct participants of one occurrence may not share a canonical anchor. A COLLISION IS INVALID -- never an arbitrary tie-break, because a tie-break would silently decide an identity the evidence does not."
+    },
+    "canonical_numbering": {
+      "_law": "LOCAL SERIALIZATION LAW ONLY. It makes the same occurrence's participants align across independent exports. IT GIVES EQUAL ORDINALS NO CROSS-CARD SEMANTIC MEANING: participant 0 on one card and participant 0 on another are not an inference rule, ever.",
+      "exporter_order_has_no_authority": true,
+      "remapping": "every participant reference in facts and relations is remapped to the canonical ordinal, so a permuted export canonicalizes byte-identically",
+      "rule": "sort participants by canonical anchor (span start, then span end) and assign 0..n-1 in that order"
+    },
+    "cross_card_correspondence": "NOT PROJECTION CONTENT. It lives in the benchmark binding layer, is key-side instantiation metadata, is frozen before candidates exist, and is never a semantic comparison verdict.",
+    "forbidden": [
+      "a participant kind or type coordinate",
+      "a semantic role",
+      "an argument slot",
+      "a global or cross-document participant id",
+      "a cross-card ordinal",
+      "a fifth occurrence coordinate",
+      "any key outside the closed record key set"
+    ],
+    "ordinal": "integer >= 0; the intra-document reference that facts and relations use. The anchor makes it DETERMINISTIC; it does not replace it with a production identity.",
+    "record_keys": [
+      "ordinal",
+      "anchor"
+    ]
   },
   "provenance_classes": [
     "human",
@@ -482,5 +515,5 @@
     "v1_composite_rule": "A composite activated cost (mana + tap + sacrifice) remains ONE COST region in v1.",
     "v1_out_of_scope_reported": "The bare keyword-parameter form ('Equip {3}') is NOT derived in v1; deriving it needs keyword-parameter parsing of the kind this packet is forbidden to build. Recorded rather than silently omitted."
   },
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

@@ -100,7 +100,7 @@ ALGEBRA_PATH = HERE / "comparison-algebra.json"
 PAIRS_PATH = HERE / "pairs-open.json"
 
 ALGEBRA_NAME = "aq4-comparison-algebra"
-ALGEBRA_VERSION = "2.0.0"
+ALGEBRA_VERSION = "3.0.0"
 
 PROVEN, PROVEN_NOT, UNKNOWN = "PROVEN", "PROVEN_NOT", "UNKNOWN"
 CR_CONTRACT, CORPUS_WITNESS = "CR_CONTRACT", "CORPUS_WITNESS"
@@ -181,7 +181,7 @@ class Unit:
 
     @property
     def participants(self):
-        return tuple(sorted(set(self.occ.get("participants", []))))
+        return tuple(r["ordinal"] for r in self.occ.get("participants", []))
 
     @property
     def heads(self):
@@ -373,6 +373,25 @@ def _hierarchy_parents(subtype):
 # ENTAILMENT
 # ==========================================================================
 
+def counterpart_ordinal(corr, frm: "Unit", to: "Unit", ordinal):
+    """The corresponding participant on `to`, or None.
+
+    Resolution is by BOUND UNIT ADDRESS, so a correspondence supplied for one
+    pair can never be silently applied to another, and reversing the operands
+    inverts the mapping instead of reusing it. **Ordinal equality is never a
+    fallback and constraint similarity is never consulted** -- no mapping means
+    no comparison.
+    """
+    if not corr:
+        return None
+    a_u, b_u = corr.get("a_unit"), corr.get("b_unit")
+    if tuple(frm.addr) == a_u and tuple(to.addr) == b_u:
+        return corr.get("a_to_b", {}).get(ordinal)
+    if tuple(frm.addr) == b_u and tuple(to.addr) == a_u:
+        return corr.get("b_to_a", {}).get(ordinal)
+    return None
+
+
 def _entity_kinds(index, prefix):
     out = set()
     for v in index.get(prefix + ("entity_kind",), []):
@@ -381,9 +400,9 @@ def _entity_kinds(index, prefix):
     return out
 
 
-def _context_compatible(ia, ib, key):
-    prefix = (key[0], key[1])
-    ka, kb = _entity_kinds(ia, prefix), _entity_kinds(ib, prefix)
+def _context_compatible(ia, ib, key, a_key=None):
+    ka = _entity_kinds(ia, ((a_key or key)[0], (a_key or key)[1]))
+    kb = _entity_kinds(ib, (key[0], key[1]))
     return not (ka and kb and not (ka & kb))
 
 
@@ -493,21 +512,25 @@ def _prov(*views):
     return [v.provenance for v in views if v is not None and v.provenance]
 
 
-def entailment_components(a: Unit, b: Unit, ledger=None) -> list:
+def entailment_components(a: Unit, b: Unit, ledger=None, corr=None) -> list:
     ia, ib = fact_index(a, ledger), fact_index(b, ledger)
     comps = []
-    for key in sorted(set(ia) | set(ib),
+    for key in sorted(set(ib),
                       key=lambda k: (str(k[0]), str(k[1]), str(k[2]))):
-        # PARTICIPANT ORDINALS DO NOT CORRESPOND ACROSS OCCURRENCES. Aligning
-        # them would give the integers a meaning the contract withholds, so the
-        # comparison declines instead.
-        if key[0] == "PARTICIPANT":
-            comps.append(_component("ENTAILMENT", key, UNKNOWN,
-                                    reason="NO_PARTICIPANT_CORRESPONDENCE"))
-            continue
-        if key not in ib:
-            continue
         dim = key[2]
+        # PARTICIPANT ORDINALS DO NOT CORRESPOND ACROSS OCCURRENCES. They may
+        # be compared ONLY through a supplied frozen correspondence; with no
+        # mapping the comparison declines, because aligning by ordinal would
+        # give the integers a meaning the contract withholds.
+        a_key = key
+        if key[0] == "PARTICIPANT":
+            mate = counterpart_ordinal(corr, b, a, key[1])
+            if mate is None:
+                comps.append(_component(
+                    "ENTAILMENT", key, UNKNOWN,
+                    reason="NO_PARTICIPANT_CORRESPONDENCE"))
+                continue
+            a_key = (key[0], mate, key[2])
         for bv in ib[key]:
             if bv.status == "BLOCKED":
                 comps.append(_component("ENTAILMENT", key, UNKNOWN,
@@ -523,13 +546,13 @@ def entailment_components(a: Unit, b: Unit, ledger=None) -> list:
                     (DIMENSIONS.get(dim) or {}).get("cr_anchor"),
                     evidence=_ev(bv), provenance=_prov(bv)))
                 continue
-            if not _context_compatible(ia, ib, key):
+            if not _context_compatible(ia, ib, key, a_key):
                 comps.append(_component("ENTAILMENT", key, UNKNOWN,
                                         reason="CONTEXT_INCOMPATIBLE",
                                         atoms_b=bv.atom, evidence=_ev(bv)))
                 continue
             best = None
-            for av in ia.get(key, []):
+            for av in ia.get(a_key, []):
                 if av.status == "BLOCKED":
                     cand = (UNKNOWN, None, None, av.reason, av)
                 elif av.status == "ABSENT":
@@ -540,7 +563,7 @@ def entailment_components(a: Unit, b: Unit, ledger=None) -> list:
                 if best is None or (cand[0] == PROVEN and best[0] != PROVEN):
                     best = cand
             if best is None or best[0] != PROVEN:
-                hv = _hierarchy_discharges(ia, key, bv.atom, dim)
+                hv = _hierarchy_discharges(ia, a_key, bv.atom, dim)
                 if hv is not None:
                     best = (PROVEN, CR_CONTRACT,
                             "CR 205.3 subtype-to-type (ratified hierarchy)",
@@ -710,7 +733,7 @@ def _first_reason(comps):
     return None
 
 
-def _audit_preconditions(a: Unit, b: Unit) -> list:
+def _audit_preconditions(a: Unit, b: Unit, corr=None) -> list:
     """Structural observations, recorded so the trace stays legible.
 
     NONE of these is a proof and none influences a verdict. Cost, relations,
@@ -729,15 +752,20 @@ def _audit_preconditions(a: Unit, b: Unit) -> list:
                       "printed order; no action comparison is authorized"),
         _precondition("participant_ordinal_sets",
                       [list(a.participants), list(b.participants)],
-                      "occurrence-local integers; no cross-card correspondence "
-                      "is ratified, so this is never evidence"),
+                      "occurrence-local integers; equal ordinals are never "
+                      "evidence and never an inference rule"),
+        _precondition("participant_correspondence_supplied", bool(corr),
+                      "an explicitly supplied frozen mapping, or none. There "
+                      "is no global lookup, and the mapping itself proves no "
+                      "semantic relation"),
     ]
 
 
-def entails(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
+def entails(a: Unit, b: Unit, witness=None, ledger=None,
+            corr=None) -> dict:
     """OP_ENTAILS. DIRECTIONAL: does a's constraint set entail b's?"""
-    comps = entailment_components(a, b, ledger)
-    pre = _audit_preconditions(a, b)
+    comps = entailment_components(a, b, ledger, corr)
+    pre = _audit_preconditions(a, b, corr)
     result = kleene(comps) if comps else UNKNOWN
     proof_kind = CR_CONTRACT if result == PROVEN else None
     reason, extra = None, {}
@@ -774,9 +802,21 @@ def entails(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
                    proof_kind, reason, preconditions=pre, **extra)
 
 
-def _coverage_components(a: Unit, b: Unit, ledger=None) -> list:
+def _coverage_components(a: Unit, b: Unit, ledger=None, corr=None,
+                        _skip_participants=False) -> list:
     """A dimension actionable on one side and missing on the other is
-    MISSING_FACT, never ABSENT."""
+    MISSING_FACT, never ABSENT.
+
+    CORRESPONDENCE-AWARE, and it has to be. While all participant comparison
+    was universally refused, skipping participant scopes here was safe because
+    nothing could be proven through them anyway. The moment a correspondence
+    can be supplied that stops being true: an actionable restricted participant
+    that is UNBOUND on either side must prevent eligibility equality, and an
+    extra participant may never be silently ignored.
+
+    `_skip_participants` exists ONLY to rig that: it reproduces the old
+    skipping behaviour so the control can show it turning red.
+    """
     ia, ib = fact_index(a, ledger), fact_index(b, ledger)
     comps = []
     for key in sorted(set(ia) | set(ib),
@@ -788,6 +828,27 @@ def _coverage_components(a: Unit, b: Unit, ledger=None) -> list:
         if ha != hb:
             comps.append(_component("COVERAGE", key, UNKNOWN,
                                     reason="MISSING_FACT"))
+    if _skip_participants:
+        return comps
+    for side, (idx, unit, other_idx, other) in (
+            ("a", (ia, a, ib, b)), ("b", (ib, b, ia, a))):
+        for key in sorted(idx, key=lambda k: (str(k[0]), str(k[1]),
+                                              str(k[2]))):
+            if key[0] != "PARTICIPANT":
+                continue
+            if not any(v.status in ("ATOM", "ABSENT") for v in idx[key]):
+                continue
+            mate = counterpart_ordinal(corr, unit, other, key[1])
+            if mate is None:
+                comps.append(_component(
+                    "COVERAGE", key, UNKNOWN,
+                    reason="NO_PARTICIPANT_CORRESPONDENCE"))
+                continue
+            other_key = (key[0], mate, key[2])
+            if not any(v.status in ("ATOM", "ABSENT")
+                       for v in other_idx.get(other_key, [])):
+                comps.append(_component("COVERAGE", key, UNKNOWN,
+                                        reason="MISSING_FACT"))
     return comps
 
 
@@ -806,7 +867,8 @@ def _carried_witness(*records):
     return {}
 
 
-def eligibility_equality(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
+def eligibility_equality(a: Unit, b: Unit, witness=None, ledger=None,
+                         corr=None) -> dict:
     """OP_ELIGIBILITY_EQUALITY — the ONLY ratified positive equality operation.
 
     Named in full at every site. There is no bare whole-unit equality operation
@@ -814,8 +876,8 @@ def eligibility_equality(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
     reading creeps back in.
     """
     a, b = _order(a, b)
-    ab = entails(a, b, witness, ledger)
-    ba = entails(b, a, witness, ledger)
+    ab = entails(a, b, witness, ledger, corr)
+    ba = entails(b, a, witness, ledger, corr)
     comps = [
         # A COMPOSITION node, not a contract proof: it carries no proof kind,
         # because the sub-record it summarizes carries the proof and the
@@ -825,7 +887,7 @@ def eligibility_equality(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
         _component("DIRECTION_B_TO_A", None, ba["result"], None, None,
                    ba.get("unknown_reason")),
     ]
-    comps += _coverage_components(a, b, ledger)
+    comps += _coverage_components(a, b, ledger, corr)
     if not _actionable(a, b, ledger):
         comps.append(_component("VACUITY", None, UNKNOWN,
                                 reason="NO_COMPARABLE_CONTENT"))
@@ -836,7 +898,7 @@ def eligibility_equality(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
     return _record("OP_ELIGIBILITY_EQUALITY", "SYMMETRIC", a, b, result,
                    comps + ab["components"] + ba["components"], pk,
                    _first_reason(comps) if result == UNKNOWN else None,
-                   preconditions=_audit_preconditions(a, b),
+                   preconditions=_audit_preconditions(a, b, corr),
                    directions={"a_to_b": ab["result"], "b_to_a": ba["result"]},
                    **extra)
 
@@ -899,10 +961,11 @@ def _contradiction(x, y, dim, anchor):
     return None
 
 
-def intersection(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
+def intersection(a: Unit, b: Unit, witness=None, ledger=None,
+                 corr=None) -> dict:
     """OP_INTERSECTION. One proposition, two poles."""
     a, b = _order(a, b)
-    pre = _audit_preconditions(a, b)
+    pre = _audit_preconditions(a, b, corr)
     contras = _contradiction_components(a, b, ledger)
     if contras:
         return _record("OP_INTERSECTION", "SYMMETRIC", a, b, PROVEN_NOT,
@@ -935,16 +998,16 @@ def intersection(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
                    None, reason, preconditions=pre, **extra)
 
 
-def overlap(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
-    r = intersection(a, b, witness, ledger)
+def overlap(a: Unit, b: Unit, witness=None, ledger=None, corr=None) -> dict:
+    r = intersection(a, b, witness, ledger, corr)
     r["reads_pole"] = "NONEMPTY_INTERSECTION_PROVEN"
     return r
 
 
-def disjoint(a: Unit, b: Unit, ledger=None) -> dict:
+def disjoint(a: Unit, b: Unit, ledger=None, corr=None) -> dict:
     """Takes NO witness: a witness is inadmissible for disjointness, so the
     parameter does not exist rather than being ignored."""
-    r = intersection(a, b, None, ledger)
+    r = intersection(a, b, None, ledger, corr)
     r["reads_pole"] = "EMPTY_INTERSECTION_PROVEN"
     return r
 
@@ -1023,9 +1086,9 @@ def assert_not_a_projection_fact(doc: dict, rec: dict) -> None:
 # DERIVED CONSUMER LAYER — derived output, never a key
 # ==========================================================================
 
-def b1(a: Unit, b: Unit, witness=None, ledger=None) -> dict:
+def b1(a: Unit, b: Unit, witness=None, ledger=None, corr=None) -> dict:
     """B1 — PARTIAL IN v1. The positive pole cannot be reached."""
-    r = eligibility_equality(a, b, witness, ledger)
+    r = eligibility_equality(a, b, witness, ledger, corr)
     verdict = PROVEN_NOT if r["result"] == PROVEN_NOT else UNKNOWN
     return {
         "question": "B1", "verdict": verdict,
@@ -1047,7 +1110,8 @@ B2_LABELS = ("EQUAL", "BROADER", "NARROWER", "OVERLAPPING", "DISJOINT",
              "UNKNOWN")
 
 
-def b2(subject: Unit, counterpart: Unit, witness=None, ledger=None) -> dict:
+def b2(subject: Unit, counterpart: Unit, witness=None, ledger=None,
+       corr=None) -> dict:
     """B2 — is the SUBJECT's eligibility broader/narrower/... than the
     counterpart's?
 
@@ -1056,10 +1120,10 @@ def b2(subject: Unit, counterpart: Unit, witness=None, ledger=None) -> dict:
     subject admits at least everything the counterpart admits — which is
     entailment FROM the counterpart TO the subject.
     """
-    s_to_c = entails(subject, counterpart, witness, ledger)
-    c_to_s = entails(counterpart, subject, witness, ledger)
-    eq = eligibility_equality(subject, counterpart, witness, ledger)
-    inter = intersection(subject, counterpart, witness, ledger)
+    s_to_c = entails(subject, counterpart, witness, ledger, corr)
+    c_to_s = entails(counterpart, subject, witness, ledger, corr)
+    eq = eligibility_equality(subject, counterpart, witness, ledger, corr)
+    inter = intersection(subject, counterpart, witness, ledger, corr)
 
     if eq["result"] == PROVEN:
         label = "EQUAL"
@@ -1360,6 +1424,14 @@ OID_A = "00000000-0000-0000-0000-00000000000a"
 OID_B = "00000000-0000-0000-0000-00000000000b"
 
 
+def _part(ordinal, a, b, oid, clause=0):
+    return {"ordinal": ordinal,
+            "anchor": {"category": "ORACLE_TEXT", "view": "RAW_ORACLE",
+                       "occurrence": {"oracle_id": oid, "face": 0,
+                                      "paragraph": 0, "clause": clause},
+                       "span": {"start": a, "end": b}}}
+
+
 def _doc(oid, facts, role="CANDIDATE_EXPORT", heads=("destroy",), regions=(),
          relations=(), participants=(), clause=0, groups=None, occs=None):
     d = {"schema": pj.SCHEMA_NAME, "version": pj.SCHEMA_VERSION,
@@ -1367,7 +1439,8 @@ def _doc(oid, facts, role="CANDIDATE_EXPORT", heads=("destroy",), regions=(),
          "occurrences": occs or [{
              "occurrence": {"oracle_id": oid, "face": 0, "paragraph": 0,
                             "clause": clause},
-             "participants": list(participants),
+             "participants": [_part(i, 10 * i, 10 * i + 5, oid, clause)
+                              for i in participants],
              "action_heads": [
                  {"head": h, "cr_anchor": "CR 701",
                   "derivation_class": "EXTRACT-1",
@@ -1431,12 +1504,12 @@ def selftest() -> int:
     print("=" * 74)
 
     print("\nLAW / DEPENDENCY")
-    check(f"ALG.PROJECTION_2_REQUIRED the algebra pins projection "
+    check(f"ALG.PROJECTION_VERSION_PINNED the algebra pins projection "
           f"{pj.SCHEMA_VERSION} and refuses any other",
-          ALGEBRA["projection_dependency"]["version"] == "2.0.0"
+          ALGEBRA["projection_dependency"]["version"] == "3.0.0"
           == pj.SCHEMA_VERSION)
-    check("ALG.PROJECTION_2_REQUIRED-RIG a 1.0.0-shaped payload is refused by "
-          "the PROJECTION validator, not re-implemented here",
+    check("ALG.PROJECTION_VERSION_PINNED-RIG a stale payload shape is refused "
+          "by the PROJECTION validator, not re-implemented here",
           halts(_unit, _doc(OID_A, [_f("color", "CARD", 1, OID_A)])))
     check(f"ALG.NO_GENERIC_UNIT_EQUALITY no whole-unit equality operation is "
           f"registered ({sorted(OPERATIONS)})",
@@ -1592,7 +1665,8 @@ def selftest() -> int:
           "no verdict",
           {p["check"] for p in rec["preconditions"]} ==
           {"cost_regions_observed", "relation_edges_observed",
-           "action_head_sequences", "participant_ordinal_sets"}
+           "action_head_sequences", "participant_ordinal_sets",
+           "participant_correspondence_supplied"}
           and all(set(p) == {"check", "observed", "note"}
                   for p in rec["preconditions"]))
     check("ALG.NONBLOCKING_NOT_PROOF-RIG moving a blocking condition into a "
@@ -1634,6 +1708,90 @@ def selftest() -> int:
     check("ALG.PARTICIPANT_ORDINAL_NOT_CROSSCARD_EQUALITY-RIG the SAME atoms "
           "at occurrence scope DO prove it, so the refusal is the ordinal law",
           eligibility_equality(ua, ub)["result"] == PROVEN)
+
+    print("\nPARTICIPANT CORRESPONDENCE — SUPPLIED, NEVER INFERRED")
+    pa = _unit(_doc(OID_A, [_f("card_type", "REQUIRES", "creature", OID_A,
+                               scope={"kind": "PARTICIPANT",
+                                      "participant": 0})],
+                    participants=(0,)))
+    pb = _unit(_doc(OID_B, [_f("card_type", "REQUIRES", "creature", OID_B,
+                               scope={"kind": "PARTICIPANT",
+                                      "participant": 0})],
+                    participants=(0,)))
+    check("ALG.PARTICIPANT_NO_MAPPING_UNKNOWN without a supplied mapping the "
+          "comparison declines",
+          eligibility_equality(pa, pb)["result"] == UNKNOWN
+          and any(c["unknown_reason"] == "NO_PARTICIPANT_CORRESPONDENCE"
+                  for c in eligibility_equality(pa, pb)["components"]))
+    corr = _corr(pa, pb, {0: 0})
+    check("ALG.PARTICIPANT_CORRESPONDENCE_LIFT a supplied mapping makes the "
+          "same facts comparable",
+          eligibility_equality(pa, pb, corr=corr)["result"] == PROVEN,
+          eligibility_equality(pa, pb, corr=corr)["result"])
+    other_pair = dict(corr, a_unit=(OID_A, 9, 9, 9))
+    check("BIND.ORDINAL_NOT_CORRESPONDENCE a mapping frozen for ANOTHER pair "
+          "does not apply, and ordinal equality is no fallback",
+          eligibility_equality(pa, pb, corr=other_pair)["result"] == UNKNOWN)
+    swapped = _unit(_doc(OID_B, [
+        _f("card_type", "REQUIRES", "creature", OID_B,
+           scope={"kind": "PARTICIPANT", "participant": 1}),
+        _f("color", "REQUIRES", "blue", OID_B,
+           scope={"kind": "PARTICIPANT", "participant": 0})],
+        participants=(0, 1)))
+    pa2 = _unit(_doc(OID_A, [
+        _f("card_type", "REQUIRES", "creature", OID_A,
+           scope={"kind": "PARTICIPANT", "participant": 0}),
+        _f("color", "REQUIRES", "blue", OID_A,
+           scope={"kind": "PARTICIPANT", "participant": 1})],
+        participants=(0, 1)))
+    check("BIND.SWAPPED_ATTACHMENT_NOT_AUTOBOUND a swapped attachment is only "
+          "comparable through the mapping that states the swap",
+          eligibility_equality(pa2, swapped)["result"] == UNKNOWN
+          and eligibility_equality(pa2, swapped,
+                                   corr=_corr(pa2, swapped,
+                                              {0: 1, 1: 0}))["result"]
+          == PROVEN)
+    check("BIND.ORDINAL_NOT_CORRESPONDENCE-RIG the SAME pair under the "
+          "identity mapping is NOT proven, so ordinal equality really is not "
+          "the rule",
+          eligibility_equality(pa2, swapped,
+                               corr=_corr(pa2, swapped,
+                                          {0: 0, 1: 1}))["result"] != PROVEN)
+
+    print("\nCOVERAGE REPAIR — AN EXTRA UNBOUND PARTICIPANT BLOCKS")
+    extra = _unit(_doc(OID_B, [
+        _f("card_type", "REQUIRES", "creature", OID_B,
+           scope={"kind": "PARTICIPANT", "participant": 0}),
+        _f("color", "REQUIRES", "blue", OID_B,
+           scope={"kind": "PARTICIPANT", "participant": 1})],
+        participants=(0, 1)))
+    c_one = _corr(pa, extra, {0: 0})
+    r_extra = eligibility_equality(pa, extra, corr=c_one)
+    check("BIND.EXTRA_UNBOUND_BLOCKS_EQUALITY one mapped participant plus an "
+          "extra actionable UNBOUND one does not prove equality",
+          r_extra["result"] == UNKNOWN, r_extra["result"])
+    check("BIND.EXTRA_UNBOUND_BLOCKS_EQUALITY it is UNKNOWN, never PROVEN_NOT "
+          "-- an extra participant is not a proof of difference",
+          r_extra["result"] != PROVEN_NOT)
+    skipped = kleene(
+        [c for c in _coverage_components(pa, extra, None, c_one,
+                                         _skip_participants=True)]
+        + [_component("DIRECTION_A_TO_B", None, PROVEN),
+           _component("DIRECTION_B_TO_A", None, PROVEN)])
+    check("BIND.EXTRA_UNBOUND_BLOCKS_EQUALITY-RIG the OLD participant-skipping "
+          "coverage would have let it through",
+          skipped == PROVEN and r_extra["result"] == UNKNOWN, skipped)
+
+    print("\nB1 SAFETY UNDER COMPLETE CORRESPONDENCE")
+    r_b1 = b1(pa, pb, corr=corr)
+    check("BIND.COMPLETE_MAPPING_NOT_B1_PROOF a complete binding and complete "
+          "correspondence with mutually entailing eligibility is STILL not "
+          "whole-unit equality",
+          r_b1["verdict"] == UNKNOWN
+          and r_b1["positive_arm"] == "UNAVAILABLE_IN_V1", r_b1["verdict"])
+    check("BIND.COMPLETE_MAPPING_NOT_B1_PROOF-RIG the eligibility layer IS "
+          "proven on that same input, so the refusal is B1's law",
+          eligibility_equality(pa, pb, corr=corr)["result"] == PROVEN)
 
     print("\nB2 — SIX LABELS, STRICT")
     sub = _unit(_doc(OID_A, [_f("subtype", "REQUIRES", "goblin", OID_A)]))
@@ -1787,6 +1945,16 @@ def selftest() -> int:
     print("SELFTEST PASSED — every control fired on the path it guards, and "
           "every rigging turned its control red.")
     return 0
+
+
+def _corr(a: Unit, b: Unit, a_to_b: dict) -> dict:
+    """A synthetic correspondence context, shaped exactly as the binding
+    artifact's `correspondence_for` emits it."""
+    return {"a_unit": tuple(a.addr), "b_unit": tuple(b.addr),
+            "a_to_b": dict(a_to_b),
+            "b_to_a": {v: k for k, v in a_to_b.items()},
+            "unbound_a": [], "unbound_b": [],
+            "correspondence_state": "COMPLETE"}
 
 
 def _choice_group_projection(selection=None, same_option=False):

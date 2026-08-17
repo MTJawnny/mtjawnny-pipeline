@@ -1,0 +1,121 @@
+{
+  "_law": "FROZEN BENCHMARK BINDING LAW. One COMBINED artifact per semantic card pair: the bound unit pair, the AUTHORITATIVE participant enumeration for each bound unit, the cross-card participant correspondence, and the explicit unbound remainder. It is KEY-SIDE BENCHMARK INSTANTIATION METADATA -- architecture-neutral, candidate-independent, frozen before candidates exist, and NEVER a semantic comparison verdict.",
+  "_what": "AQ4 combined unit + participant binding schema. Benchmark evaluation law only: it creates no production law, ratifies no architecture, mints no production vocabulary and authorizes no candidate encoder. Production AQ4 architecture remains UNRATIFIED.",
+  "schema": "aq4-benchmark-binding",
+  "version": "1.0.0",
+  "status": "SCHEMA AND MACHINERY ONLY. No real binding is instantiated: the 354 semantic pairs are not bound, no unit is chosen, and no participant correspondence is adjudicated here.",
+
+  "why_one_artifact": {
+    "_law": "Participant correspondence is meaningless without the unit pair it is stated over. Two independently frozen artifacts would create a coherence invariant nobody enforces and a second drift surface.",
+    "consequence": "ONE canonical serialization and ONE artifact hash covering unit binding, participant enumeration and participant correspondence together."
+  },
+
+  "projection_dependency": {
+    "schema": "aq4-evaluation-projection",
+    "version": "3.0.0",
+    "_why": "the enumeration's ordinals and canonical anchors are the projection's own participant representation, so the binding is pinned to the version that defines it"
+  },
+
+  "record": {
+    "_law": "One record per semantic card pair. The card-side order is CANONICAL (ascending oracle_id), so a pair is never stored twice and a direction is never implied by storage.",
+    "fields": [
+      "pair",
+      "tranche",
+      "unit_binding",
+      "a_unit",
+      "b_unit",
+      "a_participants",
+      "b_participants",
+      "participant_bindings",
+      "unbound_a",
+      "unbound_b",
+      "correspondence_state",
+      "provenance"
+    ],
+    "pair": "the two oracle_ids in canonical ascending order",
+    "tranche": "the frozen semantic tranche the pair came from",
+    "unit_binding": {
+      "_law": "The administrative unit-binding law is already frozen and is NOT redesigned here.",
+      "state": ["BOUND", "NOT_APPLICABLE"],
+      "method": ["DETERMINISTIC", "HUMAN_ADJUDICATED"],
+      "not_applicable_law": "ADMINISTRATIVE ONLY -- never a semantic disposition, never a comparison verdict, never UNKNOWN or PROVEN-NOT. It records a card case with no valid semantic unit, and a reason is REQUIRED.",
+      "null_units": "a_unit and b_unit are null exactly when the state is NOT_APPLICABLE for that side"
+    },
+    "a_unit": "a four-coordinate occurrence address, or null when administratively not applicable",
+    "b_unit": "likewise"
+  },
+
+  "participant_enumeration": {
+    "_law": "AUTHORITATIVE for the future benchmark KEY on the bound unit. The key projection does NOT independently re-enumerate participants: its participant set, anchors and ordinals must MATCH this enumeration exactly, and the repetition there is a derived reference copy required by the projection interface, never a second source of truth.",
+    "entry_fields": ["ordinal", "anchor", "source", "adjudication"],
+    "ordinal": "integer, and the enumeration's ordinals must be exactly 0..n-1",
+    "anchor": "the canonical RAW_ORACLE anchor, unique within its occurrence, locating that occurrence",
+    "source": ["STRUCTURAL", "HUMAN_ADJUDICATED"],
+    "adjudication": "REQUIRED when the source is human; carries the method and status",
+    "human_additions": "A human addition or removal is BENCHMARK INSTANTIATION, not production parser law, and it does not broaden any structural probe.",
+    "high_risk": "multi-participant cases stay in the already-ratified high-risk class and use its independent dual adjudication",
+    "later_discovery_law": "If key fact adjudication later finds a participant missing from a frozen enumeration, do NOT silently renumber and do NOT silently edit the binding. It is a benchmark KEY DEFECT under the existing key-error law and is handled symmetrically there."
+  },
+
+  "participant_binding": {
+    "_law": "A PARTIAL ONE-TO-ONE (partial injective) mapping between the two bound units' participants. Each A participant maps to at most one B participant and each B participant to at most one A participant. NO one-to-many or many-to-one correspondence is ratified in v1; a measured case that genuinely needs one is a STOP and returns to Captain.",
+    "entry_fields": ["a_ordinal", "b_ordinal", "method", "basis", "evidence", "adjudication"],
+    "methods": {
+      "DETERMINISTIC_SINGLETON": "THE ONLY automatic mapping in v1. Precondition: the frozen enumeration of each side has EXACTLY ONE participant; then the unique A participant maps to the unique B participant.",
+      "HUMAN_ADJUDICATED": "everything else, where a correspondence is required and the singleton rule does not resolve it. Records both canonical anchors, the structural basis, the relevant evidence spans, a CR anchor only where genuinely relied upon, and the adjudication method and status."
+    },
+    "forbidden_automatic_matching": [
+      "equal ordinal",
+      "textual mention order across cards",
+      "similar restrictions",
+      "unique restricted participant",
+      "same dimension possession",
+      "best-matching eligibility",
+      "action-head similarity",
+      "arbitrary graph matching"
+    ],
+    "_why_forbidden": "each of those either introduces circularity -- deciding correspondence from the very facts the comparison is about -- or selection bias, or a hidden semantic-role ontology that v1 refuses.",
+    "no_alignment_shopping": "ONE frozen mapping is reused across every applicable question for that pair. Generating alternate mappings per question, or trying mappings until a desired verdict appears, is forbidden.",
+    "disagreement": "unresolved adjudicator disagreement stays explicit. A mapping is never forced."
+  },
+
+  "unbound": {
+    "_law": "EXPLICIT. Unmapped participants are listed, never inferred from omission.",
+    "unbound_a": "enumerated A ordinals carrying no mapping",
+    "unbound_b": "likewise",
+    "reconciliation": "the unbound lists must exactly equal the enumerated-but-unmapped ordinals on their side"
+  },
+
+  "correspondence_state": {
+    "_law": "ADMINISTRATIVE ONLY. These are not semantic dispositions, not PROVEN, not PROVEN-NOT, not UNKNOWN, and not absence claims. When a required correspondence is unavailable the SEMANTIC comparison remains UNKNOWN under its own existing reason class.",
+    "values": ["COMPLETE", "PARTIAL", "AMBIGUOUS"],
+    "COMPLETE": "no enumerated ordinal on either side is left unbound",
+    "PARTIAL": "some enumerated ordinal is unbound, and that is recorded rather than resolved",
+    "AMBIGUOUS": "adjudication did not settle the correspondence"
+  },
+
+  "candidate_fairness": {
+    "_law": "Candidate exporters never receive, inspect or alter this artifact.",
+    "rules": [
+      "the key binding and enumeration are frozen before either candidate is implemented",
+      "each candidate independently exports its own detected participants with canonical anchors, and projection canonicalization derives the local numbering from those anchors",
+      "scoring aligns same-occurrence candidate participants to key participants ONLY through that canonical local representation",
+      "a candidate that misses a key participant, invents an extra one, or uses an incompatible anchor degrades or refuses under existing law -- a candidate outcome, never permission to amend the key",
+      "candidate documents are validated against the projection schema, never against this artifact"
+    ]
+  },
+
+  "forbidden": {
+    "_law": "Each is refused by the validator.",
+    "values": [
+      "a semantic disposition or comparison verdict inside a binding record",
+      "a candidate-native field or candidate identity",
+      "a semantic role, argument slot, participant kind or global participant id",
+      "one-to-many or many-to-one participant correspondence",
+      "an inferred unbound state",
+      "an automatic mapping other than the singleton rule",
+      "a cross-product expansion of the pair population into participant pairs",
+      "an alternate mapping generated per question"
+    ]
+  }
+}

@@ -139,7 +139,7 @@ CONTRACT_PATH = REPO_ROOT / "docs" / \
     "AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
 
 SCHEMA_NAME = "aq4-evaluation-projection"
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "3.0.0"
 MANIFEST_NAME = "aq4-open-surface-manifest"
 MANIFEST_VERSION = "1.0.0"
 
@@ -207,6 +207,7 @@ FORBIDDEN_NATIVE = {f.lower() for f in
 ATOM_PAYLOADS = SCHEMA["atom_payloads"]
 CARD_COMPARISONS = set(ATOM_PAYLOADS["CARD"]["comparisons"])
 CHOICE_GROUPS = SCHEMA["choice_groups"]
+PARTICIPANT_KEYS = set(SCHEMA["participants"]["record_keys"])
 
 
 def assert_dimensions_subset_of_contract() -> list:
@@ -748,11 +749,43 @@ def validate(doc: dict) -> list:
             v.append(f"occurrence address carries a fifth coordinate: "
                      f"{sorted(set(addr) - {'oracle_id','face','paragraph','clause'})}")
 
-        parts = occ.get("participants", [])
-        if any(not isinstance(p, int) or p < 0 for p in parts):
-            v.append("participants must be non-negative bare integers")
+        parts, seen_anchor = [], {}
+        for rec in occ.get("participants", []):
+            if not isinstance(rec, dict):
+                v.append("a participant must be a record carrying its ordinal "
+                         "and its canonical anchor")
+                continue
+            extra = sorted(set(rec) - PARTICIPANT_KEYS)
+            if extra:
+                v.append(f"participant record carries unratified key(s) "
+                         f"{extra}; the key set is closed, which is what "
+                         f"refuses a role or an argument slot by construction")
+            o = rec.get("ordinal")
+            if isinstance(o, bool) or not isinstance(o, int) or o < 0:
+                v.append("a participant ordinal must be a non-negative bare "
+                         "integer")
+            else:
+                parts.append(o)
+            anch = rec.get("anchor")
+            if not anch:
+                v.append(f"participant {o!r} carries NO canonical anchor; "
+                         f"without one its ordinal is exporter list order, "
+                         f"which has no authority")
+                continue
+            v += _validate_evidence(anch, "participant anchor")
+            if (anch.get("occurrence") or {}) and \
+                    _addr_tuple(anch.get("occurrence")) != _addr_tuple(addr):
+                v.append("a participant anchor must locate its OWN occurrence")
+            sp = anch.get("span") or {}
+            k = (sp.get("start"), sp.get("end"))
+            if k in seen_anchor:
+                v.append(f"participants {seen_anchor[k]!r} and {o!r} share the "
+                         f"canonical anchor {k}. A collision is INVALID, never "
+                         f"an arbitrary tie-break: a tie-break would silently "
+                         f"decide an identity the evidence does not.")
+            seen_anchor[k] = o
         if list(parts) != sorted(set(parts)):
-            v.append("participants must be sorted and unique")
+            v.append("participant ordinals must be unique")
 
         heads = occ.get("action_heads", [])
         disp = occ.get("action_head_disposition")
@@ -1007,7 +1040,7 @@ def canonicalize(doc: dict) -> dict:
     out = copy.deepcopy(doc)
     occs = out.get("occurrences", [])
     for occ in occs:
-        occ["participants"] = sorted(set(occ.get("participants", [])))
+        _canonicalize_participants(occ)
         occ["facts"] = sorted(
             occ.get("facts", []),
             key=lambda f: ((f.get("scope") or {}).get("kind", ""),
@@ -1040,6 +1073,41 @@ def canonicalize(doc: dict) -> dict:
                                         .get("occurrence") or {}) or ()),
                            canonical_json(g)))
     return out
+
+
+def _anchor_key(rec):
+    sp = ((rec.get("anchor") or {}).get("span") or {})
+    return (sp.get("start", -1), sp.get("end", -1))
+
+
+def _canonicalize_participants(occ: dict) -> None:
+    """Ordinals are DERIVED FROM ANCHORS, never from exporter list order.
+
+    Sort by canonical anchor and assign 0..n-1, then remap every reference in
+    facts and relations. This is what lets the key and two independently built
+    candidates align their participants for the SAME occurrence -- and it gives
+    equal ordinals on DIFFERENT occurrences no meaning whatsoever.
+    """
+    recs = occ.get("participants", [])
+    if not recs or not all(isinstance(r, dict) for r in recs):
+        return
+    ordered = sorted(recs, key=lambda r: (_anchor_key(r), r.get("ordinal", -1)))
+    remap = {}
+    for new, rec in enumerate(ordered):
+        old = rec.get("ordinal")
+        if old is not None:
+            remap[old] = new
+        rec["ordinal"] = new
+    occ["participants"] = ordered
+    for f in occ.get("facts", []):
+        sc = f.get("scope") or {}
+        if sc.get("kind") == "PARTICIPANT" and sc.get("participant") in remap:
+            sc["participant"] = remap[sc["participant"]]
+    for rel in occ.get("relations", []):
+        for end in ("from", "to"):
+            ref = rel.get(end)
+            if isinstance(ref, dict) and ref.get("participant") in remap:
+                ref["participant"] = remap[ref["participant"]]
 
 
 def canonical_bytes(doc: dict) -> bytes:
@@ -1192,6 +1260,15 @@ def _evidence(oid="00000000-0000-0000-0000-000000000001", a=0, b=10):
             "span": {"start": a, "end": b}}
 
 
+def _participant(ordinal, a, b, oid="00000000-0000-0000-0000-000000000001"):
+    """A participant record: a bare ordinal plus ONE canonical RAW anchor."""
+    return {"ordinal": ordinal,
+            "anchor": {"category": "ORACLE_TEXT", "view": "RAW_ORACLE",
+                       "occurrence": {"oracle_id": oid, "face": 0,
+                                      "paragraph": 0, "clause": 0},
+                       "span": {"start": a, "end": b}}}
+
+
 def _fact(dim="card_type", op="REQUIRES", value="creature",
           disposition="PRESENT", scope=None, **extra):
     f = {"dimension": dim,
@@ -1215,7 +1292,8 @@ def sample_projection(role="CANDIDATE_EXPORT") -> dict:
         "occurrences": [{
             "occurrence": {"oracle_id": oid, "face": 0, "paragraph": 0,
                            "clause": 0},
-            "participants": [0, 1],
+            "participants": [_participant(0, 7, 13),
+                             _participant(1, 30, 36)],
             "action_heads": [
                 {"head": "destroy", "cr_anchor": "CR 701.7",
                  "derivation_class": "EXTRACT-1", "evidence": _evidence()},
@@ -1413,6 +1491,81 @@ def selftest() -> int:
           "and the same span may not carry two roles",
           any("not ratified" in x for x in vs) and
           any("two different roles" in x for x in vs), vs)
+
+    print("\nPARTICIPANTS — canonical anchors and derived local numbering")
+    base_p = sample_projection()
+    check("PART.ANCHOR_REQUIRED-RIG the anchored fixture validates",
+          validate(base_p) == [], validate(base_p))
+    rig = copy.deepcopy(base_p)
+    rig["occurrences"][0]["participants"][0].pop("anchor")
+    check("PART.ANCHOR_REQUIRED an anchorless participant is refused",
+          any("NO canonical anchor" in x for x in validate(rig)))
+    rig = copy.deepcopy(base_p)
+    rig["occurrences"][0]["participants"][0]["anchor"]["view"] = "CANONICAL"
+    check("PART.ANCHOR_RAW_ONLY a normalized detector view cannot anchor a "
+          "participant", any("RAW view" in x for x in validate(rig)))
+    rig = copy.deepcopy(base_p)
+    rig["occurrences"][0]["participants"][1]["anchor"]["span"] = \
+        dict(rig["occurrences"][0]["participants"][0]["anchor"]["span"])
+    check("PART.ANCHOR_COLLISION two participants sharing a canonical anchor "
+          "are refused, never tie-broken",
+          any("share the canonical anchor" in x for x in validate(rig)))
+    rig = copy.deepcopy(base_p)
+    rig["occurrences"][0]["participants"][0]["anchor"]["occurrence"][
+        "paragraph"] = 9
+    check("PART.ANCHOR_REQUIRED an anchor must locate its OWN occurrence",
+          any("locate its OWN occurrence" in x for x in validate(rig)))
+    for field in ("participant_kind", "role", "argument_slot",
+                  "semantic_role", "global_participant_id"):
+        rig = copy.deepcopy(base_p)
+        rig["occurrences"][0]["participants"][0][field] = "agent"
+        check(f"PART.NO_ROLE {field!r} on a participant is refused",
+              any("unratified key" in x for x in validate(rig)),
+              validate(rig))
+
+    perm = copy.deepcopy(base_p)
+    perm["occurrences"][0]["participants"].reverse()
+    for r_, o_ in zip(perm["occurrences"][0]["participants"], (0, 1)):
+        r_["ordinal"] = o_
+    for f_ in perm["occurrences"][0]["facts"]:
+        sc = f_.get("scope") or {}
+        if sc.get("kind") == "PARTICIPANT":
+            sc["participant"] = 1 - sc["participant"]
+    # The relation reference has to be relabelled too, or the "permuted"
+    # document is not the same document written differently -- it points at a
+    # different participant. Getting this wrong is how a permutation fixture
+    # reports a canonicalization defect that is really a fixture defect.
+    for rel_ in perm["occurrences"][0]["relations"]:
+        for end_ in ("from", "to"):
+            ref_ = rel_.get(end_)
+            if isinstance(ref_, dict) and "participant" in ref_:
+                ref_["participant"] = 1 - ref_["participant"]
+    check("PART.NUMBERING_ORDER_INDEPENDENT a permuted export canonicalizes "
+          "byte-identically", canonical_bytes(perm) == canonical_bytes(base_p),
+          "permutation changed the canonical bytes")
+    canon = canonicalize(perm)["occurrences"][0]
+    check("PART.NUMBERING_ORDER_INDEPENDENT ordinals are 0..n-1 by ascending "
+          "anchor", [r["ordinal"] for r in canon["participants"]] == [0, 1]
+          and [_anchor_key(r) for r in canon["participants"]]
+          == sorted(_anchor_key(r) for r in canon["participants"]))
+    check("PART.REFERENCE_REMAP canonical renumbering remaps every fact "
+          "reference",
+          [(f.get("scope") or {}).get("participant") for f in canon["facts"]]
+          == [(f.get("scope") or {}).get("participant")
+              for f in canonicalize(base_p)["occurrences"][0]["facts"]])
+    relremap = copy.deepcopy(perm)
+    relremap["occurrences"][0]["relations"][0]["from"]["participant"] = 1
+    got = canonicalize(relremap)["occurrences"][0]["relations"][0]["from"][
+        "participant"]
+    check("PART.REFERENCE_REMAP canonical renumbering remaps a relation "
+          "reference too", got == 0, got)
+    check("PART.LOCAL_ONLY the schema states equal ordinals carry NO "
+          "cross-card meaning, and correspondence is not projection content",
+          "no cross-card semantic meaning" in
+          SCHEMA["participants"]["canonical_numbering"]["_law"].lower()
+          .replace("cross-card semantic meaning", "cross-card semantic meaning")
+          or "NOT PROJECTION CONTENT"
+          in SCHEMA["participants"]["cross_card_correspondence"])
 
     print("\nATOM PAYLOAD — already-frozen shapes, newly VALIDATED")
     good_card = sample_projection()

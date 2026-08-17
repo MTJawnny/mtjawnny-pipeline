@@ -518,9 +518,14 @@ indistinguishable from a rig that found nothing.
 
 ---
 
-## 8b. THE EVALUATION PROJECTION — packet 4, schema 2.0.0
+## 8b. THE EVALUATION PROJECTION — packet 4, schema 3.0.0
 
-> **SCHEMA 2.0.0, 2026-08-17.** Register #38's two authorized repairs are
+> **SCHEMA 3.0.0, 2026-08-17.** Register #40 adds canonical participant
+> anchors and anchor-derived local numbering (see §8d), a BREAKING bump
+> because a participant without an anchor is now invalid. The occurrence
+> surface is unchanged by it.
+>
+> **Previously, schema 2.0.0:** Register #38's two authorized repairs are
 > PERFORMED: atom-payload validation, and the generated structural
 > **choice-group** record. **The occurrence surface did not move** — 782 / 307 /
 > 364 and the 113 cost regions reproduce exactly, and
@@ -662,7 +667,7 @@ with two independent rigs.
 
 Deliberately **not** wired into Gate 2 or CI.
 
-## 8c. THE SHARED COMPARISON ALGEBRA — repaired and frozen, packet 7
+## 8c. THE SHARED COMPARISON ALGEBRA — frozen, packet 7
 
 Contract §17a and register #31–#39. **Benchmark evaluation law only.**
 
@@ -673,7 +678,7 @@ python3 experiments/aq4_benchmark/aq4_compare.py --selftest
 
 | file | role |
 |---|---|
-| `comparison-algebra.json` | the frozen law — `aq4-comparison-algebra` **2.0.0**, consuming projection **2.0.0** |
+| `comparison-algebra.json` | the frozen law — `aq4-comparison-algebra` **3.0.0**, consuming projection **3.0.0** |
 | `aq4_compare.py` | the shared comparator, its proof records and its controls. Never a candidate |
 
 **⛔ The first attempt (`4e2ff09`) was QUARANTINED and is SUPERSEDED, never
@@ -706,10 +711,10 @@ are existential. That is why an inability to prove something never becomes
 - **C3's INDEPENDENT arm is NOT DERIVABLE.** Audited: nothing the projection
   carries positively establishes independence, and **absence of a choice group
   is not proof of it**. Reported, not minted.
-- **Participant-scoped constraints do not compare across occurrences.**
-  Ordinals are occurrence-local and no correspondence is ratified, so the
-  comparator declines rather than aligning integers the contract says do not
-  correspond. This is the largest practical limit and it is stated in §17a.3a.
+- **Participant-scoped constraints compare only through a supplied frozen
+  correspondence** (§8d). With no mapping the comparator declines rather than
+  aligning integers on its own — ordinal equality and constraint similarity are
+  never fallbacks.
 
 ### B2's six labels
 
@@ -752,6 +757,89 @@ UNKNOWN and INDEPENDENT derivable on none.
 **No answer key, no candidate export, no scoring, no unit binding.** The
 comparator accepts explicitly supplied units and selects nothing itself; the
 open key must freeze `CARD_CASE_WITH_EXPLICIT_UNIT_BINDING` first.
+
+## 8d. PARTICIPANT CORRESPONDENCE — infrastructure frozen, NO real binding
+
+Contract §17b and register #40–#42. **No real binding exists**: the 354
+semantic pairs are not bound, no unit is chosen, no participant is enumerated
+for a real card, and no correspondence is adjudicated. Every fixture is
+synthetic.
+
+```
+python3 experiments/aq4_benchmark/aq4_binding.py --census
+python3 experiments/aq4_benchmark/aq4_binding.py --selftest
+```
+
+| file | role |
+|---|---|
+| `binding-schema.json` | the combined unit + participant binding law — `aq4-benchmark-binding` 1.0.0, pinned to projection 3.0.0 |
+| `aq4_binding.py` | validator, canonicalizer, the one automatic mapping rule, and the key-enumeration contract |
+
+### Two alignment problems, and solving one does not solve the other
+
+**Same-occurrence cross-export alignment** lives in the **projection**: every
+participant carries one canonical RAW_ORACLE anchor, and ordinals are *derived*
+from anchors — sorted by span, assigned `0..n-1`, with every fact and relation
+reference remapped, so a permuted export canonicalizes byte-identically. An
+anchorless participant is invalid, normalization is never an anchor, and **an
+anchor collision is invalid rather than tie-broken** (measured: **0** colliding
+structural candidates over the frozen surface).
+
+**Cross-card semantic correspondence** lives **here**, never in the projection.
+*"Participant 0 here equals participant 0 there"* is **never an inference rule**.
+
+### One artifact, one hash
+
+Pair · tranche · bound units · **both authoritative participant enumerations** ·
+mappings · **explicit** unbound remainder · correspondence state · provenance.
+Correspondence is meaningless without the unit pair it is stated over, so two
+artifacts would create a coherence invariant nobody enforces.
+
+**The enumeration is authoritative for the key.** A future key does not
+re-enumerate; its ordinals and anchors must match exactly, and
+`assert_key_matches_binding` is that check. A participant discovered later is a
+**benchmark key defect**, never a silent renumber.
+
+### Exactly one automatic rule
+
+`DETERMINISTIC_SINGLETON` — one participant on each side, so the correspondence
+is forced by counting rather than by judging. **Everything else is
+human-adjudicated.** Refused: equal ordinal · mention order · similar
+restrictions · the unique restricted one · same dimension possession ·
+best-matching eligibility · action-head similarity · graph matching. Each either
+decides correspondence from the very facts the comparison is about, or
+introduces selection bias, or smuggles in a role ontology.
+
+Correspondence is **partial one-to-one**; unbound participants are explicit and
+never inferred; `COMPLETE` / `PARTIAL` / `AMBIGUOUS` are **administrative
+only**. **One frozen mapping per pair, reused across its questions** —
+alignment-shopping is forbidden. Candidates never see the artifact.
+
+### The comparator lift, and the coverage repair it forced
+
+A participant-scoped fact is comparable **only through a supplied mapping**,
+resolved by bound unit address and inverted under operand reversal. No mapping
+→ UNKNOWN. **Coverage is now correspondence-aware**: an actionable restricted
+participant that is UNBOUND on either side prevents eligibility equality from
+being PROVEN. The old participant-skipping coverage returns PROVEN on that
+fixture and the repaired code returns UNKNOWN — both printed by the control.
+
+**B1 is unchanged.** A complete binding and a complete correspondence are not
+positive evidence of whole-unit equality, and never create a B1 positive.
+
+### Sizing evidence — NOT a participant census
+
+Reproduced read-only over the 782-occurrence surface: **242** selected-object
+participant candidates, **185** restricted, **16** occurrences with ≥2
+candidates, **8** with ≥2 restricted; candidate distribution 0:558 1:208 2:14
+3:2, restricted 0:605 1:169 2:8. At pair level over the 354 semantic pairs:
+**41** touch a card with a multi-candidate occurrence, **148** have both cards
+all-singleton, **138** have one side with no candidate, **41** both zero.
+
+**These are SIZING EVIDENCE ONLY.** They are not the final projected-participant
+census, because the existing structural probe does not enumerate untargeted
+affected-object participants — and it is deliberately **not** broadened to
+improve automation coverage.
 
 ## 9. WHAT THIS PACKET DELIBERATELY DID NOT DECIDE
 
