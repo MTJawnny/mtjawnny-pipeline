@@ -285,7 +285,7 @@ evidence?
 | 35 | B3's action-equivalence arm was an open question, and it was unclear whether the frozen pairing should move to accommodate it | §20 B3 / §17 | **RATIFIED — CAPTAIN 2026-08-17** | **B3 stays intentionally PARTIAL and no action-equivalence operator is added.** Heads may be surfaced structurally for audit, but an identical sequence is not positive proof of equivalence, differing heads do not prove non-equivalence, an unresolved head blocks overclaim, and the arm is UNKNOWN until a separately ratified action comparison exists. **The frozen pairing is NOT redrawn** | measured 2026-08-17 over the frozen open surface: card-level head-multiset identity is **1 of 127** on the tranche B3 is instantiated over, against 19 of 105 and 16 of 122 on the other two — because that tranche holds the action family DIFFERENT by construction. That is benchmark evidence, and evidence is not authorization to move a pre-registered population | yes |
 | 36 | §20's cross-card questions are phrased over UNITS while the frozen pairing binds CARDS, so nothing bound a pair to the units its questions compare | §20 / §21 / register #19 | **RATIFIED `CARD_CASE_WITH_EXPLICIT_UNIT_BINDING` — CAPTAIN 2026-08-17** | §21a. The population stays the **354 unique semantic card pairs** and is **NOT** expanded into occurrence cross-products. One neutral PRIMARY unit binding per semantic pair is created and frozen **before any answer-key truth and before either candidate exists**, and is reused by that pair's questions. Hybrid method: deterministic default where frozen machinery uniquely resolves the intended occurrence, human-adjudicated where it does not, with method and provenance recorded. Binding state is `BOUND` or `NOT_APPLICABLE`, and `NOT_APPLICABLE` is **ADMINISTRATIVE ONLY** — never a disposition, a verdict, UNKNOWN or PROVEN-NOT | left open, the cross product silently makes the key an order of magnitude larger — **3,030** unit pairs against 354 card pairs, measured 2026-08-17 — and lets an implementation decide the benchmark's size. **6 of the 272 published open exemplars carry no semantic occurrence at all**, which is exactly what the administrative state exists for | yes |
 | 37 | a structural guard that was evaluated and did not block was emitted as a PROVEN proof component carrying a contract proof kind | §19 / the quarantined implementation | **RATIFIED — CAPTAIN 2026-08-17** | **A non-blocking check is not a proof.** No verdict, no proof kind and no anchor may be emitted for *no cost region observed* · *no relation edge observed* · *identical head sequences* · *identical participant integer sets* · *another blocker simply not firing*. Such a check is recorded as derived audit/precondition metadata only. **Only genuine semantic proof components enter the three-valued composition**, and a contract proof must cite a real applicable rule anchor — **prose describing a precondition is never an anchor** | measured 2026-08-17: four such components asserted a contract proof kind with no contract behind them, three of them carrying prose in the anchor field. Two were, structurally, absence claims of the kind register #27 says cannot exist on either side, reintroduced through the proof channel instead of the dimension channel. Removing them changed **0 of 5,184** top-line verdicts, so the damage was entirely to the trace — which is where the false-precision veto does its work | yes |
-| 38 | the Packet-4 projection omitted structural input that already-ratified law requires, and validated an atom's operator without validating its payload | §23a / §17 / the ratified locality exclusivity amendment | **REPAIR AUTHORIZED — CAPTAIN 2026-08-17. NOT YET PERFORMED** | §23a. A neutral GENERATED structural choice-group record may be materialized: owning-header evidence and location, member occurrence addresses in the existing four-coordinate identity, selection cardinality `{min,max}` deterministically derived under the ratified rules-backed grammar, and an admissible trace to the owning header. **No mode-id coordinate, no codebook storage, no production ownership ruling, no candidate-native vocabulary.** Separately, the cardinality and interval payload shapes — already frozen law — must be VALIDATED, with a malformed payload rejected as UNKNOWN and **never** admissible as evidence for a negative verdict | the projection may materialize the derived input because accepted law already requires owning-header-derived choice-group behaviour: this was an implementation omission, not missing law. C3 may then derive alternative or cumulative **only from positive choice-group structure**, and independent **only where positive structural law proves it** — **absence of a choice-group record is not proof of independence** — and if that arm cannot be derived it stays UNKNOWN and is reported rather than minted | yes |
+| 38 | the Packet-4 projection omitted structural input that already-ratified law requires, and validated an atom's operator without validating its payload | §23a / §17 / the ratified locality exclusivity amendment | **REPAIR AUTHORIZED — CAPTAIN 2026-08-17. ✅ PERFORMED 2026-08-17 at projection schema 2.0.0; the occurrence surface did not move and no semantic law was minted** | §23a. A neutral GENERATED structural choice-group record may be materialized: owning-header evidence and location, member occurrence addresses in the existing four-coordinate identity, selection cardinality `{min,max}` deterministically derived under the ratified rules-backed grammar, and an admissible trace to the owning header. **No mode-id coordinate, no codebook storage, no production ownership ruling, no candidate-native vocabulary.** Separately, the cardinality and interval payload shapes — already frozen law — must be VALIDATED, with a malformed payload rejected as UNKNOWN and **never** admissible as evidence for a negative verdict | the projection may materialize the derived input because accepted law already requires owning-header-derived choice-group behaviour: this was an implementation omission, not missing law. C3 may then derive alternative or cumulative **only from positive choice-group structure**, and independent **only where positive structural law proves it** — **absence of a choice-group record is not proof of independence** — and if that arm cannot be derived it stays UNKNOWN and is reported rather than minted | yes |
 
 **A note on labels, and it is load-bearing.** The Manager's packet-local ruling
 labels are deliberately **not reproduced anywhere under `docs/`**. Their
@@ -775,15 +775,26 @@ exists **only if the complete allowed disjunction is eliminated.** Requiring
 because creature remains satisfiable. An *"any overlap means contradiction"*
 implementation is wrong and is repaired in the technical task.
 
-## 17a.3 Repairs AUTHORIZED but NOT YET PERFORMED
+## 17a.3 Repair status
 
-**None of this is done. Do not read this subsection as describing the
-repository.**
+**DONE — the two Packet-4 repairs authorized by register #38 are PERFORMED and
+frozen at projection schema version 2.0.0 (§23a):** atom-payload validation for
+the cardinality and interval shapes, and the generated structural choice-group
+record. Neither minted semantic law; both implement law that was already
+ratified and merely unimplemented.
 
-- **The Packet-4 ChoiceGroup omission** — see §23a.
-- **Packet-4 payload validation** for cardinality and interval atoms — see §23a.
-- **The Packet-7 corrective implementation**, which must supersede the
-  quarantined artifacts and satisfy every ruling in 17a.1 and 17a.2.
+**STILL OUTSTANDING — the Packet-7 corrective implementation**, which must
+supersede the quarantined artifacts and satisfy every ruling in 17a.1 and
+17a.2. **Packet 7 remains INCOMPLETE.** The Packet-4 repair does not advance
+it, and the quarantined artifacts are unchanged and are now version-stale
+against the projection they claim to consume — which is the correct outcome,
+not a regression.
+
+**C3 IS NOT DERIVED, SCORED OR ANSWERED BY THAT REPAIR.** The projection now
+carries the positive structural input a later comparison layer needs; deriving
+alternative-versus-cumulative from it, and proving independence, remain
+Packet-7 work under register #38's constraints. **Absence of a choice-group
+record is still not proof of independence.**
 
 ## 17a.4 DEFERRED
 
@@ -1247,10 +1258,13 @@ refresh behavior and canonical identity churn, mutation/ratification
 path, durability surface (P3/C6), projection/regeneration obligations,
 reversibility — tiers FIFTH and SIXTH.
 
-# 23a. THE FROZEN PACKET-4 PROJECTION (register #27–#30)
+# 23a. THE FROZEN PACKET-4 PROJECTION (register #27–#30, amended by #38)
 
 **Artifacts.** `experiments/aq4_benchmark/evaluation-projection-schema.json`
-(schema `aq4-evaluation-projection`, version 1.0.0) ·
+(schema `aq4-evaluation-projection`, **version 2.0.0** — bumped by register
+#38's repair, which both ADDS a projected category and NARROWS validation, so
+a document valid under 1.0.0 may no longer be. **There is no migration
+obligation: no accepted candidate export and no answer key exists.**) ·
 `experiments/aq4_benchmark/open-surface-manifest.json` ·
 `experiments/aq4_benchmark/aq4_projection.py` (validator, canonicalizer and
 surface regenerator; **never** a candidate encoder, and it parses no Oracle
@@ -1267,8 +1281,9 @@ heads (predicates, printed order preserved, multi-head required, no detected
 head represented as UNRESOLVED and never fabricated) · constraint facts over
 **ratified §14 dimensions only**, scoped to the occurrence or to a participant
 ordinal · quantity/numeric intervals · §16 relation edges (the three
-CR-groundable kinds, same-card only) · **COST structural regions** · evidence
-locators · the five §18 dispositions.
+CR-groundable kinds, same-card only) · **COST structural regions** ·
+**generated structural CHOICE GROUPS** (register #38) · evidence locators ·
+the five §18 dispositions.
 
 **What the substrate must never contain**, each refused by a rigged-red
 control: a candidate-native ownership or storage concept; a participant kind
@@ -1311,42 +1326,60 @@ candidate failure, never permission to mutate the projection.**
 **only if that candidate has satisfied the applicable §18 claimant-side
 obligations.** The key does not discharge them on the candidate's behalf.
 
-**TWO PACKET-4 REPAIRS ARE AUTHORIZED AND NONE IS PERFORMED (register #38,
-Captain 2026-08-17).** Neither is new semantic law; both close gaps that Packet
-7 surfaced. **Do not read the next two paragraphs as describing the
-repository — the artifacts named in this section are unchanged.**
+**BOTH PACKET-4 REPAIRS ARE PERFORMED — projection schema version 2.0.0
+(register #38, implemented 2026-08-17).** Neither minted semantic law. The
+occurrence surface itself did NOT change: **782 / 307 / 364** reproduce exactly,
+the rejected unstripped surface stays **872 / 360 / 417**, the **113** structural
+cost regions are unmoved, and `open-surface-manifest.json` is **byte-identical**
+because it never bound the projection schema version.
 
-**1. The choice-group structural omission.** Accepted §17 already requires
-owning-header-derived alternative-versus-cumulative behaviour, resting on the
-ratified locality exclusivity amendment, and the projection carries the
-occurrence address without the header input that derivation needs — so C3 is
-currently underivable. A later technical repair may materialize a **neutral
-GENERATED structural record**: owning-header evidence and location, member
-occurrence addresses in the existing four-coordinate identity, selection
-cardinality `{min,max}` deterministically derived under the ratified
-rules-backed grammar, and an admissible trace to the owning header. **No mode-id
-coordinate, no codebook storage, no production ownership ruling, no
-candidate-native vocabulary.** The projection may materialize it precisely
-because it is DERIVED input that accepted law already requires.
+**1. The generated structural choice-group record — BUILT.**
+`aq4_projection.derive_choice_groups` materializes owning-header evidence and
+location, member occurrence addresses in the existing four-coordinate identity,
+a `{min,max}` selection derived under the ratified rules-backed grammar, and an
+admissible trace. **No mode identifier, no fifth coordinate, no codebook
+storage, no ownership ruling, no candidate-native vocabulary** — and the record
+carries no dimension, no atom, no disposition and no verdict.
 
-Once repaired, C3 may derive **alternative or cumulative only from positive
-choice-group structure**, and **independent only where existing positive
-structural law proves independent ownership/ability structure**. **Absence of a
-choice-group record is NOT proof of independence.** If that arm still cannot be
-derived from already-ratified positive structure, it stays UNKNOWN and is
-**reported rather than minted**.
+**The four coordinates suffice, and that is measured rather than asserted.**
+Each CR 700.2 option is its own paragraph under the ratified locality split, so
+a member's PARAGRAPH coordinate already says which option it belongs to. All 21
+derived groups span more than one paragraph and **none crosses a face**, which
+is the correct shape rather than a violation.
 
-**2. Atom payload validation.** The semantic forms are already frozen law —
-§13 states the cardinality atom as an operator and a count, and `{min,max}`
-appears in §13, §14's quantity row and §17 — but the validator checks an atom's
-operator and never its payload. A later repair must enforce the shapes: an
-interval carrying `{min,max}` with each endpoint an integer or null as frozen
-law permits, never both null, and min at or below max where both are present;
-and the cardinality payload validated for a comparison operator drawn from the
-frozen set and a count valid where current law requires one. Repository-native
-field spelling, used consistently. **This creates no new cardinality semantics.
-A malformed payload is rejected as UNKNOWN and may NEVER become evidence for a
-negative verdict.**
+**Every step is a ratified helper** — the locality unit split, the CR 207.2a
+reminder strip, the ratified mode-line and modal-header tests, the clause
+segmentation, and the ratified numeral map. **No modal parser was written.**
+
+**THE DERIVATION REFUSES RATHER THAN GUESSES.** CR 700.2 enumerates no header
+forms — it says *"preceded by instructions for a player to choose a number of
+those options, **such as** 'Choose one —'"* — so a count is trusted only where
+nothing remains between the matched count token and the modal separator. The
+ratified matcher accepts a bare *"chooses one"*, and that alternative also fires
+inside *"Choose one or more —"* and *"Choose one or both —"*, where the
+selection is not one. Residue means refuse.
+
+Measured over the frozen open surface: **27** candidate headers, **21** groups
+derived (selection `{1,1}` ×20, `{2,2}` ×1), **49** options, **54** member
+occurrences, max 4 members, **0** off-surface members, **0** duplicates, **0**
+overlapping membership, **0** face crossings — and **6 refusals, every one
+correct**: two headers with no bulleted list under them (targeting
+instructions, not modes), a conditional selection count, a CR 700.2i pawprint
+header, and the two compound *"or more"* / *"or both"* forms. **Each refused
+form is reported as a masked generic shape, never as card text.**
+
+**2. Atom-payload validation — BUILT.** The shapes were already frozen law and
+the validator inspected only an atom's operator, so a malformed payload
+validated here and failed later as an unattributable UNKNOWN. Cardinality now
+validates as an operator drawn from the ratified set plus a non-negative
+integer count; the interval validates as `{min,max}` with integer-or-null
+endpoints, never both null, and min at or below max. **A malformed payload
+fails HERE, and may never become evidence for a negative verdict.**
+
+**The ratified cardinality operator set is exactly two** — the ones §13's own
+worked examples attest. A third is a ratification request and is refused
+loudly, because an operator admitted silently here would be comparison law
+minted by an exporter.
 
 # 24. EXTRACTION TAXONOMY AND REPORTING — PRE-REGISTERED
 

@@ -518,7 +518,45 @@ indistinguishable from a rig that found nothing.
 
 ---
 
-## 8b. THE EVALUATION PROJECTION — frozen, packet 4
+## 8b. THE EVALUATION PROJECTION — packet 4, schema 2.0.0
+
+> **SCHEMA 2.0.0, 2026-08-17.** Register #38's two authorized repairs are
+> PERFORMED: atom-payload validation, and the generated structural
+> **choice-group** record. **The occurrence surface did not move** — 782 / 307 /
+> 364 and the 113 cost regions reproduce exactly, and
+> `open-surface-manifest.json` is byte-identical because it never bound the
+> projection schema version. The bump is MAJOR because validation narrowed:
+> a document valid under 1.0.0 may no longer be. There is no migration
+> obligation — no accepted candidate export and no answer key exists — and the
+> quarantined packet-7 artifacts are now version-stale, which is the intended
+> outcome and not a regression.
+>
+> **Atom payloads.** `CARD` is `{comparison, n}` with the comparison drawn from
+> the **two operators ratified law attests** (`=`, `>=` — §13's monocolored,
+> colorless and multicolored examples) and `n` a non-negative integer;
+> `INTERVAL` is `{min, max}`, endpoints integer or null, never both null,
+> min ≤ max. A third comparison operator is a **ratification request** and is
+> refused loudly, because one admitted silently here would be comparison law
+> minted by an exporter. **A malformed payload fails validation and may never
+> become evidence for a negative verdict.**
+>
+> **Choice groups** carry an owning header, a `{min,max}` selection, member
+> occurrence addresses and a trace — and **no dimension, no atom, no
+> disposition, no verdict and no mode identifier.** Each CR 700.2 option is
+> its own paragraph under the ratified locality split, so a member's
+> **paragraph coordinate already says which option it belongs to**; that is why
+> the existing four coordinates suffice and no fifth was added.
+>
+> **The derivation refuses rather than guesses.** CR 700.2 enumerates no header
+> forms (*"such as 'Choose one —'"*), so a count is trusted only when nothing
+> remains between the matched count token and the modal separator — the
+> ratified matcher's bare `chooses one` alternative also fires inside
+> *"Choose one or more —"*, where the selection is not one. Measured over the
+> frozen surface: **27 candidate headers, 21 groups, 49 options, 54 members,
+> 6 refusals — every refusal correct.** **Absence of a choice group is NOT
+> proof that units are independent**, and C3 is not derived here.
+
+## 8b-history. THE EVALUATION PROJECTION — frozen, packet 4
 
 Contract §23a and supersession-register entries #27–#30. **Benchmark evaluation
 law only**: no production architecture is ratified, no canonical ownership is

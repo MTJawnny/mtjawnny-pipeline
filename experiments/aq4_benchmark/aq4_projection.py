@@ -53,6 +53,50 @@ There is deliberately NO per-row party field. Artifact identity already
 establishes whether rows belong to the frozen key or to a candidate export, and
 storing it per row would be a second source of truth.
 
+ATOM PAYLOADS (schema 2.0.0) -- VALIDATION ONLY, NO NEW SEMANTICS
+------------------------------------------------------------------
+The CARD and INTERVAL payload shapes were already frozen law -- contract 13
+states `CARD(dim, op, n)` and `{min,max}` -- and this file validated an atom's
+OPERATOR while never inspecting its VALUE. A differently-keyed or malformed
+payload therefore validated here and failed later, silently, as an UNKNOWN
+nobody could attribute to anything. It now fails HERE:
+
+    CARD      {"comparison": <ratified operator>, "n": <integer >= 0>}
+    INTERVAL  {"min": <int|null>, "max": <int|null>}  not both null, min <= max
+
+The CARD operator set is EXACTLY the two ratified law attests -- `=` and `>=`,
+from contract 13's monocolored/colorless/multicolored examples. A third is a
+ratification request and is refused loudly; admitting one silently would let an
+exporter mint comparison law. **A malformed payload is invalid input, never
+evidence for a negative verdict.**
+
+CHOICE GROUPS -- GENERATED STRUCTURE, NEVER A VERDICT
+------------------------------------------------------
+`derive_choice_groups` materializes the structural input that already-ratified
+law requires and the projection was missing, so a later comparison layer never
+has to parse Oracle text. It carries an owning header, a `{min,max}` selection,
+member occurrence addresses and a trace -- and no dimension, no atom, no
+disposition and no verdict.
+
+**There is no mode identifier and none may be added.** Each CR 700.2 option is
+its own paragraph under the ratified locality split, so a member's PARAGRAPH
+coordinate already says which option it belongs to. That is why the existing
+four coordinates suffice.
+
+**Every step is a ratified helper** -- `foundry_locality.units`,
+`foundry_shape_extractor.strip_reminder`, `foundry_common.is_mode_line`,
+`foundry_common._MODAL_HEADER_RE`, `foundry_shape_extractor.sentence_spans`,
+`foundry_object_lattice._NUMBER_WORDS`. No modal parser is written here.
+
+**THE DERIVATION REFUSES RATHER THAN GUESSES, and the refusal is the safety
+property.** CR 700.2 does not enumerate header forms, so a count is trusted
+only when nothing remains between the matched count token and the modal
+separator. The ratified matcher accepts `chooses? one`, and that alternative
+also fires inside "Choose one or more --" and "Choose one or both --", where
+the selection is not one. Residue means refuse. Measured over the frozen open
+surface: 21 groups derived, 6 candidate headers refused, and every refusal is
+correct. **Absence of a choice group is NOT proof that units are independent.**
+
 WHY THE SCHEMA IS A JSON FILE AND NOT A PYTHON LITERAL
 ------------------------------------------------------
 `evaluation-projection-schema.json` is the single versioned source of the
@@ -86,6 +130,7 @@ import foundry_cr as CR                  # noqa: E402
 import foundry_locality as fl            # noqa: E402
 import foundry_shape_extractor as fx     # noqa: E402
 import foundry_aq4_probes as aq4p        # noqa: E402
+import foundry_object_lattice as ol      # noqa: E402
 import aq4_pairing as pr                 # noqa: E402
 
 SCHEMA_PATH = HERE / "evaluation-projection-schema.json"
@@ -94,7 +139,7 @@ CONTRACT_PATH = REPO_ROOT / "docs" / \
     "AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
 
 SCHEMA_NAME = "aq4-evaluation-projection"
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 MANIFEST_NAME = "aq4-open-surface-manifest"
 MANIFEST_VERSION = "1.0.0"
 
@@ -159,6 +204,9 @@ ARTIFACT_ROLES = set(SCHEMA["artifact_roles"]["values"])
 FORBIDDEN_FIELDS = {f.lower() for f in SCHEMA["forbidden_fields"]["values"]}
 FORBIDDEN_NATIVE = {f.lower() for f in
                     SCHEMA["forbidden_native_vocabulary"]["values"]}
+ATOM_PAYLOADS = SCHEMA["atom_payloads"]
+CARD_COMPARISONS = set(ATOM_PAYLOADS["CARD"]["comparisons"])
+CHOICE_GROUPS = SCHEMA["choice_groups"]
 
 
 def assert_dimensions_subset_of_contract() -> list:
@@ -429,6 +477,187 @@ def measure_cost_spans(cards=None, ids=None) -> dict:
 
 
 # ==========================================================================
+# CHOICE GROUPS — generated structural input, positional and CR-grounded
+# ==========================================================================
+
+#: The count vocabulary, CONSUMED rather than retyped. `_MODAL_HEADER_RE` is
+#: the ratified DET preprocessing standard (2026-07-31) and already owns which
+#: header shapes are modal; `_NUMBER_WORDS` is the ratified numeral map. The
+#: composition mirrors `foundry_aq4_probes`, which builds the same set the same
+#: way -- one convention, not two.
+_COUNT_WORDS = dict(ol._NUMBER_WORDS)
+_COUNT_WORDS["one"] = 1
+_COUNT_TOKEN = re.compile(r"\bchooses?\s+(\w+)", re.I)
+
+
+def _selection_from_header(header: str):
+    """({min,max}, None) for a deterministically derivable header, else
+    (None, generic form) naming why it was REFUSED.
+
+    THE TEST IS RESIDUE-HONEST, which is the whole safety property. The
+    ratified modal matcher accepts `chooses? one`, and that alternative also
+    matches INSIDE "Choose one or more —" and "Choose one or both —" — where
+    the real selection is not one. So the count is trusted only when NOTHING
+    remains between the matched token and the modal separator. Anything left
+    over is residue, and residue means refuse rather than guess.
+
+    Nothing here widens the ratified matcher; it only declines part of what
+    the matcher already accepts.
+    """
+    m = fc._MODAL_HEADER_RE.search(header)
+    if not m:
+        return None, "no ratified modal header"
+    residue = re.split(r"\s*[—–]\s*", header[m.end():], maxsplit=1)[0].strip()
+    if residue:
+        return None, f"residue between the count and the separator: {residue[:40]!r}"
+    tok = _COUNT_TOKEN.match(m.group(0))
+    if not tok:
+        return None, "count token not recoverable"
+    word = tok.group(1).lower()
+    if word.isdigit():
+        n = int(word)
+    elif word in _COUNT_WORDS:
+        n = _COUNT_WORDS[word]
+    else:
+        return None, f"count word {word!r} is not a ratified numeral"
+    return {"min": n, "max": n}, None
+
+
+def derive_choice_groups(card: dict, oracle_id: str) -> tuple:
+    """([group], [refusal]) for one card. Structural; parses no semantics.
+
+    Every step is a ratified helper: `foundry_locality.units` for the paragraph
+    split, `foundry_shape_extractor.strip_reminder` for CR 207.2a,
+    `foundry_common.is_mode_line` for the CR 700.2 bullet,
+    `foundry_common._MODAL_HEADER_RE` for the header, and
+    `foundry_shape_extractor.sentence_spans` for the clause ordinal. No new
+    modal parser is written, and membership is never lexical.
+
+    MODALITY IS CONFIRMED STRUCTURALLY, exactly as the ratified consumers
+    confirm it: a header opens a group only if two or more bullet paragraphs
+    actually follow it on the same face (CR 700.2 — *"two or more options in a
+    bulleted list"*). A header with no bullets under it is a targeting
+    instruction, not a mode list.
+    """
+    units = list(fl.units(card))
+    groups, refused = [], []
+    for k, ((fi, pi), raw, canon) in enumerate(units):
+        head = fx.strip_reminder(canon).strip()
+        if fc.is_mode_line(head) or not fc._MODAL_HEADER_RE.search(head):
+            continue
+        options = []
+        for (fj, pj_), raw2, canon2 in units[k + 1:]:
+            if fj != fi:
+                break
+            body = fx.strip_reminder(canon2).strip()
+            if not fc.is_mode_line(body):
+                break
+            options.append((fj, pj_, body))
+        if len(options) < 2:
+            refused.append({"reason": "fewer than two bulleted options follow",
+                            "generic_form": _generic(head)})
+            continue
+        sel, why = _selection_from_header(head)
+        if sel is None:
+            refused.append({"reason": why, "generic_form": _generic(head)})
+            continue
+        span = _raw_header_span(raw)
+        if span is None:
+            refused.append({"reason": "the header phrase is not locatable in "
+                                      "the RAW evidence view",
+                            "generic_form": _generic(head)})
+            continue
+        members = []
+        for fj, pj_, body in options:
+            for ci in range(len(fx.sentence_spans(body))):
+                members.append({"oracle_id": oracle_id, "face": fj,
+                                "paragraph": pj_, "clause": ci})
+        groups.append({
+            "owning_header": {
+                "occurrence": {"oracle_id": oracle_id, "face": fi,
+                               "paragraph": pi, "clause": 0}},
+            "selection": sel,
+            "members": members,
+            "derivation_class": "EXTRACT-0",
+            "cr_anchors": ["CR 700.2"],
+            "evidence": {"category": "ORACLE_TEXT", "view": "RAW_ORACLE",
+                         "occurrence": {"oracle_id": oracle_id, "face": fi,
+                                        "paragraph": pi, "clause": 0},
+                         "span": {"start": span[0], "end": span[1]}},
+        })
+    return groups, refused
+
+
+def _raw_header_span(raw_paragraph: str):
+    m = fc._MODAL_HEADER_RE.search(raw_paragraph)
+    return (m.start(), m.end()) if m else None
+
+
+def _generic(header: str) -> str:
+    """A STRUCTURAL shape, never a card's text: numerals and any word carrying
+    a capital letter are masked, so a refusal can be reported and counted
+    without publishing oracle text."""
+    masked = re.sub(r"\b[A-Z][\w'’-]*", "<W>", header)
+    return re.sub(r"\d+", "<N>", masked)[:80]
+
+
+def measure_choice_groups(cards=None, ids=None) -> dict:
+    """The full census over the frozen open surface. Counts only."""
+    if cards is None:
+        cards, _, _ = fc.load_corpus_gated()
+    if ids is None:
+        ids = pr.open_exemplars(pr.published_classes())
+    surface = {s[:4] for s in open_surface("canonical", cards, ids)}
+    sel = collections.Counter()
+    refusals = collections.Counter()
+    groups_all, members_all, headers_seen = [], [], 0
+    for oid in ids:
+        gs, rs = derive_choice_groups(cards[oid], oid)
+        for r in rs:
+            refusals[r["reason"].split(":")[0]] += 1
+        headers_seen += len(gs) + len(rs)
+        for g in gs:
+            groups_all.append(g)
+            sel[f"{g['selection']['min']},{g['selection']['max']}"] += 1
+            members_all += [tuple(_addr_tuple(m)) for m in g["members"]]
+    sizes = [len(g["members"]) for g in groups_all]
+    off = [m for m in members_all if m not in surface]
+    dupes = len(members_all) - len(set(members_all))
+    overlap = sum(1 for _m, c in collections.Counter(members_all).items()
+                  if c > 1)
+    faces = sum(1 for g in groups_all
+                if len({m["face"] for m in g["members"]}
+                       | {g["owning_header"]["occurrence"]["face"]}) > 1)
+    paras = sum(1 for g in groups_all
+                if len({m["paragraph"] for m in g["members"]}) > 1)
+    return {
+        "owning_headers_recognized": headers_seen,
+        "choice_groups_derived": len(groups_all),
+        "member_occurrences": len(members_all),
+        "options_bulleted_paragraphs": sum(
+            len({m["paragraph"] for m in g["members"]}) for g in groups_all),
+        "selection_distribution": dict(sorted(sel.items())),
+        "groups_with_1_member": sum(1 for n in sizes if n == 1),
+        "groups_with_more_than_1_member": sum(1 for n in sizes if n > 1),
+        "max_members_in_one_group": max(sizes) if sizes else 0,
+        "refused_by_reason": dict(sorted(refusals.items())),
+        "refused_total": sum(refusals.values()),
+        "members_not_on_frozen_surface": len(off),
+        "groups_crossing_a_face_boundary": faces,
+        "groups_spanning_more_than_one_paragraph": paras,
+        "duplicate_member_references": dupes,
+        "occurrences_in_more_than_one_group": overlap,
+        "_paragraph_note": "SPANNING PARAGRAPHS IS THE CORRECT RESULT, not a "
+                           "violation: each CR 700.2 option is its own "
+                           "paragraph under the ratified locality split, which "
+                           "is exactly why the option a member belongs to is "
+                           "carried by its paragraph coordinate and no mode "
+                           "identifier exists. A FACE crossing would be the "
+                           "defect, and there are none.",
+    }
+
+
+# ==========================================================================
 # EVIDENCE ADMISSIBILITY — the reminder-text rule (P4-R3)
 # ==========================================================================
 
@@ -544,6 +773,7 @@ def validate(doc: dict) -> list:
             atom = f.get("atom") or {}
             if atom.get("op") not in OPERATORS:
                 v.append(f"atom operator {atom.get('op')!r} is not ratified")
+            v += _validate_atom_payload(atom)
             d = f.get("disposition")
             if d not in DISPOSITIONS:
                 v.append(f"disposition {d!r} is not one of the five")
@@ -606,6 +836,10 @@ def validate(doc: dict) -> list:
                     v.append("relation edges are same-card only")
             v += _validate_evidence(rel.get("evidence"), "relation")
 
+    v += _validate_choice_groups(
+        doc, {_addr_tuple(o.get("occurrence") or {})
+              for o in doc.get("occurrences", [])} - {None})
+
     # -- same span may not carry two different roles ----------------------
     for occ in doc.get("occurrences", []):
         seen = {}
@@ -618,6 +852,121 @@ def validate(doc: dict) -> list:
             seen[k] = r.get("role")
 
     return v
+
+
+def _validate_atom_payload(atom: dict) -> list:
+    """The payload shapes are ALREADY FROZEN LAW; only the check is new.
+
+    A malformed payload fails HERE, loudly. It must never reach a comparator
+    and become an UNKNOWN nobody can attribute, and it may never become
+    evidence for a negative verdict -- an unparseable value is invalid input,
+    not a proof about a card.
+    """
+    op, v, out = atom.get("op"), atom.get("value"), []
+    if op == "CARD":
+        if not isinstance(v, dict):
+            return ["a CARD atom's value must be the frozen payload object "
+                    "{comparison, n}"]
+        extra = sorted(set(v) - set(ATOM_PAYLOADS["CARD"]["required_keys"]))
+        missing = sorted(set(ATOM_PAYLOADS["CARD"]["required_keys"]) - set(v))
+        if missing:
+            out.append(f"CARD payload is missing {missing}")
+        if extra:
+            out.append(f"CARD payload carries unratified key(s) {extra}")
+        if "comparison" in v and v["comparison"] not in CARD_COMPARISONS:
+            out.append(f"CARD comparison {v['comparison']!r} is not ratified; "
+                       f"the attested set is {sorted(CARD_COMPARISONS)}. A "
+                       f"further operator is a ratification, not an export "
+                       f"choice.")
+        n = v.get("n")
+        if "n" in v and (isinstance(n, bool) or not isinstance(n, int)
+                         or n < 0):
+            out.append(f"CARD n must be a non-negative integer; got {n!r}")
+    elif op == "INTERVAL":
+        if not isinstance(v, dict):
+            return ["an INTERVAL atom's value must be the frozen payload "
+                    "object {min,max}"]
+        extra = sorted(set(v) - set(ATOM_PAYLOADS["INTERVAL"]["required_keys"]))
+        missing = sorted(set(ATOM_PAYLOADS["INTERVAL"]["required_keys"])
+                         - set(v))
+        if missing:
+            out.append(f"INTERVAL payload is missing {missing}")
+        if extra:
+            out.append(f"INTERVAL payload carries unratified key(s) {extra}")
+        lo, hi = v.get("min"), v.get("max")
+        for name, x in (("min", lo), ("max", hi)):
+            if x is not None and (isinstance(x, bool) or not isinstance(x, int)):
+                out.append(f"INTERVAL {name} must be an integer or null; "
+                           f"got {x!r}")
+        if "min" in v and "max" in v and lo is None and hi is None:
+            out.append("an INTERVAL with both endpoints null constrains "
+                       "nothing and is not a constraint")
+        if isinstance(lo, int) and isinstance(hi, int) and not \
+                isinstance(lo, bool) and not isinstance(hi, bool) and lo > hi:
+            out.append(f"INTERVAL min {lo} is greater than max {hi}")
+    return out
+
+
+def _validate_choice_groups(doc: dict, addrs: set) -> list:
+    """Structural only. No dimension, no atom, no disposition, no verdict."""
+    out = []
+    for g in doc.get("choice_groups", []):
+        for banned in ("dimension", "atom", "disposition"):
+            if banned in g:
+                out.append(f"a choice group must not carry {banned!r} -- it is "
+                           f"structural, not an eligibility dimension and not "
+                           f"a comparison answer")
+        hdr = (g.get("owning_header") or {}).get("occurrence") or {}
+        if not hdr:
+            out.append("a choice group must name its owning header occurrence")
+        elif len(hdr) > 4:
+            out.append("the owning header address carries a fifth coordinate")
+        htup = _addr_tuple(hdr)
+        if htup and addrs and htup not in addrs:
+            out.append(f"owning header {htup!r} does not resolve to a declared "
+                       f"occurrence")
+        sel = g.get("selection") or {}
+        lo, hi = sel.get("min"), sel.get("max")
+        ok = all(isinstance(x, int) and not isinstance(x, bool) and x >= 0
+                 for x in (lo, hi))
+        if not ok or lo > hi:
+            out.append(f"choice-group selection must be {{min,max}} with "
+                       f"0 <= min <= max; got {sel!r}")
+        members = g.get("members") or []
+        if len(members) < 2:
+            out.append("a choice group needs at least two members -- CR 700.2 "
+                       "requires two or more options")
+        seen = []
+        for m in members:
+            if len(m) > 4:
+                out.append("a member address carries a fifth coordinate")
+            t = _addr_tuple(m)
+            if t is None:
+                out.append(f"member address {m!r} is not a four-coordinate "
+                           f"occurrence")
+                continue
+            if addrs and t not in addrs:
+                out.append(f"member {t!r} does not resolve to a declared "
+                           f"occurrence")
+            if htup and t[0] != htup[0]:
+                out.append("choice groups are same-card only")
+            if t in seen:
+                out.append(f"duplicate member reference {t!r}")
+            seen.append(t)
+        if g.get("derivation_class") not in DERIVATION_CLASSES:
+            out.append(f"choice-group derivation_class "
+                       f"{g.get('derivation_class')!r} is not ratified")
+        out += _validate_evidence(g.get("evidence"), "choice group")
+    return out
+
+
+def _addr_tuple(a):
+    if not isinstance(a, dict):
+        return None
+    try:
+        return (a["oracle_id"], a["face"], a["paragraph"], a["clause"])
+    except KeyError:
+        return None
 
 
 def _validate_evidence(ev, what) -> list:
@@ -677,6 +1026,19 @@ def canonicalize(doc: dict) -> dict:
                              o.get("occurrence", {}).get("face", -1),
                              o.get("occurrence", {}).get("paragraph", -1),
                              o.get("occurrence", {}).get("clause", -1)))
+    if "choice_groups" in out:
+        for g in out["choice_groups"]:
+            # Members are a SET of occurrences; their option is carried by the
+            # paragraph coordinate, so member order is not semantic and is
+            # normalized. Head order is semantic and is not -- the two cases
+            # are deliberately opposite.
+            g["members"] = sorted(g.get("members", []),
+                                  key=lambda m: (_addr_tuple(m) or ()))
+        out["choice_groups"] = sorted(
+            out["choice_groups"],
+            key=lambda g: ((_addr_tuple((g.get("owning_header") or {})
+                                        .get("occurrence") or {}) or ()),
+                           canonical_json(g)))
     return out
 
 
@@ -687,7 +1049,8 @@ def canonical_bytes(doc: dict) -> bytes:
 def fact_count(doc: dict) -> int:
     return sum(len(o.get("facts", [])) + len(o.get("structural_regions", []))
                + len(o.get("relations", [])) + len(o.get("action_heads", []))
-               for o in doc.get("occurrences", []))
+               for o in doc.get("occurrences", [])) \
+        + len(doc.get("choice_groups", []))
 
 
 # ==========================================================================
@@ -1051,6 +1414,141 @@ def selftest() -> int:
           any("not ratified" in x for x in vs) and
           any("two different roles" in x for x in vs), vs)
 
+    print("\nATOM PAYLOAD — already-frozen shapes, newly VALIDATED")
+    good_card = sample_projection()
+    good_card["occurrences"][0]["facts"].append(
+        _fact(dim="color", op="CARD", value={"comparison": "=", "n": 1},
+              scope={"kind": "PARTICIPANT", "participant": 0}))
+    check("PROJ.CARD_OK the ratified payload validates",
+          validate(good_card) == [], validate(good_card))
+    for name, payload, needle in (
+            ("PROJ.CARD_BAD_OPERATOR", {"comparison": "!=", "n": 1},
+             "is not ratified"),
+            ("PROJ.CARD_BAD_N", {"comparison": "=", "n": -1},
+             "non-negative integer"),
+            ("PROJ.CARD_BAD_N-RIG", {"comparison": "=", "n": "1"},
+             "non-negative integer"),
+            ("PROJ.CARD_BAD_SHAPE", {"op": "=", "count": 1}, "unratified key"),
+            ("PROJ.CARD_BAD_SHAPE-RIG", {"comparison": "="}, "missing")):
+        rig = copy.deepcopy(good_card)
+        rig["occurrences"][0]["facts"][-1]["atom"]["value"] = payload
+        check(f"{name} malformed CARD payload is refused",
+              any(needle in x for x in validate(rig)), validate(rig))
+    rig = copy.deepcopy(good_card)
+    rig["occurrences"][0]["facts"][-1]["atom"]["value"] = "1"
+    check("PROJ.CARD_BAD_SHAPE a non-object CARD value is refused",
+          any("frozen payload object" in x for x in validate(rig)))
+
+    good_int = sample_projection()
+    good_int["occurrences"][0]["facts"].append(
+        _fact(dim="quantity", op="INTERVAL", value={"min": 1, "max": 3},
+              scope={"kind": "OCCURRENCE"}))
+    check("PROJ.INTERVAL_OK the ratified payload validates",
+          validate(good_int) == [], validate(good_int))
+    check("PROJ.INTERVAL_OK-RIG a half-open interval is still valid",
+          validate(_with_interval({"min": 2, "max": None})) == [])
+    for name, payload, needle in (
+            ("PROJ.INTERVAL_BOTH_NULL", {"min": None, "max": None},
+             "constrains nothing"),
+            ("PROJ.INTERVAL_REVERSED", {"min": 5, "max": 2},
+             "greater than max"),
+            ("PROJ.INTERVAL_BAD_TYPE", {"min": "1", "max": 3},
+             "integer or null"),
+            ("PROJ.INTERVAL_BAD_TYPE-RIG", {"min": 1}, "missing")):
+        check(f"{name} malformed INTERVAL payload is refused",
+              any(needle in x for x in validate(_with_interval(payload))),
+              validate(_with_interval(payload)))
+    check("PROJ.MALFORMED_NEVER_UNKNOWN a malformed payload FAILS validation "
+          "rather than reaching a comparator as an unattributable UNKNOWN",
+          validate(_with_interval({"min": 5, "max": 2})) != [])
+
+    print("\nCHOICE GROUPS — generated structure, never a verdict")
+    cg = sample_choice_group()
+    check("PROJ.CHOICEGROUP_OK a conforming group validates",
+          validate(cg) == [], validate(cg))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["members"][0]["clause"] = 99
+    check("PROJ.CHOICEGROUP_MEMBER_MISSING an unresolvable member is refused",
+          any("does not resolve" in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["members"].append(
+        dict(rig["choice_groups"][0]["members"][0]))
+    check("PROJ.CHOICEGROUP_DUP_MEMBER a duplicate member is refused",
+          any("duplicate member" in x for x in validate(rig)))
+    for bad in ({"min": 2, "max": 1}, {"min": -1, "max": 1}, {"min": 1}):
+        rig = copy.deepcopy(cg)
+        rig["choice_groups"][0]["selection"] = bad
+        check(f"PROJ.CHOICEGROUP_BAD_SELECTION {bad} is refused",
+              any("selection must be" in x for x in validate(rig)))
+    for field in ("mode_id", "mode_ordinal", "mode_index"):
+        rig = copy.deepcopy(cg)
+        rig["choice_groups"][0][field] = 0
+        check(f"PROJ.CHOICEGROUP_NO_MODE_ID an injected {field} is refused",
+              any(field in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["members"][0]["mode"] = 1
+    check("PROJ.CHOICEGROUP_NO_MODE_ID a fifth coordinate on a member is "
+          "refused", any("fifth coordinate" in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0].pop("evidence")
+    check("PROJ.CHOICEGROUP_TRACE_REQUIRED a group with no owning-header "
+          "evidence is refused",
+          any("no evidence trace" in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["evidence"]["view"] = "CANONICAL"
+    check("PROJ.CHOICEGROUP_TRACE_REQUIRED-RIG normalization as the group's "
+          "evidence is refused", any("RAW view" in x for x in validate(rig)))
+    for field in ("dimension", "atom", "disposition"):
+        rig = copy.deepcopy(cg)
+        rig["choice_groups"][0][field] = "card_type"
+        check(f"PROJ.CHOICEGROUP_NOT_DIMENSION a group carrying {field!r} is "
+              f"refused", any("structural, not an eligibility" in x
+                              for x in validate(rig)))
+    for field in ("C3_verdict", "choice_verdict", "exclusivity_verdict",
+                  "alternative_or_cumulative"):
+        rig = copy.deepcopy(cg)
+        rig["choice_groups"][0][field] = "ALTERNATIVE"
+        check(f"PROJ.CHOICEGROUP_NOT_VERDICT {field} injected as canonical "
+              f"fact is refused", any(field in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["members"] = rig["choice_groups"][0]["members"][:1]
+    check("PROJ.CHOICEGROUP_NOT_VERDICT-RIG CR 700.2 needs two or more "
+          "options, so a one-member group is refused",
+          any("at least two members" in x for x in validate(rig)))
+    rig = copy.deepcopy(cg)
+    rig["choice_groups"][0]["members"][1]["oracle_id"] = \
+        "00000000-0000-0000-0000-0000000000ff"
+    check("PROJ.CHOICEGROUP_EXISTING_OCCURRENCES a cross-card member is "
+          "refused", any("same-card only" in x for x in validate(rig)))
+
+    print("\nCHOICE GROUPS — the derivation refuses rather than guesses")
+    for form, want in (("Choose one —", {"min": 1, "max": 1}),
+                       ("Choose two —", {"min": 2, "max": 2}),
+                       ("An opponent chooses one —", {"min": 1, "max": 1})):
+        got, _why = _selection_from_header(form)
+        check(f"PROJ.CHOICEGROUP_SELECTION {form!r} -> {want}", got == want,
+              f"{form!r} -> {got}")
+    for form in ("Choose one or more —", "Choose one or both —",
+                 "Choose up to five {P} worth of modes.",
+                 "Choose one. If you control an artifact and an enchantment "
+                 "as you cast this spell, you may choose both instead."):
+        got, why = _selection_from_header(form)
+        check(f"PROJ.CHOICEGROUP_NO_GUESS an ambiguous header yields NO "
+              f"structure ({form[:26]!r})", got is None and bool(why),
+              f"{form!r} -> {got}")
+    check("PROJ.CHOICEGROUP_NO_GUESS-RIG the ratified matcher ACCEPTS the "
+          "ambiguous forms, so the refusal is ours and not the matcher's",
+          all(fc._MODAL_HEADER_RE.search(f) for f in
+              ("Choose one or more —", "Choose one or both —")))
+
+    perm = copy.deepcopy(cg)
+    perm["choice_groups"][0]["members"].reverse()
+    check("PROJ.CHOICEGROUP_ORDER_DETERMINISTIC a member permutation "
+          "canonicalizes to identical bytes",
+          canonical_bytes(perm) == canonical_bytes(cg))
+    check("PROJ.CHOICEGROUP_ORDER_DETERMINISTIC canonicalization drops no "
+          "group", fact_count(canonicalize(cg)) == fact_count(cg))
+
     print("\nTRACE")
     rig = copy.deepcopy(base)
     rig["occurrences"][0]["facts"][0].pop("evidence")
@@ -1134,6 +1632,25 @@ def selftest() -> int:
     check("SURFACE.DETERMINISM_X2 two manifest builds are byte-identical",
           canonical_json(a) == canonical_json(b))
 
+    cg1 = measure_choice_groups(cards, ids)
+    cg2 = measure_choice_groups(cards, ids)
+    check("PROJ.CHOICEGROUP_ORDER_DETERMINISTIC the live derivation is "
+          "byte-identical across two runs",
+          canonical_json(cg1) == canonical_json(cg2))
+    check(f"PROJ.CHOICEGROUP_EXISTING_OCCURRENCES every derived member "
+          f"({cg1['member_occurrences']}) resolves on the frozen surface, and "
+          f"no group crosses a face",
+          cg1["members_not_on_frozen_surface"] == 0
+          and cg1["groups_crossing_a_face_boundary"] == 0
+          and cg1["duplicate_member_references"] == 0
+          and cg1["occurrences_in_more_than_one_group"] == 0, cg1)
+    check(f"PROJ.CHOICEGROUP_NO_GUESS the live derivation REFUSES "
+          f"{cg1['refused_total']} of {cg1['owning_headers_recognized']} "
+          f"candidate headers rather than guessing",
+          cg1["refused_total"] > 0
+          and cg1["choice_groups_derived"]
+          + cg1["refused_total"] == cg1["owning_headers_recognized"])
+
     print()
     if fails:
         print(f"SELFTEST FAILED — {len(fails)} control(s): {fails}")
@@ -1141,6 +1658,47 @@ def selftest() -> int:
     print("SELFTEST PASSED — every control fired on the path it guards, and "
           "every rigging turned its control red.")
     return 0
+
+
+def _with_interval(payload):
+    d = sample_projection()
+    d["occurrences"][0]["facts"].append(
+        _fact(dim="quantity", op="INTERVAL", value=payload,
+              scope={"kind": "OCCURRENCE"}))
+    return d
+
+
+def sample_choice_group(role="KEY") -> dict:
+    """A conforming synthetic document carrying one choice group.
+
+    Synthetic throughout: the oracle_id is a zero-padded placeholder and no
+    real card is used as a projection fixture.
+    """
+    oid = "00000000-0000-0000-0000-000000000001"
+
+    def occ(par, cl):
+        return {"occurrence": {"oracle_id": oid, "face": 0, "paragraph": par,
+                               "clause": cl},
+                "participants": [], "action_heads": [],
+                "action_head_disposition": "UNRESOLVED", "facts": []}
+
+    return {
+        "schema": SCHEMA_NAME, "version": SCHEMA_VERSION,
+        "artifact_role": role,
+        "occurrences": [occ(0, 0), occ(1, 0), occ(2, 0)],
+        "choice_groups": [{
+            "owning_header": {"occurrence": {"oracle_id": oid, "face": 0,
+                                             "paragraph": 0, "clause": 0}},
+            "selection": {"min": 1, "max": 1},
+            "members": [
+                {"oracle_id": oid, "face": 0, "paragraph": 1, "clause": 0},
+                {"oracle_id": oid, "face": 0, "paragraph": 2, "clause": 0},
+            ],
+            "derivation_class": "EXTRACT-0",
+            "cr_anchors": ["CR 700.2"],
+            "evidence": _evidence(oid, 0, 10),
+        }],
+    }
 
 
 def _heads_swapped(doc):
@@ -1173,6 +1731,19 @@ def census() -> int:
     print(f"  COST regions                  {c['cost_regions_total']} "
           f"({c['cost_regions_by_cr_arm']})")
     print(f"  COST crossing a clause        {c['crossing_clause_boundary']}")
+    g = measure_choice_groups(cards, ids)
+    print("  " + "-" * 70)
+    for k in ("owning_headers_recognized", "choice_groups_derived",
+              "member_occurrences", "options_bulleted_paragraphs",
+              "selection_distribution", "groups_with_1_member",
+              "groups_with_more_than_1_member", "max_members_in_one_group",
+              "refused_total", "refused_by_reason",
+              "members_not_on_frozen_surface",
+              "groups_crossing_a_face_boundary",
+              "groups_spanning_more_than_one_paragraph",
+              "duplicate_member_references",
+              "occurrences_in_more_than_one_group"):
+        print(f"  {k:<42} {g[k]}")
     return 0
 
 

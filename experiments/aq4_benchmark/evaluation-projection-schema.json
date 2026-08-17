@@ -3,14 +3,14 @@
   "_what": "AQ4 ownership-neutral EVALUATION PROJECTION schema. Packet 4. This is benchmark evaluation law only: it creates no production law, ratifies no architecture, mints no production vocabulary, and authorizes no candidate encoder. Production AQ4 architecture remains UNRATIFIED.",
   "action_heads": {
     "_law": "An action/predicate head is NOT a dimension (contract 14, register 23). It says what the occurrence DOES; dimensions say what an object must BE. Keeping them apart is what stops a detector improvement arriving as a silent dimension ratification.",
-    "disposition_when_empty": "UNRESOLVED",
-    "multiple_heads": "REQUIRED to be representable; printed order is semantic and is NEVER sorted",
-    "vocabulary_source": "CR 701 keyword actions parsed at run time, plus the object-lattice printed action words; never a hand-list",
     "detector_entry_point": "foundry_aq4_probes.semantic_action_heads",
+    "disposition_when_empty": "UNRESOLVED",
     "forbidden": [
       "encoding an action head as a dimension row",
       "fabricating a head where the detector reaches none"
-    ]
+    ],
+    "multiple_heads": "REQUIRED to be representable; printed order is semantic and is NEVER sorted",
+    "vocabulary_source": "CR 701 keyword actions parsed at run time, plus the object-lattice printed action words; never a hand-list"
   },
   "artifact_roles": {
     "_law": "Declared ONCE at document level. Artifact identity already establishes whose rows these are, so no per-row party field exists or may be added (P4-R2). Storing it per row would create a second source of truth.",
@@ -46,6 +46,43 @@
       "op": "EQUALITY"
     }
   ],
+  "atom_payloads": {
+    "CARD": {
+      "_contract": "13 -- CARD(dim, op, n) means |values(object, dim)| op n",
+      "_why_the_operator_key_is_renamed": "Contract 13 spells the operator `op`, and that key is already taken by the atom's own operator. ONLY the colliding key is renamed; the payload is contract 13's, unchanged.",
+      "comparisons": [
+        "=",
+        ">="
+      ],
+      "comparisons_provenance": "EXACTLY the operators ratified law attests: contract 13's worked examples give monocolored (= 1), colorless (= 0) and multicolored (>= 2), and contract 14's colour row carries the same three. NO OTHER COMPARISON OPERATOR IS RATIFIED ANYWHERE. A fourth is a ratification request and is REJECTED LOUDLY rather than admitted silently -- an unratified operator accepted here would be a comparison law minted by an exporter.",
+      "required_keys": [
+        "comparison",
+        "n"
+      ],
+      "shape": {
+        "comparison": "one of `comparisons` below",
+        "n": "integer >= 0"
+      }
+    },
+    "INTERVAL": {
+      "_contract": "13 and 14 quantity/numeric -- the frozen spelling is {min,max}",
+      "required_keys": [
+        "min",
+        "max"
+      ],
+      "rules": [
+        "each endpoint is an integer or null",
+        "NOT both null -- an interval constraining nothing is not a constraint",
+        "min <= max when both are present"
+      ],
+      "shape": {
+        "max": "integer or null",
+        "min": "integer or null"
+      }
+    },
+    "_law": "The SEMANTIC forms are already frozen law; Packet 4 previously validated an atom's operator and never its payload, so a differently-keyed or malformed value validated and only failed later, silently, as an UNKNOWN nobody could attribute. This block adds VALIDATION ONLY. It creates no new semantics.",
+    "malformed_payload_law": "A malformed CARD or INTERVAL payload FAILS VALIDATION. It must never silently compare as UNKNOWN merely because a downstream comparator could not parse it, and it may NEVER become evidence for a negative verdict."
+  },
   "canonical_serialization": {
     "encoding": "UTF-8",
     "ensure_ascii": false,
@@ -63,6 +100,49 @@
       "unit": "each id encoded UTF-8 and followed by exactly one LF, fed in sorted order"
     }
   },
+  "choice_groups": {
+    "_law": "A GENERATED STRUCTURAL record implementing already-ratified law: exclusivity is DERIVED from the owning header and never stored. It carries no dimension, no atom, no disposition and no verdict, it is not a contract-14 dimension, and it is not a consumer answer. Its only job is to give a later comparison layer positive structural input so that layer never parses Oracle text.",
+    "cr_anchors": [
+      "CR 700.2"
+    ],
+    "forbidden": [
+      "a mode identifier or mode ordinal of any spelling",
+      "a fifth occurrence coordinate",
+      "a dimension, atom or disposition on the group or on a member",
+      "an alternative/cumulative/independent verdict",
+      "candidate-native ownership",
+      "a cross-card member",
+      "executable rules semantics"
+    ],
+    "members": "occurrence addresses that must resolve inside the same document. THE OPTION A MEMBER BELONGS TO IS CARRIED BY ITS PARAGRAPH COORDINATE, which is exactly why no mode identifier exists and none may be added.",
+    "membership_law": [
+      "derived from the ratified structural header/locality machinery only",
+      "NEVER from lexical similarity",
+      "NEVER inferred from clauses merely co-occurring in one paragraph",
+      "every member must be an existing semantic occurrence; an unresolvable member reference is REJECTED"
+    ],
+    "owning_header": "the header's OWN four-coordinate occurrence address -- no new identity is introduced",
+    "refusal_law": "An unhandled or ambiguous header form produces NO group and is reported. ABSENCE OF A CHOICE GROUP IS NOT PROOF THAT UNITS ARE INDEPENDENT.",
+    "required_fields": [
+      "owning_header",
+      "selection",
+      "members",
+      "derivation_class",
+      "evidence"
+    ],
+    "same_card_only": true,
+    "selection": {
+      "_contract": "{min,max}, the same frozen interval spelling",
+      "rules": [
+        "both present",
+        "0 <= min <= max"
+      ],
+      "shape": {
+        "max": "integer >= 0",
+        "min": "integer >= 0"
+      }
+    }
+  },
   "derivation_classes": [
     "EXTRACT-0",
     "EXTRACT-1",
@@ -74,28 +154,196 @@
     "U"
   ],
   "dimensions": [
-    {"cr_anchor": "CR 205.2a", "closed": true, "multi": true, "must_have": true, "name": "card_type", "v1_status": "full"},
-    {"cr_anchor": "CR 205.3c/d", "closed": true, "context_guard": "kind/zone", "multi": true, "must_have": false, "name": "subtype", "v1_status": "full"},
-    {"cr_anchor": "CR 205.4a", "closed": true, "multi": true, "must_have": false, "name": "supertype", "v1_status": "full"},
-    {"cr_anchor": "CR 105", "closed": true, "multi": true, "must_have": false, "name": "color", "v1_status": "full"},
-    {"cr_anchor": "CR 400.1", "closed": true, "multi": false, "must_have": true, "name": "zone", "note": "'Outside the game' is NOT a zone (CR 400.11) and is never a value", "v1_status": "full"},
-    {"cr_anchor": "CR 109.1", "closed": false, "multi": false, "must_have": true, "name": "entity_kind", "note": "core {permanent, card, spell}; absence from the core is NOT proof", "v1_status": "core only"},
-    {"cr_anchor": "CR 102.1 / 109.1 / 115.4", "closed": false, "multi": false, "must_have": true, "name": "sort", "note": "'player' is a contracted value; mixed slots are unions, never a coordinate on the participant", "v1_status": "contracted"},
-    {"cr_anchor": "CR 108.3", "closed": true, "multi": false, "must_have": true, "name": "owner_relation", "v1_status": "full"},
-    {"cr_anchor": "CR 102.2 / 102.3", "closed": true, "context_guard": "kind + zone", "multi": false, "must_have": false, "name": "controller_relation", "note": "complement inference FORBIDDEN; the benchmark assumes no player count", "v1_status": "full"},
-    {"cr_anchor": "CR 109.2d", "closed": null, "multi": false, "must_have": null, "name": "self_identity", "v1_status": "full"},
-    {"cr_anchor": "CR 702", "closed": true, "context_guard": "kind", "multi": true, "must_have": false, "name": "keyword_ability", "v1_status": "full"},
-    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "tapped_untapped", "v1_status": "full"},
-    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "flipped_unflipped", "v1_status": "full"},
-    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "face_up_face_down", "v1_status": "full"},
-    {"cr_anchor": "CR 110.5", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": true, "name": "phased_in_phased_out", "v1_status": "full"},
-    {"cr_anchor": "CR 115.1", "closed": false, "multi": false, "must_have": true, "name": "selection_mode", "note": "unhandled shapes are UNRESOLVED, never coerced", "v1_status": "conservative"},
-    {"cr_anchor": "CR 107.1", "closed": null, "multi": false, "must_have": false, "name": "quantity", "v1_status": "interval only"},
-    {"cr_anchor": "CR 107.1", "closed": null, "multi": false, "must_have": false, "name": "numeric", "v1_status": "interval only"},
-    {"cr_anchor": "CR 122.1", "closed": false, "context_guard": "permanent/player", "multi": true, "must_have": false, "name": "counter_kind", "v1_status": "equality-only"},
-    {"cr_anchor": "CR 506.3 / 508", "closed": true, "context_guard": "permanent only", "multi": false, "must_have": false, "name": "combat_state", "v1_status": "equality-only"},
-    {"cr_anchor": "contract 17 v1", "closed": false, "multi": true, "must_have": false, "name": "condition", "v1_status": "equality-only"},
-    {"cr_anchor": "contract 17 v1", "closed": false, "multi": false, "must_have": false, "name": "timing_duration", "v1_status": "equality-only"}
+    {
+      "closed": true,
+      "cr_anchor": "CR 205.2a",
+      "multi": true,
+      "must_have": true,
+      "name": "card_type",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "kind/zone",
+      "cr_anchor": "CR 205.3c/d",
+      "multi": true,
+      "must_have": false,
+      "name": "subtype",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "cr_anchor": "CR 205.4a",
+      "multi": true,
+      "must_have": false,
+      "name": "supertype",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "cr_anchor": "CR 105",
+      "multi": true,
+      "must_have": false,
+      "name": "color",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "cr_anchor": "CR 400.1",
+      "multi": false,
+      "must_have": true,
+      "name": "zone",
+      "note": "'Outside the game' is NOT a zone (CR 400.11) and is never a value",
+      "v1_status": "full"
+    },
+    {
+      "closed": false,
+      "cr_anchor": "CR 109.1",
+      "multi": false,
+      "must_have": true,
+      "name": "entity_kind",
+      "note": "core {permanent, card, spell}; absence from the core is NOT proof",
+      "v1_status": "core only"
+    },
+    {
+      "closed": false,
+      "cr_anchor": "CR 102.1 / 109.1 / 115.4",
+      "multi": false,
+      "must_have": true,
+      "name": "sort",
+      "note": "'player' is a contracted value; mixed slots are unions, never a coordinate on the participant",
+      "v1_status": "contracted"
+    },
+    {
+      "closed": true,
+      "cr_anchor": "CR 108.3",
+      "multi": false,
+      "must_have": true,
+      "name": "owner_relation",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "kind + zone",
+      "cr_anchor": "CR 102.2 / 102.3",
+      "multi": false,
+      "must_have": false,
+      "name": "controller_relation",
+      "note": "complement inference FORBIDDEN; the benchmark assumes no player count",
+      "v1_status": "full"
+    },
+    {
+      "closed": null,
+      "cr_anchor": "CR 109.2d",
+      "multi": false,
+      "must_have": null,
+      "name": "self_identity",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "kind",
+      "cr_anchor": "CR 702",
+      "multi": true,
+      "must_have": false,
+      "name": "keyword_ability",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "permanent only",
+      "cr_anchor": "CR 110.5",
+      "multi": false,
+      "must_have": true,
+      "name": "tapped_untapped",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "permanent only",
+      "cr_anchor": "CR 110.5",
+      "multi": false,
+      "must_have": true,
+      "name": "flipped_unflipped",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "permanent only",
+      "cr_anchor": "CR 110.5",
+      "multi": false,
+      "must_have": true,
+      "name": "face_up_face_down",
+      "v1_status": "full"
+    },
+    {
+      "closed": true,
+      "context_guard": "permanent only",
+      "cr_anchor": "CR 110.5",
+      "multi": false,
+      "must_have": true,
+      "name": "phased_in_phased_out",
+      "v1_status": "full"
+    },
+    {
+      "closed": false,
+      "cr_anchor": "CR 115.1",
+      "multi": false,
+      "must_have": true,
+      "name": "selection_mode",
+      "note": "unhandled shapes are UNRESOLVED, never coerced",
+      "v1_status": "conservative"
+    },
+    {
+      "closed": null,
+      "cr_anchor": "CR 107.1",
+      "multi": false,
+      "must_have": false,
+      "name": "quantity",
+      "v1_status": "interval only"
+    },
+    {
+      "closed": null,
+      "cr_anchor": "CR 107.1",
+      "multi": false,
+      "must_have": false,
+      "name": "numeric",
+      "v1_status": "interval only"
+    },
+    {
+      "closed": false,
+      "context_guard": "permanent/player",
+      "cr_anchor": "CR 122.1",
+      "multi": true,
+      "must_have": false,
+      "name": "counter_kind",
+      "v1_status": "equality-only"
+    },
+    {
+      "closed": true,
+      "context_guard": "permanent only",
+      "cr_anchor": "CR 506.3 / 508",
+      "multi": false,
+      "must_have": false,
+      "name": "combat_state",
+      "v1_status": "equality-only"
+    },
+    {
+      "closed": false,
+      "cr_anchor": "contract 17 v1",
+      "multi": true,
+      "must_have": false,
+      "name": "condition",
+      "v1_status": "equality-only"
+    },
+    {
+      "closed": false,
+      "cr_anchor": "contract 17 v1",
+      "multi": false,
+      "must_have": false,
+      "name": "timing_duration",
+      "v1_status": "equality-only"
+    }
   ],
   "dimensions_provenance": "Contract section 14 minimum-useful v1 sheet, Captain 2026-08-16, register 16. This file is the machine-readable copy the validator reads; section 14 remains the ratifying text and the validator asserts containment (schema is a SUBSET of section 14) rather than re-parsing the markdown table as its vocabulary source.",
   "dispositions": {
@@ -127,19 +375,27 @@
   "forbidden_fields": {
     "_law": "Each entry is refused by the validator wherever it appears in a projection object, at any depth. Written as data, never as prose vocabulary.",
     "values": [
-      "participant_kind",
-      "record_party",
-      "historic_event_flags",
       "B1_verdict",
       "B2_verdict",
       "B3_verdict",
       "B4_verdict",
       "C1_verdict",
+      "C3_verdict",
       "DISCOVERY_1",
       "E1_explanation",
+      "UNKNOWN_PART_ROLE",
+      "alternative_or_cumulative",
+      "choice_verdict",
       "e1_prose",
+      "exclusivity_verdict",
+      "historic_event_flags",
+      "mode_id",
+      "mode_identifier",
+      "mode_index",
+      "mode_ordinal",
       "part_role",
-      "UNKNOWN_PART_ROLE"
+      "participant_kind",
+      "record_party"
     ]
   },
   "forbidden_native_vocabulary": {
@@ -177,6 +433,7 @@
   "ordering": {
     "_law": "Canonicalization may reorder and normalize representation. It may NEVER invent or drop a semantic fact, and it may never reorder something whose order is semantic.",
     "action_heads": "PRINTED ORDER PRESERVED -- never sorted",
+    "choice_groups": "sorted by (owning_header address, then canonical form); members sorted by occurrence address",
     "facts": "sorted by (scope, participant, dimension, canonical atom)",
     "occurrences": "sorted by (oracle_id, face, paragraph, clause)",
     "relations": "sorted by canonical form",
@@ -192,8 +449,6 @@
     "rule-derived",
     "llm"
   ],
-  "schema": "aq4-evaluation-projection",
-  "status": "PRE-REGISTERED benchmark evaluation law. Production AQ4 architecture remains UNRATIFIED; this schema decides no production canonical ownership and authorizes no candidate encoder.",
   "relation_kinds": {
     "_law": "Same-card references only. Edges name occurrences/participants, never game objects. An unresolvable reference stays UNRESOLVED and is never guessed. Runtime object binding is permanently out of scope.",
     "values": [
@@ -202,6 +457,8 @@
       "CONDITIONALITY"
     ]
   },
+  "schema": "aq4-evaluation-projection",
+  "status": "PRE-REGISTERED benchmark evaluation law. Production AQ4 architecture remains UNRATIFIED; this schema decides no production canonical ownership and authorizes no candidate encoder.",
   "structural_regions": {
     "_law": "P4-R1. COST is STRUCTURAL ability content, not an eligibility dimension. The marker is POSITIONAL and CR-grounded -- effect text that merely discusses paying or sacrificing is NOT a COST region. Material not proven to occupy a structural cost position stays unmarked.",
     "cr_grounded_boundaries": [
@@ -225,5 +482,5 @@
     "v1_composite_rule": "A composite activated cost (mana + tap + sacrifice) remains ONE COST region in v1.",
     "v1_out_of_scope_reported": "The bare keyword-parameter form ('Equip {3}') is NOT derived in v1; deriving it needs keyword-parameter parsing of the kind this packet is forbidden to build. Recorded rather than silently omitted."
   },
-  "version": "1.0.0"
+  "version": "2.0.0"
 }
