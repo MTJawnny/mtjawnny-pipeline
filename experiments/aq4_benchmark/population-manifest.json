@@ -4793,9 +4793,9 @@
   },
   "cohort_6_split": {
     "c6.add-mana": {
-      "open_half": 859,
-      "population": 1718,
-      "reserved_for_holdout_draw": 859
+      "open_half": 1095,
+      "population": 2189,
+      "reserved_for_holdout_draw": 1094
     },
     "c6.blink": {
       "open_half": 83,
@@ -4808,6 +4808,12 @@
       "reserved_for_holdout_draw": 226
     },
     "c6.ramp": {
+      "additional_land_play_excluded": {
+        "members_contributed_to_this_family": 0,
+        "population": 34,
+        "ruled_by": "Captain, 2026-08-16 — EXCLUDE from ramp membership.",
+        "see": "ramp_family.components[additional_land_play] for the preserved mechanic identity and the benchmark-only tangential outcome relation."
+      },
       "components": [
         "c6.ramp-land-to-battlefield",
         "c6.ramp-nonland-mana",
@@ -5196,18 +5202,18 @@
         {
           "class_id": "c6.add-mana",
           "derivation_class": "EXTRACT-2 CR 106.4 template / grammar §4 ratified verb",
-          "inclusion_reason": "prints the CR 106.4 `add {mana}` template. NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim, and it is the objective stand-in for §21's 'ramp'. The two are NOT the same set — a Cavern of Souls adds mana and is fixing, not acceleration — and closing that gap needs a ratification this packet is not allowed to make",
+          "inclusion_reason": "prints the CR 106.4 add-mana template in BOTH of its printed forms — the mana SYMBOL (`Add {G}`) and the mana NOUN (`Add one mana of any color`). NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim. It is still NOT §21's 'ramp' and is not the stand-in for it — a Cavern of Souls adds mana and is fixing, not acceleration — which is why the ramp family is derived separately and this class stays a PRIMITIVE. CORRECTED PRE-HOLDOUT: the first pass required the symbol and so missed 471 cards that print the same CR 106.4 template with its noun object. The correction is purely ADDITIVE (the old population is a proven subset) and was made before any holdout draw or answer key existed",
           "named_historical": false,
-          "qualifying_population": 859,
+          "qualifying_population": 1095,
           "selected": [
-            "106ae855-574b-411d-8689-cbb9eeb4f602",
             "20b549e9-26db-40a5-8bcc-e8de6c559d32",
-            "4cc014f3-05e0-442e-9dee-03eab1aa65a3",
+            "312a5a75-9b68-4e4b-97fe-3ab644e3e493",
             "5f2b3ea8-99ee-47a4-8a1c-4b27478d524c",
+            "77b73f11-a59a-4f2b-83d3-e6fe5064bc87",
             "82debe1c-31cb-411f-a353-98a952180666",
-            "867f0cdf-cf75-40f0-bf1e-ccb92e55e9a3",
             "bc475376-54eb-4846-9cfc-5fa2e7908905",
-            "ef2bb4fa-f292-4d19-aaa4-cfbe445caf45"
+            "e9a7dede-3968-4b0e-a707-419d46a6fec9",
+            "ee723c7c-ec9f-4ffb-8f36-cd7637eb1fae"
           ]
         },
         {
@@ -5593,26 +5599,26 @@
       "qualifying_population": 0
     }
   ],
-  "manifest_sha256": "eba6b996e449de83aadc6320d994d9744bb9deef5d9cd94d23692ee8b381a5b3",
+  "manifest_sha256": "5ff4a1b0ca64fd84ad821cbc38ef39c4eb4b8853f1717bb26054f7c379a0dff8",
   "open_cohort_overlap_qualifying_population": {
     "1x1": 1237,
     "1x2": 863,
     "1x3": 6,
-    "1x6": 646,
+    "1x6": 644,
     "1x7": 821,
     "1x8": 671,
     "2x2": 13997,
     "2x3": 0,
-    "2x6": 1501,
+    "2x6": 1560,
     "2x7": 10344,
     "2x8": 2027,
     "3x3": 31,
     "3x6": 18,
     "3x7": 31,
     "3x8": 0,
-    "6x6": 2913,
-    "6x7": 2109,
-    "6x8": 657,
+    "6x6": 3035,
+    "6x7": 2228,
+    "6x8": 655,
     "7x7": 25340,
     "7x8": 1507,
     "8x8": 2479
@@ -5643,11 +5649,18 @@
   "packet": "AQ4 packet 2 — population + sampling machinery",
   "produced_by": "experiments/aq4_benchmark/aq4_population.py",
   "ramp_family": {
-    "add_mana_template_gap": {
-      "c6_add_mana_symbol_only": 1718,
-      "cr106_4_both_forms": 2189,
-      "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — c6.add-mana is a PRE-REGISTERED family and was NOT widened here. The ramp arms use the corrected CR 106.4 template, so cohort 6 currently carries two mana tests. Reconciling them moves an already-committed population and is Manager/Captain's call.",
-      "missed_by_symbol_only": 471
+    "add_mana_template_correction": {
+      "c6_add_mana_population_after": 2189,
+      "c6_add_mana_population_before": 1718,
+      "cards_added_by_correction": 471,
+      "cards_removed_by_correction": 0,
+      "cohort_6_now_carries_one_mana_test": true,
+      "correction_is_additive": true,
+      "cr_basis": "CR 106.4 supplies the verb verbatim ('When an effect instructs a player to add mana'); the corpus prints the object as a SYMBOL or as the NOUN, and both are the same template. Requiring the symbol was the recorded 'hand-shaped pattern is a defect with a delay'.",
+      "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — RESOLVED.",
+      "ruled_by": "Captain, 2026-08-16 — CORRECT_BEFORE_PACKET3; the symbol-only test is an objective pre-holdout detector defect, not a design choice.",
+      "safe_because": "no holdout has been drawn, no cohort-5 seed chosen and no answer key exists, so the correction cannot be fitted to a known key. Cohort 4 is unaffected and proven byte-identical by its selection hash.",
+      "status": "CORRECTED_PRE_HOLDOUT"
     },
     "components": [
       {
@@ -5708,11 +5721,21 @@
       },
       {
         "anchor": "CR 305.2 — \"continuous effects may increase this number\"",
+        "benchmark_outcome_relation": {
+          "recorded_here_because": "the benchmark has no existing representation for a cross-family outcome relation — classes carry membership only. The register row is the narrowest existing benchmark-only place that can hold it, so it is recorded as metadata rather than invented as canonical architecture.",
+          "relation": "TANGENTIAL_OUTCOME_SIMILARITY",
+          "ruled_by": "Captain, 2026-08-16 — INCLUDE_AS_TANGENTIAL_OUTCOME_RELATION.",
+          "scope": "BENCHMARK_ONLY — this is a note in the benchmark's disposition register. It is NOT a production semantic parent, NOT a canonical axis, NOT vocabulary, and it mints nothing. No cohort membership is computed from it.",
+          "statement": "An additional land play is not ramp outright, but it can contribute to a similar gameplay RESULT. A future broad outcome/discovery parent should be able to retrieve these 34 cards alongside ramp; a strict ramp-membership query must not.",
+          "to": "c6.ramp"
+        },
         "class_id": null,
         "component": "additional_land_play",
-        "disposition": "AMBIGUOUS_REQUIRES_CAPTAIN",
-        "note": "OBJECTIVELY DETECTABLE, and deliberately not forced. CR 305.2 is the same rule the nonland arm's rationale rests on, which is the argument FOR inclusion; but this grants PERMISSION and adds nothing by itself — a Burgeoning with no land in hand ramps nobody. Whether permission joins the same family as arrival is a family-boundary ruling, and the population is small enough that ruling it later costs one rebuild.",
-        "population": 34
+        "disposition": "EXCLUDED_OBJECTIVELY",
+        "mechanic_identity": "PRESERVED_SEPARATELY — this component keeps its own derived population and its own register row. It contributes ZERO members to every ramp class and to the ramp union count; `_assert_additional_land_play_outside_ramp` proves the disjunction on every build, and RC8 rigs it red.",
+        "note": "OBJECTIVELY DETECTABLE and RULED OUT of ramp, not left ambiguous. CR 305.2 is the same rule the nonland arm rests on, which was the argument FOR inclusion; but this grants PERMISSION and adds nothing by itself — a Burgeoning with no land in hand ramps nobody. Permission is a different mechanic from arrival, so it is its own thing and not a ramp arm.",
+        "population": 34,
+        "ruled_by": "Captain, 2026-08-16 — EXCLUDE from ramp membership; PRESERVE the mechanic separately."
       },
       {
         "anchor": "CR 107.4 mana symbols / CR 305.2",

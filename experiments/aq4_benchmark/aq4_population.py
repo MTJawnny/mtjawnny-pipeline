@@ -525,12 +525,16 @@ def card_facts(oid: str, card: dict, ratified: dict) -> dict:
         "instant_or_sorcery_face": ("Instant" in tl or "Sorcery" in tl),
         "creature_type": "Creature" in tl,
         "_artifact": "Artifact" in tl,
-        "add_mana": bool(_ADD_MANA.search(base_nr)),
+        # CORRECTED 2026-08-16 on Captain's ruling (README §6a). This fact IS
+        # the `c6.add-mana` population and it now matches CR 106.4's template
+        # in BOTH printed forms. The previous session measured the defect and
+        # deliberately did not close it, because moving a pre-registered
+        # population is a ruling and not a fix; the ruling has now been made.
+        # The narrow pattern is KEPT below — it is the only way to report what
+        # the correction moved, and it is the rigged-red path for RC2/RC7.
+        "add_mana": bool(_ADD_MANA_CR106.search(base_nr)),
+        "add_mana_symbol_only": bool(_ADD_MANA.search(base_nr)),
         # -- ramp ----------------------------------------------------------
-        # `add_mana` above is LEFT EXACTLY AS IT WAS. It is the population of
-        # the already-committed `c6.add-mana` family, and widening it in place
-        # would move a pre-registered cohort silently. The corrected template
-        # gets its own fact, and the difference is reported, not absorbed.
         "add_mana_cr106": bool(_ADD_MANA_CR106.search(base_nr)),
         "is_land": "Land" in tl,
         "ramp_nonland_mana": bool(_ADD_MANA_CR106.search(base_nr))
@@ -844,13 +848,19 @@ def build_cohorts(facts: dict, views: dict, cards: dict, name_index: dict):
             "EXTRACT-1 CR 701 keyword action + packet-1 boundary test",
             where(lambda f: "counter" in f["heads"])),
         "c6.add-mana": (
-            "prints the CR 106.4 `add {mana}` template. NAMED FOR THE RATIFIED "
-            "PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is "
-            "Captain-ratified with CR 106.4 supplying the words verbatim, and "
-            "it is the objective stand-in for §21's 'ramp'. The two are NOT the "
-            "same set — a Cavern of Souls adds mana and is fixing, not "
-            "acceleration — and closing that gap needs a ratification this "
-            "packet is not allowed to make",
+            "prints the CR 106.4 add-mana template in BOTH of its printed "
+            "forms — the mana SYMBOL (`Add {G}`) and the mana NOUN (`Add one "
+            "mana of any color`). NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR "
+            "THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with "
+            "CR 106.4 supplying the words verbatim. It is still NOT §21's "
+            "'ramp' and is not the stand-in for it — a Cavern of Souls adds "
+            "mana and is fixing, not acceleration — which is why the ramp "
+            "family is derived separately and this class stays a PRIMITIVE. "
+            "CORRECTED PRE-HOLDOUT: the first pass required the symbol and so "
+            "missed 471 cards that print the same CR 106.4 template with its "
+            "noun object. The correction is purely ADDITIVE (the old "
+            "population is a proven subset) and was made before any holdout "
+            "draw or answer key existed",
             "EXTRACT-2 CR 106.4 template / grammar §4 ratified verb",
             where(lambda f: f["add_mana"])),
     }
@@ -916,6 +926,7 @@ def build_cohorts(facts: dict, views: dict, cards: dict, name_index: dict):
                          "reserved_for_holdout_draw": len(pool) - len(open_half),
                          "split_taken_at": "c6.ramp (family level)"}
         c6.add(cid, reason, src, open_half, K_PER_FAMILY_OPEN)
+    _assert_additional_land_play_outside_ramp(facts, ramp_union, ramp_families)
     c6_split["c6.ramp"] = {
         "population": len(ramp_union),
         "open_half": len(ramp_open),
@@ -924,6 +935,15 @@ def build_cohorts(facts: dict, views: dict, cards: dict, name_index: dict):
         "note": "§21's consumer-critical family. The split is taken here, ONCE, "
                 "over the union; the components draw exemplars from inside this "
                 "open half so every arm stays visible.",
+        "additional_land_play_excluded": {
+            "population": sum(1 for f in facts.values()
+                              if f["additional_land_play"]),
+            "members_contributed_to_this_family": 0,
+            "ruled_by": "Captain, 2026-08-16 — EXCLUDE from ramp membership.",
+            "see": "ramp_family.components[additional_land_play] for the "
+                   "preserved mechanic identity and the benchmark-only "
+                   "tangential outcome relation.",
+        },
     }
 
     # ---------------------------------------------------------------- 7
@@ -1099,6 +1119,40 @@ EMPTY_CLASSES_MEASURED = [
                 "class are the SAME population. c7.vanilla-creature covers it."},
 ]
 
+def _assert_additional_land_play_outside_ramp(facts, ramp_union, ramp_families):
+    """Captain's 2026-08-16 ruling, enforced instead of merely written down.
+
+    An additional land play is PERMISSION, not arrival, and is excluded from
+    every ramp membership and every ramp count. The measured fact is stronger
+    than the ruling needs — the two sets are wholly disjoint (34 vs 1,944, zero
+    intersection) — so the assertion is exact rather than a tolerance.
+
+    ASSERTS CONTENT, NOT CARDINALITY. A `len()` check cannot see a
+    substitution, which is this repository's recorded halt-guard defect; this
+    names the offending oracle_ids and the arm that admitted them.
+
+    It also guards the direction nobody watches: a later widening of an arm's
+    regex could quietly pull a permission card into ramp, and the disposition
+    register would still read EXCLUDED_OBJECTIVELY while the membership said
+    otherwise. That is the "ratified token with no emitter" shape aimed at a
+    ruling instead of at vocabulary.
+    """
+    alp = {o for o, f in facts.items() if f["additional_land_play"]}
+    leaked = sorted(alp & set(ramp_union))
+    if leaked:
+        arms = {o: ([cid for cid, (_, _, pool) in ramp_families.items()
+                     if o in set(pool)]
+                    or ["<in the union with no arm — the union was built "
+                        "from something other than the arms>"])
+                for o in leaked[:5]}
+        fc.halt(
+            f"Captain ruled additional-land-play EXCLUDED from ramp, but "
+            f"{len(leaked)} of {len(alp)} permission card(s) reached the ramp "
+            f"family. First offenders and the arm that admitted each: {arms!r}. "
+            f"A ruling recorded in the disposition register while the "
+            f"membership says otherwise is a register that lies.")
+
+
 #: The four dispositions a candidate ramp component may carry. A component the
 #: contract asked about and this packet did not include must say WHICH of these
 #: it is — "not included" alone reads later as "nobody considered it".
@@ -1181,17 +1235,50 @@ def ramp_disposition_register(facts: dict) -> list:
                  "this is an exclusion with a rule behind it and not a "
                  "coverage gap."},
         {"component": "additional_land_play",
-         "disposition": "AMBIGUOUS_REQUIRES_CAPTAIN",
+         "disposition": "EXCLUDED_OBJECTIVELY",
          "population": n("additional_land_play"),
          "class_id": None,
          "anchor": "CR 305.2 — \"continuous effects may increase this number\"",
-         "note": "OBJECTIVELY DETECTABLE, and deliberately not forced. CR 305.2 "
-                 "is the same rule the nonland arm's rationale rests on, which "
-                 "is the argument FOR inclusion; but this grants PERMISSION and "
-                 "adds nothing by itself — a Burgeoning with no land in hand "
-                 "ramps nobody. Whether permission joins the same family as "
-                 "arrival is a family-boundary ruling, and the population is "
-                 "small enough that ruling it later costs one rebuild."},
+         "ruled_by": "Captain, 2026-08-16 — EXCLUDE from ramp membership; "
+                     "PRESERVE the mechanic separately.",
+         "note": "OBJECTIVELY DETECTABLE and RULED OUT of ramp, not left "
+                 "ambiguous. CR 305.2 is the same rule the nonland arm rests "
+                 "on, which was the argument FOR inclusion; but this grants "
+                 "PERMISSION and adds nothing by itself — a Burgeoning with no "
+                 "land in hand ramps nobody. Permission is a different "
+                 "mechanic from arrival, so it is its own thing and not a "
+                 "ramp arm.",
+         "mechanic_identity": "PRESERVED_SEPARATELY — this component keeps its "
+                              "own derived population and its own register "
+                              "row. It contributes ZERO members to every ramp "
+                              "class and to the ramp union count; "
+                              "`_assert_additional_land_play_outside_ramp` "
+                              "proves the disjunction on every build, and RC8 "
+                              "rigs it red.",
+         "benchmark_outcome_relation": {
+             "relation": "TANGENTIAL_OUTCOME_SIMILARITY",
+             "to": "c6.ramp",
+             "scope": "BENCHMARK_ONLY — this is a note in the benchmark's "
+                      "disposition register. It is NOT a production semantic "
+                      "parent, NOT a canonical axis, NOT vocabulary, and it "
+                      "mints nothing. No cohort membership is computed from "
+                      "it.",
+             "ruled_by": "Captain, 2026-08-16 — "
+                         "INCLUDE_AS_TANGENTIAL_OUTCOME_RELATION.",
+             "statement": "An additional land play is not ramp outright, but "
+                          "it can contribute to a similar gameplay RESULT. A "
+                          "future broad outcome/discovery parent should be "
+                          "able to retrieve these 34 cards alongside ramp; a "
+                          "strict ramp-membership query must not.",
+             "recorded_here_because": "the benchmark has no existing "
+                                      "representation for a cross-family "
+                                      "outcome relation — classes carry "
+                                      "membership only. The register row is "
+                                      "the narrowest existing benchmark-only "
+                                      "place that can hold it, so it is "
+                                      "recorded as metadata rather than "
+                                      "invented as canonical architecture.",
+         }},
         {"component": "multi_mana_lands",
          "disposition": "OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE",
          "population": None,
@@ -1390,20 +1477,37 @@ def build(write: bool = False, g: dict = None) -> dict:
             "predefined_tokens_total": len(PREDEFINED_TOKENS),
             "predefined_mana_tokens": PREDEFINED_MANA_TOKENS,
             "components": ramp_disposition_register(g["facts"]),
-            "add_mana_template_gap": {
-                "c6_add_mana_symbol_only": sum(
+            "add_mana_template_correction": {
+                "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — RESOLVED.",
+                "status": "CORRECTED_PRE_HOLDOUT",
+                "ruled_by": "Captain, 2026-08-16 — CORRECT_BEFORE_PACKET3; the "
+                            "symbol-only test is an objective pre-holdout "
+                            "detector defect, not a design choice.",
+                "cr_basis": "CR 106.4 supplies the verb verbatim ('When an "
+                            "effect instructs a player to add mana'); the "
+                            "corpus prints the object as a SYMBOL or as the "
+                            "NOUN, and both are the same template. Requiring "
+                            "the symbol was the recorded 'hand-shaped pattern "
+                            "is a defect with a delay'.",
+                "c6_add_mana_population_before": sum(
+                    1 for f in g["facts"].values() if f["add_mana_symbol_only"]),
+                "c6_add_mana_population_after": sum(
                     1 for f in g["facts"].values() if f["add_mana"]),
-                "cr106_4_both_forms": sum(
-                    1 for f in g["facts"].values() if f["add_mana_cr106"]),
-                "missed_by_symbol_only": sum(
+                "cards_added_by_correction": sum(
                     1 for f in g["facts"].values()
-                    if f["add_mana_cr106"] and not f["add_mana"]),
-                "finding": "RAMP.ADD_MANA_SYMBOL_ONLY — c6.add-mana is a "
-                           "PRE-REGISTERED family and was NOT widened here. "
-                           "The ramp arms use the corrected CR 106.4 template, "
-                           "so cohort 6 currently carries two mana tests. "
-                           "Reconciling them moves an already-committed "
-                           "population and is Manager/Captain's call.",
+                    if f["add_mana"] and not f["add_mana_symbol_only"]),
+                "cards_removed_by_correction": sum(
+                    1 for f in g["facts"].values()
+                    if f["add_mana_symbol_only"] and not f["add_mana"]),
+                "correction_is_additive": all(
+                    f["add_mana"] for f in g["facts"].values()
+                    if f["add_mana_symbol_only"]),
+                "cohort_6_now_carries_one_mana_test": True,
+                "safe_because": "no holdout has been drawn, no cohort-5 seed "
+                                "chosen and no answer key exists, so the "
+                                "correction cannot be fitted to a known key. "
+                                "Cohort 4 is unaffected and proven "
+                                "byte-identical by its selection hash.",
             },
         },
         "empty_classes_measured": EMPTY_CLASSES_MEASURED,
@@ -1494,7 +1598,8 @@ def selftest() -> int:
            f"{rigged['strata_total']}, drawn {a['drawn_total']} -> "
            f"{rigged['drawn_total']} — control turns red")
 
-    cohorts, _ = build_cohorts(facts, g["views"], universe, g["name_index"])
+    cohorts, c6_split_now = build_cohorts(facts, g["views"], universe,
+                                          g["name_index"])
     dev = set().union(*[co.selected() for co in cohorts])
     base_hashes = {co.number: sha256_of([sorted(c["selected"])
                                          for c in co.classes])
@@ -1648,8 +1753,9 @@ def selftest() -> int:
     report("RC2", rc2_ok and len(rc2_rig) >= 2
            and ramp_classes["c6.ramp-nonland-mana"]["qualifying_population"] > 0,
            f"both CR 106.4 printed forms captured; the symbol-only template "
-           f"loses {len(rc2_rig)} of the fixture's true positives, which is the "
-           f"RAMP.ADD_MANA_SYMBOL_ONLY finding in miniature")
+           f"loses {len(rc2_rig)} of the fixture's true positives, which is "
+           f"the RAMP.ADD_MANA_SYMBOL_ONLY defect in miniature — RESOLVED for "
+           f"c6.add-mana too, see RC7")
 
     # -- RC3 ordinary basic lands are EXCLUDED -----------------------------
     # AIMED AT THE CODE PATH, and the aim MATTERS here. The obvious story is
@@ -1746,6 +1852,100 @@ def selftest() -> int:
            f"{len(incidental6)} are independently selected by another cohort, "
            f"which is overlap policy and not a leak")
 
+    # -- RC7 c6.add-mana carries BOTH CR 106.4 printed forms ----------------
+    # RC2 proves the corrected template captures both forms; it says nothing
+    # about which template the c6.add-mana CLASS is built from, and that is
+    # exactly the defect Captain ruled on — the two disagreed for a whole
+    # commit. RC7 is aimed at the CLASS's own membership predicate.
+    #
+    # SHAPES, not card names (RC4's subject). The two worded shapes below are
+    # the printed templates of the archetypal mana accelerants the symbol-only
+    # test dropped: the any-color mana creature and the any-color land-fixing
+    # artifact.
+    RC7_CASES = [
+        ("{T}: Add {G}.", True),                              # symbol form
+        ("Add {C}{C}.", True),                                # symbol form
+        ("{T}: Add one mana of any color.", True),            # worded form
+        ("Lands you control have \"{T}: Add one mana of any color.\"", True),
+        ("{T}: Add two mana in any combination of colors.", True),
+        # TRUE NEGATIVES — mana-adjacent text that must NOT reach the class.
+        ("Flying, vigilance", False),
+        ("This spell costs {1} less to cast for each artifact you control.",
+         False),
+        ("Exile a card with mana value 3 or greater from your hand.", False),
+        ("Counter target spell unless its controller pays {3}.", False),
+        ("You may play an additional land on each of your turns.", False),
+    ]
+    rc7_ok = True
+    try:
+        p.must_capture(lambda s: bool(_ADD_MANA_CR106.search(s)), RC7_CASES,
+                       name="RC7 c6.add-mana membership predicate")
+    except BaseException:
+        rc7_ok = False
+    # The class must be built from the CORRECTED fact, proven against the
+    # facts table rather than by reading the source: every card the class
+    # publishes carries `add_mana`, and the population equals it.
+    c6_add = [c for c in c6.classes if c["class_id"] == "c6.add-mana"][0]
+    corrected_pop = sum(1 for f in facts.values() if f["add_mana"])
+    narrow_pop = sum(1 for f in facts.values() if f["add_mana_symbol_only"])
+    added = corrected_pop - narrow_pop
+    # ADDITIVE: the old population must be a strict SUBSET of the new one. A
+    # correction that also DROPPED cards would move a pre-registered
+    # population in the direction nobody asked for, and a count alone cannot
+    # see that — 471 in and 471 out reads identically on the totals.
+    dropped = [o for o, f in facts.items()
+               if f["add_mana_symbol_only"] and not f["add_mana"]]
+    # RIG: rebuild the class on the SYMBOL-ONLY fact — the pre-correction
+    # defect — and it must lose the worded fixtures and shrink the class.
+    rc7_rig = [t for t, w in RC7_CASES if w and not _ADD_MANA.search(t)]
+    report("RC7",
+           rc7_ok and not dropped and added == 471
+           and c6_split_now["c6.add-mana"]["population"] == corrected_pop
+           and c6_add["qualifying_population"]
+               == c6_split_now["c6.add-mana"]["open_half"]
+           and len(rc7_rig) >= 3,
+           f"c6.add-mana is built from the corrected CR 106.4 template: "
+           f"{narrow_pop} -> {corrected_pop} (+{added}, -{len(dropped)}), so "
+           f"the correction is additive and the old set is a proven subset; "
+           f"RIG — the symbol-only predicate loses {len(rc7_rig)} of the "
+           f"fixture's true positives, including both worded accelerant shapes")
+
+    # -- RC8 additional-land-play stays OUT of the ramp family --------------
+    # Captain ruled EXCLUDE (membership) + PRESERVE (identity), so the control
+    # has to prove BOTH — an exclusion that also erased the mechanic would
+    # satisfy a disjointness test and lose the thing being preserved.
+    alp_ids = {o for o, f in facts.items() if f["additional_land_play"]}
+    alp_in_ramp = sorted(alp_ids & set(ramp_union_ids))
+    alp_in_classes = sorted(alp_ids & (published_ramp | pool_ramp))
+    reg = ramp_disposition_register(facts)
+    alp_row = [r for r in reg if r["component"] == "additional_land_play"][0]
+    identity_preserved = (
+        alp_row["disposition"] == "EXCLUDED_OBJECTIVELY"
+        and alp_row["population"] == len(alp_ids) > 0
+        and alp_row["class_id"] is None
+        and "benchmark_outcome_relation" in alp_row
+        and alp_row["benchmark_outcome_relation"]["to"] == "c6.ramp")
+    # RIG: feed the guard a ramp union that HAS swallowed the permission
+    # cards. It must halt — proving the guard is a guard and not a reporter,
+    # which is this repository's recorded "detect and exit 0" failure.
+    # The arms come from the LIVE classes, not a hand-typed stand-in, so the
+    # rig exercises the same shape the build passes in.
+    rig_arms = {cid: (None, None, c["_all"])
+                for cid, c in ramp_classes.items()}
+    rc8_rig = False
+    try:
+        _assert_additional_land_play_outside_ramp(
+            facts, set(ramp_union_ids) | alp_ids, rig_arms)
+    except BaseException:
+        rc8_rig = True
+    report("RC8",
+           not alp_in_ramp and not alp_in_classes and identity_preserved
+           and rc8_rig,
+           f"{len(alp_ids)} additional-land-play cards: 0 in the ramp union, "
+           f"0 in any c6.ramp class or pool, while the mechanic keeps its own "
+           f"measured register row and its benchmark-only tangential outcome "
+           f"relation to c6.ramp; RIG — a union that swallowed them HALTS")
+
     print()
     print("  every control above was aimed at the CODE PATH, not at a tool "
           "name:")
@@ -1756,7 +1956,11 @@ def selftest() -> int:
     print("    RC4     rigs the VOCABULARY, not a grep of this file, which")
     print("            names cards in prose on purpose (README §7);")
     print("    RC6     is scoped to the c6.ramp classes, because an open")
-    print("            cohort may republish a reserved card by coincidence.")
+    print("            cohort may republish a reserved card by coincidence;")
+    print("    RC7     rigs the CLASS's membership predicate, not the ramp")
+    print("            arm's — RC2 already passed while the class was wrong;")
+    print("    RC8     rigs the GUARD's argument, so a guard that merely")
+    print("            reported would fail the control.")
     return 0 if ok else 1
 
 

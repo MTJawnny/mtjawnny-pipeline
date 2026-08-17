@@ -3,19 +3,19 @@
     {
       "class_id": "c6.add-mana",
       "derivation_class": "EXTRACT-2 CR 106.4 template / grammar §4 ratified verb",
-      "inclusion_reason": "prints the CR 106.4 `add {mana}` template. NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim, and it is the objective stand-in for §21's 'ramp'. The two are NOT the same set — a Cavern of Souls adds mana and is fixing, not acceleration — and closing that gap needs a ratification this packet is not allowed to make",
+      "inclusion_reason": "prints the CR 106.4 add-mana template in BOTH of its printed forms — the mana SYMBOL (`Add {G}`) and the mana NOUN (`Add one mana of any color`). NAMED FOR THE RATIFIED PRIMITIVE, NOT FOR THE FAMILY: grammar §4's `add-mana` verb is Captain-ratified with CR 106.4 supplying the words verbatim. It is still NOT §21's 'ramp' and is not the stand-in for it — a Cavern of Souls adds mana and is fixing, not acceleration — which is why the ramp family is derived separately and this class stays a PRIMITIVE. CORRECTED PRE-HOLDOUT: the first pass required the symbol and so missed 471 cards that print the same CR 106.4 template with its noun object. The correction is purely ADDITIVE (the old population is a proven subset) and was made before any holdout draw or answer key existed",
       "named_historical": false,
       "oracle_ids": [
-        "106ae855-574b-411d-8689-cbb9eeb4f602",
         "20b549e9-26db-40a5-8bcc-e8de6c559d32",
-        "4cc014f3-05e0-442e-9dee-03eab1aa65a3",
+        "312a5a75-9b68-4e4b-97fe-3ab644e3e493",
         "5f2b3ea8-99ee-47a4-8a1c-4b27478d524c",
+        "77b73f11-a59a-4f2b-83d3-e6fe5064bc87",
         "82debe1c-31cb-411f-a353-98a952180666",
-        "867f0cdf-cf75-40f0-bf1e-ccb92e55e9a3",
         "bc475376-54eb-4846-9cfc-5fa2e7908905",
-        "ef2bb4fa-f292-4d19-aaa4-cfbe445caf45"
+        "e9a7dede-3968-4b0e-a707-419d46a6fec9",
+        "ee723c7c-ec9f-4ffb-8f36-cd7637eb1fae"
       ],
-      "qualifying_population": 859
+      "qualifying_population": 1095
     },
     {
       "class_id": "c6.blink",
@@ -121,7 +121,7 @@
     }
   ],
   "cohort": 6,
-  "cohort_sha256": "29db85b2bbe203400a8588905a23aa838e158258f1942b573f1aa16be3e8040f",
+  "cohort_sha256": "7b91f499fc9fa5caf2bcdacf41f5dce5b99272f78e438562a6e5c989dd110e6a",
   "corpus_ref": "2026-07-04",
   "representation": "oracle_id only — no oracle text, and no card name, type line or characteristic attached to any oracle_id. Class prose may NAME a §21 exemplar class (\"the Prey Upon class\"); that names a structure, not a row. README §7.",
   "status": "open-half",

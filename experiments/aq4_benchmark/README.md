@@ -225,7 +225,7 @@ Family derivations, all from objective existing primitives:
 | `c6.removal` | carries an object-lattice class on destroy / exile / bounce | EXTRACT-3, ratified lattice |
 | `c6.blink` | exile followed by return in one sentence | EXTRACT-4, packet-1 form test |
 | `c6.counterspell` | CR 701.5 `counter` as an effect head in predicate position | EXTRACT-1 + boundary test |
-| `c6.add-mana` | the CR 106.4 `add {mana}` **symbol** template | EXTRACT-2 |
+| `c6.add-mana` | the CR 106.4 add-mana template, **both printed forms** (symbol and noun) | EXTRACT-2 |
 | `c6.ramp-nonland-mana` | CR 106.4 add-mana, **both printed forms**, on a card with no Land type | EXTRACT-2 + CR 305.2 + EXTRACT-0 |
 | `c6.ramp-land-to-battlefield` | `put … onto the battlefield` and a CR 205 `‹land type› card` in one sentence | EXTRACT-4 + ratified CR 205 parse |
 | `c6.ramp-predefined-mana-token` | creates a CR 111.10 token whose CR-printed ability is itself CR 106.4 add-mana | EXTRACT-2, two CR rules meeting |
@@ -253,17 +253,45 @@ them. It does not handle **Wastes**: it has no basic land *type*, so CR 305.6
 makes nothing intrinsic and its `{T}: Add {C}.` is real printed text. Rigged,
 the strip-only story lets **1,038** lands into the arm.
 
-**`c6.add-mana` was NOT widened, and that is a finding, not an oversight.**
+**`c6.add-mana` HAS NOW BEEN WIDENED — the finding is closed, 2026-08-16.**
 CR 106.4 supplies the verb verbatim — *"instructs a player to **add mana**"* —
 and the corpus prints the object two ways: a symbol (`Add {G}`) or the noun
-(`Add one mana of any color`). The committed `c6.add-mana` matches only the
-symbol, so it misses **471 cards including Birds of Paradise and Chromatic
-Lantern**. The ramp arms use the corrected template; the pre-registered family
-was left exactly as committed, because widening it in place moves a population
-Captain has already seen. **Cohort 6 therefore carries two mana tests right
-now**, deliberately and visibly — `population-manifest.json` →
-`ramp_family.add_mana_template_gap` states it, and reconciling them is
-Manager/Captain's call.
+(`Add one mana of any color`). The first pass matched only the symbol, so it
+missed **471 cards including Birds of Paradise and Chromatic Lantern** — the
+archetypal mana accelerants. The previous session measured that, recorded it as
+`RAMP.ADD_MANA_SYMBOL_ONLY`, and deliberately did **not** close it, because
+moving a pre-registered population is a ruling and not a fix.
+
+**Captain ruled `CORRECT_BEFORE_PACKET3`**: the symbol-only test is an
+objective **pre-holdout detector defect**, not a design choice. So:
+
+| | before | after |
+|---|---|---|
+| `c6.add-mana` qualifying population | **1,718** | **2,189** |
+| open half (published) | 859 | 1,095 |
+| reserved for holdout draw | 859 | 1,094 |
+
+**The correction is purely ADDITIVE and that is asserted, not assumed.** The
+old population is a proven **subset** of the new one: **+471, −0**. RC7 checks
+the subset relation directly rather than the totals, because a change that
+added 471 and dropped 471 reads identically on a count — the recorded "a count
+cannot see a substitution".
+
+**Cohort 6 now carries ONE mana test.** `population-manifest.json` →
+`ramp_family.add_mana_template_correction` records the ruling, the CR basis and
+both populations. Correcting now is safe and was timed deliberately: **no
+holdout has been drawn, no cohort-5 seed chosen, and no answer key exists**, so
+the correction cannot have been fitted to a known key. Cohort 4 is untouched
+and proven byte-identical by its selection hash.
+
+**What moved, and nothing else did.** Only `c6.add-mana` changed: the other six
+cohort-6 classes are byte-identical, and cohorts 1, 2, 3, 7 and 8 are
+byte-identical files. The cohort-6 overlap rows in the manifest moved in *both*
+directions (`1x6` 646→644, `2x6` 1,501→1,560) — which is the open/reserved
+**re-slice**, not displacement: the open half is every other card of a keyed
+ordering, so a larger pool re-slices membership both ways. Verified by
+reverting only the `add_mana` predicate and reproducing every baseline overlap
+number exactly.
 
 **Search is not the arm; the zone change is.** A search-gated cut loses Settle
 the Wilds (which *seeks*) and every "put a land card from your hand onto the
@@ -284,15 +312,53 @@ this session did not know to look for.
 **What is deliberately NOT included** lives in
 `population-manifest.json` → `ramp_family.components`, every entry carrying one
 of four dispositions and its measured size. Two are worth reading here:
-`additional_land_play` is **AMBIGUOUS_REQUIRES_CAPTAIN** (CR 305.2 is the same
-rule the nonland arm rests on, but a Burgeoning with no land in hand ramps
-nobody — whether permission joins the family as arrival is a boundary ruling);
+`additional_land_play` is **EXCLUDED_OBJECTIVELY** as of Captain's 2026-08-16
+ruling — see §6b, which is where its preserved identity is described;
 `multi_mana_lands` is **OUTSIDE_CURRENT_DETERMINISTIC_COVERAGE**, and the
 measurement that looked like it was not is why. Counting mana symbols in the
 add clause returns 388 lands — **310 of those print `Add {R} or {G}`, which is
 one mana with a choice of color, not two.** Only 73 print CR 107.4's adjacent
 conjunctive form, and even those need the activation cost subtracted before
 "accelerates" is true.
+
+### 6b. ADDITIONAL LAND PLAY — excluded from ramp, preserved as itself
+
+Captain ruled on this 2026-08-16, and the ruling has three parts that pull in
+different directions, so all three are implemented separately:
+
+1. **EXCLUDE from ramp membership.** An additional land play grants
+   *permission*; ramp is *arrival*. A Burgeoning with no land in hand ramps
+   nobody. The 34 cards contribute **zero** members to every ramp class and to
+   the ramp union count.
+2. **PRESERVE the mechanic separately.** It keeps its own objectively derived
+   population (CR 305.2's own words, `_ADDITIONAL_LAND`) and its own row in
+   `ramp_family.components`. Excluding it from ramp is not deleting it.
+3. **Its relationship to broader outcome similarity is recorded**, because an
+   additional land play *can* contribute to a similar gameplay result. A future
+   broad outcome/discovery parent should be able to retrieve these cards
+   alongside ramp; a strict ramp-membership query must not.
+
+**Where part 3 lives, and why there.** The benchmark has **no existing
+representation for a cross-family outcome relation** — a class carries
+membership and nothing else. Rather than invent one, the relation is recorded
+as **benchmark metadata** on the register row it belongs to:
+`ramp_family.components[additional_land_play].benchmark_outcome_relation`,
+carrying `relation: TANGENTIAL_OUTCOME_SIMILARITY`, `to: c6.ramp`, and an
+explicit `scope: BENCHMARK_ONLY`. **It is not a production semantic parent, not
+a canonical axis, not vocabulary, and no cohort membership is computed from
+it.** Minting a parent to hold this note would be exactly the architecture this
+packet is forbidden to decide.
+
+**The exclusion is a guard, not a sentence in a document.**
+`_assert_additional_land_play_outside_ramp` halts on every build if any
+permission card reaches the ramp family, naming the ids and the arm that
+admitted them. It exists because the failure it guards is silent: a later
+widening of an arm's regex could pull permission into ramp while the register
+still read `EXCLUDED_OBJECTIVELY` — a register that lies. Measured today the
+two sets are **wholly disjoint** (34 vs 1,944, zero intersection), so the
+assertion is exact rather than a tolerance. **RC8 rigs it red** by handing the
+guard a union that has swallowed the 34, which is what separates a guard from a
+reporter that detects and exits 0.
 
 ---
 
@@ -362,6 +428,8 @@ control at the **code path**, not at the tool's name.
 | RC4 | no named-card hand-list | vocabulary re-derived from the CR and equal to what the module loaded; an injected card name is detected |
 | RC5 | deterministic open/reserved split | rebuild byte-identical, the family split partitions its union, an unkeyed split moves 950 assignments |
 | RC6 | holdout non-exposure | 972 reserved ramp cards reach 0 `c6.ramp` classes and appear in no split record |
+| RC7 | `c6.add-mana` carries **both** CR 106.4 printed forms, and the correction is additive | the symbol-only predicate loses 3 of the fixture's true positives, including both worded accelerant shapes; the class must also be **−0** against the old population, checked as a subset and not as a total |
+| RC8 | additional-land-play stays out of ramp, **and keeps its own identity** | handing the guard a union that has swallowed the 34 must HALT — a guard that merely reported would pass the disjointness half and fail this |
 
 **All six were rigged red against the code path** (drill:
 `_LAND_CARD` without its head noun · the symbol-only template · the nonland cut
@@ -389,16 +457,20 @@ Twelve of 795, and the control now asserts exactly that identity.
 - **Whether `this way` is a fourth relation kind.** It is in cohort 2 because
   packet 1 measured it as the largest unresolved reference form (1,088
   references). Nothing here assigns it a kind.
-- **Whether `c6.add-mana` should be widened to CR 106.4's worded form.**
-  Measured here (471 cards, §6a) and deliberately not done: it moves a
-  pre-registered population.
+- ~~**Whether `c6.add-mana` should be widened to CR 106.4's worded form.**~~
+  **RULED AND DONE, 2026-08-16** — Captain ruled it an objective pre-holdout
+  detector defect (`CORRECT_BEFORE_PACKET3`). 1,718 → 2,189, additive, §6a.
 - **Whether a card that ramps an OPPONENT is ramp.** 41 of
   `c6.ramp-land-to-battlefield`'s members name a non-`you` recipient and no
   your-zone (Show and Tell, Hypergenesis, the Ghost Quarter cycle). The arm is
   the zone change, which they genuinely print; controller scoping is a separate
   dimension and cohort 8 already carries `c8.residue-controller` for it.
-- **Whether permission-to-play-a-land joins the family** (§6a,
-  `additional_land_play`, 34 cards).
+- ~~**Whether permission-to-play-a-land joins the family**~~ **RULED,
+  2026-08-16** — EXCLUDED from ramp, mechanic preserved separately, and its
+  tangential outcome relation recorded as benchmark-only metadata (§6b, 34
+  cards). What remains undecided is a *different* question, and it belongs to
+  the architecture and not to this packet: **what a broad outcome/discovery
+  parent actually is.** Nothing here proposes one.
 - **Cohort 4's size beyond the zero-free-parameter rule** (§4). Changing
   `per_stratum` in `sampling.json` and regenerating is the whole cost, so this
   stays cheap to rule on.
