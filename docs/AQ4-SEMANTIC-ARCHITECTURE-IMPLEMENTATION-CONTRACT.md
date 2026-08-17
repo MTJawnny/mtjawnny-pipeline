@@ -266,6 +266,9 @@ evidence?
 | 17 | overlap inferable from absence of a contradictory dimension pair | §17 as written | **AMENDED — CAPTAIN 2026-08-16** | OVERLAP = PROVEN only on a corpus-ref-pinned positive WITNESS; DISJOINT = PROVEN-NOT only on a CR-contract contradiction; otherwise UNKNOWN. `proof_kind` recorded as §19 provenance, never a fourth verdict | non-contradiction is not nonempty intersection: measured 2026-08-16, **54.8%** of supertype × creature-subtype cells are empty while the CR forbids none (0 snow Soldiers of 61 × 1,078; 0 legendary Drakes of 3,406 × 107) | yes |
 | 18 | a fact-category → admissible-evidence-source registry; CR 110.5a status evidence-boundary amendment | packet-3b proposals | **DECLINED / WITHDRAWN — CAPTAIN 2026-08-16** | three evidence categories (ORACLE_TEXT · CANONICAL_CHARACTERISTIC · CR_DERIVED), register #12's two riders retained, nothing added | the registry was designed for a failure that does not exist: measured 2026-08-16, **zero of 69 card fields carry CR 110.5 status**, so status is never observed and is only ever referenced in oracle text — already inside the strictest boundary. Production evidence law unchanged | yes |
 | 19 | §20 cross-card questions had no instantiation (cohorts are flat id lists) | §20 / §21 | **CLOSED — CAPTAIN 2026-08-16** | frozen pairing protocol: PAIR_K_CHAIN + S0 + S1 + S2, unordered, `experiments/aq4_benchmark/aq4_pairing.py`, 486 unique pairs over 272/272 published open exemplars | B1–B4, C1, DISCOVERY-1 and E1 are phrased over two cards and nothing bound a card to a counterpart; PAIR_C deferred because only 3 of 20 recorded-trap cards fall in the open set | yes |
+| 20 | qualifying residue could become a constraint on the extractor's own judgement | §13 / §18 | **RATIFIED — CAPTAIN 2026-08-16** | the facet boundary (§13): qualifying residue becomes a constraint atom **only** on a ratified §14 contract; otherwise it stays uncontracted residue; qualification never authorizes minting a production axis, predicate, dimension or vocabulary item | sibling of §18.4 — there no contract means no *absence* claim, here no contract means no *constraint*. A dimension invented at extraction time to hold something the text plainly says looks original rather than unratified, and makes the gap disappear without anything being decided | yes |
+| 21 | normalization/lowering could carry a fact forward while losing its evidence trace | §19 | **PRE-REGISTERED CONTROL CLASS — CAPTAIN 2026-08-16** | provenance conservation (§19): every surviving output fact keeps a deterministic trace to admissible source evidence, with a required rigged-red `DROP_OR_CORRUPT_TRACE` negative control per applicable transform. **Adds no canonical provenance field** | pre-registered while no such pass exists, because a control written after its transform is shaped by what that transform happens to do. Candidate-neutral: binds both candidates identically and prices neither | yes |
+| 22 | §22 step 9 required one independent adjudication of the blind key | §22 | **AMENDED — CAPTAIN 2026-08-16** | **independent dual adjudication**: two adjudicators answer separately, neither sees candidate output, they do not share initial answers, disagreement is rechecked independently and resolved only while outputs remain invisible, else the cell is AMBIGUOUS/UNRESOLVED. Candidate outputs may **never** reconcile the two | one adjudication has no error signal at all. Deliberately **not** called "double-blind": there is no treatment assignment and the adjudicators are blind to candidate outputs only, so the stronger name would overclaim the design | yes |
 
 Also historical, already banner-documented in the repo: FL-2's original
 recommendation (fold into AQ4) was **not** what was ratified — see
@@ -406,6 +409,31 @@ Negation is thereby confined to the atom; the algebra (§17) needs **no
 formula-level negation**. These counterexamples are documentation, not
 production fixtures — the benchmark adds them as negative-control
 fixtures when authorized.
+
+**THE FACET BOUNDARY — WHEN QUALIFYING RESIDUE MAY BECOME A CONSTRAINT
+(Captain, 2026-08-16 — register #20).** This governs the *residue that
+qualifies an already-identified semantic claim* — the leftover of a clause
+the extractor has already claimed, in §18's sense of residue. **It does not
+govern arbitrary text**, and it is not a licence to read unclaimed
+material.
+
+1. Such residue becomes a **constraint atom only when it maps to a
+   RATIFIED §14 dimension contract.** No contract, no atom.
+2. Residue that maps to no ratified contract **stays unresolved,
+   uncontracted residue** and is reported as residue. It is never
+   promoted, never approximated onto a neighbouring dimension, and never
+   silently dropped.
+3. **Qualification alone NEVER authorizes minting** a production axis,
+   predicate, dimension or vocabulary item. A facet that "clearly wants"
+   a new dimension is a ratification request, not an extraction result.
+
+This is the sibling of §18.4. There, no contract means no *absence*
+claim; here, no contract means no *constraint*. Both exist because the
+tempting failure is identical — a dimension invented at extraction time
+to hold something the text plainly says, which then looks original rather
+than unratified. Recording it as residue keeps the gap visible and
+countable; promoting it makes the gap disappear without anything being
+decided.
 
 # 14. DIMENSION SEMANTIC CONTRACTS — SHAPE IS CANDIDATE; ROWS ARE UNWRITTEN
 
@@ -645,6 +673,42 @@ vs deterministic provenance classes remain distinct throughout. This is a
 contract, not a database design — do not build heavyweight provenance
 infrastructure to satisfy it.
 
+**PROVENANCE CONSERVATION — A PRE-REGISTERED CONTROL CLASS, NOT A NEW
+FIELD (Captain, 2026-08-16 — register #21).**
+
+**The law.** Any normalization or lowering transform that receives
+source-grounded semantic material **must preserve a deterministic trace
+from every surviving output semantic fact back to admissible source
+evidence.** Surviving is the operative word: a transform may legitimately
+drop a fact, and dropping is not a trace failure. Carrying a fact forward
+*without* its trace is.
+
+**The control.** Every applicable transform ships a **negative control of
+class `DROP_OR_CORRUPT_TRACE`**: break the trace deliberately — sever one
+output fact's link, or corrupt it to point at the wrong source span — and
+the check **must turn red**. A trace check that has never been shown to
+fail is not known to be a check, which is this repository's recorded
+"reporters listed as gates" finding. Each such control is demonstrated
+rigged-red, exactly as §24's per-derivation-class controls are.
+
+**This adds NO canonical provenance field.** §19's trace above already
+carries what is needed; this pre-registers the *obligation and its
+control*, not a new row, column or store. Nothing here may be cited to
+justify a schema addition.
+
+**Timing.** Pre-registered **now**, deliberately, while no normalization
+or lowering pass exists — a control written after the transform it guards
+is a control shaped by what that transform happens to do. Candidate
+implementations satisfy it when those passes are actually built (packets
+5–7). **No candidate code is written for it here**, and its absence today
+is not a gap.
+
+**Candidate-neutral by construction.** The obligation is stated over "any
+transform receiving source-grounded material", so it binds OCC-FACET and
+MIN-IR identically and prices neither. A candidate that normalizes more
+aggressively carries more trace obligation — which is a fact about that
+candidate, and is exactly what the benchmark is for.
+
 **`proof_kind` is PROVENANCE, never canonical semantic truth (Captain,
 2026-08-16 — register #17).** A §17 comparison verdict records **how** it
 was established: `CR_CONTRACT` (a contradiction on a single-valued
@@ -763,12 +827,45 @@ verdict via tiers THIRD and SIXTH.
 7. verify the corpus snapshot sha;
 8. verify zero development leakage (holdout ∩ development = ∅; no
    pre-freeze inspection);
-9. adjudicate the complete holdout answer key independently — in
-   projection vocabulary, from the cards and the CR, **without access to
-   any candidate output**;
+9. adjudicate the complete holdout answer key by **INDEPENDENT DUAL
+   ADJUDICATION** (see below) — in projection vocabulary, from the cards
+   and the CR, **without access to any candidate output**;
 10. freeze and hash the answer key;
 11. record procedural PASS **in writing**;
 12. only then expose candidate outputs and score.
+
+**INDEPENDENT DUAL ADJUDICATION — step 9's procedure (Captain,
+2026-08-16 — register #22).**
+
+- **Two adjudicators, A and B, answer the whole blind key separately.**
+- **Neither may see any candidate output**, at any point before the key
+  is frozen and hashed (step 10). This is the §6.5 invariant, now
+  enforced twice over.
+- **They do not share initial answers.** A and B work from the cards, the
+  CR and the frozen contract alone; an adjudication anchored on the
+  other's answer is one adjudication wearing two names.
+- **On disagreement:** each **independently rechecks** against the frozen
+  contract, the CR and the evidence. Resolution happens **only while
+  candidate outputs are still invisible.**
+- **If they still disagree, the cell is `AMBIGUOUS` or `UNRESOLVED`** —
+  and that is a *result*, not a failure to be tidied away. §18's law
+  applies unchanged: a slightly incomplete honest key beats a fully
+  populated wrong one, and forcing agreement to fill a cell is exactly
+  the false precision the symmetric veto exists to punish.
+- **CANDIDATE OUTPUTS MAY NEVER BE USED TO RECONCILE THE TWO
+  ADJUDICATIONS.** Reconciling against outputs would let the candidates
+  vote on their own answer key — the single failure this whole section
+  exists to prevent, arriving through the one door the timing rules left
+  open.
+
+**It is deliberately NOT called "double-blind", and the name matters.**
+Double-blind names an experimental design in which neither subject nor
+experimenter knows the treatment assignment. There is no treatment
+assignment here and the adjudicators are not blind to the cards — they
+are blind to **candidate outputs only**, which is a weaker and more
+specific property. Calling it double-blind would claim a design this
+benchmark does not have, and an overclaimed method is a defect in the
+same family as an overclaimed count.
 
 **The reserve seed may activate ONLY if the primary fails steps 5–8
 BEFORE scoring begins.** Once scoring begins: no performance result
@@ -1038,7 +1135,7 @@ red gate, any ratified-law conflict, any need to mint vocabulary.
 | **6** | candidate B (MIN-IR) benchmark encoding | benchmark dir | 3,4 | same, symmetric | same |
 | **7** | comparison algebra + scoring harness (§17, §26) | benchmark dir | 4 | verdict tables on open cohorts | any op outside §17's closed table needed |
 | **8** | negative controls + trap replay (§24) | benchmark dir | 5,6,7 | control transcripts, misparse counts | a control cannot be aimed (record, continue others) |
-| **9** | candidate freeze + blind evaluation (§22 steps 3–12, incl. blind-cohort key adjudication at steps 9–10) | benchmark dir | 5–8 complete | freeze commits named; procedural audit record THEN scores | procedural audit fails (reserve path only) |
+| **9** | candidate freeze + blind evaluation (§22 steps 3–12, incl. blind-cohort key adjudication at steps 9–10 by **independent dual adjudication**) | benchmark dir | 5–8 complete | freeze commits named; **both adjudications** + disagreement record; procedural audit record THEN scores | procedural audit fails (reserve path only); adjudicator sees candidate output |
 | **10** | evidence-packet generation | benchmark dir | 9 | one packet: matrices, verdicts, kills per §25, tier walk per §26 | — |
 | **11** | Captain decision checkpoint | none (document only) | 10 | one decision sheet | **always — this packet ends in Captain's hands** |
 | post-ratification | §29 / §30 / §31 tranches | per path | Captain ruling | per path | preamble item missing |

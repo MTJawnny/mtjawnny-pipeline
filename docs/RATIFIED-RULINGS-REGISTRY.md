@@ -27,7 +27,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `A15-VOCAB-01-RULING-2026-08-09.md` | 610 | 6 | 0 | yes |
 | `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md` | 686 | 6 | 0 | yes |
 | `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md` | 839 | 2 | 0 | yes |
-| `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` | 1039 | 2 | 0 | yes |
+| `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` | 1271 | 2 | 0 | yes |
 | `ARCHITECTURE-AUDIT.md` | 1272 | 2 | 0 | yes |
 | `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
 | `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
@@ -296,7 +296,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
 - `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md:49` — amendments A1–A4) to answer a question that ruling deliberately did not
 - `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:129` — `B-MIGRATION-DISCOVERY.md` §11, verbatim text + amendments A1–A4.
-- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:464` — header per ratified A4; derived-and-materialized in generated artifacts,
+- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:574` — header per ratified A4; derived-and-materialized in generated artifacts,
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `B-MIGRATION-DISCOVERY.md:921` — 11.2 Amendments A1–A4 (from the architecture review, RATIFY WITH AMENDMENTS)
 - `PICK-UP-HERE.md:182` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
