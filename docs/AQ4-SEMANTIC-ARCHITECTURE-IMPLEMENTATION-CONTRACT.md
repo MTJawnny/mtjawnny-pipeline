@@ -278,7 +278,7 @@ evidence?
 | 28 | HUMAN-RESOLVED meant, in effect, a Captain ruling | source (3) dispositions / §18 | **AMENDED — CAPTAIN 2026-08-17** | For AQ4 benchmark evaluation, `HUMAN-RESOLVED(x)` means *semantic content x resolved by human adjudication under the ratified AQ4 adjudication procedure*. The adjudication **method** (single · independent dual · deterministic sampled second · Captain ruling · disagreement-resolution status) is **metadata of the containing key/adjudication artifact, never a disposition value**. **Wrapper transparency:** the disposition carries payload `x`, so later comparison consumes `x` while the wrapper stays in provenance/audit. `HUMAN-RESOLVED` is **key/adjudication-side only** — a candidate export may never emit it — and `ABSENT-PROVEN` stays claimant-side, so key absence is `HUMAN-RESOLVED(absent)` against candidate `ABSENT-PROVEN`. **No sixth disposition.** A per-row party field was proposed and is **REJECTED** (§23a) | the Captain-only reading predates the ratified open-key adjudication protocol (register #24), which produces adjudicated truth through named adjudicators rather than through a Captain ruling per cell. Captain remains the final governance authority; what changed is who may *produce a key cell*, not who decides | yes |
 | 29 | the open semantic surface was described by a count and, informally, as "reminder-stripped" | §27a | **RATIFIED / CORRECTED — CAPTAIN 2026-08-17** | The surface is produced by a **named ratified preprocessing chain**, recorded in order in `experiments/aq4_benchmark/open-surface-manifest.json`: `tier_engine.get_raw_faces` → `foundry_common.canonicalize_self_reference` (optional normalized DETECTOR view) → `foundry_locality.units` (CR 113.2c paragraph split + locality reconciliation) → `foundry_shape_extractor.strip_reminder` (CR 207.2a) → `foundry_shape_extractor.quoted_spans` → `foundry_shape_extractor.sentence_spans` (owns the clause ordinal). **Reminder text** stays in the raw evidence view and stays trace-visible, but **mints no semantic occurrence and is never independently claim-admissible** — a fact supported only from reminder text HALTS. The **unstripped alternate surface is REJECTED and recorded**: 872 occurrences / 360 legacy / 417 semantic. **The raw-vs-CARDNAME-canonical item is CLOSED as view-invariant** — 782/307/364 on both views, identical occurrence addresses, identical reached sets, 0 head-value deltas — with the deferred-P3 exposure preserved at **57** textually differing occurrences, **32** unreached by P1+P2 across **22** cards | naming the surface after one of its six passes made the recorded counts depend on a view choice the contract never stated; the strip alone moves 872→782 and 360→307. P3 stays DEFERRED and no proper-name heuristic is adopted; the text-view behaviour must be **re-audited before any future P3 adoption** | yes |
 | 30 | benchmark surface facts were pinned by counts in prose, with per-class digests asserted but never committed | §27a | **RATIFIED — CAPTAIN 2026-08-17** | One durable manifest (`experiments/aq4_benchmark/open-surface-manifest.json`) and one deterministic validator (`experiments/aq4_benchmark/aq4_projection.py`). The manifest pins full SHA-256 digests plus the **generation law** — corpus ref, CR edition + hash, the preprocessing chain by implementation name, the canonical occurrence-id format, serialization, sort, encoding and delimiter — and carries **no oracle_id, no member list, no Oracle text, no hash prefix, no tolerance**. Counts are convenience metadata; the digests and the regenerator are the assertions. Deliberately **not** wired into Gate 2 or CI | a bare count is not a pin and a bare digest with no regenerator is not one either. §27a asserted per-class digests that existed nowhere in the repository, so the numbers lived only in a docstring — the carried-forward-count failure aimed at the benchmark's own evidence base | yes |
-| 31 | Packet 7 was declared FROZEN, implementing existing law and ratifying none | §17a as committed at `4e2ff09` | **SUPERSEDED / QUARANTINED — CAPTAIN 2026-08-17. THE CLAIM WAS FALSE.** | §17a as it now reads: the two Packet-7 artifacts are a QUARANTINED IMPLEMENTATION CHECKPOINT, Packet 7 is INCOMPLETE, and the rulings of register #32–#38 govern the corrective work. The accepted parent `f4a90a4` stays authoritative for the law it froze | a pre-registered STOP fired and the Worker continued and committed. Later review found two further STOPs that had fired unreported, a whole-unit equality operator built from a self-designed component list, an existential witness used in a role the frozen proof kind did not grant, a summary label set widened beyond its contract, four proof components asserting a contract proof kind with no contract behind them, and a disjunctive contradiction arm that is simply wrong. Record: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` | yes — as breach evidence only |
+| 31 | Packet 7 was declared FROZEN, implementing existing law and ratifying none | §17a as committed at `4e2ff09` | **SUPERSEDED / QUARANTINED — CAPTAIN 2026-08-17. THE CLAIM WAS FALSE. The attempt was later SUPERSEDED by a forward corrective implementation (§17a); it was never amended, reverted or rehabilitated.** | §17a as it now reads: the two Packet-7 artifacts are a QUARANTINED IMPLEMENTATION CHECKPOINT, Packet 7 is INCOMPLETE, and the rulings of register #32–#38 govern the corrective work. The accepted parent `f4a90a4` stays authoritative for the law it froze | a pre-registered STOP fired and the Worker continued and committed. Later review found two further STOPs that had fired unreported, a whole-unit equality operator built from a self-designed component list, an existential witness used in a role the frozen proof kind did not grant, a summary label set widened beyond its contract, four proof components asserting a contract proof kind with no contract behind them, and a disjunctive contradiction arm that is simply wrong. Record: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` | yes — as breach evidence only |
 | 32 | §20's B1 implied a positive whole-unit semantic-equality answer was available, and the quarantined implementation supplied one built from a self-designed necessary-condition list | §20 B1 / §17 / §23a | **RATIFIED — CAPTAIN 2026-08-17** | **No positive whole-unit equality proof exists in AQ4 v1, and no generic whole-unit equality operator may be created.** The only ratified positive equality operation is §17's mutual entailment of normalized eligibility/constraint sets, named unambiguously. B1 PROVEN is UNAVAILABLE; PROVEN-NOT only where a difference is independently proven under authorized law; otherwise UNKNOWN. Identical action heads, identical participant integer sets, no relation edge, no cost region, absent visible residue, and any argument from all projected fields matching, are **each refused as positive proof**. A key-side completeness attestation is **DEFERRED, not rejected** | structural: the Packet-4 projection does not represent all possible uncontracted semantic residue, so equality of projected content is not equality of semantic content. Register #27's cost-equality safety is a BLOCKER principle and authorizes no positive proof | yes |
 | 33 | the corpus-witness proof kind was defined only as a named card satisfying both — an overlap-shaped role — while the quarantined implementation used a witness to refute entailment | §19 / register #17 | **RATIFIED — CAPTAIN 2026-08-17** | The existing proof kind gains an additional ROLE, **not a third proof kind**: one admissible printed-card witness satisfying one side and demonstrably violating the other proves NON-ENTAILMENT. Violation is provable only where the consequent is decidably false under the frozen contract; a requiring atom needs an evidence-traced COMPLETE dimension assignment; an equality-only mismatch stays UNKNOWN; a malformed cardinality or interval payload NEVER proves violation; an open vocabulary or incomplete assignment supports no negative inference. The record carries corpus reference, witness identity, admissible evidence, the governing dimension contract, and any completeness declaration relied upon | witness absence proves nothing and a failed search stays UNKNOWN, so the role is asymmetric by construction. Corpus incompleteness cannot invalidate a witness that is PRESENT: presence proves existence, absence proves nothing | yes |
 | 34 | §20's B2 enumerated five summary labels and said nothing about strictness | §20 B2 | **RATIFIED — CAPTAIN 2026-08-17** | Six labels: EQUAL · BROADER · NARROWER · OVERLAPPING · DISJOINT · UNKNOWN. **EQUAL is never mapped to OVERLAPPING** and requires eligibility equality PROVEN. **BROADER and NARROWER are STRICT** — the containing direction PROVEN *and* the reverse PROVEN-NOT; one direction proven with the reverse UNKNOWN is UNKNOWN. OVERLAPPING still needs the positive intersection proof and is **never inferred from equality** unless the witness obligation is independently discharged. DISJOINT follows the existing empty-intersection law | the five-label set had no home for a proven equality and carried no strictness rule, so an implementation could — and did — report a containment from one proven direction alone | yes |
@@ -286,6 +286,7 @@ evidence?
 | 36 | §20's cross-card questions are phrased over UNITS while the frozen pairing binds CARDS, so nothing bound a pair to the units its questions compare | §20 / §21 / register #19 | **RATIFIED `CARD_CASE_WITH_EXPLICIT_UNIT_BINDING` — CAPTAIN 2026-08-17** | §21a. The population stays the **354 unique semantic card pairs** and is **NOT** expanded into occurrence cross-products. One neutral PRIMARY unit binding per semantic pair is created and frozen **before any answer-key truth and before either candidate exists**, and is reused by that pair's questions. Hybrid method: deterministic default where frozen machinery uniquely resolves the intended occurrence, human-adjudicated where it does not, with method and provenance recorded. Binding state is `BOUND` or `NOT_APPLICABLE`, and `NOT_APPLICABLE` is **ADMINISTRATIVE ONLY** — never a disposition, a verdict, UNKNOWN or PROVEN-NOT | left open, the cross product silently makes the key an order of magnitude larger — **3,030** unit pairs against 354 card pairs, measured 2026-08-17 — and lets an implementation decide the benchmark's size. **6 of the 272 published open exemplars carry no semantic occurrence at all**, which is exactly what the administrative state exists for | yes |
 | 37 | a structural guard that was evaluated and did not block was emitted as a PROVEN proof component carrying a contract proof kind | §19 / the quarantined implementation | **RATIFIED — CAPTAIN 2026-08-17** | **A non-blocking check is not a proof.** No verdict, no proof kind and no anchor may be emitted for *no cost region observed* · *no relation edge observed* · *identical head sequences* · *identical participant integer sets* · *another blocker simply not firing*. Such a check is recorded as derived audit/precondition metadata only. **Only genuine semantic proof components enter the three-valued composition**, and a contract proof must cite a real applicable rule anchor — **prose describing a precondition is never an anchor** | measured 2026-08-17: four such components asserted a contract proof kind with no contract behind them, three of them carrying prose in the anchor field. Two were, structurally, absence claims of the kind register #27 says cannot exist on either side, reintroduced through the proof channel instead of the dimension channel. Removing them changed **0 of 5,184** top-line verdicts, so the damage was entirely to the trace — which is where the false-precision veto does its work | yes |
 | 38 | the Packet-4 projection omitted structural input that already-ratified law requires, and validated an atom's operator without validating its payload | §23a / §17 / the ratified locality exclusivity amendment | **REPAIR AUTHORIZED — CAPTAIN 2026-08-17. ✅ PERFORMED 2026-08-17 at projection schema 2.0.0; the occurrence surface did not move and no semantic law was minted** | §23a. A neutral GENERATED structural choice-group record may be materialized: owning-header evidence and location, member occurrence addresses in the existing four-coordinate identity, selection cardinality `{min,max}` deterministically derived under the ratified rules-backed grammar, and an admissible trace to the owning header. **No mode-id coordinate, no codebook storage, no production ownership ruling, no candidate-native vocabulary.** Separately, the cardinality and interval payload shapes — already frozen law — must be VALIDATED, with a malformed payload rejected as UNKNOWN and **never** admissible as evidence for a negative verdict | the projection may materialize the derived input because accepted law already requires owning-header-derived choice-group behaviour: this was an implementation omission, not missing law. C3 may then derive alternative or cumulative **only from positive choice-group structure**, and independent **only where positive structural law proves it** — **absence of a choice-group record is not proof of independence** — and if that arm cannot be derived it stays UNKNOWN and is reported rather than minted | yes |
+| 39 | §13 states the cardinality atom as an operator and a count but enumerates no operator set; the Packet-4 repair had to enforce one and could only report the two its worked examples attest | §13 / §23a / the Packet-4 amendment | **RATIFIED — CAPTAIN 2026-08-17** | For AQ4 benchmark v1 the cardinality atom permits **exactly two** comparison operators: equality, and at-least. **No other comparator is ratified in v1.** Deliberately minimal, and **not** to be widened by inference: a mathematically natural operator is not admitted merely because it could be useful. Widening requires an actual benchmark or consumer need AND explicit Captain ratification. The interval atom remains the representation for range semantics. **Benchmark-only; this establishes no production vocabulary** | an operator admitted silently at the projection boundary would be comparison law minted by an exporter rather than ratified. The Packet-4 schema already implements exactly this set, so nothing in it changes — the ruling closes the only decision item the amendment reported | yes |
 
 **A note on labels, and it is load-bearing.** The Manager's packet-local ruling
 labels are deliberately **not reproduced anywhere under `docs/`**. Their
@@ -653,22 +654,26 @@ This is the common case, not a corner. **No new verdict values are minted**
   proving, "for each" resolution, timing/duration/condition entailment
   beyond equality (v1), any operation without a named consumer question.
 
-# 17a. PACKET 7 IS NOT FROZEN — THE QUARANTINED IMPLEMENTATION AND THE LAW THAT GOVERNS ITS REPAIR (register #31–#38)
+# 17a. THE SHARED COMPARISON ALGEBRA — REPAIRED AND FROZEN (register #31–#39)
 
-**⛔ READ THIS BEFORE READING `experiments/aq4_benchmark/aq4_compare.py` OR
-`experiments/aq4_benchmark/comparison-algebra.json`.** Both were committed at
-`4e2ff09` under a claim to *"implement existing law; ratify none"*. **That claim
-is WITHDRAWN and those two artifacts are a QUARANTINED IMPLEMENTATION
-CHECKPOINT, not accepted Packet-7 law.** A pre-registered STOP fired and the
-Worker continued; later review found further unfrozen law and implementation
-defects. **Nothing in those two files carries authority merely because it sits
-at HEAD.** Incident record: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`.
+**✅ PACKET 7 IS FROZEN at `aq4-comparison-algebra` 2.0.0**, consuming the
+Packet-4 projection at 2.0.0. The corrective implementation superseded the
+quarantined attempt and passed validation.
 
-**PACKET 7 REMAINS INCOMPLETE.** A corrective implementation becomes the
-Packet-7 milestone only after it passes validation. Until then the accepted
-parent `f4a90a4` is authoritative for every piece of law it froze, and the
-rulings below are authoritative for the repair. **Where the quarantined
-implementation and this section disagree, this section governs.**
+**⛔ THE QUARANTINED ATTEMPT IS NOT REHABILITATED.** Commit `4e2ff09` crossed a
+pre-registered STOP and embedded unratified law; it stays in history as
+evidence and **nothing in it carries authority**. It was superseded, never
+adopted. Incident record:
+`docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`. **Every defect that
+record names is repaired**, and the repair is a forward commit — `4e2ff09` was
+neither amended nor reverted.
+
+**What the freeze covers:** the operation table, the three verdicts, the two
+proof kinds, the distinguishing-witness role and its decidability
+restrictions, the corrected contradiction semantics, the six B2 labels, B1's
+and B3's intentional partiality, C3 over projected choice-group structure, and
+the proof/precondition boundary. **It does not cover scoring, an answer key,
+a candidate encoder or the unit binding**, none of which exists.
 
 ## 17a.1 What is RATIFIED NOW (Captain, 2026-08-17)
 
@@ -777,24 +782,42 @@ implementation is wrong and is repaired in the technical task.
 
 ## 17a.3 Repair status
 
-**DONE — the two Packet-4 repairs authorized by register #38 are PERFORMED and
-frozen at projection schema version 2.0.0 (§23a):** atom-payload validation for
-the cardinality and interval shapes, and the generated structural choice-group
-record. Neither minted semantic law; both implement law that was already
-ratified and merely unimplemented.
+**✅ ALL DONE.** The two Packet-4 repairs (register #38) are performed at
+projection schema 2.0.0, and the **Packet-7 corrective implementation** is
+performed at comparison-algebra 2.0.0. Packet 7 is **FROZEN**.
 
-**STILL OUTSTANDING — the Packet-7 corrective implementation**, which must
-supersede the quarantined artifacts and satisfy every ruling in 17a.1 and
-17a.2. **Packet 7 remains INCOMPLETE.** The Packet-4 repair does not advance
-it, and the quarantined artifacts are unchanged and are now version-stale
-against the projection they claim to consume — which is the correct outcome,
-not a regression.
+**What the repair removed, and did not revive:** the generic whole-unit
+equality operation and its self-designed necessary-condition list · action-head
+identity, relation-edge absence, cost-region absence and participant
+integer-set identity as comparison conditions · PROVEN components carrying a
+contract proof kind for a check that merely did not block · prose in a
+contract-anchor field · a false disjointness proof on partially-forbidden
+disjunctions · the cardinality and interval payload readings, now Packet-4 law.
 
-**C3 IS NOT DERIVED, SCORED OR ANSWERED BY THAT REPAIR.** The projection now
-carries the positive structural input a later comparison layer needs; deriving
-alternative-versus-cumulative from it, and proving independence, remain
-Packet-7 work under register #38's constraints. **Absence of a choice-group
-record is still not proof of independence.**
+**Measured effect of the repair**, on the same 5,184-pair synthetic sweep the
+audit used: the removed whole-unit operation's **12** positive verdicts are
+gone, because v1 has no proof for them; the eligibility operation is
+**byte-for-byte behaviour-preserving** on equivalent occurrence-scoped input
+(1,728 proven, unchanged); and the participant-correspondence restriction moves
+**1,728 → 0** positive verdicts on participant-scoped input. The false
+disjointness reproduced as `PROVEN-NOT` before the repair and is `UNKNOWN`
+after, while the genuine all-alternatives-forbidden case still proves.
+
+## 17a.3a THE COST OF THE PARTICIPANT RULING, STATED PLAINLY
+
+**Eligibility comparison is unreachable on PARTICIPANT-scoped constraints**, and
+that follows directly from 17a.2 rather than from an implementation choice. A
+constraint describing *what an object must be* is normally scoped to a
+participant, so on realistic input the operation will answer UNKNOWN far more
+often than the operation table alone suggests.
+
+**This is the conservative direction and it costs nothing today** — no
+projection instance and no answer key exists — but it is the single largest
+practical limit on B1, B2 and C1, and it is recorded here rather than
+discovered later. **The remedy is a benchmark contract for participant
+correspondence**, which 17a.2 already names as the required route. Until then
+the comparator declines instead of aligning integers the contract says do not
+correspond.
 
 ## 17a.4 DEFERRED
 
@@ -1723,19 +1746,21 @@ the sequencing note is recorded rather than the graph rewritten. Packet 3A
 **§22's blind timing is untouched**: the blind key is still adjudicated after
 candidate freeze, and packets 5–6 still require packet 3 as well as 4.
 
-**PACKET 7 SPLITS, AND NEITHER HALF IS ACCEPTED (register #31).** The row above
+**PACKET 7 SPLITS, AND ONLY THE ALGEBRA HALF IS FROZEN (register #31).** The row above
 bundles *"comparison algebra + scoring harness"*, and the two halves have
 different prerequisites: the **algebra** depends only on packet 4, while the
 **scoring harness** and the *"verdict tables on open cohorts"* need packet 3's
 open key and packets 5–6's encodings, none of which exist. **No verdict table
 over any real card was produced, and none could honestly be.**
 
-**An algebra implementation was attempted at `4e2ff09` and is QUARANTINED, not
-frozen** — a pre-registered STOP fired and the Worker continued, and later
-review found further unfrozen law and implementation defects. Read §17a for the
-rulings that govern the corrective work and
-`docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` for the record. **Do not
-read this row, or the presence of those two files, as packet 7 being done.**
+**The first attempt at `4e2ff09` is QUARANTINED and was SUPERSEDED, never
+adopted** — a pre-registered STOP fired and the Worker continued, and later
+review found further unfrozen law and implementation defects. A forward
+corrective implementation now carries the algebra and is **FROZEN** (§17a);
+`docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` is the record. **The
+scoring harness is still not built and needs packet 3's open key and packets
+5–6's encodings, so do not read this row as packet 7 being complete end to
+end.**
 
 # 33. CAPTAIN-CONTROLLED DECISIONS
 
@@ -1821,6 +1846,17 @@ DO NOT infer that:
 - an administrative not-applicable binding state is a semantic disposition or
   a comparison verdict — it is neither, and it is never UNKNOWN or PROVEN-NOT
   (register #36);
+- the quarantined attempt was rehabilitated because the algebra is now frozen —
+  it was SUPERSEDED by a forward commit and never adopted (§17a);
+- a cardinality comparator beyond the two ratified in v1 is available because
+  it is mathematically natural — widening needs a real consumer need and an
+  explicit ratification (register #39);
+- absence of a projected choice group proves two units are independent, or that
+  the independence arm is merely unimplemented — it is NOT DERIVABLE from
+  anything the projection carries, and that was audited (register #38);
+- participant-scoped constraints can be compared across occurrences once an
+  implementation aligns them by ordinal — the alignment is exactly what is
+  unratified (§17a.2, §17a.3a);
 - the 354 semantic card pairs may be expanded into occurrence cross-products —
   the population is the card pairs, with one frozen primary unit binding each
   (register #36);

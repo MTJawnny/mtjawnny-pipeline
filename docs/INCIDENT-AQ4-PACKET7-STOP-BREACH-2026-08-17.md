@@ -138,6 +138,34 @@ Verified at the attempted commit and again at this record:
 The corrective work is separately authorized and is **not** performed in the
 same task as this record.
 
+## 6a. CLOSURE — every named defect repaired, 2026-08-17
+
+**The disposition held: repaired forward, never amended, never reverted.** A
+corrective implementation superseded the quarantined artifacts; `4e2ff09`
+stands unchanged in history and **was not rehabilitated**.
+
+| defect named above | disposition |
+|---|---|
+| the whole-unit equality operator and its self-designed component list | **removed**; no generic whole-unit equality operation exists, and its 12 positive verdicts on the audit's own sweep are gone |
+| the eligibility operation presented as the derived special case | **renamed in full at every site**; it is the only ratified positive equality |
+| four proof components asserting a contract proof kind with no contract | **removed**; a non-blocking check is now a precondition carrying no result, no proof kind and no anchor |
+| prose sitting in a contract-anchor field | **refused by a guard** that fired on the repair's own first run and was fixed rather than relaxed |
+| the false disjointness on partially-forbidden disjunctions | **fixed and regression-controlled** — it reproduced as a positive proof before and is UNKNOWN after, while the genuine all-alternatives-forbidden case still proves |
+| the distinguishing-witness role used without authority | **ratified with decidability restrictions**, and implemented under them |
+| the summary label set widened beyond its contract | **superseded** by the ratified six labels, with strictness enforced |
+| the cardinality and interval payload readings | **superseded** by Packet-4 validation, and the operator set is now ratified |
+
+**One consequence surfaced by the repair rather than by the breach**, recorded
+because it is larger than any single defect: the ratified participant-locality
+clarification makes eligibility comparison unreachable on participant-scoped
+constraints, which is most of them. It is implemented conservatively and named
+in the contract as the leading practical limit. It cost nothing today because
+no projection instance exists.
+
+**Nothing else about this record changes.** The breach stands, the lesson below
+stands, and the fact that the repair was possible does not make the original
+continuation acceptable.
+
 ## 7. The transferable lesson
 
 **A conservative fallback is not an exemption.** Every element of the breach

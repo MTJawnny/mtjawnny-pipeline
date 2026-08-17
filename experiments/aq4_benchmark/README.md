@@ -662,138 +662,96 @@ with two independent rigs.
 
 Deliberately **not** wired into Gate 2 or CI.
 
-## 8c. THE SHARED COMPARISON ALGEBRA — ⛔ QUARANTINED, packet 7 NOT frozen
+## 8c. THE SHARED COMPARISON ALGEBRA — repaired and frozen, packet 7
 
-> **⛔ STATUS, 2026-08-17: `comparison-algebra.json` and `aq4_compare.py` are a
-> QUARANTINED IMPLEMENTATION CHECKPOINT, not accepted Packet-7 law.** They were
-> committed at `4e2ff09` after a pre-registered STOP fired and the Worker
-> continued; later review found further unfrozen law and implementation
-> defects. **Nothing in those two files carries authority merely because it is
-> committed.** Packet 7 remains INCOMPLETE until a corrective implementation
-> passes validation.
->
-> **Governing law is contract §17a and register #31–#38, not this section.**
-> Incident record:
-> `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`.
->
-> Known-defective in the committed artifacts, each ruled on and each awaiting
-> the technical repair: a whole-unit equality operator that v1 does not have
-> (register #32) · a summary label set and strictness rule since amended
-> (register #34) · four proof components asserting a contract proof kind with
-> no contract behind them (register #37) · a disjunctive contradiction arm that
-> is wrong, since requiring *artifact or creature* against forbidding
-> *artifact* leaves *creature* satisfiable (§17a.2) · a distinguishing-witness
-> role that is now granted but carries decidability restrictions the
-> implementation does not apply (register #33).
->
-> **The rest of this section describes what was BUILT, and is retained as
-> history so the repair has something exact to work against. Read it as a
-> record of the quarantined implementation, never as current law.**
-
-Contract §17a and supersession-register entries #31–#38.
+Contract §17a and register #31–#39. **Benchmark evaluation law only.**
 
 ```
 python3 experiments/aq4_benchmark/aq4_compare.py --census
 python3 experiments/aq4_benchmark/aq4_compare.py --selftest
-python3 experiments/aq4_benchmark/aq4_compare.py --validate-pins
 ```
 
 | file | role |
 |---|---|
-| `comparison-algebra.json` | the frozen law — operation table, result domain, proof-kind vocabulary, per-operation obligations, UNKNOWN propagation and reason classes, the derived-question audit, and the dependency pins. **No pair answer, no member list, no candidate data** |
-| `aq4_compare.py` | the shared comparator, its proof records and its controls. Shared evaluation machinery, **never a candidate** |
+| `comparison-algebra.json` | the frozen law — `aq4-comparison-algebra` **2.0.0**, consuming projection **2.0.0** |
+| `aq4_compare.py` | the shared comparator, its proof records and its controls. Never a candidate |
 
-### Universal versus existential — the one law the table hangs on
+**⛔ The first attempt (`4e2ff09`) was QUARANTINED and is SUPERSEDED, never
+adopted.** It crossed a pre-registered STOP and embedded unratified law; it
+stays in history as evidence and carries no authority. Incident record and
+closure: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`.
 
-> **A universal claim is contract-provable. An existential claim needs a corpus
-> witness.**
+### Three operations, and no whole-unit equality
 
-Entailment, equality and disjointness are universal, so they are proved from
-the §14 contracts, the §13 atom semantics and the ratified subtype→type
-hierarchy (`CR_CONTRACT`). Non-entailment, non-equality and OVERLAP assert that
-some object *exists*, so only a named printed card proves them
-(`CORPUS_WITNESS`). That is register #17 generalized past overlap — and it is
-why *"I could not prove equality"* is `UNKNOWN` and never `PROVEN_NOT`.
+`OP_ENTAILS` (directional) · `OP_ELIGIBILITY_EQUALITY` (symmetric, **the only
+ratified positive equality**) · `OP_INTERSECTION` (one proposition, two poles).
+**There is deliberately no operation named for whole-unit equality** — a
+shorter name is how the refused whole-unit reading creeps back in.
 
-Four operations, and `compare()` refuses anything the frozen file does not
-register: `OP_ENTAILS` (directional), `OP_EQUALITY`,
-`OP_ELIGIBILITY_EQUALITY`, `OP_INTERSECTION`. **OVERLAP and DISJOINT are two
-readers of ONE proposition**, so they cannot disagree and nothing can appear
-between them.
+*A universal claim is contract-provable; an existential claim needs a corpus
+witness.* Entailment and disjointness are universal; non-entailment and overlap
+are existential. That is why an inability to prove something never becomes
+`PROVEN_NOT`.
 
-### Blockers block; they never disprove
+### What is partial, and why
 
-| present | consequence | never |
-|---|---|---|
-| a structural COST region on either side | strict equality cannot be PROVEN | PROVEN_NOT from differing cost bytes |
-| a differing or missing action head | strict equality cannot be PROVEN | a missing head read as an equal action |
-| a projected relation edge | strict equality cannot be PROVEN | a claim that no relation exists |
-| a dimension actionable on one side, missing on the other | UNKNOWN, reason `MISSING_FACT` | any absence claim |
+- **B1's positive arm is UNAVAILABLE in v1.** The projection does not represent
+  all uncontracted semantic residue, so matching projected content is not
+  matching semantic content. Identical heads, identical participant integers,
+  an absent cost region, an absent relation edge and matching visible fields are
+  **each refused as positive evidence**. `PROVEN_NOT` only via an independently
+  proven eligibility non-equivalence.
+- **B3's action arm is UNKNOWN.** No action-equivalence operator exists. The
+  head-sequence report is non-verdict audit metadata that influences nothing.
+- **C3's INDEPENDENT arm is NOT DERIVABLE.** Audited: nothing the projection
+  carries positively establishes independence, and **absence of a choice group
+  is not proof of it**. Reported, not minted.
+- **Participant-scoped constraints do not compare across occurrences.**
+  Ordinals are occurrence-local and no correspondence is ratified, so the
+  comparator declines rather than aligning integers the contract says do not
+  correspond. This is the largest practical limit and it is stated in §17a.3a.
 
-The cost case is demonstrated rather than asserted: a synthetic pair with
-identical constraint facts and identical heads, one side carrying a cost
-region, is `PROVEN` if the region is ignored and `UNKNOWN` under the real
-algebra. The control prints both.
+### B2's six labels
 
-### What is derivable, and what is honestly not
+`EQUAL` · `BROADER` · `NARROWER` · `OVERLAPPING` · `DISJOINT` · `UNKNOWN`.
+EQUAL needs eligibility equality PROVEN and is **never** remapped to
+OVERLAPPING. BROADER and NARROWER are **STRICT**: the containing direction
+PROVEN *and* the reverse PROVEN-NOT — one direction proven with the reverse
+UNKNOWN is UNKNOWN. Orientation was audited against the consumer contract's own
+wording before implementing.
 
-`B1` · `B2` · `B4` · `C1` · `C2` · `DISCOVERY-1` · `E1` · `HONESTY-1` derive
-mechanically. Two do not, and **neither gap was filled from intuition**:
+### Proof records versus preconditions
 
-- **`B3` is PARTIAL.** Its eligibility arm derives in full; its
-  action-equivalence arm returns `UNKNOWN` with reason
-  `NO_CONTRACTED_COMPARISON_LAW`, because §17's closed table authorizes no
-  action-head comparison and a head is expressly not a §14 dimension. Head
-  identity is reported as a **structural** fact — evidence for a future ruling,
-  never a semantic claim.
-- **`C3` is NOT derivable.** §17's ChoiceGroup derivation reads the *owning
-  header's* modality; the frozen projection exports the occurrence address and
-  no header modality. Reported, not fixed — proposing a projection field is
-  outside this packet.
-- **`HONESTY-2`** is a scoring-time property of a claiming candidate, and no
-  candidate exists. The algebra implements only its consequence: an
-  `ABSENT_PROVEN` row whose claimant obligations are not represented as
-  satisfied degrades to `UNKNOWN`, reason `ABSENCE_NOT_EARNED`.
+Only genuine semantic proof components enter the three-valued composition, and
+a contract proof must cite a **real** anchor — prose is never one. A structural
+check that ran and did **not** block is recorded as a `precondition` carrying no
+result, no proof kind and no anchor. Cost, relations, heads and participant
+ordinals live there precisely because the law refuses them as comparison
+conditions.
 
-`C1` is directional over the **frozen unordered pair** — the direction is an
-argument at answer time and no directed pair is ever stored. An empty blocker
-list means *"no blocking fact is derivable under v1 law"*, **not** that the
-replacement holds.
+### The disjunction repair
 
-`E1`'s domain is the **354** unique unordered pairs of the semantic tranches,
-one trace per pair, never multiplied by question count and never over
-`PAIR_K_CHAIN`. It emits a validated §19 trace and no prose.
+Requiring *artifact or creature* against forbidding *artifact* is **not** a
+contradiction — `creature` remains satisfiable. The quarantined implementation
+proved empty intersection on any overlap, which is a false negative verdict. It
+reproduced as a positive proof before the repair and is UNKNOWN after, while the
+genuine all-alternatives-forbidden case still proves. Both directions are
+rigged-red controls.
 
-### Two declared readings, flagged rather than smuggled
+### Measured
 
-The projection schema fixes an atom's `op` but not the payload shape of a
-`CARD` or `INTERVAL` value, so the comparator declares one. And §20's `B4` says
-"destination / timing / quantity" while §14's rows are named `zone`,
-`timing_duration`, `quantity` and `numeric`, so the mapping is recorded as a
-reading. **Neither is ratified law, neither is load-bearing, and both sit
-beside the full per-dimension verdict table**, which does not depend on them.
+66 assertions across 35 control codes, every rig demonstrated red. Determinism
+×2 cross-process. On the audit's own 5,184-pair synthetic sweep: the removed
+whole-unit operation's **12** positive verdicts are gone; the eligibility
+operation is **behaviour-preserving** on equivalent occurrence-scoped input
+(1,728 proven, unchanged); the participant restriction moves **1,728 → 0** on
+participant-scoped input. Over the 21 projected choice groups, C3 derives
+ALTERNATIVE on 20 and CUMULATIVE on 4, with 1 group and 6 member pairs left
+UNKNOWN and INDEPENDENT derivable on none.
 
-### Controls
-
-`--selftest`, 67 assertions, every rig demonstrated red: unregistered-operator
-refusal · inability-to-prove staying UNKNOWN with its closed-world
-counterfactual printed · a distinguishing witness being the *only* route to
-PROVEN_NOT · missing-is-not-absent · residue and cost blocking a proof that
-ignoring them would grant · action-head blocking · overlap without a witness ·
-witness inadmissibility and non-satisfaction · disjointness needing a
-contradiction · the forbidden controller complement beside the zone complement
-that *is* taken · the context guard · wrapper transparency with the
-adjudication metadata surviving into the trace · claimant-side absence
-obligations · derived verdicts refused by the projection · native identifiers
-refused in a proof record · proof-trace and reason-class discipline · symmetry
-as **byte-identity** under operand reversal · explicit direction · determinism
-×2.
-
-Deliberately **not** wired into Gate 2 or CI.
-
-**No verdict over any real card is produced here.** There is no answer key, no
-candidate export and no scoring. Every fixture is synthetic and every
-`oracle_id` in this module is a zero-padded placeholder.
+**No answer key, no candidate export, no scoring, no unit binding.** The
+comparator accepts explicitly supplied units and selects nothing itself; the
+open key must freeze `CARD_CASE_WITH_EXPLICIT_UNIT_BINDING` first.
 
 ## 9. WHAT THIS PACKET DELIBERATELY DID NOT DECIDE
 
