@@ -282,7 +282,11 @@ def record_sha256(rec: dict) -> str:
 # THE ONE AUTHORIZED AUTOMATIC MAPPING
 # ==========================================================================
 
-def deterministic_singleton(a_participants, b_participants):
+AUTHORITATIVE = "AUTHORITATIVE"
+
+
+def deterministic_singleton(a_participants, b_participants,
+                            enumeration=None):
     """The ONLY automatic cross-card participant mapping in v1.
 
     Returns the mapping when EACH side enumerates exactly one participant --
@@ -291,7 +295,23 @@ def deterministic_singleton(a_participants, b_participants):
     best-effort fallback: every alternative rule either decides correspondence
     from the very facts the comparison is about, or smuggles in a role
     ontology v1 refuses.
+
+    **THE RULE IS DEFINED OVER THE FINAL AUTHORITATIVE ENUMERATION, AND THAT
+    IS ENFORCED RATHER THAN ASSUMED.** A STRUCTURAL CANDIDATE count of one is
+    not an authoritative count of one: the frozen structural probe does not
+    enumerate untargeted affected-object participants, so "the probe found one"
+    and "there is exactly one" are different statements. The caller must
+    therefore declare `enumeration=AUTHORITATIVE`; a candidate enumeration is
+    refused outright, because a singleton mapping minted from an incomplete
+    count would be a correspondence nobody adjudicated.
     """
+    if enumeration != AUTHORITATIVE:
+        fc.halt("deterministic_singleton refuses a non-authoritative "
+                "enumeration. The rule is defined over the FINAL enumeration, "
+                "and a structural CANDIDATE count of one is not an "
+                "authoritative count of one -- the frozen probe does not "
+                "enumerate untargeted affected objects. Pass "
+                "enumeration=AUTHORITATIVE only after completeness review.")
     if len(a_participants) == 1 and len(b_participants) == 1:
         return [{"a_ordinal": a_participants[0]["ordinal"],
                  "b_ordinal": b_participants[0]["ordinal"],
@@ -346,6 +366,54 @@ def assert_key_matches_binding(rec: dict, key_doc: dict) -> None:
                   "never a silent renumber and never a silent edit.")
 
 
+def validate_artifact(records) -> list:
+    """EXISTING-LAW CONSISTENCY GUARD over the WHOLE combined artifact.
+
+    A semantic occurrence's participant enumeration is OCCURRENCE TRUTH, and
+    the same occurrence can be the bound unit of several card-pair records. The
+    enumeration is authoritative, so every copy of it inside the one artifact
+    must be the SAME enumeration.
+
+    **One artifact hash is not sufficient on its own**: a hash proves the file
+    did not change, not that the file is internally coherent. Two rows could
+    disagree about the same occurrence and each validate perfectly on its own,
+    which is exactly what the per-record validator allowed before this guard.
+
+    This adds no schema field, no stored registry and no second truth source --
+    the records remain the only place an enumeration lives. It is the
+    already-ratified authoritative-enumeration law applied consistently.
+    """
+    out = []
+    for i, rec in enumerate(records):
+        out += [f"record {i}: {x}" for x in validate(rec)]
+    seen = {}
+    for i, rec in enumerate(records):
+        for side in ("a", "b"):
+            unit = rec.get(f"{side}_unit")
+            if unit is None:
+                continue
+            addr = tuple(unit)
+            canon = pj.canonical_json(
+                sorted((rec.get(f"{side}_participants") or []),
+                       key=lambda e: (_anchor_key(e), e.get("ordinal", -1))))
+            if addr in seen and seen[addr][1] != canon:
+                out.append(
+                    f"records {seen[addr][0]} and {i} bind the SAME semantic "
+                    f"occurrence and carry DIFFERENT authoritative participant "
+                    f"enumerations. An occurrence's enumeration is occurrence "
+                    f"truth; every copy inside the one artifact must be "
+                    f"byte-identical.")
+            seen.setdefault(addr, (i, canon))
+    return out
+
+
+def assert_artifact_valid(records) -> None:
+    bad = validate_artifact(records)
+    if bad:
+        fc.halt("combined binding artifact rejected:\n  - "
+                + "\n  - ".join(bad))
+
+
 def correspondence_for(rec: dict) -> dict:
     """The comparator's correspondence context for one bound pair.
 
@@ -393,7 +461,8 @@ def sample_binding(a_spans=((7, 13),), b_spans=((5, 11),), mappings=None,
     a_ps = _enum(OID_A, a_unit, a_spans)
     b_ps = _enum(OID_B, b_unit, b_spans)
     if mappings is None:
-        m = deterministic_singleton(a_ps, b_ps)
+        m = deterministic_singleton(a_ps, b_ps,
+                                    enumeration=AUTHORITATIVE)
         mappings = [] if m is NEEDS_ADJUDICATION else m
     mapped_a = {x["a_ordinal"] for x in mappings}
     mapped_b = {x["b_ordinal"] for x in mappings}
@@ -458,23 +527,24 @@ def selftest() -> int:
                      [(10 * i, 10 * i + 5) for i in range(b_n)])
         check(f"BIND.MULTI_CANNOT_DEFAULT {label} refuses and asks for "
               f"adjudication",
-              deterministic_singleton(a_ps, b_ps) is NEEDS_ADJUDICATION)
+              deterministic_singleton(a_ps, b_ps, enumeration=AUTHORITATIVE)
+              is NEEDS_ADJUDICATION)
     check("BIND.ORDINAL_NOT_CORRESPONDENCE equal ordinals are not a rule -- a "
           "2x2 case with identical ordinals still refuses",
           deterministic_singleton(
               _enum(OID_A, [OID_A, 0, 0, 0], [(0, 5), (9, 14)]),
-              _enum(OID_B, [OID_B, 0, 0, 0], [(0, 5), (9, 14)]))
-          is NEEDS_ADJUDICATION)
+              _enum(OID_B, [OID_B, 0, 0, 0], [(0, 5), (9, 14)]),
+              enumeration=AUTHORITATIVE) is NEEDS_ADJUDICATION)
     check("BIND.CONSTRAINT_SIMILARITY_REFUSED the helper receives no "
           "constraints at all, so similarity cannot be consulted",
           "restriction" not in deterministic_singleton.__doc__.lower()
-          and deterministic_singleton.__code__.co_argcount == 2)
+          and deterministic_singleton.__code__.co_argcount == 3)
     check("BIND.SWAPPED_ATTACHMENT_NOT_AUTOBOUND a swapped multi-participant "
           "attachment is never auto-bound",
           deterministic_singleton(
               _enum(OID_A, [OID_A, 0, 0, 0], [(0, 5), (20, 25)]),
-              _enum(OID_B, [OID_B, 0, 0, 0], [(20, 25), (0, 5)]))
-          is NEEDS_ADJUDICATION)
+              _enum(OID_B, [OID_B, 0, 0, 0], [(20, 25), (0, 5)]),
+              enumeration=AUTHORITATIVE) is NEEDS_ADJUDICATION)
     check("BIND.NO_ROLE_ONTOLOGY no role/slot/kind vocabulary exists in the "
           "schema", not ({"semantic_role", "argument_slot", "participant_kind"}
                          & set(pj.canonical_json(SCHEMA).lower().split('"'))
@@ -580,6 +650,68 @@ def selftest() -> int:
           "byte-identical", canonical_bytes(base) == canonical_bytes(base))
     check("BIND.PERMUTATION_DETERMINISTIC one artifact, one hash",
           record_sha256(base) == record_sha256(canonicalize(base)))
+
+    print("\nCROSS-RECORD ENUMERATION CONSISTENCY (whole artifact)")
+    shared_unit = [OID_A, 0, 0, 0]
+    row1 = sample_binding()
+    row2 = copy.deepcopy(row1)
+    row2["pair"] = sorted([OID_A, "00000000-0000-0000-0000-00000000000c"])
+    check("BIND.SAME_OCCURRENCE_ENUM_CONSISTENT two rows agreeing about the "
+          "same occurrence validate", validate_artifact([row1, row2]) == [],
+          validate_artifact([row1, row2]))
+    rig = copy.deepcopy(row2)
+    rig["a_participants"][0]["anchor"]["span"] = {"start": 99, "end": 105}
+    check("BIND.SAME_OCCURRENCE_ENUM_CONSISTENT-RIG two rows DISAGREEING about "
+          "the same occurrence turn the artifact red",
+          any("DIFFERENT authoritative participant" in x
+              for x in validate_artifact([row1, rig])),
+          validate_artifact([row1, rig]))
+    check("BIND.SAME_OCCURRENCE_ENUM_CONSISTENT-RIG each disagreeing row still "
+          "validates ON ITS OWN, which is exactly why a per-record validator "
+          "and one artifact hash were not enough",
+          validate(row1) == [] and validate(rig) == [])
+    rig2 = copy.deepcopy(row2)
+    rig2["a_participants"][0] = {**rig2["a_participants"][0],
+                                 "source": "HUMAN_ADJUDICATED",
+                                 "adjudication": {"method": "SINGLE"}}
+    check("BIND.SAME_OCCURRENCE_ENUM_CONSISTENT a differing enumeration is "
+          "caught even when only its provenance differs",
+          validate_artifact([row1, rig2]) != [])
+    perm_row = copy.deepcopy(row2)
+    perm_row["a_participants"] = list(reversed(perm_row["a_participants"]))
+    check("BIND.REPEATED_ENUM_CANONICAL the same enumeration written in a "
+          "different order is NOT a disagreement",
+          validate_artifact([row1, perm_row]) == [],
+          validate_artifact([row1, perm_row]))
+    two_p = sample_binding(a_spans=((7, 13), (20, 26)), b_spans=((5, 11),),
+                           mappings=[])
+    two_p_perm = copy.deepcopy(two_p)
+    two_p_perm["pair"] = sorted([OID_A, "00000000-0000-0000-0000-00000000000c"])
+    two_p_perm["a_participants"] = list(reversed(two_p_perm["a_participants"]))
+    check("BIND.REPEATED_ENUM_CANONICAL-RIG the multi-participant case "
+          "canonicalizes the same way",
+          validate_artifact([two_p, two_p_perm]) == [],
+          validate_artifact([two_p, two_p_perm]))
+
+    print("\nSTRUCTURAL IS NOT AUTHORITATIVE")
+    one_each = (_enum(OID_A, [OID_A, 0, 0, 0], [(7, 13)]),
+                _enum(OID_B, [OID_B, 0, 0, 0], [(5, 11)]))
+    check("BIND.STRUCTURAL_SINGLETON_NOT_FINAL applying the singleton rule to "
+          "a non-authoritative enumeration is REFUSED",
+          halts(deterministic_singleton, *one_each))
+    check("BIND.STRUCTURAL_SINGLETON_NOT_FINAL-RIG the SAME input declared "
+          "authoritative does map, so the refusal is the declaration and not "
+          "the fixture",
+          deterministic_singleton(*one_each, enumeration=AUTHORITATIVE)
+          is not NEEDS_ADJUDICATION)
+
+    print("\nA PREFLIGHT QUEUE IS NOT AN ARTIFACT")
+    queue = {"schema": "aq4-binding-preflight-queue", "rows": [
+        {"pair": sorted([OID_A, OID_B]), "state": "NEEDS_HUMAN_ADJUDICATION"}]}
+    check("BIND.PREFLIGHT_NOT_AUTHORITY a work-queue object cannot pass as a "
+          "frozen combined binding artifact", validate(queue) != [])
+    check("BIND.PREFLIGHT_NOT_AUTHORITY-RIG the real record does pass",
+          validate(sample_binding()) == [])
 
     print("\nTHE KEY-ENUMERATION CONTRACT")
     key = _key_doc(base)

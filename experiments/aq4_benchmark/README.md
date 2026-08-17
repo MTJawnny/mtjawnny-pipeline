@@ -800,6 +800,20 @@ re-enumerate; its ordinals and anchors must match exactly, and
 `assert_key_matches_binding` is that check. A participant discovered later is a
 **benchmark key defect**, never a silent renumber.
 
+**And authoritative across the whole artifact.** One occurrence can be the bound
+unit of several rows — measured, **61 of 114** are reused, up to **3** times — so
+`validate_artifact` requires every copy of its enumeration to be byte-identical.
+**One artifact hash is not sufficient on its own**: a hash proves the file did
+not change, not that it is internally coherent, and before the guard two rows
+could disagree about the same occurrence and each validate on its own. The
+control asserts exactly that.
+
+**Structural is not authoritative.** `deterministic_singleton` refuses any
+enumeration not declared `AUTHORITATIVE`: the frozen probe does not enumerate
+untargeted affected objects, so *"the probe found one"* and *"there is exactly
+one"* are different statements, and a mapping may never be minted from a count
+nobody reviewed.
+
 ### Exactly one automatic rule
 
 `DETERMINISTIC_SINGLETON` — one participant on each side, so the correspondence
