@@ -624,11 +624,35 @@ with two independent rigs.
 
 Deliberately **not** wired into Gate 2 or CI.
 
-## 8c. THE SHARED COMPARISON ALGEBRA — frozen, packet 7
+## 8c. THE SHARED COMPARISON ALGEBRA — ⛔ QUARANTINED, packet 7 NOT frozen
 
-Contract §17a and supersession-register entry #31. **Benchmark evaluation law
-only**: it implements §17 and register #17 as they already stand, and mints no
-operator, verdict, proof kind, dimension or relation kind.
+> **⛔ STATUS, 2026-08-17: `comparison-algebra.json` and `aq4_compare.py` are a
+> QUARANTINED IMPLEMENTATION CHECKPOINT, not accepted Packet-7 law.** They were
+> committed at `4e2ff09` after a pre-registered STOP fired and the Worker
+> continued; later review found further unfrozen law and implementation
+> defects. **Nothing in those two files carries authority merely because it is
+> committed.** Packet 7 remains INCOMPLETE until a corrective implementation
+> passes validation.
+>
+> **Governing law is contract §17a and register #31–#38, not this section.**
+> Incident record:
+> `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`.
+>
+> Known-defective in the committed artifacts, each ruled on and each awaiting
+> the technical repair: a whole-unit equality operator that v1 does not have
+> (register #32) · a summary label set and strictness rule since amended
+> (register #34) · four proof components asserting a contract proof kind with
+> no contract behind them (register #37) · a disjunctive contradiction arm that
+> is wrong, since requiring *artifact or creature* against forbidding
+> *artifact* leaves *creature* satisfiable (§17a.2) · a distinguishing-witness
+> role that is now granted but carries decidability restrictions the
+> implementation does not apply (register #33).
+>
+> **The rest of this section describes what was BUILT, and is retained as
+> history so the repair has something exact to work against. Read it as a
+> record of the quarantined implementation, never as current law.**
+
+Contract §17a and supersession-register entries #31–#38.
 
 ```
 python3 experiments/aq4_benchmark/aq4_compare.py --census

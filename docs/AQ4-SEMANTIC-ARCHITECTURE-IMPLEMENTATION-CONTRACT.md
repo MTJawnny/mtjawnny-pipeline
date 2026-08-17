@@ -278,7 +278,14 @@ evidence?
 | 28 | HUMAN-RESOLVED meant, in effect, a Captain ruling | source (3) dispositions / §18 | **AMENDED — CAPTAIN 2026-08-17** | For AQ4 benchmark evaluation, `HUMAN-RESOLVED(x)` means *semantic content x resolved by human adjudication under the ratified AQ4 adjudication procedure*. The adjudication **method** (single · independent dual · deterministic sampled second · Captain ruling · disagreement-resolution status) is **metadata of the containing key/adjudication artifact, never a disposition value**. **Wrapper transparency:** the disposition carries payload `x`, so later comparison consumes `x` while the wrapper stays in provenance/audit. `HUMAN-RESOLVED` is **key/adjudication-side only** — a candidate export may never emit it — and `ABSENT-PROVEN` stays claimant-side, so key absence is `HUMAN-RESOLVED(absent)` against candidate `ABSENT-PROVEN`. **No sixth disposition.** A per-row party field was proposed and is **REJECTED** (§23a) | the Captain-only reading predates the ratified open-key adjudication protocol (register #24), which produces adjudicated truth through named adjudicators rather than through a Captain ruling per cell. Captain remains the final governance authority; what changed is who may *produce a key cell*, not who decides | yes |
 | 29 | the open semantic surface was described by a count and, informally, as "reminder-stripped" | §27a | **RATIFIED / CORRECTED — CAPTAIN 2026-08-17** | The surface is produced by a **named ratified preprocessing chain**, recorded in order in `experiments/aq4_benchmark/open-surface-manifest.json`: `tier_engine.get_raw_faces` → `foundry_common.canonicalize_self_reference` (optional normalized DETECTOR view) → `foundry_locality.units` (CR 113.2c paragraph split + locality reconciliation) → `foundry_shape_extractor.strip_reminder` (CR 207.2a) → `foundry_shape_extractor.quoted_spans` → `foundry_shape_extractor.sentence_spans` (owns the clause ordinal). **Reminder text** stays in the raw evidence view and stays trace-visible, but **mints no semantic occurrence and is never independently claim-admissible** — a fact supported only from reminder text HALTS. The **unstripped alternate surface is REJECTED and recorded**: 872 occurrences / 360 legacy / 417 semantic. **The raw-vs-CARDNAME-canonical item is CLOSED as view-invariant** — 782/307/364 on both views, identical occurrence addresses, identical reached sets, 0 head-value deltas — with the deferred-P3 exposure preserved at **57** textually differing occurrences, **32** unreached by P1+P2 across **22** cards | naming the surface after one of its six passes made the recorded counts depend on a view choice the contract never stated; the strip alone moves 872→782 and 360→307. P3 stays DEFERRED and no proper-name heuristic is adopted; the text-view behaviour must be **re-audited before any future P3 adoption** | yes |
 | 30 | benchmark surface facts were pinned by counts in prose, with per-class digests asserted but never committed | §27a | **RATIFIED — CAPTAIN 2026-08-17** | One durable manifest (`experiments/aq4_benchmark/open-surface-manifest.json`) and one deterministic validator (`experiments/aq4_benchmark/aq4_projection.py`). The manifest pins full SHA-256 digests plus the **generation law** — corpus ref, CR edition + hash, the preprocessing chain by implementation name, the canonical occurrence-id format, serialization, sort, encoding and delimiter — and carries **no oracle_id, no member list, no Oracle text, no hash prefix, no tolerance**. Counts are convenience metadata; the digests and the regenerator are the assertions. Deliberately **not** wired into Gate 2 or CI | a bare count is not a pin and a bare digest with no regenerator is not one either. §27a asserted per-class digests that existed nowhere in the repository, so the numbers lived only in a docstring — the carried-forward-count failure aimed at the benchmark's own evidence base | yes |
-| 31 | §17's comparison algebra was a one-sentence CANDIDATE list of operation names: no operation table, no per-operation proof obligations, no UNKNOWN-propagation law, no proof-record shape and no implementation — while every §20 cross-card question was already phrased over it | §17 / §20 / §23a | **FROZEN — PACKET 7. Implements existing law; ratifies none, and two items stay open** | §17a: four registered operations over the frozen Packet-4 projection, the three verdicts and the two proof kinds unchanged, organized by *universal ⇒ `CR_CONTRACT`, existential ⇒ `CORPUS_WITNESS`*; uncontracted material (cost, action heads, relations, missing counterparts) BLOCKS toward UNKNOWN and never disproves; derived answers stay derived output | a named list of operations is not an operation table, and a §20 question phrased over an unimplemented algebra cannot be answered or shown to be unanswerable. **NOTHING WAS MINTED TO COMPLETE IT:** B3's action-equivalence arm returns UNKNOWN because §17's table authorizes no action-head comparison, and C3 is not derivable because the frozen projection exports no owning-header modality. Both are named as open decisions rather than filled from intuition | yes |
+| 31 | Packet 7 was declared FROZEN, implementing existing law and ratifying none | §17a as committed at `4e2ff09` | **SUPERSEDED / QUARANTINED — CAPTAIN 2026-08-17. THE CLAIM WAS FALSE.** | §17a as it now reads: the two Packet-7 artifacts are a QUARANTINED IMPLEMENTATION CHECKPOINT, Packet 7 is INCOMPLETE, and the rulings of register #32–#38 govern the corrective work. The accepted parent `f4a90a4` stays authoritative for the law it froze | a pre-registered STOP fired and the Worker continued and committed. Later review found two further STOPs that had fired unreported, a whole-unit equality operator built from a self-designed component list, an existential witness used in a role the frozen proof kind did not grant, a summary label set widened beyond its contract, four proof components asserting a contract proof kind with no contract behind them, and a disjunctive contradiction arm that is simply wrong. Record: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` | yes — as breach evidence only |
+| 32 | §20's B1 implied a positive whole-unit semantic-equality answer was available, and the quarantined implementation supplied one built from a self-designed necessary-condition list | §20 B1 / §17 / §23a | **RATIFIED — CAPTAIN 2026-08-17** | **No positive whole-unit equality proof exists in AQ4 v1, and no generic whole-unit equality operator may be created.** The only ratified positive equality operation is §17's mutual entailment of normalized eligibility/constraint sets, named unambiguously. B1 PROVEN is UNAVAILABLE; PROVEN-NOT only where a difference is independently proven under authorized law; otherwise UNKNOWN. Identical action heads, identical participant integer sets, no relation edge, no cost region, absent visible residue, and any argument from all projected fields matching, are **each refused as positive proof**. A key-side completeness attestation is **DEFERRED, not rejected** | structural: the Packet-4 projection does not represent all possible uncontracted semantic residue, so equality of projected content is not equality of semantic content. Register #27's cost-equality safety is a BLOCKER principle and authorizes no positive proof | yes |
+| 33 | the corpus-witness proof kind was defined only as a named card satisfying both — an overlap-shaped role — while the quarantined implementation used a witness to refute entailment | §19 / register #17 | **RATIFIED — CAPTAIN 2026-08-17** | The existing proof kind gains an additional ROLE, **not a third proof kind**: one admissible printed-card witness satisfying one side and demonstrably violating the other proves NON-ENTAILMENT. Violation is provable only where the consequent is decidably false under the frozen contract; a requiring atom needs an evidence-traced COMPLETE dimension assignment; an equality-only mismatch stays UNKNOWN; a malformed cardinality or interval payload NEVER proves violation; an open vocabulary or incomplete assignment supports no negative inference. The record carries corpus reference, witness identity, admissible evidence, the governing dimension contract, and any completeness declaration relied upon | witness absence proves nothing and a failed search stays UNKNOWN, so the role is asymmetric by construction. Corpus incompleteness cannot invalidate a witness that is PRESENT: presence proves existence, absence proves nothing | yes |
+| 34 | §20's B2 enumerated five summary labels and said nothing about strictness | §20 B2 | **RATIFIED — CAPTAIN 2026-08-17** | Six labels: EQUAL · BROADER · NARROWER · OVERLAPPING · DISJOINT · UNKNOWN. **EQUAL is never mapped to OVERLAPPING** and requires eligibility equality PROVEN. **BROADER and NARROWER are STRICT** — the containing direction PROVEN *and* the reverse PROVEN-NOT; one direction proven with the reverse UNKNOWN is UNKNOWN. OVERLAPPING still needs the positive intersection proof and is **never inferred from equality** unless the witness obligation is independently discharged. DISJOINT follows the existing empty-intersection law | the five-label set had no home for a proven equality and carried no strictness rule, so an implementation could — and did — report a containment from one proven direction alone | yes |
+| 35 | B3's action-equivalence arm was an open question, and it was unclear whether the frozen pairing should move to accommodate it | §20 B3 / §17 | **RATIFIED — CAPTAIN 2026-08-17** | **B3 stays intentionally PARTIAL and no action-equivalence operator is added.** Heads may be surfaced structurally for audit, but an identical sequence is not positive proof of equivalence, differing heads do not prove non-equivalence, an unresolved head blocks overclaim, and the arm is UNKNOWN until a separately ratified action comparison exists. **The frozen pairing is NOT redrawn** | measured 2026-08-17 over the frozen open surface: card-level head-multiset identity is **1 of 127** on the tranche B3 is instantiated over, against 19 of 105 and 16 of 122 on the other two — because that tranche holds the action family DIFFERENT by construction. That is benchmark evidence, and evidence is not authorization to move a pre-registered population | yes |
+| 36 | §20's cross-card questions are phrased over UNITS while the frozen pairing binds CARDS, so nothing bound a pair to the units its questions compare | §20 / §21 / register #19 | **RATIFIED `CARD_CASE_WITH_EXPLICIT_UNIT_BINDING` — CAPTAIN 2026-08-17** | §21a. The population stays the **354 unique semantic card pairs** and is **NOT** expanded into occurrence cross-products. One neutral PRIMARY unit binding per semantic pair is created and frozen **before any answer-key truth and before either candidate exists**, and is reused by that pair's questions. Hybrid method: deterministic default where frozen machinery uniquely resolves the intended occurrence, human-adjudicated where it does not, with method and provenance recorded. Binding state is `BOUND` or `NOT_APPLICABLE`, and `NOT_APPLICABLE` is **ADMINISTRATIVE ONLY** — never a disposition, a verdict, UNKNOWN or PROVEN-NOT | left open, the cross product silently makes the key an order of magnitude larger — **3,030** unit pairs against 354 card pairs, measured 2026-08-17 — and lets an implementation decide the benchmark's size. **6 of the 272 published open exemplars carry no semantic occurrence at all**, which is exactly what the administrative state exists for | yes |
+| 37 | a structural guard that was evaluated and did not block was emitted as a PROVEN proof component carrying a contract proof kind | §19 / the quarantined implementation | **RATIFIED — CAPTAIN 2026-08-17** | **A non-blocking check is not a proof.** No verdict, no proof kind and no anchor may be emitted for *no cost region observed* · *no relation edge observed* · *identical head sequences* · *identical participant integer sets* · *another blocker simply not firing*. Such a check is recorded as derived audit/precondition metadata only. **Only genuine semantic proof components enter the three-valued composition**, and a contract proof must cite a real applicable rule anchor — **prose describing a precondition is never an anchor** | measured 2026-08-17: four such components asserted a contract proof kind with no contract behind them, three of them carrying prose in the anchor field. Two were, structurally, absence claims of the kind register #27 says cannot exist on either side, reintroduced through the proof channel instead of the dimension channel. Removing them changed **0 of 5,184** top-line verdicts, so the damage was entirely to the trace — which is where the false-precision veto does its work | yes |
+| 38 | the Packet-4 projection omitted structural input that already-ratified law requires, and validated an atom's operator without validating its payload | §23a / §17 / the ratified locality exclusivity amendment | **REPAIR AUTHORIZED — CAPTAIN 2026-08-17. NOT YET PERFORMED** | §23a. A neutral GENERATED structural choice-group record may be materialized: owning-header evidence and location, member occurrence addresses in the existing four-coordinate identity, selection cardinality `{min,max}` deterministically derived under the ratified rules-backed grammar, and an admissible trace to the owning header. **No mode-id coordinate, no codebook storage, no production ownership ruling, no candidate-native vocabulary.** Separately, the cardinality and interval payload shapes — already frozen law — must be VALIDATED, with a malformed payload rejected as UNKNOWN and **never** admissible as evidence for a negative verdict | the projection may materialize the derived input because accepted law already requires owning-header-derived choice-group behaviour: this was an implementation omission, not missing law. C3 may then derive alternative or cumulative **only from positive choice-group structure**, and independent **only where positive structural law proves it** — **absence of a choice-group record is not proof of independence** — and if that arm cannot be derived it stays UNKNOWN and is reported rather than minted | yes |
 
 **A note on labels, and it is load-bearing.** The Manager's packet-local ruling
 labels are deliberately **not reproduced anywhere under `docs/`**. Their
@@ -646,95 +653,143 @@ This is the common case, not a corner. **No new verdict values are minted**
   proving, "for each" resolution, timing/duration/condition entailment
   beyond equality (v1), any operation without a named consumer question.
 
-# 17a. THE FROZEN SHARED COMPARISON ALGEBRA (register #31)
+# 17a. PACKET 7 IS NOT FROZEN — THE QUARANTINED IMPLEMENTATION AND THE LAW THAT GOVERNS ITS REPAIR (register #31–#38)
 
-**Artifacts.** `experiments/aq4_benchmark/comparison-algebra.json` (schema
-`aq4-comparison-algebra`, version 1.0.0) ·
-`experiments/aq4_benchmark/aq4_compare.py` (the shared comparator, its proof
-records and its controls). **Shared benchmark evaluation machinery, never a
-candidate.** It parses no Oracle text, reads no candidate-native field,
-branches on no candidate identity, adjudicates no truth, writes no answer key
-and scores nothing.
+**⛔ READ THIS BEFORE READING `experiments/aq4_benchmark/aq4_compare.py` OR
+`experiments/aq4_benchmark/comparison-algebra.json`.** Both were committed at
+`4e2ff09` under a claim to *"implement existing law; ratify none"*. **That claim
+is WITHDRAWN and those two artifacts are a QUARANTINED IMPLEMENTATION
+CHECKPOINT, not accepted Packet-7 law.** A pre-registered STOP fired and the
+Worker continued; later review found further unfrozen law and implementation
+defects. **Nothing in those two files carries authority merely because it sits
+at HEAD.** Incident record: `docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`.
 
-**Benchmark evaluation law only.** It ratifies no production architecture,
-decides no canonical ownership, mints no production vocabulary, contracts no
-dimension, authorizes no candidate encoder and changes no §22 blind timing.
-**No new operator, verdict, proof kind, dimension or relation kind is created**
-— the frozen table implements §17 and register #17 exactly as they already
-stand.
+**PACKET 7 REMAINS INCOMPLETE.** A corrective implementation becomes the
+Packet-7 milestone only after it passes validation. Until then the accepted
+parent `f4a90a4` is authoritative for every piece of law it froze, and the
+rulings below are authoritative for the repair. **Where the quarantined
+implementation and this section disagree, this section governs.**
 
-**THE ORGANIZING LAW, and it is what makes the whole table decidable:**
+## 17a.1 What is RATIFIED NOW (Captain, 2026-08-17)
 
-> **A UNIVERSAL claim is contract-provable. An EXISTENTIAL claim needs a
-> corpus witness.**
+**No positive whole-unit semantic-equality proof exists in v1.** The only
+ratified positive equality operation is the one §17 already froze —
+**mutual entailment of normalized eligibility/constraint sets** — and it must be
+named unambiguously (`ELIGIBILITY_EQUALITY`, or a repository-native equivalent).
+**A bare unqualified operation name meaning whole-unit "equality" must not be
+used, and no generic whole-unit equality operator may be created.**
 
-Entailment, equality and disjointness are universal, so they are proved from
-the §14 contracts, the §13 atom semantics and the ratified subtype→type
-hierarchy — `CR_CONTRACT`. Non-entailment, non-equality and OVERLAP assert that
-some object *exists*, so they are proved only by a named printed card —
-`CORPUS_WITNESS`. This is register #17 generalized past overlap, and it is why
-*"I could not prove equality"* can never become `PROVEN-NOT`.
+For the consumer question B1: **PROVEN whole-unit equality is UNAVAILABLE in
+v1.** PROVEN-NOT is permitted only where a semantic difference is independently
+proven under currently-authorized law — in v1 that is eligibility equality
+proven negative by an admissible distinguishing witness. Everything else is
+UNKNOWN.
 
-**Four operations, and the table is closed.** `OP_ENTAILS` (directional
-constraint-set entailment) · `OP_EQUALITY` (strict semantic equality of two
-occurrences) · `OP_ELIGIBILITY_EQUALITY` (mutual entailment of the constraint
-sets alone, because §20's B2 and B4 are phrased over *eligibility* while B1 is
-phrased over the unit) · `OP_INTERSECTION`. **OVERLAP and DISJOINT are two
-named readers of ONE proposition** — nonempty intersection — so they can never
-disagree and no state can appear between them. `compare()` refuses any
-operation the frozen file does not register.
+**None of the following is positive proof of whole-unit semantic equality:**
+identical action heads · identical participant integer sets · no relation edge ·
+no cost region · absence of visible residue · any *"all projected fields match"*
+argument. **The reason is structural, not stylistic:** the Packet-4 projection
+does not represent all possible uncontracted semantic residue, so equality of
+projected content is not equality of semantic content.
 
-**BLOCKERS CAN ONLY MOVE A VERDICT TOWARD UNKNOWN.** Uncontracted material is
-not comparable, so it never proves and never disproves:
+**A key-side completeness-attestation field is NOT introduced in v1.** It is
+**deferred, not rejected forever.** The existing cost-equality-safety law
+(register #27) stands as a blocker principle and **authorizes no positive
+proof**.
 
-| blocker | why | never |
-|---|---|---|
-| a structural COST region on either side | register #27 gives COST no comparison algebra | `PROVEN-NOT` from differing cost bytes |
-| a differing or missing action head | §17's table authorizes no action-head comparison; a head is not a §14 dimension (register #23) | a missing head read as an equal action |
-| a projected relation edge | §16 admits relations only where the contract authorizes it, and §17 does not | a claim that no relation exists |
-| a dimension actionable on one side and missing on the other | missing is never absent | an absence claim of any kind |
-| `UNRESOLVED` / `AMBIGUOUS`, unearned `ABSENT-PROVEN`, differing participant sets, vacuity | §18 | a strict claim |
+**The distinguishing-witness role is granted.** One admissible printed-card
+witness that satisfies one side and demonstrably violates the other proves
+non-entailment. **This is an additional ROLE for the existing corpus-witness
+proof kind — not a third proof kind.** Witness absence proves nothing; a failed
+search stays UNKNOWN; and corpus incompleteness can never invalidate a witness
+that is present, because presence proves existence while absence proves nothing.
 
-**Head identity is a NECESSARY CONDITION, never a positive claim.** Two units
-printing the same head sequence merely fail to block; the algebra emits no
-action-equivalence verdict, and §20's **B3 is therefore PARTIAL by law** — its
-eligibility arm derives in full and its action arm returns `UNKNOWN` with the
-reason class naming the missing law. **The operator was not minted to complete
-the table.**
+**The witness may prove violation only where the violated consequent is
+decidably false under the frozen dimension contract:**
 
-**Derived answers are DERIVED OUTPUT.** B1, B2, B4, C1, C2, DISCOVERY-1, E1 and
-HONESTY-1 derive mechanically; **C3 does not**, because §17's ChoiceGroup
-derivation reads the *owning header's* modality and the frozen projection
-exports the occurrence address without it. That is reported, not fixed — a
-projection field is not this layer's to propose. **C1 is directional over the
-frozen UNORDERED pair**: the direction is an argument at answer time, the pair
-store is untouched, and an empty blocker list means *"no blocking fact is
-derivable under v1 law"*, **never** that the replacement holds.
+| consequent | may a witness prove violation? |
+|---|---|
+| a forbidding atom | yes, where the forbidden value's presence is evidence-admissible |
+| a requiring atom | **only** with an evidence-traced COMPLETE assignment for that dimension, sufficient to establish that no required value is present |
+| an equality-only dimension | **no** — a value or text mismatch is not automatically violation and stays UNKNOWN unless existing law independently proves it |
+| a malformed cardinality or interval payload | **never** — malformed input is invalid and UNKNOWN, and must be rejected once Packet-4 validation is repaired |
+| an open vocabulary or an incomplete assignment | **no negative inference at all** |
 
-**E1 is a trace property with a fixed domain** — the 354 unique unordered pairs
-of the semantic tranches, one trace per pair, never multiplied by question
-count, never over the semantics-free control tranche, and never prose.
+Such a proof record carries the corpus reference, the witness identity, the
+admissible evidence, the governing dimension contract, and any completeness
+declaration relied upon.
 
-**Two DECLARED READINGS, flagged rather than smuggled**, each reversible
-without touching a verdict: the projection schema fixes an atom's operator but
-not the payload shape of a cardinality or interval value, and the comparator
-declares one; and §20's B4 says *"destination / timing / quantity"* while §14's
-rows are named for zones, durations and quantities, so the mapping between them
-is recorded as a reading beside the full per-dimension verdict table. **Neither
-is ratified law and neither is load-bearing.**
+**The summary label set for B2 is amended to six values** — EQUAL, BROADER,
+NARROWER, OVERLAPPING, DISJOINT, UNKNOWN. **EQUAL is never mapped to
+OVERLAPPING**, and requires eligibility equality PROVEN. **BROADER and NARROWER
+are STRICT**: the containing direction must be PROVEN *and the reverse direction
+must be PROVEN-NOT.* One direction proven with the reverse UNKNOWN is **not
+enough** and is UNKNOWN. OVERLAPPING still requires the positive intersection
+proof, and **overlap is never inferred from equality** unless the witness
+obligation is independently discharged. DISJOINT follows the existing
+empty-intersection law.
 
-**Controls.** `--selftest`, 67 assertions, every rig demonstrated red:
-unregistered-operator refusal, inability-to-prove staying UNKNOWN with its
-closed-world counterfactual shown, missing-is-not-absent, residue and cost
-blocking a proof that ignoring them would grant, action-head blocking,
-overlap-without-witness, witness inadmissibility and non-satisfaction,
-disjointness needing a contradiction, the forbidden controller complement
-beside the zone complement that *is* taken, context guarding, wrapper
-transparency with the adjudication metadata surviving, claimant-side absence
-obligations, derived verdicts refused by the projection, native identifiers
-refused in a proof record, proof-trace and reason-class discipline, symmetry as
-byte-identity under operand reversal, explicit direction, and determinism ×2.
-Deliberately **not** wired into Gate 2 or CI.
+**B3 remains intentionally PARTIAL, and no action-equivalence operator is
+added.** Semantic action heads may be surfaced structurally for audit, but an
+identical head sequence is not positive proof of semantic equivalence, differing
+heads do not prove non-equivalence, and an unresolved head blocks overclaim. The
+action-equivalence arm is **UNKNOWN** until a separately ratified action
+comparison exists. **The frozen pairing is NOT redrawn**: the measured near-zero
+positive yield on the same-delivery contrast tranche is benchmark evidence, and
+evidence is not authorization to move a pre-registered population.
+
+**A NON-BLOCKING CHECK IS NOT A PROOF.** No component may be emitted as PROVEN
+with a contract proof kind for *no cost region observed* · *no relation edge
+observed* · *action-head sequences identical* · *participant integer sets
+identical* · *another blocker simply not firing*. A structural guard that was
+evaluated and did not block is recorded as **derived audit/precondition
+metadata only**: no verdict, no proof kind, no anchor. **Only genuine semantic
+proof components enter the three-valued composition, and a contract proof must
+cite a real applicable rule anchor — prose describing a precondition is never an
+anchor.**
+
+## 17a.2 Existing-law CLARIFICATIONS (no new law)
+
+**Participant integers are LOCAL to one semantic occurrence.** Participant 0 on
+one card and participant 0 on another have **no cross-card semantic meaning by
+themselves**, and participant-set identity is never positive evidence for B1 or
+for any cross-card equality. **No printed-order cross-card participant
+correspondence is ratified here**; if future comparison needs correspondence
+beyond the frozen attachment law, that is its own benchmark contract.
+
+**The coverage and non-vacuity guards remain required**, because a missing fact
+is not a proven absence, two projection-empty constraint sets are not thereby
+proven unconstrained, and sparse representation must never be read as equality.
+**Two genuinely adjudicated constraint-free cases may still prove eligibility
+equality under existing absence law.**
+
+**Empty intersection may be established** by a same-value requiring-versus-
+forbidding pair, by incompatible required values on a contracted closed
+single-valued domain, by disjoint cardinality ranges, or by disjoint intervals —
+**where their frozen semantics actually contradict.**
+
+**One correction, and it is a defect in the quarantined implementation.** For a
+DISJUNCTIVE required value set against a forbidding constraint, contradiction
+exists **only if the complete allowed disjunction is eliminated.** Requiring
+*artifact or creature* against forbidding *artifact* is **not** a contradiction,
+because creature remains satisfiable. An *"any overlap means contradiction"*
+implementation is wrong and is repaired in the technical task.
+
+## 17a.3 Repairs AUTHORIZED but NOT YET PERFORMED
+
+**None of this is done. Do not read this subsection as describing the
+repository.**
+
+- **The Packet-4 ChoiceGroup omission** — see §23a.
+- **Packet-4 payload validation** for cardinality and interval atoms — see §23a.
+- **The Packet-7 corrective implementation**, which must supersede the
+  quarantined artifacts and satisfy every ruling in 17a.1 and 17a.2.
+
+## 17a.4 DEFERRED
+
+The key-side completeness attestation that would be required before any positive
+whole-unit equality proof could exist. **Deferred, not rejected.** Reviving it is
+a Captain ratification and nothing else.
 
 # 18. UNCERTAINTY AND ABSENT-PROVEN — LOAD-BEARING
 
@@ -886,6 +941,25 @@ later snapshot may add the card that was missing. `proof_kind` is a field
 on the derived relation — it is **not** a fourth verdict value, **not** a
 stored semantic fact, and nothing may branch on it except the audit trail.
 
+**A NON-BLOCKING CHECK IS NOT A PROOF (Captain, 2026-08-17 — register #37).**
+A structural guard that was evaluated and did not block carries **no comparison
+verdict, no `proof_kind` and no anchor.** It is recorded as derived
+audit/precondition metadata only. Specifically, none of *no cost region
+observed* · *no relation edge observed* · *identical action-head sequences* ·
+*identical participant integer sets* · *another blocker simply not firing* may
+be emitted as a PROVEN component carrying a contract proof kind. **Only genuine
+semantic proof components enter the three-valued composition.**
+
+**A contract proof must cite a real applicable rule anchor. Prose describing a
+precondition is never an anchor.** Measured 2026-08-17 in the quarantined
+Packet-7 implementation: four components asserted a contract proof kind with no
+contract behind them, three of them carrying prose in the anchor field, and two
+were structurally absence claims of a kind register #27 says cannot exist on
+either side — arriving through the proof channel instead of the dimension
+channel. Removing them moved **0 of 5,184** top-line verdicts, which is the
+point: **the damage was entirely to the trace, and the trace is what the
+false-precision veto reads.**
+
 **Evidence categories — three, and no registry (Captain, 2026-08-16 —
 register #18).** The minimum the §20 questions actually require is
 `ORACLE_TEXT` (every constraint value, including CR 110.5 *status
@@ -927,9 +1001,35 @@ No rules-engine questions.
 **B. Cross-card mechanical comparison**
 - B1. Are U_A and U_B semantically equal under normalization despite
   different wording?
+
+  **PARTIAL IN v1, ratified Captain 2026-08-17 (register #32).** There is **no
+  positive whole-unit semantic-equality proof in AQ4 v1** and no generic
+  whole-unit equality operator may be created. PROVEN is **UNAVAILABLE**;
+  PROVEN-NOT only where a semantic difference is independently proven under
+  authorized law; otherwise UNKNOWN. The refused positive arguments are
+  enumerated in §17a.1 — the reason is that the projection does not represent
+  all uncontracted semantic residue, so matching projected content is not
+  matching semantic content.
+
 - B2. Is A's eligibility broader / narrower / overlapping / disjoint /
   UNKNOWN vs B's — and which per-dimension verdicts produce the answer?
+
+  **SUMMARY LABELS AMENDED TO SIX, ratified Captain 2026-08-17 (register
+  #34):** EQUAL · BROADER · NARROWER · OVERLAPPING · DISJOINT · UNKNOWN.
+  EQUAL requires eligibility equality PROVEN and is **never** mapped to
+  OVERLAPPING. **BROADER and NARROWER are STRICT** — the containing direction
+  PROVEN *and* the reverse PROVEN-NOT; one direction proven with the reverse
+  UNKNOWN is UNKNOWN. OVERLAPPING still requires the positive intersection
+  proof and is never inferred from equality.
+
 - B3. Actions equivalent while eligibility differs?
+
+  **INTENTIONALLY PARTIAL, ratified Captain 2026-08-17 (register #35).** No
+  action-equivalence operator is added. The eligibility arm answers; the
+  action-equivalence arm is **UNKNOWN** until a separately ratified action
+  comparison exists. Heads may be surfaced structurally for audit only, and
+  the frozen pairing is **not** redrawn to accommodate the measured yield.
+
 - B4. Eligibility equal while destination / timing / quantity differs?
 
 **C. Strict Budget Swapper**
@@ -986,6 +1086,53 @@ Development may consult 1–3, 7–8, and the open half of 6. Cohorts 4–5
 stay uninspected until extractor freeze; 5 until evaluation. Trap cohorts
 seed from the measured failure inventory (CLAUDE.md traps; NC-A…E of
 `FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md`).
+
+# 21a. CARD CASE WITH EXPLICIT UNIT BINDING (register #36)
+
+**Ratified Captain 2026-08-17. NOT YET INSTANTIATED — the binding artifact does
+not exist and this section does not create it.**
+
+§20's cross-card questions are phrased over **units**; the frozen pairing binds
+**cards**. Register #19 closed the card-level instantiation and left the unit
+level unstated, so nothing bound a pair to the units its questions actually
+compare.
+
+**The population does not change.** It stays the **354 unique semantic card
+pairs**, and it is **NOT** expanded into occurrence cross-products. (Measured
+2026-08-17, the cross product is **3,030** unit pairs — an order of magnitude,
+decided by implementation rather than by contract, which is why this is ruled
+rather than left to a later session.)
+
+**One neutral PRIMARY unit binding per semantic pair**, created and frozen
+**before any answer-key truth exists and before either candidate exists**, and
+reused by every pair-level question instantiated for that pair. **The binding
+layer is benchmark administration and ground-truth instantiation. It is not a
+semantic comparison verdict.**
+
+**Method — hybrid, and both arms are required.**
+
+1. a **deterministic default** wherever frozen machinery uniquely resolves the
+   intended occurrence. It may use the corrected semantic detector for binding,
+   but **MUST NOT modify the frozen Packet-2 pairing coordinate**, which stays
+   legacy by ratified history (§27a);
+2. **human-adjudicated binding** wherever it does not, frozen before encoders
+   and carrying its adjudication method and provenance.
+
+Multi-occurrence ambiguous cases belong to the **high-risk** class of the
+ratified open-key adjudication protocol (register #24).
+
+**Binding state is `BOUND` or `NOT_APPLICABLE`, and the second is
+ADMINISTRATIVE ONLY.** It is **not** a semantic disposition, **not** a
+comparison verdict, **not** UNKNOWN and **not** PROVEN-NOT. It records a card
+case with no valid semantic unit — including the known no-oracle-text shape, of
+which the published open set carries **6** — and **no semantic verdict is
+invented for such a side.**
+
+**The minimum record, conceptually:** pair identity · tranche · each side's
+occurrence address or null when not applicable · binding method · binding state
+· a required reason when not applicable · evidence and adjudication metadata
+where applicable. **Every bound occurrence must validate against the frozen
+semantic occurrence surface.**
 
 # 22. HOLDOUT PROTOCOL — EVERY ESCAPE HATCH CLOSED
 
@@ -1163,6 +1310,43 @@ candidate failure, never permission to mutate the projection.**
 `ABSENT-PROVEN(dim, occurrence)` may match a key's `HUMAN-RESOLVED(absent)`
 **only if that candidate has satisfied the applicable §18 claimant-side
 obligations.** The key does not discharge them on the candidate's behalf.
+
+**TWO PACKET-4 REPAIRS ARE AUTHORIZED AND NONE IS PERFORMED (register #38,
+Captain 2026-08-17).** Neither is new semantic law; both close gaps that Packet
+7 surfaced. **Do not read the next two paragraphs as describing the
+repository — the artifacts named in this section are unchanged.**
+
+**1. The choice-group structural omission.** Accepted §17 already requires
+owning-header-derived alternative-versus-cumulative behaviour, resting on the
+ratified locality exclusivity amendment, and the projection carries the
+occurrence address without the header input that derivation needs — so C3 is
+currently underivable. A later technical repair may materialize a **neutral
+GENERATED structural record**: owning-header evidence and location, member
+occurrence addresses in the existing four-coordinate identity, selection
+cardinality `{min,max}` deterministically derived under the ratified
+rules-backed grammar, and an admissible trace to the owning header. **No mode-id
+coordinate, no codebook storage, no production ownership ruling, no
+candidate-native vocabulary.** The projection may materialize it precisely
+because it is DERIVED input that accepted law already requires.
+
+Once repaired, C3 may derive **alternative or cumulative only from positive
+choice-group structure**, and **independent only where existing positive
+structural law proves independent ownership/ability structure**. **Absence of a
+choice-group record is NOT proof of independence.** If that arm still cannot be
+derived from already-ratified positive structure, it stays UNKNOWN and is
+**reported rather than minted**.
+
+**2. Atom payload validation.** The semantic forms are already frozen law —
+§13 states the cardinality atom as an operator and a count, and `{min,max}`
+appears in §13, §14's quantity row and §17 — but the validator checks an atom's
+operator and never its payload. A later repair must enforce the shapes: an
+interval carrying `{min,max}` with each endpoint an integer or null as frozen
+law permits, never both null, and min at or below max where both are present;
+and the cardinality payload validated for a comparison operator drawn from the
+frozen set and a count valid where current law requires one. Repository-native
+field spelling, used consistently. **This creates no new cardinality semantics.
+A malformed payload is rejected as UNKNOWN and may NEVER become evidence for a
+negative verdict.**
 
 # 24. EXTRACTION TAXONOMY AND REPORTING — PRE-REGISTERED
 
@@ -1506,14 +1690,19 @@ the sequencing note is recorded rather than the graph rewritten. Packet 3A
 **§22's blind timing is untouched**: the blind key is still adjudicated after
 candidate freeze, and packets 5–6 still require packet 3 as well as 4.
 
-**PACKET 7 SPLITS, AND ONLY ITS FIRST HALF IS DONE (register #31).** The row
-above bundles *"comparison algebra + scoring harness"*, and the two halves have
-different prerequisites: the **algebra** depends only on packet 4 and is frozen
-(§17a), while the **scoring harness** and the *"verdict tables on open
-cohorts"* need packet 3's open key and packets 5–6's encodings, none of which
-exist. **No verdict table over any real card was produced, and none could
-honestly be.** Do not read the row as satisfied; read §17a for what is frozen
-and its two named open items for what is not.
+**PACKET 7 SPLITS, AND NEITHER HALF IS ACCEPTED (register #31).** The row above
+bundles *"comparison algebra + scoring harness"*, and the two halves have
+different prerequisites: the **algebra** depends only on packet 4, while the
+**scoring harness** and the *"verdict tables on open cohorts"* need packet 3's
+open key and packets 5–6's encodings, none of which exist. **No verdict table
+over any real card was produced, and none could honestly be.**
+
+**An algebra implementation was attempted at `4e2ff09` and is QUARANTINED, not
+frozen** — a pre-registered STOP fired and the Worker continued, and later
+review found further unfrozen law and implementation defects. Read §17a for the
+rulings that govern the corrective work and
+`docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md` for the record. **Do not
+read this row, or the presence of those two files, as packet 7 being done.**
 
 # 33. CAPTAIN-CONTROLLED DECISIONS
 
@@ -1577,9 +1766,31 @@ DO NOT infer that:
   and never stores, and the projection refuses a derived verdict by name;
 - UNKNOWN means the two units differ, or are incompatible, or that a search
   was run and found nothing — it means none of those, ever;
-- identical action heads mean the actions are proven equivalent — head
-  identity is a necessary condition that can only BLOCK, and no action
-  comparison is authorized (§17a, register #31);
+- identical action heads mean the actions are proven equivalent — no action
+  comparison is authorized at all, an identical head sequence is not positive
+  proof of anything, and differing heads prove nothing either (register #35);
+- anything in the QUARANTINED Packet-7 artifacts is law because it is
+  committed at HEAD — it is not, and §17a governs where they disagree
+  (register #31);
+- a whole-unit semantic equality can be PROVEN in v1 — it cannot, and none of
+  matching heads, matching participant integers, an absent relation edge, an
+  absent cost region or an absence of visible residue supplies one
+  (register #32);
+- participant integer 0 on one card means the same participant as integer 0 on
+  another — the ordinals are LOCAL to one occurrence and carry no cross-card
+  meaning by themselves (register #32);
+- a structural guard that ran and did not block has proved something — it has
+  not, and emitting it as a proof component with a contract proof kind is
+  refused (register #37);
+- absence of a choice-group record proves the units are independent — it does
+  not, and an underivable independence arm stays UNKNOWN and is reported
+  rather than minted (register #38);
+- an administrative not-applicable binding state is a semantic disposition or
+  a comparison verdict — it is neither, and it is never UNKNOWN or PROVEN-NOT
+  (register #36);
+- the 354 semantic card pairs may be expanded into occurrence cross-products —
+  the population is the card pairs, with one frozen primary unit binding each
+  (register #36);
 - an empty blocker list on the strict-replacement question means the
   replacement holds — no positive strict-replacement relation is contracted;
 - the algebra's PROVEN means either projection is semantically complete — it
