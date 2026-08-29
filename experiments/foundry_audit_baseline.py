@@ -28,11 +28,47 @@ rate the floor is 1 line. A class compared to the corpus can hide a defect the
 size of a set release; a class compared to itself cannot.
 
     from foundry_audit_baseline import load, compare, save
+
+**WHERE THE BASELINE LIVES, AND WHY IT MOVED (P0.3D, C8 step 3).** This file
+used to keep its baseline at `experiments/out/foundry/audit-baseline.json`.
+`.gitignore:6` ignores `experiments/out/`, so the control input deciding
+whether a standing audit degraded **had no version history**: a value could
+change and no diff would show it, and every fresh clone started with nothing
+pinned. P0.3A copied the exact bytes to `config/baselines/`, tracked, without
+repointing anything; this module now reads and writes that tracked copy and
+nothing else, which closes the window in which the two could drift apart.
+
+**No baseline VALUE changed in the cutover** — the tracked file is byte-for-byte
+the capture P0.3A took (`sha256 51fca151…`, 4,324 bytes). The ignored file may
+still sit on an operator's disk as historical evidence; nothing here reads it.
+
+**A MISSING BASELINE FILE IS NOW FATAL, and that is the second half of the
+point.** `load()` used to return `None` both when the file was absent and when
+the section simply was not pinned yet, and `compare()` reads `None` as "no
+baseline pinned" and returns **no regressions**. So a baseline that had never
+existed and a baseline that had been deleted were the same green result — the
+failure mode two other modules independently worked around, recording that
+`report()` "returns 0 without comparing anything" on a fresh clone. The file is
+tracked now, so its absence means a broken checkout, not a first run. An absent
+SECTION still returns `None` and still prints the pin-it note; that behaviour is
+deliberately unchanged, because an unpinned section really is a first run.
 """
 import json
 from pathlib import Path
 
-BASELINE = Path(__file__).resolve().parent / "out" / "foundry" / "audit-baseline.json"
+# The TRACKED baseline. `parent.parent` is the repository root: this module
+# lives in `experiments/`, and the control input deliberately does not.
+BASELINE = (Path(__file__).resolve().parent.parent
+            / "config" / "baselines" / "foundry-audit-baseline.json")
+
+
+class BaselineUnavailable(RuntimeError):
+    """The tracked baseline file could not be read.
+
+    Fatal, never a verdict. The whole purpose of a ratchet is to make an
+    unreviewed change loud, so the one thing it may never do is report success
+    because it could not find the thing it compares against.
+    """
 
 # For each metric family, the direction that means WORSE. A metric absent here
 # is compared for equality only -- unexplained movement in either direction is
@@ -124,20 +160,63 @@ WORSE_IF_DOWN = ("lines", "deliveries", "keyword_homes", "expansions",
                  "documents", "ruling_ids", "corroborated", "blocked")
 
 
-def load(section: str) -> dict:
-    """The pinned numbers for one audit, or None if nothing is pinned yet."""
+def _document() -> dict:
+    """Every pinned section, or HALT. The single read of the tracked baseline.
+
+    Absence is fatal here rather than an empty document. The file is tracked, so
+    it is present in any checkout; if it is missing, unreadable or not a JSON
+    object, the honest answer is that this run cannot say whether anything
+    degraded — and returning an empty document would say that nothing did.
+    """
     if not BASELINE.exists():
-        return None
-    return json.loads(BASELINE.read_text(encoding="utf-8")).get(section)
+        raise BaselineUnavailable(
+            f"the tracked ratchet baseline is missing: {BASELINE}. It is tracked in "
+            "git, so this is a broken checkout, not a first run — and a ratchet that "
+            "reported success because it could not find its baseline would be worse "
+            "than no ratchet at all. Restore the file (git checkout -- "
+            "config/baselines/foundry-audit-baseline.json) rather than re-pinning it."
+        )
+    try:
+        raw = BASELINE.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise BaselineUnavailable(
+            f"the tracked ratchet baseline at {BASELINE} could not be read: {exc}"
+        ) from None
+    try:
+        doc = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise BaselineUnavailable(
+            f"the tracked ratchet baseline at {BASELINE} is not valid JSON: {exc}. "
+            "Refusing to treat a damaged control input as an empty one."
+        ) from None
+    if not isinstance(doc, dict):
+        raise BaselineUnavailable(
+            f"the tracked ratchet baseline at {BASELINE} is not a JSON object"
+        )
+    return doc
+
+
+def load(section: str) -> dict:
+    """The pinned numbers for one audit, or None if that SECTION is not pinned yet.
+
+    `None` now means one thing only — this section has never been pinned. It used
+    to mean that OR "the baseline file is not there", and `compare()` reads the
+    value as a green "nothing pinned yet". Halting on the missing file is what
+    separates the two.
+    """
+    return _document().get(section)
 
 
 def save(section: str, metrics: dict) -> None:
-    """Pin `metrics` for `section`, leaving every other section untouched."""
-    doc = {}
-    if BASELINE.exists():
-        doc = json.loads(BASELINE.read_text(encoding="utf-8"))
+    """Pin `metrics` for `section` in the TRACKED baseline, leaving the rest alone.
+
+    Reads through the same halt: if the baseline is missing, this refuses rather
+    than creating a fresh one. Writing a new file would silently drop every other
+    section's pins and leave each of them reading as "not pinned yet" — a
+    one-command way to un-ratchet the whole suite while looking like an update.
+    """
+    doc = _document()
     doc[section] = metrics
-    BASELINE.parent.mkdir(parents=True, exist_ok=True)
     BASELINE.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n",
                         encoding="utf-8")
 
