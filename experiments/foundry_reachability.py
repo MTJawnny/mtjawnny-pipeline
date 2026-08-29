@@ -48,7 +48,7 @@ sys.path.insert(0, str(REPO / "experiments"))
 import foundry_common as fc                # noqa: E402
 import foundry_audit_baseline as baseline  # noqa: E402
 
-WORKFLOWS = REPO / ".github" / "workflows"
+WORKFLOWS = fc.REPO_ROOT / ".github" / "workflows"
 SEARCH_DIRS = ("pipeline", "experiments")
 
 # A foundry artifact is anything the foundry GENERATES or PARSES AT RUN TIME to
@@ -172,7 +172,7 @@ def inverse_census(literals_all_repo=True) -> dict:
     """artifact -> experiments/ modules that read it. Context, not a verdict:
     it is what makes "13 importers, all audits" a number instead of a story."""
     out = {a: [] for a in FOUNDRY_ARTIFACTS}
-    for py in sorted((REPO / "experiments").glob("*.py")):
+    for py in sorted((fc.REPO_ROOT / "experiments").glob("*.py")):
         try:
             _, lits = scan(py)
         except SystemExit:
