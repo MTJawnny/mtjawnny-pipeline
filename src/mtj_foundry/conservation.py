@@ -131,6 +131,18 @@ def canonical_relpath(declared: str | os.PathLike[str]) -> str:
             f"declared path {raw!r} is absolute; declarations are repository-relative so "
             "a manifest does not describe one operator's machine"
         )
+    # A DRIVE-RELATIVE path is not absolute and is not repository-relative either.
+    # `ntpath.isabs("C:foo")` is False - it means "foo, relative to the current
+    # directory ON DRIVE C" - so an absoluteness test alone let `C:foo`, `C:` and
+    # `Z:dir/file` through as if they were ordinary relative paths. The invariant is
+    # about the DRIVE component, not about absoluteness.
+    drive = ntpath.splitdrive(raw)[0]
+    if drive:
+        raise PathDomainError(
+            f"declared path {raw!r} carries a drive component {drive!r}; a declaration "
+            "naming a volume is not repository-relative, and a drive-relative path is "
+            "resolved against that volume's own current directory"
+        )
     segments = raw.split("/")
     for segment in segments:
         if segment == "":
@@ -196,7 +208,15 @@ def posix_label(target: PurePath, relative_to: str | os.PathLike[str]) -> str:
     apart and a regression to platform-native labels would pass unnoticed on this
     machine while breaking cross-platform comparison.
     """
-    return target.relative_to(relative_to).as_posix()
+    try:
+        relative = target.relative_to(relative_to)
+    except ValueError:
+        raise PathDomainError(
+            f"{str(target)!r} is not inside {str(relative_to)!r}, so it has no "
+            "repository-relative label. A conservation set may not record a file from "
+            "outside the root it claims to conserve."
+        ) from None
+    return relative.as_posix()
 
 
 def digest_file(path: str | os.PathLike[str], *,
@@ -206,9 +226,19 @@ def digest_file(path: str | os.PathLike[str], *,
     `relative_to` is REQUIRED and only controls the recorded label, never what is
     read. It was optional, and omitting it produced an absolute label — a manifest
     describing one operator's machine, which is precisely what the path domain
-    exists to prevent. The resulting label is validated by `FileDigest`.
+    exists to prevent.
+
+    Order is part of the contract: **derive the label, validate it, then open**. An
+    out-of-domain target costs zero file reads.
     """
     target = Path(path)
+    # Derive and validate the label FIRST. The label used to be computed after the
+    # read, so a target outside `relative_to` was opened and hashed in full before
+    # anything rejected it — the domain check ran, but only after the work it exists
+    # to prevent had already happened. An out-of-domain target must cost zero reads.
+    label = posix_label(target, relative_to)
+    canonical_relpath(label)
+
     digest = hashlib.sha256()
     size = 0
     with open(target, "rb") as handle:
@@ -218,8 +248,7 @@ def digest_file(path: str | os.PathLike[str], *,
                 break
             digest.update(chunk)
             size += len(chunk)
-    return FileDigest(path=posix_label(Path(target), relative_to),
-                      sha256=digest.hexdigest(), size_bytes=size)
+    return FileDigest(path=label, sha256=digest.hexdigest(), size_bytes=size)
 
 
 def digest_paths(root: str | os.PathLike[str],

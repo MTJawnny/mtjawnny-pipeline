@@ -213,6 +213,30 @@ class TestCanonicalPathDomain(ConservationTestCase):
             with self.subTest(bad=bad), self.assertRaises(PathDomainError):
                 canonical_relpath(bad)
 
+    def test_drive_relative_declarations_are_refused(self):
+        """F5: a drive component is not absoluteness, and the invariant is the drive.
+
+        `ntpath.isabs("C:foo")` is False — it means "foo, relative to the current
+        directory ON DRIVE C" — so an absoluteness test alone admitted `C:foo`, `C:`
+        and `Z:dir/file` as though they were ordinary relative paths.
+        """
+        for bad in ("C:foo", "C:", "Z:dir/file", "C:/abs", "c:x/y"):
+            with self.subTest(bad=bad), self.assertRaises(PathDomainError):
+                canonical_relpath(bad)
+
+    def test_the_drive_check_is_on_the_drive_not_on_absoluteness(self):
+        """The witness that makes the previous test non-vacuous."""
+        import ntpath
+
+        self.assertFalse(ntpath.isabs("C:foo"))
+        self.assertEqual(ntpath.splitdrive("C:foo")[0], "C:")
+
+    def test_ordinary_posix_labels_are_unaffected_by_the_drive_check(self):
+        """Negative control: the guard is aimed at drives, not at colons or letters."""
+        for good in ("a/one.txt", "docs/x/y.md", "C/foo", "a/b:c.txt", "Z/dir/file"):
+            with self.subTest(good=good):
+                self.assertEqual(canonical_relpath(good), good)
+
     def test_backslash_declarations_are_refused_as_ambiguous(self):
         with self.assertRaises(PathDomainError):
             canonical_relpath("a\\one.txt")
@@ -274,6 +298,67 @@ class TestCanonicalPathDomain(ConservationTestCase):
         entry = digest_paths(self.root, ["two.bin"])[0]
         self.assertEqual(entry.sha256, hashlib.sha256(bytes(range(256))).hexdigest())
         self.assertEqual(entry.size_bytes, 256)
+
+
+class TestValidateBeforeRead(ConservationTestCase):
+    """F6: an out-of-domain target must cost ZERO file reads.
+
+    The label used to be computed after the read, so a target outside `relative_to`
+    was opened and hashed in full before anything rejected it. The domain check ran
+    — just after the work it exists to prevent had already happened.
+    """
+
+    def _reads(self, fn):
+        """Run fn, returning the paths opened. Patches builtins.open, which is the
+        call `digest_file` actually makes."""
+        import builtins
+
+        opened: list[str] = []
+        real_open = builtins.open
+
+        def watched(path, *a, **kw):
+            opened.append(str(path))
+            return real_open(path, *a, **kw)
+
+        with unittest.mock.patch.object(builtins, "open", watched):
+            try:
+                fn()
+            except PathDomainError:
+                pass
+        return opened
+
+    def test_a_target_outside_the_base_is_never_opened(self):
+        outside = self.root / "two.bin"
+        base = self.root / "a"
+        self.assertTrue(outside.exists(), "the target must exist, or the test is vacuous")
+        self.assertEqual(self._reads(lambda: digest_file(outside, relative_to=base)), [])
+
+    def test_the_rejection_is_a_path_domain_error(self):
+        with self.assertRaises(PathDomainError):
+            digest_file(self.root / "two.bin", relative_to=self.root / "a")
+
+    def test_a_valid_target_is_still_read_exactly_once(self):
+        """Negative control: the reordering must not stop the read happening at all."""
+        reads = self._reads(
+            lambda: digest_file(self.root / "a" / "one.txt", relative_to=self.root))
+        self.assertEqual(len(reads), 1)
+
+    def test_exact_byte_semantics_are_unchanged_by_the_reordering(self):
+        import hashlib
+
+        entry = digest_file(self.root / "two.bin", relative_to=self.root)
+        self.assertEqual(entry.sha256, hashlib.sha256(bytes(range(256))).hexdigest())
+        self.assertEqual(entry.size_bytes, 256)
+        self.assertEqual(entry.path, "two.bin")
+
+    def test_the_public_signature_is_unchanged_from_r2(self):
+        import inspect
+
+        sig = inspect.signature(digest_file)
+        self.assertEqual(list(sig.parameters), ["path", "relative_to"])
+        self.assertIs(sig.parameters["relative_to"].default, inspect.Parameter.empty)
+        self.assertEqual(sig.parameters["relative_to"].kind,
+                         inspect.Parameter.KEYWORD_ONLY)
 
 
 class TestDigestBytes(unittest.TestCase):
