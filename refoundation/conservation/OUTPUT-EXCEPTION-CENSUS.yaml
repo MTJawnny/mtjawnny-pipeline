@@ -2260,47 +2260,56 @@ unresolved:
   dynamic_construction_shapes: 9
   entries:
     - construction: "FOUNDRY_OUT_DIR / f'batch{batch_num}_assembled.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 124
           context: "'assembled': FOUNDRY_OUT_DIR / f'batch{batch_num}_assembled.json',"
     - construction: "FOUNDRY_OUT_DIR / f'consolidate_clusters_raw{suffix}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 131
           context: "'consolidate_clusters_raw': FOUNDRY_OUT_DIR / f'consolidate_clusters_raw{suffix}.json',"
     - construction: "FOUNDRY_OUT_DIR / f'consolidated_batch{batch_num}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 130
           context: "'consolidated': FOUNDRY_OUT_DIR / f'consolidated_batch{batch_num}.json',"
     - construction: "FOUNDRY_OUT_DIR / f'stage1b_batch{suffix}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 126
           context: "'batch_record': FOUNDRY_OUT_DIR / f'stage1b_batch{suffix}.json',"
     - construction: "FOUNDRY_OUT_DIR / f'stage1b_completion_note{suffix}.md'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 127
           context: "'completion_note': FOUNDRY_OUT_DIR / f'stage1b_completion_note{suffix}.md',"
     - construction: "FOUNDRY_OUT_DIR / f'stage1b_cost_estimate{suffix}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 128
           context: "'cost_estimate': FOUNDRY_OUT_DIR / f'stage1b_cost_estimate{suffix}.json',"
     - construction: "FOUNDRY_OUT_DIR / f'stage1b_raw_results{suffix}.jsonl'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 129
           context: "'raw_results': FOUNDRY_OUT_DIR / f'stage1b_raw_results{suffix}.jsonl',"
     - construction: "FOUNDRY_OUT_DIR / f'stage1b_requests{suffix}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_common.py
           line: 125
           context: "'requests': FOUNDRY_OUT_DIR / f'stage1b_requests{suffix}.json',"
     - construction: "fc.FOUNDRY_OUT_DIR / f'candidate-manifest.{manifest['snapshot_id']}.json'"
-      sites: 1
+      site_count: 1
+      sites:
         - source: experiments/foundry_authority.py
           line: 2206
           context: "fc.FOUNDRY_OUT_DIR / f'candidate-manifest.{manifest['snapshot_id']}.json')"

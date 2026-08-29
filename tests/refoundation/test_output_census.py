@@ -293,5 +293,116 @@ class TestDeclaredBlindSpot(CensusTestCase):
         self.assertIn("literal grep does not find", flat)
 
 
+# --- P0.3B.R1: the document must be YAML, not YAML-shaped ------------------
+#
+# The first version of this census carried `sites: 1` with an indented `- source:`
+# sequence beneath it. Every test above passed, because every test above reads the
+# document as LINES. A line test cannot see that its subject is not parseable, so
+# the primary artifact of a conservation census was not a valid document and nothing
+# in the suite said so.
+#
+# No YAML parser is available to this suite and P0.3A forbids pinning one, so this is
+# a structural detector for the exact defect class rather than a parse: a key that
+# carries a scalar value CANNOT also own a block sequence (YAML 1.2 §8.2.1 — a block
+# node is either a scalar or a collection, never both). The repair splits the two
+# facts the old shape conflated into `site_count` and `sites`.
+
+BLOCK_SCALAR = re.compile(r":\s*[|>][-+]?\d*\s*$")
+KEY_WITH_SCALAR = re.compile(r"^(\s*)(?:- )?[^\s#][^:]*:\s+(\S.*)$")
+SEQUENCE_ITEM = re.compile(r"^(\s*)- ")
+
+
+def scalar_keys_owning_a_block_sequence(text: str) -> list[tuple[int, str]]:
+    """(line number, line) for every key that carries a scalar AND a deeper sequence.
+
+    Content inside a block scalar is skipped: prose there may contain a colon or open
+    with a dash without being structure. Reporting those would make the detector a
+    stylistic complaint rather than a parse-failure witness.
+    """
+    lines = text.split("\n")
+    found = []
+    skip_below = None
+    for i, line in enumerate(lines):
+        indent = len(line) - len(line.lstrip())
+        if skip_below is not None:
+            if not line.strip() or indent > skip_below:
+                continue
+            skip_below = None
+        if BLOCK_SCALAR.search(line):
+            skip_below = indent
+            continue
+        match = KEY_WITH_SCALAR.match(line)
+        if not match:
+            continue
+        for nxt in lines[i + 1:]:
+            if not nxt.strip():
+                continue
+            item = SEQUENCE_ITEM.match(nxt)
+            if item and len(item.group(1)) > len(match.group(1)):
+                found.append((i + 1, line))
+            break
+    return found
+
+
+class TestTheDocumentIsParseable(CensusTestCase):
+    INVALID_SHAPE = (
+        "unresolved:\n"
+        "  entries:\n"
+        "    - construction: \"FOUNDRY_OUT_DIR / f'stage1b_batch{suffix}.json'\"\n"
+        "      sites: 1\n"
+        "        - source: experiments/foundry_common.py\n"
+        "          line: 126\n"
+    )
+
+    def test_no_key_carries_both_a_scalar_and_a_block_sequence(self):
+        offenders = scalar_keys_owning_a_block_sequence(self.text)
+        self.assertEqual(offenders, [], "\n".join(f"line {n}: {l}" for n, l in offenders))
+
+    def test_the_detector_fires_on_the_shape_that_shipped(self):
+        """Negative control. A guard never shown to fail is not known to be a guard."""
+        offenders = scalar_keys_owning_a_block_sequence(self.INVALID_SHAPE)
+        self.assertEqual(len(offenders), 1)
+        self.assertIn("sites: 1", offenders[0][1])
+
+    def test_the_detector_accepts_the_repaired_shape(self):
+        """The other half of the control: it must not fire on a key with no scalar."""
+        repaired = self.INVALID_SHAPE.replace("      sites: 1\n",
+                                              "      site_count: 1\n      sites:\n")
+        self.assertEqual(scalar_keys_owning_a_block_sequence(repaired), [])
+
+    def test_block_scalar_prose_is_not_read_as_structure(self):
+        """A `>-` body may hold a colon and a dash; that is text, not a mapping."""
+        prose = "conclusions:\n  note: >-\n    A finding: it holds.\n    - and a dash\n"
+        self.assertEqual(scalar_keys_owning_a_block_sequence(prose), [])
+
+
+class TestTheBlindSpotSurvivedTheRepair(CensusTestCase):
+    """The repair is structural. Every fact the old shape asserted must still be here."""
+
+    def setUp(self):
+        self.body = block(self.text, "unresolved")
+
+    def test_every_construction_records_a_site_count_and_a_sites_sequence(self):
+        declared = int(re.search(r"dynamic_construction_shapes: (\d+)", self.body).group(1))
+        constructions = re.findall(r"\n    - construction: ", self.body)
+        self.assertEqual(len(constructions), declared)
+        self.assertEqual(len(re.findall(r"\n      site_count: \d+\n", self.body)), declared)
+        self.assertEqual(len(re.findall(r"\n      sites:\n", self.body)), declared)
+
+    def test_each_declared_site_count_matches_the_sites_recorded_under_it(self):
+        for entry in self.body.split("\n    - construction: ")[1:]:
+            construction, _, rest = entry.partition("\n")
+            with self.subTest(construction=construction.strip()):
+                declared = int(re.search(r"site_count: (\d+)", rest).group(1))
+                sites = re.findall(r"\n        - source: ", rest)
+                self.assertEqual(declared, len(sites))
+
+    def test_every_site_keeps_its_source_line_and_context(self):
+        for entry in self.body.split("\n        - source: ")[1:]:
+            source, _, rest = entry.partition("\n")
+            with self.subTest(source=source.strip()):
+                self.assertRegex(rest, r"^          line: \d+\n          context: ")
+
+
 if __name__ == "__main__":
     unittest.main()
