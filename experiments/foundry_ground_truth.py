@@ -292,7 +292,7 @@ def main():
     fx.build_keyword_homes(ratified)
 
     cb_axes = {s for s, a in json.loads(
-        (REPO_ROOT / "out" / "foundry" / "codebook.json").read_text(
+        (fc.FOUNDRY_OUT_DIR / "codebook.json").read_text(
             encoding="utf-8"))["axes"].items() if a.get("status") == "active"}
 
     specs = sorted(MOVES.glob("*.json"))
@@ -315,7 +315,7 @@ def main():
     # Kept behind a flag so the pinned 488 stays comparable run to run, and so
     # a fixture that is 8x larger cannot silently redefine what "green" means.
     if args.wide:
-        cbp = REPO_ROOT / "out" / "foundry" / "codebook.json"
+        cbp = fc.FOUNDRY_OUT_DIR / "codebook.json"
         cb = json.loads(cbp.read_text(encoding="utf-8"))
         seen = {(s["to"], s["member"]) for _, s in seeds}
         for slug, ax in sorted(cb["axes"].items()):
