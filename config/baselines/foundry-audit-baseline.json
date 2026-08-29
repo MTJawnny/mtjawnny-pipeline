@@ -1,0 +1,181 @@
+{
+  "conservation": {
+    "class_lines": {
+      "bullet (modal mode)": 1791,
+      "colon": 11041,
+      "comma": 27144,
+      "digit": 25372,
+      "ellipsis ...": 3,
+      "em-dash prefix": 4037,
+      "multi-sentence": 10202,
+      "non-ASCII letter": 33,
+      "quote": 1297,
+      "semicolon": 34,
+      "terminal !": 86,
+      "terminal ?": 2
+    },
+    "class_unrouted": {
+      "bullet (modal mode)": 1171,
+      "colon": 51,
+      "comma": 4148,
+      "digit": 6461,
+      "ellipsis ...": 1,
+      "em-dash prefix": 1333,
+      "multi-sentence": 3546,
+      "non-ASCII letter": 7,
+      "quote": 220,
+      "semicolon": 0,
+      "terminal !": 52,
+      "terminal ?": 1
+    },
+    "deliveries": 61960,
+    "descriptor_unrouted": {
+      "a-counter-placed": 1,
+      "any-counter-placed": 2,
+      "any-damage-recipient-unstated": 33,
+      "caused-to-discard-trigger": 11,
+      "combat-damage-recipient-unstated": 13,
+      "die-row:spell-or-static": 42,
+      "draw-fifth-card": 1,
+      "draw-first-card": 2,
+      "draw-third-card": 4,
+      "hour-counter-placed": 1,
+      "linked:unclassified-trigger": 38,
+      "loyalty-counter-placed": 1,
+      "main-phase-unqualified": 2,
+      "minus1-counter-placed": 3,
+      "plan-counter-placed": 9,
+      "plus1-counter-placed": 31,
+      "spell-or-static": 14742,
+      "to-graveyard-from-nonbattlefield": 1,
+      "to-graveyard-zone-unstated": 12,
+      "unclassified-trigger": 481
+    },
+    "lines": 61383,
+    "reminder_mid_line": 155,
+    "reminder_only_lines": 565,
+    "unrouted_lines": 15350
+  },
+  "definition_drift": {
+    "active_axes": 403,
+    "findings": 29,
+    "findings_by_check": {
+      "C1b": 1,
+      "C2": 9,
+      "C3": 8,
+      "C4a": 3,
+      "C4e": 5,
+      "C4f": 3
+    }
+  },
+  "ground_truth_wide": {
+    "graded": 1248,
+    "head_ambiguous": 3,
+    "mismatch": 10,
+    "passed": 1238,
+    "unanchored": 0
+  },
+  "locality": {
+    "addressable_missing": 0,
+    "ambiguous": 40,
+    "assertions": 7930,
+    "owned": 7808,
+    "quoted": 7891,
+    "quoteless": 39,
+    "span": 39,
+    "stored_mismatch": 0,
+    "stored_owned": 7808,
+    "unresolved": 4
+  },
+  "object_lattice": {
+    "memberships": {
+      "bounce": {
+        "artifact": 10,
+        "creature": 174,
+        "enchantment": 9,
+        "land": 8,
+        "nonland-permanent": 75,
+        "permanent": 51,
+        "planeswalker": 4
+      },
+      "destroy": {
+        "artifact": 370,
+        "battle": 1,
+        "creature": 601,
+        "enchantment": 272,
+        "land": 149,
+        "noncreature-permanent": 13,
+        "nonland-permanent": 47,
+        "permanent": 47,
+        "planeswalker": 59
+      },
+      "exile": {
+        "artifact": 77,
+        "creature": 323,
+        "enchantment": 60,
+        "land": 15,
+        "nonland-permanent": 78,
+        "permanent": 39,
+        "planeswalker": 17
+      }
+    },
+    "residual": {
+      "bounce": 445,
+      "destroy": 2,
+      "exile": 263
+    },
+    "residual_unexplained": {
+      "bounce": 0,
+      "destroy": 0,
+      "exile": 0
+    }
+  },
+  "reachability": {
+    "artifacts_orphaned": 5,
+    "artifacts_reaching_product": 0,
+    "closure_modules": 9,
+    "consumers": {
+      "CODEBOOK-NAMING-GRAMMAR_md": 5,
+      "card-tags_json_gz": 4,
+      "codebook_json": 26,
+      "corpus_pass_run1_classification_json": 4,
+      "det-patterns-v2_json": 8
+    },
+    "entry_points": 9
+  },
+  "ruling_registry": {
+    "corroborated": 86,
+    "documents": 141,
+    "ruling_ids": 127,
+    "sole_home": 41,
+    "total_references": 684
+  },
+  "visibility": {
+    "band_content": 174,
+    "band_uncontexted": 0,
+    "band_unscanned": 0,
+    "by_form": {
+      "CR 606.2  loyalty ability": 909,
+      "CR 700.2  bulleted mode": 1791,
+      "CR 700.2h spree mode": 51,
+      "CR 700.2i pawprint mode": 15,
+      "CR 706.3b die-roll row": 106,
+      "CR 714.2  Saga chapter": 576,
+      "CR 721.2  station striation": 49
+    },
+    "dropped": 0,
+    "face_spans": 0,
+    "options": 3497,
+    "uncontexted": 31,
+    "uncontexted_by_form": {
+      "CR 606.2  loyalty ability": 0,
+      "CR 700.2  bulleted mode": 31,
+      "CR 700.2h spree mode": 0,
+      "CR 700.2i pawprint mode": 0,
+      "CR 706.3b die-roll row": 0,
+      "CR 714.2  Saga chapter": 0,
+      "CR 721.2  station striation": 0
+    },
+    "unscanned": 0
+  }
+}

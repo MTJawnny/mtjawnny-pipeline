@@ -1,0 +1,140 @@
+# BASELINE INPUTS — local-only pre-refoundation state, inventoried READ-ONLY.
+#
+# P0.2 correction C7.7 and the P0.2 review both say the same thing: a GitHub-only
+# Manager cannot see these bytes, and nothing that depends on them may be migrated
+# until they are durably captured through an authorized path. This file is that
+# capture. It MODIFIES NOTHING - every value below was read, hashed and recorded.
+#
+# sha256 is over EXACT FILE BYTES. Semantic equivalence is deliberately deferred
+# (P0.3A: semantic_equivalence_logic: defer): these digests answer 'did the bytes
+# survive', never 'does this mean the same thing'.
+
+schema: mtj-conservation-baseline-inputs/1
+phase: P0.3A.REFOUNDATION-FOUNDATION
+status: CAPTURED
+mutations_to_inventoried_sources: NONE
+
+provenance:
+  captain_worktree: /Users/jawnny/Projects/mtjawnny-pipeline
+  captain_head: 11d63633919146a9be7a5dcdeb55efa0b8dc058d
+  forensic_baseline_branch: refoundation-baseline-2026-08-28
+  read_only: true
+  declared_by: refoundation/BOOTSTRAP-STATE.yaml known_local_only_state_at_forensic_baseline
+
+# 1. TRACKED FILES MODIFIED IN THE WORKING TREE.
+#    committed_sha256 is the digest of the bytes at captain_head; working_sha256 is
+#    what is actually on disk. They differ, which is the point of recording both.
+#    BOOTSTRAP-STATE.yaml warns the regenerated registry carries a KNOWN FALSE-POSITIVE
+#    S1 namespace collision and must not be accepted merely to clean the tree.
+tracked_modified:
+  - path: docs/RATIFIED-RULINGS-REGISTRY.md
+    working_sha256: 650eadbb70b0f068546d8a1877bdfadafb9bee8fda8fb971838316bbc1a661b2
+    committed_sha256: 0df933ac212e18cc1da5886a356257aa10d9a72a709cf8b6828fcb26acf6ee17
+    size_bytes: 100397
+    mtime_utc: "2026-08-29T03:28:34Z"
+    diverged: true
+    disposition: EVIDENCE_PENDING_S1_FALSE_POSITIVE_FIX
+
+# 2. UNTRACKED FILES. Present only on the Captain's machine at captain_head.
+untracked_count: 9
+untracked:
+  - path: docs/CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md
+    sha256: 1a39e3456e5d503fcd68469c1e037376546bb627c72b7f8986d769ae3f3f15a8
+    size_bytes: 23515
+    mtime_utc: "2026-08-14T02:07:24Z"
+  - path: docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md
+    sha256: 83e774fc84d9be15b1c20fb78d244f489f5248a2af3dc0c215614e2206eeea6d
+    size_bytes: 17393
+    mtime_utc: "2026-08-14T02:07:24Z"
+  - path: docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md
+    sha256: 86e6326e0f68ea77d347cd06d077675a905d2581dd9d42d69666e10befc57c7e
+    size_bytes: 16163
+    mtime_utc: "2026-08-14T02:07:24Z"
+  - path: docs/FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md
+    sha256: 65c46121410b0f9e099539fc820aa799e650e596a639a070aac6ece495746836
+    size_bytes: 13948
+    mtime_utc: "2026-08-14T02:07:24Z"
+  - path: docs/INCIDENT-LOCALITY-REVERSION-2026-08-14.md
+    sha256: 6bd82972623ebb444756a8f2bdd4b853af49440aef2ee171d3fae5ae98150bce
+    size_bytes: 4893
+    mtime_utc: "2026-08-14T23:08:17Z"
+  - path: docs/MTJAWNNY-TEMP-AGENT-COMMUNICATION-PROTOCOL.md
+    sha256: 80e26ea0fe61a0e6c544a76ee030c9ca7d721068d4218c63e051160216ae79aa
+    size_bytes: 15953
+    mtime_utc: "2026-08-15T21:40:18Z"
+  - path: docs/REPOSITORY-ARCHITECTURE-AUDIT-2026-08-28.md
+    sha256: d59859d9a8a759b8b84d44a5c8c2f94bfc23d3122045e62e7cab56ce3451507b
+    size_bytes: 31567
+    mtime_utc: "2026-08-29T03:28:31Z"
+  - path: docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md
+    sha256: 09fccd8fe6ed8a724cc72f6012af16f28535e2bf2a0d9b4f231fabd0fd1ff0fd
+    size_bytes: 16336
+    mtime_utc: "2026-08-14T02:07:24Z"
+  - path: docs/THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md
+    sha256: ee88ca51e7eb6c50ebd30f4910e9a594eb34de5e80d00c9c763080626161d797
+    size_bytes: 16013
+    mtime_utc: "2026-08-14T02:08:30Z"
+
+# 3. THE IGNORED RATCHET BASELINE — the control input that decides whether an audit
+#    'got worse'. .gitignore line 6 ignores experiments/out/, so a change to these
+#    values was never visible in a diff. P0.3A copies the EXACT BYTES into a tracked
+#    location; the values themselves are NOT changed and no consumer is repointed.
+ignored_ratchet_baseline:
+  source_path: experiments/out/foundry/audit-baseline.json
+  source_sha256: 51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601
+  source_size_bytes: 4324
+  source_mtime_utc: "2026-08-15T17:03:16Z"
+  gitignore_rule: ".gitignore:6:experiments/out/"
+  tracked_copy_path: config/baselines/foundry-audit-baseline.json
+  tracked_copy_sha256: 51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601
+  tracked_copy_size_bytes: 4324
+  byte_identical: true
+  consumers_repointed: NONE
+  values_changed: NONE
+  legacy_writer: experiments/foundry_audit_baseline.py
+
+# 4. SELECTED CODEBOOK AUTHORITY, LOCAL COPY.
+#    P0.2 correction C7.1 requires the selected immutable object's EXACT sha256 AND
+#    byte size be preserved, not a hash of canonicalized JSON. The tracked selector
+#    docs/codebook-authority.json names both; the local working copy is ignored by
+#    git. Recorded here because a local copy that has silently drifted from the
+#    selected authority is a conservation fact nobody could otherwise see.
+selected_codebook_authority:
+  selector_path: docs/codebook-authority.json
+  selector_snapshot_id: codebook-20260814-locality-backfill
+  selected_sha256: 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c
+  selected_byte_size: 5066147
+  local_copy_path: experiments/out/foundry/codebook.json
+  local_copy_sha256: 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c
+  local_copy_size_bytes: 5066147
+  local_copy_mtime_utc: "2026-08-14T23:12:04Z"
+  local_matches_selected_authority: true
+  copied_into_repository: false
+  copy_reason_withheld: >-
+    5,066,147 bytes of authoritative content is outside P0.3A's declared outputs and
+    the repository forbids card/codebook data in git. Identity is preserved by exact
+    sha256 + byte size, which is what C7.1 asks for.
+
+# 5. DELIBERATELY NOT INVENTORIED, stated so the boundary is explicit rather than
+#    silent. Under P0.2 correction C4 this tree is EPHEMERAL_OUTPUT: generated,
+#    untracked, and not a conservation input. The two files inside it that DO govern
+#    acceptance - the ratchet baseline and the codebook - are captured in 3 and 4.
+not_inventoried:
+  - path_glob: experiments/out/**
+    file_count: 3321
+    total_bytes: 2892506087
+    artifact_class: EPHEMERAL_OUTPUT
+    hashed: false
+    reason: generated batch/report output; not an input to any acceptance decision
+    exceptions_captured_above:
+      - experiments/out/foundry/audit-baseline.json
+      - experiments/out/foundry/codebook.json
+
+# 6. ONE DIGEST STANDING FOR THE WHOLE DECLARED SET (sections 1 and 2), computed by
+#    mtj_foundry.conservation over the working-tree bytes. Stable across runs, so a
+#    later phase can prove this exact set survived.
+declared_set_digest:
+  algorithm: mtj-conservation-manifest/1 over sha256 of exact bytes
+  entry_count: 10
+  total_bytes: 256178
+  manifest_sha256: 7d15df8b1114948c171f811ecdfe5cdc62feb5609048db2f7642bbf72dce806e
