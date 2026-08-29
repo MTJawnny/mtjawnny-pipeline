@@ -141,6 +141,8 @@ class Task:
     delivery: str = ""
     next_authorized: str = "NONE"
     mutating: bool = True
+    declares_read_only: bool = False
+    validation_commands: list[list[str]] = dataclasses.field(default_factory=list)
     raw: dict = dataclasses.field(default_factory=dict, repr=False)
 
     @property
@@ -148,8 +150,52 @@ class Task:
         return self.status == "READY"
 
     @property
+    def declares_scope(self) -> bool:
+        """True when the task supplies machine-readable path scope.
+
+        Absence is NOT permission. A mutating task without scope is a STOP, because
+        unattended mutation cannot be bounded by a glob list that does not exist.
+        """
+        return bool(self.allow_paths or self.deny_paths)
+
+    @property
     def authorizes_successor(self) -> bool:
         return str(self.next_authorized).strip().upper() not in ("NONE", "", "NULL")
+
+
+def _validation_commands(raw: dict) -> list[list[str]]:
+    """Wrapper-owned acceptance commands declared by the task.
+
+    Accepted under `validation.commands` or `acceptance.commands`. Each entry is
+    split with shlex and run WITHOUT a shell, so metacharacters are inert literals.
+    The executable is separately allowlisted by policy before anything runs.
+    """
+    import shlex
+
+    out: list[list[str]] = []
+    for key in ("validation", "acceptance"):
+        section = raw.get(key)
+        if isinstance(section, dict):
+            entries = section.get("commands")
+        elif isinstance(section, list):
+            entries = section
+        else:
+            entries = None
+        for entry in _as_list(entries):
+            if entry is None:
+                continue
+            if isinstance(entry, list):
+                argv = [str(a) for a in entry]
+            else:
+                try:
+                    argv = shlex.split(str(entry))
+                except ValueError as exc:
+                    raise ProtocolError(
+                        f"mtj-task: validation command is not parseable: {entry!r} ({exc})"
+                    ) from exc
+            if argv:
+                out.append(argv)
+    return out
 
 
 def _scope_paths(raw: dict) -> tuple[list[str], list[str]]:
@@ -186,7 +232,9 @@ def parse_task(markdown_or_yaml: str, issue_number: int | None = None) -> Task:
     elif nxt is not None:
         next_auth = str(nxt)
     kind = str(scope.get("kind", "")).lower()
-    mutating = "read_only" not in kind and "read-only" not in kind
+    declares_read_only = "read_only" in kind or "read-only" in kind
+    mutating = not declares_read_only
+    validation_commands = _validation_commands(data)
     return Task(
         schema=schema,
         task=str(_require(data, "task", "mtj-task")),
@@ -202,6 +250,8 @@ def parse_task(markdown_or_yaml: str, issue_number: int | None = None) -> Task:
         delivery=delivery,
         next_authorized=next_auth,
         mutating=mutating,
+        declares_read_only=declares_read_only,
+        validation_commands=validation_commands,
         raw=data,
     )
 
@@ -224,8 +274,14 @@ class Result:
     validation: list[str] = dataclasses.field(default_factory=list)
     discrepancies: list[str] = dataclasses.field(default_factory=list)
     decision_required: list[str] = dataclasses.field(default_factory=list)
+    evidence: list[dict] = dataclasses.field(default_factory=list)
     next_authorized: str = "NONE"
     raw: dict = dataclasses.field(default_factory=dict, repr=False)
+
+    @property
+    def validation_failed(self) -> bool:
+        """True when any wrapper-captured acceptance command exited non-zero."""
+        return any(int(e.get("rc", 0)) != 0 for e in self.evidence if isinstance(e, dict))
 
     @property
     def base_matches(self) -> bool:
@@ -264,6 +320,7 @@ def parse_result(markdown_or_yaml: str) -> Result:
         validation=_as_str_list(data.get("validation")),
         discrepancies=_as_str_list(data.get("discrepancies"), drop_sentinels=True),
         decision_required=_as_str_list(decision, drop_sentinels=True),
+        evidence=[e for e in _as_list(data.get("evidence")) if isinstance(e, dict)],
         next_authorized=next_auth,
         raw=data,
     )

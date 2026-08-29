@@ -32,7 +32,9 @@ class FakeGitHub:
         self.writes: list[tuple[str, dict]] = []
         self._issue_counter = itertools.count(max(self.issues, default=0) + 1)
         self._pr_counter = itertools.count(1000)
+        self.diff_unavailable = False
         self.fail_next_post = False
+        self.diff_unavailable = False
 
     # ---- reads -----------------------------------------------------------
     def list_issues(self, state: str = "open") -> list[dict]:
@@ -54,6 +56,16 @@ class FakeGitHub:
 
     def pr_changed_paths(self, number: int) -> list[str]:
         return list(self.prs.get(number, {}).get("files", []))
+
+    def pr_diff(self, number: int, max_bytes: int = 200000) -> tuple[str, bool]:
+        if number not in self.prs:
+            raise KeyError(f"no such PR: {number}")
+        text = self.prs[number].get("diff", "")
+        if self.diff_unavailable:
+            raise RuntimeError("simulated diff fetch failure")
+        if max_bytes and len(text) > max_bytes:
+            return text[:max_bytes], True
+        return text, False
 
     # ---- writes ----------------------------------------------------------
     def post_comment(self, number: int, body: str, idempotency_key: str = "") -> dict:
@@ -79,7 +91,8 @@ class FakeGitHub:
     def create_draft_pr(self, title: str, body: str, head: str, base: str) -> int:
         number = next(self._pr_counter)
         self.prs[number] = {"title": title, "body": body, "head": head, "base": base,
-                            "draft": True, "files": [], "merged": False}
+                            "draft": True, "files": [], "merged": False,
+                            "diff": "--- a/src/thing.py\n+++ b/src/thing.py\n@@\n-VALUE = 1\n+VALUE = 2\n"}
         self.writes.append(("pr", {"number": number, "head": head, "base": base}))
         return number
 

@@ -49,7 +49,7 @@ def make_repo() -> tuple[Path, Path, str]:
 
 def task_body(task_id="TEST.TASK", base="0" * 40, base_branch=BOOTSTRAP_BRANCH,
               status="READY", kind="infrastructure_only",
-              allow=("src/**",), deny=("docs/**",)) -> str:
+              allow=("src/**",), deny=("docs/**",), validation=()) -> str:
     """Build an mtj-task/1 body. Empty allow/deny omit the key entirely, which is
     how a real task that supplies no machine-readable scope actually looks."""
     lines = [
@@ -68,6 +68,8 @@ def task_body(task_id="TEST.TASK", base="0" * 40, base_branch=BOOTSTRAP_BRANCH,
         lines += ["  allow_paths:", *[f"    - {a}" for a in allow]]
     if deny:
         lines += ["  deny_paths:", *[f"    - {d}" for d in deny]]
+    if validation:
+        lines += ["validation:", "  commands:", *[f"    - {c}" for c in validation]]
     lines += [
         "prohibited:",
         "  - modifying main",

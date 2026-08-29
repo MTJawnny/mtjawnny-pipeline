@@ -23,6 +23,10 @@ from .protocol import Review, Result, Task
 
 __all__ = [
     "PolicyError",
+    "ValidationCommandRefused",
+    "check_validation_commands",
+    "require_machine_readable_scope",
+    "VALIDATION_EXECUTABLE_ALLOWLIST",
     "Decision",
     "Action",
     "CAPTAIN_PATHS",
@@ -90,6 +94,56 @@ _CAPTAIN_TEXT_SIGNALS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\bconflict\b.{0,40}\bauthorit(y|ies)\b", re.I),
      "conflict between durable authorities"),
 )
+
+
+# Executables a task may ask the WRAPPER to run as acceptance validation.
+# A task body is authored by a MODEL, so an unrestricted command list would let the
+# Manager escalate from "review" to "arbitrary code execution on the operator's host".
+# Commands run without a shell, so metacharacters are inert; the executable is the
+# thing that must be constrained, and it is constrained here.
+VALIDATION_EXECUTABLE_ALLOWLIST: frozenset[str] = frozenset({
+    "python", "python3", "pytest", "unittest",
+    "make", "node", "npm", "npx", "yarn", "pnpm",
+    "go", "cargo", "ruff", "mypy", "flake8", "black", "isort",
+    "bash", "sh",  # refused below; listed so the refusal is explicit, not incidental
+})
+
+# Shells are never allowed, even though they look like ordinary executables: `sh -c`
+# reintroduces exactly the arbitrary execution the allowlist exists to prevent.
+VALIDATION_EXECUTABLE_DENYLIST: frozenset[str] = frozenset({"bash", "sh", "zsh", "fish",
+                                                            "env", "eval", "exec", "sudo"})
+
+
+class ValidationCommandRefused(PolicyError):
+    """A declared acceptance command is outside the allowlist."""
+
+
+def check_validation_commands(commands: Iterable[Iterable[str]]) -> list[list[str]]:
+    """Return the commands, or raise. Never silently drops one."""
+    import os as _os
+
+    checked: list[list[str]] = []
+    for command in commands:
+        argv = [str(a) for a in command]
+        if not argv:
+            raise ValidationCommandRefused("empty validation command")
+        exe = _os.path.basename(argv[0])
+        if exe in VALIDATION_EXECUTABLE_DENYLIST:
+            raise ValidationCommandRefused(
+                f"validation command '{exe}' is a shell or privilege wrapper and is refused; "
+                "declare the real command directly instead of wrapping it"
+            )
+        if exe not in VALIDATION_EXECUTABLE_ALLOWLIST:
+            raise ValidationCommandRefused(
+                f"validation executable '{exe}' is not in VALIDATION_EXECUTABLE_ALLOWLIST. "
+                "A task body is model-authored; the wrapper will not run an arbitrary program."
+            )
+        if _os.path.isabs(argv[0]) or ".." in argv[0]:
+            raise ValidationCommandRefused(
+                f"validation command must be a bare executable name, got '{argv[0]}'"
+            )
+        checked.append(argv)
+    return checked
 
 
 @dataclasses.dataclass(frozen=True)
@@ -171,6 +225,24 @@ def captain_signals_in_result(result: Result) -> list[str]:
 # --------------------------------------------------------------------------
 
 
+def require_machine_readable_scope(task: Task) -> str | None:
+    """Return a STOP reason when a MUTATING task lacks machine-readable path scope.
+
+    Report-only scope was acceptable while a human watched every run. It is not
+    acceptable for unattended mutation: without globs there is nothing to enforce,
+    and 'no globs' must never read as 'every path permitted'.
+    """
+    if not task.mutating:
+        return None
+    if task.declares_scope:
+        return None
+    return (
+        "task is mutating but declares no machine-readable scope.allow_paths / "
+        "scope.deny_paths. Absence of scope is not permission: refusing to execute. "
+        "Either declare path globs, or declare scope.kind: read_only."
+    )
+
+
 def decide(
     *,
     task: Task,
@@ -232,17 +304,24 @@ def decide(
             captain.append(f"worker declared decision_required -> {item}")
 
     # --- 3. Task-scope enforcement. -----------------------------------------
+    scope_stop = require_machine_readable_scope(task)
+    if scope_stop:
+        return Decision(action=Action.HALT, verdict="STOP", reasons=(scope_stop,))
+    if result.validation_failed:
+        failed = [f"{' '.join(e.get('command', []))} -> rc={e.get('rc')}"
+                  for e in result.evidence if int(e.get("rc", 0)) != 0]
+        return Decision(
+            action=Action.HALT if review.verdict == "PASS" else Action.CREATE_REPAIR_TASK,
+            verdict="STOP" if review.verdict == "PASS" else "REPAIR",
+            reasons=tuple(["wrapper-captured acceptance validation failed:"] + failed),
+            automation_may_continue=review.verdict == "REPAIR" and repair_count < max_repairs,
+        )
     violations = check_paths_against_task(task, changed_paths)
     if violations:
         return Decision(
             action=Action.HALT,
             verdict="STOP",
             reasons=tuple(["task allow/deny scope violated:"] + violations),
-        )
-    if changed_paths and not task.allow_paths and not task.deny_paths:
-        reasons.append(
-            "task supplied no machine-readable allow/deny globs; path scope was NOT "
-            "machine-checked (reported, not assumed safe)"
         )
 
     # --- 4. The model verdict may only restrict from here. ------------------

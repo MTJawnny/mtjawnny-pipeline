@@ -49,6 +49,8 @@ comments are the state. This is what makes both sessions disposable.
 ## 3. Worker sequence
 
 ```
+0. mutating task with no allow/deny globs  →  STOP, model NEVER invoked
+0b. validation command outside the allowlist →  STOP, model NEVER invoked
 1. fetch origin/<base_branch>                     ← read-only
 2. measured = rev-parse origin/<base_branch>
    measured != task.base  →  STOP, and the model is NEVER invoked
@@ -57,12 +59,17 @@ comments are the state. This is what makes both sessions disposable.
 5. build prompt = bootstrap + measured state + issue contract
 6. claude -p --output-format json --session-id <fresh uuid> …   ← FRESH session
 7. changed = git status --porcelain -uall            ← MEASURED, not claimed
-8. enforce task allow/deny globs        → violation  →  STOP, no PR
-9. classify against CAPTAIN_PATHS       → hit        →  STOP, no PR, packet
-10. git add -A; git commit; git push                 ← wrapper owns git
-11. gh pr create --draft                             ← never merged
-12. post mtj-result/1
+9. enforce task allow/deny globs        → violation  →  STOP, no PR
+10. classify against CAPTAIN_PATHS      → hit        →  STOP, no PR, packet
+11. git add -A; git commit; git push                 ← wrapper owns git
+12. gh pr create --draft                             ← never merged
+13. post mtj-result/1 (including `evidence:`)
 ```
+
+Discovery (step 0, before all of this) requires **both** `status: READY` in the
+issue body **and** ledger phase `WORKER_EXECUTE`. `READY` is a static string that
+nobody rewrites when work completes, so it stays true forever; the ledger is what
+knows the task is done.
 
 Step 2 before step 6 is deliberate: a stale base costs zero model spend.
 Steps 7–9 before step 10 are deliberate: a Captain-reserved change never
@@ -72,8 +79,9 @@ reaches a pull request at all.
 
 ```
 1. reconstruct ledger from GitHub
-2. read PR diff paths (measured) — falls back to result.mutations
-3. build prompt = bootstrap + task + result + diff paths
+2. read PR changed paths AND the actual patch (`gh pr diff`, bounded + redacted)
+   a PR whose diff cannot be fetched  →  STOP, the model is not asked to review blind
+3. build prompt = bootstrap + task + result + patch + wrapper-captured evidence
 4. model.review(prompt)                    ← FRESH call, no tools, text only
 5. parse_review(text)   → invalid → STOP   ← a chatty model halts, never crashes
 6. policy.decide(...)                      ← deterministic, no model
@@ -87,18 +95,27 @@ and its output is data that `decide()` may ignore.
 
 | Component | Trusted for | NOT trusted for |
 |---|---|---|
-| Claude Worker | editing files inside its worktree | git, GitHub, scope enforcement |
+| Claude Worker | editing files inside its worktree | git, GitHub, scope enforcement, its own validation |
 | OpenAI Manager | judgement expressed as a verdict | authorizing anything |
 | `policy.decide()` | every authorization | — |
 | Captain | semantic truth, ratification, authority | — |
 
 Both models are treated as untrusted inputs to a deterministic gate. The gate is
-`policy.decide()`, it is 100% covered by `tests/test_policy.py`, and its central
-invariant has a negative control (`test_negative_control_clean_case_really_does_pass`)
-so the restrictive assertions cannot pass for the wrong reason.
+`policy.decide()`, its central invariant has a negative control
+(`test_negative_control_clean_case_really_does_pass`) so the restrictive assertions
+cannot pass for the wrong reason, and the Worker's git prohibition is enforced by
+the invocation's tool-deny rather than by its prompt.
+
+**The task body is also an untrusted input.** It is authored by a model, so its
+`validation.commands` are constrained by an executable allowlist and run without a
+shell. Without that, "the Manager may specify acceptance criteria" would read as
+"the Manager may run anything on the operator's host".
 
 ## 6. Known limitations
 
+0. **The manager model has still never been run live** — `OPENAI_API_KEY` is not
+   set in this environment. `mtj-manager --canary` exists to close this and must be
+   run before any live mutation cycle.
 1. **Repair tasks are not auto-created.** `policy.decide()` returns
    `CREATE_REPAIR_TASK` and the manager logs it, but v0 does not open the issue.
    Deliberate: issuing tasks is Manager authority, and Captain should watch the
@@ -107,9 +124,11 @@ so the restrictive assertions cannot pass for the wrong reason.
 3. **`next_task` creation is gated twice** — on the task authorizing a successor
    *and* on the review naming one. Issue #3 sets `next.authorized: NONE`, so no
    successor can be created from this task under any verdict.
-4. **Path scope is only enforced when the task supplies globs.** Issue #3 supplies
-   none. The bridge reports "NOT machine-checked" rather than assuming permission;
-   future tasks should carry `scope.allow_paths` / `scope.deny_paths`.
+4. **Path scope is now mandatory for mutating tasks** (Manager review, 2026-08-29).
+   A mutating task with no globs STOPs before the model is invoked. Read-only tasks
+   declare `scope.kind: read_only` and are exempt. Note that Issue #3's own body
+   supplies no globs, so under the repaired rule that task would not execute
+   unattended — which is the correct outcome, and is why the rule changed.
 5. **`CAPTAIN_PATHS` is a heuristic list, not a derived one.** It is a floor. It
    cannot know that an ordinary-looking path carries semantic weight, which is why
    the Worker-declared `decision_required` channel exists alongside it.

@@ -19,9 +19,11 @@ import time
 from pathlib import Path
 
 from . import state as state_mod
-from .adapters import BridgeCommandError, ClaudeCliAdapter, GhCliGitHub, GitOps
+from .adapters import (MAX_EVIDENCE_BYTES, BridgeCommandError, ClaudeCliAdapter, GhCliGitHub,
+                       GitOps, run)
 from .logging_setup import configure, get_logger
-from .policy import PolicyError, check_paths_against_task, classify_paths
+from .policy import (PolicyError, check_paths_against_task, check_validation_commands,
+                     classify_paths, require_machine_readable_scope)
 from .protocol import ProtocolError, Task, parse_task, render_block
 from .redact import redact
 
@@ -63,6 +65,7 @@ class WorkerOutcome:
     base_measured: str = ""
     claude_session_id: str = ""
     model_summary: str = ""
+    evidence: list[dict] = dataclasses.field(default_factory=list)
 
     def to_payload(self) -> dict:
         return {
@@ -78,12 +81,24 @@ class WorkerOutcome:
             "discrepancies": self.discrepancies or ["NONE"],
             "decision_required": self.decision_required or ["NONE"],
             "claude_session_id": self.claude_session_id,
+            "evidence": self.evidence or [],
             "next": {"authorized": "NONE"},
         }
 
 
 def find_ready_task(github, repo_hint: str = "") -> tuple[int, Task] | None:
-    """Discover exactly ONE ready task. More than one ready task is an error, not a queue."""
+    """Discover exactly ONE executable task.
+
+    Executable requires BOTH conditions, and the second is the one that was missing:
+
+      1. the issue body declares `status: READY`  (declarative readiness), AND
+      2. the durable ledger phase is WORKER_EXECUTE (no result posted yet).
+
+    `status: READY` is a static string in a task body that nobody rewrites after the
+    work is done, so condition 1 alone stays true forever. A worker relying on it
+    re-executes a completed task - the exact duplicate-execution failure the ledger
+    exists to prevent.
+    """
     ready: list[tuple[int, Task]] = []
     for issue in github.list_issues(state="open"):
         number = issue["number"]
@@ -96,8 +111,14 @@ def find_ready_task(github, repo_hint: str = "") -> tuple[int, Task] | None:
             log.warning("issue has an mtj-task block that does not validate",
                         extra={"issue": number, "error": str(exc)})
             continue
-        if task.is_ready:
-            ready.append((number, task))
+        if not task.is_ready:
+            continue
+        phase = state_mod.reconstruct(github, number).next_phase()
+        if phase != "WORKER_EXECUTE":
+            log.info("task declares READY but the ledger says otherwise; not executable",
+                     extra={"issue": number, "task": task.task, "phase": phase})
+            continue
+        ready.append((number, task))
     if not ready:
         return None
     if len(ready) > 1:
@@ -107,6 +128,31 @@ def find_ready_task(github, repo_hint: str = "") -> tuple[int, Task] | None:
             + ". The bridge executes one task at a time; mark the others BLOCKED."
         )
     return ready[0]
+
+
+def run_validation(commands: list[list[str]], cwd: Path) -> list[dict]:
+    """Run each allowlisted acceptance command IN THE WRAPPER and capture the evidence.
+
+    The worker model cannot be the source of this evidence: it is the thing being
+    checked. Output is bounded and redacted so a failing test dump cannot blow the
+    Manager's context or leak a credential into a GitHub comment.
+    """
+    evidence: list[dict] = []
+    for argv in commands:
+        log.info("running wrapper-owned validation", extra={"argv": " ".join(argv)})
+        try:
+            proc = run(argv, cwd=cwd, timeout=1800, check=False)
+            rc, stdout, stderr = proc.returncode, proc.stdout, proc.stderr
+        except Exception as exc:  # noqa: BLE001 - a runner failure IS the evidence
+            rc, stdout, stderr = 127, "", redact(str(exc))
+        tail = (stdout + ("\n" + stderr if stderr else ""))[-MAX_EVIDENCE_BYTES:]
+        evidence.append({
+            "command": argv,
+            "rc": rc,
+            "output_tail": redact(tail),
+            "truncated": len(stdout) + len(stderr) > MAX_EVIDENCE_BYTES,
+        })
+    return evidence
 
 
 def build_prompt(task: Task, bootstrap_files: dict[str, str], worktree: Path,
@@ -151,6 +197,23 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
     """Run one task end to end. The wrapper owns every effect."""
     worktree_root = worktree_root or WORKTREE_ROOT
     outcome = WorkerOutcome(task_id=task.task, status="COMPLETE", base_expected=task.base)
+
+    # --- scope must be machine-readable before anything mutates ------------
+    scope_stop = require_machine_readable_scope(task)
+    if scope_stop:
+        outcome.status = "STOP"
+        outcome.discrepancies.append(scope_stop)
+        log.error("refusing a mutating task with no machine-readable scope",
+                  extra={"task": task.task})
+        return outcome
+
+    # --- acceptance commands are allowlisted before anything runs ----------
+    try:
+        validation_commands = check_validation_commands(task.validation_commands)
+    except PolicyError as exc:
+        outcome.status = "STOP"
+        outcome.discrepancies.append(str(exc))
+        return outcome
 
     # --- base verification: drift is a STOP, never an adaptation -----------
     git.fetch("origin", task.base_branch)
@@ -224,6 +287,21 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
                 "changed paths enter Captain-reserved territory; not opening a PR")
             return outcome
 
+        # --- wrapper-owned acceptance validation, machine-captured -------
+        outcome.evidence = run_validation(validation_commands, worktree)
+        for item in outcome.evidence:
+            outcome.validation.append(
+                f"{' '.join(item['command'])} -> rc={item['rc']}")
+        if any(item["rc"] != 0 for item in outcome.evidence):
+            outcome.status = "FAIL"
+            outcome.discrepancies.append(
+                "wrapper-captured acceptance validation failed; not opening a PR")
+            return outcome
+        if not validation_commands:
+            outcome.discrepancies.append(
+                "task declared no validation.commands: the only evidence of correctness "
+                "is model prose, which the wrapper cannot verify")
+
         if not changed:
             outcome.validation.append("no file changes produced")
             return outcome
@@ -266,7 +344,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.issue:
         body = github.get_issue(args.issue).get("body") or ""
-        found = (args.issue, parse_task(body, args.issue))
+        task = parse_task(body, args.issue)
+        # An explicit --issue must not become a back door around the ledger: the
+        # duplicate-execution guard has to hold on the path an operator actually
+        # types when re-running something by hand.
+        phase = state_mod.reconstruct(github, args.issue).next_phase()
+        if phase != "WORKER_EXECUTE":
+            log.error("refusing to execute: the ledger says this task is not awaiting a worker",
+                      extra={"issue": args.issue, "phase": phase, "task": task.task})
+            return 2
+        found = (args.issue, task)
     else:
         found = find_ready_task(github)
     if not found:

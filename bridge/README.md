@@ -42,8 +42,14 @@ No install step and no packaging decision — the bridge runs from the repo.
 
 ```bash
 cd bridge
-python3 -m unittest discover -s tests -t .   # 84 tests, offline, no credentials
+python3 -m unittest discover -s tests -t .   # must report OK, offline, no credentials
 ```
+
+**The suite must end in `OK`.** No document in this repository states a test count:
+a hard-coded number in prose goes stale the moment a test is added, and three
+different stale counts in three documents is what the Manager review caught.
+The command and its pass/fail requirement are the durable contract; run
+`bridge/bin/mtj-selftest` to print the live count.
 
 Requires Python 3.11+ (developed on 3.14.6). The core has **no third-party
 dependencies**: protocol parsing is stdlib-only so the offline tests and the
@@ -105,6 +111,37 @@ own worktree under `~/.mtj-bridge/worktrees/` for every task.
 has been trusted through several supervised single cycles. When it is added it
 must keep `max_cycles` and `max_repairs`, which already exist in `policy.decide()`.
 
+## 4a. Task-body requirements (enforced, not advisory)
+
+A `mtj-task/1` that mutates **must** declare machine-readable path scope, or the
+worker STOPs before the model is invoked:
+
+```yaml
+scope:
+  kind: infrastructure_only
+  allow_paths:
+    - "bridge/**"
+  deny_paths:
+    - "docs/**"
+validation:
+  commands:
+    - python3 -m unittest discover -s bridge/tests -t bridge
+```
+
+- **Absence of scope is not permission.** A read-only task declares
+  `scope.kind: read_only` instead; it is then exempt.
+- **`validation.commands` are run by the WRAPPER**, after the model's edits and
+  before the commit, with argv captured, rc captured, and output bounded and
+  redacted into the result as `evidence:`. A non-zero rc fails the result and no
+  PR is opened.
+- Commands are run **without a shell** and their executable must be in
+  `policy.VALIDATION_EXECUTABLE_ALLOWLIST`. Shell wrappers (`sh -c`, `bash -c`,
+  `sudo`, `env`) are refused by name. A task body is model-authored, so an
+  unrestricted command list would convert review authority into arbitrary code
+  execution on the operator's host.
+- Quote backticked scalars in task bodies (the parser tolerates them; strict YAML
+  readers do not).
+
 ## 5. Captain boundaries
 
 `policy.decide()` halts and posts a decision packet — **whatever the model says** —
@@ -123,6 +160,30 @@ The invariant, pinned by `tests/test_policy.py::TestModelCannotUnlock`:
 > advance past a failed Worker result, and cannot override a base mismatch.
 
 A compromised or prompt-injected Manager can, at worst, halt the automation.
+
+### The Worker's git prohibition is structural, not prompt-level
+
+`ClaudeCliAdapter` passes a deny list through **both** `--disallowedTools` and a
+per-invocation `--settings` file, covering `git commit/push/reset/rebase/merge/
+remote/branch/checkout/worktree/clean/stash/update-ref/config` and `gh`.
+
+Measured against Claude Code 2.1.251: a denied command **does not execute** and is
+reported in the invocation's `permission_denials`. Measured in the same run: under
+`--permission-mode acceptEdits`, file edits are auto-approved but arbitrary `Bash`
+is **not**, which is why acceptance validation is wrapper-owned by construction
+rather than delegated to the model.
+
+## 5a. Before a live mutation cycle: run the canary
+
+```bash
+export OPENAI_API_KEY=...
+bridge/bin/mtj-manager --canary          # read-only; writes nothing anywhere
+```
+
+The canary exercises the **real** OpenAI adapter and asserts its output survives
+`parse_review` and the schema gate. It proves the credential resolves, the
+configured model exists, and the contract holds — none of which the offline suite
+can prove. Exit 0 means proceed; exit 4 means blocked.
 
 ## 6. Recovery after a crash
 

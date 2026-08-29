@@ -16,6 +16,7 @@ import json
 import os
 import shlex
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Any, Protocol
@@ -28,6 +29,20 @@ log = get_logger(__name__)
 DEFAULT_MANAGER_MODEL = os.environ.get("MTJ_MANAGER_MODEL", "gpt-5.6-sol")
 DEFAULT_WORKER_MODEL = os.environ.get("MTJ_WORKER_MODEL", "opus")
 CLAUDE_TIMEOUT_S = int(os.environ.get("MTJ_CLAUDE_TIMEOUT_S", "3600"))
+MAX_DIFF_BYTES = int(os.environ.get("MTJ_MAX_DIFF_BYTES", "200000"))
+MAX_EVIDENCE_BYTES = int(os.environ.get("MTJ_MAX_EVIDENCE_BYTES", "8000"))
+
+# Git/GitHub mutation must be STRUCTURALLY impossible for the worker model, not merely
+# discouraged in its prompt. Verified empirically against Claude Code 2.1.251: a denied
+# command does not execute and is reported in the result's `permission_denials`.
+DEFAULT_DENIED_TOOLS: tuple[str, ...] = (
+    "Bash(git commit:*)", "Bash(git push:*)", "Bash(git reset:*)", "Bash(git rebase:*)",
+    "Bash(git merge:*)", "Bash(git tag:*)", "Bash(git remote:*)", "Bash(git branch:*)",
+    "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git worktree:*)", "Bash(git clean:*)",
+    "Bash(git cherry-pick:*)", "Bash(git revert:*)", "Bash(git stash:*)",
+    "Bash(git update-ref:*)", "Bash(git filter-branch:*)", "Bash(git am:*)",
+    "Bash(git apply:*)", "Bash(git config:*)", "Bash(gh:*)", "Bash(glab:*)",
+)
 
 
 class BridgeCommandError(RuntimeError):
@@ -122,6 +137,19 @@ class GhCliGitHub:
     def pr_changed_paths(self, number: int) -> list[str]:
         out = run(["gh", "pr", "view", str(number), "--repo", self.repo, "--json", "files"])
         return [f["path"] for f in json.loads(out.stdout).get("files", [])]
+
+    def pr_diff(self, number: int, max_bytes: int = MAX_DIFF_BYTES) -> tuple[str, bool]:
+        """The actual patch, redacted and bounded.
+
+        Returns (text, truncated). The Manager must review implementation truth, not
+        just a list of path names - but an unbounded diff would silently blow the
+        model context, so oversize is reported explicitly and the caller decides.
+        """
+        out = run(["gh", "pr", "diff", str(number), "--repo", self.repo], timeout=180)
+        text = redact(out.stdout or "")
+        if max_bytes and len(text) > max_bytes:
+            return text[:max_bytes], True
+        return text, False
 
     # ---- writes ----------------------------------------------------------
     def post_comment(self, number: int, body: str, idempotency_key: str = "") -> dict:
@@ -285,12 +313,22 @@ class ClaudeCliAdapter:
 
     model: str = DEFAULT_WORKER_MODEL
     timeout_s: int = CLAUDE_TIMEOUT_S
-    permission_mode: str = "acceptEdits"
+    permission_mode: str = os.environ.get("MTJ_WORKER_PERMISSION_MODE", "acceptEdits")
     dry_run: bool = False
     max_budget_usd: float | None = None
+    denied_tools: tuple[str, ...] = DEFAULT_DENIED_TOOLS
+
+    def settings_payload(self) -> dict:
+        """Permission settings passed to the invocation, independent of user config.
+
+        Belt and braces: the same deny list is supplied through --settings AND
+        --disallowedTools, so the restriction does not depend on one mechanism.
+        """
+        return {"permissions": {"deny": list(self.denied_tools)}}
 
     def build_argv(self, cwd: str | Path, session_id: str,
-                   allowed_tools: list[str] | None = None) -> list[str]:
+                   allowed_tools: list[str] | None = None,
+                   settings_path: str | None = None) -> list[str]:
         argv = [
             "claude", "-p",
             "--output-format", "json",
@@ -298,7 +336,10 @@ class ClaudeCliAdapter:
             "--permission-mode", self.permission_mode,
             "--model", self.model,
             "--add-dir", str(cwd),
+            "--disallowedTools", *self.denied_tools,
         ]
+        if settings_path:
+            argv += ["--settings", settings_path]
         if allowed_tools:
             argv += ["--allowedTools", *allowed_tools]
         if self.max_budget_usd:
@@ -308,7 +349,12 @@ class ClaudeCliAdapter:
     def run_task(self, prompt: str, cwd: str | Path,
                  allowed_tools: list[str] | None = None) -> dict:
         session_id = str(uuid.uuid4())
-        argv = self.build_argv(cwd, session_id, allowed_tools)
+        settings_path = None
+        if not self.dry_run:
+            settings_dir = Path(tempfile.mkdtemp(prefix="mtj-claude-settings-"))
+            settings_path = str(settings_dir / "settings.json")
+            Path(settings_path).write_text(json.dumps(self.settings_payload()))
+        argv = self.build_argv(cwd, session_id, allowed_tools, settings_path)
         if self.dry_run:
             log.info("DRY-RUN would invoke Claude",
                      extra={"argv": " ".join(argv), "prompt_bytes": len(prompt)})

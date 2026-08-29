@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 from . import state as state_mod
-from .adapters import GhCliGitHub, GitOps, OpenAIResponsesAdapter
+from .adapters import BridgeCommandError, GhCliGitHub, GitOps, OpenAIResponsesAdapter
 from .logging_setup import configure, get_logger
 from .policy import Action, Decision, PolicyError, decide
 from .protocol import ProtocolError, Review, parse_review, parse_task, render_block
@@ -56,22 +56,99 @@ you should return STOP saying so.
 """
 
 
+CANARY_PROMPT = """\
+This is a READ-ONLY connectivity and contract canary for the MTJ refoundation bridge.
+
+No repository work is being reviewed. Confirm you can produce a schema-valid review
+block and nothing else.
+
+Return exactly one fenced yaml block:
+
+```yaml
+schema: mtj-review/1
+task: BRIDGE.CANARY
+verdict: PASS
+reasons:
+  - canary reached the manager model and returned a valid review block
+findings:
+  - NONE
+```
+"""
+
+
+def run_canary(model, *, dry_run: bool = False) -> tuple[bool, str]:
+    """Exercise the REAL manager model end to end, read-only, writing nothing.
+
+    Proves three things the offline suite cannot: the credential resolves, the
+    configured model exists, and its output survives `parse_review` + the policy
+    schema gate. Run this before any live mutation cycle.
+    """
+    if dry_run:
+        return True, "DRY-RUN: canary not sent"
+    text = model.review(CANARY_PROMPT, REVIEW_SCHEMA_HINT)
+    if not text.strip():
+        return False, "manager model returned empty text"
+    try:
+        review = parse_review(text)
+    except ProtocolError as exc:
+        return False, f"manager model output did not validate as mtj-review/1: {exc}"
+    if review.verdict not in ("PASS", "REPAIR", "CAPTAIN_DECISION_REQUIRED", "STOP"):
+        return False, f"verdict out of domain: {review.verdict}"
+    return True, f"canary OK: model returned a valid mtj-review/1 with verdict {review.verdict}"
+
+
 def build_review_prompt(*, bootstrap: dict[str, str], issue_body: str, result_body: str,
-                        changed_paths: list[str], pr_number: int | None) -> str:
+                        changed_paths: list[str], pr_number: int | None,
+                        diff_text: str = "", diff_truncated: bool = False,
+                        evidence: list[dict] | None = None) -> str:
+    """Assemble everything a cold reviewer needs to judge IMPLEMENTATION TRUTH.
+
+    A path list says what was touched; only the patch says what was done. The task
+    contract required reconstruction from task + result + PR diff + evidence, so the
+    actual diff and the wrapper-captured validation output both belong here.
+    """
     parts = ["## Durable refoundation control plane\n"]
     for name, text in bootstrap.items():
         parts.append(f"### {name}\n\n```\n{text.strip()}\n```\n")
     parts.append(f"## Task contract\n\n{issue_body}\n")
     parts.append(f"## Worker result\n\n{result_body}\n")
     parts.append(
-        "## Measured PR diff paths\n\n"
+        "## Measured changed paths\n\n"
         + (f"PR #{pr_number}\n" if pr_number else "no PR opened\n")
         + ("\n".join(f"- {p}" for p in changed_paths) if changed_paths else "- (no files changed)")
         + "\n"
     )
+
+    ev = evidence or []
+    if ev:
+        lines = ["## Wrapper-captured acceptance evidence\n",
+                 "These commands were run by the WRAPPER, not by the worker model.\n"]
+        for item in ev:
+            lines.append(f"### `{' '.join(item.get('command', []))}` -> rc={item.get('rc')}"
+                         + (" (output truncated)" if item.get("truncated") else ""))
+            lines.append(f"```\n{(item.get('output_tail') or '').strip()}\n```\n")
+        parts.append("\n".join(lines))
+    else:
+        parts.append("## Wrapper-captured acceptance evidence\n\n"
+                     "NONE. The worker declared no validation commands, so the only account "
+                     "of correctness is model prose. Weigh it accordingly.\n")
+
+    if diff_text:
+        parts.append(
+            "## Actual PR diff\n\n"
+            + ("**TRUNCATED** - this patch exceeded the size bound, so you are seeing a "
+               "PREFIX. Do not return PASS on the strength of a partial diff; if the "
+               "unreviewed remainder matters, return STOP and say so.\n\n"
+               if diff_truncated else "")
+            + f"```diff\n{diff_text}\n```\n"
+        )
+    else:
+        parts.append("## Actual PR diff\n\nUNAVAILABLE - no diff could be fetched.\n")
+
     parts.append(
-        "## Your task\n\nReview the Worker result against the task contract and the durable "
-        "control plane. Judge only what the evidence supports. Then return the review block."
+        "## Your task\n\nReview the Worker result against the task contract, the actual diff, "
+        "and the captured evidence. Judge only what the evidence supports. Then return the "
+        "review block."
     )
     return "\n".join(parts)
 
@@ -122,21 +199,36 @@ def review_once(*, github, git: GitOps, model, repo: str, issue_number: int,
                         reasons=("no mtj-result/1 comment on this issue yet",))
 
     changed_paths: list[str] = []
+    diff_text, diff_truncated = "", False
     if result.pr:
         try:
             changed_paths = github.pr_changed_paths(result.pr)
         except Exception as exc:  # noqa: BLE001 - a diff read failure must not be silent
+            log.warning("could not read PR files", extra={"pr": result.pr, "error": str(exc)})
+        try:
+            diff_text, diff_truncated = github.pr_diff(result.pr)
+            log.info("fetched PR diff", extra={"pr": result.pr, "bytes": len(diff_text),
+                                               "truncated": diff_truncated})
+        except Exception as exc:  # noqa: BLE001
             log.warning("could not read PR diff", extra={"pr": result.pr, "error": str(exc)})
-            changed_paths = []
     if not changed_paths:
         changed_paths = [m for m in result.mutations if m not in ("NONE",)]
+
+    # A mutation task the reviewer cannot actually SEE is not reviewable.
+    if result.pr and not diff_text:
+        return Decision(
+            action=Action.HALT, verdict="STOP",
+            reasons=(f"PR #{result.pr} exists but its diff could not be fetched; refusing to "
+                     "review implementation truth from a path list alone",))
 
     from .worker import read_bootstrap
 
     bootstrap = read_bootstrap(git, f"origin/{base_branch}")
     prompt = build_review_prompt(bootstrap=bootstrap, issue_body=issue_body,
                                  result_body=render_block(result.raw),
-                                 changed_paths=changed_paths, pr_number=result.pr)
+                                 changed_paths=changed_paths, pr_number=result.pr,
+                                 diff_text=diff_text, diff_truncated=diff_truncated,
+                                 evidence=result.evidence)
     log.info("invoking a FRESH manager model", extra={"prompt_bytes": len(prompt),
                                                       "issue": issue_number})
     text = model.review(prompt, REVIEW_SCHEMA_HINT)
@@ -173,7 +265,7 @@ def review_once(*, github, git: GitOps, model, repo: str, issue_number: int,
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="mtj-manager", description=__doc__)
     parser.add_argument("--repo", default=DEFAULT_REPO)
-    parser.add_argument("--issue", type=int, required=True)
+    parser.add_argument("--issue", type=int, default=0)
     parser.add_argument("--base-branch", default="refoundation-manager-bootstrap-2026-08-28")
     parser.add_argument("--once", action="store_true")
     parser.add_argument("--dry-run", action="store_true",
@@ -183,11 +275,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-repairs", type=int, default=2)
     parser.add_argument("--max-cycles", type=int, default=8)
     parser.add_argument("--log-level", default=None)
+    parser.add_argument("--canary", action="store_true",
+                        help="read-only: exercise the real manager model and exit; writes nothing")
     args = parser.parse_args(argv)
 
     configure(args.log_level)
+    if args.canary:
+        model = OpenAIResponsesAdapter(dry_run=args.dry_run,
+                                       **({"model": args.model} if args.model else {}))
+        try:
+            ok, message = run_canary(model, dry_run=args.dry_run)
+        except BridgeCommandError as exc:
+            log.error("canary could not run", extra={"error": str(exc)})
+            print(f"CANARY BLOCKED: {exc}")
+            return 4
+        print(message)
+        return 0 if ok else 4
     github = GhCliGitHub(args.repo, dry_run=args.dry_run)
     git = GitOps(args.repo_root, dry_run=args.dry_run)
+    if not args.issue:
+        parser.error("--issue is required unless --canary is given")
     model = OpenAIResponsesAdapter(dry_run=args.dry_run,
                                    **({"model": args.model} if args.model else {}))
     decision = review_once(github=github, git=git, model=model, repo=args.repo,

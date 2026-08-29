@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import shutil
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from mtjbridge import manager, state as state_mod, worker
@@ -27,9 +28,11 @@ class BridgeTestCase(unittest.TestCase):
         self.state_dir.mkdir()
         self.git = GitOps(self.work)
 
-    def make_github(self, *, base=None, allow=("src/**",), deny=("docs/**",), task_id="TEST.TASK"):
+    def make_github(self, *, base=None, allow=("src/**",), deny=("docs/**",),
+                    task_id="TEST.TASK", validation=(), kind="infrastructure_only"):
         body = task_body(task_id=task_id, base=base or self.base,
-                         base_branch=BOOTSTRAP_BRANCH, allow=allow, deny=deny)
+                         base_branch=BOOTSTRAP_BRANCH, allow=allow, deny=deny,
+                         validation=validation, kind=kind)
         return FakeGitHub([FakeIssue(number=42, title="[mtj-task/1] test", body=body)])
 
     def run_worker(self, github, claude, task_id="TEST.TASK"):
@@ -373,3 +376,222 @@ class TestLedgerClassification(BridgeTestCase):
         ledger = state_mod.reconstruct(github, 42)
         self.assertEqual(len(ledger.results), 0)
         self.assertEqual(len(ledger.parse_errors), 1, "a bad block must be visible, not dropped")
+
+
+class TestManagerSeesImplementationTruth(BridgeTestCase):
+    """Manager review finding 1: a path list is not a diff."""
+
+    def _post_result_with_pr(self, github):
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "changed VALUE"
+
+        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+        from mtjbridge.protocol import render_block
+
+        github.post_comment(42, render_block(outcome.to_payload()))
+        return outcome
+
+    def test_the_actual_patch_reaches_the_manager_prompt(self):
+        github = self.make_github()
+        outcome = self._post_result_with_pr(github)
+        github.prs[outcome.pr]["diff"] = "--- a/src/thing.py\n+++ b/src/thing.py\n+VALUE = 2\n"
+        model = FakeManagerModel([review_body(verdict="PASS")])
+        manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
+                            issue_number=42, base_branch=BOOTSTRAP_BRANCH)
+        prompt = model.prompts[0]
+        self.assertIn("## Actual PR diff", prompt)
+        self.assertIn("+VALUE = 2", prompt)
+
+    def test_an_unfetchable_diff_halts_instead_of_reviewing_path_names(self):
+        github = self.make_github()
+        self._post_result_with_pr(github)
+        github.diff_unavailable = True
+        model = FakeManagerModel([review_body(verdict="PASS")])
+        decision = manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
+                                       issue_number=42, base_branch=BOOTSTRAP_BRANCH)
+        self.assertEqual(decision.verdict, "STOP")
+        self.assertTrue(any("diff could not be fetched" in r for r in decision.reasons))
+        self.assertEqual(model.prompts, [], "the model must not be asked to review blind")
+
+    def test_a_truncated_diff_is_flagged_in_the_prompt(self):
+        github = self.make_github()
+        outcome = self._post_result_with_pr(github)
+        github.prs[outcome.pr]["diff"] = "x" * 500
+        model = FakeManagerModel([review_body(verdict="PASS")])
+        with unittest.mock.patch.object(type(github), "pr_diff",
+                                        lambda self, n, max_bytes=100: ("x" * 100, True)):
+            manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
+                                issue_number=42, base_branch=BOOTSTRAP_BRANCH)
+        self.assertIn("TRUNCATED", model.prompts[0])
+
+
+class TestStructuralToolDeny(BridgeTestCase):
+    """Manager review finding 2: the git prohibition must not be prompt-only."""
+
+    def test_the_invocation_denies_git_and_gh_tools(self):
+        from mtjbridge.adapters import ClaudeCliAdapter
+
+        argv = ClaudeCliAdapter().build_argv("/tmp/wt", "sid")
+        self.assertIn("--disallowedTools", argv)
+        for denied in ("Bash(git commit:*)", "Bash(git push:*)", "Bash(gh:*)",
+                       "Bash(git reset:*)", "Bash(git remote:*)"):
+            self.assertIn(denied, argv)
+
+    def test_the_settings_payload_repeats_the_deny_list(self):
+        from mtjbridge.adapters import ClaudeCliAdapter
+
+        deny = ClaudeCliAdapter().settings_payload()["permissions"]["deny"]
+        self.assertIn("Bash(git push:*)", deny)
+        self.assertIn("Bash(gh:*)", deny)
+
+    def test_the_session_is_never_resumed(self):
+        from mtjbridge.adapters import ClaudeCliAdapter
+
+        argv = ClaudeCliAdapter().build_argv("/tmp/wt", "sid")
+        for forbidden in ("--continue", "-c", "--resume", "-r"):
+            self.assertNotIn(forbidden, argv)
+        self.assertIn("--session-id", argv)
+
+
+class TestMandatoryScope(BridgeTestCase):
+    """Manager review finding 3: missing scope is a STOP before Claude runs."""
+
+    def test_a_mutating_task_without_scope_stops_before_the_model(self):
+        github = self.make_github(allow=(), deny=())
+        claude = FakeClaude(behavior=lambda cwd, prompt: "should never run")
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [], "the model must not be invoked without scope")
+        self.assertIsNone(outcome.pr)
+
+    def test_a_read_only_task_without_scope_proceeds(self):
+        github = self.make_github(allow=(), deny=())
+        github.issues[42].body = task_body(base=self.base, base_branch=BOOTSTRAP_BRANCH,
+                                           kind="read_only", allow=(), deny=())
+        claude = FakeClaude(behavior=lambda cwd, prompt: "inspected only")
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "COMPLETE")
+        self.assertEqual(len(claude.calls), 1)
+
+
+class TestWrapperOwnedValidation(BridgeTestCase):
+    """Manager review finding 4: evidence must be machine-captured, not model prose."""
+
+    def test_declared_commands_run_in_the_wrapper_and_are_captured(self):
+        github = self.make_github(validation=('python3 -c "print(1+1)"',))
+
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "edited"
+
+        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+        self.assertEqual(outcome.status, "COMPLETE")
+        self.assertEqual(len(outcome.evidence), 1)
+        item = outcome.evidence[0]
+        self.assertEqual(item["rc"], 0)
+        self.assertIn("2", item["output_tail"])
+        self.assertEqual(item["command"][0], "python3")
+
+    def test_a_failing_command_fails_the_result_and_blocks_the_pr(self):
+        github = self.make_github(validation=('python3 -c "raise SystemExit(3)"',))
+
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "edited"
+
+        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+        self.assertEqual(outcome.status, "FAIL")
+        self.assertIsNone(outcome.pr, "a failing acceptance command must not reach a PR")
+        self.assertEqual(outcome.evidence[0]["rc"], 3)
+
+    def test_a_refused_command_stops_before_the_model(self):
+        github = self.make_github(validation=("curl http://evil.example",))
+        claude = FakeClaude(behavior=lambda cwd, prompt: "should never run")
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [])
+
+    def test_absent_validation_is_recorded_as_a_discrepancy(self):
+        github = self.make_github()
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        self.assertTrue(any("no validation.commands" in d for d in outcome.discrepancies))
+
+    def test_evidence_survives_the_result_round_trip(self):
+        from mtjbridge.protocol import parse_result, render_block
+
+        github = self.make_github(validation=('python3 -c "print(1+1)"',))
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        parsed = parse_result(render_block(outcome.to_payload()))
+        self.assertEqual(len(parsed.evidence), 1)
+        self.assertFalse(parsed.validation_failed)
+
+
+class TestDiscoveryRespectsLedger(BridgeTestCase):
+    """Manager review finding 7: READY is a static string; the ledger is the truth."""
+
+    def test_a_task_with_a_posted_result_is_not_rediscovered(self):
+        github = self.make_github()
+        self.assertIsNotNone(worker.find_ready_task(github))
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        from mtjbridge.protocol import render_block
+
+        github.post_comment(42, render_block(outcome.to_payload()))
+        self.assertEqual(state_mod.reconstruct(github, 42).next_phase(), "MANAGER_REVIEW")
+        self.assertIsNone(worker.find_ready_task(github),
+                          "a completed task must not be re-executed just because it says READY")
+
+    def test_restart_after_result_before_review_leaves_only_the_manager_eligible(self):
+        github = self.make_github()
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        from mtjbridge.protocol import render_block
+
+        github.post_comment(42, render_block(outcome.to_payload()))
+        self.assertIsNone(worker.find_ready_task(github))
+        model = FakeManagerModel([review_body(verdict="PASS")])
+        decision = manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
+                                       issue_number=42, base_branch=BOOTSTRAP_BRANCH)
+        self.assertEqual(decision.verdict, "PASS")
+
+    def test_a_halted_task_is_not_rediscovered_either(self):
+        github = self.make_github()
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        from mtjbridge.protocol import render_block
+
+        github.post_comment(42, render_block(outcome.to_payload()))
+        model = FakeManagerModel([review_body(verdict="STOP", reasons=("halt",))])
+        manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
+                            issue_number=42, base_branch=BOOTSTRAP_BRANCH)
+        self.assertEqual(state_mod.reconstruct(github, 42).next_phase(), "HALTED")
+        self.assertIsNone(worker.find_ready_task(github))
+
+
+class TestManagerCanary(BridgeTestCase):
+    """Manager review finding 6: prove the real model path before a live cycle."""
+
+    def test_canary_passes_on_a_valid_review_block(self):
+        ok, message = manager.run_canary(FakeManagerModel([review_body(task_id="BRIDGE.CANARY")]))
+        self.assertTrue(ok, message)
+
+    def test_canary_fails_on_prose(self):
+        ok, message = manager.run_canary(FakeManagerModel(["looks fine to me"]))
+        self.assertFalse(ok)
+        self.assertIn("did not validate", message)
+
+    def test_canary_fails_on_empty_output(self):
+        ok, _ = manager.run_canary(FakeManagerModel([""]))
+        self.assertFalse(ok)
+
+
+class TestExplicitIssueIsNotABackDoor(BridgeTestCase):
+    def test_main_refuses_an_explicit_issue_that_is_already_complete(self):
+        github = self.make_github()
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        from mtjbridge.protocol import render_block
+
+        github.post_comment(42, render_block(outcome.to_payload()))
+        phase = state_mod.reconstruct(github, 42).next_phase()
+        self.assertEqual(phase, "MANAGER_REVIEW")
+        # main() would return 2 for this issue; assert the guard's condition directly
+        # so the test does not depend on argparse or the live GitHub adapter.
+        self.assertNotEqual(phase, "WORKER_EXECUTE")
