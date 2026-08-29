@@ -55,7 +55,7 @@ sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 
-CODEBOOK = REPO_ROOT / "out" / "foundry" / "codebook.json"
+CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"
 GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
 
 
