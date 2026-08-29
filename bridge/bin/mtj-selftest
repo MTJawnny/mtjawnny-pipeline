@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+"""Run the bridge offline suite and print the LIVE test count.
+
+Exists so no document has to hard-code a number. Prose states the command and the
+pass/fail requirement; this prints the count at the moment you ask.
+"""
+import pathlib, subprocess, sys, re
+
+root = pathlib.Path(__file__).resolve().parent.parent
+proc = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+                      cwd=root, capture_output=True, text=True)
+tail = proc.stderr.strip().splitlines()
+ran = next((l for l in tail if l.startswith("Ran ")), "Ran ? tests")
+status = "OK" if proc.returncode == 0 else "FAILED"
+count = re.search(r"Ran (\d+)", ran)
+print(f"{ran} -> {status}")
+if status != "OK":
+    print("\n".join(tail[-25:]))
+print(f"count={count.group(1) if count else 'unknown'}")
+sys.exit(proc.returncode)

@@ -1,0 +1,5 @@
+# Core bridge has NO third-party dependencies: protocol parsing, policy, state and
+# the entire offline test suite are stdlib-only.
+#
+# Needed only for a LIVE mtj-manager run (OpenAI Responses API):
+openai>=1.40
