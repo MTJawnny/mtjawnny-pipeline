@@ -144,6 +144,18 @@ class TestTheC7InventoryIsStatedInFull(ContractTestCase):
         binding = self.contract.sides["LEGACY_LOCAL"].bindings["RATCHET_BASELINE_BYTES"]
         self.assertEqual(binding.availability, "LOCAL_ONLY_GITIGNORED")
 
+    def test_the_codebook_row_contracts_only_what_c7_1_settles(self):
+        """C7.1 is 'EXACT sha256 AND byte size'. Anything else in this row's value is
+        selector metadata, and every declared field is compared — so a widened row
+        turns an unchanged authority into reported drift."""
+        row = next(i for i in self.document["invariants"]
+                   if i["invariant_id"] == "CODEBOOK_AUTHORITY_IDENTITY")
+        self.assertEqual([f["name"] for f in row["value_fields"]],
+                         ["selected_sha256", "selected_byte_size"])
+        self.assertEqual(sorted(row["extractor_args"]["fields"]),
+                         ["selected_byte_size", "selected_sha256"])
+        self.assertNotIn("snapshot_id", json.dumps(row["extractor_args"]))
+
     def test_the_cr_row_does_not_claim_the_interpretation_contract(self):
         """C7.5 names edition content AND an interpretation contract. Only one is here,
         and quietly conserving the row would misreport the other as done."""
@@ -192,7 +204,16 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         value = self.measured["CODEBOOK_AUTHORITY_IDENTITY"].value
         self.assertEqual(value["selected_sha256"], selector["sha256"])
         self.assertEqual(value["selected_byte_size"], selector["byte_size"])
-        self.assertEqual(value["selected_snapshot_id"], selector["snapshot_id"])
+
+    def test_the_codebook_value_is_EXACTLY_the_sha256_and_the_byte_size(self):
+        """C7.1 settles the contracted truth as exact sha256 AND byte size — nothing
+        more. Every declared field is compared, so one extra field is one extra way
+        for an unchanged object to report drift. The first version of this row also
+        carried the selector's `snapshot_id`, which made a RELABEL read as a changed
+        authority; this is the guard that keeps it out.
+        """
+        self.assertEqual(sorted(self.measured["CODEBOOK_AUTHORITY_IDENTITY"].value),
+                         ["selected_byte_size", "selected_sha256"])
 
     def test_the_codebook_identity_agrees_with_the_p0_3a_capture(self):
         recorded = scalars(block(self.inputs, "selected_codebook_authority"))
@@ -329,6 +350,50 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
 
         report = cc.compare(self.contract, left, right)
         self.assertTrue(report.conserved)
+
+    def test_relabelling_the_snapshot_is_not_drift(self):
+        """The repair F1 asked for. The selector's `snapshot_id` is a name somebody
+        gave a snapshot; the authority is the object it selects. Renaming it while
+        the selected sha256 and byte size are untouched must be CONSERVED, or the
+        harness has promoted a label to truth.
+        """
+        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+                              .read_text(encoding="utf-8"))
+        relabelled = dict(selector, snapshot_id="codebook-relabelled-by-a-human")
+        self.assertNotEqual(relabelled["snapshot_id"], selector["snapshot_id"])
+        legacy_root = self.make_root(
+            ratchet_at="experiments/out/foundry/audit-baseline.json")
+        new_root = self.make_root(
+            ratchet_at="config/baselines/foundry-audit-baseline.json",
+            selector=relabelled)
+
+        report = cc.compare(self.contract,
+                            cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root),
+                            cc.measure_side(self.contract, "REFOUNDATION_TRACKED",
+                                            new_root))
+        self.assertTrue(report.conserved)
+        self.assertEqual(report.drifted_ids, ())
+
+    def test_a_changed_selected_byte_size_is_drift(self):
+        """The other half of the contracted value, controlled separately: a check that
+        only ever moves the digest cannot tell whether the size is compared at all."""
+        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+                              .read_text(encoding="utf-8"))
+        drifted = dict(selector, byte_size=selector["byte_size"] + 1)
+        legacy_root = self.make_root(
+            ratchet_at="experiments/out/foundry/audit-baseline.json")
+        new_root = self.make_root(
+            ratchet_at="config/baselines/foundry-audit-baseline.json", selector=drifted)
+
+        report = cc.compare(self.contract,
+                            cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root),
+                            cc.measure_side(self.contract, "REFOUNDATION_TRACKED",
+                                            new_root))
+        self.assertFalse(report.conserved)
+        self.assertEqual(report.drifted_ids, ("CODEBOOK_AUTHORITY_IDENTITY",))
+        verdict = next(v for v in report.verdicts
+                       if v.invariant_id == "CODEBOOK_AUTHORITY_IDENTITY")
+        self.assertEqual(verdict.differing_fields, ("selected_byte_size",))
 
     def test_a_byte_identical_selector_that_selects_something_else_is_drift(self):
         """The inverse control. Same document, same length, different selection."""
@@ -682,9 +747,12 @@ class TestMeasurementFailsClosed(FixtureTestCase):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
 
     def test_a_missing_key_in_the_source_stops_the_run(self):
+        """Aimed at a CONTRACTED key. It used to delete `snapshot_id`, which the
+        contract no longer reads — a control pointed at a field nobody looks at
+        passes for the wrong reason and proves nothing about the halt."""
         selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
                               .read_text(encoding="utf-8"))
-        del selector["snapshot_id"]
+        del selector["byte_size"]
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):

@@ -36,16 +36,15 @@
       "extractor_args": {
         "fields": {
           "selected_sha256": "sha256",
-          "selected_byte_size": "byte_size",
-          "selected_snapshot_id": "snapshot_id"
+          "selected_byte_size": "byte_size"
         }
       },
       "value_fields": [
         {"name": "selected_sha256", "type": "sha256"},
-        {"name": "selected_byte_size", "type": "byte_size"},
-        {"name": "selected_snapshot_id", "type": "string"}
+        {"name": "selected_byte_size", "type": "byte_size"}
       ],
       "why_not_exact_bytes": "C7.1 contracts the identity of the SELECTED immutable object, not the bytes of the tracked selector that names it. Digesting the selector would pass on a reformat that changed the selection and fail on a whitespace edit that changed nothing.",
+      "why_snapshot_id_is_not_contracted": "P0.3C's first version also contracted the selector's snapshot_id, and the Manager review refused it (F1.CODEBOOK_IDENTITY_OVERCONTRACTED). C7.1 settles the contracted truth as EXACT sha256 AND byte size — nothing more. Every declared value field is compared, so carrying the label made a RELABEL of an unchanged object report as drift: the identity would have been the name somebody gave the snapshot rather than the object it selects. That is plumbing promoted to truth, and the exact inversion of this phase's principle. The label is a real and useful fact; it is EVIDENCE, and this row deliberately reads none of it.",
       "requires_remote_access": false,
       "remote_note": "The selected object lives in R2 and is content-addressed. The identity is read from the tracked selector, so no network access is needed and none is performed."
     },
