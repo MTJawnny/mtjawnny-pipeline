@@ -1,0 +1,88 @@
+schema: mtj-refoundation-bootstrap-state/1
+status: ACTIVE
+updated: 2026-08-28
+
+repository:
+  github: MTJawnny/mtjawnny-pipeline
+  remote_default_branch: main
+  remote_main_sha: 3a2db848329cfcd54846a6ef6b4f3e1a4bc606b3
+  forensic_baseline_branch: refoundation-baseline-2026-08-28
+  forensic_baseline_sha: 11d63633919146a9be7a5dcdeb55efa0b8dc058d
+  bootstrap_branch: refoundation-manager-bootstrap-2026-08-28
+
+project:
+  priority: P0_REFOUNDATION
+  feature_work: PAUSED
+  aq4: PAUSED_AFTER_ADJUDICATOR_A_INCIDENT
+  governing_principle: PRESERVE_TRUTH_NOT_PLUMBING
+
+bridge:
+  github_control_plane: OPERATIONAL
+  manager_can_read_write_github: true
+  worker_github_issue_commenting: VERIFIED_BY_ISSUE_1
+  captain_manual_courier_required: false
+  session_model: DISPOSABLE_SESSIONS_DURABLE_EXTERNAL_STATE
+
+completed:
+  - id: BRIDGE.PUBLISH-LOCAL-BASELINE
+    result: PASS
+    sha: 11d63633919146a9be7a5dcdeb55efa0b8dc058d
+  - id: P0.1.CLEAN-SLATE-REFOUNDATION-ARCHITECTURE
+    github_issue: 1
+    result: COMPLETE
+    mutations: NONE
+    acceptance: PENDING_MANAGER_AND_CAPTAIN_REVIEW
+
+pending_review:
+  github_issue: 1
+  note: >-
+    Claude proposed a clean-slate target architecture and Captain decision points D1-D9.
+    The proposal is evidence/recommendation only. No D1-D9 item has been ratified by this
+    bootstrap state and no migration phase has been authorized.
+
+captain_decisions_already_made:
+  - repository refoundation outranks AQ4 continuation
+  - substantial rewriting is allowed if it produces a cleaner reliable engine
+  - old files do not deserve preservation merely because they exist
+  - alternate-end-state / other-system ideas should leave the active repository for later analysis
+  - Git history preserves prior tracked implementation history
+  - preserve semantic truth and governance meaning, not accidental plumbing
+  - GitHub is the preferred Manager/Worker durable control plane
+  - ChatGPT and Claude sessions should be replaceable rather than authoritative
+
+known_local_only_state_at_forensic_baseline:
+  note: >-
+    GitHub cannot see these bytes unless Claude later publishes/classifies them. A fresh Manager
+    must not assume the GitHub tree represents the entire Claude working tree.
+  modified_tracked:
+    - docs/RATIFIED-RULINGS-REGISTRY.md
+  untracked_count: 9
+  untracked:
+    - docs/CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md
+    - docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md
+    - docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md
+    - docs/FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md
+    - docs/INCIDENT-LOCALITY-REVERSION-2026-08-14.md
+    - docs/MTJAWNNY-TEMP-AGENT-COMMUNICATION-PROTOCOL.md
+    - docs/REPOSITORY-ARCHITECTURE-AUDIT-2026-08-28.md
+    - docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md
+    - docs/THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md
+  registry_warning: >-
+    The locally regenerated RATIFIED-RULINGS-REGISTRY.md contains a known false-positive S1
+    namespace collision and must not be blindly accepted merely to clean the tree.
+
+next_manager_action:
+  authorized: REVIEW_ONLY
+  instructions:
+    - start a fresh GitHub-enabled ChatGPT Manager session
+    - read this bootstrap directory
+    - read and independently audit GitHub Issue #1 result
+    - compare Claude's clean-slate proposal against Captain direction and repository evidence
+    - identify Captain decisions that must be made before implementation
+    - do not begin migration merely because P0.1 completed
+
+next_worker_action:
+  authorized: NONE
+  note: >-
+    Prefer a fresh Claude Code session after the Manager review. The fresh Worker should use
+    WORKER-START.md and execute only the next READY GitHub issue.
