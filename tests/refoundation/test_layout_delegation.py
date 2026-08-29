@@ -63,6 +63,18 @@ SECOND_SLICE = {
     WIRE: {"codebook.json": 1, "wire": 1},
 }
 
+# P0.4E, the third slice: root-relative CONSUMPTIONS delegated to the
+# compatibility ROOT rather than to a directory under it. Different provider
+# (`fc.REPO_ROOT`), same boundary, and the first slice whose two consumers both
+# run GREEN in an isolated worktree -- which is why it can carry byte-identical
+# before/after runtime evidence instead of structure-only review.
+REACHABILITY = EXPERIMENTS / "foundry_reachability.py"
+
+THIRD_SLICE = {
+    REACHABILITY: 2,   # WORKFLOWS, and the inverse_census glob base
+    PROBE: 1,          # GRAMMAR
+}
+
 COVERING_GATE2_ROWS = ("ground_truth", "ground_truth_wide", "probe_guards")
 
 
@@ -232,11 +244,18 @@ class TestNothingElseMoved(unittest.TestCase):
         cls.probe = load_legacy("foundry_probe")
 
     def test_the_neighbouring_layout_sites_are_untouched(self):
-        """`GRAMMAR` sits on the line after the migrated `CODEBOOK` and is a
-        root-relative docs path. It is a real ownership site and it is
-        deliberately NOT in this slice."""
+        """`GRAMMAR` sits on the line after the migrated `CODEBOOK`.
+
+        SUPERSEDED IN ITS SOURCE-TEXT HALF ONLY, BY P0.4E. P0.4B left `GRAMMAR`
+        alone as a root-relative docs path and asserted that old text; P0.4E was
+        then authorized to migrate exactly this line to `fc.REPO_ROOT`, so the
+        expected text moved with it. What the guard MEANS is unchanged and is the
+        assertion below: `CODEBOOK` and `GRAMMAR` stay two distinct paths, and
+        `GRAMMAR` still resolves to the grammar in `docs/`. That equality is
+        byte-for-byte the one P0.4B wrote.
+        """
         source = PROBE.read_text(encoding="utf-8")
-        self.assertIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
+        self.assertIn('GRAMMAR = fc.REPO_ROOT / "docs" / '
                       '"CODEBOOK-NAMING-GRAMMAR.md"', source)
         self.assertEqual(self.probe.GRAMMAR,
                          PATHS.legacy_docs / "CODEBOOK-NAMING-GRAMMAR.md")
@@ -467,6 +486,257 @@ class TestTheSecondSliceChangedNothingElse(unittest.TestCase):
             len(delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 2)
         self.assertEqual(
             len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+
+
+# ---------------------------------------------------------------------------
+# P0.4E — the third slice: delegating the ROOT itself
+# ---------------------------------------------------------------------------
+
+
+def root_delegating_expressions(source: str) -> list[str]:
+    """Occurrences of `fc.REPO_ROOT / ...`.
+
+    A different provider from the first two slices: those delegated to a
+    DIRECTORY under the root, this delegates the ROOT. Counted with its own
+    helper so a P0.4B/P0.4C count can never absorb a P0.4E site.
+    """
+    matches = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        if (isinstance(base, ast.Attribute) and base.attr == "REPO_ROOT"
+                and isinstance(base.value, ast.Name) and base.value.id == "fc"):
+            matches.append(node)
+    # OUTERMOST ONLY. `fc.REPO_ROOT / "docs" / "X.md"` is a left-nested chain, so
+    # the inner `fc.REPO_ROOT / "docs"` matches too and one site scores twice.
+    # FOURTH recorded instance of this nesting double-count in this arc; it is
+    # fixed the same way every time rather than absorbed into an expected count.
+    inner = {id(d) for n in matches for d in ast.walk(n) if d is not n}
+    return [f"line {n.lineno}: {ast.unparse(n)}"
+            for n in matches if id(n) not in inner]
+
+
+TOP_LEVEL_DIRS = {".github", "docs", "data", "config", "tags", "experiments",
+                  "pipeline", "src", "tests", "refoundation", "bridge"}
+
+
+def local_root_relative_constructions(source: str, *, exempt_bootstrap: bool = True,
+                                      names=("REPO", "REPO_ROOT")) -> list[str]:
+    """Path joins that reach a repository DIRECTORY through a LOCAL root variable.
+
+    This is the shape P0.4E removes: `REPO / ".github" / ...` where `REPO` is
+    already the root, and `REPO_ROOT.parent / "docs" / ...` where `REPO_ROOT` is
+    the experiments directory and `.parent` climbs to it.
+
+    A LITERAL top-level directory name is required. The first version asked only
+    that the base be a root variable, and so flagged `REPO / rel`,
+    `REPO / e` and `REPO / d / f"{tail}.py"` — runtime joins that resolve a path
+    supplied by the caller rather than restating layout. Those are ordinary I/O
+    on an explicit path, which C1 does not forbid.
+
+    `exempt_bootstrap` suppresses the join inside `sys.path.insert(...)`, which
+    is a root DECISION and stays out of this slice. It is anchored to that CALL,
+    not to the shape `REPO / "experiments"`: a shape-based exemption also
+    swallowed the reverted `inverse_census` glob base, so that site's negative
+    control could never fire. It is a parameter rather than a hardcoded skip so a
+    test can prove the exemption is what silences the bootstrap.
+    """
+    tree = ast.parse(source)
+    bootstrap = set()
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr in ("insert", "append")
+                and isinstance(node.func.value, ast.Attribute)
+                and node.func.value.attr == "path"):
+            for d in ast.walk(node):
+                bootstrap.add(id(d))
+    matches = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+        base, _climbed = node, False
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        if isinstance(base, ast.Attribute) and base.attr == "parent":
+            _climbed, base = True, base.value
+        if not (isinstance(base, ast.Name) and base.id in names):
+            continue
+        literals = [n.value for n in ast.walk(node)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        if not any(l in TOP_LEVEL_DIRS for l in literals):
+            continue
+        if exempt_bootstrap and id(node) in bootstrap:
+            continue
+        matches.append(node)
+    # OUTERMOST ONLY, the same left-nesting rule every checker in this file obeys.
+    inner = {id(d) for n in matches for d in ast.walk(n) if d is not n}
+    return [f"line {n.lineno}: {ast.unparse(n)}"
+            for n in matches if id(n) not in inner]
+
+
+class TestTheThirdSliceDelegatesTheRoot(unittest.TestCase):
+    def test_each_file_has_the_expected_number_of_root_delegations(self):
+        for path, expected in THIRD_SLICE.items():
+            with self.subTest(file=path.name):
+                got = root_delegating_expressions(path.read_text(encoding="utf-8"))
+                self.assertEqual(len(got), expected, got)
+
+    def test_the_delegations_are_the_expected_three_sites(self):
+        reach = root_delegating_expressions(REACHABILITY.read_text(encoding="utf-8"))
+        self.assertTrue(any("'.github' / 'workflows'" in g for g in reach), reach)
+        self.assertTrue(any("'experiments'" in g for g in reach), reach)
+        probe = root_delegating_expressions(PROBE.read_text(encoding="utf-8"))
+        self.assertTrue(any("CODEBOOK-NAMING-GRAMMAR.md" in g for g in probe), probe)
+
+    def test_no_local_root_relative_construction_remains(self):
+        for path in THIRD_SLICE:
+            with self.subTest(file=path.name):
+                self.assertEqual(
+                    local_root_relative_constructions(path.read_text(encoding="utf-8")),
+                    [])
+
+    def test_neither_file_gained_an_import(self):
+        for path in THIRD_SLICE:
+            with self.subTest(file=path.name):
+                source = path.read_text(encoding="utf-8")
+                self.assertIn("import foundry_common as fc", source)
+                self.assertEqual(source.count("import foundry_common"), 1)
+
+
+class TestTheThirdSliceCheckerCatchesAReversion(unittest.TestCase):
+    CASES = {
+        "reachability WORKFLOWS": (
+            REACHABILITY,
+            'WORKFLOWS = fc.REPO_ROOT / ".github" / "workflows"',
+            'WORKFLOWS = REPO / ".github" / "workflows"'),
+        "reachability inverse_census glob base": (
+            REACHABILITY,
+            '    for py in sorted((fc.REPO_ROOT / "experiments").glob("*.py")):',
+            '    for py in sorted((REPO / "experiments").glob("*.py")):'),
+        "probe GRAMMAR": (
+            PROBE,
+            'GRAMMAR = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"',
+            'GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"'),
+    }
+
+    def test_restoring_any_one_local_construction_is_caught(self):
+        for label, (path, now, before) in self.CASES.items():
+            with self.subTest(site=label):
+                source = path.read_text(encoding="utf-8")
+                self.assertIn(now, source, "the live text moved; fix the control")
+                reverted = source.replace(now, before, 1)
+                self.assertNotEqual(reverted, source)
+                self.assertEqual(
+                    len(local_root_relative_constructions(reverted)), 1)
+
+    def test_reverting_one_site_also_drops_a_root_delegation(self):
+        for label, (path, now, before) in self.CASES.items():
+            with self.subTest(site=label):
+                source = path.read_text(encoding="utf-8")
+                reverted = source.replace(now, before, 1)
+                self.assertEqual(
+                    len(root_delegating_expressions(reverted)),
+                    len(root_delegating_expressions(source)) - 1)
+
+    def test_the_bootstrap_exemption_is_what_silences_the_bootstrap(self):
+        """The checker must stay blind to `sys.path.insert(0, str(REPO /
+        "experiments"))` — a root DECISION, out of slice — but blind ON PURPOSE.
+
+        Asserting only "no findings" would pass just as well if the shape never
+        matched at all. Turning the exemption off must make exactly that line
+        appear, which is what proves the exemption is doing the silencing.
+        """
+        source = REACHABILITY.read_text(encoding="utf-8")
+        self.assertEqual(local_root_relative_constructions(source), [])
+        unexempted = local_root_relative_constructions(source, exempt_bootstrap=False)
+        self.assertEqual(len(unexempted), 1, unexempted)
+        self.assertIn("'experiments'", unexempted[0])
+        self.assertIn('sys.path.insert(0, str(REPO / "experiments"))', source)
+
+
+class TestTheThirdSliceResolvedPathsAreByteIdentical(unittest.TestCase):
+    """Each delegated value must equal the construction it replaced, recomputed
+    from the module's OWN live root binding."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.reach = load_legacy("foundry_reachability")
+        cls.probe = load_legacy("foundry_probe")
+
+    def test_workflows_equals_its_pre_change_construction(self):
+        self.assertEqual(self.reach.WORKFLOWS,
+                         self.reach.REPO / ".github" / "workflows")
+        self.assertEqual(self.reach.WORKFLOWS,
+                         self.fc.REPO_ROOT / ".github" / "workflows")
+
+    def test_grammar_equals_its_pre_change_construction(self):
+        self.assertEqual(self.probe.GRAMMAR,
+                         self.probe.REPO_ROOT.parent / "docs"
+                         / "CODEBOOK-NAMING-GRAMMAR.md")
+        self.assertEqual(self.probe.GRAMMAR,
+                         PATHS.legacy_docs / "CODEBOOK-NAMING-GRAMMAR.md")
+
+    def test_the_inverse_census_glob_base_is_unchanged(self):
+        self.assertEqual(self.fc.REPO_ROOT / "experiments",
+                         self.reach.REPO / "experiments")
+        self.assertEqual(self.fc.REPO_ROOT / "experiments",
+                         PATHS.legacy_experiments)
+
+    def test_the_two_local_root_bindings_still_resolve_as_before(self):
+        """The slice delegates CONSUMPTION, not the root DECISION. Both files
+        still decide a root of their own, and both still agree with fc."""
+        self.assertEqual(self.reach.REPO, self.fc.REPO_ROOT)
+        self.assertEqual(self.probe.REPO_ROOT.parent, self.fc.REPO_ROOT)
+
+
+class TestTheThirdSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.probe = load_legacy("foundry_probe")
+        cls.reach = load_legacy("foundry_reachability")
+
+    def test_the_root_decisions_and_bootstraps_survive(self):
+        reach = REACHABILITY.read_text(encoding="utf-8")
+        self.assertIn("REPO = Path(__file__).resolve().parent.parent", reach)
+        self.assertIn('sys.path.insert(0, str(REPO / "experiments"))', reach)
+        probe = PROBE.read_text(encoding="utf-8")
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent", probe)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", probe)
+        for path in THIRD_SLICE:
+            with self.subTest(file=path.name):
+                self.assertEqual(
+                    path.read_text(encoding="utf-8").count("sys.path.insert"), 1)
+
+    def test_the_foundry_artifact_identifiers_are_untouched(self):
+        """They are artifact IDENTIFIERS, not path construction, and P0.3F
+        asserts them exactly."""
+        self.assertEqual(sorted(self.reach.FOUNDRY_ARTIFACTS), [
+            "docs/CODEBOOK-NAMING-GRAMMAR.md",
+            "experiments/out/card-tags.json.gz",
+            "experiments/out/foundry/codebook.json",
+            "experiments/out/foundry/corpus_pass_run1_classification.json",
+            "experiments/out/foundry/det-patterns-v2.json",
+        ])
+
+    def test_the_probe_codebook_from_the_first_slice_is_untouched(self):
+        self.assertEqual(self.probe.CODEBOOK,
+                         PATHS.legacy_foundry_out / "codebook.json")
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn('REPO_ROOT = Path(__file__).resolve().parents[1]',
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_two_covering_gate2_rows_are_unchanged(self):
+        argv = {name: a for name, a, _ in gate_rows()}
+        self.assertEqual(argv["reachability"],
+                         ["experiments/foundry_reachability.py"])
+        self.assertEqual(argv["probe_guards"], ["experiments/foundry_probe.py"])
 
 
 if __name__ == "__main__":
