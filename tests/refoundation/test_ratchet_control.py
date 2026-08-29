@@ -422,8 +422,13 @@ class TestThePublicCallShapesAreCompatible(RatchetTestCase):
                                  expected)
 
     def test_the_baseline_attribute_consumers_reach_for_still_exists(self):
-        """`foundry_reachability.py --selftest` reads and writes `BASELINE`
-        directly, so keeping the NAME is what spares every consumer a change."""
+        """`foundry_reachability.py --selftest` reaches for `BASELINE` directly,
+        so keeping the NAME is what spares every consumer a change.
+
+        It no longer WRITES through it: P0.3F rebinds this attribute at a
+        temporary control input for the duration of the negative control, so the
+        tracked baseline stops being the write target. The attribute is load-
+        bearing either way, which is why this assertion is unchanged."""
         self.assertIsInstance(self.fab.BASELINE, Path)
 
     def test_report_still_returns_the_regression_count(self):

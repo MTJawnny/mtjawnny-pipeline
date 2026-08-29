@@ -268,17 +268,54 @@ def selftest(metrics: dict) -> int:
 
     The path that must be proven is the ratchet's WORSE_IF_DOWN arm on
     `reaching`. So this pins a SYNTHETIC baseline in which one wire existed,
-    compares today's reality against it, and asserts the drop is fatal. It
-    writes to its own section and removes it afterwards, so the real pinned
-    baseline is never touched.
+    compares today's reality against it, and asserts the drop is fatal.
+
+    WHERE THE SYNTHETIC BASELINE LIVES, AND WHY IT MOVED (P0.3F, C8 step 3).
+    This used to pin the synthetic section into the REAL baseline and delete it
+    again in a `finally`. That was tolerable only while the baseline was an
+    ignored local file. P0.3D made it a TRACKED control input, so the
+    arrangement became a verification run that transiently rewrites one of the
+    repository's own acceptance inputs — and **a cleanup write is not a
+    guarantee**: an interrupt between the two writes leaves the tracked ratchet
+    carrying a synthetic section, and the restore is itself a write to the file
+    the gate compares against. The cure is not a more careful cleanup, it is a
+    different WRITE TARGET. The comparison now runs against a temporary control
+    input outside the repository, so the tracked baseline is never written —
+    not even transiently — and an interrupt has nothing to leave behind.
+
+    THE COMPARISON ITSELF IS UNCHANGED, AND IS STILL THE REAL ONE. `save()` and
+    `compare()` still come from `foundry_audit_baseline`, so `WORSE_IF_DOWN`
+    and `_direction()` are what decide whether the lost wire is fatal.
+    Re-deciding that here would turn the control into a copy of the comparator
+    instead of a test of it — which is the `foundry_probe` principle applied to
+    a negative control.
+
+    The rebinding is set on the MODULE OBJECT the comparator reads, never on
+    this file's globals: "a module run as `__main__` is a second, separate copy
+    of itself, and monkeypatching the wrong one reads as a passing test."
+    `foundry_audit_baseline` is never `__main__`, so it has exactly one
+    instance, and `_document()` reads `BASELINE` at call time.
     """
     import json
+    import tempfile
     section = "reachability_selftest"
     pretend = dict(metrics)
     pretend["artifacts_reaching_product"] = metrics["artifacts_reaching_product"] + 1
     pretend["consumers"] = dict(metrics["consumers"])
-    baseline.save(section, pretend)
+
+    # The temporary control input is created and the module attribute REBOUND
+    # BEFORE anything is written, so the tracked baseline is never the write
+    # target at any instant. An empty JSON object is a valid document for
+    # `_document()`: `save()` adds the synthetic section to it, and there is no
+    # other section for a fresh file to drop.
+    real_baseline = baseline.BASELINE
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
+                                     encoding="utf-8") as fh:
+        json.dump({}, fh)
+        tmp = Path(fh.name)
     try:
+        baseline.BASELINE = tmp
+        baseline.save(section, pretend)
         regressions, changes, _ = baseline.compare(section, metrics)
         keys = [k for k, *_ in regressions]
         print("\n" + "=" * 78)
@@ -287,6 +324,8 @@ def selftest(metrics: dict) -> int:
         print(f"  pinned a synthetic baseline claiming "
               f"{pretend['artifacts_reaching_product']} artifact(s) reached the")
         print(f"  product; reality is {metrics['artifacts_reaching_product']}.")
+        print("  the synthetic pin lives in a temporary control input outside")
+        print("  the repository; the tracked ratchet is never written.")
         for k, a, b, why in regressions:
             print(f"    ✗ {k}: {a} → {b}   {why}")
         ok = any("reaching" in k for k in keys)
@@ -296,10 +335,8 @@ def selftest(metrics: dict) -> int:
             print("  This check cannot fail and must not be listed as a gate.")
         return 0 if ok else 1
     finally:
-        doc = json.loads(baseline.BASELINE.read_text(encoding="utf-8"))
-        doc.pop(section, None)
-        baseline.BASELINE.write_text(
-            json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        baseline.BASELINE = real_baseline
+        tmp.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
