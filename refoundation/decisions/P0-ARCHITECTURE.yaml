@@ -1,0 +1,264 @@
+# P0 ARCHITECTURE — DECISION RECORD
+#
+# This file PERSISTS decisions that were already made elsewhere. It mints nothing.
+# Every record names the actor who decided it, the status that actor's decision
+# carries, and the durable source it can be checked against.
+#
+# It is written in the selector / decision-record model that Captain ratified as
+# CAPTAIN DECISION B, applied to itself: status lives in a structured record with
+# explicit provenance, and NOTHING becomes binding merely because a field here says
+# so. P0.2 correction C5 is the rule being followed --
+#
+#     "evidence is not authority"; `status: RATIFIED` cannot become binding merely
+#     because someone edited a field.
+#
+# -- so a reader who distrusts this file can resolve every record against the GitHub
+# comment named in its `source`. Where an item was recommended by the Manager but not
+# separately ruled on by Captain, it says so; those are DIRECTION, not law.
+
+schema: mtj-decision-record/1
+set: P0.ARCHITECTURE
+phase_recorded_by: P0.3A.REFOUNDATION-FOUNDATION
+repository: MTJawnny/mtjawnny-pipeline
+
+provenance:
+  p0_1_study: issue:1#issuecomment-5460247505
+  p0_1_manager_checkpoint: issue:1#issuecomment-5460275616
+  p0_2_manager_review: issue:1#issuecomment-5460303260
+  captain_ratification: issue:1#issuecomment-5463518042
+  manager_transition_bridge_parked: issue:1#issuecomment-5463520545
+  p0_3a_task: issue:1#issuecomment-5463526592
+  captain_direction: refoundation/CAPTAIN-DIRECTION.md
+  bootstrap_state: refoundation/BOOTSTRAP-STATE.yaml
+
+authority_classes:
+  CAPTAIN: final human authority; the only class that ratifies
+  MANAGER: review/recommendation; direction, never law
+  WORKER: measurement and implementation; evidence, never law
+
+# =====================================================================
+# 1. CAPTAIN-RATIFIED. Binding.
+# =====================================================================
+ratified:
+  - id: P0.CAPTAIN.A
+    question: permanent Python import namespace
+    decision: mtj_foundry
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+    rejected_alternatives: ["foundry", "mtgt"]
+    notes: >-
+      Naming and interface vocabulary, not semantic law. The distribution/project
+      label may still differ from the import namespace; P0.3A uses project name
+      "mtjawnny-foundry" with import namespace mtj_foundry.
+    implemented_by_P0_3A: src/mtj_foundry/
+
+  - id: P0.CAPTAIN.B
+    question: what makes a semantic/governance record binding
+    decision: selector_decision_record
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+    rejected_alternatives: ["document_frontmatter_model"]
+    meaning: >-
+      A structured decision/authority record is the machine source of status,
+      supersession and authority, and it SELECTS the binding content (a prose
+      section, a structured config, an immutable artifact). Metadata may route to
+      that record but cannot confer authority on itself.
+    already_in_use: docs/codebook-authority.json selects the codebook by exact sha256
+    implemented_by_P0_3A: this file, applied to itself
+
+  - id: P0.CAPTAIN.C1
+    constraint: frontmatter_self_authority
+    value: false
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+
+  - id: P0.CAPTAIN.C2
+    constraint: aq4
+    value: PAUSED
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+    meaning: >-
+      Paused at the Adjudicator-A incident boundary. The A overlay stays wholly
+      non-authoritative, none of its selections become accepted by any migration,
+      and its referred semantic questions remain unanswered. Infrastructure phases
+      turning green is not a resumption condition.
+
+  - id: P0.CAPTAIN.C3
+    constraint: bridge_v0
+    value: PARKED_UNUSED
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+    meaning: >-
+      PR #4 stays a parked unmerged draft; bridge H6/H7 are deferred; execution
+      transport is manual Captain relay. P0.3A was executed manually and did not
+      use the bridge.
+
+  - id: P0.CAPTAIN.C4
+    constraint: p0_reconstruction
+    value: AUTHORIZED
+    status: RATIFIED
+    authority: CAPTAIN
+    source: issue:1#issuecomment-5463518042
+
+# =====================================================================
+# 2. MANAGER-ACCEPTED DIRECTION. Not separately ratified; guides work,
+#    binds nothing on its own.
+# =====================================================================
+accepted_direction:
+  verdict: ACCEPT THE REFOUNDATION DIRECTION; DO NOT RATIFY THE P0.1 BLUEPRINT VERBATIM
+  status: ACCEPTED_MANAGER_REVIEW
+  authority: MANAGER
+  source: issue:1#issuecomment-5460303260
+
+  destination_principles:
+    - Foundry becomes a real Python package
+    - library code and CLI/entry-point code are separated
+    - imports obey an explicit acyclic direction, enforced mechanically
+    - one component owns repository layout/root resolution
+    - verification is pure -- checks return verdicts, emitters write separately
+    - gate/report categories are explicit, not inferred from exit-code folklore
+    - ratchet baselines and other acceptance-governing inputs are tracked and reviewable
+    - generated working output has one obvious non-source area
+    - current state, authority, supersession and routing become machine-readable
+    - session startup is deterministic and low-token
+    - AQ4 depends one-way on the production substrate and stays paused
+    - legacy material gets explicit KEEP/EVIDENCE/REWRITE/EXTRACT/DERIVE/DELETE disposition
+    - reconstruction proceeds in bounded revertible phases with conservation proof first
+    - shipped pipeline/ does not move merely for symmetry
+
+  corrections_to_P0_1:
+    - id: C1
+      title: paths owns layout/root resolution, not "the filesystem"
+      rule: >-
+        Exactly one module/service defines repository-relative layout and default root
+        resolution; ordinary libraries receive explicit paths and do not rediscover the
+        repository or hardcode layout. Libraries are NOT forbidden ordinary I/O, and
+        importing one must not HALT because .git is absent.
+      implemented_by_P0_3A: src/mtj_foundry/paths.py
+    - id: C2
+      title: __all__ / __init__ is not an API-enforcement mechanism
+      rule: >-
+        Prefer explicit public facade modules plus _private modules and an import-boundary
+        gate. Mandatory re-export through __init__ recreates import cycles.
+      implemented_by_P0_3A: src/mtj_foundry/__init__.py kept intentionally tiny
+    - id: C3
+      title: AQ4 is a benchmark and belongs outside the production package
+      rule: >-
+        A separate top-level benchmark tree may import the production package through
+        public APIs; production must never import the benchmark.
+      implemented_by_P0_3A: NONE (AQ4 untouched and paused)
+    - id: C4
+      title: replace "generated is never tracked" with explicit artifact classes
+      classes: [SOURCE, DERIVED_VIEW, EPHEMERAL_OUTPUT, REMOTE_IMMUTABLE_AUTHORITY]
+      implemented_by_P0_3A: >-
+        config/baselines/foundry-audit-baseline.json recorded as SOURCE. NOTHING ELSE
+        WAS CLASSIFIED. P0.3A's first draft classified experiments/out/** as
+        EPHEMERAL_OUTPUT and the Manager review refused it (R1_OUTPUT_CLASS): a
+        tracked governance record depends on ignored bytes in that tree as evidence,
+        so the blanket class was unsupported. It now carries the non-dispositive
+        state MIXED_UNCLASSIFIED_PENDING_CENSUS.
+      correction_applied: P0.3A.R1
+      caution: >-
+        C4 supplies the VOCABULARY of artifact classes. It does not license assigning
+        one to a tree by inspection - "generated" is an observation, and the class is
+        a disposition that has to be earned per path.
+    - id: C5
+      title: machine-readable status must not self-create authority
+      rule: >-
+        Structured decision records carry status, actor and supersession and select the
+        binding content; historical evidence is not rewritten to inject metadata.
+      implemented_by_P0_3A: this file
+    - id: C6
+      title: reject "all rulings become JSON" as a blanket decision
+      rule: >-
+        The unit of migration is the DECISION, not the markdown file. Typed rulings may
+        become structured records with generated views; narrative evidence stays evidence;
+        nothing is reclassified before an equivalence proof.
+      implemented_by_P0_3A: NONE
+    - id: C7
+      title: the semantic-conservation contract preserves truth, not plumbing
+      required:
+        - codebook authority preserved as EXACT sha256 AND byte size, not canonicalized JSON
+        - Gate 2 invariants and known-debt fingerprints preserved, not its 16 legacy row names
+        - routing compared as a canonical semantic relation except where bytes are contracted
+        - ruling ids/content/provenance preserved, not old document paths
+        - CR edition/content hash and interpretation contract preserved, not the old read path
+        - AQ4 frozen commitments AND governance state preserved
+        - local-only ratchet bytes captured durably before touching consumers
+      implemented_by_P0_3A: >-
+        C7.1 and C7.7 discharged for the local side in
+        refoundation/conservation/BASELINE-INPUTS.yaml. The rest are unstarted.
+    - id: C8
+      title: migration starts with a conservation/control-plane foundation, not 97 edits
+      ordering:
+        - 0. durably capture/classify local-only conservation inputs
+        - 1. add package/config/test/conservation skeleton ALONGSIDE legacy, no moves
+        - 2. make the harness measure legacy and future against the same invariants
+        - 3. make gate execution pure; track the ratchet baseline without changing values
+        - 4. migrate root/layout ownership behind compatibility boundaries
+        - 5. migrate package layers lowest-first; remove compatibility only when gates are green
+        - 6. migrate knowledge only after the S1 registry false positive cannot contaminate it
+        - 7. isolate AQ4 physically only after its frozen state is pinned
+        - 8. EXTRACT/DELETE last
+      P0_3A_covers: steps 0 and 1 only
+
+  d_item_dispositions:
+    D1_package_name: RESOLVED_BY_CAPTAIN_DECISION_A
+    D2_all_rulings_become_data: REJECTED_AS_BLANKET_QUESTION
+    D3_move_pipeline: DEFERRED_NOT_BLOCKING
+    D4_retire_handoff_chain: DERIVED_FROM_CAPTAIN_DIRECTION
+    D5_create_research_repo_now: DEFERRED_NOT_BLOCKING
+    D6_cut_CLAUDE_md: IMPLEMENTATION_DETAIL_NO_LINE_COUNT
+    D7_tracked_generated_state_index: IMPLEMENTATION_DETAIL_DERIVED_VIEW_WITH_FRESHNESS_GATE
+    D8_phases_vs_aq4: ALREADY_DECIDED_P0_OUTRANKS_AQ4
+    D9_fix_S1_false_positive_first: MECHANICALLY_REQUIRED_BEFORE_KNOWLEDGE_CONSERVATION
+
+# =====================================================================
+# 3. MEASUREMENTS. Evidence only. Explicitly NOT ratchets.
+# =====================================================================
+measurements:
+  status: EVIDENCE
+  authority: WORKER
+  independently_confirmed_by_manager:
+    - the legacy shared foundation derives the root, mutates sys.path, and imports the engine at import time
+    - Gate 2 is not pure -- it invokes tools that write tracked markdown, so verification can dirty the tree
+    - the ratchet baseline lives outside git history under an ignored path
+    - the routing layer is known-broken by its own current law
+    - Foundry authority is already explicit and content-addressed by exact sha256 and byte size
+    - AQ4 is paused at a governance incident boundary
+  accepted_but_not_re_derived:
+    note: >-
+      P0.2 accepted these as Worker measurements and warned that the exact counts must
+      not become new ratchets merely because they appeared in a report. Recorded here
+      with that warning attached, not as targets.
+      P0.3A did not re-derive any of them.
+    values:
+      python_modules: 99
+      max_fan_in: 82
+      hand_managed_cycles: 3
+      root_or_path_derivations: ~97
+      dangling_links: 19
+
+# =====================================================================
+# 4. WHAT P0.3A DID NOT DECIDE.
+# =====================================================================
+not_decided_by_this_phase:
+  - >-
+    experiments/out/** IS NOT CLASSIFIED. Its state is
+    MIXED_UNCLASSIFIED_PENDING_CENSUS: measured, never dispositioned. No deletion,
+    move or conservation claim over that tree may rely on P0.3A, and the bounded
+    exception census that would classify it is deferred (P0.3A.R1 output_census:
+    DEFER). At least one tracked governance record depends on ignored bytes inside it.
+  - no legacy module moved, and no legacy behavior changed
+  - no semantic or authority selection changed
+  - no ruling, axis, token or codebook content touched
+  - no AQ4 state changed
+  - no gate run, no gate rewritten, no ratchet value altered
+  - no legacy dependency migrated or pinned
+  - no consumer repointed at the newly tracked baseline copy
+  - the target architecture beyond C8 steps 0-1 remains unratified

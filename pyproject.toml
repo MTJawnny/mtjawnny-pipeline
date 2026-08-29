@@ -1,0 +1,27 @@
+# Packaging for the refounded Foundry namespace.
+#
+# P0.3A adds this ALONGSIDE the legacy tree. Nothing under experiments/, pipeline/
+# or docs/ is moved, imported, or made to depend on this package, and no legacy
+# dependency is migrated or pinned here yet (P0.3A constraint:
+# `deps: do_not_migrate_or_pin_legacy_dependencies_yet`). The dependency list is
+# therefore EMPTY ON PURPOSE and is not a claim that the system has no dependencies.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtjawnny-foundry"
+version = "0.0.0"
+description = "MTG Thesaurus Foundry — refoundation package skeleton (zero behavior)"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+# Only the new namespace is discoverable. Legacy top-level directories are not
+# packages and must not be swept in by discovery.
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mtj_foundry*"]
