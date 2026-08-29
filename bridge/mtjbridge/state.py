@@ -91,16 +91,45 @@ def reconstruct(github, issue_number: int) -> IssueLedger:
     ledger = IssueLedger(number=issue_number)
     for comment in github.list_comments(issue_number):
         body = comment.get("body") or ""
+        # Classify on the `schema:` value INSIDE the fenced block, never on a substring
+        # of the whole comment. A result that merely MENTIONS "mtj-claim/1" in its prose
+        # was previously filed as a claim, and the real result vanished from the ledger.
+        schema = _declared_schema(body)
+        if schema is None:
+            continue
+        parser = {"mtj-claim": parse_claim, "mtj-result": parse_result,
+                  "mtj-review": parse_review}.get(schema)
+        if parser is None:
+            continue
         try:
-            if CLAIM_MARKER in body:
-                ledger.claims.append(parse_claim(body))
-            elif RESULT_MARKER in body:
-                ledger.results.append(parse_result(body))
-            elif REVIEW_MARKER in body:
-                ledger.reviews.append(parse_review(body))
+            parsed = parser(body)
         except ProtocolError as exc:
-            ledger.parse_errors.append(f"comment by {comment.get('author', {}).get('login')}: {exc}")
+            ledger.parse_errors.append(
+                f"comment by {comment.get('author', {}).get('login')}: {exc}")
+            continue
+        {"mtj-claim": ledger.claims, "mtj-result": ledger.results,
+         "mtj-review": ledger.reviews}[schema].append(parsed)
     return ledger
+
+
+def _declared_schema(body: str) -> str | None:
+    """The schema family a comment DECLARES, read from the first fenced yaml block.
+
+    Returns e.g. 'mtj-result' for `schema: mtj-result/1`, or None when the comment
+    carries no protocol block at all. Deliberately does not scan prose: a comment
+    that talks about a schema is not an instance of it.
+    """
+    from . import yamlite
+
+    for block in yamlite.find_blocks(body):
+        for line in block.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("schema:"):
+                value = stripped.split(":", 1)[1].strip().strip("\"'")
+                return value.split("/")[0] if "/" in value else None
+            if stripped and not stripped.startswith("#"):
+                break  # schema must be the first key; otherwise this is not a protocol block
+    return None
 
 
 # --------------------------------------------------------------------------

@@ -338,3 +338,38 @@ class TestDryRun(BridgeTestCase):
                              issue_number=42, dry_run=True)
         self.assertEqual(github.writes, [], "a dry-run cycle must write nothing to GitHub")
         self.assertIn(rc, (0, 3))
+
+
+class TestLedgerClassification(BridgeTestCase):
+    """Regression: classify on the DECLARED schema, never on a substring of the prose.
+
+    The real failure this pins: a genuine mtj-result/1 comment whose body happened to
+    describe the protocol ("comments carry mtj-claim/1, mtj-result/1, mtj-review/1")
+    was filed as a CLAIM, so the result disappeared from the ledger and the phase
+    silently rewound to WORKER_EXECUTE — i.e. the bridge would have re-run completed work.
+    """
+
+    def test_a_result_that_mentions_other_schemas_is_still_a_result(self):
+        from tests.helpers import result_body
+
+        body = result_body() + "\n\nProse: comments carry mtj-claim/1, mtj-result/1, mtj-review/1.\n"
+        github = self.make_github()
+        github.post_comment(42, body)
+        ledger = state_mod.reconstruct(github, 42)
+        self.assertEqual(len(ledger.results), 1)
+        self.assertEqual(len(ledger.claims), 0)
+        self.assertEqual(ledger.next_phase(), "MANAGER_REVIEW")
+
+    def test_a_comment_with_no_protocol_block_is_ignored(self):
+        github = self.make_github()
+        github.post_comment(42, "Just a human note mentioning mtj-result/1 in passing.")
+        ledger = state_mod.reconstruct(github, 42)
+        self.assertEqual((len(ledger.results), len(ledger.claims), len(ledger.reviews)), (0, 0, 0))
+        self.assertEqual(ledger.parse_errors, [])
+
+    def test_a_malformed_protocol_block_is_recorded_not_swallowed(self):
+        github = self.make_github()
+        github.post_comment(42, "```yaml\nschema: mtj-result/1\ntask: T\n```")
+        ledger = state_mod.reconstruct(github, 42)
+        self.assertEqual(len(ledger.results), 0)
+        self.assertEqual(len(ledger.parse_errors), 1, "a bad block must be visible, not dropped")
