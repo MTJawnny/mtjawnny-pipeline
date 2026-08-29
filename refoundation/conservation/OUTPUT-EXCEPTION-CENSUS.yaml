@@ -1,0 +1,2409 @@
+# OUTPUT EXCEPTION CENSUS — ignored experiments/out/** material that may carry
+# acceptance, authority, benchmark, incident or governance weight.
+#
+# WHAT THIS IS. P0.3A recorded experiments/out/** as
+# MIXED_UNCLASSIFIED_PENDING_CENSUS: measured, never dispositioned. This census is
+# the bounded exception pass that state requires. It does NOT classify the tree, and
+# it does not authorize deleting anything.
+#
+# WHAT IT IS NOT. It is NOT exhaustive over the 3,321 files in that tree. It is a
+# census of what TRACKED SOURCE REFERENCES, and its completeness is exactly the
+# completeness of that reference scan - no more. A file nothing tracked mentions is
+# absent from this document, and absence here is NOT evidence of disposability.
+#
+# EVERY candidate below carries provenance to a tracked source. Nothing was included
+# because it looked important, and no role was assigned by inspecting file contents.
+
+schema: mtj-output-exception-census/1
+phase: P0.3B.OUTPUT-EXCEPTION-CENSUS
+status: CENSUS_COMPLETE_PENDING_MANAGER_REVIEW
+base_sha: 348610b2225645ce263d6e3d99861c41ac0ed78b
+
+method:
+  source_universe: TRACKED_FILES_ONLY
+  tracked_files_scanned: 356
+  read_only: true
+  mutations_to_output_tree: NONE
+  discovery:
+    - id: literal_reference
+      description: >-
+        Every tracked file scanned line by line for the token experiments/out/ followed
+        by path characters. Records source path, line number and the surrounding line.
+    - id: constructed_reference
+      description: >-
+        Tracked Python scanned for output paths BUILT rather than written literally, and
+        the construction resolved statically to a concrete path. This arm is not
+        optional: experiments/foundry_audit_baseline.py line 35 builds the ratchet path
+        as Path(__file__).resolve().parent / 'out' / 'foundry' / 'audit-baseline.json',
+        so a literal grep does not find the single most acceptance-bearing file in the
+        tree. 44 tracked files construct paths through foundry_common.FOUNDRY_OUT_DIR.
+    - id: task_must_include
+      description: five paths named by the P0.3B task contract, recorded as such.
+  role_derivation:
+    principle: >-
+      A role is derived from the CONSUMER, never from the file's name, location or
+      contents. Content was never opened except to hash it.
+    multi_role: >-
+      A path may hold SEVERAL roles and all are recorded. Returning only the first
+      would have hidden that unit-binding-workqueue.json is both incident evidence and
+      the AQ4 benchmark's queue - whichever rule ran first would have claimed it
+      silently and the other consumer would have vanished from this census.
+  not_performed:
+    whole_tree_enumeration: false
+    whole_tree_hash: false
+    disposition_assignment: false
+    semantic_inference: false
+    aq4_execution: false
+    gate2_run: false
+    content_inspection_beyond_hashing: false
+
+scan_coverage:
+  tracked_files_scanned: 356
+  tracked_files_referencing_output_tree: 108
+  reference_sites_recorded: 280
+  distinct_paths_discovered: 110
+  exact_file_candidates: 106
+  pattern_or_directory_candidates: 4
+  unresolvable_dynamic_shapes: 9
+  exhaustive_over_output_tree: false
+  known_total_files_in_tree: 3321
+  coverage_claim: >-
+    This census covers what tracked source references. It makes NO claim about the
+    remaining files in the tree, and absence from this list is not evidence that a
+    file is derivable, ephemeral or disposable.
+
+exact_candidates:
+  count: 106
+  # Role totals sum to MORE than count: roles are not exclusive and one path holds
+  # two. That is the multi-role rule working, not an arithmetic error.
+  role_assignments: 107
+  paths_with_multiple_roles: 1
+  role_totals:
+    ACCEPTANCE_CONTROL: 1
+    AUTHORITY_LOCAL_MIRROR: 1
+    DERIVABLE_OUTPUT_CANDIDATE: 70
+    FROZEN_BENCHMARK_INPUT: 1
+    GOVERNANCE_OR_INCIDENT_EVIDENCE: 3
+    UNKNOWN_REVIEW: 31
+  measurement_status:
+    measured: 86
+    missing_on_disk: 11
+    hash_deferred: 9
+  entries:
+    - path: experiments/out/foundry/audit-baseline.json
+      roles: [ACCEPTANCE_CONTROL]
+      role_basis_acceptance_control: >-
+        written and read by experiments/foundry_audit_baseline.py, which decides whether a standing audit degraded; a ratchet value is acceptance state
+      must_include: true
+      exists: true
+      size_bytes: 4324
+      sha256_measured: 51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601
+      hash_status: MEASURED
+      reference_sites: 6
+      provenance:
+        - source: docs/SESSION-HANDOFF-2026-08-07-EVE.md
+          line: 129
+          kind: literal
+          context: "(`experiments/out/foundry/audit-baseline.json`, 65 metrics). Movement in the"
+        - source: docs/SESSION-START-PROCEDURE.md
+          line: 184
+          kind: literal
+          context: "against a **pinned baseline** (`experiments/out/foundry/audit-baseline.json`):"
+        - source: experiments/foundry_audit_baseline.py
+          line: 35
+          kind: construction
+          context: "BASELINE = Path(__file__).resolve().parent / 'out' / 'foundry' / 'audit-baseline.json'"
+        - source: issue:1#issuecomment-5464035563
+          line: 0
+          kind: task_must_include
+          context: "named in the P0.3B task must_include list"
+        - source: refoundation/conservation/BASELINE-INPUTS.yaml
+          line: 83
+          kind: literal
+          context: "source_path: experiments/out/foundry/audit-baseline.json"
+        - source: refoundation/conservation/BASELINE-INPUTS.yaml
+          line: 178
+          kind: literal
+          context: "- experiments/out/foundry/audit-baseline.json"
+    - path: experiments/out/foundry/codebook.json
+      roles: [AUTHORITY_LOCAL_MIRROR]
+      role_basis_authority_local_mirror: >-
+        docs/codebook-authority.json selects an immutable object by exact sha256 and byte size; this is the local copy of that selection
+      must_include: true
+      exists: true
+      size_bytes: 5066147
+      sha256_measured: 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c
+      hash_status: MEASURED
+      reference_sites: 40
+      provenance:
+        - source: docs/AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md
+          line: 23
+          kind: literal
+          context: "- `experiments/out/foundry/codebook.json` — SHA-256"
+        - source: docs/CONSOLIDATION-RUN1-DIRECTIVE.md
+          line: 58
+          kind: literal
+          context: "- `experiments/out/foundry/codebook.json` — current v0.7-post-walk state"
+        - source: docs/KEYWORD-LEDGER-CANDIDATES.md
+          line: 165
+          kind: literal
+          context: "and `experiments/out/foundry/codebook.json`, both already active)."
+        - source: docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md
+          line: 123
+          kind: literal
+          context: "| `experiments/out/foundry/codebook.json` | **5,066,147 bytes (5.07 MB)** |"
+        - source: docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md
+          line: 336
+          kind: literal
+          context: "Remove `experiments/out/foundry/codebook.json` from the ignore."
+        - source: docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md
+          line: 516
+          kind: literal
+          context: "`experiments/out/foundry/codebook.json` is a **working copy** — and until"
+        - truncated: 34 further sites not listed
+    - path: experiments/out/aq4/triage-deterministic-census.json
+      roles: [GOVERNANCE_OR_INCIDENT_EVIDENCE]
+      role_basis_governance_or_incident_evidence: >-
+        named as evidence by a tracked docs/INCIDENT-*.md record
+      must_include: true
+      exists: true
+      size_bytes: 22731
+      sha256_measured: 0360f5e39dfbf0287dc7757eb158193222fa734e7d5224d82a4df57de57a8e40
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+          line: 206
+          kind: literal
+          context: "(`experiments/out/aq4/triage-deterministic-census.json`, gitignored) covers"
+        - source: issue:1#issuecomment-5464035563
+          line: 0
+          kind: task_must_include
+          context: "named in the P0.3B task must_include list"
+        - source: refoundation/conservation/BASELINE-INPUTS.yaml
+          line: 170
+          kind: literal
+          context: "- experiments/out/aq4/triage-deterministic-census.json"
+        - source: tests/refoundation/test_captured_state.py
+          line: 136
+          kind: literal
+          context: "for path in ('experiments/out/aq4/triage-deterministic-census.json',"
+    - path: experiments/out/aq4/unit-binding-adjudication-s0-a.json
+      roles: [GOVERNANCE_OR_INCIDENT_EVIDENCE]
+      role_basis_governance_or_incident_evidence: >-
+        named as evidence by a tracked docs/INCIDENT-*.md record
+      must_include: true
+      exists: true
+      size_bytes: 196927
+      sha256_measured: 0782423d469f849ec947e3bef3033c9734e9ca9a7c033d40fdbfe4e04b0f1fb4
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+          line: 31
+          kind: literal
+          context: "| artifact | `experiments/out/aq4/unit-binding-adjudication-s0-a.json` — **gitignored, non-authoritative, never committed** |"
+        - source: issue:1#issuecomment-5464035563
+          line: 0
+          kind: task_must_include
+          context: "named in the P0.3B task must_include list"
+        - source: refoundation/conservation/BASELINE-INPUTS.yaml
+          line: 171
+          kind: literal
+          context: "- experiments/out/aq4/unit-binding-adjudication-s0-a.json"
+        - source: tests/refoundation/test_captured_state.py
+          line: 137
+          kind: literal
+          context: "'experiments/out/aq4/unit-binding-adjudication-s0-a.json',"
+    - path: experiments/out/aq4/unit-binding-workqueue.json
+      roles: [GOVERNANCE_OR_INCIDENT_EVIDENCE, FROZEN_BENCHMARK_INPUT]
+      role_basis_governance_or_incident_evidence: >-
+        named as evidence by a tracked docs/INCIDENT-*.md record
+      role_basis_frozen_benchmark_input: >-
+        referenced by tracked experiments/aq4_benchmark/ code or docs
+      must_include: true
+      exists: true
+      size_bytes: 789975
+      sha256_measured: 7443de2ec353236db54411c2c2d7782c6e5b384b4c88e7477210fc3fde3eac67
+      hash_status: MEASURED
+      quoted_hash_from_tracked_record:
+        value: 7443de2e
+        truncated_in_source: true
+        source: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+        relationship_to_measured: >-
+          The measured hash BEGINS WITH the quoted prefix. Recorded as two separate
+          facts - a quote from a tracked record, and a value this census computed -
+          because a truncated prefix agreeing is weaker evidence than full equality,
+          and conflating them would launder a quote into a measurement.
+      reference_sites: 5
+      provenance:
+        - source: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+          line: 32
+          kind: literal
+          context: "| source queue | `experiments/out/aq4/unit-binding-workqueue.json`, sha256 `7443de2e…` — pinned inside the overlay and **still reproducing byte-identi"
+        - source: experiments/aq4_benchmark/README.md
+          line: 776
+          kind: literal
+          context: "`--report` writes `experiments/out/aq4/unit-binding-workqueue.json`, following"
+        - source: issue:1#issuecomment-5464035563
+          line: 0
+          kind: task_must_include
+          context: "named in the P0.3B task must_include list"
+        - source: refoundation/conservation/BASELINE-INPUTS.yaml
+          line: 172
+          kind: literal
+          context: "- experiments/out/aq4/unit-binding-workqueue.json"
+        - source: tests/refoundation/test_captured_state.py
+          line: 138
+          kind: literal
+          context: "'experiments/out/aq4/unit-binding-workqueue.json'):"
+    - path: experiments/out/foundry/backups/codebook.v0.7.pre-det-pass.20260801-013346.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 596587
+      sha256_measured: b2e2ec6a190432aaf6584be6fd5eec3debea64799d75085ac0c12f300f5cee1d
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/CORPUS-PASS-PLAN.md
+          line: 198
+          kind: literal
+          context: "`experiments/out/foundry/backups/codebook.v0.7.pre-det-pass.20260801-013346.json`."
+        - source: docs/archive/RESUME-NOTE.md
+          line: 140
+          kind: literal
+          context: "`experiments/out/foundry/backups/codebook.v0.7.pre-det-pass.20260801-013346.json`."
+    - path: experiments/out/foundry/backups/codebook.v0.7.pre-locality-backfill.20260814-015858.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 4425891
+      sha256_measured: b4197e9405003bd641b4fa445b22b01adefeb5dddcbcdb3fa610b3b9e72b99d8
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/PICK-UP-HERE.md
+          line: 241
+          kind: literal
+          context: "`experiments/out/foundry/backups/codebook.v0.7.pre-locality-backfill.20260814-015858.json`"
+    - path: experiments/out/foundry/batch8_lane_aware_corroboration.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 702
+      sha256_measured: a132ec04428cdcdbb8065858246f4642aa3a483c96a33551ebda379fe298a08a
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/MASTER-HANDOFF-ADDENDUM-4.md
+          line: 182
+          kind: literal
+          context: "(`experiments/out/foundry/batch8_lane_aware_corroboration.json`: 951"
+    - path: experiments/out/foundry/corpus_pass_run1_cost_actual.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 196
+      sha256_measured: c0f2c2958c170b2064aecad2dac68a699ef203149ba3766db49d1e0dffa6507a
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/ARCHITECTURE-AUDIT.md
+          line: 387
+          kind: literal
+          context: "(`experiments/out/foundry/corpus_pass_run1_cost_actual.json`), 814 packs, 40.0"
+    - path: experiments/out/foundry/decisions/batch-N.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 2
+      provenance:
+        - source: docs/SUP-TRIAGE-PROTOCOL.md
+          line: 58
+          kind: literal
+          context: "**Decisions** (`experiments/out/foundry/decisions/batch-N.json`,"
+        - source: docs/archive/site-forks/SUP-TRIAGE-PROTOCOL.md
+          line: 50
+          kind: literal
+          context: "**Decisions** (`experiments/out/foundry/decisions/batch-N.json`,"
+    - path: experiments/out/foundry/delivery_gaps.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 170339
+      sha256_measured: d3e74e56cb85fb7507dcffa0b80b586b8644ae974c0ddfd678574db64d8f43bd
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/DELIVERY-GAP-CENSUS-2026-08-03.md
+          line: 111
+          kind: literal
+          context: "`experiments/out/foundry/delivery_gaps.json` carries the full card lists."
+    - path: experiments/out/foundry/foundry_batch1_seed.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 8090
+      sha256_measured: 41548387fdff8f5e95799cf9c2c276cdc8ead6a309a3e6c2b54b3d83cf5e17eb
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/MASTER-HANDOFF.md
+          line: 261
+          kind: literal
+          context: "Session A. Consume experiments/out/foundry/foundry_batch1_seed.json for"
+    - path: experiments/out/foundry/migration_manifest.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 2130789
+      sha256_measured: 7004432b677f5a3c49db50158fa5d0e7b164db23ae56aa38e1954b3cb935a839
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/B-MIGRATION-DIRECTIVE.md
+          line: 71
+          kind: literal
+          context: "Also emits `experiments/out/foundry/migration_manifest.json`"
+        - source: docs/archive/B-MIGRATION-SESSION-1-REPORT.md
+          line: 47
+          kind: literal
+          context: "- `experiments/out/foundry/migration_manifest.json` (`foundry-migration-manifest/1`),"
+    - path: experiments/out/foundry/migration_verification_report.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 2602
+      sha256_measured: 2371c1f520baf2c139814b1c3c8010a4d8440357766bc593849cc194e9c59e20
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/archive/B-MIGRATION-SESSION-1-REPORT.md
+          line: 49
+          kind: literal
+          context: "- `experiments/out/foundry/migration_verification_report.json`,"
+    - path: experiments/out/foundry/regression/p18-linked-final.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 11940399
+      sha256_measured: 218edf683e2488cb3603e0dc8847edc8417f5819b1791f8a9ef5d46a5d095c76
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/SESSION-HANDOFF-2026-08-06.md
+          line: 98
+          kind: literal
+          context: "| baseline snapshot | `experiments/out/foundry/regression/p18-linked-final.json` |"
+    - path: experiments/out/foundry/regression/p2-loyalty.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 11876882
+      sha256_measured: 62de36a2e4a7dc282febd952bcab637e28af5f2093d0a1ec6cc90a86c1caff8c
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/SESSION-HANDOFF-2026-08-04-EVE.md
+          line: 111
+          kind: literal
+          context: "| baseline snapshot | `experiments/out/foundry/regression/p2-loyalty.json` |"
+    - path: experiments/out/foundry/regression/p24-join-after.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 11943525
+      sha256_measured: 38a6ba2834d6e05a888dcc4fac7963a54d23a82ba7a87f4d48204559f0da137e
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/SESSION-HANDOFF-2026-08-07.md
+          line: 99
+          kind: literal
+          context: "| baseline snapshot | `experiments/out/foundry/regression/p24-join-after.json` |"
+    - path: experiments/out/foundry/regression/p9-step2a.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 11912711
+      sha256_measured: af7e43658a7d3889d809b5a38752ed97d30e64b48003e81ddf5aaf17da44e82e
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/SESSION-HANDOFF-2026-08-05.md
+          line: 92
+          kind: literal
+          context: "| baseline snapshot | `experiments/out/foundry/regression/p9-step2a.json` |"
+    - path: experiments/out/foundry/regression/w1-after.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 2
+      provenance:
+        - source: docs/WORK-PACKETS-2026-08-07.md
+          line: 115
+          kind: literal
+          context: "python3 experiments/foundry_routing_regression.py snapshot experiments/out/foundry/regression/w1-after.json"
+        - source: docs/WORK-PACKETS-2026-08-07.md
+          line: 116
+          kind: literal
+          context: "python3 experiments/foundry_routing_regression.py diff  experiments/out/foundry/regression/w1-before.json experiments/out/foundry/regression/w1-after."
+    - path: experiments/out/foundry/regression/w1-before.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 11944663
+      sha256_measured: 60edf62f0c45678662703b8833cc0fd36377938f76ba8785bafdeb1efb700837
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/WORK-PACKETS-2026-08-07.md
+          line: 113
+          kind: literal
+          context: "python3 experiments/foundry_routing_regression.py snapshot experiments/out/foundry/regression/w1-before.json"
+        - source: docs/WORK-PACKETS-2026-08-07.md
+          line: 116
+          kind: literal
+          context: "python3 experiments/foundry_routing_regression.py diff  experiments/out/foundry/regression/w1-before.json experiments/out/foundry/regression/w1-after."
+    - path: experiments/out/foundry/review/batch-4-deferred-examples.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 3285
+      sha256_measured: d2781afd502ef1186c334b7990de9e1803c1ad5c44f6e411e249bd0435b57cc4
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/MASTER-HANDOFF-ADDENDUM-2.md
+          line: 134
+          kind: literal
+          context: "| Deferred verdict (b4 D5) | New codebook status alongside active/killed/merged/renamed: `deferred` — axis is recorded with its members but not offere"
+        - source: docs/MASTER-HANDOFF-ADDENDUM-2.md
+          line: 187
+          kind: literal
+          context: "experiments/out/foundry/review/batch-4-deferred-examples.md."
+        - source: docs/RATIFIED-DIRECTIVES-BATCH-4-6.md
+          line: 88
+          kind: literal
+          context: "`experiments/out/foundry/review/batch-4-deferred-examples.md` (file only —"
+        - source: docs/archive/TRIAGE-BATCH-4.md
+          line: 605
+          kind: literal
+          context: "`experiments/out/foundry/review/batch-4-deferred-examples.md` (file only —"
+    - path: experiments/out/foundry/review/batch-5-enriched.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 3800711
+      sha256_measured: 58d5588e00727c091868524f2fd7fdb06c4e096fb2254172ff1844aa15ce744a
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/TRIAGE-BATCH-5.md
+          line: 416
+          kind: literal
+          context: "`experiments/out/foundry/review/batch-5-enriched.json` — **all 30 passed"
+    - path: experiments/out/foundry/review/digest-batch-2.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 345246
+      sha256_measured: 078935fd863eff059fb9adafc31549a7aa929c5d2a352317f7660c742bf05682
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/TRIAGE-BATCH-2.md
+          line: 4
+          kind: literal
+          context: "reading `experiments/out/foundry/review/digest-batch-2.md` (149 axes: 64"
+    - path: experiments/out/foundry/review/digest-batch-3.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 359256
+      sha256_measured: 9790639c49842e070bdf054289fe3883ab79d965f7cb0e9c8ab135edced47443
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/TRIAGE-BATCH-3.md
+          line: 4
+          kind: literal
+          context: "reading `experiments/out/foundry/review/digest-batch-3.md` (158 axes: 111"
+    - path: experiments/out/foundry/review/digest-batch-4.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 394288
+      sha256_measured: 6664c611a64e1932897987452ddd4f0b11b72989ae1349cd364927edaa17941c
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/archive/TRIAGE-BATCH-4.md
+          line: 4
+          kind: literal
+          context: "reading `experiments/out/foundry/review/digest-batch-4.md` (166 axes: 131"
+    - path: experiments/out/foundry/review/digest-batch-5.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 429241
+      sha256_measured: 888954126b0fe3d7561b3715d404a0d10c58e962062f4875ec6a99d43a2c673b
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/TRIAGE-BATCH-5.md
+          line: 4
+          kind: literal
+          context: "reading `experiments/out/foundry/review/digest-batch-5.md` (169 axes: 131"
+    - path: experiments/out/foundry/review/digest-batch-6.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 470333
+      sha256_measured: 36004cf7dab92dd0360e633929b587364cfbea768a700e72eecf4c887a98a6e4
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/archive/TRIAGE-BATCH-6.md
+          line: 3
+          kind: literal
+          context: "Reviewed against `docs/SUP-TRIAGE-PROTOCOL.md`, `experiments/out/foundry/review/digest-batch-6.md`"
+    - path: experiments/out/foundry/review/digest-batch-7.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 483393
+      sha256_measured: 746a880691a2393ad42404ca15aaaf21732b958ae57e7d00a6c7a0038e36f348
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: docs/TRIAGE-BATCH-7.md
+          line: 3
+          kind: literal
+          context: "Reviewed against `docs/SUP-TRIAGE-PROTOCOL.md`, `experiments/out/foundry/review/digest-batch-7.md`"
+    - path: experiments/out/foundry/review/digest-batch-N.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 2
+      provenance:
+        - source: docs/SUP-TRIAGE-PROTOCOL.md
+          line: 33
+          kind: literal
+          context: "**DIGEST** (`experiments/out/foundry/review/digest-batch-N.md`, target"
+        - source: docs/archive/site-forks/SUP-TRIAGE-PROTOCOL.md
+          line: 33
+          kind: literal
+          context: "**DIGEST** (`experiments/out/foundry/review/digest-batch-N.md`, target"
+    - path: experiments/out/foundry/stage1b_requests_batch6.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 60361414
+      sha256_measured: af6bec17afb31b4447c895701799a316d4bf27734f98a1082092d21d7daa9e75
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/RATIFIED-DIRECTIVES-BATCH-4-6.md
+          line: 708
+          kind: literal
+          context: "(`experiments/out/foundry/stage1b_requests_batch6.json`): the system prompt's"
+        - source: docs/archive/TRIAGE-BATCH-6.md
+          line: 971
+          kind: literal
+          context: "(`experiments/out/foundry/stage1b_requests_batch6.json`): the system prompt's"
+    - path: experiments/out/measurement/clean_recut_report.txt
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 5877
+      sha256_measured: ff39a52d008b090dcc3593aa9482729fba44db3e90793ed2c209aa4ec3530b5e
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md
+          line: 6
+          kind: literal
+          context: "`experiments/out/measurement/clean_recut_report.txt` /"
+    - path: experiments/out/measurement/df_distributions_raw.json
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 387737
+      sha256_measured: 0bf7e157f66af4a4b763c9862175c5fd07fc21f9682249df8ffb63738f7982eb
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/measure/FINDINGS-MEMO.md
+          line: 130
+          kind: literal
+          context: "*(Percentiles given as [bisect-left, bisect-right] ranges since these DF values recur many times in each population — a single-point percentile would "
+    - path: experiments/out/measurement/df_distributions_report.txt
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 20432
+      sha256_measured: fb0c3e397fc2e533ae8b0c86bbd7ed632c16eb75be2fd001f9825c9887bcd185
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/measure/FINDINGS-MEMO.md
+          line: 232
+          kind: literal
+          context: "`experiments/out/measurement/df_distributions_report.txt` and"
+    - path: experiments/out/measurement/phase3_rebalance_shapes_report.txt
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 5244
+      sha256_measured: fb7ec3eab5475dd9bd5b55d29b1e69d4878fc8e1afc87d1b5c7af83c829fc02c
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md
+          line: 5
+          kind: literal
+          context: "`experiments/out/measurement/phase3_rebalance_shapes_report.txt`.*"
+    - path: experiments/out/measurement/pip_normalization_report.txt
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 27687
+      sha256_measured: 21f75ca3bdd6033829e4bfd268f9d96e455fd922f08439c4a0dfd822b2f5dbb3
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/measure/FINDINGS-MEMO.md
+          line: 233
+          kind: literal
+          context: "`experiments/out/measurement/pip_normalization_report.txt` (gitignored,"
+    - path: experiments/out/reports/full/zurgo-thunder-s-decree-tier2.md
+      roles: [UNKNOWN_REVIEW]
+      role_basis_unknown_review: >-
+        referenced only in tracked prose; no code consumer found, so the role cannot be derived from a consumer
+      must_include: false
+      exists: true
+      size_bytes: 18010
+      sha256_measured: 8694119cb48471a04a008b50ac6f21c6ce07c91213e789c9aad3f6855443bc68
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/POKE-PUNCH-LIST.md
+          line: 140
+          kind: literal
+          context: "`experiments/out/reports/full/zurgo-thunder-s-decree-tier2.md` and the"
+    - path: experiments/out/card-tags.json.gz
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 2610835
+      sha256_measured: ccebe84a4c2565c44260fe9d06ce757c75db3fa301dbe234d1fabea59709cde7
+      hash_status: MEASURED
+      reference_sites: 8
+      provenance:
+        - source: docs/S7-GATE-NOT-RUNNABLE-2026-08-05.md
+          line: 74
+          kind: literal
+          context: "| **Tagger cross-reference** | **AVAILABLE.** `experiments/out/card-tags.json.gz`, **35,550 cards** tagged; `te.load_card_tags` / `build_tag_index` / "
+        - source: experiments/POKE-PUNCH-LIST.md
+          line: 14
+          kind: literal
+          context: "`experiments/out/card-tags.json.gz` -> `tier_engine.py` (35,550 tagged"
+        - source: experiments/POKE-PUNCH-LIST.md
+          line: 578
+          kind: literal
+          context: "in `experiments/out/card-tags.json.gz` already carries"
+        - source: experiments/emit_viewer.py
+          line: 18
+          kind: literal
+          context: "- data/raw/oracle-cards.jsonl.gz + experiments/out/card-tags.json.gz:"
+        - source: experiments/foundry_reachability.py
+          line: 67
+          kind: literal
+          context: "'experiments/out/card-tags.json.gz':"
+        - source: experiments/invert_tags.py
+          line: 20
+          kind: literal
+          context: "OUTPUT_PATH = Path('experiments/out/card-tags.json.gz')"
+        - truncated: 2 further sites not listed
+    - path: experiments/out/clause-df.json.gz
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 566359
+      sha256_measured: 94a45a3aea376902aa55a845e87d68fca500c3d80ee2b50df2913d3afb4a4149
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/tier_engine.py
+          line: 187
+          kind: literal
+          context: "CLAUSE_DF_PATH = Path('experiments/out/clause-df.json.gz')"
+    - path: experiments/out/foundry/axis_walk_scaffold.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 377955
+      sha256_measured: 2949bb980458298ada9ac654f0d1864e946f1c289c6a5dd3377fc1309d0d71d7
+      hash_status: MEASURED
+      reference_sites: 5
+      provenance:
+        - source: docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md
+          line: 39
+          kind: literal
+          context: "`experiments/out/foundry/axis_walk_scaffold.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 33
+          kind: literal
+          context: "`experiments/foundry_axis_walk.py`, `experiments/out/foundry/axis_walk_scaffold.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 147
+          kind: literal
+          context: "`experiments/out/foundry/axis_walk_scaffold.json`; this document surfaces"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 466
+          kind: literal
+          context: "| `experiments/out/foundry/axis_walk_scaffold.json` | Full 306-row walk output |"
+        - source: experiments/foundry_axis_walk.py
+          line: 29
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'axis_walk_scaffold.json'"
+    - path: experiments/out/foundry/batch1_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 179741
+      sha256_measured: 3c66d6571de950f72d11e4567296618a9c9d02ca1f7ac33463a258222b6d698b
+      hash_status: MEASURED
+      reference_sites: 7
+      provenance:
+        - source: experiments/foundry_assemble_batch2.py
+          line: 35
+          kind: construction
+          context: "BATCH1_ASSEMBLED = fc.FOUNDRY_OUT_DIR / 'batch1_assembled.json'"
+        - source: experiments/foundry_assemble_batch2.py
+          line: 248
+          kind: literal
+          context: "'deduped_against': 'all batch-1 cards (experiments/out/foundry/batch1_assembled.json:all_oracle_ids, n=500)',"
+        - source: experiments/foundry_assemble_batch3.py
+          line: 109
+          kind: construction
+          context: "b1 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch1_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch4.py
+          line: 121
+          kind: construction
+          context: "b1 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch1_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch5.py
+          line: 121
+          kind: construction
+          context: "b1 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch1_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch6.py
+          line: 116
+          kind: construction
+          context: "b1 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch1_assembled.json').read_text())"
+        - truncated: 1 further sites not listed
+    - path: experiments/out/foundry/batch2_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 284953
+      sha256_measured: 6d2e6f09b7fd51a36020f01f7c9d18e8a819cef18109b5d33d635df99531be3f
+      hash_status: MEASURED
+      reference_sites: 6
+      provenance:
+        - source: experiments/foundry_assemble_batch2.py
+          line: 37
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json'"
+        - source: experiments/foundry_assemble_batch3.py
+          line: 110
+          kind: construction
+          context: "b2 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch4.py
+          line: 122
+          kind: construction
+          context: "b2 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch5.py
+          line: 122
+          kind: construction
+          context: "b2 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch6.py
+          line: 117
+          kind: construction
+          context: "b2 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch7.py
+          line: 124
+          kind: construction
+          context: "b2 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch2_assembled.json').read_text())"
+    - path: experiments/out/foundry/batch3_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 257880
+      sha256_measured: 6099de341295195839bb6209b91663cf9c0d4bf7e44156b01f8b1dbd1da50cd6
+      hash_status: MEASURED
+      reference_sites: 5
+      provenance:
+        - source: experiments/foundry_assemble_batch3.py
+          line: 26
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch3_assembled.json'"
+        - source: experiments/foundry_assemble_batch4.py
+          line: 123
+          kind: construction
+          context: "b3 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch3_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch5.py
+          line: 123
+          kind: construction
+          context: "b3 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch3_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch6.py
+          line: 118
+          kind: construction
+          context: "b3 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch3_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch7.py
+          line: 125
+          kind: construction
+          context: "b3 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch3_assembled.json').read_text())"
+    - path: experiments/out/foundry/batch4_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 255121
+      sha256_measured: 653e0f133c0251582e99a531515ac77a803fcc5089ee6450ca2660d41c743c1d
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: experiments/foundry_assemble_batch4.py
+          line: 35
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch4_assembled.json'"
+        - source: experiments/foundry_assemble_batch5.py
+          line: 124
+          kind: construction
+          context: "b4 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch4_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch6.py
+          line: 119
+          kind: construction
+          context: "b4 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch4_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch7.py
+          line: 126
+          kind: construction
+          context: "b4 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch4_assembled.json').read_text())"
+    - path: experiments/out/foundry/batch5_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 254934
+      sha256_measured: 9596e4456a9dfb16eb9ba102f16588913795a2c695177a837a1e41bf2dff0f4f
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: experiments/foundry_assemble_batch5.py
+          line: 45
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch5_assembled.json'"
+        - source: experiments/foundry_assemble_batch6.py
+          line: 120
+          kind: construction
+          context: "b5 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch5_assembled.json').read_text())"
+        - source: experiments/foundry_assemble_batch7.py
+          line: 127
+          kind: construction
+          context: "b5 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch5_assembled.json').read_text())"
+    - path: experiments/out/foundry/batch6_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 256203
+      sha256_measured: be8a67c25f5fa52bee0cd599c7a14807d8527bd6b30df00359c1d3e33080e014
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_assemble_batch6.py
+          line: 33
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch6_assembled.json'"
+        - source: experiments/foundry_assemble_batch7.py
+          line: 128
+          kind: construction
+          context: "b6 = json.loads((fc.FOUNDRY_OUT_DIR / 'batch6_assembled.json').read_text())"
+    - path: experiments/out/foundry/batch7_assembled.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 242931
+      sha256_measured: f93f86aa7eaa679a3d7f6a932dcd3c95f7cbaf49905093f7c16772b129c38670
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_assemble_batch7.py
+          line: 45
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch7_assembled.json'"
+        - source: experiments/foundry_batch8_ab.py
+          line: 5
+          kind: literal
+          context: "verbatim from experiments/out/foundry/batch7_assembled.json -- real,"
+    - path: experiments/out/foundry/batch7_pay_life_scrub_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1554
+      sha256_measured: 8dae36f8cb147622af52c924fa2e982529f8a9a129ecb035c0f5d47266256c35
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/archive/B-MIGRATION-AUDIT-PACKET.md
+          line: 896
+          kind: literal
+          context: "- `experiments/out/foundry/batch7_pay_life_scrub_report.json` (the 8)"
+        - source: experiments/foundry_batch7_pay_life_scrub.py
+          line: 44
+          kind: construction
+          context: "REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'batch7_pay_life_scrub_report.json'"
+    - path: experiments/out/foundry/batch8_ab_raw_results.jsonl
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 3655515
+      sha256_measured: 22239bdc1f1ec14888e2c92ac6880cc635a2bc0fa1b5dc5dba417953351387a8
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_batch8_diff.py
+          line: 4
+          kind: literal
+          context: "Reads experiments/out/foundry/batch8_ab_raw_results.jsonl (written by"
+    - path: experiments/out/foundry/batch8_canon_analysis.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 4706
+      sha256_measured: 5720e0ea985a6c252104d84797ce8d921be10b033c29b3a0f4d06230ba5f9a43
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_batch8_canon_analysis.py
+          line: 28
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'batch8_canon_analysis.json'"
+    - path: experiments/out/foundry/captain_tags_queue.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_reconcile.py
+          line: 9
+          kind: literal
+          context: "- experiments/out/foundry/captain_tags_queue.json (appended, provenance-noted)"
+        - source: experiments/foundry_reconcile.py
+          line: 61
+          kind: construction
+          context: "TAGS_QUEUE_PATH = fc.FOUNDRY_OUT_DIR / 'captain_tags_queue.json'"
+    - path: experiments/out/foundry/card_axes_index.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 4
+      provenance:
+        - source: docs/archive/B-MIGRATION-AUDIT-PACKET.md
+          line: 1058
+          kind: literal
+          context: "- `experiments/out/foundry/card_axes_index.json`: oracle_id → {axes:"
+        - source: docs/archive/CONSOLIDATION-APPLY-DIRECTIVE.md
+          line: 40
+          kind: literal
+          context: "- `experiments/out/foundry/card_axes_index.json` — derived card-level"
+        - source: docs/archive/CONSOLIDATION-RUN1-DIRECTIVE-2.md
+          line: 99
+          kind: literal
+          context: "- `experiments/out/foundry/card_axes_index.json`: oracle_id → {axes:"
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 689
+          kind: construction
+          context: "path = fc.FOUNDRY_OUT_DIR / 'card_axes_index.json'"
+    - path: experiments/out/foundry/cdr09_derivation.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 12891
+      sha256_measured: 373071eba959ab030142804af63e31091b7adb5d52aaba99698c118d784e7021
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_cdr09_derive.py
+          line: 249
+          kind: construction
+          context: "out = fc.FOUNDRY_OUT_DIR / 'cdr09_derivation.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_apply_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 78
+          kind: construction
+          context: "APPLY_REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_apply_report.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_batch.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 948
+      sha256_measured: 7c209aa634c8ef587507c7ccfabc2b8e3cab7095898d366b5e02a5433115387e
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: docs/archive/RESUME-NOTE.md
+          line: 169
+          kind: literal
+          context: "- `experiments/out/foundry/corpus_pass_run1_batch.json` — batch record"
+        - source: experiments/foundry_corpus_pass_run1.py
+          line: 47
+          kind: construction
+          context: "BATCH_RECORD_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_batch.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_classification.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1531949
+      sha256_measured: 04e0409947e75f780af3c41300f9fc63845d54b2ad58bd0c77e030504b5ffdc3
+      hash_status: MEASURED
+      reference_sites: 12
+      provenance:
+        - source: docs/B-CONSOLIDATION-REAUDIT-PACKET.md
+          line: 1734
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_classification.json`"
+        - source: docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md
+          line: 33
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_classification.json`"
+        - source: docs/PRODUCT-REALITY-AUDIT-2026-08-09.md
+          line: 146
+          kind: literal
+          context: "python3 -c 'import json;print(json.load(open('experiments/out/foundry/corpus_pass_run1_classification.json'))['STOPPED_FOR_CAPTAIN'])'"
+        - source: docs/SESSION-HANDOFF-2026-08-01.md
+          line: 192
+          kind: literal
+          context: "- `experiments/out/foundry/corpus_pass_run1_classification.json` (sha256"
+        - source: docs/archive/B-SESSION-SPLIT-REVIEW-PACKET.md
+          line: 187
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_classification.json`"
+        - source: experiments/foundry_build_reaudit_packet.py
+          line: 22
+          kind: construction
+          context: "ARTIFACT_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_classification.json'"
+        - truncated: 6 further sites not listed
+    - path: experiments/out/foundry/corpus_pass_run1_completion_note.md
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_corpus_pass_run1.py
+          line: 49
+          kind: construction
+          context: "COMPLETION_NOTE_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_completion_note.md'"
+    - path: experiments/out/foundry/corpus_pass_run1_consolidation_corrected.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 765
+          kind: construction
+          context: "DRY_RUN_CORRECTED_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_consolidation_corrected.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_consolidation_dry_run.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 847053
+      sha256_measured: 6e60703668fe1f06617fe7d6bdad0423d3277ded8903672d21ca710f44bcfe60
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/MASTER-HANDOFF-ADDENDUM-4.md
+          line: 160
+          kind: literal
+          context: "(`experiments/out/foundry/corpus_pass_run1_consolidation_dry_run.json`:"
+        - source: experiments/foundry_consolidate_run1.py
+          line: 38
+          kind: construction
+          context: "DRY_RUN_REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_consolidation_dry_run.json'"
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 764
+          kind: construction
+          context: "DRY_RUN_STALE_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_consolidation_dry_run.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_det_synth_check.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 16128
+      sha256_measured: 89b4b8a5fdc94684483aaf69b7043c8b7efe6861f9331301319dd8d0cbe59335
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_consolidate_run1.py
+          line: 36
+          kind: construction
+          context: "DET_SYNTH_CHECK_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_det_synth_check.json'"
+        - source: experiments/foundry_consolidate_run1_classify.py
+          line: 766
+          kind: construction
+          context: "fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_det_synth_check.json'])"
+    - path: experiments/out/foundry/corpus_pass_run1_discovery.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 8793129
+      sha256_measured: a3b8843e2b82c14189add634db6caf099ee3b281bc50bfb0627fb0a3877eeec0
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/CONSOLIDATION-RUN1-DIRECTIVE.md
+          line: 111
+          kind: literal
+          context: "`experiments/out/foundry/corpus_pass_run1_discovery.json` — canonicalized"
+        - source: docs/archive/B-MIGRATION-AUDIT-PACKET.md
+          line: 1336
+          kind: literal
+          context: "`experiments/out/foundry/corpus_pass_run1_discovery.json` — canonicalized"
+        - source: experiments/foundry_consolidate_run1.py
+          line: 37
+          kind: construction
+          context: "DISCOVERY_OUT_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_discovery.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_parsed_final.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 16588665
+      sha256_measured: 75b7170e679dac1b6c57c6d640528e9b085c63eb0dbfd6c314d10228c2538b63
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/ARCHITECTURE-AUDIT.md
+          line: 432
+          kind: literal
+          context: "`experiments/out/foundry/corpus_pass_run1_parsed_final.json` holds **46,999"
+        - source: experiments/foundry_consolidate_run1.py
+          line: 9
+          kind: literal
+          context: "per-card structure (experiments/out/foundry/corpus_pass_run1_parsed_final.json,"
+        - source: experiments/foundry_consolidate_run1.py
+          line: 35
+          kind: construction
+          context: "PARSED_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_parsed_final.json'"
+        - source: experiments/foundry_consolidate_run1_classify.py
+          line: 41
+          kind: construction
+          context: "PARSED_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_parsed_final.json'"
+    - path: experiments/out/foundry/corpus_pass_run1_plan.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 9326138
+      sha256_measured: b545d2bf2fbd9245950c9038c911d7f2ba01355d67c3c8c3736bf8a6f9e90188
+      hash_status: MEASURED
+      reference_sites: 7
+      provenance:
+        - source: docs/A15-VOCAB-01-RULING-2026-08-09.md
+          line: 470
+          kind: literal
+          context: "`experiments/out/foundry/corpus_pass_run1_plan.json`, and no judgment"
+        - source: docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md
+          line: 31
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_plan.json`"
+        - source: docs/archive/B-SESSION-SPLIT-REVIEW-PACKET.md
+          line: 315
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_plan.json`"
+        - source: docs/archive/CONSOLIDATION-PLAN-DIRECTIVE.md
+          line: 28
+          kind: literal
+          context: "## 2. Build `experiments/out/foundry/corpus_pass_run1_plan.json`"
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 75
+          kind: construction
+          context: "PLAN_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_plan.json'"
+        - source: experiments/foundry_consolidate_run1_enumerate.py
+          line: 6
+          kind: literal
+          context: "`experiments/out/foundry/corpus_pass_run1_plan.json` — and makes NO decisions."
+        - truncated: 1 further sites not listed
+    - path: experiments/out/foundry/corpus_pass_run1_raw_results.jsonl
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 18316116
+      sha256_measured: 875dee1bda64d0cda09c38c4f3a851661520804a21a7773ec80d82e0508aefab
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/CONSOLIDATION-RUN1-DIRECTIVE.md
+          line: 42
+          kind: literal
+          context: "- `experiments/out/foundry/corpus_pass_run1_raw_results.jsonl` — main batch"
+        - source: docs/archive/RESUME-NOTE.md
+          line: 80
+          kind: literal
+          context: "→ writes `experiments/out/foundry/corpus_pass_run1_raw_results.jsonl`"
+        - source: experiments/foundry_corpus_pass_run1.py
+          line: 48
+          kind: construction
+          context: "RAW_RESULTS_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_raw_results.jsonl'"
+    - path: experiments/out/foundry/corpus_pass_run1_requests.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 60874814
+      sha256_measured: e99d227cc7ef6bd71a5096d7e1e6131a6a8ea0313a957e796d34018be4063d82
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/ARCHITECTURE-AUDIT.md
+          line: 399
+          kind: literal
+          context: "(`experiments/out/foundry/corpus_pass_run1_requests.json`, 814 requests). Every"
+        - source: docs/archive/RESUME-NOTE.md
+          line: 171
+          kind: literal
+          context: "- `experiments/out/foundry/corpus_pass_run1_requests.json` — the 814"
+        - source: experiments/foundry_corpus_pass_run1.py
+          line: 46
+          kind: construction
+          context: "REQUESTS_PATH = fc.FOUNDRY_OUT_DIR / 'corpus_pass_run1_requests.json'"
+    - path: experiments/out/foundry/decisions/batch-1.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 22384
+      sha256_measured: e7576d58dbed1707fa2e8c34524aeac26e082bc2c4d750890bb641b219e47e16
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch1_decisions.py
+          line: 40
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-1.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 19675
+      sha256_measured: 2d34a3aca17de4bda4149fc9739ea50f7929d0d7b4a584179fd1137e4c611a77
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch1_decisions.py
+          line: 38
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-1.json'"
+        - source: experiments/foundry_reconcile.py
+          line: 43
+          kind: literal
+          context: "--decisions experiments/out/foundry/decisions/batch-1.json \\"
+    - path: experiments/out/foundry/decisions/batch-2.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 30557
+      sha256_measured: 24dd11676414d5eb8bdeb0e2c76d2f8d6ab1b9b8c3dd2872d4a69feecfd10a5b
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch2_decisions.py
+          line: 28
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-2.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-2.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 30868
+      sha256_measured: 0c8229a1b35856af291c084fefafa74591859fa77e01785d34e27e723e890b9d
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch2_decisions.py
+          line: 26
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-2.json'"
+        - source: experiments/foundry_adapt_batch2_decisions.py
+          line: 161
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-2.json',"
+    - path: experiments/out/foundry/decisions/batch-3.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 35698
+      sha256_measured: 5c6948cd19083934ddf827819831d57898fc8cda6149846d9e37c1f199eba585
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch3_decisions.py
+          line: 30
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-3.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-3.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 36437
+      sha256_measured: 46c5562419e31bc2fd5deb9b1923ba2cea9a8e79e74c7672bae2e3d44eebc013
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/KEYWORD-LEDGER-CANDIDATES.md
+          line: 164
+          kind: literal
+          context: "`experiments/out/foundry/decisions/batch-3.json`'s captain_authored_axes"
+        - source: experiments/foundry_adapt_batch3_decisions.py
+          line: 28
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-3.json'"
+        - source: experiments/foundry_adapt_batch3_decisions.py
+          line: 145
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-3.json',"
+    - path: experiments/out/foundry/decisions/batch-4.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 26057
+      sha256_measured: eadd836654c216edc24269ab1d4ba83200836f9ef2b0ef8b7a55520058078909
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch4_decisions.py
+          line: 29
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-4.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-4.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 26337
+      sha256_measured: 0a39fc068c45fc8959ddadb0fd35964a08a1e5ef54ec8a0d4fcadc6ca8df8938
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch4_decisions.py
+          line: 27
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-4.json'"
+        - source: experiments/foundry_adapt_batch4_decisions.py
+          line: 139
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-4.json',"
+    - path: experiments/out/foundry/decisions/batch-5.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 43856
+      sha256_measured: f2d5505ef4456b1d1b29b04e745d39d1727123e49fb62e9ffb53ab31bc90a5ad
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch5_decisions.py
+          line: 26
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-5.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-5.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 40623
+      sha256_measured: a58b39bfbb2e7d91dba537f8bfa582e13218fd8af4f85b2340a7e93d8635cd23
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch5_decisions.py
+          line: 24
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-5.json'"
+        - source: experiments/foundry_adapt_batch5_decisions.py
+          line: 171
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-5.json',"
+    - path: experiments/out/foundry/decisions/batch-6.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 36737
+      sha256_measured: 3e8d60c0e7504bd9a61b13d3fec3ab098807619eadd533e8a8be42e6763866f8
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch6_decisions.py
+          line: 28
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-6.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-6.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 36504
+      sha256_measured: e257e0545190d83836e1fa03e20b48cbdd3308d79fb570804492bad7683b4e84
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch6_decisions.py
+          line: 26
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-6.json'"
+        - source: experiments/foundry_adapt_batch6_decisions.py
+          line: 185
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-6.json',"
+    - path: experiments/out/foundry/decisions/batch-7.foundry-decisions-v1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 30303
+      sha256_measured: 8422a04b11a1e9badf2a85949b3e0d6ab27ab8991c0212119d0cb0137605a72e
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch7_decisions.py
+          line: 30
+          kind: construction
+          context: "ADAPTED_OUT = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-7.foundry-decisions-v1.json'"
+    - path: experiments/out/foundry/decisions/batch-7.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 30248
+      sha256_measured: 9df0cf55193c6fddda61563318794c2ecfce56770d68d3f2de4a9ebb64904fea
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch7_decisions.py
+          line: 28
+          kind: construction
+          context: "DECISIONS_SRC = fc.FOUNDRY_OUT_DIR / 'decisions' / 'batch-7.json'"
+        - source: experiments/foundry_adapt_batch7_decisions.py
+          line: 184
+          kind: literal
+          context: "'adapted_from': 'experiments/out/foundry/decisions/batch-7.json',"
+    - path: experiments/out/foundry/definition_drift_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 29685
+      sha256_measured: ce9cc9ba929dc907ad0b807794e1cfd156497a0809cb85b4f3df719b591f43b7
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/C4-DECISION-SHEET-2026-08-02.md
+          line: 9
+          kind: literal
+          context: "Full per-axis evidence: `experiments/out/foundry/definition_drift_report.json`"
+        - source: docs/WORK-PACKETS-2026-08-07.md
+          line: 365
+          kind: literal
+          context: "`experiments/out/foundry/definition_drift_report.json`."
+        - source: experiments/foundry_definition_drift.py
+          line: 45
+          kind: construction
+          context: "REPORT_JSON = fc.FOUNDRY_OUT_DIR / 'definition_drift_report.json'"
+        - source: experiments/foundry_reaudit.py
+          line: 32
+          kind: construction
+          context: "DRIFT_JSON = fc.FOUNDRY_OUT_DIR / 'definition_drift_report.json'"
+    - path: experiments/out/foundry/det-patterns-v2.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_reachability.py
+          line: 61
+          kind: literal
+          context: "'experiments/out/foundry/det-patterns-v2.json':"
+    - path: experiments/out/foundry/det_pass_full_hits.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 279918
+      sha256_measured: c77814cc6e3be004ab8ceae42f7366a2c0e603394847e6de6c46040adcf0defa
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_det_pass.py
+          line: 56
+          kind: construction
+          context: "HITS_CACHE_PATH = fc.FOUNDRY_OUT_DIR / 'det_pass_full_hits.json'"
+    - path: experiments/out/foundry/det_pass_samples_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 382642
+      sha256_measured: 26e7eee0ba3dd4fcd76affa2f885758cea2ba7dd4bd49a9c66dc7d682c867ac8
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_det_pass.py
+          line: 34
+          kind: literal
+          context: "# review experiments/out/foundry/det_pass_samples_report.json /.md"
+        - source: experiments/foundry_det_pass.py
+          line: 54
+          kind: construction
+          context: "SAMPLES_REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'det_pass_samples_report.json'"
+    - path: experiments/out/foundry/det_pass_samples_report.md
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 295194
+      sha256_measured: dea2677e7a8d701ff573892d999060f4a5280301f759d41fc4b4e02e490598b7
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_det_pass.py
+          line: 55
+          kind: construction
+          context: "SAMPLES_REPORT_MD_PATH = fc.FOUNDRY_OUT_DIR / 'det_pass_samples_report.md'"
+    - path: experiments/out/foundry/det_patterns_probe.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 32413
+      sha256_measured: afa9c2127c56eb52eb67e0fa2f27224782d2b809d355ea11cada0de7f9d9866b
+      hash_status: MEASURED
+      reference_sites: 7
+      provenance:
+        - source: docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md
+          line: 41
+          kind: literal
+          context: "`experiments/out/foundry/det_patterns_probe.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 34
+          kind: literal
+          context: "`experiments/foundry_det_patterns_probe.py`, `experiments/out/foundry/det_patterns_probe.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 343
+          kind: literal
+          context: "`experiments/out/foundry/det_patterns_probe.json`."
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 468
+          kind: literal
+          context: "| `experiments/out/foundry/det_patterns_probe.json` | Measured hit counts, patterns, sample names |"
+        - source: docs/det-patterns-v1.json
+          line: 5
+          kind: literal
+          context: "'ruling_basis': 'docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.5 (final arithmetic) and sec.3 step 6 (assembly). Supersedes experiments/out/foundr"
+        - source: docs/det-patterns-v2.json
+          line: 5
+          kind: literal
+          context: "'ruling_basis': 'docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md sec.2.5 (final arithmetic) and sec.3 step 6 (assembly). Supersedes experiments/out/foundr"
+        - truncated: 1 further sites not listed
+    - path: experiments/out/foundry/family_sweep_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 163679
+      sha256_measured: 8a78cf5bf118c545a7ed5c10a65922b4db61d5158d3cb6ccaac97afc9a2ca154
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_family_sweep.py
+          line: 59
+          kind: construction
+          context: "REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'family_sweep_report.json'"
+    - path: experiments/out/foundry/gate0_scrub_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 40640
+      sha256_measured: 291a34c75f299a79c748f6720cb6aa27716718d010f56d96b720e95a8f31a9f5
+      hash_status: MEASURED
+      reference_sites: 4
+      provenance:
+        - source: docs/CORPUS-PASS-PLAN.md
+          line: 163
+          kind: literal
+          context: "retroactive scrub report at `experiments/out/foundry/gate0_scrub_report.json` (173"
+        - source: docs/RATIFIED-DIRECTIVES-BATCH-4-6.md
+          line: 395
+          kind: literal
+          context: "`experiments/out/foundry/gate0_scrub_report.json`. Named suspects from D1 confirmed:"
+        - source: docs/archive/TRIAGE-BATCH-6.md
+          line: 658
+          kind: literal
+          context: "`experiments/out/foundry/gate0_scrub_report.json`. Named suspects from D1 confirmed:"
+        - source: experiments/foundry_gate0_scrub.py
+          line: 32
+          kind: construction
+          context: "REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'gate0_scrub_report.json'"
+    - path: experiments/out/foundry/keyword-buckets.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 152933
+      sha256_measured: ffb68ade6ac4fe3baa41e5e02d31982993a4f0edde68c980cb96affd67d6e54e
+      hash_status: MEASURED
+      reference_sites: 6
+      provenance:
+        - source: docs/CORPUS-PASS-PLAN.md
+          line: 169
+          kind: literal
+          context: "`experiments/out/foundry/keyword-buckets.json` + report. **RATIFIED 2026-07-31**"
+        - source: docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md
+          line: 35
+          kind: literal
+          context: "`experiments/out/foundry/keyword-buckets.json` (+ `_report.md`),"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 30
+          kind: literal
+          context: "`experiments/foundry_keyword_buckets.py`, `experiments/out/foundry/keyword-buckets.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 460
+          kind: literal
+          context: "| `experiments/out/foundry/keyword-buckets.json` | 194 keyword classifications, CR-cited |"
+        - source: experiments/foundry_keyword_buckets.py
+          line: 35
+          kind: construction
+          context: "OUT_PATH = fc.FOUNDRY_OUT_DIR / 'keyword-buckets.json'"
+        - source: experiments/validate_slug.py
+          line: 338
+          kind: construction
+          context: "path = fc.FOUNDRY_OUT_DIR / 'keyword-buckets.json'"
+    - path: experiments/out/foundry/keyword-buckets_report.md
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 7975
+      sha256_measured: 09b60c2aa7298711adb1561407ff36790935315e0b833622994ae94f15ab3e61
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 31
+          kind: literal
+          context: "`experiments/out/foundry/keyword-buckets_report.md`, `experiments/validate_slug.py`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 461
+          kind: literal
+          context: "| `experiments/out/foundry/keyword-buckets_report.md` | Verify-or-drop residuals, trigger-family gaps, casting-modifier hits |"
+        - source: experiments/foundry_keyword_buckets.py
+          line: 36
+          kind: construction
+          context: "REPORT_PATH = fc.FOUNDRY_OUT_DIR / 'keyword-buckets_report.md'"
+    - path: experiments/out/foundry/killed_slug_routing.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_consolidate_run1_apply.py
+          line: 77
+          kind: construction
+          context: "ROUTING_PATH = fc.FOUNDRY_OUT_DIR / 'killed_slug_routing.json'"
+    - path: experiments/out/foundry/locality-backfill-plan.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1408573
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_locality_backfill.py
+          line: 72
+          kind: construction
+          context: "PLAN_PATH = fc.FOUNDRY_OUT_DIR / 'locality-backfill-plan.json'"
+    - path: experiments/out/foundry/locality-unaddressed.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 59680
+      sha256_measured: 2851ddb08808772751b712651300aa43fc28ebcfc13996eef62140668fdbacdd
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_locality.py
+          line: 742
+          kind: construction
+          context: "UNADDRESSED_JSON = fc.FOUNDRY_OUT_DIR / 'locality-unaddressed.json'"
+    - path: experiments/out/foundry/locality-unaddressed.md
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 18911
+      sha256_measured: eb8a5fbabfe40ed077e49f98a53812127a95ec9623553dcccb67544ef7dd4482
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_locality.py
+          line: 743
+          kind: construction
+          context: "UNADDRESSED_MD = fc.FOUNDRY_OUT_DIR / 'locality-unaddressed.md'"
+    - path: experiments/out/foundry/object_lattice_samples.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 163135
+      sha256_measured: 88c93a59ea16c6176c00ecc383c9d16b84ed2182ae2f9e89530c934e5a5a0a26
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_object_lattice.py
+          line: 1052
+          kind: construction
+          context: "SAMPLE_REPORT_JSON = fc.FOUNDRY_OUT_DIR / 'object_lattice_samples.json'"
+    - path: experiments/out/foundry/object_lattice_samples.md
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 25413
+      sha256_measured: 94f1fd6612bd38046d0b34f4724a3f7f3bb8ac5ffc2df52a0aee5b32d60f2d02
+      hash_status: MEASURED
+      reference_sites: 3
+      provenance:
+        - source: docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md
+          line: 3
+          kind: literal
+          context: "**2026-08-13.** Captain reviewed `experiments/out/foundry/object_lattice_samples.md`"
+        - source: docs/det-patterns-v2.json
+          line: 576
+          kind: literal
+          context: "'v2_changelog': '2026-08-01, during full-corpus DET-pass generate-samples review (standing_condition fixed-seed sample gate), 2 corrections found and "
+        - source: experiments/foundry_object_lattice.py
+          line: 1053
+          kind: construction
+          context: "SAMPLE_REPORT_MD = fc.FOUNDRY_OUT_DIR / 'object_lattice_samples.md'"
+    - path: experiments/out/foundry/preflight_n40_result.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 591
+      sha256_measured: 24e1951c190cd00513781a0005c6eba6d795dd2f098042782a5107016df8bbd0
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_corpus_pass_run1.py
+          line: 23
+          kind: literal
+          context: "correctly) -- experiments/out/foundry/preflight_n40_result.json."
+    - path: experiments/out/foundry/review/batch-1.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 733365
+      sha256_measured: f73a8e5fe9757889a54f221caff2bf7441332f0836bd1df4d90933ebcee452d4
+      hash_status: MEASURED
+      reference_sites: 2
+      provenance:
+        - source: experiments/foundry_adapt_batch1_decisions.py
+          line: 39
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-1.json'"
+        - source: experiments/foundry_reconcile.py
+          line: 42
+          kind: literal
+          context: "python3 experiments/foundry_reconcile.py --batch-json experiments/out/foundry/review/batch-1.json \\"
+    - path: experiments/out/foundry/review/batch-2.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1446605
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch2_decisions.py
+          line: 27
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-2.json'"
+    - path: experiments/out/foundry/review/batch-3.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1345916
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch3_decisions.py
+          line: 29
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-3.json'"
+    - path: experiments/out/foundry/review/batch-4.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1334249
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch4_decisions.py
+          line: 28
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-4.json'"
+    - path: experiments/out/foundry/review/batch-5.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1383085
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch5_decisions.py
+          line: 25
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-5.json'"
+    - path: experiments/out/foundry/review/batch-6.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1396315
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch6_decisions.py
+          line: 27
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-6.json'"
+    - path: experiments/out/foundry/review/batch-7.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1497124
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_adapt_batch7_decisions.py
+          line: 29
+          kind: construction
+          context: "REVIEW_SRC = fc.FOUNDRY_OUT_DIR / 'review' / 'batch-7.json'"
+    - path: experiments/out/foundry/review/batch-N.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: false
+      size_bytes: null
+      hash_status: NOT_MEASURED_FILE_ABSENT
+      note: >-
+        Referenced by tracked source but not present on this machine. Recorded as
+        a reference with no artifact, never as a deletion candidate.
+      reference_sites: 3
+      provenance:
+        - source: docs/T3-AXIS-FOUNDRY-v3.md
+          line: 58
+          kind: literal
+          context: "3. **Emit the review batch** (`experiments/out/foundry/review/batch-N.json`,"
+        - source: experiments/foundry_emit.py
+          line: 23
+          kind: literal
+          context: "python3 experiments/foundry_emit.py --in <consolidated.json> --out experiments/out/foundry/review/batch-N.json"
+        - source: experiments/foundry_enrich.py
+          line: 3
+          kind: literal
+          context: "batch. Reads experiments/out/foundry/review/batch-N.json (foundry_emit.py's"
+    - path: experiments/out/foundry/ruling_registry.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 174868
+      sha256_measured: 9cd974c8f69f14c171633c3e22d971ee576735faadea4797e61d949c9316c103
+      hash_status: MEASURED
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_ruling_registry.py
+          line: 40
+          kind: literal
+          context: "experiments/out/foundry/ruling_registry.json   machine-checkable"
+    - path: experiments/out/foundry/validate_slug_report.json
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 94413
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 6
+      provenance:
+        - source: docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md
+          line: 37
+          kind: literal
+          context: "`experiments/out/foundry/validate_slug_report.json`, `docs/grammars.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 32
+          kind: literal
+          context: "`docs/grammars.json`, `experiments/out/foundry/validate_slug_report.json`,"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 235
+          kind: literal
+          context: "`experiments/out/foundry/validate_slug_report.json`). These are exactly"
+        - source: docs/archive/CORPUS-PASS-WALK-RATIFICATION.md
+          line: 463
+          kind: literal
+          context: "| `experiments/out/foundry/validate_slug_report.json` | Per-slug validation result, all 306 active axes |"
+        - source: experiments/foundry_axis_walk.py
+          line: 173
+          kind: construction
+          context: "json.loads((fc.FOUNDRY_OUT_DIR / 'validate_slug_report.json').read_text())['results']}"
+        - source: experiments/validate_slug.py
+          line: 603
+          kind: construction
+          context: "out_path = fc.FOUNDRY_OUT_DIR / 'validate_slug_report.json'"
+    - path: experiments/out/ngram-df.json.gz
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+      role_basis_derivable_output_candidate: >-
+        referenced only by tracked generator/analysis code; no acceptance, authority, incident or benchmark consumer found
+      must_include: false
+      exists: true
+      size_bytes: 1393460
+      hash_status: DEFERRED_OVER_TOTAL_BUDGET
+      bytes_read: 0
+      reference_sites: 1
+      provenance:
+        - source: experiments/tier_engine.py
+          line: 188
+          kind: literal
+          context: "NGRAM_DF_PATH = Path('experiments/out/ngram-df.json.gz')"
+
+# Directory and pattern references. Per the task these record the CONSUMER and the
+# pattern only. The subtrees are NOT enumerated, so no cardinality is claimed.
+pattern_candidates:
+  count: 4
+  subtree_enumerated: false
+  subtree_cardinality_claimed: false
+  entries:
+    - pattern: experiments/out/aq4
+      reference_sites: 1
+      provenance:
+        - source: experiments/aq4_benchmark/aq4_binding.py
+          line: 74
+          kind: construction
+    - pattern: experiments/out/foundry/backups
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_codebook.py
+          line: 43
+          kind: construction
+    - pattern: experiments/out/foundry/reports
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_reconcile.py
+          line: 62
+          kind: construction
+    - pattern: experiments/out/foundry/review
+      reference_sites: 1
+      provenance:
+        - source: experiments/foundry_common.py
+          line: 17
+          kind: construction
+
+# Constructions whose concrete path CANNOT be determined statically - the final
+# segment is a variable, an f-string or a loop value. These are the census's own
+# blind spot, recorded rather than omitted: each one may reach files no arm above
+# discovered.
+unresolved:
+  dynamic_construction_shapes: 9
+  entries:
+    - construction: "FOUNDRY_OUT_DIR / f'batch{batch_num}_assembled.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 124
+          context: "'assembled': FOUNDRY_OUT_DIR / f'batch{batch_num}_assembled.json',"
+    - construction: "FOUNDRY_OUT_DIR / f'consolidate_clusters_raw{suffix}.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 131
+          context: "'consolidate_clusters_raw': FOUNDRY_OUT_DIR / f'consolidate_clusters_raw{suffix}.json',"
+    - construction: "FOUNDRY_OUT_DIR / f'consolidated_batch{batch_num}.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 130
+          context: "'consolidated': FOUNDRY_OUT_DIR / f'consolidated_batch{batch_num}.json',"
+    - construction: "FOUNDRY_OUT_DIR / f'stage1b_batch{suffix}.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 126
+          context: "'batch_record': FOUNDRY_OUT_DIR / f'stage1b_batch{suffix}.json',"
+    - construction: "FOUNDRY_OUT_DIR / f'stage1b_completion_note{suffix}.md'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 127
+          context: "'completion_note': FOUNDRY_OUT_DIR / f'stage1b_completion_note{suffix}.md',"
+    - construction: "FOUNDRY_OUT_DIR / f'stage1b_cost_estimate{suffix}.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 128
+          context: "'cost_estimate': FOUNDRY_OUT_DIR / f'stage1b_cost_estimate{suffix}.json',"
+    - construction: "FOUNDRY_OUT_DIR / f'stage1b_raw_results{suffix}.jsonl'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 129
+          context: "'raw_results': FOUNDRY_OUT_DIR / f'stage1b_raw_results{suffix}.jsonl',"
+    - construction: "FOUNDRY_OUT_DIR / f'stage1b_requests{suffix}.json'"
+      sites: 1
+        - source: experiments/foundry_common.py
+          line: 125
+          context: "'requests': FOUNDRY_OUT_DIR / f'stage1b_requests{suffix}.json',"
+    - construction: "fc.FOUNDRY_OUT_DIR / f'candidate-manifest.{manifest['snapshot_id']}.json'"
+      sites: 1
+        - source: experiments/foundry_authority.py
+          line: 2206
+          context: "fc.FOUNDRY_OUT_DIR / f'candidate-manifest.{manifest['snapshot_id']}.json')"
+  implication: >-
+    A dynamic construction can reach paths this census never names. Any later claim
+    that the exception set is complete must resolve these first.
+
+hash_budget:
+  per_file_cap_bytes: 67108864
+  total_read_cap_bytes: 268435456
+  bytes_read: 268409478
+  budget_utilisation: "100.0%"
+  files_hashed: 86
+  files_deferred_over_total_budget: 9
+  files_deferred_over_per_file_cap: 0
+  deferred_files_read: 0
+  ordering: >-
+    Candidates were hashed in role-priority order with the five must_include paths
+    first, so the budget cannot be exhausted on batch output while an acceptance or
+    authority file goes unmeasured. Every deferral below is a DERIVABLE_OUTPUT_CANDIDATE
+    or UNKNOWN_REVIEW; no ACCEPTANCE_CONTROL, AUTHORITY_LOCAL_MIRROR,
+    GOVERNANCE_OR_INCIDENT_EVIDENCE or FROZEN_BENCHMARK_INPUT path was deferred.
+  deferred:
+    - path: experiments/out/foundry/locality-backfill-plan.json
+      size_bytes: 1408573
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-2.json
+      size_bytes: 1446605
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-3.json
+      size_bytes: 1345916
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-4.json
+      size_bytes: 1334249
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-5.json
+      size_bytes: 1383085
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-6.json
+      size_bytes: 1396315
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/review/batch-7.json
+      size_bytes: 1497124
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/foundry/validate_slug_report.json
+      size_bytes: 94413
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+    - path: experiments/out/ngram-df.json.gz
+      size_bytes: 1393460
+      reason: DEFERRED_OVER_TOTAL_BUDGET
+      roles: [DERIVABLE_OUTPUT_CANDIDATE]
+
+conclusions:
+  deletion_authorized: false
+  whole_tree_classified: false
+  manager_review_required: true
+  candidate_list_exhaustive: false
+  dispositions_assigned: NONE
+  findings:
+    - >-
+      A LITERAL GREP WOULD HAVE MISSED THE MOST ACCEPTANCE-BEARING FILE IN THE TREE.
+      experiments/foundry_audit_baseline.py builds its path from __file__ rather than
+      writing it, so audit-baseline.json - the ratchet that decides whether a standing
+      audit degraded - appears in no literal reference from its own writer. The
+      constructed-reference arm exists because of this, and 44 tracked files build
+      output paths the same way.
+    - >-
+      THE LOCAL CODEBOOK MIRROR MATCHES THE SELECTED AUTHORITY EXACTLY. Measured
+      sha256 and byte size both equal docs/codebook-authority.json's selection. This
+      re-derives P0.3A's finding independently rather than citing it, and no codebook
+      bytes were copied into git.
+    - >-
+      ONE PATH CARRIES TWO ROLES. unit-binding-workqueue.json is named as evidence by
+      the tracked incident AND is the AQ4 benchmark's queue. A single-role classifier
+      would have recorded one and silently dropped the other.
+    - >-
+      31 EXACT CANDIDATES HAVE NO CODE CONSUMER AT ALL - they are referenced only in
+      tracked prose. They are UNKNOWN_REVIEW, not derivable: a tracked prose reference
+      does not create authority, and equally does not establish that a file can be
+      regenerated. This is the largest group needing a human decision.
+    - >-
+      11 REFERENCED PATHS DO NOT EXIST ON THIS MACHINE. Recorded as references without
+      artifacts. This is a fact about this working copy, not a property of the paths.
+    - >-
+      THE CENSUS HAS A DECLARED BLIND SPOT. Nine dynamic constructions cannot be
+      resolved statically, and files nothing tracked mentions are invisible to a
+      reference scan by construction.
+  what_this_does_not_establish:
+    - a DERIVABLE_OUTPUT_CANDIDATE role is a HYPOTHESIS from the consumer set, not a finding that the file is reproducible
+    - no file here is shown to be safely deletable, and none is proposed for deletion
+    - non_authoritative != disposable; the AQ4 overlay is non-authoritative and is still evidence
+    - a tracked prose reference does not create authority
+    - this document's own status field cannot ratify anything
+  required_before_any_disposition:
+    - Manager review of these candidates and their roles
+    - resolution of the nine dynamic constructions, or an explicit decision to accept them unresolved
+    - a decision on whether coverage limited to tracked references is sufficient, or whether the tree needs enumerating
+    - for any DERIVABLE_OUTPUT_CANDIDATE proposed for deletion, an actual reproduction test
