@@ -47,7 +47,7 @@ sys.path.insert(0, str(REPO))
 import foundry_common as fc                       # noqa: E402
 import foundry_codebook as fcb                    # noqa: E402
 
-BACKUPS = REPO / "out" / "foundry" / "backups"
+BACKUPS = fc.FOUNDRY_OUT_DIR / "backups"
 LIVE = fcb.CODEBOOK_PATH
 
 
