@@ -45,9 +45,22 @@ GATES = [
     # working W6.
     ("family_sweep",     [f"{EXP}/foundry_family_sweep.py", "--gate"],
      "a ratified family and its members contradict"),
-    ("definition_drift", [f"{EXP}/foundry_definition_drift.py"],
+    # `--check-only` on both rows since 2026-08-29 (P0.3E). Both tools DEFAULT to
+    # emitting, and both emit into `docs/` — which is TRACKED. Measured on a full
+    # green run: `definition_drift` rewrote its audit markdown byte-identically,
+    # and `ruling_registry` left `docs/RATIFIED-RULINGS-REGISTRY.md` MODIFIED in
+    # the worktree. So verification dirtied the tree it was verifying, and the
+    # diff it produced is one nobody may commit — BOOTSTRAP-STATE records that the
+    # regenerated registry carries a known false-positive S1 collision.
+    #
+    # The flag suppresses the WRITE and nothing else. Each tool still runs every
+    # check, derives the same metrics and applies the same ratchet, so this row's
+    # verdict is unchanged; what changes is that a gate no longer mutates the
+    # repository as a side effect of reading it. Standalone invocation still emits
+    # by default, because emitting the reports is what those commands are FOR.
+    ("definition_drift", [f"{EXP}/foundry_definition_drift.py", "--check-only"],
      "an axis definition drifted from its name (ratcheted 2026-08-09)"),
-    ("ruling_registry",  [f"{EXP}/foundry_ruling_registry.py"],
+    ("ruling_registry",  [f"{EXP}/foundry_ruling_registry.py", "--check-only"],
      "a ruling lost its home (ratcheted 2026-08-09)"),
     ("conservation",     [f"{EXP}/foundry_punctuation_audit.py"],
      "text, a sentence or an ability was LOST"),
