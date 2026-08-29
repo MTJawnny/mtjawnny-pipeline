@@ -1,0 +1,196 @@
+{
+  "schema": "mtj-conservation-contract/1",
+  "phase": "P0.3C.CONSERVATION-HARNESS-CORE",
+  "c8_step": 2,
+  "principle": "PRESERVE_TRUTH_NOT_PLUMBING",
+  "authority": {
+    "this_document_ratifies": "NOTHING",
+    "binding_status": "EVIDENCE_PENDING_MANAGER_REVIEW",
+    "ratified_by": "NONE",
+    "note": "A contract that could ratify itself would be the self-created authority C5 refuses. Every status below is a record of a decision taken elsewhere, or an explicit statement that no decision exists yet."
+  },
+  "what_this_is": [
+    "C8 step 2 asks for ONE invariant definition measurable on legacy state and on future/candidate state.",
+    "An invariant here is a NAMED TRUTH with a contracted VALUE. Where that value was read is EVIDENCE and is never compared, so a file moving does not read as drift and a file staying put does not read as conservation.",
+    "Nothing here classifies, moves, deletes or migrates anything, and no measurement code writes."
+  ],
+  "what_this_is_not": [
+    "It is not a census: it measures only paths declared below, and enumerates no tree.",
+    "It is not a semantic-equivalence engine. Every C7 item needing one is DEFERRED_WITH_REASON, and the harness refuses to measure a deferred item rather than reporting it conserved.",
+    "A DEFERRED item is not a conserved item. Silence about one would be the failure mode this inventory exists to prevent."
+  ],
+  "comparison_kinds": {
+    "EXACT_BYTES": "The contracted value is the sha256 and byte length of the source's exact bytes. Correct only where the bytes themselves are the truth.",
+    "EXACT_VALUE": "The contracted value is a set of scalars the source DECLARES. The source document's own bytes are evidence, not truth: a selector may be reformatted without the thing it selects changing, and may be left byte-identical while its selection changes.",
+    "EXACT_BYTES_PLUS_DECLARED_IDENTITY": "Both: the source's exact bytes, plus an identity the source states about itself in machine-readable form."
+  },
+  "c7_inventory_rule": "Every C7 item appears exactly once with status ACTIVE_MECHANICAL or DEFERRED_WITH_REASON. Omission is forbidden and the loader refuses a contract that omits one.",
+  "invariants": [
+    {
+      "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",
+      "c7_item": "C7.1",
+      "title": "the SELECTED codebook authority's exact sha256 and byte size",
+      "status": "ACTIVE_MECHANICAL",
+      "comparison_kind": "EXACT_VALUE",
+      "extractor": "json_declared_scalars",
+      "extractor_args": {
+        "fields": {
+          "selected_sha256": "sha256",
+          "selected_byte_size": "byte_size"
+        }
+      },
+      "value_fields": [
+        {"name": "selected_sha256", "type": "sha256"},
+        {"name": "selected_byte_size", "type": "byte_size"}
+      ],
+      "why_not_exact_bytes": "C7.1 contracts the identity of the SELECTED immutable object, not the bytes of the tracked selector that names it. Digesting the selector would pass on a reformat that changed the selection and fail on a whitespace edit that changed nothing.",
+      "why_snapshot_id_is_not_contracted": "P0.3C's first version also contracted the selector's snapshot_id, and the Manager review refused it (F1.CODEBOOK_IDENTITY_OVERCONTRACTED). C7.1 settles the contracted truth as EXACT sha256 AND byte size — nothing more. Every declared value field is compared, so carrying the label made a RELABEL of an unchanged object report as drift: the identity would have been the name somebody gave the snapshot rather than the object it selects. That is plumbing promoted to truth, and the exact inversion of this phase's principle. The label is a real and useful fact; it is EVIDENCE, and this row deliberately reads none of it.",
+      "requires_remote_access": false,
+      "remote_note": "The selected object lives in R2 and is content-addressed. The identity is read from the tracked selector, so no network access is needed and none is performed."
+    },
+    {
+      "invariant_id": "RATCHET_BASELINE_BYTES",
+      "c7_item": "C7.7",
+      "title": "the acceptance ratchet baseline, byte for byte",
+      "status": "ACTIVE_MECHANICAL",
+      "comparison_kind": "EXACT_BYTES",
+      "extractor": "exact_file_bytes",
+      "extractor_args": {},
+      "value_fields": [
+        {"name": "sha256", "type": "sha256"},
+        {"name": "size_bytes", "type": "byte_size"}
+      ],
+      "why_exact_bytes": "This file IS the control input that decides whether a standing audit degraded. Its bytes are contracted: any re-serialization is a change to the acceptance criterion.",
+      "why_this_is_the_worked_case": "C7.7's whole point is that these bytes lived under an ignored path, so a change to them was never visible in a diff. The two sides below bind this one invariant to TWO DIFFERENT paths, which is the property C8 step 2 exists to establish."
+    },
+    {
+      "invariant_id": "CR_EDITION_CONTENT",
+      "c7_item": "C7.5",
+      "title": "the vendored Comprehensive Rules edition: its exact bytes and the edition it declares itself to be",
+      "status": "ACTIVE_MECHANICAL",
+      "comparison_kind": "EXACT_BYTES_PLUS_DECLARED_IDENTITY",
+      "extractor": "exact_file_bytes_plus_front_matter",
+      "extractor_args": {"front_matter_fields": {"effective_date": "effective_date"}},
+      "value_fields": [
+        {"name": "sha256", "type": "sha256"},
+        {"name": "size_bytes", "type": "byte_size"},
+        {"name": "effective_date", "type": "string"}
+      ],
+      "edition_identity_source": "The document's own YAML front matter declares effective_date. It is read from CONTENT, never from the filename: a filename is a source path, and a source path may differ across sides without meaning drift.",
+      "interpretation_contract_status": "NOT_INCLUDED_HERE",
+      "interpretation_contract_note": "C7.5 also names the INTERPRETATION contract (how the edition is normalized and read). That is a semantic object, no ratified statement of it exists, and inventing one to complete this row is exactly what the deferral rule forbids. This row conserves the edition's content and declared identity only, and says so."
+    },
+    {
+      "invariant_id": "GATE2_INVARIANTS_AND_KNOWN_DEBT",
+      "c7_item": "C7.2",
+      "title": "what Gate 2 asserts, and the debt it knowingly carries",
+      "status": "DEFERRED_WITH_REASON",
+      "comparison_kind": null,
+      "extractor": null,
+      "extractor_args": {},
+      "value_fields": [],
+      "deferred_reason": "C7.2 contracts the INVARIANTS, explicitly not the 16 legacy row names. No ratified statement of those invariants exists apart from the rows, so any comparator built today would conserve the row names under a different label.",
+      "what_a_comparator_would_require": [
+        "a ratified list of the properties Gate 2 asserts, stated independently of the rows that print them",
+        "a fingerprint of known debt that distinguishes accepted debt from new degradation",
+        "gate execution that is PURE — P0-ARCHITECTURE records that Gate 2 invokes tools which write tracked markdown, so measuring it by running it would dirty the tree it is measuring",
+        "a run signal that is not the exit code: two of the eight Gate 2 checks detect and still exit 0, so exit status is not a fingerprint of anything"
+      ],
+      "blocked_by_task_constraint": "gate2_run: false"
+    },
+    {
+      "invariant_id": "ROUTING_RELATION",
+      "c7_item": "C7.3",
+      "title": "routing as a canonical semantic relation",
+      "status": "DEFERRED_WITH_REASON",
+      "comparison_kind": null,
+      "extractor": null,
+      "extractor_args": {},
+      "value_fields": [],
+      "deferred_reason": "C7.3 requires comparison as a CANONICAL SEMANTIC RELATION except where bytes are contracted. No canonical form is defined, and P0-ARCHITECTURE records the routing layer as known-broken by its own current law — so a byte comparator would freeze a state the project has already judged wrong.",
+      "what_a_comparator_would_require": [
+        "a ratified canonical form for a routing decision, independent of the classifier that produces it",
+        "an explicit statement of which routing surfaces are byte-contracted and which are relational",
+        "a decision on whether a known-broken relation is conserved as-is or excluded until repaired"
+      ]
+    },
+    {
+      "invariant_id": "RULING_DECISIONS",
+      "c7_item": "C7.4",
+      "title": "ruling ids, content and provenance",
+      "status": "DEFERRED_WITH_REASON",
+      "comparison_kind": null,
+      "extractor": null,
+      "extractor_args": {},
+      "value_fields": [],
+      "deferred_reason": "C7.4 conserves the DECISION, not the document path, and C6 refuses the blanket move to structured records. The identity of a ruling is therefore not yet defined in a form anything can measure.",
+      "what_a_comparator_would_require": [
+        "a ratified identity for a decision, separate from the markdown file that records it",
+        "the S1 registry false positive resolved first — BOOTSTRAP-STATE warns the regenerated registry carries a KNOWN false-positive namespace collision, and C8 step 6 forbids migrating knowledge until it cannot contaminate the result",
+        "a rule for rulings that were filed under a former axis name, which a path- or name-keyed comparator would silently split"
+      ]
+    },
+    {
+      "invariant_id": "AQ4_FROZEN_STATE_AND_GOVERNANCE",
+      "c7_item": "C7.6",
+      "title": "AQ4's frozen commitments and its governance state",
+      "status": "DEFERRED_WITH_REASON",
+      "comparison_kind": null,
+      "extractor": null,
+      "extractor_args": {},
+      "value_fields": [],
+      "deferred_reason": "AQ4 is PAUSED at a governance incident boundary and its frozen state is not pinned. C8 step 7 permits isolating AQ4 only after that pinning; pinning it here would be doing step 7's work under step 2's name.",
+      "what_a_comparator_would_require": [
+        "the frozen commitments named and pinned by a Captain-ratified record",
+        "a measurement, not a quote: the tracked incident pins unit-binding-workqueue.json by a TRUNCATED sha256 prefix, and the P0.3B census recorded the quote and the full measurement as separate facts precisely so one could not stand in for the other",
+        "governance state expressed as data rather than as incident narrative"
+      ],
+      "blocked_by_task_constraint": "aq4: PAUSED, aq4_changes: 0"
+    }
+  ],
+  "sides": [
+    {
+      "side_id": "LEGACY_LOCAL",
+      "description": "Pre-refoundation state as it sits today: the ratchet baseline under the gitignored output tree, the authority selector and the CR edition where legacy readers already find them.",
+      "bindings": [
+        {
+          "invariant_id": "RATCHET_BASELINE_BYTES",
+          "source_path": "experiments/out/foundry/audit-baseline.json",
+          "availability": "LOCAL_ONLY_GITIGNORED",
+          "note": ".gitignore:6 ignores experiments/out/, which is why C7.7 exists. This path is DECLARED, never discovered, and is absent from a fresh clone — the harness fails closed on an absent source rather than reporting the invariant conserved."
+        },
+        {
+          "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",
+          "source_path": "docs/codebook-authority.json",
+          "availability": "TRACKED"
+        },
+        {
+          "invariant_id": "CR_EDITION_CONTENT",
+          "source_path": "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+          "availability": "TRACKED"
+        }
+      ]
+    },
+    {
+      "side_id": "REFOUNDATION_TRACKED",
+      "description": "The candidate side. Only RATCHET_BASELINE_BYTES has moved so far — P0.3A copied the exact bytes to a tracked location and repointed no consumer. The other two are bound to the same paths as LEGACY_LOCAL because nothing has moved them, which the harness must report as neither drift nor merit.",
+      "bindings": [
+        {
+          "invariant_id": "RATCHET_BASELINE_BYTES",
+          "source_path": "config/baselines/foundry-audit-baseline.json",
+          "availability": "TRACKED"
+        },
+        {
+          "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",
+          "source_path": "docs/codebook-authority.json",
+          "availability": "TRACKED"
+        },
+        {
+          "invariant_id": "CR_EDITION_CONTENT",
+          "source_path": "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+          "availability": "TRACKED"
+        }
+      ]
+    }
+  ]
+}
