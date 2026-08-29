@@ -11,12 +11,21 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-from mtjbridge import manager, state as state_mod, worker
+from mtjbridge import adapters, manager, policy, state as state_mod, worker
 from mtjbridge.adapters import GitOps
 from mtjbridge.fakes import FakeClaude, FakeGitHub, FakeIssue, FakeManagerModel
 from mtjbridge.policy import Action
 from mtjbridge.protocol import parse_task
 from tests.helpers import BOOTSTRAP_BRANCH, make_repo, review_body, task_body
+
+
+# Test-only validation IDs. They are registered the same way a real one is - by
+# trusted code, never by a task body - so the registry's contract is exercised
+# rather than bypassed. The real `bridge-selftest` entry is never redefined.
+TEST_VALIDATION_REGISTRY = {
+    "selftest-ok": ("python3", "--version"),
+    "selftest-fail": ("python3", "-m", "mtj_no_such_module_for_bridge_tests"),
+}
 
 
 class BridgeTestCase(unittest.TestCase):
@@ -27,12 +36,16 @@ class BridgeTestCase(unittest.TestCase):
         self.state_dir = self.work.parent / "state"
         self.state_dir.mkdir()
         self.git = GitOps(self.work)
+        patch = unittest.mock.patch.dict(policy.VALIDATION_REGISTRY, TEST_VALIDATION_REGISTRY)
+        patch.start()
+        self.addCleanup(patch.stop)
 
     def make_github(self, *, base=None, allow=("src/**",), deny=("docs/**",),
-                    task_id="TEST.TASK", validation=(), kind="infrastructure_only"):
+                    task_id="TEST.TASK", validation_ids=("selftest-ok",), raw_commands=(),
+                    kind="infrastructure_only"):
         body = task_body(task_id=task_id, base=base or self.base,
                          base_branch=BOOTSTRAP_BRANCH, allow=allow, deny=deny,
-                         validation=validation, kind=kind)
+                         validation_ids=validation_ids, raw_commands=raw_commands, kind=kind)
         return FakeGitHub([FakeIssue(number=42, title="[mtj-task/1] test", body=body)])
 
     def run_worker(self, github, claude, task_id="TEST.TASK"):
@@ -414,16 +427,39 @@ class TestManagerSeesImplementationTruth(BridgeTestCase):
         self.assertTrue(any("diff could not be fetched" in r for r in decision.reasons))
         self.assertEqual(model.prompts, [], "the model must not be asked to review blind")
 
-    def test_a_truncated_diff_is_flagged_in_the_prompt(self):
+    def test_a_truncated_diff_stops_before_the_model_is_invoked(self):
+        """H2: a partial patch is not implementation truth, and wording is not a gate."""
         github = self.make_github()
         outcome = self._post_result_with_pr(github)
         github.prs[outcome.pr]["diff"] = "x" * 500
         model = FakeManagerModel([review_body(verdict="PASS")])
         with unittest.mock.patch.object(type(github), "pr_diff",
                                         lambda self, n, max_bytes=100: ("x" * 100, True)):
-            manager.review_once(github=github, git=self.git, model=model, repo="fake/repo",
-                                issue_number=42, base_branch=BOOTSTRAP_BRANCH)
-        self.assertIn("TRUNCATED", model.prompts[0])
+            decision = manager.review_once(github=github, git=self.git, model=model,
+                                           repo="fake/repo", issue_number=42,
+                                           base_branch=BOOTSTRAP_BRANCH)
+        self.assertEqual(decision.verdict, "STOP")
+        self.assertEqual(model.prompts, [], "a truncated diff must never reach the model")
+        self.assertTrue(any("TRUNCATED" in r for r in decision.reasons))
+
+    def test_the_prompt_builder_itself_refuses_a_truncated_diff(self):
+        """The STOP is structural: even a caller that forgets the check cannot bypass it."""
+        with self.assertRaises(policy.PolicyError):
+            manager.build_review_prompt(bootstrap={}, issue_body="", result_body="",
+                                        changed_paths=["src/thing.py"], pr_number=1000,
+                                        diff_text="x" * 100, diff_truncated=True)
+
+    def test_a_complete_diff_still_reaches_the_manager(self):
+        """The negative control: the gate is aimed at truncation, not at review itself."""
+        github = self.make_github()
+        outcome = self._post_result_with_pr(github)
+        github.prs[outcome.pr]["diff"] = "--- a/src/thing.py\n+++ b/src/thing.py\n+VALUE = 2\n"
+        model = FakeManagerModel([review_body(verdict="PASS")])
+        decision = manager.review_once(github=github, git=self.git, model=model,
+                                       repo="fake/repo", issue_number=42,
+                                       base_branch=BOOTSTRAP_BRANCH)
+        self.assertEqual(len(model.prompts), 1)
+        self.assertEqual(decision.verdict, "PASS")
 
 
 class TestStructuralToolDeny(BridgeTestCase):
@@ -468,7 +504,8 @@ class TestMandatoryScope(BridgeTestCase):
     def test_a_read_only_task_without_scope_proceeds(self):
         github = self.make_github(allow=(), deny=())
         github.issues[42].body = task_body(base=self.base, base_branch=BOOTSTRAP_BRANCH,
-                                           kind="read_only", allow=(), deny=())
+                                           kind="read_only", allow=(), deny=(),
+                                           validation_ids=())
         claude = FakeClaude(behavior=lambda cwd, prompt: "inspected only")
         outcome = self.run_worker(github, claude)
         self.assertEqual(outcome.status, "COMPLETE")
@@ -478,53 +515,182 @@ class TestMandatoryScope(BridgeTestCase):
 class TestWrapperOwnedValidation(BridgeTestCase):
     """Manager review finding 4: evidence must be machine-captured, not model prose."""
 
-    def test_declared_commands_run_in_the_wrapper_and_are_captured(self):
-        github = self.make_github(validation=('python3 -c "print(1+1)"',))
+    def _edit(self, cwd: Path, prompt: str) -> str:
+        (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+        return "edited"
 
-        def edit(cwd: Path, prompt: str) -> str:
-            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
-            return "edited"
-
-        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+    def test_a_registered_id_runs_in_the_wrapper_and_is_captured(self):
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=self._edit))
         self.assertEqual(outcome.status, "COMPLETE")
         self.assertEqual(len(outcome.evidence), 1)
         item = outcome.evidence[0]
         self.assertEqual(item["rc"], 0)
-        self.assertIn("2", item["output_tail"])
-        self.assertEqual(item["command"][0], "python3")
+        self.assertEqual(item["command"], ["python3", "--version"])
 
-    def test_a_failing_command_fails_the_result_and_blocks_the_pr(self):
-        github = self.make_github(validation=('python3 -c "raise SystemExit(3)"',))
-
-        def edit(cwd: Path, prompt: str) -> str:
-            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
-            return "edited"
-
-        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+    def test_a_failing_check_fails_the_result_and_blocks_the_pr(self):
+        github = self.make_github(validation_ids=("selftest-fail",))
+        outcome = self.run_worker(github, FakeClaude(behavior=self._edit))
         self.assertEqual(outcome.status, "FAIL")
-        self.assertIsNone(outcome.pr, "a failing acceptance command must not reach a PR")
-        self.assertEqual(outcome.evidence[0]["rc"], 3)
-
-    def test_a_refused_command_stops_before_the_model(self):
-        github = self.make_github(validation=("curl http://evil.example",))
-        claude = FakeClaude(behavior=lambda cwd, prompt: "should never run")
-        outcome = self.run_worker(github, claude)
-        self.assertEqual(outcome.status, "STOP")
-        self.assertEqual(claude.calls, [])
-
-    def test_absent_validation_is_recorded_as_a_discrepancy(self):
-        github = self.make_github()
-        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
-        self.assertTrue(any("no validation.commands" in d for d in outcome.discrepancies))
+        self.assertIsNone(outcome.pr, "a failing acceptance check must not reach a PR")
+        self.assertNotEqual(outcome.evidence[0]["rc"], 0)
 
     def test_evidence_survives_the_result_round_trip(self):
         from mtjbridge.protocol import parse_result, render_block
 
-        github = self.make_github(validation=('python3 -c "print(1+1)"',))
+        github = self.make_github(validation_ids=("selftest-ok",))
         outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
         parsed = parse_result(render_block(outcome.to_payload()))
         self.assertEqual(len(parsed.evidence), 1)
         self.assertFalse(parsed.validation_failed)
+
+
+class TestTrustedValidationIDs(BridgeTestCase):
+    """H1: a task NAMES a check. It never supplies, extends or reorders argv."""
+
+    def _claude(self):
+        return FakeClaude(behavior=lambda cwd, prompt: "should never run")
+
+    def test_raw_commands_in_a_task_body_stop_before_the_model(self):
+        github = self.make_github(validation_ids=(),
+                                  raw_commands=('python3 -c "import os; os.system(\'id\')"',))
+        claude = self._claude()
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [], "raw argv must halt before Claude is invoked")
+        self.assertTrue(any("raw validation/acceptance COMMANDS" in d
+                            for d in outcome.discrepancies))
+
+    def test_an_allowlisted_executable_no_longer_launders_a_payload(self):
+        """`python3` passes any executable allowlist; `python3 -c <payload>` is the hole."""
+        github = self.make_github(validation_ids=(),
+                                  raw_commands=("python3 -c \"print(open('/etc/passwd').read())\"",))
+        claude = self._claude()
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [])
+
+    def test_a_shell_payload_dressed_as_an_id_is_refused(self):
+        github = self.make_github(validation_ids=('python3 -c "print(1)"',))
+        claude = self._claude()
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [])
+        self.assertTrue(any("is not registered" in d for d in outcome.discrepancies))
+
+    def test_an_unknown_id_halts_before_claude(self):
+        github = self.make_github(validation_ids=("no-such-check",))
+        claude = self._claude()
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [])
+        self.assertIsNone(outcome.pr)
+
+    def test_a_known_id_resolves_to_exactly_its_registered_argv(self):
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=lambda c, p: "no change"))
+        self.assertEqual([tuple(e["command"]) for e in outcome.evidence],
+                         [TEST_VALIDATION_REGISTRY["selftest-ok"]])
+
+
+class TestMutatingTaskRequiresValidation(BridgeTestCase):
+    """H3: a mutation nobody checked must not reach a branch, a PR or a Manager PASS."""
+
+    def test_zero_validation_ids_halts_before_claude(self):
+        github = self.make_github(validation_ids=())
+        claude = FakeClaude(behavior=lambda cwd, prompt: "should never run")
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "STOP")
+        self.assertEqual(claude.calls, [], "a mutating task with no check must not run")
+        self.assertIsNone(outcome.pr)
+        self.assertTrue(any("no trusted validation.ids" in d for d in outcome.discrepancies))
+
+    def test_a_read_only_task_remains_exempt(self):
+        github = self.make_github(allow=(), deny=(), validation_ids=())
+        github.issues[42].body = task_body(base=self.base, base_branch=BOOTSTRAP_BRANCH,
+                                           kind="read_only", allow=(), deny=(),
+                                           validation_ids=())
+        claude = FakeClaude(behavior=lambda cwd, prompt: "inspected only")
+        outcome = self.run_worker(github, claude)
+        self.assertEqual(outcome.status, "COMPLETE")
+        self.assertEqual(len(claude.calls), 1)
+
+    def test_publication_is_refused_when_evidence_is_empty(self):
+        """Defence in depth. `require_validation_ids` already guarantees a check was
+        declared, so this can only fire if that gate is bypassed - which is exactly
+        why the publication boundary asserts the evidence instead of trusting it."""
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "edited"
+
+        github = self.make_github(validation_ids=("selftest-ok",))
+        with unittest.mock.patch.object(worker, "run_validation", lambda cmds, cwd: []):
+            outcome = self.run_worker(github, FakeClaude(behavior=edit))
+        self.assertEqual(outcome.status, "STOP")
+        self.assertIsNone(outcome.pr)
+        self.assertEqual(github.prs, {}, "no PR may exist without evidence")
+
+    def test_a_published_mutation_carries_evidence(self):
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "edited"
+
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=edit))
+        self.assertIsNotNone(outcome.pr)
+        self.assertTrue(outcome.evidence, "a PR may not be published without evidence")
+        self.assertTrue(all(e["rc"] == 0 for e in outcome.evidence))
+
+
+class TestClaudeErrorBlocksPublication(BridgeTestCase):
+    """H4: a failed execution must not publish a branch or PR that looks like work."""
+
+    def test_an_errored_claude_that_edited_files_publishes_nothing(self):
+        def edit_then_fail(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "partial work before the error"
+
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=edit_then_fail, is_error=True))
+        self.assertEqual(outcome.status, "FAIL")
+        self.assertIsNone(outcome.pr, "no PR may be created for a failed execution")
+        self.assertEqual(github.prs, {}, "no PR object may exist at all")
+        self.assertFalse(any(v.startswith("committed ") for v in outcome.validation))
+        self.assertEqual(outcome.evidence, [], "validation must not run after a failed model")
+
+    def test_the_changed_path_evidence_survives_the_failure(self):
+        def edit_then_fail(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "partial work"
+
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=edit_then_fail, is_error=True))
+        self.assertIn("src/thing.py", outcome.changed_paths)
+        self.assertTrue(any("claude reported an error" in d for d in outcome.discrepancies))
+
+    def test_a_failed_run_still_classifies_captain_territory(self):
+        def touch_captain(cwd: Path, prompt: str) -> str:
+            (cwd / "docs" / "RATIFIED-RULINGS-REGISTRY.md").write_text("# registry\nnew\n")
+            return "touched a ratified doc before failing"
+
+        github = self.make_github(allow=("src/**", "docs/**"), deny=(),
+                                  validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=touch_captain, is_error=True))
+        self.assertEqual(outcome.status, "FAIL")
+        self.assertIsNone(outcome.pr)
+        self.assertTrue(any("Captain-reserved" in d for d in outcome.decision_required),
+                        "classification must survive a failed execution")
+
+    def test_a_successful_run_still_publishes(self):
+        """Negative control: the block is aimed at is_error, not at publication."""
+        def edit(cwd: Path, prompt: str) -> str:
+            (cwd / "src" / "thing.py").write_text("VALUE = 2\n")
+            return "edited"
+
+        github = self.make_github(validation_ids=("selftest-ok",))
+        outcome = self.run_worker(github, FakeClaude(behavior=edit, is_error=False))
+        self.assertEqual(outcome.status, "COMPLETE")
+        self.assertIsNotNone(outcome.pr)
 
 
 class TestDiscoveryRespectsLedger(BridgeTestCase):
@@ -581,6 +747,95 @@ class TestManagerCanary(BridgeTestCase):
     def test_canary_fails_on_empty_output(self):
         ok, _ = manager.run_canary(FakeManagerModel([""]))
         self.assertFalse(ok)
+
+
+class TestOpenAIFailuresAreBridgeControlled(unittest.TestCase):
+    """H5: an SDK exception becomes a bounded, redacted bridge error - not a traceback.
+
+    Measured live before API credit was added: `mtj-manager --canary` raised a raw
+    openai.RateLimitError with a traceback. The adapter is the controlled boundary;
+    a boundary that propagates a third-party exception is not one.
+
+    These exercise the REAL OpenAIResponsesAdapter.review() with only its client
+    factory substituted, so the wrapping code under test is the shipped code.
+    """
+
+    FAKE_KEY = "sk-test-FAKE-not-a-real-key-0000000000"
+
+    class _Fake429(Exception):
+        status_code = 429
+        code = "insufficient_quota"
+
+    class _FakeConnection(Exception):
+        pass
+
+    def _adapter(self, exc=None, text=""):
+        import os
+
+        class _Responses:
+            def create(_self, **kwargs):
+                if exc is not None:
+                    raise exc
+                return type("R", (), {"output_text": text})()
+
+        class _Client:
+            responses = _Responses()
+
+        class _Adapter(adapters.OpenAIResponsesAdapter):
+            def _client(_self):
+                return _Client()
+
+        patch = unittest.mock.patch.dict(os.environ, {"OPENAI_API_KEY": self.FAKE_KEY})
+        patch.start()
+        self.addCleanup(patch.stop)
+        return _Adapter()
+
+    def test_a_quota_429_becomes_a_controlled_bridge_error(self):
+        adapter = self._adapter(exc=self._Fake429("credit_balance_exhausted"))
+        with self.assertRaises(adapters.BridgeCommandError) as caught:
+            adapter.review("prompt")
+        message = str(caught.exception)
+        self.assertIn("_Fake429", message)
+        self.assertIn("status=429", message)
+        self.assertIn("insufficient_quota", message)
+
+    def test_a_network_exception_becomes_a_controlled_bridge_error(self):
+        adapter = self._adapter(exc=self._FakeConnection("connection reset by peer"))
+        with self.assertRaises(adapters.BridgeCommandError) as caught:
+            adapter.review("prompt")
+        self.assertIn("connection reset", str(caught.exception))
+
+    def test_the_error_message_is_bounded(self):
+        adapter = self._adapter(exc=self._FakeConnection("x" * 50000))
+        with self.assertRaises(adapters.BridgeCommandError) as caught:
+            adapter.review("prompt")
+        self.assertLess(len(str(caught.exception)), adapters.MAX_ERROR_BYTES + 400)
+
+    def test_the_error_message_cannot_carry_the_api_key(self):
+        adapter = self._adapter(
+            exc=self._FakeConnection(f"401 while sending Authorization: Bearer {self.FAKE_KEY}"))
+        with self.assertRaises(adapters.BridgeCommandError) as caught:
+            adapter.review("prompt")
+        message = str(caught.exception)
+        self.assertNotIn(self.FAKE_KEY, message)
+        self.assertIn("[REDACTED]", message)
+
+    def test_the_canary_reports_blocked_instead_of_raising(self):
+        adapter = self._adapter(exc=self._Fake429("credit_balance_exhausted"))
+        with self.assertRaises(adapters.BridgeCommandError):
+            manager.run_canary(adapter)
+        # main() is what turns that into an exit code; assert the controlled path.
+        with unittest.mock.patch.object(manager, "OpenAIResponsesAdapter",
+                                        lambda **kw: adapter):
+            rc = manager.main(["--canary"])
+        self.assertEqual(rc, 4, "a blocked canary must exit non-zero, controlled")
+
+    def test_a_successful_canary_is_unchanged(self):
+        """Negative control: the wrapping must not alter the passing path."""
+        adapter = self._adapter(text=review_body(task_id="BRIDGE.CANARY"))
+        ok, message = manager.run_canary(adapter)
+        self.assertTrue(ok, message)
+        self.assertIn("verdict PASS", message)
 
 
 class TestExplicitIssueIsNotABackDoor(BridgeTestCase):

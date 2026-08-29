@@ -24,8 +24,14 @@ from .protocol import Review, Result, Task
 __all__ = [
     "PolicyError",
     "ValidationCommandRefused",
+    "UnknownValidationID",
     "check_validation_commands",
+    "check_task_validation",
+    "refuse_raw_validation_commands",
+    "require_validation_ids",
+    "resolve_validation_ids",
     "require_machine_readable_scope",
+    "VALIDATION_REGISTRY",
     "VALIDATION_EXECUTABLE_ALLOWLIST",
     "Decision",
     "Action",
@@ -96,11 +102,33 @@ _CAPTAIN_TEXT_SIGNALS: tuple[tuple[re.Pattern[str], str], ...] = (
 )
 
 
-# Executables a task may ask the WRAPPER to run as acceptance validation.
-# A task body is authored by a MODEL, so an unrestricted command list would let the
-# Manager escalate from "review" to "arbitrary code execution on the operator's host".
-# Commands run without a shell, so metacharacters are inert; the executable is the
-# thing that must be constrained, and it is constrained here.
+# --------------------------------------------------------------------------
+# trusted validation registry
+# --------------------------------------------------------------------------
+#
+# A task body is MODEL-authored. An executable allowlist was not enough: `python3`
+# and `node` are on any reasonable list, and `python3 -c <payload>` is arbitrary
+# host code execution with an allowlisted executable at argv[0]. Constraining the
+# EXECUTABLE constrains the wrong half of the command.
+#
+# So task text may no longer supply argv at all. It may only NAME a validation ID.
+# Trusted bridge code owns the argv that ID resolves to; a task cannot append to it,
+# reorder it, or substitute one argument. An unknown ID is a deterministic STOP
+# before the model is invoked, so the registry is fail-closed: capability arrives
+# only through a reviewed change to THIS table, never through an issue body.
+#
+# Keep it minimal. Every entry added here widens what an unattended mutating task
+# can cause to run on the operator's host.
+VALIDATION_REGISTRY: dict[str, tuple[str, ...]] = {
+    # The one check the bridge's own repair/canary work actually needs.
+    "bridge-selftest": ("python3", "bridge/bin/mtj-selftest"),
+}
+
+# Executables the TRUSTED registry is permitted to name. This is now an invariant
+# assertion over bridge-owned code, not a filter over model input: model input can
+# no longer reach argv at all. It is retained because a registry entry is still
+# hand-written, and a shell wrapper smuggled into the table would reopen exactly the
+# hole the table exists to close.
 VALIDATION_EXECUTABLE_ALLOWLIST: frozenset[str] = frozenset({
     "python", "python3", "pytest", "unittest",
     "make", "node", "npm", "npx", "yarn", "pnpm",
@@ -115,11 +143,19 @@ VALIDATION_EXECUTABLE_DENYLIST: frozenset[str] = frozenset({"bash", "sh", "zsh",
 
 
 class ValidationCommandRefused(PolicyError):
-    """A declared acceptance command is outside the allowlist."""
+    """A declared acceptance command is not executable authority for this bridge."""
+
+
+class UnknownValidationID(ValidationCommandRefused):
+    """A task named a validation ID that trusted bridge code does not define."""
 
 
 def check_validation_commands(commands: Iterable[Iterable[str]]) -> list[list[str]]:
-    """Return the commands, or raise. Never silently drops one."""
+    """Assert every command is a bare, non-shell, allowlisted executable. Or raise.
+
+    Applied to REGISTRY-RESOLVED argv only. Never applied to task text as a way of
+    admitting it: see `resolve_validation_ids`.
+    """
     import os as _os
 
     checked: list[list[str]] = []
@@ -144,6 +180,80 @@ def check_validation_commands(commands: Iterable[Iterable[str]]) -> list[list[st
             )
         checked.append(argv)
     return checked
+
+
+def resolve_validation_ids(ids: Iterable[str]) -> list[list[str]]:
+    """Map task-declared validation IDs to the fixed argv trusted code assigns them.
+
+    The returned argv comes from `VALIDATION_REGISTRY` and from nowhere else. The
+    task supplies a key; it never supplies, extends or reorders a value. An ID that
+    is not in the table raises, and every caller treats that as a STOP *before* the
+    model is invoked.
+    """
+    resolved: list[list[str]] = []
+    for raw in ids:
+        vid = str(raw).strip()
+        if vid not in VALIDATION_REGISTRY:
+            raise UnknownValidationID(
+                f"validation id '{vid}' is not registered. A task body may only NAME a "
+                f"pre-registered check; it cannot supply a command. Known ids: "
+                f"{sorted(VALIDATION_REGISTRY)}"
+            )
+        resolved.append([str(a) for a in VALIDATION_REGISTRY[vid]])
+    # Invariant on the trusted table itself, not on the task.
+    return check_validation_commands(resolved)
+
+
+def refuse_raw_validation_commands(task: Task) -> str | None:
+    """Return a STOP reason when a task body carries raw argv instead of IDs.
+
+    Fail-closed for read-only tasks too: raw argv in a task body is a malformed
+    contract under this schema, and silently ignoring it would leave the author
+    believing a check ran.
+    """
+    if not task.raw_validation_commands:
+        return None
+    shown = "; ".join(" ".join(c) for c in task.raw_validation_commands[:3])
+    return (
+        "task body declares raw validation/acceptance COMMANDS. Raw argv is not "
+        "executable authority for this bridge: a model-authored command line is "
+        f"arbitrary host code execution ({shown!r}). Declare validation.ids naming "
+        f"pre-registered checks instead. Known ids: {sorted(VALIDATION_REGISTRY)}"
+    )
+
+
+def require_validation_ids(task: Task) -> str | None:
+    """Return a STOP reason when a MUTATING task declares no trusted validation.
+
+    A mutation nobody checked is not evidence of anything. Recording that as a
+    discrepancy was not enough: the worker still committed, pushed and opened a PR,
+    and an automated Manager could PASS it. Read-only tasks are exempt by
+    declaration, not by omission.
+    """
+    if not task.mutating:
+        return None
+    if task.validation_ids:
+        return None
+    return (
+        "task is mutating but declares no trusted validation.ids. A mutating task "
+        "must name at least one pre-registered check, or declare scope.kind: read_only. "
+        f"Known ids: {sorted(VALIDATION_REGISTRY)}"
+    )
+
+
+def check_task_validation(task: Task) -> str | None:
+    """The whole validation gate as one deterministic answer: a STOP reason, or None."""
+    reason = refuse_raw_validation_commands(task)
+    if reason:
+        return reason
+    reason = require_validation_ids(task)
+    if reason:
+        return reason
+    try:
+        resolve_validation_ids(task.validation_ids)
+    except ValidationCommandRefused as exc:
+        return str(exc)
+    return None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -307,6 +417,19 @@ def decide(
     scope_stop = require_machine_readable_scope(task)
     if scope_stop:
         return Decision(action=Action.HALT, verdict="STOP", reasons=(scope_stop,))
+    validation_stop = check_task_validation(task)
+    if validation_stop:
+        return Decision(action=Action.HALT, verdict="STOP", reasons=(validation_stop,))
+    if task.mutating and result.pr and not result.evidence:
+        return Decision(
+            action=Action.HALT,
+            verdict="STOP",
+            reasons=(
+                f"mutating task published PR #{result.pr} with no wrapper-captured validation "
+                "evidence. A published mutation must carry the output of a trusted check, not "
+                "model prose about one.",
+            ),
+        )
     if result.validation_failed:
         failed = [f"{' '.join(e.get('command', []))} -> rc={e.get('rc')}"
                   for e in result.evidence if int(e.get("rc", 0)) != 0]

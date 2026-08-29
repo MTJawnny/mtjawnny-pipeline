@@ -130,18 +130,23 @@ def build_review_prompt(*, bootstrap: dict[str, str], issue_body: str, result_bo
         parts.append("\n".join(lines))
     else:
         parts.append("## Wrapper-captured acceptance evidence\n\n"
-                     "NONE. The worker declared no validation commands, so the only account "
-                     "of correctness is model prose. Weigh it accordingly.\n")
+                     "NONE. A MUTATING task cannot reach this state - it is refused before "
+                     "execution and again at publication - so this is either a read-only task "
+                     "or a result produced outside the wrapper. The only account of correctness "
+                     "is then model prose. Weigh it accordingly.\n")
 
-    if diff_text:
-        parts.append(
-            "## Actual PR diff\n\n"
-            + ("**TRUNCATED** - this patch exceeded the size bound, so you are seeing a "
-               "PREFIX. Do not return PASS on the strength of a partial diff; if the "
-               "unreviewed remainder matters, return STOP and say so.\n\n"
-               if diff_truncated else "")
-            + f"```diff\n{diff_text}\n```\n"
+    # A partial diff must never reach the model. Asking it not to PASS on one was
+    # prompt wording, and prompt wording is the model's own restraint standing in for
+    # a structural guarantee - the exact inversion of "model output may only ever make
+    # the outcome MORE restrictive". Refusing here makes it unreachable by construction,
+    # so a future caller that forgets the check in `review_once` still cannot bypass it.
+    if diff_truncated:
+        raise PolicyError(
+            "refusing to build a review prompt around a TRUNCATED diff: a partial patch "
+            "is not implementation truth, and no instruction to the model can make it one"
         )
+    if diff_text:
+        parts.append(f"## Actual PR diff\n\n```diff\n{diff_text}\n```\n")
     else:
         parts.append("## Actual PR diff\n\nUNAVAILABLE - no diff could be fetched.\n")
 
@@ -214,12 +219,20 @@ def review_once(*, github, git: GitOps, model, repo: str, issue_number: int,
     if not changed_paths:
         changed_paths = [m for m in result.mutations if m not in ("NONE",)]
 
-    # A mutation task the reviewer cannot actually SEE is not reviewable.
+    # A mutation task the reviewer cannot actually SEE is not reviewable. Both arms
+    # halt BEFORE the model is invoked, so the model-call count is zero and there is
+    # no verdict for policy to have to override.
     if result.pr and not diff_text:
         return Decision(
             action=Action.HALT, verdict="STOP",
             reasons=(f"PR #{result.pr} exists but its diff could not be fetched; refusing to "
                      "review implementation truth from a path list alone",))
+    if result.pr and diff_truncated:
+        return Decision(
+            action=Action.HALT, verdict="STOP",
+            reasons=(f"PR #{result.pr} diff exceeded the size bound and came back TRUNCATED. "
+                     "Only a complete bounded diff may reach an automated Manager PASS path in "
+                     "v0; split the change, or review it by hand.",))
 
     from .worker import read_bootstrap
 
@@ -297,10 +310,18 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--issue is required unless --canary is given")
     model = OpenAIResponsesAdapter(dry_run=args.dry_run,
                                    **({"model": args.model} if args.model else {}))
-    decision = review_once(github=github, git=git, model=model, repo=args.repo,
-                           issue_number=args.issue, base_branch=args.base_branch,
-                           dry_run=args.dry_run, max_repairs=args.max_repairs,
-                           max_cycles=args.max_cycles)
+    # The adapter normalises every SDK failure into BridgeCommandError; the review
+    # path must then surface it as a controlled exit, exactly as --canary does.
+    # Otherwise H5's repair holds for the canary and leaks a traceback here.
+    try:
+        decision = review_once(github=github, git=git, model=model, repo=args.repo,
+                               issue_number=args.issue, base_branch=args.base_branch,
+                               dry_run=args.dry_run, max_repairs=args.max_repairs,
+                               max_cycles=args.max_cycles)
+    except BridgeCommandError as exc:
+        log.error("manager review could not run", extra={"error": str(exc)})
+        print(f"MANAGER BLOCKED: {exc}")
+        return 4
     return 0 if decision.automation_may_continue or decision.verdict == "PASS" else 3
 
 

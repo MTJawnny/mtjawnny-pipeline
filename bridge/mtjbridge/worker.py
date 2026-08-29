@@ -22,8 +22,8 @@ from . import state as state_mod
 from .adapters import (MAX_EVIDENCE_BYTES, BridgeCommandError, ClaudeCliAdapter, GhCliGitHub,
                        GitOps, run)
 from .logging_setup import configure, get_logger
-from .policy import (PolicyError, check_paths_against_task, check_validation_commands,
-                     classify_paths, require_machine_readable_scope)
+from .policy import (PolicyError, check_paths_against_task, check_task_validation,
+                     classify_paths, require_machine_readable_scope, resolve_validation_ids)
 from .protocol import ProtocolError, Task, parse_task, render_block
 from .redact import redact
 
@@ -207,10 +207,19 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
                   extra={"task": task.task})
         return outcome
 
-    # --- acceptance commands are allowlisted before anything runs ----------
+    # --- validation must be trusted, and a mutation must have some ---------
+    # Three refusals, all BEFORE Claude is invoked: raw model-authored argv, a
+    # mutating task with no check at all, and an unregistered validation id.
+    validation_stop = check_task_validation(task)
+    if validation_stop:
+        outcome.status = "STOP"
+        outcome.discrepancies.append(validation_stop)
+        log.error("refusing the task on its validation declaration",
+                  extra={"task": task.task})
+        return outcome
     try:
-        validation_commands = check_validation_commands(task.validation_commands)
-    except PolicyError as exc:
+        validation_commands = resolve_validation_ids(task.validation_ids)
+    except PolicyError as exc:  # unreachable via check_task_validation; kept fail-closed
         outcome.status = "STOP"
         outcome.discrepancies.append(str(exc))
         return outcome
@@ -257,7 +266,8 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
         payload = claude.run_task(prompt, worktree)
         outcome.claude_session_id = payload.get("session_id", "")
         outcome.model_summary = redact(str(payload.get("result", "")))[:4000]
-        if payload.get("is_error"):
+        claude_failed = bool(payload.get("is_error"))
+        if claude_failed:
             outcome.status = "FAIL"
             outcome.discrepancies.append(
                 f"claude reported an error: {payload.get('subtype', 'unknown')}")
@@ -266,15 +276,17 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
             outcome.discrepancies.append(f"claude hit {len(denials)} permission denial(s)")
 
         # --- what actually changed, measured, not claimed ------------------
+        # Measured and classified even on a FAILED execution: a failed run that
+        # touched Captain territory is exactly the thing durable state must record.
+        # Only PUBLICATION is withheld below, never the evidence.
         changed = git.changed_paths(worktree)
         outcome.changed_paths = changed
-        log.info("worker changed paths", extra={"count": len(changed)})
+        log.info("worker changed paths", extra={"count": len(changed),
+                                                "claude_failed": claude_failed})
 
         violations = check_paths_against_task(task, changed)
         if violations:
-            outcome.status = "STOP"
             outcome.discrepancies.extend(["task scope violated:"] + violations)
-            return outcome
         if changed and not task.allow_paths and not task.deny_paths:
             outcome.validation.append(
                 "path scope NOT machine-checked: this task supplied no allow/deny globs")
@@ -282,9 +294,18 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
         for path, category in captain_hits:
             outcome.decision_required.append(f"{path} is Captain-reserved ({category})")
         if captain_hits:
-            outcome.status = "STOP"
             outcome.discrepancies.append(
                 "changed paths enter Captain-reserved territory; not opening a PR")
+
+        # A failed model execution must not publish a branch or a PR as if it were
+        # work. The Manager blocking a PASS later is not the same guarantee: by then
+        # the mutation is already on the remote wearing the shape of a delivery.
+        if claude_failed:
+            outcome.discrepancies.append(
+                "claude execution failed: no validation, commit, push or PR was attempted")
+            return outcome
+        if violations or captain_hits:
+            outcome.status = "STOP"
             return outcome
 
         # --- wrapper-owned acceptance validation, machine-captured -------
@@ -297,13 +318,20 @@ def execute(task: Task, issue_body: str, *, github, git: GitOps, claude,
             outcome.discrepancies.append(
                 "wrapper-captured acceptance validation failed; not opening a PR")
             return outcome
-        if not validation_commands:
-            outcome.discrepancies.append(
-                "task declared no validation.commands: the only evidence of correctness "
-                "is model prose, which the wrapper cannot verify")
 
         if not changed:
             outcome.validation.append("no file changes produced")
+            return outcome
+
+        # --- publication requires wrapper-captured successful evidence -----
+        # `require_validation_ids` already refused a mutating task with no ids, so
+        # empty evidence here means the run did not actually happen. Assert it at the
+        # publication boundary rather than trusting the earlier gate to have held.
+        if task.mutating and not outcome.evidence:
+            outcome.status = "STOP"
+            outcome.discrepancies.append(
+                "mutating task reached publication with no wrapper-captured validation "
+                "evidence; refusing to commit, push or open a PR")
             return outcome
 
         # --- wrapper-owned commit / push / draft PR ------------------------

@@ -49,9 +49,14 @@ def make_repo() -> tuple[Path, Path, str]:
 
 def task_body(task_id="TEST.TASK", base="0" * 40, base_branch=BOOTSTRAP_BRANCH,
               status="READY", kind="infrastructure_only",
-              allow=("src/**",), deny=("docs/**",), validation=()) -> str:
+              allow=("src/**",), deny=("docs/**",),
+              validation_ids=("bridge-selftest",), raw_commands=()) -> str:
     """Build an mtj-task/1 body. Empty allow/deny omit the key entirely, which is
-    how a real task that supplies no machine-readable scope actually looks."""
+    how a real task that supplies no machine-readable scope actually looks.
+
+    `validation_ids` is the supported shape: a task NAMES pre-registered checks.
+    `raw_commands` writes the superseded `validation.commands` shape, which exists
+    here only so tests can prove the bridge refuses it."""
     lines = [
         "```yaml",
         "schema: mtj-task/1",
@@ -68,8 +73,12 @@ def task_body(task_id="TEST.TASK", base="0" * 40, base_branch=BOOTSTRAP_BRANCH,
         lines += ["  allow_paths:", *[f"    - {a}" for a in allow]]
     if deny:
         lines += ["  deny_paths:", *[f"    - {d}" for d in deny]]
-    if validation:
-        lines += ["validation:", "  commands:", *[f"    - {c}" for c in validation]]
+    if validation_ids or raw_commands:
+        lines += ["validation:"]
+        if validation_ids:
+            lines += ["  ids:", *[f"    - {v}" for v in validation_ids]]
+        if raw_commands:
+            lines += ["  commands:", *[f"    - {c}" for c in raw_commands]]
     lines += [
         "prohibited:",
         "  - modifying main",
@@ -84,7 +93,7 @@ def task_body(task_id="TEST.TASK", base="0" * 40, base_branch=BOOTSTRAP_BRANCH,
 
 def result_body(task_id="TEST.TASK", status="COMPLETE", base_expected="0" * 40,
                 base_measured=None, mutations=("src/thing.py",), pr=1000,
-                discrepancies=("NONE",), decision=("NONE",)) -> str:
+                discrepancies=("NONE",), decision=("NONE",), evidence=("default",)) -> str:
     base_measured = base_measured if base_measured is not None else base_expected
     lines = [
         "```yaml",
@@ -103,6 +112,19 @@ def result_body(task_id="TEST.TASK", status="COMPLETE", base_expected="0" * 40,
         *[f"  - {d}" for d in discrepancies],
         "decision_required:",
         *[f"  - {d}" for d in decision],
+    ]
+    # A mutating task that opened a PR must carry wrapper-captured evidence, so the
+    # default result body carries one passing entry. `evidence=()` writes a result
+    # with none, which is what the H3 publication gate is aimed at.
+    if evidence == ("default",):
+        evidence = ({"command": ["python3", "bridge/bin/mtj-selftest"], "rc": 0},)
+    if evidence:
+        lines.append("evidence:")
+        for item in evidence:
+            lines.append("  - command:")
+            lines += [f"      - {a}" for a in item["command"]]
+            lines.append(f"    rc: {item['rc']}")
+    lines += [
         "next:",
         "  authorized: NONE",
         "```",

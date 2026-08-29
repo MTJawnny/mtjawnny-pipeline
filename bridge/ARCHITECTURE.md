@@ -50,7 +50,9 @@ comments are the state. This is what makes both sessions disposable.
 
 ```
 0. mutating task with no allow/deny globs  →  STOP, model NEVER invoked
-0b. validation command outside the allowlist →  STOP, model NEVER invoked
+0b. raw validation.commands in the task body  →  STOP, model NEVER invoked
+0c. mutating task with zero validation.ids   →  STOP, model NEVER invoked
+0d. validation id not in VALIDATION_REGISTRY →  STOP, model NEVER invoked
 1. fetch origin/<base_branch>                     ← read-only
 2. measured = rev-parse origin/<base_branch>
    measured != task.base  →  STOP, and the model is NEVER invoked
@@ -59,11 +61,17 @@ comments are the state. This is what makes both sessions disposable.
 5. build prompt = bootstrap + measured state + issue contract
 6. claude -p --output-format json --session-id <fresh uuid> …   ← FRESH session
 7. changed = git status --porcelain -uall            ← MEASURED, not claimed
-9. enforce task allow/deny globs        → violation  →  STOP, no PR
-10. classify against CAPTAIN_PATHS      → hit        →  STOP, no PR, packet
-11. git add -A; git commit; git push                 ← wrapper owns git
-12. gh pr create --draft                             ← never merged
-13. post mtj-result/1 (including `evidence:`)
+8. enforce task allow/deny globs        → violation  →  STOP, no PR
+9. classify against CAPTAIN_PATHS       → hit        →  STOP, no PR, packet
+10. claude is_error                     → FAIL       →  no validation, no commit,
+                                                        no push, no PR (7-9 still
+                                                        recorded as evidence)
+11. run VALIDATION_REGISTRY argv for each declared id ← wrapper owns validation
+    non-zero rc                         → FAIL       →  no PR
+    empty evidence on a mutating task   → STOP       →  no PR
+12. git add -A; git commit; git push                 ← wrapper owns git
+13. gh pr create --draft                             ← never merged
+14. post mtj-result/1 (including `evidence:`)
 ```
 
 Discovery (step 0, before all of this) requires **both** `status: READY` in the
@@ -72,8 +80,11 @@ nobody rewrites when work completes, so it stays true forever; the ledger is wha
 knows the task is done.
 
 Step 2 before step 6 is deliberate: a stale base costs zero model spend.
-Steps 7–9 before step 10 are deliberate: a Captain-reserved change never
-reaches a pull request at all.
+Steps 7–9 before step 12 are deliberate: a Captain-reserved change never reaches a
+pull request at all. Step 10 after 7–9 is also deliberate: a failed execution still
+has to leave its changed-path and Captain classification in durable state, because a
+failed run that touched reserved territory is exactly what the record must show —
+only PUBLICATION is withheld, never the evidence.
 
 ## 4. Manager sequence
 
@@ -81,6 +92,7 @@ reaches a pull request at all.
 1. reconstruct ledger from GitHub
 2. read PR changed paths AND the actual patch (`gh pr diff`, bounded + redacted)
    a PR whose diff cannot be fetched  →  STOP, the model is not asked to review blind
+   a PR whose diff came back TRUNCATED →  STOP, before the model is invoked
 3. build prompt = bootstrap + task + result + patch + wrapper-captured evidence
 4. model.review(prompt)                    ← FRESH call, no tools, text only
 5. parse_review(text)   → invalid → STOP   ← a chatty model halts, never crashes
@@ -106,16 +118,27 @@ Both models are treated as untrusted inputs to a deterministic gate. The gate is
 cannot pass for the wrong reason, and the Worker's git prohibition is enforced by
 the invocation's tool-deny rather than by its prompt.
 
-**The task body is also an untrusted input.** It is authored by a model, so its
-`validation.commands` are constrained by an executable allowlist and run without a
-shell. Without that, "the Manager may specify acceptance criteria" would read as
-"the Manager may run anything on the operator's host".
+**The task body is also an untrusted input.** It is authored by a model, so it may
+not supply argv at all: it names `validation.ids`, and trusted code owns what each
+one resolves to. Constraining the *executable* was not enough — `python3` belongs on
+any allowlist and `python3 -c <payload>` is arbitrary execution with an allowlisted
+`argv[0]`. Raw `validation.commands` in a task body is now a STOP. Without this,
+"the Manager may specify acceptance criteria" reads as "the Manager may run anything
+on the operator's host".
+
+**Only a complete diff may reach an automated PASS.** A truncated patch is refused
+before the Manager model is invoked, and `build_review_prompt` raises if handed one,
+so the guarantee does not depend on a caller remembering the check. Instructing the
+model not to PASS on a partial diff was prompt wording standing in for a structural
+gate — the exact inversion of "model output may only ever make the outcome more
+restrictive".
 
 ## 6. Known limitations
 
-0. **The manager model has still never been run live** — `OPENAI_API_KEY` is not
-   set in this environment. `mtj-manager --canary` exists to close this and must be
-   run before any live mutation cycle.
+0. **The live Manager canary passed once** (Captain-run, 2026-08-29, recorded on
+   issue #3). It has not been re-run since the OpenAI error path changed, because
+   `OPENAI_API_KEY` is not present in every operator environment; the failure path
+   is covered offline against the shipped adapter with its client substituted.
 1. **Repair tasks are not auto-created.** `policy.decide()` returns
    `CREATE_REPAIR_TASK` and the manager logs it, but v0 does not open the issue.
    Deliberate: issuing tasks is Manager authority, and Captain should watch the

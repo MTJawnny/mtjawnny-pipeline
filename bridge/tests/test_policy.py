@@ -184,9 +184,129 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class TestValidationCommandAllowlist(unittest.TestCase):
-    """A task body is MODEL-authored. Running its commands unrestricted would turn
-    the Manager's review authority into arbitrary execution on the operator's host."""
+class TestTrustedValidationRegistry(unittest.TestCase):
+    """H1: a task body may NAME a check. It may not supply, extend or reorder argv.
+
+    The previous design constrained the EXECUTABLE, which is the wrong half of a
+    command line: `python3` is on any reasonable allowlist and `python3 -c <payload>`
+    is arbitrary host code execution with an allowlisted argv[0].
+    """
+
+    def test_a_known_id_resolves_to_exactly_its_registered_argv(self):
+        from mtjbridge.policy import VALIDATION_REGISTRY, resolve_validation_ids
+
+        self.assertEqual(resolve_validation_ids(["bridge-selftest"]),
+                         [list(VALIDATION_REGISTRY["bridge-selftest"])])
+
+    def test_an_unknown_id_is_refused(self):
+        from mtjbridge.policy import UnknownValidationID, resolve_validation_ids
+
+        with self.assertRaises(UnknownValidationID):
+            resolve_validation_ids(["no-such-check"])
+
+    def test_a_command_line_cannot_masquerade_as_an_id(self):
+        from mtjbridge.policy import UnknownValidationID, resolve_validation_ids
+
+        for smuggled in ('python3 -c "import os"', "node -e 'x'", "sh -c 'id'",
+                         "bridge-selftest; curl evil.example",
+                         "bridge-selftest --extra-arg"):
+            with self.subTest(smuggled=smuggled), self.assertRaises(UnknownValidationID):
+                resolve_validation_ids([smuggled])
+
+    def test_task_text_cannot_append_to_a_registered_argv(self):
+        """The task supplies a KEY. There is no syntax by which it supplies a value."""
+        from mtjbridge.policy import VALIDATION_REGISTRY, resolve_validation_ids
+
+        registered = list(VALIDATION_REGISTRY["bridge-selftest"])
+        task = parse_task(task_body(base=BASE, validation_ids=("bridge-selftest",)))
+        self.assertEqual(task.validation_ids, ["bridge-selftest"])
+        self.assertEqual(resolve_validation_ids(task.validation_ids), [registered])
+
+    def test_raw_commands_in_a_task_body_are_refused(self):
+        from mtjbridge.policy import refuse_raw_validation_commands
+
+        task = parse_task(task_body(base=BASE, validation_ids=(),
+                                    raw_commands=('python3 -c "print(1)"',)))
+        reason = refuse_raw_validation_commands(task)
+        self.assertIsNotNone(reason)
+        self.assertIn("raw validation/acceptance COMMANDS", reason)
+
+    def test_a_bare_list_under_validation_is_read_as_commands_not_ids(self):
+        """The two shapes are indistinguishable by inspection; guessing permissively
+        is how argv would get back in, so a bare list is refused as raw argv."""
+        from mtjbridge.policy import check_task_validation
+
+        body = task_body(base=BASE, validation_ids=()).replace(
+            "prohibited:", "validation:\n  - bridge-selftest\nprohibited:")
+        task = parse_task(body)
+        self.assertEqual(task.validation_ids, [])
+        self.assertTrue(task.raw_validation_commands)
+        self.assertIn("raw validation/acceptance COMMANDS", check_task_validation(task))
+
+    def test_the_registry_itself_names_no_shell_or_unlisted_executable(self):
+        """An invariant on TRUSTED code: a shell smuggled into the table reopens the
+        hole the table exists to close."""
+        from mtjbridge.policy import VALIDATION_REGISTRY, check_validation_commands
+
+        check_validation_commands([list(a) for a in VALIDATION_REGISTRY.values()])
+
+    def test_the_registry_is_minimal_and_fail_closed(self):
+        from mtjbridge.policy import VALIDATION_REGISTRY
+
+        self.assertTrue(VALIDATION_REGISTRY, "an empty registry blocks all mutating work")
+        self.assertLessEqual(len(VALIDATION_REGISTRY), 3,
+                             "every entry widens what a model-authored task can run")
+
+
+class TestMutatingTaskNeedsTrustedValidation(unittest.TestCase):
+    """H3: a mutation nobody checked cannot reach a PR or an automated PASS."""
+
+    def test_zero_validation_ids_halts_the_decision(self):
+        task = parse_task(task_body(base=BASE, validation_ids=()))
+        _, result, review = _trio()
+        decision = decide(task=task, result=result, review=review,
+                          changed_paths=["src/thing.py"])
+        self.assertEqual(decision.verdict, "STOP")
+        self.assertTrue(any("no trusted validation.ids" in r for r in decision.reasons))
+
+    def test_a_read_only_task_is_exempt(self):
+        task = parse_task(task_body(base=BASE, allow=(), deny=(), kind="read_only",
+                                    validation_ids=()))
+        _, result, review = _trio()
+        decision = decide(task=task, result=result, review=review, changed_paths=[])
+        self.assertEqual(decision.verdict, "PASS")
+
+    def test_an_unknown_id_halts_the_decision_too(self):
+        task = parse_task(task_body(base=BASE, validation_ids=("no-such-check",)))
+        _, result, review = _trio()
+        decision = decide(task=task, result=result, review=review,
+                          changed_paths=["src/thing.py"])
+        self.assertEqual(decision.verdict, "STOP")
+        self.assertTrue(any("is not registered" in r for r in decision.reasons))
+
+    def test_a_pr_with_no_evidence_cannot_be_passed(self):
+        task = parse_task(task_body(base=BASE))
+        result = parse_result(result_body(base_expected=BASE, evidence=()))
+        self.assertEqual(result.evidence, [])
+        decision = decide(task=task, result=result, review=parse_review(review_body()),
+                          changed_paths=["src/thing.py"])
+        self.assertEqual(decision.verdict, "STOP")
+        self.assertTrue(any("no wrapper-captured validation evidence" in r
+                            for r in decision.reasons))
+
+    def test_a_pr_with_passing_evidence_still_passes(self):
+        """Negative control: the gate is aimed at absent evidence, not at evidence."""
+        task = parse_task(task_body(base=BASE))
+        result = parse_result(result_body(base_expected=BASE))
+        self.assertTrue(result.evidence)
+        decision = decide(task=task, result=result, review=parse_review(review_body()),
+                          changed_paths=["src/thing.py"])
+        self.assertEqual(decision.verdict, "PASS")
+
+
+class TestValidationExecutableInvariant(unittest.TestCase):
+    """Retained from the superseded design, re-aimed: `check_validation_commands` is
+    now an invariant over registry-owned argv, not a filter over model input."""
 
     def test_ordinary_test_commands_are_allowed(self):
         from mtjbridge.policy import check_validation_commands
@@ -230,12 +350,9 @@ class TestFailedValidationBlocksPass(unittest.TestCase):
         from mtjbridge.protocol import parse_result
 
         task = parse_task(task_body(base=BASE))
-        body = result_body(base_expected=BASE).replace(
-            "next:\n  authorized: NONE",
-            "evidence:\n  - command:\n      - python3\n      - -m\n      - unittest\n"
-            "    rc: 1\n    output_tail: \"FAILED (failures=3)\"\n    truncated: false\n"
-            "next:\n  authorized: NONE")
-        result = parse_result(body)
+        result = parse_result(result_body(
+            base_expected=BASE,
+            evidence=({"command": ["python3", "bridge/bin/mtj-selftest"], "rc": 1},)))
         self.assertTrue(result.validation_failed)
         decision = decide(task=task, result=result, review=parse_review(review_body()),
                           changed_paths=["src/thing.py"])

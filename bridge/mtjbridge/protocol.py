@@ -142,7 +142,8 @@ class Task:
     next_authorized: str = "NONE"
     mutating: bool = True
     declares_read_only: bool = False
-    validation_commands: list[list[str]] = dataclasses.field(default_factory=list)
+    validation_ids: list[str] = dataclasses.field(default_factory=list)
+    raw_validation_commands: list[list[str]] = dataclasses.field(default_factory=list)
     raw: dict = dataclasses.field(default_factory=dict, repr=False)
 
     @property
@@ -163,12 +164,43 @@ class Task:
         return str(self.next_authorized).strip().upper() not in ("NONE", "", "NULL")
 
 
-def _validation_commands(raw: dict) -> list[list[str]]:
-    """Wrapper-owned acceptance commands declared by the task.
+def _validation_ids(raw: dict) -> list[str]:
+    """Trusted validation IDs declared by the task.
 
-    Accepted under `validation.commands` or `acceptance.commands`. Each entry is
-    split with shlex and run WITHOUT a shell, so metacharacters are inert literals.
-    The executable is separately allowlisted by policy before anything runs.
+    Accepted under `validation.ids` / `validation.validation_ids` / `acceptance.ids`.
+    An ID is a KEY into a table trusted bridge code owns. The task never supplies
+    argv, so there is nothing here to sanitise: an unregistered key is refused by
+    `policy.resolve_validation_ids` before the model is invoked.
+    """
+    out: list[str] = []
+    for key in ("validation", "acceptance"):
+        section = raw.get(key)
+        if not isinstance(section, dict):
+            continue
+        entries = section.get("ids")
+        if entries is None:
+            entries = section.get("validation_ids")
+        for entry in _as_str_list(entries, drop_sentinels=True):
+            text = entry.strip()
+            if text and text not in out:
+                out.append(text)
+    for entry in _as_str_list(raw.get("validation_ids"), drop_sentinels=True):
+        text = entry.strip()
+        if text and text not in out:
+            out.append(text)
+    return out
+
+
+def _raw_validation_commands(raw: dict) -> list[list[str]]:
+    """Raw argv a task body declared, parsed ONLY so that policy can refuse it.
+
+    Nothing executes these. They are extracted so an author who wrote the old
+    `validation.commands` shape gets a deterministic STOP naming the reason, rather
+    than a silently ignored section that reads as a check which ran.
+
+    A bare list under `validation:` / `acceptance:` is treated as commands, not as
+    IDs: the two shapes are indistinguishable by inspection, and guessing in the
+    permissive direction is how argv would get back in.
     """
     import shlex
 
@@ -187,12 +219,15 @@ def _validation_commands(raw: dict) -> list[list[str]]:
             if isinstance(entry, list):
                 argv = [str(a) for a in entry]
             else:
+                text = str(entry)
+                if text.strip().lower() in _SENTINEL_EMPTY:
+                    continue
                 try:
-                    argv = shlex.split(str(entry))
-                except ValueError as exc:
-                    raise ProtocolError(
-                        f"mtj-task: validation command is not parseable: {entry!r} ({exc})"
-                    ) from exc
+                    argv = shlex.split(text)
+                except ValueError:
+                    # Unparseable is still a declaration of raw argv, and refusing it
+                    # is the same outcome as refusing a parseable one.
+                    argv = [text]
             if argv:
                 out.append(argv)
     return out
@@ -234,7 +269,8 @@ def parse_task(markdown_or_yaml: str, issue_number: int | None = None) -> Task:
     kind = str(scope.get("kind", "")).lower()
     declares_read_only = "read_only" in kind or "read-only" in kind
     mutating = not declares_read_only
-    validation_commands = _validation_commands(data)
+    validation_ids = _validation_ids(data)
+    raw_validation_commands = _raw_validation_commands(data)
     return Task(
         schema=schema,
         task=str(_require(data, "task", "mtj-task")),
@@ -251,7 +287,8 @@ def parse_task(markdown_or_yaml: str, issue_number: int | None = None) -> Task:
         next_authorized=next_auth,
         mutating=mutating,
         declares_read_only=declares_read_only,
-        validation_commands=validation_commands,
+        validation_ids=validation_ids,
+        raw_validation_commands=raw_validation_commands,
         raw=data,
     )
 

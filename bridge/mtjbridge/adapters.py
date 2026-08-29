@@ -31,6 +31,9 @@ DEFAULT_WORKER_MODEL = os.environ.get("MTJ_WORKER_MODEL", "opus")
 CLAUDE_TIMEOUT_S = int(os.environ.get("MTJ_CLAUDE_TIMEOUT_S", "3600"))
 MAX_DIFF_BYTES = int(os.environ.get("MTJ_MAX_DIFF_BYTES", "200000"))
 MAX_EVIDENCE_BYTES = int(os.environ.get("MTJ_MAX_EVIDENCE_BYTES", "8000"))
+# Upper bound on any third-party exception text the bridge re-raises. An SDK error
+# can carry a whole response body; the bridge reports a bounded, redacted summary.
+MAX_ERROR_BYTES = 600
 
 # Git/GitHub mutation must be STRUCTURALLY impossible for the worker model, not merely
 # discouraged in its prompt. Verified empirically against Claude Code 2.1.251: a denied
@@ -404,31 +407,73 @@ class OpenAIResponsesAdapter:
     dry_run: bool = False
     timeout_s: int = 600
 
-    def review(self, prompt: str, schema_hint: str = "") -> str:
-        if self.dry_run:
-            log.info("DRY-RUN would call manager model", extra={"model": self.model})
-            return ""
+    INSTRUCTIONS = (
+        "You are the MTJ refoundation Manager. You review a Worker result and return "
+        "ONLY one fenced ```yaml block conforming to mtj-review/1. You have no tools "
+        "and no authority to execute anything. A deterministic policy layer validates "
+        "your output and decides what, if anything, is written to GitHub."
+    )
+
+    def _client(self):
+        """Construct the SDK client. Isolated so a test can substitute one."""
         try:
             from openai import OpenAI
         except ImportError as exc:  # pragma: no cover - environment dependent
             raise BridgeCommandError(
                 "the openai package is not installed; `pip install openai` in the bridge venv, "
                 "or run with a fake adapter (--offline)"
-            ) from exc
+            ) from None
+        return OpenAI(timeout=self.timeout_s)
+
+    @staticmethod
+    def _describe(exc: BaseException) -> str:
+        """A bounded, redacted, secret-free summary of a third-party failure.
+
+        Deliberately narrow about what it reads: the exception TYPE, and the status
+        and error code when the SDK exposes them as plain scalars. It never touches
+        `exc.response`, so no header, no Authorization value and no raw payload can
+        be carried into a log line or a GitHub comment. The message body is still
+        run through `redact` because an API error can echo a request back.
+        """
+        parts = [f"manager model call failed: {type(exc).__name__}"]
+        status = getattr(exc, "status_code", None)
+        if isinstance(status, (int, str)):
+            parts.append(f"status={redact(str(status))[:32]}")
+        code = getattr(exc, "code", None)
+        if isinstance(code, (int, str)) and str(code).strip():
+            parts.append(f"code={redact(str(code))[:64]}")
+        parts.append(f"detail={redact(str(exc))[:MAX_ERROR_BYTES]}")
+        return "; ".join(parts)
+
+    def review(self, prompt: str, schema_hint: str = "") -> str:
+        if self.dry_run:
+            log.info("DRY-RUN would call manager model", extra={"model": self.model})
+            return ""
         if not os.environ.get("OPENAI_API_KEY"):
             raise BridgeCommandError(
                 "OPENAI_API_KEY is not set. The bridge never stores this key; export it in the "
                 "operator shell for the duration of a live manager run."
             )
-        client = OpenAI(timeout=self.timeout_s)
-        response = client.responses.create(
-            model=self.model,
-            instructions=(
-                "You are the MTJ refoundation Manager. You review a Worker result and return "
-                "ONLY one fenced ```yaml block conforming to mtj-review/1. You have no tools "
-                "and no authority to execute anything. A deterministic policy layer validates "
-                "your output and decides what, if anything, is written to GitHub."
-            ),
-            input=prompt + ("\n\n" + schema_hint if schema_hint else ""),
-        )
-        return redact(response.output_text)
+        client = self._client()
+        # Every failure mode of a third-party SDK - rate limit, exhausted credit,
+        # auth, connection, timeout, an unexpected response shape - becomes ONE
+        # bounded bridge error. Measured live before credit was added: a raw
+        # openai.RateLimitError escaped here and the canary died in a traceback,
+        # which is an uncontrolled failure of the component whose whole job is to
+        # be the controlled boundary. `from None` keeps the original exception's
+        # unredacted text out of any chained traceback.
+        try:
+            response = client.responses.create(
+                model=self.model,
+                instructions=self.INSTRUCTIONS,
+                input=prompt + ("\n\n" + schema_hint if schema_hint else ""),
+            )
+            text = response.output_text
+        except BridgeCommandError:
+            raise
+        except Exception as exc:  # noqa: BLE001 - normalising IS the point
+            summary = self._describe(exc)
+            log.error("manager model call failed", extra={"model": self.model,
+                                                          "error": summary})
+            raise BridgeCommandError(summary) from None
+        return redact(str(text))

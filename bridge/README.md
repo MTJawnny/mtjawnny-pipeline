@@ -124,23 +124,42 @@ scope:
   deny_paths:
     - "docs/**"
 validation:
-  commands:
-    - python3 -m unittest discover -s bridge/tests -t bridge
+  ids:
+    - bridge-selftest
 ```
 
 - **Absence of scope is not permission.** A read-only task declares
   `scope.kind: read_only` instead; it is then exempt.
-- **`validation.commands` are run by the WRAPPER**, after the model's edits and
-  before the commit, with argv captured, rc captured, and output bounded and
-  redacted into the result as `evidence:`. A non-zero rc fails the result and no
-  PR is opened.
-- Commands are run **without a shell** and their executable must be in
-  `policy.VALIDATION_EXECUTABLE_ALLOWLIST`. Shell wrappers (`sh -c`, `bash -c`,
-  `sudo`, `env`) are refused by name. A task body is model-authored, so an
-  unrestricted command list would convert review authority into arbitrary code
-  execution on the operator's host.
+- **A mutating task must name at least one validation ID.** Zero IDs is a STOP
+  before the model is invoked. Recording it as a discrepancy was not enough: the
+  worker still committed, pushed and opened a PR that an automated Manager could
+  PASS.
+- **A task names a check; it never supplies a command.** `validation.ids` are keys
+  into `policy.VALIDATION_REGISTRY`, which trusted bridge code owns. Task text
+  cannot append to, reorder, or substitute one argument of the resolved argv. An
+  unregistered ID is a deterministic STOP before the model runs.
+- **`validation.commands` is refused.** The earlier design allowlisted the
+  *executable*, which is the wrong half of a command line: `python3` belongs on any
+  reasonable allowlist and `python3 -c <payload>` is arbitrary host code execution
+  with an allowlisted `argv[0]`. A task body is model-authored, so it gets no argv
+  at all.
+- **Registry extension is a reviewed code change**, not a task capability. Adding
+  an entry to `VALIDATION_REGISTRY` widens what an unattended mutating task can run
+  on the operator's host; keep it minimal and fail-closed.
+- The wrapper runs the resolved argv after the model's edits and before the commit,
+  capturing argv, rc, and bounded redacted output into the result as `evidence:`.
+  A non-zero rc fails the result and no PR is opened, and a mutating task cannot
+  publish a PR without successful captured evidence.
+- **A failed Claude execution publishes nothing.** Changed paths are still measured
+  and classified into the result, but no commit, push or PR follows.
 - Quote backticked scalars in task bodies (the parser tolerates them; strict YAML
   readers do not).
+
+### Registered validation IDs
+
+| id | resolves to |
+|---|---|
+| `bridge-selftest` | `python3 bridge/bin/mtj-selftest` |
 
 ## 5. Captain boundaries
 
@@ -184,6 +203,14 @@ The canary exercises the **real** OpenAI adapter and asserts its output survives
 `parse_review` and the schema gate. It proves the credential resolves, the
 configured model exists, and the contract holds — none of which the offline suite
 can prove. Exit 0 means proceed; exit 4 means blocked.
+
+Every OpenAI SDK failure — rate limit, exhausted credit, auth, connection, timeout —
+is normalised into one bounded, redacted `BridgeCommandError`, so a blocked canary
+prints `CANARY BLOCKED: …` and exits 4 rather than dying in a traceback. The live
+run before credit was added did the latter, which is an uncontrolled failure of the
+component whose whole job is to be the controlled boundary. The error summary reads
+only the exception type and its scalar `status_code`/`code`; it never touches
+`exc.response`, so no header or credential can travel with it.
 
 ## 6. Recovery after a crash
 
