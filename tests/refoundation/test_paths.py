@@ -120,6 +120,49 @@ class TestExplicitRootIsStable(unittest.TestCase):
         self.assertTrue(paths.root.is_absolute())
 
 
+class TestTheRootInvariantIsStructural(unittest.TestCase):
+    """F1: the invariant belongs to the CLASS, not to one constructor.
+
+    `ProjectPaths` is a dataclass, so `ProjectPaths(root=Path("rel"))` is a supported
+    construction path. Normalizing only inside `for_root` enforced the rule only for
+    callers who happened to use it — a convention wearing an invariant's clothes.
+    """
+
+    def test_the_direct_constructor_normalizes_too(self):
+        paths = ProjectPaths(root=Path("some/relative/root"))
+        self.assertTrue(paths.root.is_absolute(), paths.root)
+
+    def test_the_direct_constructor_is_not_cwd_dependent(self):
+        original = os.getcwd()
+        self.addCleanup(os.chdir, original)
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            os.chdir(a)
+            paths = ProjectPaths(root=Path("rel"))
+            before = (paths.root, paths.baselines, paths.legacy_foundry_out)
+            os.chdir(b)
+            self.assertEqual(before, (paths.root, paths.baselines, paths.legacy_foundry_out))
+
+    def test_the_two_constructors_agree(self):
+        self.assertEqual(ProjectPaths(root=Path("a/b")), ProjectPaths.for_root("a/b"))
+        self.assertEqual(ProjectPaths(root=Path("/x/../y")), ProjectPaths.for_root("/y"))
+
+    def test_dataclasses_replace_preserves_the_invariant(self):
+        import dataclasses
+
+        replaced = dataclasses.replace(ProjectPaths.for_root("/anchor"),
+                                       root=Path("relative/after"))
+        self.assertTrue(replaced.root.is_absolute(), replaced.root)
+
+    def test_the_invariant_holds_without_touching_the_filesystem(self):
+        with unittest.mock.patch.object(Path, "exists",
+                                        side_effect=AssertionError("existence checked")), \
+             unittest.mock.patch.object(Path, "resolve",
+                                        side_effect=AssertionError("resolve() called")), \
+             unittest.mock.patch.object(Path, "stat",
+                                        side_effect=AssertionError("stat() called")):
+            self.assertTrue(ProjectPaths(root=Path("rel/x")).root.is_absolute())
+
+
 class TestDiscoveryIsExplicitOnly(unittest.TestCase):
     def test_discovery_finds_a_marked_root_when_asked(self):
         with tempfile.TemporaryDirectory() as tmp:

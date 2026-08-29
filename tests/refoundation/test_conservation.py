@@ -10,9 +10,10 @@ from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT  # noqa: F401  (sets sys.path)
 
-from mtj_foundry.conservation import (MANIFEST_SCHEMA, PathDomainError, canonical_relpath,
-                                      digest_bytes, digest_file, digest_paths, manifest,
-                                      manifest_digest, manifest_json, posix_label)
+from mtj_foundry.conservation import (MANIFEST_SCHEMA, FileDigest, PathDomainError,
+                                      canonical_relpath, digest_bytes, digest_file,
+                                      digest_paths, manifest, manifest_digest,
+                                      manifest_json, posix_label)
 
 
 class ConservationTestCase(unittest.TestCase):
@@ -40,14 +41,67 @@ class TestExactBytes(ConservationTestCase):
 
     def test_one_flipped_byte_changes_the_digest(self):
         """Negative control: the digest must actually be sensitive to content."""
-        before = digest_file(self.root / "a" / "one.txt").sha256
-        (self.root / "a" / "one.txt").write_bytes(b"onE\n")
-        self.assertNotEqual(before, digest_file(self.root / "a" / "one.txt").sha256)
+        target = self.root / "a" / "one.txt"
+        before = digest_file(target, relative_to=self.root).sha256
+        target.write_bytes(b"onE\n")
+        self.assertNotEqual(before, digest_file(target, relative_to=self.root).sha256)
 
     def test_recorded_paths_are_relative_so_manifests_compare_across_machines(self):
         entry = digest_file(self.root / "a" / "one.txt", relative_to=self.root)
         self.assertEqual(entry.path, "a/one.txt")
         self.assertNotIn(str(self.root), entry.path)
+
+
+class TestTheDomainIsStructural(ConservationTestCase):
+    """F3: no PUBLIC construction path can produce a non-canonical manifest label.
+
+    The domain used to be a property of `digest_paths` alone, so three exported
+    routes went around it: `digest_file` with no `relative_to` (absolute label), a
+    direct `FileDigest(...)`, and entries handed straight to `manifest()`. A rule
+    only one function enforces is a rule only that function's callers obey.
+    """
+
+    def test_a_file_digest_cannot_hold_an_absolute_label(self):
+        with self.assertRaises(PathDomainError):
+            FileDigest("/etc/passwd", "0" * 64, 1)
+
+    def test_a_file_digest_cannot_hold_a_noncanonical_label(self):
+        for bad in ("../x", "./a", "a//b", "a/../b", "a/b/", ""):
+            with self.subTest(bad=bad), self.assertRaises(PathDomainError):
+                FileDigest(bad, "0" * 64, 1)
+
+    def test_a_canonical_file_digest_is_still_constructible(self):
+        """Negative control: the guard is aimed at the domain, not at construction."""
+        self.assertEqual(FileDigest("a/one.txt", "0" * 64, 4).path, "a/one.txt")
+
+    def test_dataclasses_replace_cannot_smuggle_a_bad_label(self):
+        import dataclasses
+
+        good = FileDigest("a/one.txt", "0" * 64, 4)
+        with self.assertRaises(PathDomainError):
+            dataclasses.replace(good, path="/abs/x")
+
+    def test_digest_file_requires_a_base_so_no_absolute_label_is_reachable(self):
+        with self.assertRaises(TypeError):
+            digest_file(self.root / "a" / "one.txt")  # type: ignore[call-arg]
+
+    def test_posix_label_requires_a_base(self):
+        from pathlib import PureWindowsPath
+
+        with self.assertRaises(TypeError):
+            posix_label(PureWindowsPath(r"C:\a\b"))  # type: ignore[call-arg]
+
+    def test_manifest_refuses_duplicate_entries_it_did_not_build(self):
+        """Entries can reach manifest() without passing through digest_paths."""
+        entries = [FileDigest("a/one.txt", "0" * 64, 1),
+                   FileDigest("a/one.txt", "1" * 64, 2)]
+        for fn in (manifest, manifest_json, manifest_digest):
+            with self.subTest(fn=fn.__name__), self.assertRaises(PathDomainError):
+                fn(entries)
+
+    def test_manifest_still_accepts_a_distinct_set(self):
+        entries = [FileDigest("a/one.txt", "0" * 64, 1), FileDigest("two.bin", "1" * 64, 2)]
+        self.assertEqual(manifest(entries)["entry_count"], 2)
 
 
 class TestDeterminism(ConservationTestCase):
@@ -117,8 +171,27 @@ class TestCanonicalPathDomain(ConservationTestCase):
     def test_a_canonical_path_passes_through_unchanged(self):
         self.assertEqual(canonical_relpath("a/one.txt"), "a/one.txt")
 
-    def test_redundant_current_directory_segments_are_canonicalized(self):
-        self.assertEqual(canonical_relpath("./a//one.txt"), "a/one.txt")
+    def test_a_canonical_declaration_round_trips_to_itself(self):
+        """F2: this is a VALIDATOR, not a normalizer. Canonical in, identical out."""
+        for good in ("a/one.txt", "two.bin", "docs/x/y.md", "a/b/c/d.json"):
+            with self.subTest(good=good):
+                self.assertEqual(canonical_relpath(good), good)
+
+    def test_noncanonical_input_is_refused_not_repaired(self):
+        """The earlier version rewrote './a//b' to 'a/b' while its contract said refuse.
+
+        A gate that quietly edits its input is not a gate: the manifest would then
+        record something the caller never declared, and the caller is the one making
+        the conservation claim.
+        """
+        for bad in ("./a/b", "a/./b", "a//b", "./a//b"):
+            with self.subTest(bad=bad), self.assertRaises(PathDomainError):
+                canonical_relpath(bad)
+
+    def test_leading_and_trailing_separators_are_refused(self):
+        for bad in ("a/b/", "/a/b", "a/"):
+            with self.subTest(bad=bad), self.assertRaises(PathDomainError):
+                canonical_relpath(bad)
 
     def test_absolute_declarations_are_refused(self):
         for bad in ("/etc/passwd", "/", "//srv/x"):

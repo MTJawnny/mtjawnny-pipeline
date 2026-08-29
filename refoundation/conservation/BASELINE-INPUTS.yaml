@@ -149,17 +149,31 @@ not_inventoried:
       and evidence a tracked governance record depends on - so no single class
       describes it. Classification requires a bounded exception census, which is
       deferred.
+    # EXACT PATHS, not a glob with a count. A glob plus file_count is a cardinality
+    # claim about a subtree - "this subtree contains 3 files" - and no census was run,
+    # so that claim was not measured. What IS known is narrower and is all that is
+    # recorded: these three specific paths are named by a tracked governance record.
+    # Whether the aq4 subtree holds only these three is unknown and unclaimed here.
     known_counter_examples_to_a_blanket_ephemeral_class:
-      - path_glob: experiments/out/aq4/**
-        file_count: 3
-        hashed: false
-        depended_on_by: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
-        note: >-
-          The tracked incident names unit-binding-adjudication-s0-a.json,
-          unit-binding-workqueue.json (pinned by sha256 in the doc) and
-          triage-deterministic-census.json. All are gitignored and the incident
-          calls the overlay non-authoritative - but non-authoritative is not
-          disposable, and AQ4 is PAUSED at this incident boundary.
+      source: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+      source_is_tracked: true
+      claim: >-
+        These exact paths are named as evidence by the tracked incident record above.
+        They are gitignored, and the incident calls the Adjudicator-A overlay
+        non-authoritative - but non-authoritative is not disposable, and AQ4 is PAUSED
+        at this incident boundary. Their existence is sufficient to refute a blanket
+        ephemeral class over experiments/out/**; it is not a census of it.
+      subtree_cardinality_claimed: false
+      hashed: false
+      censused: false
+      paths:
+        - experiments/out/aq4/triage-deterministic-census.json
+        - experiments/out/aq4/unit-binding-adjudication-s0-a.json
+        - experiments/out/aq4/unit-binding-workqueue.json
+      note: >-
+        unit-binding-workqueue.json is pinned by sha256 inside the incident record
+        itself. That hash is the incident's, quoted by reference only - P0.3A did not
+        recompute it, because doing so would be the deferred census.
     exceptions_captured_above:
       - experiments/out/foundry/audit-baseline.json
       - experiments/out/foundry/codebook.json

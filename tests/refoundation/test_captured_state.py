@@ -34,7 +34,7 @@ class TestCapturedRatchetBaseline(unittest.TestCase):
 
     def test_the_copy_still_hashes_to_the_recorded_source_digest(self):
         recorded = scalars(INPUTS.read_text())
-        actual = digest_file(BASELINE_COPY)
+        actual = digest_file(BASELINE_COPY, relative_to=REPO_ROOT)
         self.assertEqual(actual.sha256, recorded["source_sha256"])
         self.assertEqual(actual.sha256, recorded["tracked_copy_sha256"])
         self.assertEqual(actual.size_bytes, int(recorded["source_size_bytes"]))
@@ -130,14 +130,32 @@ class TestOutputTreeIsNotClassified(unittest.TestCase):
             with self.subTest(line=line):
                 self.assertIn(line, self.body)
 
-    def test_the_counter_example_that_refutes_a_blanket_class_is_named(self):
-        self.assertIn("experiments/out/aq4/**", self.body)
-        self.assertIn("INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH", self.body)
+    def test_the_counter_examples_are_exact_paths_from_the_tracked_incident(self):
+        """F4: exact paths, because a glob plus a count is an unmeasured claim."""
+        counter = self.body.split("known_counter_examples", 1)[1]
+        for path in ("experiments/out/aq4/triage-deterministic-census.json",
+                     "experiments/out/aq4/unit-binding-adjudication-s0-a.json",
+                     "experiments/out/aq4/unit-binding-workqueue.json"):
+            with self.subTest(path=path):
+                self.assertIn(f"- {path}", counter)
+        self.assertIn("INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH", counter)
 
-    def test_the_counter_example_was_named_not_censused(self):
+    def test_no_subtree_cardinality_is_claimed_for_the_counter_examples(self):
+        """`path_glob: .../** ` + `file_count: 3` asserts what the subtree HOLDS.
+
+        No census was run, so that was never measured. What is known is narrower:
+        three specific paths are named by a tracked record.
+        """
+        counter = self.body.split("known_counter_examples", 1)[1]
+        self.assertNotIn("experiments/out/aq4/**", counter)
+        self.assertNotIn("file_count:", counter)
+        self.assertIn("subtree_cardinality_claimed: false", counter)
+
+    def test_the_counter_examples_were_named_not_censused(self):
         """output_census: DEFER — naming why a census is needed is not doing one."""
         counter = self.body.split("known_counter_examples", 1)[1]
         self.assertIn("hashed: false", counter)
+        self.assertIn("censused: false", counter)
         self.assertNotRegex(counter, r"sha256: [0-9a-f]{64}")
 
     def test_the_decision_record_no_longer_claims_the_tree_was_classified(self):

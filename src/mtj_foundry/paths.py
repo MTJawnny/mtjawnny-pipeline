@@ -47,6 +47,19 @@ class RootNotFound(RuntimeError):
     """Explicit root discovery failed. Never raised at import time."""
 
 
+def _absolute_lexical(root: str | os.PathLike[str]) -> Path:
+    """Make a root absolute and lexically stable. Touches no filesystem.
+
+    `os.getcwd()` is read only to anchor a relative root at construction time, which
+    is the whole point: after this returns, no later `chdir` can change what the
+    object derives. It is not a probe of the root — nothing is stat-ed, opened,
+    resolved, or searched for.
+    """
+    raw = os.fspath(root)
+    absolute = raw if os.path.isabs(raw) else os.path.join(os.getcwd(), raw)
+    return Path(os.path.normpath(absolute))
+
+
 @dataclasses.dataclass(frozen=True)
 class ProjectPaths:
     """An immutable, explicit view of repository layout rooted at `root`.
@@ -59,9 +72,19 @@ class ProjectPaths:
     The root is normalized to an absolute lexical path once, at construction, so the
     object is stable: changing the process working directory afterwards cannot change
     any path it derives.
+
+    That normalization lives in `__post_init__`, NOT in the `for_root` classmethod,
+    which is what makes it an invariant rather than a convention. A dataclass is
+    directly constructible — `ProjectPaths(root=Path("rel"))` — so a rule enforced
+    only by an alternative constructor is enforced only for callers who happen to use
+    it. Every supported construction path now yields an absolute, lexically stable
+    root, including `dataclasses.replace`.
     """
 
     root: Path
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "root", _absolute_lexical(self.root))
 
     # ---- construction ---------------------------------------------------
     @classmethod
@@ -80,10 +103,11 @@ class ProjectPaths:
         follow symlinks), and does not search for a repository. `..` is collapsed
         textually. An arbitrary or nonexistent root therefore stays valid, which is
         what C1 requires.
+
+        Normalization itself happens in `__post_init__`, so this classmethod is a
+        named entry point rather than the thing that enforces the invariant.
         """
-        raw = os.fspath(root)
-        absolute = raw if os.path.isabs(raw) else os.path.join(os.getcwd(), raw)
-        return cls(root=Path(os.path.normpath(absolute)))
+        return cls(root=Path(os.fspath(root)))
 
     # ---- refoundation layout (current) ----------------------------------
     @property
