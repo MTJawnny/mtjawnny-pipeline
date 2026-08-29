@@ -33,6 +33,22 @@ def scalars(text: str) -> dict[str, str]:
     return out
 
 
+def block(text: str, key: str) -> str:
+    """Return the indented body of a top-level `key:` block.
+
+    Needed because `scalars()` lets a later duplicate key win, and the inventory
+    deliberately repeats keys like `file_count` inside nested counter-examples.
+    """
+    lines = text.splitlines()
+    start = next(i for i, l in enumerate(lines) if l.startswith(f"{key}:"))
+    out = []
+    for line in lines[start + 1:]:
+        if line and not line[0].isspace() and not line.startswith("#"):
+            break
+        out.append(line)
+    return "\n".join(out)
+
+
 def top_level_keys(text: str) -> list[str]:
     return [line.split(":", 1)[0] for line in text.splitlines()
             if line and line[0].isalpha() and ":" in line]

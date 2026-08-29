@@ -23,6 +23,29 @@ contracted.
 
 Everything here is READ-ONLY: no function writes, moves, or creates a path.
 
+## The path domain
+
+A declared path is a **canonical repository-relative POSIX path**: `/`-separated,
+no leading `/`, no drive letter, no `..`, no empty or `.` segment, and unique
+within one declaration set. `canonical_relpath` is the only admission gate and it
+REFUSES anything else rather than repairing it.
+
+This is narrower than "a path that happens to work", on purpose:
+
+- an **absolute** declaration is not repository-relative, so a manifest containing
+  one describes one operator's machine and cannot be compared against another;
+- a **traversal** (`..`) can address bytes outside the root, so a set that claims
+  to conserve a repository could silently include, or exclude, something outside it;
+- a **duplicate** canonical path would be digested twice, and `entry_count` and
+  `total_bytes` would then double-count it while the set is unchanged — a manifest
+  that miscounts itself is worse than no manifest;
+- an **empty or root** declaration names no file.
+
+Emitted labels always use `/`, so a manifest produced on one platform compares
+against one produced on another. The previous version recorded platform-native
+labels while its own docstring claimed cross-machine comparability; that claim is
+now backed by the domain rather than asserted.
+
 ## Determinism
 
 Entries are sorted by path with a fixed key, the manifest is emitted as JSON with
@@ -36,13 +59,18 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import ntpath
 import os
-from pathlib import Path
+import posixpath
+from pathlib import Path, PurePath
 from typing import Iterable
 
 __all__ = [
     "MANIFEST_SCHEMA",
     "FileDigest",
+    "PathDomainError",
+    "canonical_relpath",
+    "posix_label",
     "digest_bytes",
     "digest_file",
     "digest_paths",
@@ -55,6 +83,49 @@ MANIFEST_SCHEMA = "mtj-conservation-manifest/1"
 
 # Read in chunks: a codebook snapshot is ~5 MB and later inputs may be far larger.
 _CHUNK_BYTES = 1 << 20
+
+
+class PathDomainError(ValueError):
+    """A declared path is outside the canonical repository-relative POSIX domain.
+
+    Always fatal. A conservation set that quietly dropped or rewrote a declaration
+    would report conservation of a set nobody declared.
+    """
+
+
+def canonical_relpath(declared: str | os.PathLike[str]) -> str:
+    """Admit one declaration into the canonical domain, or raise.
+
+    Returns the canonical `/`-joined form. Refuses rather than repairs: silently
+    normalising `../x` or a duplicate would make the manifest disagree with what the
+    caller wrote, and the caller is the one making the conservation claim.
+    """
+    raw = os.fspath(declared)
+    if not isinstance(raw, str):  # pragma: no cover - defensive
+        raise PathDomainError(f"declared path must be a string, got {type(raw).__name__}")
+    if not raw.strip():
+        raise PathDomainError("declared path is empty")
+    if "\\" in raw:
+        raise PathDomainError(
+            f"declared path {raw!r} contains a backslash; declarations are POSIX-style "
+            "and '/' is the only separator"
+        )
+    if raw.startswith("/") or ntpath.isabs(raw) or posixpath.isabs(raw):
+        raise PathDomainError(
+            f"declared path {raw!r} is absolute; declarations are repository-relative so "
+            "a manifest does not describe one operator's machine"
+        )
+    parts = [seg for seg in raw.split("/") if seg not in ("", ".")]
+    if any(seg == ".." for seg in parts):
+        raise PathDomainError(
+            f"declared path {raw!r} contains a parent traversal; a conservation set may "
+            "not address bytes outside the root it claims to conserve"
+        )
+    if not parts:
+        raise PathDomainError(
+            f"declared path {raw!r} names the root, not a file"
+        )
+    return "/".join(parts)
 
 
 @dataclasses.dataclass(frozen=True, order=True)
@@ -74,6 +145,19 @@ def digest_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def posix_label(target: PurePath,
+                relative_to: str | os.PathLike[str] | None = None) -> str:
+    """The `/`-separated label a manifest records for `target`.
+
+    Split out so it is testable against a pure Windows path: on POSIX,
+    `str(p)` and `p.as_posix()` are identical, so a test running only here cannot
+    tell the two apart and a regression to platform-native labels would pass
+    unnoticed on this machine while breaking cross-platform comparison.
+    """
+    relative = target.relative_to(relative_to) if relative_to is not None else target
+    return relative.as_posix()
+
+
 def digest_file(path: str | os.PathLike[str], *,
                 relative_to: str | os.PathLike[str] | None = None) -> FileDigest:
     """Digest one file by its EXACT bytes. Opens read-only, binary, never writes.
@@ -91,20 +175,37 @@ def digest_file(path: str | os.PathLike[str], *,
                 break
             digest.update(chunk)
             size += len(chunk)
-    label = str(Path(target).relative_to(relative_to)) if relative_to else str(target)
+    label = posix_label(Path(target), relative_to)
     return FileDigest(path=label, sha256=digest.hexdigest(), size_bytes=size)
 
 
 def digest_paths(root: str | os.PathLike[str],
                  relpaths: Iterable[str]) -> tuple[FileDigest, ...]:
-    """Digest an EXPLICIT list of repository-relative paths, sorted deterministically.
+    """Digest an EXPLICIT list of declared paths, sorted deterministically.
 
     Takes a list rather than walking a tree on purpose: a tree walk silently
     changes what it measures when the tree changes, which makes it useless as a
     stable conservation input. The caller declares what is being conserved.
+
+    Every declaration must be in the canonical repository-relative POSIX domain and
+    must be unique within the set. Both are checked BEFORE any file is opened, so a
+    malformed set fails without having half-measured itself.
     """
     base = Path(root)
-    entries = [digest_file(base / rel, relative_to=base) for rel in relpaths]
+    seen: dict[str, str] = {}
+    canonical: list[str] = []
+    for declared in relpaths:
+        canon = canonical_relpath(declared)
+        if canon in seen:
+            raise PathDomainError(
+                f"duplicate declaration: {declared!r} and {seen[canon]!r} are both "
+                f"{canon!r}. A repeated path would be digested twice and double-count "
+                "itself in entry_count and total_bytes."
+            )
+        seen[canon] = str(declared)
+        canonical.append(canon)
+    entries = [digest_file(base.joinpath(*canon.split("/")), relative_to=base)
+               for canon in canonical]
     return tuple(sorted(entries, key=lambda e: e.path))
 
 

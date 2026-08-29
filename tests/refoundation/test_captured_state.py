@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import unittest
 
-from tests.refoundation.helpers import REPO_ROOT, scalars, top_level_keys
+from tests.refoundation.helpers import REPO_ROOT, block, scalars, top_level_keys
 
 from mtj_foundry.conservation import digest_file
 from mtj_foundry.paths import ProjectPaths
@@ -93,7 +93,62 @@ class TestBaselineInputsInventory(unittest.TestCase):
     def test_what_was_not_inventoried_is_stated_explicitly(self):
         text = INPUTS.read_text()
         self.assertIn("not_inventoried:", text)
-        self.assertIn("EPHEMERAL_OUTPUT", text)
+        self.assertIn("path_glob: experiments/out/**", text)
+
+
+class TestOutputTreeIsNotClassified(unittest.TestCase):
+    """R1: `experiments/out/**` is MEASURED, never dispositioned.
+
+    The first draft called the whole tree EPHEMERAL_OUTPUT. A tracked governance
+    record depends on ignored bytes inside it as evidence, so the blanket class was
+    unsupported and would have licensed a deletion it could not justify.
+
+    These assert on the `not_inventoried:` BLOCK, not on the whole document: the
+    surrounding prose explains the refused class by name, and a document-wide
+    substring check would pass on that explanation. That is precisely the shape of
+    a test passing for the wrong reason.
+    """
+
+    def setUp(self):
+        self.body = block(INPUTS.read_text(), "not_inventoried")
+
+    def test_the_tree_is_not_classified_ephemeral_output(self):
+        self.assertNotIn("artifact_class: EPHEMERAL_OUTPUT", self.body)
+
+    def test_the_class_is_the_non_dispositive_state(self):
+        self.assertIn("artifact_class: MIXED_UNCLASSIFIED_PENDING_CENSUS", self.body)
+
+    def test_the_measurement_is_retained_as_evidence(self):
+        self.assertIn("file_count: 3321", self.body)
+        self.assertIn("total_bytes: 2892506087", self.body)
+
+    def test_no_disposition_is_inferred_and_nothing_may_rely_on_it(self):
+        for line in ("census_performed: false",
+                     "disposition_inferred: NONE",
+                     "may_be_relied_on_for_deletion: false",
+                     "may_be_relied_on_for_conservation: false"):
+            with self.subTest(line=line):
+                self.assertIn(line, self.body)
+
+    def test_the_counter_example_that_refutes_a_blanket_class_is_named(self):
+        self.assertIn("experiments/out/aq4/**", self.body)
+        self.assertIn("INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH", self.body)
+
+    def test_the_counter_example_was_named_not_censused(self):
+        """output_census: DEFER — naming why a census is needed is not doing one."""
+        counter = self.body.split("known_counter_examples", 1)[1]
+        self.assertIn("hashed: false", counter)
+        self.assertNotRegex(counter, r"sha256: [0-9a-f]{64}")
+
+    def test_the_decision_record_no_longer_claims_the_tree_was_classified(self):
+        c4 = DECISIONS.read_text().split("- id: C4", 1)[1].split("- id: C5", 1)[0]
+        self.assertIn("MIXED_UNCLASSIFIED_PENDING_CENSUS", c4)
+        self.assertIn("correction_applied: P0.3A.R1", c4)
+        self.assertNotIn("experiments/out/** recorded as EPHEMERAL_OUTPUT", c4)
+
+    def test_the_decision_record_lists_it_as_not_decided(self):
+        nd = DECISIONS.read_text().split("not_decided_by_this_phase:", 1)[1]
+        self.assertIn("MIXED_UNCLASSIFIED_PENDING_CENSUS", nd)
 
 
 class TestP0ArchitectureDecisionRecord(unittest.TestCase):

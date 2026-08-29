@@ -51,10 +51,14 @@ class RootNotFound(RuntimeError):
 class ProjectPaths:
     """An immutable, explicit view of repository layout rooted at `root`.
 
-    Construction touches NO filesystem: no existence check, no resolution against
-    the current working directory, no discovery. A caller may build one for a root
-    that does not exist — a test fixture, a planned destination, a remote checkout
-    — and every derived path is a pure string join.
+    Construction touches NO filesystem: no existence check, no stat, no
+    `Path.resolve()`, no discovery. A caller may build one for a root that does not
+    exist — a test fixture, a planned destination, a remote checkout — and every
+    derived path is a pure string join.
+
+    The root is normalized to an absolute lexical path once, at construction, so the
+    object is stable: changing the process working directory afterwards cannot change
+    any path it derives.
     """
 
     root: Path
@@ -64,11 +68,22 @@ class ProjectPaths:
     def for_root(cls, root: str | os.PathLike[str]) -> "ProjectPaths":
         """Build paths for an EXPLICIT root. The only supported constructor.
 
-        Deliberately does not verify the root exists. Verification is the caller's
-        decision at the point where it matters, not a side effect of describing a
-        layout.
+        The root is made **absolute lexically, once, at construction**. Storing a
+        relative root verbatim left the object cwd-dependent: two calls to the same
+        property from different working directories returned different files, so the
+        object was not the stable description of a layout it claims to be. A caller
+        passing `.` means "the directory I am in now", not "wherever anyone happens
+        to chdir to later".
+
+        Lexical means lexical. This does NOT verify the root exists, does not stat
+        it, does not call `Path.resolve()` (which would touch the filesystem and
+        follow symlinks), and does not search for a repository. `..` is collapsed
+        textually. An arbitrary or nonexistent root therefore stays valid, which is
+        what C1 requires.
         """
-        return cls(root=Path(root))
+        raw = os.fspath(root)
+        absolute = raw if os.path.isabs(raw) else os.path.join(os.getcwd(), raw)
+        return cls(root=Path(os.path.normpath(absolute)))
 
     # ---- refoundation layout (current) ----------------------------------
     @property

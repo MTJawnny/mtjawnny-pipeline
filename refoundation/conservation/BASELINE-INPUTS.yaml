@@ -115,20 +115,58 @@ selected_codebook_authority:
     the repository forbids card/codebook data in git. Identity is preserved by exact
     sha256 + byte size, which is what C7.1 asks for.
 
-# 5. DELIBERATELY NOT INVENTORIED, stated so the boundary is explicit rather than
-#    silent. Under P0.2 correction C4 this tree is EPHEMERAL_OUTPUT: generated,
-#    untracked, and not a conservation input. The two files inside it that DO govern
-#    acceptance - the ratchet baseline and the codebook - are captured in 3 and 4.
+# 5. NOT INVENTORIED AND NOT CLASSIFIED. The boundary is stated explicitly rather
+#    than left silent, but it is a MEASUREMENT boundary, not a disposition.
+#
+#    P0.3A's first draft called this whole tree EPHEMERAL_OUTPUT under C4. That was
+#    WRONG, and the Manager review (R1_OUTPUT_CLASS) is correct to refuse it: a
+#    TRACKED governance record already depends on ignored bytes in here as EVIDENCE.
+#    docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md names three
+#    experiments/out/aq4/ artifacts, one of them pinned by sha256 and asserted to
+#    still reproduce byte-identically. Captain direction requires preserving the
+#    incident/governance records needed to understand accepted state, so a blanket
+#    "generated, therefore not a conservation input" class is unsupported by the
+#    evidence and would license exactly the deletion it cannot justify.
+#
+#    The class below is therefore deliberately NON-DISPOSITIVE. It records what was
+#    measured and refuses to infer anything from it. Per P0.3A.R1 (output_census:
+#    DEFER) no census and no hashing of this tree was performed here - including of
+#    the aq4 counter-example, which is NAMED as the reason a census is needed and is
+#    not itself censused.
 not_inventoried:
   - path_glob: experiments/out/**
     file_count: 3321
     total_bytes: 2892506087
-    artifact_class: EPHEMERAL_OUTPUT
+    artifact_class: MIXED_UNCLASSIFIED_PENDING_CENSUS
     hashed: false
-    reason: generated batch/report output; not an input to any acceptance decision
+    census_performed: false
+    disposition_inferred: NONE
+    may_be_relied_on_for_deletion: false
+    may_be_relied_on_for_conservation: false
+    reason: >-
+      Measured only. This tree demonstrably holds at least three distinct material
+      classes - ephemeral batch/report output, acceptance-governing control input,
+      and evidence a tracked governance record depends on - so no single class
+      describes it. Classification requires a bounded exception census, which is
+      deferred.
+    known_counter_examples_to_a_blanket_ephemeral_class:
+      - path_glob: experiments/out/aq4/**
+        file_count: 3
+        hashed: false
+        depended_on_by: docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md
+        note: >-
+          The tracked incident names unit-binding-adjudication-s0-a.json,
+          unit-binding-workqueue.json (pinned by sha256 in the doc) and
+          triage-deterministic-census.json. All are gitignored and the incident
+          calls the overlay non-authoritative - but non-authoritative is not
+          disposable, and AQ4 is PAUSED at this incident boundary.
     exceptions_captured_above:
       - experiments/out/foundry/audit-baseline.json
       - experiments/out/foundry/codebook.json
+    required_before_any_disposition:
+      - a bounded exception census naming every acceptance- or evidence-bearing path
+      - Manager/Captain review of that census
+      - no deletion, move, or conservation claim over this tree until both are done
 
 # 6. ONE DIGEST STANDING FOR THE WHOLE DECLARED SET (sections 1 and 2), computed by
 #    mtj_foundry.conservation over the working-tree bytes. Stable across runs, so a

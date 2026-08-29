@@ -156,8 +156,17 @@ accepted_direction:
       title: replace "generated is never tracked" with explicit artifact classes
       classes: [SOURCE, DERIVED_VIEW, EPHEMERAL_OUTPUT, REMOTE_IMMUTABLE_AUTHORITY]
       implemented_by_P0_3A: >-
-        config/baselines/foundry-audit-baseline.json recorded as SOURCE;
-        experiments/out/** recorded as EPHEMERAL_OUTPUT in the conservation inventory.
+        config/baselines/foundry-audit-baseline.json recorded as SOURCE. NOTHING ELSE
+        WAS CLASSIFIED. P0.3A's first draft classified experiments/out/** as
+        EPHEMERAL_OUTPUT and the Manager review refused it (R1_OUTPUT_CLASS): a
+        tracked governance record depends on ignored bytes in that tree as evidence,
+        so the blanket class was unsupported. It now carries the non-dispositive
+        state MIXED_UNCLASSIFIED_PENDING_CENSUS.
+      correction_applied: P0.3A.R1
+      caution: >-
+        C4 supplies the VOCABULARY of artifact classes. It does not license assigning
+        one to a tree by inspection - "generated" is an observation, and the class is
+        a disposition that has to be earned per path.
     - id: C5
       title: machine-readable status must not self-create authority
       rule: >-
@@ -239,6 +248,12 @@ measurements:
 # 4. WHAT P0.3A DID NOT DECIDE.
 # =====================================================================
 not_decided_by_this_phase:
+  - >-
+    experiments/out/** IS NOT CLASSIFIED. Its state is
+    MIXED_UNCLASSIFIED_PENDING_CENSUS: measured, never dispositioned. No deletion,
+    move or conservation claim over that tree may rely on P0.3A, and the bounded
+    exception census that would classify it is deferred (P0.3A.R1 output_census:
+    DEFER). At least one tracked governance record depends on ignored bytes inside it.
   - no legacy module moved, and no legacy behavior changed
   - no semantic or authority selection changed
   - no ruling, axis, token or codebook content touched
