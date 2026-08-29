@@ -310,6 +310,36 @@ def write_markdown(reg: dict) -> None:
     OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
+def emit_outputs(reg: dict, *, emit: bool) -> list:
+    """Write the registry's two outputs, or write NOTHING. Returns paths written.
+
+    THE ONLY PLACE THIS TOOL WRITES outside `--update-baseline`, so tracked purity
+    is a property of one function rather than of the whole file. Gate 2 calls the
+    registry with `--check-only`, which routes here with `emit=False`.
+
+    Why the gate may not emit: `OUT_MD` is `docs/RATIFIED-RULINGS-REGISTRY.md`, a
+    TRACKED deletion-gate artifact. Measured 2026-08-29 on a full green Gate 2
+    run, this write left the worktree DIRTY — the regenerated file differs from
+    the committed one, and `refoundation/BOOTSTRAP-STATE.yaml` warns that the
+    regenerated registry carries a KNOWN FALSE-POSITIVE S1 namespace collision
+    and must not be accepted merely to clean the tree. So verifying the gate
+    produced a diff that nobody may commit, on every run.
+
+    Nothing about the REGISTRY changes with `emit`. `build()` runs first and is
+    untouched; the metrics and the ratchet comparison are computed from `reg`,
+    not from anything on disk.
+    """
+    if not emit:
+        return []
+    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    OUT_JSON.write_text(
+        json.dumps(reg, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    write_markdown(reg)
+    return [OUT_MD, OUT_JSON]
+
+
 def _selftest() -> int:
     """Prove the tracked-doc boundary is a BOUNDARY, not a comment.
 
@@ -513,7 +543,19 @@ def main() -> int:
                     help="prove the tracked-doc population boundary can fail")
     ap.add_argument("--update-baseline", action="store_true",
                     help="pin the CURRENT registry counts as the baseline")
+    ap.add_argument("--check-only", action="store_true",
+                    help="read-only: build the registry, derive the same metrics and "
+                         "run the same ratchet comparison, but write neither output "
+                         "and touch no tracked file. What Gate 2 runs. Distinct from "
+                         "--check DOC, which asks about ONE document's deletability.")
     args = ap.parse_args()
+
+    if args.check_only and args.update_baseline:
+        # Contradictory rather than redundant: --update-baseline WRITES the ratchet.
+        print("HALT: --check-only and --update-baseline contradict each other. "
+              "--check-only writes nothing; --update-baseline exists to write the "
+              "ratchet.", file=sys.stderr)
+        return 2
 
     if args.selftest:
         return _selftest()
@@ -541,12 +583,7 @@ def main() -> int:
             print(f"  {rid:14s} line {occ['line']:5d}  {occ['statement'][:90]}")
         return 1
 
-    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
-    OUT_JSON.write_text(
-        json.dumps(reg, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    write_markdown(reg)
+    written = emit_outputs(reg, emit=not args.check_only)
 
     # ADD-06: print the exact block a commit message should carry.
     print("=" * 62)
@@ -566,8 +603,10 @@ def main() -> int:
     print(f"  docs deletion-BLOCKED  {len(blocked)}")
     print(f"  docs deletable         {len(clean)}")
     print("=" * 62)
-    print(f"wrote {OUT_MD.relative_to(REPO_ROOT)}")
-    print(f"wrote {OUT_JSON.relative_to(REPO_ROOT)}")
+    for path in written:
+        print(f"wrote {path.relative_to(REPO_ROOT)}")
+    if not written:
+        print("read-only (--check-only): no output written, nothing mutated")
 
     # THIS FILE NOTICED AND DID NOT GATE. Negative-controlled 2026-08-09
     # (`docs/SYSTEM-SELF-TEST-2026-08-09.md`): a sole-home ruling document was

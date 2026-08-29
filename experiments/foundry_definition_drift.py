@@ -553,13 +553,51 @@ def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
     REPORT_MD.write_text("\n".join(lines))
 
 
+def emit_reports(findings, n_active, note, *, emit: bool) -> list:
+    """Write the two reports, or write NOTHING. Returns the paths written.
+
+    THE ONLY PLACE THIS TOOL WRITES, so "does a run mutate the repository" is a
+    question about one function rather than about reading the whole file. Gate 2
+    calls the audit with `--check-only`, which routes here with `emit=False`.
+
+    Why the gate may not emit: `REPORT_MD` is a TRACKED document. A verification
+    run that rewrites tracked state can dirty the tree it is verifying, and a
+    green gate that leaves a modified file behind is indistinguishable from a
+    green gate that did not. Measured 2026-08-29 on a full green Gate 2 run: this
+    file was rewritten, byte-identically. **Byte-identical is not read-only** — the
+    write happened, the mtime moved, and identical output is a property of today's
+    inputs rather than of the code.
+
+    Nothing about the AUDIT changes with `emit`. The findings, the counts and the
+    ratchet comparison are computed before this is called and are untouched by it.
+    """
+    if not emit:
+        return []
+    REPORT_JSON.write_text(json.dumps({"findings": findings}, indent=2,
+                                      sort_keys=True) + "\n")
+    write_markdown(findings, n_active, note)
+    return [REPORT_MD, REPORT_JSON]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--update-baseline", action="store_true",
                     help="pin the CURRENT findings count as the baseline, on purpose")
     ap.add_argument("--no-corpus", action="store_true",
                     help="skip corpus load: no card names, quote-only gating")
+    ap.add_argument("--check-only", action="store_true",
+                    help="read-only: run every check and the ratchet comparison, "
+                         "write no report and touch no tracked file. What Gate 2 runs.")
     args = ap.parse_args()
+
+    if args.check_only and args.update_baseline:
+        # Contradictory rather than merely redundant: --update-baseline WRITES the
+        # ratchet. Silently preferring one would make the flag that was obeyed
+        # depend on which check happened to run first.
+        print("HALT: --check-only and --update-baseline contradict each other. "
+              "--check-only writes nothing; --update-baseline exists to write the "
+              "ratchet.", file=sys.stderr)
+        return 2
 
     cb = fcb.load_codebook()
     fcb.lint_or_halt(cb, "codebook")
@@ -575,8 +613,7 @@ def main():
     print(note)
 
     findings = audit(cb, cards)
-    REPORT_JSON.write_text(json.dumps({"findings": findings}, indent=2, sort_keys=True) + "\n")
-    write_markdown(findings, n_active, note)
+    written = emit_reports(findings, n_active, note, emit=not args.check_only)
 
     counts = {}
     for f in findings:
@@ -584,8 +621,12 @@ def main():
     print(f"\n{len(findings)} findings across {n_active} active axes")
     for k in sorted(counts):
         print(f"  {k}: {counts[k]}")
-    print(f"\nwrote {REPORT_MD}")
-    print(f"wrote {REPORT_JSON}")
+    if written:
+        print(f"\nwrote {written[0]}")
+        for path in written[1:]:
+            print(f"wrote {path}")
+    else:
+        print("\nread-only (--check-only): no report written, nothing mutated")
 
     # THIS FILE DETECTED AND DID NOT GATE. Measured 2026-08-09 by negative
     # control (`docs/SYSTEM-SELF-TEST-2026-08-09.md`): an axis definition
