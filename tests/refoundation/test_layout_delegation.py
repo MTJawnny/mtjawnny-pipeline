@@ -50,6 +50,19 @@ PROBE = EXPERIMENTS / "foundry_probe.py"
 # The three sites the census selected, as (file, expected delegating expressions).
 MIGRATED = {GROUND_TRUTH: 2, PROBE: 1}
 
+# P0.4C, the second slice: the four remaining census-selected foundry-output
+# restatements, in the three legacy files that also already import
+# foundry_common. Same shape, same compatibility boundary, two more suffixes.
+R5 = EXPERIMENTS / "foundry_r5_attribution.py"
+SLUG_REPARSE = EXPERIMENTS / "foundry_slug_reparse.py"
+WIRE = EXPERIMENTS / "foundry_wire_experiment.py"
+
+SECOND_SLICE = {
+    R5: {"backups": 1},
+    SLUG_REPARSE: {"codebook.json": 1},
+    WIRE: {"codebook.json": 1, "wire": 1},
+}
+
 COVERING_GATE2_ROWS = ("ground_truth", "ground_truth_wide", "probe_guards")
 
 
@@ -58,8 +71,13 @@ COVERING_GATE2_ROWS = ("ground_truth", "ground_truth_wide", "probe_guards")
 # ---------------------------------------------------------------------------
 
 
-def independent_codebook_constructions(source: str) -> list[str]:
+def independent_foundry_out_constructions(source: str) -> list[str]:
     """Sites that rebuild the foundry-out path instead of delegating to it.
+
+    Renamed from `independent_codebook_constructions` when P0.4C added the
+    `backups` and `wire` siblings: the shape it matches was never codebook-
+    specific, and a name that says otherwise is the kind of quiet untruth the
+    census was written to find. Every P0.4B assertion below is unchanged.
 
     A checker, not an assertion, so the controls below can run it against a
     deliberately reverted source and require it to FIRE.
@@ -89,14 +107,18 @@ def independent_codebook_constructions(source: str) -> list[str]:
             for n in matches if id(n) not in inner]
 
 
-def delegating_expressions(source: str) -> list[str]:
-    """Occurrences of `fc.FOUNDRY_OUT_DIR / "codebook.json"`."""
+def delegating_expressions(source: str, suffix: str = "codebook.json") -> list[str]:
+    """Occurrences of `fc.FOUNDRY_OUT_DIR / <suffix>`.
+
+    `suffix` defaults to `codebook.json` so every P0.4B call site keeps asserting
+    exactly what it asserted before P0.4C existed.
+    """
     found = []
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
             continue
         if not (isinstance(node.right, ast.Constant)
-                and node.right.value == "codebook.json"):
+                and node.right.value == suffix):
             continue
         left = node.left
         if (isinstance(left, ast.Attribute) and left.attr == "FOUNDRY_OUT_DIR"
@@ -116,7 +138,7 @@ class TestTheThreeSitesDelegate(unittest.TestCase):
         for path in MIGRATED:
             with self.subTest(file=path.name):
                 self.assertEqual(
-                    independent_codebook_constructions(path.read_text(encoding="utf-8")),
+                    independent_foundry_out_constructions(path.read_text(encoding="utf-8")),
                     [])
 
     def test_both_files_already_imported_the_compatibility_boundary(self):
@@ -158,7 +180,7 @@ class TestTheCheckerCatchesAReversion(unittest.TestCase):
                 self.assertIn(now, source, "the live text moved; fix the control")
                 reverted = source.replace(now, before, 1)
                 self.assertNotEqual(reverted, source)
-                findings = independent_codebook_constructions(reverted)
+                findings = independent_foundry_out_constructions(reverted)
                 self.assertEqual(len(findings), 1, findings)
 
     def test_reverting_one_site_also_drops_a_delegating_expression(self):
@@ -262,6 +284,189 @@ class TestNothingElseMoved(unittest.TestCase):
                      "domain", "assert_disjoint", "must_capture"):
             with self.subTest(name=name):
                 self.assertTrue(hasattr(self.probe, name), name)
+
+
+# ---------------------------------------------------------------------------
+# P0.4C — the second slice
+# ---------------------------------------------------------------------------
+
+
+class TestTheSecondSliceDelegates(unittest.TestCase):
+    """The four remaining census-selected foundry-output restatements.
+
+    Same shape as P0.4B and the same compatibility boundary, with two suffixes
+    the first slice did not exercise: `backups` and `wire`. That is the point of
+    including them — a delegation guard that only ever saw `codebook.json` would
+    not be known to work for anything else.
+    """
+
+    def test_each_file_has_the_expected_delegating_expressions_per_suffix(self):
+        for path, expected in SECOND_SLICE.items():
+            source = path.read_text(encoding="utf-8")
+            for suffix, count in expected.items():
+                with self.subTest(file=path.name, suffix=suffix):
+                    got = delegating_expressions(source, suffix)
+                    self.assertEqual(len(got), count, got)
+
+    def test_no_independent_foundry_out_construction_remains(self):
+        for path in SECOND_SLICE:
+            with self.subTest(file=path.name):
+                self.assertEqual(
+                    independent_foundry_out_constructions(
+                        path.read_text(encoding="utf-8")), [])
+
+    def test_no_file_gained_an_import(self):
+        """All three already imported the compatibility boundary. The slice adds
+        no import, so it needs no sys.path change and no install assumption."""
+        for path in SECOND_SLICE:
+            with self.subTest(file=path.name):
+                source = path.read_text(encoding="utf-8")
+                self.assertIn("import foundry_common as fc", source)
+                self.assertEqual(source.count("import foundry_common"), 1)
+
+
+class TestTheSecondSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL, one per migrated site, derived from the live source."""
+
+    CASES = {
+        "r5_attribution BACKUPS": (
+            R5,
+            'BACKUPS = fc.FOUNDRY_OUT_DIR / "backups"',
+            'BACKUPS = REPO / "out" / "foundry" / "backups"',
+            "backups"),
+        "slug_reparse CODEBOOK": (
+            SLUG_REPARSE,
+            'CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"',
+            'CODEBOOK = REPO_ROOT / "out" / "foundry" / "codebook.json"',
+            "codebook.json"),
+        "wire_experiment CODEBOOK": (
+            WIRE,
+            'CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"',
+            'CODEBOOK = REPO / "out" / "foundry" / "codebook.json"',
+            "codebook.json"),
+        "wire_experiment OUT_DIR": (
+            WIRE,
+            'OUT_DIR = fc.FOUNDRY_OUT_DIR / "wire"',
+            'OUT_DIR = REPO / "out" / "foundry" / "wire"',
+            "wire"),
+    }
+
+    def test_restoring_any_one_construction_is_caught(self):
+        for label, (path, now, before, _) in self.CASES.items():
+            with self.subTest(site=label):
+                source = path.read_text(encoding="utf-8")
+                self.assertIn(now, source, "the live text moved; fix the control")
+                reverted = source.replace(now, before, 1)
+                self.assertNotEqual(reverted, source)
+                self.assertEqual(
+                    len(independent_foundry_out_constructions(reverted)), 1)
+
+    def test_reverting_one_site_also_drops_a_delegating_expression(self):
+        """Both arms, so a file with neither shape cannot pass."""
+        for label, (path, now, before, suffix) in self.CASES.items():
+            with self.subTest(site=label):
+                source = path.read_text(encoding="utf-8")
+                reverted = source.replace(now, before, 1)
+                self.assertEqual(
+                    len(delegating_expressions(reverted, suffix)),
+                    len(delegating_expressions(source, suffix)) - 1)
+
+
+class TestTheSecondSliceResolvedPathsAreByteIdentical(unittest.TestCase):
+    """Each delegated constant must equal the construction it replaced.
+
+    Recomputed from each module's OWN root-ish variable rather than compared to a
+    hardcoded string, so a delegation to the wrong constant fails here even
+    though it would satisfy every structural check above.
+
+    NOTE ON EXECUTION: these modules are imported, never run.
+    `foundry_r5_attribution`'s documented replay behaviour SWAPS THE LIVE
+    CODEBOOK, so running it as verification would mutate the artifact under the
+    thing being verified. Import is safe and was confirmed so before importing:
+    each module's only top-level statement is its `sys.path.insert`, and `main`
+    sits behind `if __name__ == "__main__"`.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.r5 = load_legacy("foundry_r5_attribution")
+        cls.sr = load_legacy("foundry_slug_reparse")
+        cls.we = load_legacy("foundry_wire_experiment")
+
+    def test_r5_backups_equals_its_pre_change_construction(self):
+        self.assertEqual(self.r5.BACKUPS,
+                         self.r5.REPO / "out" / "foundry" / "backups")
+        self.assertEqual(self.r5.BACKUPS, self.fc.FOUNDRY_OUT_DIR / "backups")
+
+    def test_slug_reparse_codebook_equals_its_pre_change_construction(self):
+        self.assertEqual(self.sr.CODEBOOK,
+                         self.sr.REPO_ROOT / "out" / "foundry" / "codebook.json")
+        self.assertEqual(self.sr.CODEBOOK,
+                         self.fc.FOUNDRY_OUT_DIR / "codebook.json")
+
+    def test_wire_experiment_paths_equal_their_pre_change_constructions(self):
+        self.assertEqual(self.we.CODEBOOK,
+                         self.we.REPO / "out" / "foundry" / "codebook.json")
+        self.assertEqual(self.we.OUT_DIR,
+                         self.we.REPO / "out" / "foundry" / "wire")
+        self.assertEqual(self.we.CODEBOOK,
+                         self.fc.FOUNDRY_OUT_DIR / "codebook.json")
+        self.assertEqual(self.we.OUT_DIR, self.fc.FOUNDRY_OUT_DIR / "wire")
+
+    def test_all_four_land_under_the_one_foundry_out_directory(self):
+        for name, value in (("r5.BACKUPS", self.r5.BACKUPS),
+                            ("sr.CODEBOOK", self.sr.CODEBOOK),
+                            ("we.CODEBOOK", self.we.CODEBOOK),
+                            ("we.OUT_DIR", self.we.OUT_DIR)):
+            with self.subTest(constant=name):
+                self.assertEqual(value.parent, PATHS.legacy_foundry_out)
+
+
+class TestTheSecondSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.sr = load_legacy("foundry_slug_reparse")
+        cls.r5 = load_legacy("foundry_r5_attribution")
+
+    def test_slug_reparse_grammar_is_untouched(self):
+        """It sits on the line ABOVE the migrated CODEBOOK and is a
+        root-relative docs path — a real ownership site, deliberately out of
+        slice."""
+        self.assertIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
+                      '"CODEBOOK-NAMING-GRAMMAR.md"',
+                      SLUG_REPARSE.read_text(encoding="utf-8"))
+        self.assertEqual(self.sr.GRAMMAR,
+                         PATHS.legacy_docs / "CODEBOOK-NAMING-GRAMMAR.md")
+
+    def test_r5_live_codebook_still_comes_from_foundry_codebook(self):
+        """`LIVE` is the codebook this tool REPLACES during replay. It is
+        sourced from `foundry_codebook.CODEBOOK_PATH` and this slice does not
+        touch it."""
+        self.assertIn("LIVE = fcb.CODEBOOK_PATH",
+                      R5.read_text(encoding="utf-8"))
+        self.assertEqual(self.r5.LIVE, PATHS.legacy_foundry_out / "codebook.json")
+
+    def test_root_derivations_and_syspath_bootstraps_are_untouched(self):
+        for path in SECOND_SLICE:
+            with self.subTest(file=path.name):
+                source = path.read_text(encoding="utf-8")
+                self.assertRegex(
+                    source, r"REPO(_ROOT)? = Path\(__file__\).resolve\(\).parent\b")
+                self.assertEqual(source.count("sys.path.insert"), 1)
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn('FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" '
+                      '/ "foundry"',
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_first_slice_files_are_not_touched_by_this_slice(self):
+        """P0.4B's three sites keep delegating; this slice widened the guard,
+        not the change."""
+        self.assertEqual(
+            len(delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
 
 
 if __name__ == "__main__":

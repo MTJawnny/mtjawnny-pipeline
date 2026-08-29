@@ -48,7 +48,7 @@ import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 
 GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
-CODEBOOK = REPO_ROOT / "out" / "foundry" / "codebook.json"
+CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"
 
 
 def rule(t):

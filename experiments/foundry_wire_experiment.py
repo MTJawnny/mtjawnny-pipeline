@@ -47,8 +47,8 @@ sys.path.insert(0, str(REPO))
 import tier_engine as te              # noqa: E402
 import foundry_common as fc           # noqa: E402
 
-CODEBOOK = REPO / "out" / "foundry" / "codebook.json"
-OUT_DIR = REPO / "out" / "foundry" / "wire"
+CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"
+OUT_DIR = fc.FOUNDRY_OUT_DIR / "wire"
 
 # The panel from docs/WIRE-PREDICTIONS-2026-08-09.md §3, in that order, with
 # the CORRECT NEIGHBOURS that document named -- transcribed from the committed
