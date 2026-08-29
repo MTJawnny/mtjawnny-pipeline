@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+"""Console entry point for mtj-worker (bridge v0, no install step required)."""
+import pathlib, sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from mtjbridge.worker import main
+sys.exit(main())
