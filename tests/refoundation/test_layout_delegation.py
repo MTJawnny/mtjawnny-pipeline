@@ -3340,6 +3340,283 @@ class TestProjectPathsResolvesStatically(unittest.TestCase):
                                dataclasses.fields(ProjectPaths)})
 
 
+# ---------------------------------------------------------------------------
+# C8.5B.R1 — FILE-CHAIN ASCENT SEMANTICS
+# ---------------------------------------------------------------------------
+#
+# `pathlib` numbers `parents` from 1: `p.parents[0]` IS `p.parent`. C8.5B's
+# helper counted `.parent` as one hop and `parents[N]` as N, so the two
+# spellings of the same directory disagreed by one, in BOTH directions:
+#
+#     .parent        resolved to the repository ROOT (it means `experiments/`)
+#     .parent.parent resolved to None                (it means the root)
+#
+# No accepted count moved -- every chain-backed provider in the corpus is
+# spelled `parents[1]`, and the local-site scan only asks whether a chain
+# exists -- but `.parent` produced a WRONG TUPLE rather than a missing one, and
+# a wrong value that looks plausible is the failure mode this census exists to
+# stop. Repaired under C8.5B.R1 (issue:1#issuecomment-5471544666).
+#
+# The controls below assert EXACT COMPONENTS, not "a chain was detected", and
+# they check the census against `pathlib` itself rather than against a table
+# written by the same hand that wrote the code.
+
+# `Path(__file__)` is always the module's own file, so the ascent arithmetic
+# depends on how deep that file sits. Both depths are exercised.
+ASCENT_FILES = (Path("experiments/foundry_common.py"),
+                Path("experiments/measure/axis_foundry.py"))
+
+# (source spelling, the pathlib expression that MUST denote the same directory)
+ASCENT_SPELLINGS = (
+    ("Path(__file__).resolve().parent", lambda f: f.parent),
+    ("Path(__file__).resolve().parents[0]", lambda f: f.parents[0]),
+    ("Path(__file__).resolve().parent.parent", lambda f: f.parent.parent),
+    ("Path(__file__).resolve().parents[1]", lambda f: f.parents[1]),
+    ("Path(__file__).resolve().parent.parent.parent", lambda f: f.parent.parent.parent),
+    ("Path(__file__).resolve().parents[2]", lambda f: f.parents[2]),
+)
+
+EQUIVALENT_PAIRS = (
+    ("Path(__file__).resolve().parent",
+     "Path(__file__).resolve().parents[0]"),
+    ("Path(__file__).resolve().parent.parent",
+     "Path(__file__).resolve().parents[1]"),
+    ("Path(__file__).resolve().parent.parent.parent",
+     "Path(__file__).resolve().parents[2]"),
+)
+
+
+def _pre_r1_file_chain_hops(expr):
+    """The C8.5B implementation, kept so the defect stays reproducible.
+
+    Identical to the repaired version except that `parents[N]` contributes N
+    instead of N + 1.
+
+    IT IS ONLY HALF THE PRE-R1 BEHAVIOUR. C8.5B measured ascent from the file
+    but subtracted it from the file's DIRECTORY, so the defect lived in the
+    PAIR of functions; `_pre_r1_root_relative` below is the other half. A first
+    draft of the control patched this one alone and the equivalence came out
+    accidentally CORRECT -- the two halves had been cancelling. A negative
+    control must restore the whole broken state, or it measures something else.
+    """
+    if not any(isinstance(n, ast.Name) and n.id == "__file__"
+               for n in ast.walk(expr)):
+        return None
+    ups = 0
+    node = expr
+    while True:
+        if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute) \
+                and node.value.attr == "parents" \
+                and isinstance(node.slice, ast.Constant) \
+                and isinstance(node.slice.value, int):
+            ups += node.slice.value
+            node = node.value.value
+            continue
+        if isinstance(node, ast.Attribute) and node.attr == "parent":
+            ups += 1
+            node = node.value
+            continue
+        if isinstance(node, ast.Attribute) and node.attr == "resolve":
+            node = node.value
+            continue
+        if isinstance(node, ast.Call):
+            node = node.func
+            continue
+        if isinstance(node, ast.Attribute):
+            node = node.value
+            continue
+        break
+    return ups
+
+
+def _pre_r1_root_relative(rel, ups):
+    """The C8.5B counterpart: an ascent subtracted from the file's DIRECTORY."""
+    directory = rel.parts[:-1]
+    keep = len(directory) - ups
+    if keep < 0:
+        return None
+    return directory[:keep]
+
+
+def _resolve_spelling(spelling: str, rel: Path):
+    """Repository-relative components the census assigns to a chain, or None."""
+    expr = ast.parse(spelling, mode="eval").body
+    return layout_census._root_relative(rel, layout_census._file_chain_hops(expr))
+
+
+class TestFileChainAscentSemantics(unittest.TestCase):
+    """C8.5B.R1. Exact values, both spellings, checked against pathlib."""
+
+    def test_every_spelling_resolves_to_what_pathlib_says_it_means(self):
+        """THE GROUND TRUTH IS THE LIBRARY, not a table in this file. A table
+        written beside the implementation can agree with the same mistake."""
+        for rel in ASCENT_FILES:
+            anchored = Path("/r").joinpath(*rel.parts)
+            for spelling, pathlib_form in ASCENT_SPELLINGS:
+                with self.subTest(file=rel.as_posix(), spelling=spelling):
+                    expected = pathlib_form(anchored)
+                    got = _resolve_spelling(spelling, rel)
+                    if Path("/r") not in expected.parents and expected != Path("/r"):
+                        # The chain ascends above the repository root, which no
+                        # repository-relative tuple can express.
+                        self.assertIsNone(got)
+                    else:
+                        self.assertIsNotNone(got)
+                        self.assertEqual(Path("/r").joinpath(*got), expected)
+
+    def test_the_equivalent_spellings_resolve_identically(self):
+        for rel in ASCENT_FILES:
+            for left, right in EQUIVALENT_PAIRS:
+                with self.subTest(file=rel.as_posix(), pair=(left, right)):
+                    self.assertEqual(_resolve_spelling(left, rel),
+                                     _resolve_spelling(right, rel))
+
+    def test_the_exact_components_at_a_depth_one_file(self):
+        rel = Path("experiments/foundry_common.py")
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parent", rel),
+                         ("experiments",))
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parents[0]", rel),
+                         ("experiments",))
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parent.parent", rel),
+                         ())
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parents[1]", rel),
+                         ())
+
+    def test_the_exact_components_at_a_depth_two_file(self):
+        """The arithmetic must follow the FILE's depth, not a constant."""
+        rel = Path("experiments/measure/axis_foundry.py")
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parent", rel),
+                         ("experiments", "measure"))
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parents[1]", rel),
+                         ("experiments",))
+        self.assertEqual(_resolve_spelling("Path(__file__).resolve().parents[2]", rel),
+                         ())
+
+    def test_ascending_above_the_repository_root_is_None_not_a_wrong_tuple(self):
+        rel = Path("experiments/foundry_common.py")
+        for spelling in ("Path(__file__).resolve().parents[2]",
+                         "Path(__file__).resolve().parent.parent.parent"):
+            with self.subTest(spelling=spelling):
+                self.assertIsNone(_resolve_spelling(spelling, rel))
+
+    def test_a_provider_resolves_the_same_through_BOTH_spellings(self):
+        """The requirement stated as the census actually uses it: a PROVIDER,
+        resolved to exact repository-relative components, not a non-None chain.
+
+        Both modules below are the pre-C8.5A `foundry_common` shape, written the
+        two different ways. The census must give them the same layout."""
+        rel = Path("experiments/foundry_common.py")
+        template = ('import sys\n'
+                    'from pathlib import Path\n'
+                    'REPO_ROOT = {chain}\n'
+                    'FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" / "foundry"\n'
+                    'REVIEW_DIR = FOUNDRY_OUT_DIR / "review"\n')
+        expected = {"REPO_ROOT": (),
+                    "FOUNDRY_OUT_DIR": ("experiments", "out", "foundry"),
+                    "REVIEW_DIR": ("experiments", "out", "foundry", "review")}
+        resolved = []
+        for chain in ("Path(__file__).resolve().parents[1]",
+                      "Path(__file__).resolve().parent.parent"):
+            with self.subTest(chain=chain):
+                got = layout_census.provider_layout(
+                    template.format(chain=chain), rel, paths_layout={})
+                self.assertEqual(got, expected)
+                resolved.append(got)
+        self.assertEqual(resolved[0], resolved[1])
+
+    def test_the_same_holds_for_a_ProjectPaths_backed_provider(self):
+        """The bootstrap root is a chain too, so the repair must not have made
+        the two provider shapes disagree with each other."""
+        rel = Path("experiments/foundry_common.py")
+        _, providers = _census_inputs()
+        for chain in ("Path(__file__).resolve().parents[1]",
+                      "Path(__file__).resolve().parent.parent"):
+            with self.subTest(chain=chain):
+                source = ('from pathlib import Path\n'
+                          'from mtj_foundry.paths import ProjectPaths\n'
+                          f'_ROOT = {chain}\n'
+                          '_PATHS = ProjectPaths.for_root(_ROOT)\n'
+                          'FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out\n')
+                got = layout_census.provider_layout(
+                    source, rel, _census_inputs()[0])
+                self.assertEqual(got["_ROOT"], ())
+                self.assertEqual(got["FOUNDRY_OUT_DIR"],
+                                 ("experiments", "out", "foundry"))
+                self.assertEqual(got["FOUNDRY_OUT_DIR"],
+                                 providers["foundry_common"]["FOUNDRY_OUT_DIR"])
+
+    def test_NEGATIVE_CONTROL_the_pre_R1_off_by_one_turns_these_guards_red(self):
+        """Break the equivalence and prove the guard sees it.
+
+        The pre-R1 function is substituted into `layout_census` itself -- the
+        module `provider_layout` actually reaches -- not into this file's
+        globals. Patching the wrong copy is a recorded trap here, and it reads
+        as a passing test.
+        """
+        rel = Path("experiments/foundry_common.py")
+        original_hops = layout_census._file_chain_hops
+        original_relative = layout_census._root_relative
+        try:
+            layout_census._file_chain_hops = _pre_r1_file_chain_hops
+            layout_census._root_relative = _pre_r1_root_relative
+
+            # 1. the equivalence itself breaks, in both directions
+            self.assertNotEqual(
+                _resolve_spelling("Path(__file__).resolve().parent", rel),
+                _resolve_spelling("Path(__file__).resolve().parents[0]", rel))
+            self.assertNotEqual(
+                _resolve_spelling("Path(__file__).resolve().parent.parent", rel),
+                _resolve_spelling("Path(__file__).resolve().parents[1]", rel))
+
+            # 2. the specific wrong answers, named so this control cannot pass
+            #    for some unrelated reason
+            self.assertEqual(
+                _resolve_spelling("Path(__file__).resolve().parent", rel), (),
+                "pre-R1 resolved `.parent` to the repository ROOT")
+            self.assertIsNone(
+                _resolve_spelling("Path(__file__).resolve().parent.parent", rel),
+                "pre-R1 lost `.parent.parent` entirely")
+
+            # 3. and it reaches a PROVIDER: the `.parent.parent` spelling of the
+            #    pre-C8.5A boundary loses all three of its layout names.
+            source = ('from pathlib import Path\n'
+                      'REPO_ROOT = Path(__file__).resolve().parent.parent\n'
+                      'FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" / "foundry"\n')
+            self.assertEqual(
+                layout_census.provider_layout(source, rel, paths_layout={}), {})
+        finally:
+            layout_census._file_chain_hops = original_hops
+            layout_census._root_relative = original_relative
+
+        # restored, and the guard is green again
+        self.assertEqual(
+            _resolve_spelling("Path(__file__).resolve().parent", rel),
+            _resolve_spelling("Path(__file__).resolve().parents[0]", rel))
+        self.assertEqual(
+            layout_census._file_chain_hops(
+                ast.parse("Path(__file__).resolve().parents[1]", mode="eval").body), 2)
+
+    def test_the_repair_moved_no_accepted_measurement(self):
+        """R1 is a semantics fix, not a re-measurement. Every chain-backed
+        provider in the corpus is spelled `parents[1]`, which resolved correctly
+        before and after -- so the accepted C8.5B counts must be untouched, and
+        `CENSUS_HEAD` above is asserted unchanged by the counting tests."""
+        _, providers = _census_inputs()
+        self.assertEqual(providers["foundry_common"]["_BOOTSTRAP_ROOT"], ())
+        self.assertEqual(providers["foundry_codebook"]["REPO_ROOT"], ())
+        self.assertEqual(providers["foundry_codebook"]["LATEST_ARTIFACT_PATH"],
+                         ("data", "artifacts", "latest.json"))
+        for rel in (Path("experiments/foundry_common.py"),
+                    Path("experiments/foundry_codebook.py")):
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            chains = [n for n in ast.walk(ast.parse(source))
+                      if isinstance(n, ast.Subscript)
+                      and isinstance(n.value, ast.Attribute)
+                      and n.value.attr == "parents"]
+            self.assertEqual([ast.unparse(c).endswith("parents[1]") for c in chains],
+                             [True], rel.as_posix())
+
+
 class TestTheProviderRepair(unittest.TestCase):
     """NEGATIVE CONTROL 7 and 8, and the reason this task exists."""
 

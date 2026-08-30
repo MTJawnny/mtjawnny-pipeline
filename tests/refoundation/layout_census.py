@@ -183,27 +183,46 @@ def project_paths_layout(paths_source: str) -> dict[str, tuple[str, ...]]:
 # ---------------------------------------------------------------------------
 
 
-def _file_chain_depth(expr: ast.expr) -> int | None:
-    """How many directory levels a `__file__` chain ascends, or None.
+def _file_chain_hops(expr: ast.expr) -> int | None:
+    """How many parent-directory hops a `__file__` chain takes FROM THE FILE.
 
-    `Path(__file__).resolve().parent` -> 0 (the module's own directory);
-    `...parents[1]` -> 1; `...parent.parent` -> 2.
+    None when the expression is not rooted at `__file__` at all.
+
+    THE UNIT IS HOPS FROM THE FILE, NOT FROM ITS DIRECTORY, and that choice is
+    what makes the two pathlib spellings agree. `pathlib` numbers `parents`
+    from 1: `p.parents[0]` IS `p.parent`, so `parents[N]` costs **N + 1** hops,
+    not N. Counting it as N while counting `.parent` as 1 makes these pairs
+    disagree, and they denote the same directory:
+
+        Path(__file__).resolve().parent        == ....parents[0]
+        Path(__file__).resolve().parent.parent == ....parents[1]
+        ....parent.parent.parent               == ....parents[2]
+
+    C8.5B shipped exactly that inconsistency (`.parent` -> 1 while
+    `parents[0]` -> 0, and a docstring that contradicted its own code). It moved
+    no accepted count, because the only chain-backed providers in the corpus are
+    spelled `parents[1]` and the local-site scan only asks whether a chain
+    EXISTS. It was still a live wrong answer waiting for a provider spelled the
+    other way: `.parent` resolved to the repository ROOT when it means the
+    module's own directory — a WRONG tuple, not a missing one, which is the
+    failure mode that passes quietly. Repaired under C8.5B.R1
+    (issue:1#issuecomment-5471544666).
     """
     if not any(isinstance(n, ast.Name) and n.id == "__file__"
                for n in ast.walk(expr)):
         return None
-    ups = 0
+    hops = 0
     node = expr
     while True:
         if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute) \
                 and node.value.attr == "parents" \
                 and isinstance(node.slice, ast.Constant) \
                 and isinstance(node.slice.value, int):
-            ups += node.slice.value
+            hops += node.slice.value + 1
             node = node.value.value
             continue
         if isinstance(node, ast.Attribute) and node.attr == "parent":
-            ups += 1
+            hops += 1
             node = node.value
             continue
         if isinstance(node, ast.Attribute) and node.attr == "resolve":
@@ -216,20 +235,25 @@ def _file_chain_depth(expr: ast.expr) -> int | None:
             node = node.value
             continue
         break
-    return ups
+    return hops
 
 
-def _root_relative(rel: Path, ups: int) -> tuple[str, ...] | None:
-    """Turn an ascent count into repository-relative components.
+def _root_relative(rel: Path, hops: int) -> tuple[str, ...] | None:
+    """Turn a hop count into repository-relative components, or None.
 
-    `experiments/foundry_common.py` with `parents[1]` is the repository root
-    (`()`); with `parents[0]` it is `("experiments",)`.
+    Measured from the FILE's own path, so the arithmetic is one subtraction and
+    needs no special case: `experiments/foundry_common.py` has 2 components, so
+    2 hops (`parents[1]` or `.parent.parent`) leaves `()`, the repository root,
+    and 1 hop (`parents[0]` or `.parent`) leaves `("experiments",)`.
+
+    None means the chain ascends ABOVE the repository root, which no
+    repository-relative tuple can express. That is a real answer, not a failure:
+    `experiments/foo.py` with `parents[2]` genuinely names the root's parent.
     """
-    directory = rel.parts[:-1]
-    keep = len(directory) - ups
+    keep = len(rel.parts) - hops
     if keep < 0:
         return None
-    return directory[:keep]
+    return rel.parts[:keep]
 
 
 def _join_literals(expr: ast.expr) -> tuple[ast.expr, tuple[str, ...]] | None:
@@ -274,9 +298,9 @@ def provider_layout(source: str, rel: Path,
                 and expr.value.id in instances:
             return paths_layout.get(expr.attr)
         # 1. a bare `Path(__file__)` ascent.
-        ups = _file_chain_depth(expr)
-        if ups is not None:
-            return _root_relative(rel, ups)
+        hops = _file_chain_hops(expr)
+        if hops is not None:
+            return _root_relative(rel, hops)
         split = _join_literals(expr)
         if split is not None and split[1]:
             base, parts = split
@@ -494,7 +518,7 @@ def local_layout_sites(source: str, rel: Path) -> list[Site]:
 
     origins: dict[str, str] = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.Assign) and _file_chain_depth(node.value) is not None:
+        if isinstance(node, ast.Assign) and _file_chain_hops(node.value) is not None:
             for target in node.targets:
                 if isinstance(target, ast.Name):
                     origins[target.id] = "hop1"
@@ -531,7 +555,7 @@ def local_layout_sites(source: str, rel: Path) -> list[Site]:
         if split is None:
             continue
         base = split[0]
-        if _file_chain_depth(base) is not None:
+        if _file_chain_hops(base) is not None:
             origin = "inline"
         else:
             named = base.value if isinstance(base, ast.Attribute) else base
