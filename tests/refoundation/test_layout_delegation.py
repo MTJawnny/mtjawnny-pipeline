@@ -2598,10 +2598,6 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
                 WIRE_CAPABILITY.read_text(encoding="utf-8"))), 2)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 # ---------------------------------------------------------------------------
 # P0.4N — the tenth slice
 # ---------------------------------------------------------------------------
@@ -2904,3 +2900,7 @@ class TestTheTenthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(delegating_expressions(
                 SLUG_REPARSE.read_text(encoding="utf-8"), "codebook.json")), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
