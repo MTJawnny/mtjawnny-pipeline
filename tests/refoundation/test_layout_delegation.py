@@ -33,9 +33,11 @@ decision and is deliberately not taken here.
 from __future__ import annotations
 
 import ast
+import dataclasses
 import unittest
 from pathlib import Path
 
+from tests.refoundation import layout_census
 from tests.refoundation.helpers import REPO_ROOT
 from tests.refoundation.test_gate2_purity import gate_rows, load_legacy
 
@@ -3189,6 +3191,518 @@ class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
         self.assertEqual(sr.CODEBOOK,
                          root / "experiments" / "out" / "foundry" / "codebook.json")
         self.assertEqual(sr.GRAMMAR, root / "docs" / GRAMMAR_FILE)
+
+
+
+# ===========================================================================
+# C8.5B — THE STEP-5 MEASUREMENT REBASE
+# ===========================================================================
+#
+# C8.5A moved the compatibility boundary's three layout values onto
+# ProjectPaths. It changed no consumer -- GitHub verifies the diff is three
+# files -- and yet the P0.4-era census stopped being able to count the
+# consumers, because that census discovered a PROVIDER by following a
+# module-level `Path(__file__)` chain and `_PATHS.legacy_foundry_out` is not
+# one. The Manager blocked further census-driven Step-5 selection on repairing
+# it (issue:1#issuecomment-5471350993).
+#
+# `tests/refoundation/layout_census.py` is the repair. What follows pins the
+# fresh numbers at this head, proves the reconciliation leaves no unexplained
+# remainder, and runs the negative controls -- including the two that matter
+# most here: that a ProjectPaths-backed provider RESOLVES, and that a provider
+# resolving to the WRONG place turns a guard red rather than passing quietly.
+#
+# THE COUNTS BELOW ARE MEASUREMENTS, NOT RATCHETS. A later slice that migrates
+# a delegation is SUPPOSED to move them. They are pinned so that movement is
+# stated in a diff instead of discovered later as drift.
+
+PATHS_SOURCE = (REPO_ROOT / "src" / "mtj_foundry" / "paths.py")
+FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
+
+# Measured fresh at be52961 from the AST of all 126 tracked Python files.
+CENSUS_HEAD = {
+    # 126 tracked files at the C8.5A head be52961, plus this task's own new
+    # census helper, which lands in the `tests` bucket and in no measured scope.
+    "tracked_python": 127,
+    "files_by_scope": {"experiments": 87, "experiments_measure": 6,
+                       "aq4_PAUSED": 6, "pipeline": 11, "src": 4, "tests": 13},
+    "delegations_total": 140,
+    "delegations_by_provider": {
+        "foundry_common.FOUNDRY_OUT_DIR": 126,
+        "foundry_common.REPO_ROOT": 12,
+        "foundry_codebook.REPO_ROOT": 2,
+    },
+    "delegations_by_form": {
+        "PATH_JOIN": 135, "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1, "CALL_ARG": 1,
+    },
+    "delegation_files": 52,
+    "local_sites_total": 89,
+    "local_sites_bootstrap": 28,
+    "local_sites_consumption": 61,
+    "consumption_origin": {"hop1": 45, "hop2": 14, "inline": 2},
+    "consumption_scope": {"module": 44, "function": 17},
+    "consumption_files": 30,
+    "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
+}
+
+# The one live site in legacy production whose LINE carries the text
+# `sys.path.insert` while the module makes no such call: the text is inside an
+# f-string that builds a shell command for `os.system`. P0.4N classified it by a
+# text match and put it in the bootstrap bucket; P0.4P corrected it. The
+# correction is kept here as a test rather than as a sentence.
+TEXT_ONLY_SYS_PATH = ("experiments/foundry_verify_migration.py", 571)
+
+
+def _census_inputs():
+    paths_layout = layout_census.project_paths_layout(
+        PATHS_SOURCE.read_text(encoding="utf-8"))
+    providers = {}
+    for module in layout_census.PROVIDER_MODULES:
+        rel = Path("experiments") / f"{module}.py"
+        providers[module] = layout_census.provider_layout(
+            (REPO_ROOT / rel).read_text(encoding="utf-8"), rel, paths_layout)
+    return paths_layout, providers
+
+
+class TestTheCensusUniverseIsWhatItClaims(unittest.TestCase):
+    """A census silently narrowed by an ignore rule reports a smaller world and
+    looks healthy. Two independent enumerations must agree."""
+
+    def test_tracked_and_walked_python_agree(self):
+        tracked = layout_census.tracked_python(REPO_ROOT)
+        self.assertEqual(tracked, layout_census.walked_python(REPO_ROOT))
+        self.assertEqual(len(tracked), CENSUS_HEAD["tracked_python"])
+
+    def test_every_file_lands_in_exactly_one_named_scope(self):
+        """`other` is the unclassified bucket. A non-empty `other` would mean the
+        census has a population it is not reporting on either side."""
+        counts = {}
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            scope = layout_census.scope_of(rel)
+            counts[scope] = counts.get(scope, 0) + 1
+        self.assertEqual(counts, CENSUS_HEAD["files_by_scope"])
+        self.assertEqual(sum(counts.values()), CENSUS_HEAD["tracked_python"])
+        self.assertNotIn("other", counts)
+
+    def test_aq4_is_excluded_from_legacy_production_in_both_of_its_homes(self):
+        """AQ4 is PAUSED. It lives in a package AND in one loose file, so a
+        directory test alone leaves one AQ4 module inside the production scope."""
+        self.assertEqual(
+            layout_census.scope_of(Path("experiments/aq4_benchmark/aq4_binding.py")),
+            "aq4_PAUSED")
+        self.assertEqual(
+            layout_census.scope_of(Path("experiments/foundry_aq4_probes.py")),
+            "aq4_PAUSED")
+        self.assertNotIn("aq4_PAUSED", layout_census.LEGACY_PRODUCTION)
+
+    def test_a_non_foundry_filename_is_still_in_scope(self):
+        """`experiments/validate_slug.py` carries 4 delegations and does not
+        begin with `foundry_`. A filename prefix is not a scope."""
+        self.assertEqual(layout_census.scope_of(Path("experiments/validate_slug.py")),
+                         "experiments")
+
+
+class TestProjectPathsResolvesStatically(unittest.TestCase):
+    """The census learns the owner's layout by PARSING it. Importing the package
+    to ask it for a path would be executing project code to learn a fact the
+    source states, which is the habit this arc removes."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.layout = layout_census.project_paths_layout(
+            PATHS_SOURCE.read_text(encoding="utf-8"))
+
+    def test_every_property_resolves_to_repository_relative_components(self):
+        self.assertEqual(self.layout["root"], ())
+        self.assertEqual(self.layout["legacy_experiments"], ("experiments",))
+        self.assertEqual(self.layout["legacy_foundry_out"],
+                         ("experiments", "out", "foundry"))
+        self.assertEqual(self.layout["legacy_foundry_review"],
+                         ("experiments", "out", "foundry", "review"))
+        self.assertEqual(self.layout["baselines"], ("config", "baselines"))
+
+    def test_the_static_resolution_agrees_with_the_live_class(self):
+        """Parsed and executed must not disagree. The census uses the parse; this
+        is the one place the two are compared, and it is a test, not a source."""
+        paths = ProjectPaths.for_root("/r")
+        for name, parts in self.layout.items():
+            with self.subTest(name=name):
+                self.assertEqual(getattr(paths, name), Path("/r").joinpath(*parts))
+
+    def test_it_covers_every_public_property_and_the_root_field(self):
+        """`root` is the dataclass FIELD, not a property, so a property-only
+        comparison would silently exclude the one name every other resolves
+        against."""
+        live = {n for n in dir(ProjectPaths) if not n.startswith("_")
+                and isinstance(getattr(ProjectPaths, n), property)}
+        self.assertEqual(set(self.layout) - {"root"}, live)
+        self.assertIn("root", {f.name for f in
+                               dataclasses.fields(ProjectPaths)})
+
+
+class TestTheProviderRepair(unittest.TestCase):
+    """NEGATIVE CONTROL 7 and 8, and the reason this task exists."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paths_layout, cls.providers = _census_inputs()
+        cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
+        cls.rel = Path("experiments/foundry_common.py")
+
+    def test_the_ProjectPaths_backed_providers_resolve(self):
+        got = self.providers["foundry_common"]
+        self.assertEqual(got["REPO_ROOT"], ())
+        self.assertEqual(got["FOUNDRY_OUT_DIR"], ("experiments", "out", "foundry"))
+        self.assertEqual(got["REVIEW_DIR"],
+                         ("experiments", "out", "foundry", "review"))
+
+    def test_the_unmigrated_peer_provider_still_resolves_by_its_file_chain(self):
+        """`foundry_codebook` has NOT been migrated. The repaired rule must keep
+        reading the old shape, or it trades one blind spot for another."""
+        got = self.providers["foundry_codebook"]
+        self.assertEqual(got["REPO_ROOT"], ())
+        self.assertEqual(got["LATEST_ARTIFACT_PATH"],
+                         ("data", "artifacts", "latest.json"))
+
+    def test_the_pre_repair_rule_cannot_see_the_migrated_providers(self):
+        """THE DEFECT, kept demonstrable. The chain-only rule finds only the two
+        PRIVATE bootstrap names and none of the three public providers."""
+        old = layout_census.legacy_chain_provider_layout(self.source, self.rel)
+        self.assertEqual(set(old), {"_BOOTSTRAP_ROOT", "_BOOTSTRAP_SRC"})
+        for name in ("REPO_ROOT", "FOUNDRY_OUT_DIR", "REVIEW_DIR"):
+            self.assertNotIn(name, old)
+
+    def test_the_pre_repair_rule_collapses_the_delegation_census(self):
+        """Reproduces the collapse the Manager reported: with the old rule the
+        scoped legacy-production path-constructing delegation surface falls from
+        135 to 1 -- the single survivor being an expression on the peer provider
+        that has not been migrated yet."""
+        old_providers = {
+            m: layout_census.legacy_chain_provider_layout(
+                (EXPERIMENTS / f"{m}.py").read_text(encoding="utf-8"),
+                Path("experiments") / f"{m}.py")
+            for m in layout_census.PROVIDER_MODULES}
+        collapsed = repaired = 0
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            collapsed += sum(1 for r in layout_census.delegation_references(
+                source, rel, old_providers) if r.form == "PATH_JOIN")
+            repaired += sum(1 for r in layout_census.delegation_references(
+                source, rel, self.providers) if r.form == "PATH_JOIN")
+        self.assertEqual(collapsed, 1)
+        self.assertEqual(repaired, CENSUS_HEAD["delegations_by_form"]["PATH_JOIN"])
+
+    def test_a_wrong_ProjectPaths_property_turns_the_guard_red(self):
+        """NEGATIVE CONTROL 8. `legacy_experiments_out` is a REAL property and
+        the assignment stays a genuine ProjectPaths delegation, so an
+        ownership-only check still passes. Resolving to COMPONENTS is what makes
+        the wrong value visible. Applied to a source STRING; no file is written."""
+        broken = self.source.replace("FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out",
+                                     "FOUNDRY_OUT_DIR = _PATHS.legacy_experiments_out")
+        self.assertNotEqual(broken, self.source)
+        got = layout_census.provider_layout(broken, self.rel, self.paths_layout)
+        self.assertEqual(got["FOUNDRY_OUT_DIR"], ("experiments", "out"))
+        self.assertNotEqual(got["FOUNDRY_OUT_DIR"],
+                            ("experiments", "out", "foundry"))
+
+    def test_a_wrong_provider_mapping_is_caught_even_with_a_plausible_name(self):
+        """The same control aimed at the OTHER half: a property name that does
+        not exist resolves to nothing at all, so the provider disappears rather
+        than silently resolving somewhere plausible."""
+        broken = self.source.replace("_PATHS.legacy_foundry_out",
+                                     "_PATHS.legacy_foundry_output")
+        got = layout_census.provider_layout(broken, self.rel, self.paths_layout)
+        self.assertNotIn("FOUNDRY_OUT_DIR", got)
+
+    def test_a_matching_attribute_on_a_NON_provider_name_is_not_a_delegation(self):
+        """The import-alias check is what stops `anything.FOUNDRY_OUT_DIR`
+        counting as a delegation. NO corpus row exercises it today -- a mutation
+        drill that deleted the check moved zero tests -- so it is guarded by this
+        fixture instead of by nothing, which is the house standard for a rule
+        that has never been shown to fail."""
+        rel = Path("experiments/fixture.py")
+        without = ('from types import SimpleNamespace\n'
+                   'cfg = SimpleNamespace()\n'
+                   'P = cfg.FOUNDRY_OUT_DIR / "x.json"\n')
+        self.assertEqual(
+            layout_census.delegation_references(without, rel, self.providers), [])
+        with_import = 'import foundry_common as cfg\n' + without.split("\n", 2)[2]
+        got = layout_census.delegation_references(with_import, rel, self.providers)
+        self.assertEqual([(r.alias, r.module, r.name, r.form) for r in got],
+                         [("cfg", "foundry_common", "FOUNDRY_OUT_DIR", "PATH_JOIN")])
+
+    def test_a_provider_module_imported_WITHOUT_an_alias_is_still_followed(self):
+        got = layout_census.delegation_references(
+            'import foundry_common\nP = foundry_common.REVIEW_DIR / "x"\n',
+            Path("experiments/fixture.py"), self.providers)
+        self.assertEqual([(r.alias, r.name) for r in got],
+                         [("foundry_common", "REVIEW_DIR")])
+
+    def test_the_aliases_are_derived_from_the_imports_not_assumed(self):
+        consolidate = (EXPERIMENTS / "foundry_consolidate_run1_apply.py"
+                       ).read_text(encoding="utf-8")
+        self.assertEqual(layout_census.provider_aliases(consolidate).get("fcb"),
+                         "foundry_codebook")
+        self.assertEqual(
+            layout_census.provider_aliases("import foundry_common as anything")
+            .get("anything"), "foundry_common")
+        self.assertEqual(layout_census.provider_aliases("import json"), {})
+
+
+class TestTheBlindSpotShapesAreStillDetected(unittest.TestCase):
+    """NEGATIVE CONTROLS 1-4. The P0.4N blind spots, aimed at the repaired
+    scanner. Each is asserted against a fixture SOURCE STRING and then against a
+    live corpus site, so neither the fixture nor the corpus alone is the proof."""
+
+    def test_nc1_module_level_hop1_derivation(self):
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'ROOT = Path(__file__).resolve().parents[1]\n'
+            'OUT = ROOT / "experiments" / "out"\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual([(s.origin, s.scope) for s in got], [("hop1", "module")])
+
+    def test_nc2_hop2_derived_constant(self):
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'ROOT = Path(__file__).resolve().parents[1]\n'
+            'OUT = ROOT / "experiments"\n'
+            'DEEP = OUT / "out" / "foundry"\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual(sorted(s.origin for s in got), ["hop1", "hop2"])
+
+    def test_nc3_inline_chain_with_no_named_root(self):
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'DOCS = Path(__file__).resolve().parent.parent / "docs"\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual([(s.origin, s.scope) for s in got], [("inline", "module")])
+
+    def test_nc4_function_local_derivation(self):
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'ROOT = Path(__file__).resolve().parents[1]\n'
+            'def load():\n'
+            '    return (ROOT / "docs" / "x.md").read_text()\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual([(s.origin, s.scope) for s in got], [("hop1", "load")])
+
+    def test_all_four_shapes_are_attested_live_in_legacy_production(self):
+        sites = []
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+                continue
+            sites += layout_census.local_layout_sites(
+                (REPO_ROOT / rel).read_text(encoding="utf-8"), rel)
+        consumption = [s for s in sites if not s.bootstrap]
+        self.assertEqual({s.origin for s in consumption}, {"hop1", "hop2", "inline"})
+        self.assertTrue(any(s.scope != "module" for s in consumption))
+        self.assertIn(("experiments/foundry_visibility_audit.py", "inline"),
+                      [(s.path, s.origin) for s in consumption
+                       if s.scope != "module"])
+
+    def test_a_runtime_component_is_not_a_layout_statement(self):
+        """`ROOT / name` joins a value the source does not know. It states no
+        repository-relative fact, and the ratified checkers already say so.
+
+        This fixture is the corrected aim of a control that first pointed at
+        `sys.path.insert(0, str(REPO_ROOT))` -- which contains no join at all, so
+        it exercised a different branch than its name claimed and a mutation
+        drill showed it could not fail."""
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'ROOT = Path(__file__).resolve().parents[1]\n'
+            'def read(name):\n'
+            '    return (ROOT / name).read_text()\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual(got, [])
+
+    def test_a_root_used_without_a_join_is_not_a_layout_statement(self):
+        """53 modules bind `REPO_ROOT` to `experiments` rather than to the
+        repository root and re-add it to `sys.path`. Counting those would fill
+        the census with non-facts."""
+        got = layout_census.local_layout_sites(
+            'import sys\nfrom pathlib import Path\n'
+            'REPO_ROOT = Path(__file__).resolve().parent\n'
+            'sys.path.insert(0, str(REPO_ROOT))\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual(got, [])
+
+    def test_nesting_is_not_double_counted(self):
+        """`ROOT / "a" / "b"` is left-nested; counting every matching BinOp
+        scores one site three times. Recorded four times in this arc."""
+        got = layout_census.local_layout_sites(
+            'from pathlib import Path\n'
+            'ROOT = Path(__file__).resolve().parents[1]\n'
+            'P = ROOT / "a" / "b" / "c"\n',
+            Path("experiments/fixture.py"))
+        self.assertEqual(len(got), 1)
+        self.assertEqual(got[0].expr, "ROOT / 'a' / 'b' / 'c'")
+
+
+class TestRealBootstrapCallsAreSeparatedFromText(unittest.TestCase):
+    """NEGATIVE CONTROLS 5 and 6."""
+
+    def test_nc5_a_real_sys_path_call_is_detected_and_separated(self):
+        source = ('import sys\nfrom pathlib import Path\n'
+                  'ROOT = Path(__file__).resolve().parents[1]\n'
+                  'sys.path.insert(0, str(ROOT / "experiments"))\n'
+                  'OUT = ROOT / "docs"\n')
+        rel = Path("experiments/fixture.py")
+        self.assertEqual(len(layout_census.sys_path_call_nodes(ast.parse(source))), 1)
+        sites = layout_census.local_layout_sites(source, rel)
+        self.assertEqual(sorted((s.bootstrap, s.expr) for s in sites),
+                         [(False, "ROOT / 'docs'"), (True, "ROOT / 'experiments'")])
+
+    def test_nc6_the_text_inside_a_shell_command_is_not_this_modules_bootstrap(self):
+        source = ('import os, sys\nfrom pathlib import Path\n'
+                  'ROOT = Path(__file__).resolve().parents[1]\n'
+                  'os.system(f"python3 -c \\"import sys; '
+                  'sys.path.insert(0, r\'{ROOT / \'experiments\'}\')\\"")\n')
+        self.assertEqual(layout_census.sys_path_call_nodes(ast.parse(source)), [])
+        self.assertEqual(len(layout_census.sys_path_text_lines(source)), 1)
+
+    def test_the_live_site_that_proves_it_is_still_there(self):
+        """P0.4N put this row in the bootstrap bucket on a text match. It is the
+        only legacy-production line where the text and the AST disagree."""
+        path, lineno = TEXT_ONLY_SYS_PATH
+        source = (REPO_ROOT / path).read_text(encoding="utf-8")
+        call_lines = {c.lineno for c in
+                      layout_census.sys_path_call_nodes(ast.parse(source))}
+        self.assertIn(lineno, layout_census.sys_path_text_lines(source))
+        self.assertNotIn(lineno, call_lines)
+
+    def test_it_is_the_only_such_line_in_legacy_production(self):
+        disagreements = []
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            call_lines = {c.lineno for c in
+                          layout_census.sys_path_call_nodes(ast.parse(source))}
+            disagreements += [(rel.as_posix(), n)
+                              for n in layout_census.sys_path_text_lines(source)
+                              if n not in call_lines]
+        self.assertEqual(disagreements, [TEXT_ONLY_SYS_PATH])
+
+
+class TestTheFreshCountsAndTheirReconciliation(unittest.TestCase):
+    """The counts, and the proof that raw and scoped are reconciled rather than
+    equated. NOT RATCHETS -- a migration is supposed to move them."""
+
+    @classmethod
+    def setUpClass(cls):
+        _, cls.providers = _census_inputs()
+        cls.refs, cls.sites = [], []
+        cls.raw = {"foundry_common.FOUNDRY_OUT_DIR": 0,
+                   "foundry_common.REPO_ROOT": 0,
+                   "foundry_codebook.REPO_ROOT": 0}
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            cls.refs += layout_census.delegation_references(source, rel, cls.providers)
+            cls.sites += layout_census.local_layout_sites(source, rel)
+            aliases = layout_census.provider_aliases(source)
+            for alias, module in aliases.items():
+                for name in cls.providers[module]:
+                    key = f"{module}.{name}"
+                    if key in cls.raw:
+                        cls.raw[key] += layout_census.raw_textual_occurrences(
+                            source, f"{alias}.{name}")
+
+    def test_the_scoped_delegation_total(self):
+        self.assertEqual(len(self.refs), CENSUS_HEAD["delegations_total"])
+        by_provider = {}
+        for ref in self.refs:
+            by_provider[f"{ref.module}.{ref.name}"] = \
+                by_provider.get(f"{ref.module}.{ref.name}", 0) + 1
+        self.assertEqual(by_provider, CENSUS_HEAD["delegations_by_provider"])
+        self.assertEqual(len({r.path for r in self.refs}),
+                         CENSUS_HEAD["delegation_files"])
+
+    def test_the_forms_partition_the_total_with_no_remainder(self):
+        by_form = {}
+        for ref in self.refs:
+            by_form[ref.form] = by_form.get(ref.form, 0) + 1
+        self.assertEqual(by_form, CENSUS_HEAD["delegations_by_form"])
+        self.assertEqual(sum(by_form.values()), CENSUS_HEAD["delegations_total"])
+        self.assertNotIn("OTHER", by_form)
+
+    def test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to(self):
+        """Inside legacy production these happen to be equal at this head --
+        every textual occurrence is a real AST load, none is in a comment or a
+        docstring. That is a MEASURED coincidence of this head, so it is
+        asserted, not relied on: the two are computed by different means."""
+        self.assertEqual(self.raw, CENSUS_HEAD["delegations_by_provider"])
+        self.assertEqual(sum(self.raw.values()), len(self.refs))
+
+    def test_the_delegation_excluded_by_the_aq4_pause_is_named_not_hidden(self):
+        """AQ4 is PAUSED, so it is excluded by SCOPE rather than absent. Exactly
+        ONE delegation sits behind that exclusion and it is named here, so a
+        later reader cannot mistake the pause for a clean surface.
+
+        The `tests` bucket also carries the same text many times over -- this
+        file is full of it -- and that count is deliberately NOT pinned: it is a
+        property of the test suite's own prose, not a fact about production, and
+        pinning it would make every future test edit look like a census change.
+        """
+        excluded = []
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) != "aq4_PAUSED":
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            excluded += layout_census.delegation_references(
+                source, rel, self.providers)
+        self.assertEqual([(r.path, r.lineno, r.form) for r in excluded],
+                         [("experiments/aq4_benchmark/aq4_binding.py", 74,
+                           "ATTRIBUTE_NAV")])
+
+    def test_the_local_layout_sites(self):
+        bootstrap = [s for s in self.sites if s.bootstrap]
+        consumption = [s for s in self.sites if not s.bootstrap]
+        self.assertEqual(len(self.sites), CENSUS_HEAD["local_sites_total"])
+        self.assertEqual(len(bootstrap), CENSUS_HEAD["local_sites_bootstrap"])
+        self.assertEqual(len(consumption), CENSUS_HEAD["local_sites_consumption"])
+        origin, scope = {}, {}
+        for site in consumption:
+            origin[site.origin] = origin.get(site.origin, 0) + 1
+            key = "module" if site.scope == "module" else "function"
+            scope[key] = scope.get(key, 0) + 1
+        self.assertEqual(origin, CENSUS_HEAD["consumption_origin"])
+        self.assertEqual(scope, CENSUS_HEAD["consumption_scope"])
+        self.assertEqual(sum(origin.values()), sum(scope.values()))
+        self.assertEqual(len({s.path for s in consumption}),
+                         CENSUS_HEAD["consumption_files"])
+
+    def test_the_real_sys_path_call_sites(self):
+        calls = {}
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            scope = layout_census.scope_of(rel)
+            if scope not in layout_census.LEGACY_PRODUCTION:
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            calls[scope] = calls.get(scope, 0) + len(
+                layout_census.sys_path_call_nodes(ast.parse(source)))
+        self.assertEqual(calls, CENSUS_HEAD["sys_path_calls"])
+
+    def test_the_compatibility_boundary_states_exactly_one_layout_fact(self):
+        """The fifth category, kept separate from the other four: what the
+        boundary itself still says. One site, and it is the `src` bootstrap --
+        the irreducible knowledge needed to LOCATE the owner."""
+        sites = [s for s in self.sites
+                 if s.path == "experiments/foundry_common.py"]
+        self.assertEqual([(s.origin, s.expr) for s in sites],
+                         [("hop1", "_BOOTSTRAP_ROOT / 'src'")])
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                FOUNDRY_COMMON.read_text(encoding="utf-8"))), 1)
+
+    def test_the_boundary_is_not_counted_as_delegating_to_itself(self):
+        self.assertEqual([r for r in self.refs
+                          if r.path == "experiments/foundry_common.py"], [])
 
 
 if __name__ == "__main__":
