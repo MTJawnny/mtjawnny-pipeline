@@ -1145,10 +1145,26 @@ class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
         self.assertIn("import foundry_common as fc", source)
         self.assertEqual(source.count("import foundry_common"), 1)
 
-    def test_the_only_foundry_common_symbol_reached_is_halt(self):
-        """Why this seam adds no coupling worth the name: the CR loader uses
-        exactly one thing from the compatibility boundary, and it is the error
-        function. Delegating the root does not widen that surface."""
+    def test_the_foundry_common_symbol_surface_is_halt_plus_REPO_ROOT(self):
+        """The compatibility-boundary surface this slice actually leaves behind.
+
+        Before P0.4H the CR loader consumed exactly one `foundry_common` symbol,
+        `fc.halt`. P0.4H INTENTIONALLY adds a second, `fc.REPO_ROOT` — that is
+        the delegation. No new import and no new module dependency edge appears
+        (`foundry_common` was already imported, and the import count is asserted
+        above), but the SYMBOL surface widens from `{halt}` to
+        `{halt, REPO_ROOT}`, and this test pins it at exactly that.
+
+        Corrected by P0.4H.R1. The first version of this test asserted both
+        symbols while its name and docstring described a single-symbol surface
+        that the same slice's production diff visibly widened. Committed prose
+        that its own assertion contradicts is the thing
+        PRESERVE_TRUTH_NOT_PLUMBING forbids, so the prose moved to the truth
+        rather than the assertion moving to the prose. The superseded wording is
+        described here rather than reproduced, so that a grep for the mistaken
+        claim finds no instance of it in the tree -- the same convention the
+        house rule applies to rejected vocabulary.
+        """
         tree = ast.parse(CR.read_text(encoding="utf-8"))
         used = {n.attr for n in ast.walk(tree)
                 if isinstance(n, ast.Attribute)
@@ -1195,8 +1211,9 @@ class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
 
 class TestTheFifthSliceResolvedPathIsByteIdentical(unittest.TestCase):
     """NOTE ON EXECUTION: the module is imported, never run. It contains ZERO
-    write or `open` primitives, and the only `foundry_common` symbol it reaches
-    is `fc.halt`."""
+    write or `open` primitives, and it reaches exactly two `foundry_common`
+    symbols — `fc.halt`, which it consumed before this slice, and `fc.REPO_ROOT`,
+    which this slice adds. Neither is executed by importing the module."""
 
     @classmethod
     def setUpClass(cls):
