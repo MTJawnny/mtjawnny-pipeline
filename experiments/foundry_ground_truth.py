@@ -46,7 +46,7 @@ import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 import foundry_audit_baseline as base   # noqa: E402
 
-MOVES = REPO_ROOT / "moves"
+MOVES = fc.REPO_ROOT / "experiments" / "moves"
 
 
 def rule(t):
