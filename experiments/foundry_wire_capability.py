@@ -33,7 +33,7 @@ sys.path.insert(0, str(REPO))
 import foundry_probe as p              # noqa: E402
 import foundry_common as fc            # noqa: E402
 
-CARDS_PATH = REPO.parent / "data" / "raw" / "oracle-cards.jsonl.gz"
+CARDS_PATH = fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz"
 ANCHORS_PATH = REPO / "anchors.txt"
 
 

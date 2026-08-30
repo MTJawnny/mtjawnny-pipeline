@@ -75,6 +75,17 @@ THIRD_SLICE = {
     PROBE: 1,          # GRAMMAR
 }
 
+# P0.4J, the seventh slice: ONE root-relative consumption in
+# `foundry_wire_capability.py` — the tier_engine corpus it reads to build a
+# name index. Same provider and boundary as the third/fifth/sixth slices.
+#
+# `WIRE` above is `foundry_wire_experiment.py`, a DIFFERENT file migrated by
+# P0.4C. The name is spelled out here so the two can never be confused.
+WIRE_CAPABILITY = EXPERIMENTS / "foundry_wire_capability.py"
+
+# The adjacent `ANCHORS_PATH = REPO / "anchors.txt"` is DELIBERATELY out of this
+# slice and is asserted unchanged below.
+
 COVERING_GATE2_ROWS = ("ground_truth", "ground_truth_wide", "probe_guards")
 
 
@@ -1614,6 +1625,293 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
             FOURTH_SLICE_ROOT_DELEGATIONS)
         self.assertEqual(
             len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+
+# ---------------------------------------------------------------------------
+# P0.4J — the seventh slice
+# ---------------------------------------------------------------------------
+#
+# NO NEW CHECKER IS ADDED HERE, AND THAT IS A MEASURED RESULT.
+#
+# The P0.4I slice needed `local_subdir_constructions` because
+# `local_root_relative_constructions` was structurally BLIND to `moves` (a
+# nested directory, not a top-level one), so its negative control could never
+# have fired. That blindness was measured before the tests were written, not
+# assumed — and the same measurement was repeated here BEFORE writing anything,
+# because the P0.4F/P0.4I finding is that a control which cannot fire reads
+# exactly like a control that passed.
+#
+# Measured on this file, against real reverted and migrated source text:
+#
+#   old shape  REPO.parent / "data" / "raw" / "oracle-cards.jsonl.gz"
+#       local_root_relative_constructions -> 1 hit     root_delegating -> 0
+#   new shape  fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz"
+#       local_root_relative_constructions -> 0 hits    root_delegating -> 1
+#
+# `data` IS in TOP_LEVEL_DIRS and `.parent` climbs from `REPO` to the root, so
+# the existing P0.4E checker sees this site natively. Both arms are covered by
+# helpers that already exist; adding a replacement would have been duplication,
+# and widening TOP_LEVEL_DIRS would have changed what every earlier slice's
+# guards assert. The measurement itself is asserted below so a later reader can
+# see it was taken rather than assumed.
+
+
+class TestTheSeventhSliceDelegatesTheCorpusPath(unittest.TestCase):
+    def test_the_one_root_delegation_is_the_corpus_path(self):
+        got = root_delegating_expressions(
+            WIRE_CAPABILITY.read_text(encoding="utf-8"))
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'data'", got[0])
+        self.assertIn("'raw'", got[0])
+        self.assertIn("'oracle-cards.jsonl.gz'", got[0])
+
+    def test_no_local_root_relative_construction_remains(self):
+        self.assertEqual(
+            local_root_relative_constructions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8")), [])
+
+    def test_the_file_gained_no_import(self):
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_the_provider_is_imported_before_the_site_that_uses_it(self):
+        """A module-level constant is evaluated at import time, so `fc` must
+        already be bound when line `CARDS_PATH = ...` runs. Asserted on line
+        ORDER rather than on mere presence."""
+        lines = WIRE_CAPABILITY.read_text(encoding="utf-8").splitlines()
+        imp = next(i for i, l in enumerate(lines)
+                   if l.startswith("import foundry_common as fc"))
+        site = next(i for i, l in enumerate(lines) if l.startswith("CARDS_PATH"))
+        self.assertLess(imp, site)
+
+
+class TestTheSeventhSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL — both arms, aimed at the existing P0.4E helpers."""
+
+    NOW = 'CARDS_PATH = fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz"'
+    BEFORE = 'CARDS_PATH = REPO.parent / "data" / "raw" / "oracle-cards.jsonl.gz"'
+
+    def reverted(self) -> str:
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        """The LOCAL-OWNERSHIP arm."""
+        found = local_root_relative_constructions(self.reverted())
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("REPO.parent", found[0])
+
+    def test_reverting_also_drops_the_root_delegation(self):
+        """The DELEGATION-POSITIVE arm. Both are required: a checker that only
+        counts the bad shape would pass a file that had neither."""
+        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+
+    def test_the_existing_checkers_cover_both_arms_so_none_was_added(self):
+        """The measurement that decided this slice adds no helper. Stated as a
+        test so the decision is re-checked on every run rather than trusted
+        from a commit message."""
+        live = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        reverted = self.reverted()
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
+        self.assertEqual(len(root_delegating_expressions(reverted)), 0)
+        self.assertEqual(len(local_root_relative_constructions(live)), 0)
+        self.assertEqual(len(root_delegating_expressions(live)), 1)
+
+    def test_the_TOP_LEVEL_DIRS_constant_was_not_widened(self):
+        """`data` was ALREADY in the shared constant — this slice relies on
+        that rather than editing it. Every earlier slice's guards read this
+        set, so a widening here would silently change what they assert."""
+        self.assertIn("data", TOP_LEVEL_DIRS)
+        self.assertNotIn("raw", TOP_LEVEL_DIRS)
+        self.assertNotIn("anchors.txt", TOP_LEVEL_DIRS)
+
+
+class TestTheSeventhSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.wc = load_legacy("foundry_wire_capability")
+
+    def test_cards_path_equals_its_pre_change_construction(self):
+        """Against the module's OWN local root, exactly as it read before."""
+        self.assertEqual(self.wc.CARDS_PATH,
+                         self.wc.REPO.parent / "data" / "raw" / "oracle-cards.jsonl.gz")
+
+    def test_cards_path_equals_the_delegated_value(self):
+        self.assertEqual(self.wc.CARDS_PATH,
+                         self.fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz")
+
+    def test_cards_path_equals_the_ratified_owners_layout(self):
+        self.assertEqual(self.wc.CARDS_PATH,
+                         PATHS.root / "data" / "raw" / "oracle-cards.jsonl.gz")
+
+    def test_the_equality_holds_as_strings_too(self):
+        """Path equality is normalized; string equality catches a divergence
+        that compares equal but prints differently."""
+        self.assertEqual(
+            str(self.wc.CARDS_PATH),
+            str(self.wc.REPO.parent / "data" / "raw" / "oracle-cards.jsonl.gz"))
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """CONSUMPTION delegated, the root DECISION untouched."""
+        self.assertEqual(self.wc.REPO, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.wc.REPO, PATHS.legacy_experiments)
+
+
+class TestTheSeventhSliceLeftAnchorsPathAlone(unittest.TestCase):
+    """ANCHORS_PATH is the adjacent site and is OUT OF SCOPE by contract.
+
+    This class exists because after the migration
+    `local_root_relative_constructions` returns [] for this file — and that
+    clean result must NOT be read as "the file is now fully delegated".
+    `ANCHORS_PATH = REPO / "anchors.txt"` is still a local construction; the
+    checker is silent only because `anchors.txt` is a FILE, not one of the
+    top-level directory literals it keys on. Recorded rather than worked
+    around, the same way P0.4I recorded the `moves` blindness.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.wc = load_legacy("foundry_wire_capability")
+        cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+
+    def test_the_anchors_source_text_is_byte_for_byte_unchanged(self):
+        self.assertIn('ANCHORS_PATH = REPO / "anchors.txt"\n', self.source)
+        self.assertEqual(self.source.count("ANCHORS_PATH = "), 1)
+
+    def test_anchors_still_resolves_to_the_tracked_file(self):
+        self.assertEqual(self.wc.ANCHORS_PATH,
+                         PATHS.legacy_experiments / "anchors.txt")
+        self.assertTrue(self.wc.ANCHORS_PATH.is_file())
+
+    def test_anchors_is_still_locally_owned_and_the_checker_is_silent_on_it(self):
+        """The honest statement of what this slice did NOT do."""
+        self.assertIn("REPO / \"anchors.txt\"", self.source)
+        self.assertEqual(local_root_relative_constructions(self.source), [])
+
+    def test_anchors_did_not_become_a_root_delegation(self):
+        """The one delegation in this file is the corpus path, not this one."""
+        got = root_delegating_expressions(self.source)
+        self.assertEqual(len(got), 1, got)
+        self.assertNotIn("anchors", got[0])
+
+
+class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.wc = load_legacy("foundry_wire_capability")
+        cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+
+    def test_the_root_decision_and_bootstrap_are_untouched(self):
+        self.assertIn("REPO = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_corpus_path_is_consumed_READ_ONLY(self):
+        """The exact current read behaviour, asserted as the call it is:
+        `gzip.open(CARDS_PATH, "rt", encoding="utf-8")`. Text-READ mode. This
+        is a source-text property, not an invented semantic claim about what
+        the tool means."""
+        tree = ast.parse(self.source)
+        opens = []
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "open"
+                    and isinstance(n.func.value, ast.Name)
+                    and n.func.value.id == "gzip"):
+                opens.append(n)
+        self.assertEqual(len(opens), 1)
+        call = opens[0]
+        self.assertEqual(ast.unparse(call.args[0]), "CARDS_PATH")
+        self.assertEqual(call.args[1].value, "rt")
+
+    def test_the_module_has_no_write_primitive_at_all(self):
+        """Stronger than the P0.4I equivalent, and true of this module: there
+        is no flag-gated report either, so the runtime command cannot mutate
+        the project under any argv."""
+        tree = ast.parse(self.source)
+        primitives = {"write_text", "write_bytes", "mkdir", "touch", "unlink",
+                      "rmdir", "rename", "rmtree", "copy", "copy2", "move",
+                      "makedirs"}
+        found = []
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.Call):
+                continue
+            f = n.func
+            name = (f.attr if isinstance(f, ast.Attribute)
+                    else f.id if isinstance(f, ast.Name) else None)
+            if name in primitives:
+                found.append((n.lineno, name))
+        self.assertEqual(found, [])
+
+    def test_the_public_surface_is_unchanged(self):
+        """Module-level names and the CLI shape. `main()` takes no arguments
+        and the module parses no argv, so there is no flag surface to move."""
+        tree = ast.parse(self.source)
+        funcs = [n.name for n in tree.body
+                 if isinstance(n, ast.FunctionDef)]
+        self.assertEqual(funcs, ["anchor_names", "name_index", "main"])
+        consts = [t.id for n in tree.body if isinstance(n, ast.Assign)
+                  for t in n.targets if isinstance(t, ast.Name)]
+        self.assertEqual(consts, ["REPO", "CARDS_PATH", "ANCHORS_PATH"])
+        self.assertNotIn("argparse", self.source)
+        self.assertNotIn("sys.argv", self.source)
+        self.assertEqual(
+            [a.arg for a in
+             next(n for n in tree.body
+                  if isinstance(n, ast.FunctionDef) and n.name == "main").args.args],
+            [])
+
+    def test_the_migrated_constant_is_actually_consumed(self):
+        """A delegation that nothing reads would be untestable at runtime. The
+        name is used exactly once outside its own assignment, in the gzip read
+        that builds the name index."""
+        tree = ast.parse(self.source)
+        uses = [n.lineno for n in ast.walk(tree)
+                if isinstance(n, ast.Name) and n.id == "CARDS_PATH"
+                and isinstance(n.ctx, ast.Load)]
+        self.assertEqual(len(uses), 1)
+
+    def test_no_gate2_row_covers_this_module(self):
+        """Recorded so the runtime evidence is read for what it is: this file
+        is exercised by its own direct command, not by a Gate 2 row. A later
+        slice must not assume gate coverage it never had."""
+        for name, argv, _ in gate_rows():
+            self.assertNotIn("experiments/foundry_wire_capability.py", argv)
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
+            FOURTH_SLICE_ROOT_DELEGATIONS)
+        self.assertEqual(
+            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+
+    def test_the_sibling_wire_experiment_file_is_a_different_file(self):
+        """`WIRE` (P0.4C) and `WIRE_CAPABILITY` (this slice) have confusable
+        names. Asserted so a later edit cannot silently retarget one at the
+        other."""
+        self.assertNotEqual(WIRE, WIRE_CAPABILITY)
+        self.assertEqual(len(delegating_expressions(
+            WIRE.read_text(encoding="utf-8"), "codebook.json")), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
