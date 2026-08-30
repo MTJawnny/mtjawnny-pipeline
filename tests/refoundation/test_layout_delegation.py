@@ -1078,5 +1078,254 @@ class TestTheFourthSliceChangedNothingElse(unittest.TestCase):
             len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
 
 
+# ---------------------------------------------------------------------------
+# P0.4H — the fifth slice: the CR loader's own read path
+# ---------------------------------------------------------------------------
+#
+# ONE expression, in the module CLAUDE.md names as the single gateway to the
+# Comprehensive Rules ("never `path.read_text()` a CR — always `foundry_cr.text()`").
+#
+#   79  CR_PATH = REPO_ROOT.parent / "docs" / "MTG_..._2026-08-07_LLM.md"
+#          ->    fc.REPO_ROOT / "docs" / "MTG_..._2026-08-07_LLM.md"
+#
+# WHY THIS IS PLUMBING AND NOT TRUTH. The conservation contract
+# (refoundation/conservation/CONSERVATION-CONTRACT.json, invariant
+# CR_EDITION_CONTENT / C7.5) contracts the CR's exact bytes plus the
+# effective_date the document DECLARES ABOUT ITSELF — and states in the same row
+# that the edition identity is read from CONTENT, "never from the filename: a
+# filename is a source path, and a source path may differ across sides without
+# meaning drift." This slice moves only that source path and preserves its value
+# exactly, so the contracted invariant is untouched by construction.
+#
+# TWO THINGS IN THIS FILE ARE DELIBERATELY NOT MOVED, and both are guarded below:
+#
+#   83  PRIOR_CR_PATH is `Path.home()`-rooted — it points OUTSIDE the repository
+#       at the 2026-06-19 edition kept for refresh verification. No provider can
+#       supply it and it is not repository layout.
+#   92  the `MTJ_CR_PATH` override reassigns CR_PATH and must keep running AFTER
+#       the assignment above, or a CR refresh stops being verifiable as a
+#       comparison. Its text and its ORDER are both asserted.
+#
+# No new checker was needed: `local_root_relative_constructions` and
+# `root_delegating_expressions` already see this exact shape, and both arms were
+# measured against a reverted source before these tests were written.
+
+CR = EXPERIMENTS / "foundry_cr.py"
+
+CR_FILENAME = "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+
+
+def outermost_path_joins(source: str) -> list[tuple[int, str]]:
+    """Every outermost `/` path chain in a module, as (lineno, source text).
+
+    The fourth-production-change tripwire. A delegation guard counts the sites
+    that DID move; this one pins how many path expressions exist at all, so a
+    second expression quietly migrating — or appearing — fails here rather than
+    passing every check above by not being looked at.
+    """
+    tree = ast.parse(source)
+    joins = [n for n in ast.walk(tree)
+             if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div)]
+    inner = {id(d) for n in joins for d in ast.walk(n) if d is not n}
+    return sorted((n.lineno, ast.unparse(n)) for n in joins if id(n) not in inner)
+
+
+class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
+    def test_the_one_root_delegation_is_the_cr_path(self):
+        got = root_delegating_expressions(CR.read_text(encoding="utf-8"))
+        self.assertEqual(len(got), 1, got)
+        self.assertIn(CR_FILENAME, got[0])
+
+    def test_no_local_root_relative_construction_remains(self):
+        self.assertEqual(
+            local_root_relative_constructions(CR.read_text(encoding="utf-8")), [])
+
+    def test_the_file_gained_no_import(self):
+        source = CR.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_the_only_foundry_common_symbol_reached_is_halt(self):
+        """Why this seam adds no coupling worth the name: the CR loader uses
+        exactly one thing from the compatibility boundary, and it is the error
+        function. Delegating the root does not widen that surface."""
+        tree = ast.parse(CR.read_text(encoding="utf-8"))
+        used = {n.attr for n in ast.walk(tree)
+                if isinstance(n, ast.Attribute)
+                and isinstance(n.value, ast.Name) and n.value.id == "fc"}
+        self.assertEqual(used, {"halt", "REPO_ROOT"})
+
+
+class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL. Both arms, measured against a reverted source."""
+
+    NOW = ('CR_PATH = fc.REPO_ROOT / "docs" / '
+           '"MTG_Comprehensive_Rules_2026-08-07_LLM.md"')
+    BEFORE = ('CR_PATH = REPO_ROOT.parent / "docs" / '
+              '"MTG_Comprehensive_Rules_2026-08-07_LLM.md"')
+
+    def reverted(self) -> str:
+        source = CR.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        found = local_root_relative_constructions(self.reverted())
+        self.assertEqual(len(found), 1, found)
+        self.assertIn(CR_FILENAME, found[0])
+
+    def test_reverting_also_drops_the_root_delegation(self):
+        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+
+    def test_the_home_rooted_prior_edition_is_invisible_to_both_checkers(self):
+        """Aimed at the code path, not at the tool's name. `PRIOR_CR_PATH` is a
+        four-component path join sitting four lines below the migrated one, and
+        neither checker may react to it in either direction — its base is a CALL
+        (`Path.home()`), not a root NAME. Asserting this is what proves the
+        controls above fired on the CR path and not on its neighbour."""
+        for source in (CR.read_text(encoding="utf-8"), self.reverted()):
+            joins = [u for _, u in outermost_path_joins(source)]
+            self.assertTrue(any("home()" in u for u in joins), joins)
+        self.assertEqual(len(local_root_relative_constructions(self.reverted())), 1)
+        self.assertEqual(len(root_delegating_expressions(
+            CR.read_text(encoding="utf-8"))), 1)
+
+
+class TestTheFifthSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    """NOTE ON EXECUTION: the module is imported, never run. It contains ZERO
+    write or `open` primitives, and the only `foundry_common` symbol it reaches
+    is `fc.halt`."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.cr = load_legacy("foundry_cr")
+
+    def test_cr_path_equals_its_pre_change_construction(self):
+        self.assertEqual(self.cr.CR_PATH,
+                         self.cr.REPO_ROOT.parent / "docs" / CR_FILENAME)
+
+    def test_cr_path_equals_the_delegated_value(self):
+        self.assertEqual(self.cr.CR_PATH,
+                         self.fc.REPO_ROOT / "docs" / CR_FILENAME)
+
+    def test_cr_path_equals_the_ratified_owners_docs_directory(self):
+        self.assertEqual(self.cr.CR_PATH, PATHS.legacy_docs / CR_FILENAME)
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """CONSUMPTION delegated, the root DECISION untouched."""
+        self.assertEqual(self.cr.REPO_ROOT.parent, self.fc.REPO_ROOT)
+        self.assertEqual(self.cr.REPO_ROOT, PATHS.legacy_experiments)
+
+    def test_the_cr_file_is_the_tracked_edition_the_contract_binds(self):
+        """CONSERVATION-CONTRACT.json binds CR_EDITION_CONTENT to this path on
+        BOTH sides. The delegation must still land on it."""
+        self.assertTrue(self.cr.CR_PATH.is_file())
+        self.assertEqual(self.cr.CR_PATH.name, CR_FILENAME)
+
+
+class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cr = load_legacy("foundry_cr")
+        cls.source = CR.read_text(encoding="utf-8")
+
+    def test_exactly_two_path_joins_exist_and_only_one_is_repository_layout(self):
+        """The fourth-production-change tripwire."""
+        joins = outermost_path_joins(self.source)
+        self.assertEqual(len(joins), 2, joins)
+        by_line = dict(joins)
+        repo = [u for u in by_line.values() if "home()" not in u]
+        home = [u for u in by_line.values() if "home()" in u]
+        self.assertEqual(len(repo), 1, repo)
+        self.assertEqual(len(home), 1, home)
+        self.assertIn("fc.REPO_ROOT", repo[0])
+
+    def test_prior_cr_path_is_untouched_and_still_home_rooted(self):
+        """It points OUTSIDE the repository at the 2026-06-19 edition, so no
+        provider can supply it and it is not repository layout. It is also what
+        makes a CR refresh verifiable as a comparison."""
+        self.assertIn('PRIOR_CR_PATH = (Path.home() / "Projects" '
+                      '/ "mtjawnny.github.io" / "docs"', self.source)
+        self.assertIn('/ "mtg-comprehensive-rules.md")', self.source)
+        self.assertEqual(self.cr.PRIOR_CR_PATH.name, "mtg-comprehensive-rules.md")
+        self.assertNotIn(PATHS.root, self.cr.PRIOR_CR_PATH.parents)
+
+    def test_the_MTJ_CR_PATH_override_text_is_untouched(self):
+        self.assertIn('if "MTJ_CR_PATH" in __import__("os").environ:', self.source)
+        self.assertIn('CR_PATH = Path(__import__("os").environ["MTJ_CR_PATH"])'
+                      '.expanduser()', self.source)
+
+    def test_the_MTJ_CR_PATH_override_still_runs_AFTER_the_migrated_assignment(self):
+        """ORDER, not just presence. If the override moved above the delegated
+        assignment it would be silently dead, and `MTJ_CR_PATH=<file>` is the one
+        mechanism that turns a CR refresh into a measurement instead of a leap."""
+        tree = ast.parse(self.source)
+        assign = next(n.lineno for n in tree.body
+                      if isinstance(n, ast.Assign)
+                      and any(isinstance(t, ast.Name) and t.id == "CR_PATH"
+                              for t in n.targets))
+        override = next(n.lineno for n in tree.body
+                        if isinstance(n, ast.If) and "MTJ_CR_PATH" in ast.unparse(n))
+        self.assertLess(assign, override)
+
+    def test_the_root_decision_and_bootstrap_survive(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_module_writes_nothing(self):
+        """The runtime conservation evidence for this slice is a direct CLI run,
+        because foundry_cr is not a Gate 2 row. This is the static half of that
+        claim, kept as a standing guard rather than as a one-off measurement."""
+        tree = ast.parse(self.source)
+        primitives = {"write_text", "write_bytes", "mkdir", "touch", "unlink",
+                      "rmdir", "rename", "rmtree", "copy", "copy2", "move",
+                      "makedirs", "open", "dump"}
+        found = []
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.Call):
+                continue
+            f = n.func
+            name = (f.attr if isinstance(f, ast.Attribute)
+                    else f.id if isinstance(f, ast.Name) else None)
+            if name in primitives:
+                found.append(f"line {n.lineno}: {name}")
+        self.assertEqual(found, [])
+
+    def test_this_module_is_not_a_gate2_row(self):
+        self.assertNotIn("experiments/foundry_cr.py",
+                         [a[0] for _, a, _ in gate_rows()])
+
+    def test_the_public_surface_is_unchanged(self):
+        """13 modules import this one. The constant keeps its NAME; only what it
+        is built from changed."""
+        for name in ("CR_PATH", "PRIOR_CR_PATH", "REPO_ROOT", "text",
+                     "normalize_line", "effective_date"):
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(self.cr, name), name)
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        """P0.4B/P0.4C/P0.4E/P0.4F keep delegating; this slice widened the guard,
+        not the change."""
+        self.assertEqual(
+            len(delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
+            FOURTH_SLICE_ROOT_DELEGATIONS)
+
 if __name__ == "__main__":
     unittest.main()
