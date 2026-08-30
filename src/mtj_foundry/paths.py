@@ -165,6 +165,18 @@ class ProjectPaths:
         return self.legacy_experiments_out / "foundry"
 
     @property
+    def legacy_foundry_review(self) -> Path:
+        """The legacy foundry review directory.
+
+        Named here for the same reason as its siblings: the alternative is for a
+        legacy consumer to keep appending the literal `"review"` to a path this
+        module already owns, which is a repository-relative layout fact stated
+        outside the one component that owns layout. Adding the name is what lets
+        `foundry_common.REVIEW_DIR` delegate instead of restating.
+        """
+        return self.legacy_foundry_out / "review"
+
+    @property
     def legacy_pipeline(self) -> Path:
         return self.root / "pipeline"
 
