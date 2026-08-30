@@ -1,0 +1,195 @@
+# BEHAVIORAL REIMPLEMENTATION — DECISION CAPTURE
+#
+# Records Captain direction already captured durably in Issue #1.
+# This file does not self-create authority.
+
+schema: mtj-decision-record/1
+set: P0.BEHAVIORAL_REIMPLEMENTATION
+repository: MTJawnny/mtjawnny-pipeline
+recorded: 2026-08-30
+recorded_by: ChatGPT_MANAGER
+
+provenance:
+  captain_direction: issue:1#issuecomment-5471882570
+  c8_5d_worker_evidence: issue:1#issuecomment-5471856911
+  c8_5d_manager_review: issue:1#issuecomment-5471880506
+  prior_architecture: refoundation/decisions/P0-ARCHITECTURE.yaml
+  llm_native_architecture: refoundation/decisions/LLM-NATIVE-REPOSITORY-ARCHITECTURE.yaml
+  detailed_strategy: refoundation/BEHAVIORAL-REIMPLEMENTATION-STRATEGY.md
+
+status:
+  class: CAPTAIN_RATIFIED_DIRECTION
+  scope: REFOUNDATION_RECONSTRUCTION_METHOD
+  semantic_foundry_law_changed: false
+  codebook_authority_changed: false
+  aq4_changed: false
+  permanent_namespace_changed: false
+  permanent_path_owner_changed: false
+
+ratified_direction:
+  - id: P0.REIMPL.1
+    name: legacy_code_is_not_target_architecture
+    decision: true
+    meaning: >-
+      The permanent mtj_foundry architecture is not required to reproduce the
+      historical experiments/ module boundaries, dependency graph, script/library
+      shape, sys.path bootstraps, CWD assumptions or one-file-per-old-file structure.
+
+  - id: P0.REIMPL.2
+    name: legacy_as_evidence_and_oracle
+    decision: true
+    meaning: >-
+      Legacy implementation is valuable as evidence, provenance, edge-case source,
+      and executable behavior oracle where the behavior has been classified as valid.
+      Executability alone does not make legacy behavior authoritative.
+
+  - id: P0.REIMPL.3
+    name: behavior_contract_is_unit_of_reconstruction
+    decision: true
+    meaning: >-
+      Permanent reconstruction targets coherent capabilities defined by explicit
+      contracts. A capability may span multiple legacy files or occupy only part of one.
+
+  - id: P0.REIMPL.4
+    name: per_subsystem_disposition
+    decision: REQUIRED
+    allowed:
+      MOVE_ADAPT: >-
+        Existing implementation already approximates a good permanent capability
+        boundary and can be moved/adapted without preserving accidental architecture.
+      CLEAN_REIMPLEMENT_FROM_CONTRACT: >-
+        Valuable behavior is entangled with legacy architecture; design a clean
+        permanent implementation from the contract and protect it with differential
+        and conservation proof.
+      EXTRACT_EVIDENCE: >-
+        Lasting value is primarily research, migration, incident, provenance or
+        reproducibility evidence rather than ongoing runtime behavior.
+      DELETE_AFTER_ACCOUNTING: >-
+        No unique systematic value remains after behavior/evidence/tests/provenance
+        are preserved or intentionally abandoned.
+
+  - id: P0.REIMPL.5
+    name: preserve_spirit_is_not_a_contract
+    decision: true
+    meaning: >-
+      A prose understanding of what legacy code 'basically did' is insufficient for
+      replacement. Intended inputs, outputs, errors, side effects, authority semantics,
+      determinism and known defects must be made explicit before clean reimplementation.
+
+  - id: P0.REIMPL.6
+    name: differential_reconstruction
+    decision: REQUIRED_WHERE_LEGACY_IS_A_VALID_ORACLE
+    comparison_levels:
+      - BYTE_EXACT
+      - VALUE_EXACT
+      - SEMANTIC_EQUIVALENT
+      - INTENTIONAL_DIVERGENCE
+      - LEGACY_DEFECT_CORRECTED
+    rule: >-
+      The equivalence level is selected by the actual contract. Byte identity must not
+      be invented for behavior whose contract is semantic, and semantic comparison must
+      not weaken a true byte-level authority requirement.
+
+  - id: P0.REIMPL.7
+    name: legacy_oracle_classification
+    decision: REQUIRED
+    classes:
+      ACCEPTED_BEHAVIOR: preserve unless separately changed
+      REPRESENTATIVE_BEHAVIOR: useful compatibility evidence; divergence requires explanation
+      KNOWN_DEFECT: must not be reproduced merely to make differential comparison green
+      OBSOLETE_WORKFLOW: do not reproduce without a new reason
+      UNRESOLVED: unexplained divergence is STOP
+
+  - id: P0.REIMPL.8
+    name: negative_controls_at_replacement_boundary
+    decision: REQUIRED
+    meaning: >-
+      A replacement/differential harness must demonstrate that a meaningful violation
+      of the defining contract turns validation red. Equality without an aimed negative
+      control is insufficient evidence.
+
+  - id: P0.REIMPL.9
+    name: compatibility_facades_are_temporary
+    decision: true
+    meaning: >-
+      A legacy facade may preserve high-fan-in call surfaces during cutover, but it must
+      declare remaining consumers and a deletion prerequisite and may not become the
+      permanent internal architecture by inertia.
+
+  - id: P0.REIMPL.10
+    name: retirement_requires_value_accounting
+    decision: true
+    required_arms:
+      - runtime consumers accounted for
+      - accepted behavior covered or intentionally changed
+      - unique evidence/provenance preserved where systematic
+      - authority/governance meaning preserved
+      - meaningful regressions detectable by permanent validation
+      - historical implementation archaeology recoverable through Git once active evidence is extracted
+
+  - id: P0.REIMPL.11
+    name: research_code_is_not_presumptive_production_code
+    decision: true
+    meaning: >-
+      Executable research, probe and one-shot migration tools are not moved into the
+      permanent runtime package merely because they run. Classify production capability,
+      standing verification, research evidence, historical migration and obsolete experiment.
+
+  - id: P0.REIMPL.12
+    name: avoid_one_for_one_experiments_copy
+    decision: true
+    anti_goal: >-
+      A final src/mtj_foundry tree that mirrors experiments/ file-for-file with cleaner
+      imports is not the desired refoundation outcome unless independent evidence shows
+      those boundaries are genuinely the correct permanent architecture.
+
+sequencing_refinement:
+  c8_step_5: >-
+    Establish the permanent code/execution substrate and reconstruct executable
+    capabilities using the appropriate per-subsystem disposition. Step 5 does not
+    mean mechanically migrate every legacy Python file.
+  immediate_next_after_c8_5d:
+    class: PACKAGE_IMPORT_EXECUTION_CONTRACT
+    reason: >-
+      Stable package execution is enabling infrastructure shared by MOVE_ADAPT and
+      CLEAN_REIMPLEMENT. Establish it without deleting bootstraps or migrating dependencies.
+  after_package_execution_contract: >-
+    Do not automatically move the next leaf module. Perform a subsystem disposition
+    review using current behavior/dependency evidence, starting with the lowest-layer
+    candidates and choosing MOVE versus REIMPLEMENT explicitly.
+  full_reconstruction_audit: >-
+    Evaluate capability/contract/authority preservation and permanent architectural
+    quality, not whether every historical module found a new one-for-one home.
+
+c8_5d_evidence_snapshot:
+  status: EVIDENCE_NOT_RATCHET
+  head: aa003340f40acba6b13bcb5cb40a384a60de1c1f
+  worker_measured:
+    legacy_production_modules_in_dependency_study: 93
+    remaining_consumption_sites: 60
+    ownership: {STEP5_PACKAGE_LAYER: 32, STEP6_KNOWLEDGE: 23, STEP8_EXTRACT_DELETE: 5}
+    only_legacy_module_importing_mtj_foundry: foundry_common
+    true_leaf_with_nonzero_fan_in: foundry_audit_baseline
+    foundry_audit_baseline_fan_in: 8
+    upward_edge: foundry_common -> tier_engine
+    upward_edge_used_surface:
+      - load_cards
+      - CARDS_PATH
+      - build_name_index
+      - normalize_name
+      - get_raw_faces
+  manager_independently_checked:
+    - foundry_audit_baseline imports only json/pathlib and locally constructs the tracked baseline path
+    - foundry_common carries the temporary src bootstrap and imports ProjectPaths
+    - repository root has src/mtj_foundry but no top-level mtj_foundry package
+    - foundry_common imports tier_engine for corpus/name/face access
+    - tier_engine CARDS_PATH is CWD-relative
+    - .gitignore already covers .venv and egg-info artifacts
+
+controls_unchanged:
+  governing_principle: PRESERVE_TRUTH_NOT_PLUMBING
+  permanent_namespace: mtj_foundry
+  permanent_path_owner: mtj_foundry.paths.ProjectPaths
+  authority_model: selector_decision_record
+  aq4: PAUSED
+  bridge_v0: PARKED_UNUSED
