@@ -260,9 +260,27 @@ class TestNothingElseMoved(unittest.TestCase):
         self.assertEqual(self.probe.GRAMMAR,
                          PATHS.legacy_docs / "CODEBOOK-NAMING-GRAMMAR.md")
 
-    def test_moves_is_untouched(self):
-        self.assertIn('MOVES = REPO_ROOT / "moves"',
+    def test_moves_was_out_of_slice_for_P0_4B_and_is_migrated_by_P0_4I(self):
+        """SUPERSEDED IN ITS SOURCE-TEXT HALF ONLY, BY P0.4I.
+
+        Both statements are true and both are durable. P0.4B did NOT move
+        `MOVES`: it was a root-relative fixture path, a real ownership site
+        deliberately left out of the foundry-out slice, and this guard existed
+        to say so. P0.4I then migrated exactly that line to `fc.REPO_ROOT /
+        "experiments" / "moves"`, so the expected TEXT moved with it.
+
+        What the guard MEANS is unchanged and is the equality below: `MOVES`
+        still resolves to the tracked fixture directory `experiments/moves`, and
+        it is still a different path from the foundry-output sites P0.4B did
+        migrate in this same file. The `untouched` name and the pre-P0.4I
+        expected text are gone rather than left standing as a claim that is
+        false at HEAD.
+        """
+        self.assertIn('MOVES = fc.REPO_ROOT / "experiments" / "moves"',
                       GROUND_TRUTH.read_text(encoding="utf-8"))
+        gt = load_legacy("foundry_ground_truth")
+        self.assertEqual(gt.MOVES, PATHS.legacy_experiments / "moves")
+        self.assertNotEqual(gt.MOVES.parent, PATHS.legacy_foundry_out)
 
     def test_the_root_derivation_and_syspath_bootstrap_are_untouched(self):
         """The 45 sys.path-only derivations the census found are blocked on an
@@ -1343,6 +1361,259 @@ class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
+
+# ---------------------------------------------------------------------------
+# P0.4I — the sixth slice: the ground-truth fixture directory
+# ---------------------------------------------------------------------------
+#
+#   49  MOVES = REPO_ROOT / "moves"  ->  fc.REPO_ROOT / "experiments" / "moves"
+#
+# `experiments/moves/*.json` are the 534 Captain-ratified `class: human` seeds
+# the ground-truth harness grades against — TRACKED evidence, not generated
+# output. This slice moves the path that FINDS them and touches no seed byte.
+#
+# THE P0.4E CHECKER IS BLIND TO THIS SITE, AND THAT IS CORRECT.
+# `local_root_relative_constructions` requires a literal TOP-LEVEL directory
+# name, and `moves` is not one — it lives under `experiments/`. Measured against
+# a reverted source before these tests were written: the P0.4E checker returns
+# `[]` for BOTH the live and the reverted text. Reusing it would have given this
+# site a negative control that could never fire, which is the P0.4F alias defect
+# exactly. `TOP_LEVEL_DIRS` was deliberately NOT widened to include `moves`:
+# that constant means "a top-level repository directory", it is shared by every
+# prior slice's guards, and editing it to make one new control fire would change
+# what those guards mean. A second checker is the honest cost.
+
+MOVES_SUBDIR = "moves"
+
+
+def local_subdir_constructions(source: str, subdir: str,
+                               names=("REPO", "REPO_ROOT")) -> list[str]:
+    """Path joins that reach a NESTED repository directory through a LOCAL root.
+
+    `local_root_relative_constructions` keys on a literal TOP-LEVEL directory
+    name, so it cannot see `REPO_ROOT / "moves"` — `moves` is nested under
+    `experiments/`. This keys on the nested name instead, and is otherwise the
+    same shape: outermost `/` chains only, the sys.path bootstrap exempt, and a
+    LOCAL root variable required as the base so a delegated
+    `fc.REPO_ROOT / "experiments" / "moves"` does not match.
+
+    A checker, not an assertion, so the control below can run it against a
+    deliberately reverted source and require it to FIRE.
+    """
+    tree = ast.parse(source)
+    bootstrap = set()
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr in ("insert", "append")
+                and isinstance(node.func.value, ast.Attribute)
+                and node.func.value.attr == "path"):
+            for d in ast.walk(node):
+                bootstrap.add(id(d))
+    joins = [n for n in ast.walk(tree)
+             if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div)]
+    # OUTERMOST ONLY, the same left-nesting rule every checker in this file obeys.
+    inner = {id(d) for n in joins for d in ast.walk(n) if d is not n}
+    found = []
+    for node in [j for j in joins if id(j) not in inner and id(j) not in bootstrap]:
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        while isinstance(base, ast.Attribute) and base.attr == "parent":
+            base = base.value
+        if not (isinstance(base, ast.Name) and base.id in names):
+            continue
+        literals = [n.value for n in ast.walk(node)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        if subdir in literals:
+            found.append(f"line {node.lineno}: {ast.unparse(node)}")
+    return found
+
+
+def moves_uses(source: str) -> list[tuple[int, str]]:
+    """Every reference to the `MOVES` name outside its own assignment.
+
+    Used to prove the seeds are READ and never written: the fixture directory is
+    tracked Captain-ratified evidence, and a slice that moved the path to it
+    must not acquire the ability to touch it.
+    """
+    tree = ast.parse(source)
+    out = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and any(
+                isinstance(t, ast.Name) and t.id == "MOVES" for t in node.targets):
+            continue
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) \
+                and node.value.id == "MOVES":
+            out.append((node.lineno, node.attr))
+    return sorted(out)
+
+
+class TestTheSixthSliceDelegatesTheFixtureDirectory(unittest.TestCase):
+    def test_the_one_root_delegation_is_the_moves_directory(self):
+        got = root_delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'moves'", got[0])
+        self.assertIn("'experiments'", got[0])
+
+    def test_no_local_subdir_construction_remains(self):
+        self.assertEqual(
+            local_subdir_constructions(
+                GROUND_TRUTH.read_text(encoding="utf-8"), MOVES_SUBDIR), [])
+
+    def test_the_file_gained_no_import(self):
+        source = GROUND_TRUTH.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+
+class TestTheSixthSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL — both arms, and the blindness of the P0.4E checker is
+    ASSERTED rather than worked around."""
+
+    NOW = 'MOVES = fc.REPO_ROOT / "experiments" / "moves"'
+    BEFORE = 'MOVES = REPO_ROOT / "moves"'
+
+    def reverted(self) -> str:
+        source = GROUND_TRUTH.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        """The LOCAL-OWNERSHIP arm."""
+        found = local_subdir_constructions(self.reverted(), MOVES_SUBDIR)
+        self.assertEqual(len(found), 1, found)
+
+    def test_reverting_also_drops_the_root_delegation(self):
+        """The DELEGATION-POSITIVE arm. Both are required: a checker that only
+        counts the bad shape would pass a file that had neither."""
+        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+
+    def test_the_P0_4E_checker_is_blind_here_which_is_why_this_one_exists(self):
+        """Recorded, not worked around. `moves` is not a top-level repository
+        directory, so `local_root_relative_constructions` returns clean on a
+        FULLY reverted site — and a control that can never fire reads exactly
+        like a control that passed."""
+        reverted = self.reverted()
+        self.assertEqual(local_root_relative_constructions(reverted), [])
+        self.assertEqual(len(local_subdir_constructions(reverted, MOVES_SUBDIR)), 1)
+
+    def test_the_TOP_LEVEL_DIRS_constant_was_not_widened_to_force_the_control(self):
+        """The cheap fix would have been to add `moves` to the shared constant.
+        That constant means "a top-level repository directory" and every earlier
+        slice's guards read it, so widening it to make one new control fire
+        would silently change what those guards assert."""
+        self.assertNotIn("moves", TOP_LEVEL_DIRS)
+        self.assertIn("experiments", TOP_LEVEL_DIRS)
+
+
+class TestTheSixthSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.gt = load_legacy("foundry_ground_truth")
+
+    def test_moves_equals_its_pre_change_construction(self):
+        self.assertEqual(self.gt.MOVES, self.gt.REPO_ROOT / "moves")
+
+    def test_moves_equals_the_delegated_value(self):
+        self.assertEqual(self.gt.MOVES,
+                         self.fc.REPO_ROOT / "experiments" / "moves")
+
+    def test_moves_equals_the_ratified_owners_experiments_directory(self):
+        self.assertEqual(self.gt.MOVES, PATHS.legacy_experiments / "moves")
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """CONSUMPTION delegated, the root DECISION untouched."""
+        self.assertEqual(self.gt.REPO_ROOT, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.gt.REPO_ROOT, PATHS.legacy_experiments)
+
+    def test_the_fixture_directory_still_holds_the_tracked_seeds(self):
+        """The delegation must still land on the Captain-ratified fixture. An
+        empty or missing directory would make `foundry_ground_truth` halt rather
+        than pass, but that is the tool's guard, not this one's."""
+        self.assertTrue(self.gt.MOVES.is_dir())
+        self.assertTrue(sorted(self.gt.MOVES.glob("*.json")))
+
+
+class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.gt = load_legacy("foundry_ground_truth")
+        cls.source = GROUND_TRUTH.read_text(encoding="utf-8")
+
+    def test_the_root_decision_and_bootstrap_are_untouched(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_seed_bytes_are_outside_this_slice(self):
+        """`MOVES` is READ and never written. Expressed as a standing property
+        rather than as a one-off diff check: every use of the name is a `glob`
+        or an attribute read, so the tool cannot acquire the ability to touch
+        Captain-ratified evidence without failing here."""
+        self.assertEqual([attr for _, attr in moves_uses(self.source)], ["glob"])
+
+    def test_the_only_write_in_the_module_is_the_opt_in_json_report(self):
+        """Which is what makes both Gate 2 command shapes read-only. Neither
+        uses `--json`, and `--update-baseline` is the only other mutating flag."""
+        tree = ast.parse(self.source)
+        primitives = {"write_text", "write_bytes", "mkdir", "touch", "unlink",
+                      "rmdir", "rename", "rmtree", "copy", "copy2", "move",
+                      "makedirs", "open"}
+        found = []
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.Call):
+                continue
+            f = n.func
+            name = (f.attr if isinstance(f, ast.Attribute)
+                    else f.id if isinstance(f, ast.Name) else None)
+            if name in primitives:
+                found.append((n.lineno, name, ast.unparse(n)))
+        self.assertEqual(len(found), 1, [(l, n) for l, n, _ in found])
+        lineno, name, text = found[0]
+        self.assertEqual(name, "write_text")
+        self.assertIn("args.json", text)
+
+    def test_the_two_covering_gate2_rows_are_unchanged(self):
+        argv = {name: a for name, a, _ in gate_rows()}
+        self.assertEqual(argv["ground_truth"],
+                         ["experiments/foundry_ground_truth.py"])
+        self.assertEqual(argv["ground_truth_wide"],
+                         ["experiments/foundry_ground_truth.py", "--wide"])
+
+    def test_neither_gate2_row_gained_a_mutating_flag(self):
+        for row in ("ground_truth", "ground_truth_wide"):
+            argv = {name: a for name, a, _ in gate_rows()}[row]
+            with self.subTest(row=row):
+                self.assertNotIn("--json", argv)
+                self.assertNotIn("--update-baseline", argv)
+
+    def test_the_first_slice_sites_in_this_file_still_delegate(self):
+        """P0.4B migrated two `fc.FOUNDRY_OUT_DIR / "codebook.json"` sites in
+        this same file. This slice widened the guard, not the change."""
+        self.assertEqual(len(delegating_expressions(self.source)), 2)
+        self.assertEqual(
+            independent_foundry_out_constructions(self.source), [])
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
+            FOURTH_SLICE_ROOT_DELEGATIONS)
+        self.assertEqual(
+            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
 
 if __name__ == "__main__":
     unittest.main()
