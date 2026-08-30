@@ -76,7 +76,7 @@ import foundry_common as fc  # noqa: E402
 # because it used to be site-resident and gitignored there. The 2026-08-07
 # edition is TRACKED IN THIS REPO, which is strictly better — it has version
 # history, so a future refresh is a diff rather than an act of faith.
-CR_PATH = REPO_ROOT.parent / "docs" / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+CR_PATH = fc.REPO_ROOT / "docs" / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
 
 # The 2026-06-19 edition, kept reachable so a refresh can be VERIFIED as a
 # comparison rather than taken on trust. Never read by the pipeline.
