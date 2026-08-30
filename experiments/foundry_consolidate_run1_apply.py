@@ -694,7 +694,7 @@ def write_card_axes_index() -> dict:
             "sha256": fcb.sha256_of(path)}
 
 
-GAMECHANGERS_PATH = fcb.REPO_ROOT / "tags" / "gamechangers.yaml"
+GAMECHANGERS_PATH = fc.REPO_ROOT / "tags" / "gamechangers.yaml"
 
 GAMECHANGERS_SEED = '''# Game Changers — oracle_id list, hand-curated.
 #
@@ -840,7 +840,7 @@ def write_dry_run_correction(plan: dict, a2a: dict) -> dict:
     artifact = {
         "schema": "foundry-corpus-pass-run1-consolidation-dry-run/2",
         "generated_by": "experiments/foundry_consolidate_run1_apply.py",
-        "supersedes": {"path": str(DRY_RUN_STALE_PATH.relative_to(fcb.REPO_ROOT)),
+        "supersedes": {"path": str(DRY_RUN_STALE_PATH.relative_to(fc.REPO_ROOT)),
                        "sha256": fcb.sha256_of(DRY_RUN_STALE_PATH),
                        "schema": stale.get("schema")},
         "authority": "B-MIGRATION-DISCOVERY.md §6 (the corrections) + "

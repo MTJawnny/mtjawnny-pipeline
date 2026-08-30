@@ -177,6 +177,22 @@ class ProjectPaths:
         return self.legacy_foundry_out / "review"
 
     @property
+    def legacy_data_artifacts(self) -> Path:
+        """The legacy pipeline-artifact directory, exactly where it already is.
+
+        Named here because the alternative is for a legacy consumer to append
+        `"data" / "artifacts"` to a root this module already owns, which is a
+        repository-relative layout fact stated outside the one component that
+        owns layout. C8.5A settled that: `fc.REPO_ROOT / "data" / "artifacts"`
+        would still be a second layout statement, merely a shorter one.
+
+        NAMING IS NOT MOVING. Nothing here relocates the directory, creates it,
+        or asserts it exists; `data/` is gitignored card data and stays exactly
+        where the pipeline already writes it.
+        """
+        return self.root / "data" / "artifacts"
+
+    @property
     def legacy_pipeline(self) -> Path:
         return self.root / "pipeline"
 

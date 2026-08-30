@@ -51,6 +51,11 @@ import tier_engine as te  # noqa: E402
 FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
 REVIEW_DIR = _PATHS.legacy_foundry_review
 
+# C8.5C: the boundary also exposes the legacy pipeline-artifact directory, so
+# `foundry_codebook` can stop deriving a root of its own to reach it. Like the
+# three above, this is the OWNER's value -- it is not derived here.
+DATA_ARTIFACTS_DIR = _PATHS.legacy_data_artifacts
+
 
 def halt(message: str) -> None:
     print(f"STOP — {message}", file=sys.stderr)

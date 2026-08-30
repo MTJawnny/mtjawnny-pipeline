@@ -35,13 +35,27 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments"))
+# --- C8.5C COMPATIBILITY BOOTSTRAP -- TEMPORARY, AND NOT A LAYOUT API -------
+#
+# This module used to export `REPO_ROOT`, which made it a SECOND layout
+# provider beside the compatibility boundary: two independently derived
+# authorities for the same repository. It is now private and may be used for
+# exactly one thing -- putting `experiments` on `sys.path` so that
+# `import foundry_common` resolves when this file is run as a loose script.
+# Nothing can import the boundary before knowing where it is, which is the same
+# irreducible knowledge as C8.5A's `src` bootstrap, and it deletes the same way:
+# when the package is installed (later C8 step 5) these two lines go, and
+# nothing else in this module changes.
+#
+# The derivation and the inserted directory are UNCHANGED -- only the name and
+# its visibility. Every layout value below now comes from the boundary.
+_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_BOOTSTRAP_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 BACKUPS_DIR = fc.FOUNDRY_OUT_DIR / "backups"
-LATEST_ARTIFACT_PATH = REPO_ROOT / "data" / "artifacts" / "latest.json"
+LATEST_ARTIFACT_PATH = fc.DATA_ARTIFACTS_DIR / "latest.json"
 
 SCHEMA_V2 = "foundry-codebook/2"
 SCHEMA_V1 = "foundry-codebook/1"
