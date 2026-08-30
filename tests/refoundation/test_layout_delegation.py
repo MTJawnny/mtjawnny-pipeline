@@ -739,5 +739,344 @@ class TestTheThirdSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(argv["probe_guards"], ["experiments/foundry_probe.py"])
 
 
+# ---------------------------------------------------------------------------
+# P0.4F — the fourth slice: the prior-art probe's three root/layout restatements
+# ---------------------------------------------------------------------------
+#
+# THREE INDEPENDENT SHAPES, AND ONLY ONE OF THEM IS THE P0.4E SHAPE.
+#
+#   64   DOCS = REPO_ROOT.parent / "docs"          a root-relative JOIN  (P0.4E shape)
+#   65   CODE = REPO_ROOT                          a bare ALIAS of a local root
+#   221  sorted((REPO_ROOT.parent / "docs")...)    the SAME docs path, restated
+#                                                  a third time, inside dead code
+#
+# `local_root_relative_constructions` — the P0.4E checker — sees the first and the
+# third and is STRUCTURALLY BLIND to the second: `CODE = REPO_ROOT` is not a
+# `BinOp/Div` at all, so no path-join checker in this file can ever match it.
+# Reusing the P0.4E checker alone would therefore have given site 65 a negative
+# control that could not fire, which is exactly the defect P0.4E disclosed about
+# its own bootstrap exemption. The alias gets its own checker below, and the test
+# that records the blindness is kept as evidence rather than as an inconvenience.
+#
+# The third site is delegated to `DOCS` rather than to `fc.REPO_ROOT`, because the
+# layout fact it restates is already named one screen above it. That means it does
+# NOT raise the `fc.REPO_ROOT` count, so it too needs its own positive arm.
+#
+# The block containing site 221 is UNREACHABLE — `cmd_orphans` returns at line 212
+# and nine statements follow. This task delegates its path and deliberately does
+# not remove or repair it, so a guard below proves the dead code is still dead.
+
+PRIOR_ART = EXPERIMENTS / "foundry_prior_art.py"
+
+# DOCS and CODE. The dead docs glob consumes DOCS and is counted separately.
+FOURTH_SLICE_ROOT_DELEGATIONS = 2
+
+
+def local_root_aliases(source: str, names=("REPO", "REPO_ROOT")) -> list[str]:
+    """Assignments that BIND a local root variable straight to another name.
+
+    `CODE = REPO_ROOT` states the layout fact "the code lives in the experiments
+    directory" without a single path literal, so every checker in this file that
+    keys on a path JOIN is blind to it by construction. This one keys on the
+    assignment instead.
+
+    Kept a checker rather than an inline assertion so the negative control below
+    can run it against a deliberately reverted source and require it to FIRE.
+    """
+    out = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Assign):
+            continue
+        if isinstance(node.value, ast.Name) and node.value.id in names:
+            out.append(f"line {node.lineno}: {ast.unparse(node)}")
+    return out
+
+
+def glob_call_bases(source: str) -> list[tuple[int, str, str]]:
+    """`(lineno, base expression, pattern)` for every `X.glob(...)`/`X.rglob(...)`.
+
+    The third site's migration does not change the `fc.REPO_ROOT` count — it stops
+    re-deriving `docs/` and consumes the module's own `DOCS` instead — so its
+    positive arm has to read the glob's BASE. Reporting the base as source text
+    rather than as a resolved value is deliberate: the resolved values are equal
+    before and after, which is the whole point, so only the text can tell the two
+    apart.
+    """
+    out = []
+    for node in ast.walk(ast.parse(source)):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr in ("glob", "rglob") and node.args
+                and isinstance(node.args[0], ast.Constant)):
+            out.append((node.lineno, ast.unparse(node.func.value),
+                        node.args[0].value))
+    return sorted(out)
+
+
+def dead_statements(source: str, function: str) -> list:
+    """Statements that follow a bare `return` in `function`'s own body.
+
+    Used to prove the unreachable orphan block is STILL unreachable. The task
+    delegates that block's path and forbids removing or repairing it, and a diff
+    that quietly deleted it would otherwise satisfy every delegation guard above
+    by making the site disappear.
+    """
+    fn = next(n for n in ast.walk(ast.parse(source))
+              if isinstance(n, ast.FunctionDef) and n.name == function)
+    idx = [i for i, node in enumerate(fn.body)
+           if isinstance(node, ast.Return) and node.value is None]
+    if not idx:
+        return []
+    return fn.body[idx[-1] + 1:]
+
+
+class TestTheFourthSliceDelegates(unittest.TestCase):
+    def test_the_two_root_delegations_are_the_expected_sites(self):
+        got = root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))
+        self.assertEqual(len(got), FOURTH_SLICE_ROOT_DELEGATIONS, got)
+        self.assertTrue(any("'docs'" in g for g in got), got)
+        self.assertTrue(any("'experiments'" in g for g in got), got)
+
+    def test_the_dead_docs_glob_consumes_DOCS(self):
+        bases = glob_call_bases(PRIOR_ART.read_text(encoding="utf-8"))
+        json_globs = [b for b in bases if b[2] == "*.json"]
+        self.assertEqual(len(json_globs), 1, bases)
+        self.assertEqual(json_globs[0][1], "DOCS", json_globs)
+
+    def test_no_glob_base_re_derives_the_docs_path(self):
+        """The site could have been 'fixed' by writing `fc.REPO_ROOT / "docs"` a
+        second time. That would delegate the ROOT and still restate the LAYOUT."""
+        for lineno, base, pattern in glob_call_bases(
+                PRIOR_ART.read_text(encoding="utf-8")):
+            with self.subTest(line=lineno):
+                self.assertNotIn("docs", base)
+
+    def test_no_local_root_relative_construction_remains(self):
+        self.assertEqual(
+            local_root_relative_constructions(
+                PRIOR_ART.read_text(encoding="utf-8")), [])
+
+    def test_no_local_root_alias_remains(self):
+        self.assertEqual(
+            local_root_aliases(PRIOR_ART.read_text(encoding="utf-8")), [])
+
+    def test_the_file_gained_no_import(self):
+        source = PRIOR_ART.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_fc_is_imported_before_every_delegating_site(self):
+        """A module-level constant built from `fc` above the import would be a
+        NameError, not a subtle defect — but the dead glob is inside a function,
+        so only the two constants are ordered by the import, and that ordering is
+        worth pinning rather than inferring."""
+        tree = ast.parse(PRIOR_ART.read_text(encoding="utf-8"))
+        imp = next(n.lineno for n in tree.body
+                   if isinstance(n, ast.Import)
+                   and any(a.name == "foundry_common" for a in n.names))
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and any(
+                    isinstance(t, ast.Name) and t.id in ("DOCS", "CODE")
+                    for t in node.targets):
+                with self.subTest(line=node.lineno):
+                    self.assertGreater(node.lineno, imp)
+
+
+class TestTheFourthSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL — one per site, and each aimed at the checker that can
+    actually see that site rather than at the one with the closest name."""
+
+    DOCS_NOW = 'DOCS = fc.REPO_ROOT / "docs"'
+    DOCS_BEFORE = 'DOCS = REPO_ROOT.parent / "docs"'
+    CODE_NOW = 'CODE = fc.REPO_ROOT / "experiments"'
+    CODE_BEFORE = "CODE = REPO_ROOT"
+    GLOB_NOW = '    for path in sorted(DOCS.glob("*.json")):'
+    GLOB_BEFORE = ('    for path in sorted((REPO_ROOT.parent / "docs")'
+                   '.glob("*.json")):')
+
+    def revert(self, now: str, before: str) -> str:
+        source = PRIOR_ART.read_text(encoding="utf-8")
+        self.assertIn(now, source, "the live text moved; fix the control")
+        reverted = source.replace(now, before, 1)
+        self.assertNotEqual(reverted, source)
+        return reverted
+
+    def test_restoring_the_DOCS_join_is_caught(self):
+        found = local_root_relative_constructions(
+            self.revert(self.DOCS_NOW, self.DOCS_BEFORE))
+        self.assertEqual(len(found), 1, found)
+
+    def test_restoring_the_CODE_alias_is_caught(self):
+        found = local_root_aliases(self.revert(self.CODE_NOW, self.CODE_BEFORE))
+        self.assertEqual(len(found), 1, found)
+
+    def test_the_join_checker_is_blind_to_the_alias_which_is_why_it_has_its_own(self):
+        """Recorded, not worked around. `CODE = REPO_ROOT` is not a path join, so
+        the P0.4E checker returns clean on a fully reverted site — and a control
+        that could never fire reads exactly like a control that passed."""
+        reverted = self.revert(self.CODE_NOW, self.CODE_BEFORE)
+        self.assertEqual(local_root_relative_constructions(reverted), [])
+        self.assertEqual(len(local_root_aliases(reverted)), 1)
+
+    def test_restoring_the_dead_docs_glob_is_caught(self):
+        found = local_root_relative_constructions(
+            self.revert(self.GLOB_NOW, self.GLOB_BEFORE))
+        self.assertEqual(len(found), 1, found)
+
+    def test_the_root_delegation_count_is_blind_to_the_glob_reversion(self):
+        """Same discipline as the alias. The third site never raised the
+        `fc.REPO_ROOT` count, so counting root delegations cannot police it and
+        the glob BASE has to be read."""
+        reverted = self.revert(self.GLOB_NOW, self.GLOB_BEFORE)
+        self.assertEqual(len(root_delegating_expressions(reverted)),
+                         FOURTH_SLICE_ROOT_DELEGATIONS)
+        json_globs = [b for b in glob_call_bases(reverted) if b[2] == "*.json"]
+        self.assertEqual(len(json_globs), 1, json_globs)
+        self.assertNotEqual(json_globs[0][1], "DOCS")
+
+    def test_each_reversion_also_drops_its_own_positive_arm(self):
+        """Both arms per site. A checker that only counts the bad shape would pass
+        a file that had neither shape."""
+        source = PRIOR_ART.read_text(encoding="utf-8")
+        for label, now, before in (
+                ("DOCS", self.DOCS_NOW, self.DOCS_BEFORE),
+                ("CODE", self.CODE_NOW, self.CODE_BEFORE)):
+            with self.subTest(site=label):
+                reverted = self.revert(now, before)
+                self.assertEqual(len(root_delegating_expressions(reverted)),
+                                 len(root_delegating_expressions(source)) - 1)
+        with self.subTest(site="dead docs glob"):
+            reverted = self.revert(self.GLOB_NOW, self.GLOB_BEFORE)
+            before_bases = [b[1] for b in glob_call_bases(source)]
+            after_bases = [b[1] for b in glob_call_bases(reverted)]
+            self.assertIn("DOCS", before_bases)
+            self.assertNotIn("DOCS", after_bases)
+
+
+class TestTheFourthSliceResolvedPathsAreByteIdentical(unittest.TestCase):
+    """Each delegated value must equal the construction it replaced, recomputed
+    from the module's OWN live root binding.
+
+    NOTE ON EXECUTION: the module is imported, never run. Its only top-level
+    statements are the `sys.path.insert`, the constants and the function
+    definitions; `main()` sits behind `if __name__ == "__main__"`. It reads
+    `docs/` and `experiments/` and writes nothing.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.pa = load_legacy("foundry_prior_art")
+
+    def test_DOCS_equals_its_pre_change_construction(self):
+        self.assertEqual(self.pa.DOCS, self.pa.REPO_ROOT.parent / "docs")
+        self.assertEqual(self.pa.DOCS, self.fc.REPO_ROOT / "docs")
+        self.assertEqual(self.pa.DOCS, PATHS.legacy_docs)
+
+    def test_CODE_equals_its_pre_change_construction(self):
+        self.assertEqual(self.pa.CODE, self.pa.REPO_ROOT)
+        self.assertEqual(self.pa.CODE, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.pa.CODE, PATHS.legacy_experiments)
+
+    def test_the_dead_globs_base_equals_the_expression_it_replaced(self):
+        """The removed expression was `REPO_ROOT.parent / "docs"`; the base it now
+        consumes is `DOCS`. The point of the site is that those are the same
+        path — which is also why nothing but the source text can distinguish
+        them, and why the structural guard above exists."""
+        self.assertEqual(self.pa.DOCS, self.pa.REPO_ROOT.parent / "docs")
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """This slice delegates CONSUMPTION, not the root DECISION. The module
+        still decides a root of its own and it still agrees with fc."""
+        self.assertEqual(self.pa.REPO_ROOT.parent, self.fc.REPO_ROOT)
+        self.assertEqual(self.pa.REPO_ROOT, PATHS.legacy_experiments)
+
+    def test_the_display_prefixes_still_resolve_to_the_repository_root(self):
+        """Four report lines strip `str(DOCS.parent)` or `str(REPO_ROOT.parent)`
+        off an absolute path. Both are out of slice, and both must keep meaning
+        the repository root or every printed path would gain a prefix."""
+        self.assertEqual(self.pa.DOCS.parent, self.fc.REPO_ROOT)
+        self.assertEqual(self.pa.REPO_ROOT.parent, self.fc.REPO_ROOT)
+
+
+class TestTheFourthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_legacy("foundry_prior_art")
+        cls.source = PRIOR_ART.read_text(encoding="utf-8")
+
+    def test_the_root_decision_and_bootstrap_survive(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_display_expressions_are_untouched(self):
+        """`str(DOCS.parent) + '/'` on three report lines and
+        `str(REPO_ROOT.parent) + '/'` on a fourth. Not path CONSTRUCTION and not
+        in scope; a fourth production change would show up here."""
+        self.assertEqual(self.source.count("str(DOCS.parent)"), 3)
+        self.assertEqual(self.source.count("str(REPO_ROOT.parent)"), 1)
+
+    def test_the_two_code_rglobs_still_consume_CODE(self):
+        py_globs = [b for b in glob_call_bases(self.source) if b[2] == "*.py"]
+        self.assertEqual([b[1] for b in py_globs], ["CODE", "CODE"], py_globs)
+
+    def test_the_unreachable_orphan_block_is_still_unreachable(self):
+        """The task delegates this block's path and forbids removing or repairing
+        it. Deleting it would satisfy every delegation guard above by making the
+        site vanish, so the dead code is pinned as dead."""
+        dead = dead_statements(self.source, "cmd_orphans")
+        self.assertEqual(len(dead), 9, [d.lineno for d in dead])
+        globs = [n.lineno for stmt in dead for n in ast.walk(stmt)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "glob"]
+        self.assertEqual(len(globs), 1, globs)
+
+    def test_the_judgement_vocabulary_is_unchanged(self):
+        """`RULED`, `ARTIFACT`, `NOISE` and the pipeline constants decide what the
+        probe REPORTS. None is a path, and none is in scope."""
+        self.assertIn(r"\bVERDICT\b", self.pa.RULED.pattern)
+        self.assertIn(r"\bRATIFIED\b", self.pa.RULED.pattern)
+        self.assertEqual(
+            self.pa.ARTIFACT.pattern,
+            r"`([a-z_][a-z0-9_]{3,}(?:\(\)|\.py|\.json|\.yaml))`")
+        self.assertEqual(self.pa.NOISE,
+                         ("docs/mtg-comprehensive-rules.md",
+                          "docs/RATIFIED-RULINGS-REGISTRY.md"))
+        self.assertEqual(self.pa.RATIFIED_PIPELINE, "det_scan_texts")
+        self.assertIn("oracle_text", self.pa.READS_CARD_TEXT.pattern)
+
+    def test_the_cli_surface_is_unchanged(self):
+        for flag in ('ap.add_argument("topic", nargs="*"',
+                     'ap.add_argument("--orphans"',
+                     'ap.add_argument("--prose"',
+                     'ap.add_argument("--strict"',
+                     'ap.add_argument("--limit", type=int, default=8)'):
+            with self.subTest(flag=flag):
+                self.assertIn(flag, self.source)
+
+    def test_this_module_is_not_a_gate2_row(self):
+        """Which is WHY the runtime conservation evidence for this slice is a
+        direct CLI run rather than a gate row: no standing gate covers it."""
+        self.assertNotIn("foundry_prior_art.py",
+                         [a[0] for _, a, _ in gate_rows()])
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        """P0.4B/P0.4C/P0.4E keep delegating; this slice widened the guard, not
+        the change."""
+        self.assertEqual(
+            len(delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -61,8 +61,8 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 
-DOCS = REPO_ROOT.parent / "docs"
-CODE = REPO_ROOT
+DOCS = fc.REPO_ROOT / "docs"
+CODE = fc.REPO_ROOT / "experiments"
 
 # Same idiom as foundry_slug_dossier.py -- a line that carries a VERDICT is not
 # the same kind of evidence as a line that merely mentions the topic.
@@ -218,7 +218,7 @@ def cmd_orphans(args) -> None:
         if "__pycache__" in str(path):
             continue
         sources[path] = path.read_text(encoding="utf-8", errors="replace")
-    for path in sorted((REPO_ROOT.parent / "docs").glob("*.json")):
+    for path in sorted(DOCS.glob("*.json")):
         sources[path] = path.read_text(encoding="utf-8", errors="replace")
 
     orphans = []
