@@ -2554,13 +2554,26 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
         for _name, argv, _ in gate_rows():
             self.assertNotIn("experiments/foundry_slug_reparse.py", argv)
 
-    def test_the_deny_listed_sibling_grammar_site_is_untouched(self):
-        """`foundry_shape_extractor.py:52` holds the SAME expression and is
-        explicitly out of scope. Asserted so this slice cannot quietly become
-        two."""
-        self.assertIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
-                      '"CODEBOOK-NAMING-GRAMMAR.md"',
-                      (EXPERIMENTS / "foundry_shape_extractor.py").read_text(encoding="utf-8"))
+    def test_the_sibling_grammar_site_was_out_of_slice_for_P0_4M_and_is_migrated_by_P0_4N(self):
+        """`foundry_shape_extractor.py:52` held the SAME expression and was
+        explicitly deny-listed for P0.4M, asserted so THAT slice could not
+        quietly become two. P0.4M's scope claim is still true and is restated
+        here as the thing it always was — a SCOPE boundary, never a permanent
+        prohibition — and the site is now migrated by P0.4N.
+
+        The original guard's live claim ("the old text is still there") is
+        genuinely superseded. Its MEANING is kept: the sibling that must not
+        move with it is now `CR_CHECKS` on the next line, and P0.4N asserts
+        that directly. What survives unchanged here is the P0.4M fact that
+        matters — this file's own GRAMMAR delegation is still singular and
+        still the only one this slice produced."""
+        sibling = (EXPERIMENTS / "foundry_shape_extractor.py").read_text(encoding="utf-8")
+        self.assertNotIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
+                         '"CODEBOOK-NAMING-GRAMMAR.md"', sibling)
+        self.assertIn('GRAMMAR = fc.REPO_ROOT / "docs" / '
+                      '"CODEBOOK-NAMING-GRAMMAR.md"', sibling)
+        self.assertEqual(
+            len(root_delegated_file_constructions(self.source, GRAMMAR_FILE)), 1)
 
     def test_foundry_common_is_still_not_modified(self):
         self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
@@ -2587,3 +2600,307 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# P0.4N — the tenth slice
+# ---------------------------------------------------------------------------
+#
+#     experiments/foundry_shape_extractor.py:52
+#       GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
+#           ->    fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
+#
+# Same clause, same document and same provider as P0.4M, one file over. C7.4
+# preserves "ruling ids/content/provenance, NOT old document paths"; this slice
+# moves the EXPRESSION and nothing else. It is NOT precedent for generated
+# artifacts, authority selectors, known-debt controls, write targets or peer
+# providers — and the generated-artifact case is not hypothetical here, because
+# `CR_CHECKS` (line 53) reads `docs/cr-checks.json`, sits one line below, and is
+# DELIBERATELY LEFT LOCAL. Its survival is asserted below.
+#
+# WHAT IS DIFFERENT FROM P0.4M, AND IT MATTERS FOR THE OWNERSHIP ARM:
+# this module has TWO local `REPO_ROOT.parent / "docs" / ...` sites, so the
+# shared ownership checker goes 2 -> 1, not 1 -> 0. A test that asserted `== []`
+# here would be asserting that the deliberately-out-of-scope sibling had ALSO
+# moved. The residual is named explicitly instead.
+#
+# HELPER COVERAGE WAS MEASURED FIRST, ON REAL OLD/NEW SOURCE, BEFORE ANY TEST
+# WAS WRITTEN — the task's preferred candidate was re-derived, not assumed:
+#
+#   local_root_relative_constructions       2 -> 1   (residual = CR_CHECKS)
+#   root_delegating_expressions             0 -> 1
+#   local_file_constructions(GRAMMAR)       1 -> 0   (GRAMMAR-SPECIFIC)
+#   root_delegated_file_constructions       0 -> 1   (GRAMMAR-SPECIFIC)
+#   local_file_constructions("cr-checks.json") 1 -> 1  (unmoved, by design)
+#
+# NO new checker was added and NO shared helper or constant was widened.
+#
+# FAN-IN: 19 importers, the largest of any slice in this arc, and three of them
+# are PAUSED AQ4 benchmark modules. The change is value-preserving — proved as
+# Path AND str against the pre-change construction, `fc.REPO_ROOT` and
+# `ProjectPaths.legacy_docs` — so the blast radius is zero by construction. No
+# AQ4 file is touched, and no production module reads `fx.GRAMMAR` as an
+# attribute at all; that is asserted rather than assumed.
+
+SHAPE_EXTRACTOR = EXPERIMENTS / "foundry_shape_extractor.py"
+CR_CHECKS_FILE = "cr-checks.json"
+
+
+class TestTheTenthSliceDelegatesTheGrammarReadPath(unittest.TestCase):
+    def test_the_grammar_delegation_is_present_and_singular(self):
+        got = root_delegated_file_constructions(
+            SHAPE_EXTRACTOR.read_text(encoding="utf-8"), GRAMMAR_FILE)
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'docs'", got[0])
+
+    def test_no_local_grammar_construction_remains(self):
+        source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+        self.assertEqual(local_file_constructions(source, GRAMMAR_FILE), [])
+
+    def test_the_ownership_residual_is_exactly_the_out_of_scope_sibling(self):
+        """The shared checker goes 2 -> 1 here, not 2 -> 0. Asserting `== []`
+        would silently demand that CR_CHECKS moved too."""
+        got = local_root_relative_constructions(
+            SHAPE_EXTRACTOR.read_text(encoding="utf-8"))
+        self.assertEqual(len(got), 1, got)
+        self.assertIn(CR_CHECKS_FILE, got[0])
+
+    def test_the_file_gained_no_import(self):
+        source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_the_provider_is_imported_before_the_site_that_uses_it(self):
+        lines = SHAPE_EXTRACTOR.read_text(encoding="utf-8").splitlines()
+        imp = next(i for i, l in enumerate(lines)
+                   if l.startswith("import foundry_common as fc"))
+        site = next(i for i, l in enumerate(lines) if l.startswith("GRAMMAR"))
+        self.assertLess(imp, site)
+
+    def test_no_peer_provider_was_introduced(self):
+        """`foundry_probe` exports an exact-match `GRAMMAR`; it was not used,
+        and this module does not import it. The delegation goes straight to the
+        ratified compatibility boundary."""
+        source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+        self.assertNotIn("p.GRAMMAR", source)
+        self.assertNotIn("import foundry_probe", source)
+
+
+class TestTheTenthSliceCheckerCatchesAReversion(unittest.TestCase):
+    NOW = 'GRAMMAR = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"'
+    BEFORE = 'GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"'
+
+    def reverted(self) -> str:
+        source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        """The LOCAL-OWNERSHIP arm. The shared checker returns to 2, and the
+        GRAMMAR-keyed checker — which cannot be satisfied by the CR_CHECKS
+        sibling — returns to 1."""
+        reverted = self.reverted()
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 2)
+        self.assertEqual(len(local_file_constructions(reverted, GRAMMAR_FILE)), 1)
+
+    def test_reverting_also_drops_the_grammar_delegation(self):
+        """The GRAMMAR-SPECIFIC delegation-positive arm."""
+        reverted = self.reverted()
+        self.assertEqual(
+            root_delegated_file_constructions(reverted, GRAMMAR_FILE), [])
+        self.assertEqual(len(root_delegating_expressions(reverted)), 0)
+
+    def test_reverting_does_not_disturb_the_out_of_scope_sibling(self):
+        """A control that also moved CR_CHECKS would prove nothing about which
+        site the guards are aimed at."""
+        reverted = self.reverted()
+        self.assertEqual(
+            len(local_file_constructions(reverted, CR_CHECKS_FILE)), 1)
+
+    def test_the_measured_helper_coverage_is_what_decided_no_new_checker(self):
+        """Re-checked every run rather than trusted from a commit message."""
+        live, reverted = SHAPE_EXTRACTOR.read_text(encoding="utf-8"), self.reverted()
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 2)
+        self.assertEqual(len(root_delegated_file_constructions(reverted, GRAMMAR_FILE)), 0)
+        self.assertEqual(len(local_root_relative_constructions(live)), 1)
+        self.assertEqual(len(root_delegated_file_constructions(live, GRAMMAR_FILE)), 1)
+
+    def test_no_shared_helper_constant_was_widened(self):
+        self.assertIn("docs", TOP_LEVEL_DIRS)
+        self.assertNotIn(GRAMMAR_FILE, TOP_LEVEL_DIRS)
+        self.assertNotIn(CR_CHECKS_FILE, TOP_LEVEL_DIRS)
+
+
+class TestTheTenthSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.fx = load_legacy("foundry_shape_extractor")
+
+    def test_grammar_equals_its_pre_change_construction(self):
+        self.assertEqual(self.fx.GRAMMAR,
+                         self.fx.REPO_ROOT.parent / "docs" / GRAMMAR_FILE)
+
+    def test_grammar_equals_the_delegated_value(self):
+        self.assertEqual(self.fx.GRAMMAR,
+                         self.fc.REPO_ROOT / "docs" / GRAMMAR_FILE)
+
+    def test_grammar_equals_the_ratified_owners_legacy_docs_path(self):
+        self.assertEqual(self.fx.GRAMMAR, PATHS.legacy_docs / GRAMMAR_FILE)
+
+    def test_the_equality_holds_as_strings_too(self):
+        self.assertEqual(str(self.fx.GRAMMAR),
+                         str(self.fx.REPO_ROOT.parent / "docs" / GRAMMAR_FILE))
+        self.assertEqual(str(self.fx.GRAMMAR), str(PATHS.legacy_docs / GRAMMAR_FILE))
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """CONSUMPTION delegated, the root DECISION untouched."""
+        self.assertEqual(self.fx.REPO_ROOT, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.fx.REPO_ROOT, PATHS.legacy_experiments)
+
+    def test_the_out_of_scope_sibling_still_resolves_locally_to_the_same_file(self):
+        self.assertEqual(self.fx.CR_CHECKS,
+                         self.fx.REPO_ROOT.parent / "docs" / CR_CHECKS_FILE)
+        self.assertEqual(self.fx.CR_CHECKS, PATHS.legacy_docs / CR_CHECKS_FILE)
+
+
+class TestTheTenthSliceLeftTheRulingDocumentAlone(unittest.TestCase):
+    """C7.4: the PATH is plumbing, the DOCUMENT is truth. This guards the truth
+    half, and the read-only premise the runtime evidence rests on."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fx = load_legacy("foundry_shape_extractor")
+        cls.source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+
+    def test_the_grammar_document_is_tracked_and_present(self):
+        self.assertTrue((PATHS.legacy_docs / GRAMMAR_FILE).is_file())
+        self.assertEqual(self.fx.GRAMMAR, PATHS.legacy_docs / GRAMMAR_FILE)
+
+    def test_the_document_still_carries_the_section_this_module_parses(self):
+        """Content, not cardinality. This module reads §2's DELIVERY table, and
+        `ratified_delivery_tokens` halts loudly if it cannot locate it."""
+        text = (PATHS.legacy_docs / GRAMMAR_FILE).read_text(encoding="utf-8")
+        self.assertRegex(text, r"(?m)^## 2\.")
+
+    def test_grammar_is_acquired_by_a_READ_and_never_by_a_write(self):
+        """The only primitives applied to the name are `exists` and `read_text`."""
+        tree = ast.parse(self.source)
+        attrs = sorted(n.attr for n in ast.walk(tree)
+                       if isinstance(n, ast.Attribute)
+                       and isinstance(n.value, ast.Name)
+                       and n.value.id == "GRAMMAR")
+        self.assertEqual(attrs, ["exists", "read_text"])
+
+    def test_the_read_feeds_the_delivery_vocabulary(self):
+        """The migrated constant is load-bearing for the printed vocabulary
+        rather than merely present."""
+        self.assertIn('text = GRAMMAR.read_text(encoding="utf-8")', self.source)
+
+    def test_every_write_in_this_module_stays_flag_gated(self):
+        """The read-only premise of the runtime evidence, asserted so it cannot
+        rot silently: both write primitives are `Path(args.json).write_text`,
+        and both sit under `if args.json:`."""
+        tree = ast.parse(self.source)
+        writes = [n for n in ast.walk(tree)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and n.func.attr in ("write_text", "write_bytes", "mkdir",
+                                      "unlink", "rename", "touch")]
+        self.assertEqual(len(writes), 2, [ast.unparse(w)[:60] for w in writes])
+        for w in writes:
+            self.assertTrue(ast.unparse(w).startswith("Path(args.json).write_text"))
+        guarded = [n for n in ast.walk(tree)
+                   if isinstance(n, ast.If) and ast.unparse(n.test) == "args.json"]
+        self.assertEqual(len(guarded), 2)
+        for branch in guarded:
+            self.assertEqual(
+                sum(1 for d in ast.walk(branch)
+                    if isinstance(d, ast.Call) and isinstance(d.func, ast.Attribute)
+                    and d.func.attr == "write_text"), 1)
+
+    def test_the_json_flag_cannot_gain_a_default_silently(self):
+        """`--json` declares NO argparse keywords, so its default is None and
+        the bare command cannot reach either write."""
+        tree = ast.parse(self.source)
+        decls = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "add_argument"
+                 and any(isinstance(a, ast.Constant) and a.value == "--json"
+                         for a in n.args)]
+        self.assertEqual(len(decls), 1)
+        self.assertEqual(decls[0].keywords, [])
+
+
+class TestTheTenthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fx = load_legacy("foundry_shape_extractor")
+        cls.source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+
+    def test_the_generated_artifact_sibling_is_deliberately_untouched(self):
+        """`docs/cr-checks.json` is a GENERATED artifact, explicitly ineligible
+        in this tranche. It sits on the very next line, so this is the guard
+        that stops one slice from quietly becoming two."""
+        self.assertIn('CR_CHECKS = REPO_ROOT.parent / "docs" / "cr-checks.json"',
+                      self.source)
+        self.assertEqual(len(local_file_constructions(self.source, CR_CHECKS_FILE)), 1)
+        self.assertEqual(
+            root_delegated_file_constructions(self.source, CR_CHECKS_FILE), [])
+
+    def test_the_root_decision_and_bootstrap_are_unchanged(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+
+    def test_the_module_constant_surface_is_unchanged(self):
+        tree = ast.parse(self.source)
+        self.assertEqual(
+            [t.id for n in tree.body if isinstance(n, ast.Assign)
+             for t in n.targets if isinstance(t, ast.Name)][:3],
+            ["REPO_ROOT", "GRAMMAR", "CR_CHECKS"])
+
+    def test_the_cli_surface_is_unchanged(self):
+        tree = ast.parse(self.source)
+        flags = [a.value for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "add_argument"
+                 for a in n.args if isinstance(a, ast.Constant)]
+        self.assertEqual(flags, ["--gaps", "--action", "--rank", "--limit", "--json"])
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_no_gate2_row_covers_this_module(self):
+        """Measured, not assumed: like P0.4M, the runtime evidence for this
+        slice is the direct bare command, not gate coverage."""
+        for _name, argv, _ in gate_rows():
+            self.assertNotIn("experiments/foundry_shape_extractor.py", argv)
+
+    def test_no_production_module_reads_fx_GRAMMAR_as_an_attribute(self):
+        """The fan-in fact, measured rather than assumed. 19 modules import this
+        one; none reads its GRAMMAR constant, so value preservation is the only
+        contract the migration has to keep — and it is proved separately."""
+        offenders = []
+        for path in sorted(EXPERIMENTS.rglob("*.py")):
+            text = path.read_text(encoding="utf-8")
+            for alias in ("fx.GRAMMAR", "shape_extractor.GRAMMAR"):
+                if alias in text:
+                    offenders.append(f"{path.name}: {alias}")
+        self.assertEqual(offenders, [])
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegated_file_constructions(
+                SLUG_REPARSE.read_text(encoding="utf-8"), GRAMMAR_FILE)), 1)
+        self.assertEqual(
+            len(delegating_expressions(
+                SLUG_REPARSE.read_text(encoding="utf-8"), "codebook.json")), 1)
