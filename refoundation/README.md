@@ -14,6 +14,14 @@ The active repository is not a museum. Existing files, APIs, imports, paths, han
 
 Semantic truth and accepted governance state must not change silently as a side effect of infrastructure refactoring.
 
+Two permanent-target consequences now accompany that principle:
+
+> **Make the repository legible to agents, not resident in their context.**
+
+and
+
+> **Rebuild permanent Foundry from explicit capability contracts and preserved truth, not by reproducing the legacy module graph.**
+
 ## Current read order
 
 A fresh Manager or Worker should read only what its role requires.
@@ -34,7 +42,7 @@ A fresh Manager or Worker should read only what its role requires.
 4. The single GitHub issue explicitly assigned for execution
 5. Only the subsystem files named or required by that task
 
-These bootstrap read orders are temporary. The permanent target is progressive disclosure through a concise standing map, canonical repository knowledge, scoped/on-demand context, and behavioral cold-start verification.
+These bootstrap read orders are temporary. The permanent target is progressive disclosure through a concise standing map, canonical repository knowledge, scoped/on-demand context, explicit subsystem contracts, and behavioral cold-start verification.
 
 ## Durable control plane
 
@@ -68,16 +76,18 @@ No important project state should exist only inside one ChatGPT or Claude sessio
 - `decisions/P0-ARCHITECTURE.yaml` — durable P0 architecture decisions and Manager-accepted direction
 - `LLM-NATIVE-REPOSITORY-ARCHITECTURE.md` — detailed researched target for the permanent agent/knowledge/workflow architecture
 - `decisions/LLM-NATIVE-REPOSITORY-ARCHITECTURE.yaml` — structured Captain-direction capture for that target
+- `BEHAVIORAL-REIMPLEMENTATION-STRATEGY.md` — detailed method for reconstructing permanent executable capabilities from contracts rather than mechanically packaging the legacy tree
+- `decisions/BEHAVIORAL-REIMPLEMENTATION.yaml` — structured Captain-direction capture for the behavioral reconstruction method
 
 ## Permanent agent/knowledge target — read before rebuilding session/knowledge routing
 
 Captain directed on 2026-08-30 that the refoundation incorporate current research on LLM/agent-oriented repository architecture rather than invent a bespoke document-loading protocol.
 
-The durable capture is:
+Durable capture:
 
 `issue:1#issuecomment-5471746549`
 
-The detailed design is:
+Detailed design:
 
 `refoundation/LLM-NATIVE-REPOSITORY-ARCHITECTURE.md`
 
@@ -97,6 +107,83 @@ Future work on knowledge migration, `CLAUDE.md`, state/index generation, handoff
 - repository search/LSP/code intelligence precede custom RAG unless measured retrieval failures justify more machinery.
 
 This direction does **not** widen an already-issued Worker task. Integrate it only at separately authorized reconstruction boundaries.
+
+## Permanent executable reconstruction method — read before migrating legacy package layers
+
+Captain further directed on 2026-08-30 that the refoundation must not treat the historical Python module graph as the architecture to preserve.
+
+Durable capture:
+
+`issue:1#issuecomment-5471882570`
+
+Detailed strategy:
+
+`refoundation/BEHAVIORAL-REIMPLEMENTATION-STRATEGY.md`
+
+Its core rule is:
+
+> **Legacy code is evidence and, where valid, an executable behavior oracle. The unit of reconstruction is the capability contract, not the old file.**
+
+Every meaningful legacy executable subsystem must eventually receive an explicit implementation disposition:
+
+- **MOVE_ADAPT** — the existing boundary is already good enough to deserve retention;
+- **CLEAN_REIMPLEMENT_FROM_CONTRACT** — valuable behavior is entangled with accidental architecture;
+- **EXTRACT_EVIDENCE** — lasting value is primarily research/migration/provenance rather than runtime code;
+- **DELETE_AFTER_ACCOUNTING** — no unique systematic value remains after behavior/evidence/tests/provenance are accounted for.
+
+Important consequences:
+
+- do **not** aim for a one-for-one `experiments/*.py -> src/mtj_foundry/*.py` migration;
+- do not use “preserve the spirit” as a substitute for an explicit behavior contract;
+- classify legacy behavior before using it as an oracle: accepted behavior, representative behavior, known defect, obsolete workflow, or unresolved;
+- clean reimplementation requires differential/conservation proof at the correct equivalence level;
+- known defects must not be reproduced merely to make legacy/new comparison green;
+- negative controls must prove the comparison harness can detect a defining regression;
+- compatibility facades are allowed during cutover but must carry deletion prerequisites;
+- retirement requires runtime, behavior, evidence, authority, validation and history accounting.
+
+### C8 Step-5 interpretation
+
+C8 Step 5 now means:
+
+> **establish the permanent package/execution substrate and reconstruct executable capabilities using the correct per-subsystem method.**
+
+It does **not** mean:
+
+> **mechanically move every legacy Python module into `mtj_foundry`.**
+
+The C8.5D transition study reinforced this distinction. It selected a package import/execution contract as the immediate enabling cut because both MOVE_ADAPT and CLEAN_REIMPLEMENT need a stable package environment. After that foundation lands, the Manager must not automatically move the next leaf module; it should disposition the candidate based on its actual behavior boundary and architectural quality.
+
+## How the two permanent-target documents fit together
+
+The LLM-native architecture answers:
+
+> **How should humans and agents find the correct project knowledge and work safely without loading project history?**
+
+The behavioral-reimplementation strategy answers:
+
+> **How should the permanent executable system be reconstructed without either preserving accidental legacy structure or losing hard-earned behavior?**
+
+Together they define the post-bootstrap destination:
+
+```text
+canonical truth / decisions / evidence
+              |
+              +--> concise agent routing + Skills/rules
+              |
+              v
+      explicit subsystem contracts
+              |
+              +--> legacy evidence/oracles
+              |
+              v
+       clean mtj_foundry capabilities
+              |
+              +--> differential + permanent tests
+              |
+              v
+     old runtime plumbing retired safely
+```
 
 ## Authority warning
 
