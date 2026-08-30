@@ -307,8 +307,8 @@ class TestNothingElseMoved(unittest.TestCase):
     def test_foundry_common_is_not_modified_by_this_slice(self):
         """It is the compatibility boundary, and a denied path for this task."""
         source = (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8")
-        self.assertIn('FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" '
-                      '/ "foundry"', source)
+        # REPAIRED BY C8.5A -- same claim, structural instead of literal.
+        self.assertEqual(len(foundry_common_independent_layout(source)), 1)
 
     def test_the_three_covering_gate2_rows_are_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
@@ -515,9 +515,13 @@ class TestTheSecondSliceChangedNothingElse(unittest.TestCase):
                 self.assertEqual(source.count("sys.path.insert"), 1)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn('FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" '
-                      '/ "foundry"',
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_first_slice_files_are_not_touched_by_this_slice(self):
         """P0.4B's three sites keep delegating; this slice widened the guard,
@@ -769,8 +773,13 @@ class TestTheThirdSliceChangedNothingElse(unittest.TestCase):
             len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn('REPO_ROOT = Path(__file__).resolve().parents[1]',
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_two_covering_gate2_rows_are_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
@@ -1101,8 +1110,13 @@ class TestTheFourthSliceChangedNothingElse(unittest.TestCase):
                          [a[0] for _, a, _ in gate_rows()])
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         """P0.4B/P0.4C/P0.4E keep delegating; this slice widened the guard, not
@@ -1365,8 +1379,13 @@ class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
                 self.assertTrue(hasattr(self.cr, name), name)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         """P0.4B/P0.4C/P0.4E/P0.4F keep delegating; this slice widened the guard,
@@ -1620,8 +1639,13 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
             independent_foundry_out_constructions(self.source), [])
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         self.assertEqual(
@@ -2018,8 +2042,13 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
             self.assertNotIn("experiments/foundry_wire_capability.py", argv)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         self.assertEqual(
@@ -2280,8 +2309,13 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
             self.assertNotIn("experiments/foundry_wire_capability.py", argv)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         self.assertEqual(
@@ -2576,8 +2610,13 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
             len(root_delegated_file_constructions(self.source, GRAMMAR_FILE)), 1)
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_the_earlier_slices_sites_are_not_touched(self):
         self.assertEqual(
@@ -2866,8 +2905,13 @@ class TestTheTenthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(flags, ["--gaps", "--action", "--rank", "--limit", "--json"])
 
     def test_foundry_common_is_still_not_modified(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
-                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+        # REPAIRED BY C8.5A. This slice still added no layout statement to the
+        # boundary -- that claim is unchanged and is what is asserted. The old
+        # literal was superseded when C8.5A pointed the boundary at ProjectPaths.
+        self.assertEqual(
+            len(foundry_common_independent_layout(
+                (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))),
+            1)
 
     def test_no_gate2_row_covers_this_module(self):
         """Measured, not assumed: like P0.4M, the runtime evidence for this
@@ -2900,6 +2944,251 @@ class TestTheTenthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(delegating_expressions(
                 SLUG_REPARSE.read_text(encoding="utf-8"), "codebook.json")), 1)
+
+
+# ---------------------------------------------------------------------------
+# C8.5A — the compatibility boundary itself
+# ---------------------------------------------------------------------------
+#
+#     experiments/foundry_common.py
+#       REPO_ROOT       = Path(__file__).resolve().parents[1]  ->  _PATHS.root
+#       FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" / "foundry"
+#                                                     ->  _PATHS.legacy_foundry_out
+#       REVIEW_DIR      = FOUNDRY_OUT_DIR / "review"  ->  _PATHS.legacy_foundry_review
+#
+# This is the FIRST C8 step-5 migration and it is a different KIND of change from
+# every P0.4 slice. Those routed legacy consumption TO this boundary; this one
+# routes the boundary itself to the ratified permanent owner. All 134 downstream
+# delegating expressions are untouched and inherit the new source for free.
+#
+# WHY TEN EARLIER GUARDS WERE REPAIRED RATHER THAN DELETED. Nine P0.4 slice
+# blocks each asserted `foundry_common` still held a specific literal -- that was
+# how each slice proved IT had not touched the boundary. That claim is still true
+# of each of those slices; C8.5A is the task that legitimately changes the text.
+# They are re-pointed at `foundry_common_independent_layout()`, which expresses
+# the same "the boundary gained no independent layout statement" meaning as a
+# STRUCTURAL invariant that survives the migration instead of a string that does
+# not. No slice lost a guard, and the replacement is strictly stronger: it would
+# also catch a NEW literal the old string match could never have seen.
+
+
+def foundry_common_independent_layout(source: str) -> list[str]:
+    """Repository-relative layout the boundary states INDEPENDENTLY of ProjectPaths.
+
+    After C8.5A this must be exactly ONE entry: the bootstrap `... / "src"` join
+    that locates the package. Nothing can ask the layout owner where it lives
+    before importing it, so that single literal is irreducible -- and naming it
+    here is what stops it quietly growing into a second layout API.
+    """
+    matches = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        if isinstance(base, ast.Attribute) and base.attr == "parent":
+            base = base.value
+        if not (isinstance(base, ast.Name)
+                and base.id in ("REPO_ROOT", "_BOOTSTRAP_ROOT")):
+            continue
+        matches.append(node)
+    inner = {id(d) for n in matches for d in ast.walk(n) if d is not n}
+    return [f"line {n.lineno}: {ast.unparse(n)}"
+            for n in matches if id(n) not in inner]
+
+
+FOUNDRY_COMMON = EXPERIMENTS / "foundry_common.py"
+
+
+class TestTheBoundaryDelegatesToTheRatifiedOwner(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
+
+    def test_it_imports_the_permanent_owner(self):
+        self.assertIn("from mtj_foundry.paths import ProjectPaths", self.source)
+
+    def test_the_three_values_come_from_ProjectPaths_not_from_literals(self):
+        self.assertIn("REPO_ROOT = _PATHS.root", self.source)
+        self.assertIn("FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out", self.source)
+        self.assertIn("REVIEW_DIR = _PATHS.legacy_foundry_review", self.source)
+
+    def test_the_live_values_are_the_owners_values(self):
+        self.assertEqual(self.fc.REPO_ROOT, self.fc._PATHS.root)
+        self.assertEqual(self.fc.FOUNDRY_OUT_DIR, self.fc._PATHS.legacy_foundry_out)
+        self.assertEqual(self.fc.REVIEW_DIR, self.fc._PATHS.legacy_foundry_review)
+
+    def test_the_values_equal_their_pre_change_constructions(self):
+        """The whole point: 134 downstream expressions must not move."""
+        root = Path(self.fc.__file__).resolve().parents[1]
+        self.assertEqual(self.fc.REPO_ROOT, root)
+        self.assertEqual(self.fc.FOUNDRY_OUT_DIR,
+                         root / "experiments" / "out" / "foundry")
+        self.assertEqual(self.fc.REVIEW_DIR,
+                         root / "experiments" / "out" / "foundry" / "review")
+
+    def test_the_equalities_hold_as_strings_too(self):
+        root = Path(self.fc.__file__).resolve().parents[1]
+        self.assertEqual(str(self.fc.REPO_ROOT), str(root))
+        self.assertEqual(str(self.fc.FOUNDRY_OUT_DIR),
+                         str(root / "experiments" / "out" / "foundry"))
+        self.assertEqual(str(self.fc.REVIEW_DIR),
+                         str(root / "experiments" / "out" / "foundry" / "review"))
+
+    def test_they_equal_a_ProjectPaths_built_independently_of_the_module(self):
+        """Built from scratch here, so this is not the module agreeing with
+        itself."""
+        paths = ProjectPaths.for_root(Path(self.fc.__file__).resolve().parents[1])
+        self.assertEqual(self.fc.REPO_ROOT, paths.root)
+        self.assertEqual(self.fc.FOUNDRY_OUT_DIR, paths.legacy_foundry_out)
+        self.assertEqual(self.fc.REVIEW_DIR, paths.legacy_foundry_review)
+
+
+class TestTheBootstrapStaysCompatibilityOnly(unittest.TestCase):
+    """The bootstrap is the one thing here that could rot into a second layout
+    API. These guards are what stop that happening quietly."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
+
+    def test_the_only_independent_layout_left_is_the_src_bootstrap(self):
+        got = foundry_common_independent_layout(self.source)
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'src'", got[0])
+        self.assertIn("_BOOTSTRAP_ROOT", got[0])
+
+    def test_the_bootstrap_root_is_used_for_exactly_two_things(self):
+        """Not a line-distance heuristic -- the actual invariant. The private
+        root may ONLY locate `src` and construct the ProjectPaths instance. Any
+        third use would be it becoming a general-purpose root, which is exactly
+        the failure mode this bootstrap must not drift into."""
+        tree = ast.parse(self.source)
+        loads = []
+        for stmt in tree.body:
+            for n in ast.walk(stmt):
+                if (isinstance(n, ast.Name) and n.id == "_BOOTSTRAP_ROOT"
+                        and isinstance(n.ctx, ast.Load)):
+                    loads.append(ast.unparse(stmt))
+                    break
+        self.assertEqual(sorted(loads), [
+            '_BOOTSTRAP_SRC = _BOOTSTRAP_ROOT / \'src\'',
+            '_PATHS = ProjectPaths.for_root(_BOOTSTRAP_ROOT)',
+        ], loads)
+
+    def test_the_bootstrap_names_are_private(self):
+        for name in ("_BOOTSTRAP_ROOT", "_BOOTSTRAP_SRC", "_PATHS"):
+            with self.subTest(name=name):
+                self.assertTrue(name.startswith("_"))
+                self.assertIn(name, self.source)
+
+    def test_no_new_filesystem_discovery_was_introduced(self):
+        """The task forbids strengthening import-time assumptions."""
+        head = self.source.split("def halt")[0]
+        # `discover_root` is NAMED in the comment that explains why it is not
+        # used; asserting on the word would forbid the explanation. Assert on a
+        # CALL instead -- which is the thing that would actually probe the disk.
+        calls = [ast.unparse(n.func) for n in ast.walk(ast.parse(self.source))
+                 if isinstance(n, ast.Call)]
+        self.assertNotIn("discover_root", calls)
+        self.assertNotIn(".exists()", head)
+        self.assertNotIn(".glob(", head)
+        self.assertNotIn(".iterdir(", head)
+
+    def test_the_derivation_is_the_same_pure_lexical_one_as_before(self):
+        self.assertIn("_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]",
+                      self.source)
+
+    def test_the_bootstrap_insert_is_idempotent(self):
+        self.assertIn("if str(_BOOTSTRAP_SRC) not in sys.path:", self.source)
+        self.assertIn('_BOOTSTRAP_SRC = _BOOTSTRAP_ROOT / "src"', self.source)
+
+    def test_it_is_labelled_temporary_and_non_authoritative(self):
+        """The comment is load-bearing: it tells the next session this block is
+        scheduled for deletion, not for reuse."""
+        head = self.source.split("def halt")[0]
+        self.assertIn("C8.5A COMPATIBILITY BOOTSTRAP", head)
+        self.assertIn("TEMPORARY", head)
+        self.assertIn("NOT A LAYOUT API", head)
+
+
+class TestTheTierEngineEdgeIsUnchanged(unittest.TestCase):
+    """Explicitly NOT this task's problem, and asserted so a later reader cannot
+    mistake C8.5A for having solved the upward engine dependency."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
+
+    def test_the_engine_is_still_imported_at_module_import_time(self):
+        tree = ast.parse(self.source)
+        top = [n for n in tree.body if isinstance(n, ast.Import)
+               and any(a.name == "tier_engine" for a in n.names)]
+        self.assertEqual(len(top), 1)
+
+    def test_the_experiments_path_compatibility_is_preserved(self):
+        self.assertIn("sys.path.insert(0, str(_PATHS.legacy_experiments))",
+                      self.source)
+
+    def test_experiments_is_inserted_after_the_bootstrap_so_it_keeps_precedence(self):
+        lines = self.source.splitlines()
+        src_line = next(i for i, l in enumerate(lines) if "not in sys.path" in l)
+        exp_line = next(i for i, l in enumerate(lines)
+                        if "sys.path.insert(0, str(_PATHS.legacy_experiments))" in l)
+        self.assertLess(src_line, exp_line)
+
+
+class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
+    def test_legacy_foundry_review_is_pure_and_correct(self):
+        paths = ProjectPaths.for_root("/nonexistent-root-for-purity")
+        self.assertEqual(paths.legacy_foundry_review,
+                         Path("/nonexistent-root-for-purity")
+                         / "experiments" / "out" / "foundry" / "review")
+
+    def test_it_is_derived_from_its_sibling_not_restated(self):
+        self.assertEqual(ProjectPaths.for_root("/r").legacy_foundry_review,
+                         ProjectPaths.for_root("/r").legacy_foundry_out / "review")
+
+    def test_it_touches_no_filesystem(self):
+        paths = ProjectPaths.for_root("/definitely/not/a/real/path")
+        self.assertFalse(paths.legacy_foundry_review.exists())
+        self.assertTrue(str(paths.legacy_foundry_review).startswith("/definitely"))
+
+    def test_no_other_public_property_was_added(self):
+        props = sorted(n for n in dir(ProjectPaths)
+                       if not n.startswith("_")
+                       and isinstance(getattr(ProjectPaths, n), property))
+        self.assertEqual(props, [
+            "baselines", "config", "conservation", "decisions",
+            "legacy_docs", "legacy_experiments", "legacy_experiments_out",
+            "legacy_foundry_out", "legacy_foundry_review", "legacy_pipeline",
+            "refoundation", "src", "tests"])
+
+
+class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
+    """134 legacy expressions delegate to this boundary. C8.5A changes where the
+    boundary GETS its values, never what any consumer says."""
+
+    def test_the_arc_added_delegation_sites_still_read_as_before(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(len(root_delegating_expressions(
+            REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(len(root_delegated_file_constructions(
+            SLUG_REPARSE.read_text(encoding="utf-8"), GRAMMAR_FILE)), 1)
+        self.assertEqual(len(root_delegated_file_constructions(
+            SHAPE_EXTRACTOR.read_text(encoding="utf-8"), GRAMMAR_FILE)), 1)
+        self.assertEqual(len(delegating_expressions(
+            SLUG_REPARSE.read_text(encoding="utf-8"), "codebook.json")), 1)
+
+    def test_a_downstream_consumer_resolves_to_the_same_place_as_before(self):
+        sr = load_legacy("foundry_slug_reparse")
+        root = Path(load_legacy("foundry_common").__file__).resolve().parents[1]
+        self.assertEqual(sr.CODEBOOK,
+                         root / "experiments" / "out" / "foundry" / "codebook.json")
+        self.assertEqual(sr.GRAMMAR, root / "docs" / GRAMMAR_FILE)
 
 
 if __name__ == "__main__":

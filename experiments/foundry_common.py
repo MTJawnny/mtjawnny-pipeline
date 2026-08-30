@@ -9,12 +9,47 @@ import json
 import re
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments"))
+# --- C8.5A COMPATIBILITY BOOTSTRAP -- TEMPORARY, AND NOT A LAYOUT API -------
+#
+# `mtj_foundry.paths.ProjectPaths` is the ratified permanent owner of
+# repository-relative layout, but the package is not installed and legacy tools
+# are invoked as loose scripts, so `import mtj_foundry` fails from the legacy
+# execution environment. These three lines exist ONLY to close that gap without
+# asking anyone to set PYTHONPATH by hand.
+#
+# `_BOOTSTRAP_ROOT` and the literal `"src"` are the ONE piece of layout knowledge
+# that genuinely cannot be delegated: it is the knowledge needed to LOCATE the
+# owner, and nothing can ask the owner where it lives before importing it. It is
+# deliberately private, deliberately used for nothing else, and is NOT a second
+# layout API -- every other path below comes from ProjectPaths. When the package
+# is properly installed (later C8 step 5), these lines delete outright and
+# nothing else in this module changes.
+#
+# The derivation is the SAME pure lexical one this module already used
+# (`Path(__file__).resolve().parents[1]`); no filesystem discovery, no
+# `discover_root`, and no new import-time assumption beyond what was here before.
+_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]
+_BOOTSTRAP_SRC = _BOOTSTRAP_ROOT / "src"
+if str(_BOOTSTRAP_SRC) not in sys.path:
+    sys.path.insert(0, str(_BOOTSTRAP_SRC))
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
+
+_PATHS = ProjectPaths.for_root(_BOOTSTRAP_ROOT)
+
+# ---------------------------------------------------------------------------
+# Layout now comes FROM THE OWNER. These three names keep their exact previous
+# values -- 134 legacy expressions delegate to them and none of them moves.
+REPO_ROOT = _PATHS.root
+
+# UNCHANGED ON PURPOSE: the engine still needs `experiments` on sys.path, and the
+# upward foundry_common -> tier_engine dependency is NOT this task's to solve.
+# Inserting at 0 after the bootstrap keeps `experiments` at the same precedence
+# it has always had.
+sys.path.insert(0, str(_PATHS.legacy_experiments))
 import tier_engine as te  # noqa: E402
 
-FOUNDRY_OUT_DIR = REPO_ROOT / "experiments" / "out" / "foundry"
-REVIEW_DIR = FOUNDRY_OUT_DIR / "review"
+FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
+REVIEW_DIR = _PATHS.legacy_foundry_review
 
 
 def halt(message: str) -> None:
