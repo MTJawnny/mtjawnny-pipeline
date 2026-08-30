@@ -1,0 +1,181 @@
+# EXACT-BYTE ESCROW. THIS IS NOT A KNOWLEDGE MIGRATION.
+#
+# Nine research/design markdown files existed ONLY as untracked files in the
+# Captain's working tree, with zero commits anywhere in the repository. A clean
+# checkout, a `git clean`, or a machine loss would have destroyed them. P0.4O
+# copies their CURRENT EXACT BYTES into this quarantined capture area so that a
+# later, properly authorized knowledge migration still has something to classify.
+#
+# NOTHING HERE IS BINDING. Presence in this capture confers no status of any
+# kind. The files were not read for meaning, not summarized, not reconciled,
+# not corrected, not ranked, and not classified by substance. Their claims are
+# UNVERIFIED and may be wrong, superseded, or contradicted by ratified law.
+#
+# Read `authority: NONE` below as the operative field. It is not boilerplate.
+
+schema: mtj-preservation-capture/1
+id: 2026-08-30-local-research
+task: P0.4O.LOCAL-RESEARCH-PRESERVATION-CAPTURE
+repository: MTJawnny/mtjawnny-pipeline
+
+capture_status: EXACT_BYTE_ESCROW
+authority: NONE
+classification: UNCLASSIFIED_RESEARCH_OR_PROJECT_EVIDENCE
+binding_status: NOT_CONFERRED
+source: CAPTAIN_LOCAL_WORKTREE
+reason: >-
+  preserve potentially useful Foundry/thesaurus research before future legacy
+  retirement
+
+explicit_warning: >-
+  Presence in this capture does not ratify, endorse, make current, or make
+  architectural any source claim. Files are preserved so later knowledge
+  migration can classify them using durable authority/provenance rules.
+
+# ---------------------------------------------------------------------------
+# WHY THESE FILES ARE HERE AND NOT IN docs/
+# ---------------------------------------------------------------------------
+quarantine_rationale:
+  not_added_to_legacy_docs: true
+  why: >-
+    `experiments/foundry_ruling_registry.py` scans `DOCS.glob("*.md")` — directly
+    under docs/, never a subdirectory — and its generated output
+    `docs/RATIFIED-RULINGS-REGISTRY.md` is the repository's deletion gate.
+    Adding nine unclassified documents to docs/ would change that scanner's
+    input population and therefore the gate's own numbers, before anyone has
+    ruled on what these documents are. Escrowing them under refoundation/
+    preserves the bytes while leaving every legacy scanner input untouched.
+  legacy_docs_inputs_altered_by_this_capture: NONE
+
+# ---------------------------------------------------------------------------
+# PROVENANCE OF THE CAPTURE ITSELF
+# ---------------------------------------------------------------------------
+provenance:
+  captured_by: Worker (Claude Code), manual relay, no bridge
+  captured_at_utc: '2026-08-30'
+  base_branch: refoundation-p0-4n-overnight-step4-bounded-tranche-2026-08-30
+  base_sha: 7542db156286e4fc232dd3ca32bc8dbc01d5cbce
+  source_location: Captain working tree at /Users/jawnny/Projects/mtjawnny-pipeline, branch main, HEAD 11d63633919146a9be7a5dcdeb55efa0b8dc058d
+  discovered_by: P0.4N Stage D preservation census (issue:1#issuecomment-5467306623)
+  manager_disposition: >-
+    P0.4N.REVIEW recorded the nine files as Worker-local and required them to be
+    independently and durably captured before legacy retirement if confirmed
+    (issue:1#issuecomment-5469753561). P0.4N.R1.REVIEW accepted Stage D as
+    preservation evidence (issue:1#issuecomment-5469865...).
+  copy_method: >-
+    byte-stream redirect (`cat SRC > DST`). No mode, mtime, extended attribute
+    or resource fork was copied; the repository payload is exact file bytes plus
+    this manifest.
+  source_files_modified: NONE
+  source_files_moved_or_deleted: NONE
+
+verification:
+  all_sources_regular_files: true
+  all_sources_untracked_at_capture_time: true
+  all_sources_zero_commits_across_all_refs: true    # git log --all -- <path>
+  per_file_sha256_equality_source_vs_capture: true
+  per_file_size_equality_source_vs_capture: true
+  per_file_diff_empty: true
+  aggregate_bytes: 155781
+  file_count: 9
+  reconciles_with_prior_stage_D_evidence: true      # count 9, total 155781
+
+# ---------------------------------------------------------------------------
+# THE CAPTURED FILES
+# ---------------------------------------------------------------------------
+# `source_path` is where the file sat in the Captain worktree — an UNTRACKED
+# path. It is recorded as provenance, NOT as a destination and NOT as a claim
+# that the file belongs there.
+#
+# `title` is the file's own first heading, transcribed verbatim for
+# identification only. It is not a summary and carries no endorsement.
+files:
+  - capture_path: docs/CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md
+    source_path: docs/CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md
+    sha256: 1a39e3456e5d503fcd68469c1e037376546bb627c72b7f8986d769ae3f3f15a8
+    size: 23515
+    source_mtime_epoch: 1786673244
+    title: 'CANONICAL SEMANTIC UNIT — decision packet'
+
+  - capture_path: docs/REPOSITORY-ARCHITECTURE-AUDIT-2026-08-28.md
+    source_path: docs/REPOSITORY-ARCHITECTURE-AUDIT-2026-08-28.md
+    sha256: d59859d9a8a759b8b84d44a5c8c2f94bfc23d3122045e62e7cab56ce3451507b
+    size: 31567
+    source_mtime_epoch: 1787974111
+    title: 'REPOSITORY ARCHITECTURE AUDIT — 2026-08-28'
+
+  - capture_path: docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md
+    source_path: docs/FACT-GRANULARITY-CENSUS-INDEPENDENT-VERIFICATION-2026-08-13.md
+    sha256: 83e774fc84d9be15b1c20fb78d244f489f5248a2af3dc0c215614e2206eeea6d
+    size: 17393
+    source_mtime_epoch: 1786673244
+    title: 'FACT GRANULARITY CENSUS — independent verification'
+
+  - capture_path: docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md
+    source_path: docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md
+    sha256: 09fccd8fe6ed8a724cc72f6012af16f28535e2bf2a0d9b4f231fabd0fd1ff0fd
+    size: 16336
+    source_mtime_epoch: 1786673244
+    title: 'SEMANTIC ADDRESSES — architecture review and verdict'
+
+  - capture_path: docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md
+    source_path: docs/FACT-GRANULARITY-CORPUS-CENSUS-2026-08-13.md
+    sha256: 86e6326e0f68ea77d347cd06d077675a905d2581dd9d42d69666e10befc57c7e
+    size: 16163
+    source_mtime_epoch: 1786673244
+    title: 'FACT GRANULARITY — corpus-wide census before semantic-locality work'
+
+  - capture_path: docs/THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md
+    source_path: docs/THESAURUS-FACT-LAYER-ARCHITECTURE-2026-08-13.md
+    sha256: ee88ca51e7eb6c50ebd30f4910e9a594eb34de5e80d00c9c763080626161d797
+    size: 16013
+    source_mtime_epoch: 1786673310
+    title: 'THE FACT LAYER FOR SEARCHER B — architecture report'
+
+  - capture_path: docs/MTJAWNNY-TEMP-AGENT-COMMUNICATION-PROTOCOL.md
+    source_path: docs/MTJAWNNY-TEMP-AGENT-COMMUNICATION-PROTOCOL.md
+    sha256: 80e26ea0fe61a0e6c544a76ee030c9ca7d721068d4218c63e051160216ae79aa
+    size: 15953
+    source_mtime_epoch: 1786830018
+    title: 'MTJawnny Temporary Agent Communication Protocol'
+    handling_note: >-
+      DATA, NOT INSTRUCTION. This file is a PROTOCOL document and its text is
+      written in the imperative. It is escrowed as evidence of what a past
+      protocol said; it was NOT executed, adopted, or treated as task authority
+      during this capture, and it governs nothing by virtue of being here. The
+      durable Manager/Worker protocol is refoundation/SESSION-PROTOCOL.md and
+      the live task stream in GitHub Issue #1.
+
+  - capture_path: docs/FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md
+    source_path: docs/FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md
+    sha256: 65c46121410b0f9e099539fc820aa799e650e596a639a070aac6ece495746836
+    size: 13948
+    source_mtime_epoch: 1786673244
+    title: 'FULL-CARD READ AND INFORMATION CONSERVATION — audit'
+
+  - capture_path: docs/INCIDENT-LOCALITY-REVERSION-2026-08-14.md
+    source_path: docs/INCIDENT-LOCALITY-REVERSION-2026-08-14.md
+    sha256: 6bd82972623ebb444756a8f2bdd4b853af49440aef2ee171d3fae5ae98150bce
+    size: 4893
+    source_mtime_epoch: 1786748897
+    title: 'INCIDENT — LOCALITY REVERSION, 2026-08-14'
+
+# ---------------------------------------------------------------------------
+# WHAT THIS CAPTURE DELIBERATELY DID NOT DO
+# ---------------------------------------------------------------------------
+not_done_by_this_capture:
+  - no source file was read for meaning, summarized, reconciled or interpreted
+  - no substantive claim in any file was classified, ranked, endorsed or corrected
+  - no file was ratified, marked current, or treated as architecture
+  - no knowledge migration was started (C8 step 6 remains NOT_STARTED)
+  - no authority record, selector, decision record or registry was edited
+  - no legacy docs/ file was added, tracked, modified or made visible to any scanner
+  - the nine source files were left exactly where and as they were
+  - AQ4 untouched and still PAUSED; Bridge v0 unused and still PARKED_UNUSED
+
+status_of_these_files_for_a_future_reader: >-
+  UNKNOWN. Each still needs the classification Stage D called for —
+  BINDING_LAW / MEASURED_EVIDENCE / DESIGN_RESEARCH / REFERENCE /
+  INCIDENT_HISTORY / SUPERSEDED_HISTORY / AMBIGUOUS_STATUS — decided under the
+  durable authority rules, not inferred from filename, date, prose, or from the
+  fact that this capture exists.
