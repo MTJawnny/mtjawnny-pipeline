@@ -34,7 +34,7 @@ import foundry_probe as p              # noqa: E402
 import foundry_common as fc            # noqa: E402
 
 CARDS_PATH = fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz"
-ANCHORS_PATH = REPO / "anchors.txt"
+ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"
 
 
 def anchor_names() -> list:

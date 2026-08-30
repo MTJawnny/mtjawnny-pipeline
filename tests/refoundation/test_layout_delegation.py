@@ -1655,14 +1655,109 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
 # see it was taken rather than assumed.
 
 
+ANCHORS_FILE = "anchors.txt"
+CORPUS_FILE = "oracle-cards.jsonl.gz"
+
+
+def _outermost_joins(tree: ast.AST) -> list:
+    """Outermost `/` chains only — the left-nesting rule every checker here
+    obeys — with the sys.path bootstrap excluded."""
+    bootstrap = set()
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                and node.func.attr in ("insert", "append")
+                and isinstance(node.func.value, ast.Attribute)
+                and node.func.value.attr == "path"):
+            for d in ast.walk(node):
+                bootstrap.add(id(d))
+    joins = [n for n in ast.walk(tree)
+             if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div)]
+    inner = {id(d) for n in joins for d in ast.walk(n) if d is not n}
+    return [j for j in joins if id(j) not in inner and id(j) not in bootstrap]
+
+
+def local_file_constructions(source: str, filename: str,
+                             names=("REPO", "REPO_ROOT")) -> list[str]:
+    """Path joins that reach a repository FILE through a LOCAL root variable.
+
+    THE THIRD CHECKER IN THIS FILE, AND IT EXISTS BECAUSE THE OTHER TWO
+    TRUTHFULLY CANNOT SEE THIS SHAPE — measured before it was written, not
+    assumed:
+
+      `local_root_relative_constructions` keys on a literal TOP-LEVEL DIRECTORY
+      name. `anchors.txt` is a FILE, so it returns [] for BOTH the live text and
+      a fully reverted `REPO / "anchors.txt"` — a control that could never fire.
+
+      `local_subdir_constructions` keys on a NESTED DIRECTORY name. Handed the
+      string `anchors.txt` its implementation WOULD match, because it scans
+      every string literal in the chain — and that is exactly why it is left
+      alone. Its documented meaning is "a NESTED repository DIRECTORY", the
+      P0.4I guards read it with that meaning, and quietly redefining it to
+      "…or a file" is the same defect as widening TOP_LEVEL_DIRS: a constant's
+      meaning changed so a new control would fire.
+
+    So this keys on the one thing that actually distinguishes the shape — the
+    FINAL component of the chain is the literal filename — which makes it a
+    FILE checker rather than a third directory checker with a different list.
+    """
+    out = []
+    for node in _outermost_joins(ast.parse(source)):
+        if not (isinstance(node.right, ast.Constant)
+                and node.right.value == filename):
+            continue
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        while isinstance(base, ast.Attribute) and base.attr == "parent":
+            base = base.value
+        if isinstance(base, ast.Name) and base.id in names:
+            out.append(f"line {node.lineno}: {ast.unparse(node)}")
+    return out
+
+
+def root_delegated_file_constructions(source: str, filename: str) -> list[str]:
+    """The delegated counterpart: `fc.REPO_ROOT / ... / <filename>`.
+
+    Keyed on the FILE, so a per-site positive arm can name the site it means.
+    `root_delegating_expressions` counts every delegation in a file, which was
+    unambiguous while `foundry_wire_capability` had exactly one — it now has
+    two, and a bare count can no longer say WHICH one it saw.
+    """
+    out = []
+    for node in _outermost_joins(ast.parse(source)):
+        if not (isinstance(node.right, ast.Constant)
+                and node.right.value == filename):
+            continue
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        if (isinstance(base, ast.Attribute) and base.attr == "REPO_ROOT"
+                and isinstance(base.value, ast.Name) and base.value.id == "fc"):
+            out.append(f"line {node.lineno}: {ast.unparse(node)}")
+    return out
+
+
 class TestTheSeventhSliceDelegatesTheCorpusPath(unittest.TestCase):
-    def test_the_one_root_delegation_is_the_corpus_path(self):
-        got = root_delegating_expressions(
-            WIRE_CAPABILITY.read_text(encoding="utf-8"))
+    def test_the_corpus_path_is_a_root_delegation(self):
+        """P0.4J asserted this as "the ONE root delegation" in the file, which
+        was true when the file had one. P0.4K migrates ANCHORS_PATH, so the
+        file now has two and a bare count can no longer say WHICH one it saw.
+        Re-keyed to the CORPUS SITE: the claim P0.4J actually made about
+        CARDS_PATH is unchanged and still asserted here."""
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        got = root_delegated_file_constructions(source, CORPUS_FILE)
         self.assertEqual(len(got), 1, got)
         self.assertIn("'data'", got[0])
         self.assertIn("'raw'", got[0])
         self.assertIn("'oracle-cards.jsonl.gz'", got[0])
+
+    def test_the_file_now_carries_exactly_two_root_delegations(self):
+        """The corpus (P0.4J) and the anchors file (P0.4K). Stated so the
+        superseded "exactly one" claim is replaced by a real count rather than
+        quietly dropped."""
+        self.assertEqual(
+            len(root_delegating_expressions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8"))), 2)
 
     def test_no_local_root_relative_construction_remains(self):
         self.assertEqual(
@@ -1704,10 +1799,21 @@ class TestTheSeventhSliceCheckerCatchesAReversion(unittest.TestCase):
         self.assertEqual(len(found), 1, found)
         self.assertIn("REPO.parent", found[0])
 
-    def test_reverting_also_drops_the_root_delegation(self):
+    def test_reverting_also_drops_the_corpus_root_delegation(self):
         """The DELEGATION-POSITIVE arm. Both are required: a checker that only
-        counts the bad shape would pass a file that had neither."""
-        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+        counts the bad shape would pass a file that had neither.
+
+        Re-keyed to the corpus FILE by P0.4K. Reverting CARDS_PATH no longer
+        empties the file's delegation list — the P0.4K anchors delegation
+        survives it — so a bare emptiness check would now assert the wrong
+        thing, and would PASS for the wrong reason if anchors were reverted
+        too."""
+        reverted = self.reverted()
+        self.assertEqual(
+            root_delegated_file_constructions(reverted, CORPUS_FILE), [])
+        self.assertEqual(
+            len(root_delegated_file_constructions(reverted, ANCHORS_FILE)), 1,
+            "reverting the corpus site must not disturb the anchors site")
 
     def test_the_existing_checkers_cover_both_arms_so_none_was_added(self):
         """The measurement that decided this slice adds no helper. Stated as a
@@ -1716,9 +1822,11 @@ class TestTheSeventhSliceCheckerCatchesAReversion(unittest.TestCase):
         live = WIRE_CAPABILITY.read_text(encoding="utf-8")
         reverted = self.reverted()
         self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
-        self.assertEqual(len(root_delegating_expressions(reverted)), 0)
+        self.assertEqual(
+            len(root_delegated_file_constructions(reverted, CORPUS_FILE)), 0)
         self.assertEqual(len(local_root_relative_constructions(live)), 0)
-        self.assertEqual(len(root_delegating_expressions(live)), 1)
+        self.assertEqual(
+            len(root_delegated_file_constructions(live, CORPUS_FILE)), 1)
 
     def test_the_TOP_LEVEL_DIRS_constant_was_not_widened(self):
         """`data` was ALREADY in the shared constant — this slice relies on
@@ -1761,16 +1869,21 @@ class TestTheSeventhSliceResolvedPathIsByteIdentical(unittest.TestCase):
         self.assertEqual(self.wc.REPO, PATHS.legacy_experiments)
 
 
-class TestTheSeventhSliceLeftAnchorsPathAlone(unittest.TestCase):
-    """ANCHORS_PATH is the adjacent site and is OUT OF SCOPE by contract.
+class TestTheAnchorsSiteWasOutOfSliceForP0_4J_AndIsMigratedByP0_4K(unittest.TestCase):
+    """BOTH TRUTHS, STATED TOGETHER.
 
-    This class exists because after the migration
-    `local_root_relative_constructions` returns [] for this file — and that
-    clean result must NOT be read as "the file is now fully delegated".
-    `ANCHORS_PATH = REPO / "anchors.txt"` is still a local construction; the
-    checker is silent only because `anchors.txt` is a FILE, not one of the
-    top-level directory literals it keys on. Recorded rather than worked
-    around, the same way P0.4I recorded the `moves` blindness.
+    P0.4J deliberately left `ANCHORS_PATH = REPO / "anchors.txt"` alone — it was
+    out of scope by contract — and guarded that fact, including the honest note
+    that `local_root_relative_constructions` returns clean for this file whether
+    or not the anchors site is delegated, because `anchors.txt` is a FILE and
+    that checker keys on top-level DIRECTORY names.
+
+    P0.4K migrates exactly that site. So P0.4J's source-text claims here are
+    genuinely superseded and are rewritten rather than deleted: what P0.4J
+    asserted about its OWN slice (it changed nothing here) stays true of P0.4J,
+    and the class now asserts the post-P0.4K state. The path VALUE the class
+    always guarded — the tracked `experiments/anchors.txt` — is unchanged and
+    still asserted, which is the whole point of a value-preserving delegation.
     """
 
     @classmethod
@@ -1779,25 +1892,35 @@ class TestTheSeventhSliceLeftAnchorsPathAlone(unittest.TestCase):
         cls.wc = load_legacy("foundry_wire_capability")
         cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
 
-    def test_the_anchors_source_text_is_byte_for_byte_unchanged(self):
-        self.assertIn('ANCHORS_PATH = REPO / "anchors.txt"\n', self.source)
+    def test_the_anchors_site_is_now_delegated(self):
+        self.assertIn(
+            'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"',
+            self.source)
         self.assertEqual(self.source.count("ANCHORS_PATH = "), 1)
 
+    def test_the_local_construction_is_gone(self):
+        self.assertNotIn('ANCHORS_PATH = REPO / "anchors.txt"', self.source)
+        self.assertEqual(
+            local_file_constructions(self.source, ANCHORS_FILE), [])
+
     def test_anchors_still_resolves_to_the_tracked_file(self):
+        """Unchanged from P0.4J, and it is the assertion that makes this a
+        delegation rather than a change."""
         self.assertEqual(self.wc.ANCHORS_PATH,
                          PATHS.legacy_experiments / "anchors.txt")
         self.assertTrue(self.wc.ANCHORS_PATH.is_file())
 
-    def test_anchors_is_still_locally_owned_and_the_checker_is_silent_on_it(self):
-        """The honest statement of what this slice did NOT do."""
-        self.assertIn("REPO / \"anchors.txt\"", self.source)
-        self.assertEqual(local_root_relative_constructions(self.source), [])
-
-    def test_anchors_did_not_become_a_root_delegation(self):
-        """The one delegation in this file is the corpus path, not this one."""
-        got = root_delegating_expressions(self.source)
-        self.assertEqual(len(got), 1, got)
-        self.assertNotIn("anchors", got[0])
+    def test_the_P0_4E_checker_is_still_blind_here_which_is_why_a_file_checker_exists(self):
+        """P0.4J recorded this blindness; P0.4K is the slice that needed a
+        checker because of it. Asserted on a REVERTED source so the statement
+        is about the checker, not about the current text happening to be clean.
+        """
+        reverted = self.source.replace(
+            'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"',
+            'ANCHORS_PATH = REPO / "anchors.txt"', 1)
+        self.assertNotEqual(reverted, self.source)
+        self.assertEqual(local_root_relative_constructions(reverted), [])
+        self.assertEqual(len(local_file_constructions(reverted, ANCHORS_FILE)), 1)
 
 
 class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
@@ -1911,6 +2034,270 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
         self.assertNotEqual(WIRE, WIRE_CAPABILITY)
         self.assertEqual(len(delegating_expressions(
             WIRE.read_text(encoding="utf-8"), "codebook.json")), 1)
+
+
+# ---------------------------------------------------------------------------
+# P0.4K — the eighth slice
+# ---------------------------------------------------------------------------
+#
+# The second and LAST layout consumption in `foundry_wire_capability.py`:
+#
+#     ANCHORS_PATH = REPO / "anchors.txt"
+#         ->         fc.REPO_ROOT / "experiments" / "anchors.txt"
+#
+# WHICH HELPERS SEE THIS SHAPE — MEASURED BEFORE ANY TEST WAS WRITTEN:
+#
+#   local_root_relative_constructions   BLIND  (keys on TOP-LEVEL dir names;
+#                                              returns [] for live AND reverted)
+#   local_subdir_constructions          would match if handed "anchors.txt",
+#                                       but its documented meaning is a NESTED
+#                                       DIRECTORY and the P0.4I guards read it
+#                                       that way — NOT repurposed
+#   root_delegating_expressions         sees the NEW shape, but counts BOTH
+#                                       sites in this file, so it cannot serve
+#                                       as an anchors-SPECIFIC positive arm
+#
+# So the ownership arm had no truthful existing checker, and the positive arm
+# had no site-specific one. `local_file_constructions` and
+# `root_delegated_file_constructions` are the smallest pair that fixes exactly
+# that, keyed on the FINAL path component being a literal filename. Neither
+# TOP_LEVEL_DIRS nor any earlier helper's meaning was touched.
+
+
+class TestTheEighthSliceDelegatesTheAnchorsFile(unittest.TestCase):
+    def test_the_anchors_delegation_is_present_and_singular(self):
+        got = root_delegated_file_constructions(
+            WIRE_CAPABILITY.read_text(encoding="utf-8"), ANCHORS_FILE)
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'experiments'", got[0])
+        self.assertIn("'anchors.txt'", got[0])
+
+    def test_no_local_file_construction_remains(self):
+        self.assertEqual(
+            local_file_constructions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8"), ANCHORS_FILE), [])
+
+    def test_the_file_gained_no_import(self):
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_the_provider_is_imported_before_the_site_that_uses_it(self):
+        lines = WIRE_CAPABILITY.read_text(encoding="utf-8").splitlines()
+        imp = next(i for i, l in enumerate(lines)
+                   if l.startswith("import foundry_common as fc"))
+        site = next(i for i, l in enumerate(lines) if l.startswith("ANCHORS_PATH"))
+        self.assertLess(imp, site)
+
+
+class TestTheEighthSliceCheckerCatchesAReversion(unittest.TestCase):
+    """NEGATIVE CONTROL — both arms, aimed at the code path, not the name."""
+
+    NOW = 'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"'
+    BEFORE = 'ANCHORS_PATH = REPO / "anchors.txt"'
+
+    def reverted(self) -> str:
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        """The LOCAL-OWNERSHIP arm."""
+        found = local_file_constructions(self.reverted(), ANCHORS_FILE)
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("REPO / 'anchors.txt'", found[0])
+
+    def test_reverting_also_drops_the_anchors_delegation(self):
+        """The DELEGATION-POSITIVE arm, keyed to the anchors FILE so it cannot
+        be satisfied by the P0.4J corpus delegation sitting one line above."""
+        reverted = self.reverted()
+        self.assertEqual(
+            root_delegated_file_constructions(reverted, ANCHORS_FILE), [])
+        self.assertEqual(
+            len(root_delegated_file_constructions(reverted, CORPUS_FILE)), 1,
+            "reverting the anchors site must not disturb the corpus site")
+
+    def test_the_new_checker_was_needed_because_the_old_ones_are_not_truthful_here(self):
+        """The measurement that justified adding a helper, re-checked on every
+        run rather than trusted from a commit message."""
+        live = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        reverted = self.reverted()
+        # the P0.4E checker cannot tell the two states apart at all
+        self.assertEqual(local_root_relative_constructions(live), [])
+        self.assertEqual(local_root_relative_constructions(reverted), [])
+        # the new one can
+        self.assertEqual(len(local_file_constructions(reverted, ANCHORS_FILE)), 1)
+        self.assertEqual(len(local_file_constructions(live, ANCHORS_FILE)), 0)
+
+    def test_TOP_LEVEL_DIRS_was_not_widened_and_holds_no_filename(self):
+        self.assertNotIn("anchors.txt", TOP_LEVEL_DIRS)
+        self.assertNotIn("oracle-cards.jsonl.gz", TOP_LEVEL_DIRS)
+        self.assertIn("experiments", TOP_LEVEL_DIRS)
+        self.assertIn("data", TOP_LEVEL_DIRS)
+
+    def test_local_subdir_constructions_keeps_its_nested_directory_meaning(self):
+        """It was NOT repurposed as a file checker. Its P0.4I meaning is that a
+        NESTED DIRECTORY is reached through a local root; `moves` still is and
+        this file still has none."""
+        self.assertEqual(
+            local_subdir_constructions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8"), MOVES_SUBDIR), [])
+        self.assertEqual(
+            len(local_subdir_constructions(
+                GROUND_TRUTH.read_text(encoding="utf-8"), MOVES_SUBDIR)), 0)
+
+
+class TestTheEighthSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.wc = load_legacy("foundry_wire_capability")
+
+    def test_anchors_equals_its_pre_change_construction(self):
+        self.assertEqual(self.wc.ANCHORS_PATH, self.wc.REPO / "anchors.txt")
+
+    def test_anchors_equals_the_delegated_value(self):
+        self.assertEqual(self.wc.ANCHORS_PATH,
+                         self.fc.REPO_ROOT / "experiments" / "anchors.txt")
+
+    def test_anchors_equals_the_ratified_owners_layout(self):
+        self.assertEqual(self.wc.ANCHORS_PATH,
+                         PATHS.legacy_experiments / "anchors.txt")
+
+    def test_the_equality_holds_as_strings_too(self):
+        self.assertEqual(str(self.wc.ANCHORS_PATH),
+                         str(self.wc.REPO / "anchors.txt"))
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        self.assertEqual(self.wc.REPO, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.wc.REPO, PATHS.legacy_experiments)
+
+
+class TestTheEighthSliceLeftTheTrackedAnchorsFileAlone(unittest.TestCase):
+    """`experiments/anchors.txt` is a DENY path. The delegation must move the
+    expression, never the evidence it points at."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.wc = load_legacy("foundry_wire_capability")
+
+    def test_the_anchors_file_is_tracked(self):
+        self.assertTrue((PATHS.legacy_experiments / "anchors.txt").is_file())
+
+    def test_the_anchors_file_still_yields_its_names(self):
+        """A delegation that silently pointed somewhere empty would make
+        `anchor_names()` halt, not fail quietly — but the tool's guard is not
+        this one's, so the content is asserted here directly."""
+        names = [l.strip() for l
+                 in self.wc.ANCHORS_PATH.read_text(encoding="utf-8").splitlines()
+                 if l.strip() and not l.strip().startswith("#")]
+        self.assertEqual(len(names), 9)
+        self.assertIn("Sol Ring", names)
+
+    def test_anchors_is_acquired_by_a_READ_and_never_by_a_write(self):
+        """The only primitive applied to the name is `read_text`. Asserted as
+        the attribute access it is, so the module cannot acquire the ability to
+        write over Captain-tracked anchors without failing here."""
+        tree = ast.parse(WIRE_CAPABILITY.read_text(encoding="utf-8"))
+        attrs = sorted(
+            n.attr for n in ast.walk(tree)
+            if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+            and n.value.id == "ANCHORS_PATH")
+        self.assertEqual(attrs, ["read_text"])
+
+
+class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.wc = load_legacy("foundry_wire_capability")
+        cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+
+    def test_the_P0_4J_corpus_delegation_is_untouched(self):
+        self.assertIn(
+            'CARDS_PATH = fc.REPO_ROOT / "data" / "raw" / "oracle-cards.jsonl.gz"',
+            self.source)
+        self.assertEqual(
+            len(root_delegated_file_constructions(self.source, CORPUS_FILE)), 1)
+
+    def test_the_P0_4J_read_mode_guard_is_still_truthful(self):
+        """P0.4J asserted the corpus is opened `"rt"`. Re-asserted here so this
+        slice cannot be the one that quietly invalidates it."""
+        tree = ast.parse(self.source)
+        opens = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "open"
+                 and isinstance(n.func.value, ast.Name)
+                 and n.func.value.id == "gzip"]
+        self.assertEqual(len(opens), 1)
+        self.assertEqual(ast.unparse(opens[0].args[0]), "CARDS_PATH")
+        self.assertEqual(opens[0].args[1].value, "rt")
+
+    def test_the_root_decision_and_bootstrap_are_untouched(self):
+        self.assertIn("REPO = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_module_still_has_no_write_primitive_at_all(self):
+        tree = ast.parse(self.source)
+        primitives = {"write_text", "write_bytes", "mkdir", "touch", "unlink",
+                      "rmdir", "rename", "rmtree", "copy", "copy2", "move",
+                      "makedirs"}
+        found = [(n.lineno, n.func.attr if isinstance(n.func, ast.Attribute)
+                  else n.func.id)
+                 for n in ast.walk(tree) if isinstance(n, ast.Call)
+                 and (isinstance(n.func, ast.Attribute) or isinstance(n.func, ast.Name))
+                 and (n.func.attr if isinstance(n.func, ast.Attribute)
+                      else n.func.id) in primitives]
+        self.assertEqual(found, [])
+
+    def test_the_public_surface_is_unchanged(self):
+        tree = ast.parse(self.source)
+        self.assertEqual(
+            [n.name for n in tree.body if isinstance(n, ast.FunctionDef)],
+            ["anchor_names", "name_index", "main"])
+        self.assertEqual(
+            [t.id for n in tree.body if isinstance(n, ast.Assign)
+             for t in n.targets if isinstance(t, ast.Name)],
+            ["REPO", "CARDS_PATH", "ANCHORS_PATH"])
+        self.assertNotIn("argparse", self.source)
+        self.assertNotIn("sys.argv", self.source)
+
+    def test_no_gate2_row_covers_this_module(self):
+        for _name, argv, _ in gate_rows():
+            self.assertNotIn("experiments/foundry_wire_capability.py", argv)
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
+            FOURTH_SLICE_ROOT_DELEGATIONS)
+        self.assertEqual(
+            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+
+    def test_this_file_is_now_fully_delegated_and_that_is_asserted_positively(self):
+        """With both sites migrated the module states no repository layout of
+        its own beyond its root DECISION. Asserted with the FILE checker, not
+        with the directory checker whose silence here means nothing."""
+        self.assertEqual(local_file_constructions(self.source, ANCHORS_FILE), [])
+        self.assertEqual(local_file_constructions(self.source, CORPUS_FILE), [])
+        self.assertEqual(local_root_relative_constructions(self.source), [])
+        self.assertEqual(
+            len(root_delegating_expressions(self.source)), 2)
 
 
 if __name__ == "__main__":
