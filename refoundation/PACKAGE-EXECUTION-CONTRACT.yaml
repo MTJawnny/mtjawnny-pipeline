@@ -1,0 +1,185 @@
+schema: mtj-package-execution-contract/1
+id: PACKAGE-EXECUTION-CONTRACT
+status: ACTIVE
+established_by: C8.5E.PACKAGE-IMPORT-EXECUTION-CONTRACT
+authority:
+  task: issue:1#issuecomment-5471902653
+  study: issue:1#issuecomment-5471856911
+  captain_direction: issue:1#issuecomment-5471882570
+  self_authority: false
+
+purpose: >-
+  Declare, in one machine-readable place, the execution contexts in which
+  `mtj_foundry` may be relied upon to import, and the exact prerequisite for
+  deleting each temporary bootstrap that stands in for a real installation
+  today. Establishing this contract deletes no bootstrap and moves no module; it
+  is what makes new permanent code able to rely on the package at all.
+
+# ---------------------------------------------------------------------------
+# CONTEXTS
+# ---------------------------------------------------------------------------
+contexts:
+
+  - id: INSTALLED_PACKAGE
+    status: SUPPORTED_PERMANENT
+    definition: >-
+      `import mtj_foundry` succeeds from an unrelated working directory with no
+      PYTHONPATH set, because the package has been installed into the
+      interpreter that is running.
+    this_is_the_target: true
+    provisioning: 'pip install -e . (from the repository root)'
+    provisioning_requires:
+      - 'setuptools>=68, per [build-system] requires in pyproject.toml'
+      - >-
+        that build dependency must be obtainable — from an index (network) or an
+        environment where it is already present. MEASURED 2026-08-30: this
+        machine has no setuptools in the system interpreter and `python -m venv`
+        on Python 3.14 does not seed one, so the provisioning STEP is not
+        reproducible offline here.
+    what_is_proven_offline: >-
+      The IMPORT CONTRACT, which is the part anything depends on. A modern
+      editable install makes the package importable by placing a path
+      configuration file in the target environment's site-packages; the
+      committed test builds exactly that condition in a scratch environment and
+      proves the import from an unrelated cwd with no PYTHONPATH. It does not
+      shell out to pip and needs no network.
+    what_is_NOT_claimed: >-
+      That `pip install -e .` runs offline in this environment. It does not, for
+      the reason above. A real editable install was separately observed to
+      succeed when setuptools was obtainable (C8.5D, on a copy outside the
+      repository).
+
+  - id: LEGACY_LOOSE_SCRIPT_BOOTSTRAP
+    status: SUPPORTED_TRANSITIONAL
+    definition: >-
+      A legacy module is run or imported as a loose script with no installed
+      package present, and reaches what it needs through the compatibility
+      bootstraps enumerated below.
+    supported_until: >-
+      the deletion prerequisite of each bootstrap family is satisfied. Until
+      then this context is load-bearing and no bootstrap may be removed.
+    it_is_not_the_target: true
+
+  - id: EXPLICIT_SOURCE_LAYOUT
+    status: DEVELOPMENT_DIAGNOSTIC_ONLY
+    definition: 'PYTHONPATH=src, or any equivalent manual placement of the source tree on the path.'
+    rule: >-
+      This is a developer/diagnostic convenience and MUST NOT be confused with
+      the permanent install contract. Code may never assume it, a test may never
+      substitute it for INSTALLED_PACKAGE, and no acceptance claim may rest on
+      it. The refoundation test suite itself reaches the package this way
+      (tests/refoundation/helpers.py), which is precisely why the distinction is
+      written down: the suite passing does NOT demonstrate the install contract.
+
+# ---------------------------------------------------------------------------
+# BOOTSTRAP FAMILIES
+#
+# Enumerated from source at C8.5C head aa003340 by resolving the argument of
+# every real `sys.path` call in legacy production to repository-relative
+# components. All 89 calls resolve; there is no unresolved remainder. A
+# committed guard re-derives this table and fails if source and contract
+# disagree in either direction.
+# ---------------------------------------------------------------------------
+bootstrap_families:
+
+  - id: PACKAGE_LOCATION
+    adds: src
+    sites: 1
+    site_list:
+      - experiments/foundry_common.py:34
+    introduced_by: C8.5A
+    what_it_is_for: >-
+      Locating `src/mtj_foundry` so the compatibility boundary can import the
+      permanent path owner. Nothing can ask the layout owner where it lives
+      before importing it, so this literal is irreducible while the package is
+      not installed.
+    deletion_prerequisite: >-
+      The INSTALLED_PACKAGE context holds in every environment in which legacy
+      code is invoked. Nothing else. This is the ONLY family the install
+      contract unblocks.
+
+  - id: LEGACY_SIBLING_IMPORT
+    adds: experiments
+    sites: 87
+    site_list: DERIVED_FROM_SOURCE
+    introduced_by: PRE_REFOUNDATION
+    what_it_is_for: >-
+      Putting the legacy module directory on the path so `import
+      foundry_common`, `import tier_engine` and their siblings resolve when a
+      module is run as a loose script. Spelled two ways that resolve to the same
+      directory: a repository-relative join, and the module re-adding its own
+      directory.
+    deletion_prerequisite: >-
+      The legacy modules become importable without their directory being placed
+      on the path by hand — i.e. the legacy tree becomes a real package, or the
+      scripts are invoked as modules. This is NOT unblocked by installing
+      `mtj_foundry` and is a materially larger change.
+
+  - id: LEGACY_ROOT_DOTTED_IMPORT
+    adds: ''
+    sites: 1
+    site_list:
+      - experiments/snapshot.py:111
+    introduced_by: PRE_REFOUNDATION
+    what_it_is_for: >-
+      Putting the REPOSITORY ROOT on the path, inside a function, so that
+      `import experiments.tier_engine` — a package-style dotted import of a
+      legacy module — resolves. It is the only site that adds the root itself,
+      and the only bootstrap that is deferred rather than module-level.
+    deletion_prerequisite: >-
+      As LEGACY_SIBLING_IMPORT, and stricter: the dotted form additionally
+      requires `experiments` to be an importable package, or the call site must
+      stop using the dotted spelling.
+
+# ---------------------------------------------------------------------------
+# NON-CLAIMS — what installing this package does NOT mean
+# ---------------------------------------------------------------------------
+non_claims:
+
+  - id: NOT_A_DEPENDENCY_MIGRATION
+    statement: >-
+      `dependencies = []` is true of THIS PACKAGE and stays true. It is not a
+      claim about the repository. `pipeline/` requires eight third-party
+      packages (requests, pyyaml, Pillow, sentence-transformers, torch, numpy,
+      pandas, pyarrow per requirements.txt). Legacy foundry production under
+      `experiments/` is stdlib-only, measured. No runtime dependency is
+      migrated, pinned or vendored by this contract.
+
+  - id: NOT_AUTHORIZATION_TO_MOVE_A_SUBSYSTEM
+    statement: >-
+      An importable package is enabling infrastructure for BOTH MOVE_ADAPT and
+      CLEAN_REIMPLEMENT_FROM_CONTRACT. It commits the project to neither, and it
+      is not permission to migrate, copy or reimplement any legacy module. Per
+      the Captain's ratified direction, legacy code is evidence and a behavior
+      oracle, not the target architecture; the next reconstruction decision is a
+      per-subsystem DISPOSITION REVIEW, not an automatic module move.
+
+  - id: NOT_A_BOOTSTRAP_DELETION
+    statement: >-
+      Every bootstrap enumerated above is still load-bearing at this head and
+      none is removed by this contract. Deletion is gated per family on the
+      prerequisite recorded with it, and on the gates being green at that time.
+
+  - id: INSTALL_ARTIFACTS_ARE_NOT_SOURCE
+    statement: >-
+      Anything an installation produces — egg-info, build/, dist/, path
+      configuration files, virtual environments — is a generated artifact. It is
+      never source, never authority, and never an input to a decision.
+      `.gitignore` already covers `*.egg-info/` and `.venv/`; an install
+      performed in the repository therefore produces untracked, ignored bytes,
+      and any conservation manifest that includes ignored paths must declare
+      that delta in advance rather than discover it.
+
+# ---------------------------------------------------------------------------
+# WHAT THIS CONTRACT CHANGED
+# ---------------------------------------------------------------------------
+transition:
+  layout_census_movement: ZERO
+  bootstraps_deleted: 0
+  legacy_modules_moved: 0
+  legacy_modules_reimplemented: 0
+  production_python_changed: 0
+  pyproject_changed: false
+  new_capability: SUPPORTED_INSTALLED_MTJ_FOUNDRY_IMPORT_CONTEXT
+  debt_removed: 0
+  debt_made_explicitly_removable: true

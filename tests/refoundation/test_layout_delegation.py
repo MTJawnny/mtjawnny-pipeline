@@ -4389,5 +4389,315 @@ class TestC85CNegativeControls(unittest.TestCase):
                 source, rel, providers) if r.module == "foundry_codebook"], [])
 
 
+# ===========================================================================
+# C8.5E — THE PACKAGE EXECUTION CONTRACT, AND ITS PARITY WITH SOURCE
+# ===========================================================================
+#
+# `refoundation/PACKAGE-EXECUTION-CONTRACT.yaml` declares which execution
+# contexts may be relied on, and the deletion prerequisite for every temporary
+# bootstrap standing in for a real installation. A contract nobody checks is the
+# shape this repository has been burned by three times -- a ratified token with
+# no emitter, a ratified standard with no caller, a register naming a fix nobody
+# did. So the family table is DERIVED FROM SOURCE here and compared against the
+# document in BOTH directions: a family in source with no contract entry fails,
+# and a contract entry naming no real family fails.
+#
+# NOTHING HERE DELETES A BOOTSTRAP. The families are pinned so that a later
+# slice cannot remove one quietly, and cannot invent one either.
+
+CONTRACT_PATH = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
+
+# Pinned at aa003340. Keys are what the sys.path call ADDS, relative to the
+# repository root; "" is the root itself. NOT a ratchet -- a later slice that
+# legitimately deletes a bootstrap is expected to move these, in a diff.
+BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 87, "": 1}
+BOOTSTRAP_TOTAL = 89
+
+
+def _resolve_path_expr(expr, rel, names, paths_instances, paths_layout):
+    """Repository-relative components an expression denotes, or None.
+
+    Deliberately small and local to this file: `layout_census` is FROZEN by the
+    C8.5E task, and this needs to resolve a `sys.path` ARGUMENT, which the census
+    never had to do. It reuses the census's ascent arithmetic rather than
+    restating it -- re-implementing that is the exact defect C8.5B.R1 repaired.
+    """
+    if (isinstance(expr, ast.Call) and isinstance(expr.func, ast.Name)
+            and expr.func.id == "str" and expr.args):
+        return _resolve_path_expr(expr.args[0], rel, names, paths_instances,
+                                  paths_layout)
+    if isinstance(expr, ast.Name):
+        return names.get(expr.id)
+    if (isinstance(expr, ast.Attribute) and isinstance(expr.value, ast.Name)
+            and expr.value.id in paths_instances):
+        return paths_layout.get(expr.attr)
+    hops = layout_census._file_chain_hops(expr)
+    if hops is not None:
+        return layout_census._root_relative(rel, hops)
+    if (isinstance(expr, ast.BinOp) and isinstance(expr.op, ast.Div)
+            and isinstance(expr.right, ast.Constant)
+            and isinstance(expr.right.value, str)):
+        base = _resolve_path_expr(expr.left, rel, names, paths_instances,
+                                  paths_layout)
+        return None if base is None else base + (expr.right.value,)
+    return None
+
+
+def bootstrap_sites(source: str, rel: Path, paths_layout) -> list[tuple[str, str]]:
+    """`(what it adds, "path:lineno")` for every REAL sys.path call in a module.
+
+    "What it adds" is the RESOLVED directory, not the spelling. 53 modules bind
+    `REPO_ROOT` to their own directory and insert that; others join the literal
+    `"experiments"` onto a repository root. Those are the same family and a
+    spelling-based census would report two.
+    """
+    tree = ast.parse(source)
+    instances = {t.id for st in tree.body if isinstance(st, ast.Assign)
+                 for t in st.targets if isinstance(t, ast.Name)
+                 and isinstance(st.value, ast.Call)
+                 and isinstance(st.value.func, ast.Attribute)
+                 and st.value.func.attr == "for_root"}
+    names: dict[str, tuple[str, ...]] = {}
+    for _ in range(4):
+        for st in ast.walk(tree):
+            if not isinstance(st, ast.Assign):
+                continue
+            value = _resolve_path_expr(st.value, rel, names, instances, paths_layout)
+            if value is None:
+                continue
+            for target in st.targets:
+                if isinstance(target, ast.Name):
+                    names[target.id] = value
+    found = []
+    for call in layout_census.sys_path_call_nodes(tree):
+        value = _resolve_path_expr(call.args[-1], rel, names, instances, paths_layout)
+        found.append((None if value is None else "/".join(value),
+                      f"{rel.as_posix()}:{call.lineno}"))
+    return found
+
+
+def source_bootstrap_families():
+    """`{what it adds: [sites]}` across all of legacy production."""
+    paths_layout = layout_census.project_paths_layout(
+        PATHS_SOURCE.read_text(encoding="utf-8"))
+    families: dict[str, list[str]] = {}
+    for rel in layout_census.tracked_python(REPO_ROOT):
+        if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+            continue
+        for adds, where in bootstrap_sites(
+                (REPO_ROOT / rel).read_text(encoding="utf-8"), rel, paths_layout):
+            families.setdefault(adds, []).append(where)
+    return families
+
+
+def contract_bootstrap_families(text: str) -> dict[str, dict]:
+    """Read the `bootstrap_families:` block. Stdlib only, by design.
+
+    This tree may not import PyYAML (P0.3A: do not pin a legacy dependency), so
+    this is a targeted reader for one known block, not a YAML parser -- the same
+    posture as `helpers.scalars`.
+    """
+    lines = text.splitlines()
+    start = next(i for i, l in enumerate(lines)
+                 if l.startswith("bootstrap_families:"))
+    entries: dict[str, dict] = {}
+    current = None
+    for line in lines[start + 1:]:
+        if line and not line[0].isspace() and not line.startswith("#"):
+            break
+        stripped = line.strip()
+        if stripped.startswith("- id:"):
+            current = {"id": stripped.split(":", 1)[1].strip(), "site_list": []}
+            entries[current["id"]] = current
+        elif current is None or not stripped or stripped.startswith("#"):
+            continue
+        elif stripped.startswith("adds:"):
+            current["adds"] = stripped.split(":", 1)[1].strip().strip("'\"")
+        elif stripped.startswith("sites:"):
+            current["sites"] = int(stripped.split(":", 1)[1].strip())
+        elif stripped.startswith("deletion_prerequisite:"):
+            current["deletion_prerequisite"] = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("site_list:"):
+            current["site_list_literal"] = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("- ") and ":" in stripped and current is not None:
+            token = stripped[2:].strip()
+            if token.rsplit(":", 1)[-1].isdigit():
+                current["site_list"].append(token)
+    return entries
+
+
+class TestTheBootstrapFamiliesArePinned(unittest.TestCase):
+    """Derived from source, so a deleted or invented bootstrap is visible."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.families = source_bootstrap_families()
+
+    def test_every_sys_path_call_resolves_to_a_known_directory(self):
+        """No unresolved remainder. An unresolvable argument would be a family
+        the contract cannot describe, and it would hide there."""
+        self.assertNotIn(None, self.families)
+        self.assertEqual(sum(len(v) for v in self.families.values()),
+                         BOOTSTRAP_TOTAL)
+
+    def test_the_families_are_exactly_the_pinned_three(self):
+        self.assertEqual({k: len(v) for k, v in self.families.items()},
+                         BOOTSTRAP_FAMILIES)
+
+    def test_the_package_location_family_is_the_single_C8_5A_bootstrap(self):
+        self.assertEqual(self.families["src"], ["experiments/foundry_common.py:34"])
+
+    def test_the_root_dotted_family_is_the_single_deferred_bootstrap(self):
+        """The only site that adds the repository root, and the only one inside
+        a function. It exists for `import experiments.tier_engine`."""
+        self.assertEqual(self.families[""], ["experiments/snapshot.py:111"])
+        source = (EXPERIMENTS / "snapshot.py").read_text(encoding="utf-8")
+        enclosing = [n.name for n in ast.walk(ast.parse(source))
+                     if isinstance(n, ast.FunctionDef)
+                     and n.lineno <= 111 <= n.end_lineno]
+        self.assertEqual(enclosing, ["collect_ruling_constants"])
+        self.assertIn("import experiments.tier_engine", source)
+
+    def test_spelling_does_not_split_a_family(self):
+        """The `experiments` family is spelled two ways -- a repository-relative
+        join and a module re-adding its own directory -- and both resolve to the
+        same directory. A spelling-based census would report two families."""
+        sites = self.families["experiments"]
+        joined = [s for s in sites if "REPO_ROOT / " in
+                  (REPO_ROOT / s.split(":")[0]).read_text(encoding="utf-8")
+                  .splitlines()[int(s.split(":")[1]) - 1]]
+        self.assertTrue(joined)
+        self.assertLess(len(joined), len(sites))
+
+
+class TestTheContractMatchesSource(unittest.TestCase):
+    """Parity in BOTH directions, which is the only version that is a guard."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = CONTRACT_PATH.read_text(encoding="utf-8")
+        cls.contract = contract_bootstrap_families(cls.text)
+        cls.families = source_bootstrap_families()
+
+    def test_the_contract_declares_its_schema_and_disclaims_self_authority(self):
+        self.assertIn("schema: mtj-package-execution-contract/1", self.text)
+        self.assertIn("self_authority: false", self.text)
+
+    def test_every_source_family_has_a_contract_entry(self):
+        declared = {e["adds"] for e in self.contract.values()}
+        self.assertEqual(declared, set(self.families))
+
+    def test_no_contract_entry_names_a_family_that_does_not_exist(self):
+        for entry in self.contract.values():
+            with self.subTest(family=entry["id"]):
+                self.assertIn(entry["adds"], self.families)
+
+    def test_the_declared_counts_match_the_measured_counts(self):
+        for entry in self.contract.values():
+            with self.subTest(family=entry["id"]):
+                self.assertEqual(entry["sites"], len(self.families[entry["adds"]]))
+
+    def test_an_enumerated_site_list_matches_source_exactly(self):
+        for entry in self.contract.values():
+            if not entry["site_list"]:
+                continue
+            with self.subTest(family=entry["id"]):
+                self.assertEqual(sorted(entry["site_list"]),
+                                 sorted(self.families[entry["adds"]]))
+
+    def test_every_family_carries_a_deletion_prerequisite(self):
+        for entry in self.contract.values():
+            with self.subTest(family=entry["id"]):
+                self.assertTrue(entry.get("deletion_prerequisite"),
+                                "a family with no deletion prerequisite is debt "
+                                "with no exit")
+
+    def test_the_three_contexts_are_declared_with_distinct_status(self):
+        for context, status in (("INSTALLED_PACKAGE", "SUPPORTED_PERMANENT"),
+                                ("LEGACY_LOOSE_SCRIPT_BOOTSTRAP",
+                                 "SUPPORTED_TRANSITIONAL"),
+                                ("EXPLICIT_SOURCE_LAYOUT",
+                                 "DEVELOPMENT_DIAGNOSTIC_ONLY")):
+            with self.subTest(context=context):
+                self.assertIn(f"id: {context}", self.text)
+                self.assertIn(f"status: {status}", self.text)
+
+    def test_the_non_claims_are_present(self):
+        for claim in ("NOT_A_DEPENDENCY_MIGRATION",
+                      "NOT_AUTHORIZATION_TO_MOVE_A_SUBSYSTEM",
+                      "NOT_A_BOOTSTRAP_DELETION",
+                      "INSTALL_ARTIFACTS_ARE_NOT_SOURCE"):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, self.text)
+
+    def test_it_records_that_nothing_moved(self):
+        for line in ("bootstraps_deleted: 0", "legacy_modules_moved: 0",
+                     "production_python_changed: 0",
+                     "layout_census_movement: ZERO"):
+            self.assertIn(line, self.text)
+
+
+class TestTheContractParityGuardActuallyFires(unittest.TestCase):
+    """NEGATIVE CONTROLS. Each mutates the contract TEXT in memory; no file is
+    written. Aimed at the parity computation, not at the words."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = CONTRACT_PATH.read_text(encoding="utf-8")
+        cls.families = source_bootstrap_families()
+
+    def test_omitting_a_real_family_is_caught(self):
+        broken = self.text.replace("""  - id: LEGACY_ROOT_DOTTED_IMPORT
+    adds: ''
+    sites: 1""", "  - id: PLACEHOLDER_REMOVED\n    adds: src\n    sites: 1")
+        self.assertNotEqual(broken, self.text)
+        declared = {e["adds"] for e in contract_bootstrap_families(broken).values()}
+        self.assertNotEqual(declared, set(self.families))
+        self.assertNotIn("", declared)
+
+    def test_inventing_a_family_that_does_not_exist_is_caught(self):
+        broken = self.text.replace("bootstrap_families:\n", """bootstrap_families:
+
+  - id: INVENTED_FAMILY
+    adds: pipeline
+    sites: 3
+    site_list:
+      - experiments/nowhere.py:1
+    deletion_prerequisite: 'none — this family does not exist'
+""")
+        self.assertNotEqual(broken, self.text)
+        entries = contract_bootstrap_families(broken)
+        self.assertIn("INVENTED_FAMILY", entries)
+        self.assertNotIn(entries["INVENTED_FAMILY"]["adds"], self.families)
+
+    def test_a_wrong_site_count_is_caught(self):
+        broken = self.text.replace("    adds: experiments\n    sites: 87",
+                                   "    adds: experiments\n    sites: 86")
+        self.assertNotEqual(broken, self.text)
+        entry = next(e for e in contract_bootstrap_families(broken).values()
+                     if e["adds"] == "experiments")
+        self.assertNotEqual(entry["sites"], len(self.families["experiments"]))
+
+    def test_a_wrong_enumerated_site_is_caught(self):
+        broken = self.text.replace("      - experiments/foundry_common.py:34",
+                                   "      - experiments/foundry_common.py:35")
+        self.assertNotEqual(broken, self.text)
+        entry = next(e for e in contract_bootstrap_families(broken).values()
+                     if e["adds"] == "src")
+        self.assertNotEqual(sorted(entry["site_list"]),
+                            sorted(self.families["src"]))
+
+    def test_the_unmutated_contract_passes_every_one_of_those_checks(self):
+        """The controls above assert INEQUALITY, so they would all pass against a
+        contract that is wrong in some other way. This is the positive arm."""
+        entries = contract_bootstrap_families(self.text)
+        self.assertEqual({e["adds"] for e in entries.values()}, set(self.families))
+        for entry in entries.values():
+            self.assertEqual(entry["sites"], len(self.families[entry["adds"]]))
+            if entry["site_list"]:
+                self.assertEqual(sorted(entry["site_list"]),
+                                 sorted(self.families[entry["adds"]]))
+
+
 if __name__ == "__main__":
     unittest.main()
