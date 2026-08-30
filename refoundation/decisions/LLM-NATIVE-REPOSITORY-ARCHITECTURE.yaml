@@ -1,0 +1,262 @@
+# LLM-NATIVE REPOSITORY ARCHITECTURE — DECISION CAPTURE
+#
+# This file records Captain direction already captured durably in GitHub Issue #1.
+# It does not self-create authority. The `source` below is the durable capture of
+# the Captain instruction; the detailed prose design is a selected implementation
+# target/refinement, not semantic Foundry law.
+
+schema: mtj-decision-record/1
+set: P0.LLM_NATIVE_REPOSITORY_ARCHITECTURE
+repository: MTJawnny/mtjawnny-pipeline
+recorded: 2026-08-30
+recorded_by: ChatGPT_MANAGER
+
+provenance:
+  captain_direction_capture: issue:1#issuecomment-5471746549
+  prior_p0_architecture: refoundation/decisions/P0-ARCHITECTURE.yaml
+  detailed_design: refoundation/LLM-NATIVE-REPOSITORY-ARCHITECTURE.md
+  p0_1_study: issue:1#issuecomment-5460247505
+  original_captain_ratification: issue:1#issuecomment-5463518042
+
+status:
+  class: CAPTAIN_RATIFIED_DIRECTION
+  scope: REFOUNDATION_KNOWLEDGE_SESSION_RETRIEVAL_ARCHITECTURE
+  semantic_foundry_law_changed: false
+  codebook_authority_changed: false
+  aq4_changed: false
+  active_worker_task_changed: false
+
+compatibility:
+  preserves:
+    - P0.CAPTAIN.A permanent Python namespace mtj_foundry
+    - P0.CAPTAIN.B selector/decision-record authority model
+    - P0.CAPTAIN.C1 no frontmatter self-authority
+    - P0.CAPTAIN.C2 AQ4 PAUSED
+    - P0.CAPTAIN.C3 Bridge v0 PARKED_UNUSED
+    - P0.CAPTAIN.C4 reconstruction authorized
+    - ProjectPaths as permanent layout owner
+    - pure validation and tracked acceptance inputs
+    - bounded migration with semantic/governance conservation
+    - explicit knowledge/artifact classes and legacy disposition
+    - disposable sessions and GitHub durable control plane
+  refines:
+    - deterministic low-token startup
+    - knowledge routing
+    - handoff retirement
+    - agent-specific project instructions
+    - post-reconstruction acceptance
+
+ratified_direction:
+  - id: P0.LLM.1
+    name: progressive_disclosure
+    decision: true
+    meaning: >-
+      All necessary project knowledge must be discoverable, but only the minimum
+      universally necessary knowledge is loaded by default. Deeper context is
+      retrieved just in time from stable repository identifiers.
+
+  - id: P0.LLM.2
+    name: vendor_neutral_knowledge_core
+    decision: true
+    meaning: >-
+      Canonical project knowledge, authority, current state, plans, evidence and
+      history are repository-native and tool-independent. Agent-product configuration
+      is an adapter layer and cannot become the sole source of project truth.
+
+  - id: P0.LLM.3
+    name: small_always_on_map
+    decision: true
+    target: >-
+      A concise cross-agent standing map (AGENTS.md or successor) plus a thin
+      Claude-specific adapter, rather than a monolithic always-loaded manual.
+    size_guidance: >-
+      Approximately 80-150 lines for the cross-agent map and under roughly 200
+      lines per always-on Claude instruction file are research-derived design
+      budgets, not semantic constants or ratchets.
+
+  - id: P0.LLM.4
+    name: conditional_context
+    decision: true
+    mechanisms_are_adapters:
+      - path-scoped rules
+      - nested instructions
+      - Skills
+    meaning: >-
+      Subsystem/procedure knowledge should load only when relevant where the
+      current agent harness supports conditional/on-demand context.
+
+  - id: P0.LLM.5
+    name: canonical_knowledge_not_skill_duplication
+    decision: true
+    meaning: >-
+      Skills/rules route to canonical law/decisions/evidence/reference material.
+      They may summarize stable guidance needed for operation but may not become
+      a competing authority ledger.
+
+  - id: P0.LLM.6
+    name: behavioral_cold_start_acceptance
+    decision: true
+    supersedes_primary_proxy: hard <=4 filesystem reads to authority
+    read_count_status: DIAGNOSTIC_ONLY
+    acceptance_dimensions:
+      - correct current authority resolution
+      - superseded-source avoidance
+      - task-relevant context selection
+      - correct architecture/governance boundary behavior
+      - correct validation selection
+      - correct task outcome
+      - explicit failure when required knowledge is missing or ambiguous
+    negative_controls_required: true
+
+  - id: P0.LLM.7
+    name: deterministic_enforcement_for_hard_invariants
+    decision: true
+    hierarchy:
+      descriptive_knowledge: documentation_or_skill
+      judgment_guidance: instructions_rules_skills_review
+      hard_invariant: tests_gates_permissions_hooks_or_equivalent_where_feasible
+    meaning: >-
+      Model memory/instruction adherence is not the final enforcement boundary for
+      mechanically testable invariants.
+
+  - id: P0.LLM.8
+    name: execution_plans_replace_transcript_handoffs
+    decision: true
+    durable_work_state:
+      - Git refs/commits
+      - structured decision records
+      - active execution plans
+      - exact task/result records
+      - concise current state
+      - tests/evidence
+    transcript_required_for_resume: false
+
+  - id: P0.LLM.9
+    name: isolated_context_for_high_volume_side_work
+    decision: true
+    candidate_uses:
+      - broad research
+      - repository exploration
+      - independent verification
+    requirement: >-
+      The side context returns a compact evidence-bearing synthesis. Its claims do
+      not become authoritative merely because a subagent produced them.
+
+  - id: P0.LLM.10
+    name: code_discovery_before_custom_rag
+    decision: true
+    preferred_order:
+      - explicit architecture and exact known paths
+      - language-server/code-intelligence navigation
+      - targeted repository search
+      - canonical indexes/Skills
+      - custom retrieval infrastructure only after measured failure
+    custom_rag_default: DO_NOT_BUILD
+    rag_if_later_justified: RETRIEVAL_AID_NOT_AUTHORITY
+
+  - id: P0.LLM.11
+    name: replaceable_agent_adapters
+    decision: true
+    meaning: >-
+      Claude Skills/hooks/LSP, AGENTS.md, Copilot instructions/Skills, Cursor rules
+      and similar 2026 mechanisms implement durable capabilities but are not the
+      durable architecture themselves. Adapters may change as tools/models improve.
+
+  - id: P0.LLM.12
+    name: narrow_current_state
+    decision: true
+    state_contains:
+      - globally relevant volatile phase/status
+      - selected authority identifiers
+      - paused/frozen subsystems
+      - open Captain decisions
+      - active plan identifiers
+      - current validation health
+      - repository-wide blockers
+    state_excludes:
+      - project encyclopedia
+      - long historical narrative
+      - duplicated subsystem manuals
+      - hand-entered derivable measurements
+
+  - id: P0.LLM.13
+    name: indexes_are_discovery_not_mandatory_ritual
+    decision: true
+    meaning: >-
+      Knowledge indexes remain valuable for humans, GitHub-only readers and
+      tool-agnostic agents, but an agent may resolve exact authority directly
+      through a Skill, selector, known path, search or code intelligence.
+
+  - id: P0.LLM.14
+    name: documentation_freshness_is_testable
+    decision: true
+    eventual_checks:
+      - broken canonical links/identifiers
+      - stale generated state/index views
+      - orphaned selectors
+      - conflicting singleton authorities
+      - current/superseded inconsistency
+      - adapter pointers to missing canonical sources
+      - completed plans left active
+      - volatile measurements embedded in standing routers
+
+post_reconstruction_sequence:
+  - id: L1
+    name: full_reconstruction_acceptance_audit
+    prerequisite: structural reconstruction reaches planned stopping point
+  - id: L2
+    name: canonical_knowledge_inventory_and_disposition
+    prerequisite: known S1/registry contamination cannot corrupt conservation
+  - id: L3
+    name: canonical_knowledge_state_plan_architecture
+  - id: L4
+    name: small_cross_agent_standing_map
+  - id: L5
+    name: Claude_adapter_rules_skills_hooks
+  - id: L6
+    name: code_intelligence_environment
+  - id: L7
+    name: fresh_agent_behavioral_evaluation_suite_with_negative_controls
+  - id: L8
+    name: retire_bootstrap_and_transcript_handoff_routing
+    prerequisite: L7 green
+  - id: L9
+    name: resume_substantive_product_foundry_roadmap_under_new_workflow
+    note: AQ4 resumption remains separately governed and is not implied
+
+research_snapshot:
+  date: 2026-08-30
+  principle: >-
+    Product-specific features are evidence for implementation adapters, not durable
+    project law. Re-evaluate adapter choices when agent tooling materially changes.
+  primary_sources:
+    - https://code.claude.com/docs/en/memory
+    - https://code.claude.com/docs/en/slash-commands
+    - https://code.claude.com/docs/en/sub-agents
+    - https://code.claude.com/docs/en/hooks-guide
+    - https://code.claude.com/docs/en/permissions
+    - https://code.claude.com/docs/en/plugins-reference
+    - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+    - https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
+    - https://www.anthropic.com/engineering/managed-agents
+    - https://openai.com/index/harness-engineering/
+    - https://docs.github.com/en/copilot/concepts/agents/code-review
+    - https://docs.github.com/en/copilot/reference/customization-cheat-sheet
+    - https://agents.md/
+    - https://cursor.com/docs/rules
+  research_sources:
+    - https://arxiv.org/abs/2307.03172
+    - https://arxiv.org/abs/2404.06654
+    - https://aclanthology.org/2023.emnlp-main.151/
+    - https://arxiv.org/abs/2309.12499
+    - https://swe-agent.com/latest/background/aci/
+
+active_reconstruction_boundary:
+  base_used_for_architecture_branch: f21e989499adaea20314b2363f219380f9257af1
+  architecture_branch: refoundation-manager-llm-native-architecture-2026-08-30
+  c8_5c_scope_changed: false
+  active_worker_must_not_rebase_or_absorb_this_branch_mid_task: true
+  incorporation_point: >-
+    Future Manager sessions should carry this decision forward when authorizing
+    knowledge/session architecture reconstruction. Integrate through a separately
+    audited task/merge boundary rather than changing an active Worker's exact base.
