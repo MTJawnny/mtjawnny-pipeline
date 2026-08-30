@@ -477,13 +477,24 @@ class TestTheSecondSliceChangedNothingElse(unittest.TestCase):
         cls.sr = load_legacy("foundry_slug_reparse")
         cls.r5 = load_legacy("foundry_r5_attribution")
 
-    def test_slug_reparse_grammar_is_untouched(self):
-        """It sits on the line ABOVE the migrated CODEBOOK and is a
-        root-relative docs path — a real ownership site, deliberately out of
-        slice."""
-        self.assertIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
-                      '"CODEBOOK-NAMING-GRAMMAR.md"',
-                      SLUG_REPARSE.read_text(encoding="utf-8"))
+    def test_slug_reparse_grammar_was_out_of_slice_for_P0_4C_and_is_migrated_by_P0_4M(self):
+        """BOTH TRUTHS.
+
+        P0.4C migrated `CODEBOOK` on the line BELOW and deliberately left
+        `GRAMMAR` alone, guarding that it stayed a local root-relative docs
+        path. That was true of P0.4C and is recorded here still. P0.4M migrates
+        exactly that line, so the SOURCE-TEXT half of the original claim is
+        genuinely superseded and is updated rather than deleted.
+
+        The half that carried the meaning — GRAMMAR resolves to the ratified
+        owner's `docs/CODEBOOK-NAMING-GRAMMAR.md` — is UNCHANGED and still
+        asserted below, which is the whole point of a value-preserving
+        delegation. Nothing about the ruling document moves (C7.4)."""
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertIn('GRAMMAR = fc.REPO_ROOT / "docs" / '
+                      '"CODEBOOK-NAMING-GRAMMAR.md"', source)
+        self.assertNotIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
+                         '"CODEBOOK-NAMING-GRAMMAR.md"', source)
         self.assertEqual(self.sr.GRAMMAR,
                          PATHS.legacy_docs / "CODEBOOK-NAMING-GRAMMAR.md")
 
@@ -2298,6 +2309,280 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(local_root_relative_constructions(self.source), [])
         self.assertEqual(
             len(root_delegating_expressions(self.source)), 2)
+
+
+# ---------------------------------------------------------------------------
+# P0.4M — the ninth slice
+# ---------------------------------------------------------------------------
+#
+#     experiments/foundry_slug_reparse.py:50
+#       GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
+#           ->    fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
+#
+# C7.4 BOUNDARY, STATED SO IT CANNOT BE STRETCHED LATER: the value is a binding
+# RULING document, and C7.4 preserves "ruling ids/content/provenance, NOT old
+# document paths" — the same clause shape that authorized the CR read-path
+# migration in P0.4H under C7.5. This slice moves the EXPRESSION that computes
+# the path and nothing else: the document's bytes, ids, content and provenance
+# are untouched and asserted so. It is NOT precedent for touching generated
+# artifacts, authority selectors, known-debt controls, write targets, or peer
+# providers.
+#
+# HELPER COVERAGE WAS MEASURED FIRST, ON REAL OLD/NEW SOURCE, BEFORE ANY TEST
+# WAS WRITTEN — the P0.4L.R1 prediction was NOT assumed:
+#
+#   local_root_relative_constructions    1 -> 0   (ownership, shared helper)
+#   root_delegating_expressions          0 -> 1   (delegation, shared helper)
+#   local_file_constructions(GRAMMAR)    1 -> 0   (ownership, GRAMMAR-SPECIFIC)
+#   root_delegated_file_constructions    0 -> 1   (delegation, GRAMMAR-SPECIFIC)
+#
+# `docs` is already in TOP_LEVEL_DIRS, so the shared P0.4E pair sees this site
+# natively, and the P0.4K filename-keyed pair supplies the site-specific arms
+# the task requires. NO new checker was added and NO shared helper or constant
+# was widened.
+
+GRAMMAR_FILE = "CODEBOOK-NAMING-GRAMMAR.md"
+
+
+class TestTheNinthSliceDelegatesTheGrammarReadPath(unittest.TestCase):
+    def test_the_grammar_delegation_is_present_and_singular(self):
+        got = root_delegated_file_constructions(
+            SLUG_REPARSE.read_text(encoding="utf-8"), GRAMMAR_FILE)
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'docs'", got[0])
+
+    def test_no_local_construction_remains_on_either_checker(self):
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertEqual(local_root_relative_constructions(source), [])
+        self.assertEqual(local_file_constructions(source, GRAMMAR_FILE), [])
+
+    def test_the_file_gained_no_import(self):
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+        self.assertEqual(source.count("import foundry_common"), 1)
+
+    def test_the_provider_is_imported_before_the_site_that_uses_it(self):
+        lines = SLUG_REPARSE.read_text(encoding="utf-8").splitlines()
+        imp = next(i for i, l in enumerate(lines)
+                   if l.startswith("import foundry_common as fc"))
+        site = next(i for i, l in enumerate(lines) if l.startswith("GRAMMAR"))
+        self.assertLess(imp, site)
+
+    def test_no_peer_provider_was_introduced(self):
+        """`foundry_shape_extractor` is imported as `fx` and exports its OWN
+        GRAMMAR constant, which would have been an exact-match peer provider.
+        It was NOT used: the delegation goes directly to the ratified
+        compatibility boundary."""
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertNotIn("fx.GRAMMAR", source)
+        self.assertNotIn("p.GRAMMAR", source)
+
+
+class TestTheNinthSliceCheckerCatchesAReversion(unittest.TestCase):
+    NOW = 'GRAMMAR = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"'
+    BEFORE = 'GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"'
+
+    def reverted(self) -> str:
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertIn(self.NOW, source, "the live text moved; fix the control")
+        out = source.replace(self.NOW, self.BEFORE, 1)
+        self.assertNotEqual(out, source)
+        return out
+
+    def test_restoring_the_local_construction_is_caught(self):
+        """The LOCAL-OWNERSHIP arm, on both checkers that see this shape."""
+        reverted = self.reverted()
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
+        self.assertEqual(len(local_file_constructions(reverted, GRAMMAR_FILE)), 1)
+
+    def test_reverting_also_drops_the_grammar_delegation(self):
+        """The GRAMMAR-SPECIFIC delegation-positive arm. Keyed on the filename
+        so it cannot be satisfied by the P0.4C `codebook.json` delegation
+        sitting on the very next line."""
+        reverted = self.reverted()
+        self.assertEqual(
+            root_delegated_file_constructions(reverted, GRAMMAR_FILE), [])
+        self.assertEqual(
+            len(delegating_expressions(reverted, "codebook.json")), 1,
+            "reverting GRAMMAR must not disturb the P0.4C CODEBOOK delegation")
+
+    def test_the_measured_helper_coverage_is_what_decided_no_new_checker(self):
+        """Re-checked every run rather than trusted from a commit message."""
+        live, reverted = SLUG_REPARSE.read_text(encoding="utf-8"), self.reverted()
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
+        self.assertEqual(len(root_delegated_file_constructions(reverted, GRAMMAR_FILE)), 0)
+        self.assertEqual(len(local_root_relative_constructions(live)), 0)
+        self.assertEqual(len(root_delegated_file_constructions(live, GRAMMAR_FILE)), 1)
+
+    def test_no_shared_helper_constant_was_widened(self):
+        self.assertIn("docs", TOP_LEVEL_DIRS)
+        self.assertNotIn(GRAMMAR_FILE, TOP_LEVEL_DIRS)
+        self.assertNotIn("codebook.json", TOP_LEVEL_DIRS)
+
+
+class TestTheNinthSliceResolvedPathIsByteIdentical(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.sr = load_legacy("foundry_slug_reparse")
+
+    def test_grammar_equals_its_pre_change_construction(self):
+        self.assertEqual(self.sr.GRAMMAR,
+                         self.sr.REPO_ROOT.parent / "docs" / GRAMMAR_FILE)
+
+    def test_grammar_equals_the_delegated_value(self):
+        self.assertEqual(self.sr.GRAMMAR,
+                         self.fc.REPO_ROOT / "docs" / GRAMMAR_FILE)
+
+    def test_grammar_equals_the_ratified_owners_legacy_docs_path(self):
+        self.assertEqual(self.sr.GRAMMAR, PATHS.legacy_docs / GRAMMAR_FILE)
+
+    def test_the_equality_holds_as_strings_too(self):
+        self.assertEqual(str(self.sr.GRAMMAR),
+                         str(self.sr.REPO_ROOT.parent / "docs" / GRAMMAR_FILE))
+        self.assertEqual(str(self.sr.GRAMMAR), str(PATHS.legacy_docs / GRAMMAR_FILE))
+
+    def test_the_local_root_binding_still_resolves_as_before(self):
+        """CONSUMPTION delegated, the root DECISION untouched."""
+        self.assertEqual(self.sr.REPO_ROOT, self.fc.REPO_ROOT / "experiments")
+        self.assertEqual(self.sr.REPO_ROOT, PATHS.legacy_experiments)
+
+
+class TestTheNinthSliceLeftTheRulingDocumentAlone(unittest.TestCase):
+    """C7.4: the PATH is plumbing, the DOCUMENT is truth. This class guards the
+    truth half."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sr = load_legacy("foundry_slug_reparse")
+
+    def test_the_grammar_document_is_tracked_and_present(self):
+        self.assertTrue((PATHS.legacy_docs / GRAMMAR_FILE).is_file())
+        self.assertEqual(self.sr.GRAMMAR, PATHS.legacy_docs / GRAMMAR_FILE)
+
+    def test_the_grammar_document_still_carries_the_sections_this_probe_reads(self):
+        """Content, not cardinality: the five sections `section_tokens` is
+        called with must each still be present, or the probe would halt."""
+        text = (PATHS.legacy_docs / GRAMMAR_FILE).read_text(encoding="utf-8")
+        for num in ("3", "4", "5", "6", "8"):
+            with self.subTest(section=num):
+                self.assertRegex(text, rf"(?m)^## {num}\.")
+
+    def test_grammar_is_acquired_by_a_READ_and_never_by_a_write(self):
+        """The only primitive applied to the name is `read_text`."""
+        tree = ast.parse(SLUG_REPARSE.read_text(encoding="utf-8"))
+        attrs = sorted(n.attr for n in ast.walk(tree)
+                       if isinstance(n, ast.Attribute)
+                       and isinstance(n.value, ast.Name)
+                       and n.value.id == "GRAMMAR")
+        self.assertEqual(attrs, ["read_text"])
+
+    def test_the_read_feeds_section_parsing(self):
+        """`text = GRAMMAR.read_text(...)` is what every `section_tokens` call
+        consumes, so the migrated constant is load-bearing for the printed
+        vocabulary rather than merely present."""
+        source = SLUG_REPARSE.read_text(encoding="utf-8")
+        self.assertIn('text = GRAMMAR.read_text(encoding="utf-8")', source)
+        self.assertEqual(source.count("section_tokens(text,"), 5)
+
+
+class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.fc = load_legacy("foundry_common")
+        cls.sr = load_legacy("foundry_slug_reparse")
+        cls.source = SLUG_REPARSE.read_text(encoding="utf-8")
+
+    def test_the_P0_4C_codebook_delegation_is_untouched(self):
+        self.assertIn('CODEBOOK = fc.FOUNDRY_OUT_DIR / "codebook.json"', self.source)
+        self.assertEqual(self.sr.CODEBOOK, PATHS.legacy_foundry_out / "codebook.json")
+        self.assertEqual(len(delegating_expressions(self.source, "codebook.json")), 1)
+
+    def test_the_root_decision_and_bootstrap_are_untouched(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
+        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+        self.assertEqual(self.source.count("sys.path.insert"), 1)
+
+    def test_the_one_write_primitive_stays_flag_gated(self):
+        """`Path(args.json).write_text(...)` must remain inside `if args.json:`,
+        and `--json` must keep NO default — that pair is what makes the bare
+        command's read-only conservation evidence valid."""
+        tree = ast.parse(self.source)
+        writes = [n for n in ast.walk(tree)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and n.func.attr == "write_text"]
+        self.assertEqual(len(writes), 1)
+        gated = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.If) and ast.unparse(n.test) == "args.json"
+                 and any(w is d for d in ast.walk(n) for w in writes)]
+        self.assertEqual(len(gated), 1, "the only write is no longer gated on args.json")
+        json_arg = [n for n in ast.walk(tree)
+                    if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "add_argument"
+                    and any(isinstance(a, ast.Constant) and a.value == "--json"
+                            for a in n.args)]
+        self.assertEqual(len(json_arg), 1)
+        self.assertEqual([k.arg for k in json_arg[0].keywords], [],
+                         "--json gained a default; bare execution could now write")
+
+    def test_the_module_has_no_other_write_primitive(self):
+        tree = ast.parse(self.source)
+        primitives = {"write_bytes", "mkdir", "touch", "unlink", "rmdir",
+                      "rename", "rmtree", "copy", "copy2", "move", "makedirs",
+                      "write_json"}
+        found = [(n.lineno, n.func.attr) for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr in primitives]
+        self.assertEqual(found, [])
+
+    def test_the_public_and_CLI_surface_is_unchanged(self):
+        tree = ast.parse(self.source)
+        self.assertEqual(
+            [t.id for n in tree.body if isinstance(n, ast.Assign)
+             for t in n.targets if isinstance(t, ast.Name)],
+            ["REPO_ROOT", "GRAMMAR", "CODEBOOK"])
+        flags = [a.value for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "add_argument"
+                 for a in n.args if isinstance(a, ast.Constant)]
+        self.assertEqual(flags, ["--show-unknown", "--show-ambiguous", "--json"])
+
+    def test_no_gate2_row_covers_this_module(self):
+        """Measured, not assumed: the runtime evidence for this slice is the
+        direct bare command, and a later slice must not inherit a coverage
+        claim this file never had."""
+        for _name, argv, _ in gate_rows():
+            self.assertNotIn("experiments/foundry_slug_reparse.py", argv)
+
+    def test_the_deny_listed_sibling_grammar_site_is_untouched(self):
+        """`foundry_shape_extractor.py:52` holds the SAME expression and is
+        explicitly out of scope. Asserted so this slice cannot quietly become
+        two."""
+        self.assertIn('GRAMMAR = REPO_ROOT.parent / "docs" / '
+                      '"CODEBOOK-NAMING-GRAMMAR.md"',
+                      (EXPERIMENTS / "foundry_shape_extractor.py").read_text(encoding="utf-8"))
+
+    def test_foundry_common_is_still_not_modified(self):
+        self.assertIn("REPO_ROOT = Path(__file__).resolve().parents[1]",
+                      (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8"))
+
+    def test_the_earlier_slices_sites_are_not_touched(self):
+        self.assertEqual(
+            len(delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(REACHABILITY.read_text(encoding="utf-8"))), 2)
+        self.assertEqual(
+            len(root_delegating_expressions(PROBE.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
+            FOURTH_SLICE_ROOT_DELEGATIONS)
+        self.assertEqual(
+            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(root_delegating_expressions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8"))), 2)
 
 
 if __name__ == "__main__":
