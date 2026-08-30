@@ -3159,11 +3159,14 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         self.assertTrue(str(paths.legacy_foundry_review).startswith("/definitely"))
 
     def test_no_other_public_property_was_added(self):
+        """C8.5C adds exactly one: `legacy_data_artifacts`. The list is pinned
+        in full rather than counted, because a count cannot see a substitution."""
         props = sorted(n for n in dir(ProjectPaths)
                        if not n.startswith("_")
                        and isinstance(getattr(ProjectPaths, n), property))
         self.assertEqual(props, [
             "baselines", "config", "conservation", "decisions",
+            "legacy_data_artifacts",
             "legacy_docs", "legacy_experiments", "legacy_experiments_out",
             "legacy_foundry_out", "legacy_foundry_review", "legacy_pipeline",
             "refoundation", "src", "tests"])
@@ -3219,29 +3222,36 @@ class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
 PATHS_SOURCE = (REPO_ROOT / "src" / "mtj_foundry" / "paths.py")
 FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
 
-# Measured fresh at be52961 from the AST of all 126 tracked Python files.
+# Measured fresh from the AST of every tracked Python file. Re-measured at the
+# C8.5C head: the migration moved 23 of these numbers in exactly the direction
+# the Manager pre-committed (issue:1#issuecomment-5471648752), with zero
+# unexplained differences. The C8.5B values are kept beside each moved row so a
+# later reader can see the movement rather than a fresh unexplained constant.
 CENSUS_HEAD = {
     # 126 tracked files at the C8.5A head be52961, plus this task's own new
     # census helper, which lands in the `tests` bucket and in no measured scope.
     "tracked_python": 127,
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11, "src": 4, "tests": 13},
-    "delegations_total": 140,
+    "delegations_total": 141,                      # C8.5B: 140
     "delegations_by_provider": {
-        "foundry_common.FOUNDRY_OUT_DIR": 126,
-        "foundry_common.REPO_ROOT": 12,
-        "foundry_codebook.REPO_ROOT": 2,
+        "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
+        "foundry_common.REPO_ROOT": 14,            # C8.5B: 12 (+2 re-pointed)
+        "foundry_common.DATA_ARTIFACTS_DIR": 1,    # C8.5B: name did not exist
+        # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
+        # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
-        "PATH_JOIN": 135, "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1, "CALL_ARG": 1,
+        "PATH_JOIN": 136,                          # C8.5B: 135
+        "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1, "CALL_ARG": 1,
     },
-    "delegation_files": 52,
-    "local_sites_total": 89,
-    "local_sites_bootstrap": 28,
-    "local_sites_consumption": 61,
-    "consumption_origin": {"hop1": 45, "hop2": 14, "inline": 2},
-    "consumption_scope": {"module": 44, "function": 17},
-    "consumption_files": 30,
+    "delegation_files": 52,                        # unchanged
+    "local_sites_total": 88,                       # C8.5B: 89
+    "local_sites_bootstrap": 28,                   # unchanged
+    "local_sites_consumption": 60,                 # C8.5B: 61
+    "consumption_origin": {"hop1": 44, "hop2": 14, "inline": 2},   # hop1 was 45
+    "consumption_scope": {"module": 43, "function": 17},           # module was 44
+    "consumption_files": 29,                       # C8.5B: 30
     "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
 }
 
@@ -3603,9 +3613,9 @@ class TestFileChainAscentSemantics(unittest.TestCase):
         `CENSUS_HEAD` above is asserted unchanged by the counting tests."""
         _, providers = _census_inputs()
         self.assertEqual(providers["foundry_common"]["_BOOTSTRAP_ROOT"], ())
-        self.assertEqual(providers["foundry_codebook"]["REPO_ROOT"], ())
-        self.assertEqual(providers["foundry_codebook"]["LATEST_ARTIFACT_PATH"],
-                         ("data", "artifacts", "latest.json"))
+        # C8.5C made both bootstrap roots private; both are still `parents[1]`
+        # chains, which is what this guard is about.
+        self.assertEqual(providers["foundry_codebook"]["_BOOTSTRAP_ROOT"], ())
         for rel in (Path("experiments/foundry_common.py"),
                     Path("experiments/foundry_codebook.py")):
             source = (REPO_ROOT / rel).read_text(encoding="utf-8")
@@ -3633,13 +3643,25 @@ class TestTheProviderRepair(unittest.TestCase):
         self.assertEqual(got["REVIEW_DIR"],
                          ("experiments", "out", "foundry", "review"))
 
-    def test_the_unmigrated_peer_provider_still_resolves_by_its_file_chain(self):
-        """`foundry_codebook` has NOT been migrated. The repaired rule must keep
-        reading the old shape, or it trades one blind spot for another."""
-        got = self.providers["foundry_codebook"]
-        self.assertEqual(got["REPO_ROOT"], ())
-        self.assertEqual(got["LATEST_ARTIFACT_PATH"],
-                         ("data", "artifacts", "latest.json"))
+    def test_a_file_chain_provider_still_resolves_by_its_chain(self):
+        """The C8.5B guard's MEANING, kept after its live subject was migrated.
+
+        It asserted that the repaired rule does not trade one blind spot for
+        another -- it must still read a `Path(__file__)`-derived provider.
+        C8.5C removed the last PUBLIC one (`foundry_codebook.REPO_ROOT`), so the
+        claim is now carried by two things instead of a deleted test: the
+        surviving private bootstrap root, which is still chain-derived, and a
+        FIXTURE, so the capability stays guarded even once no live instance
+        remains. That is the "a ratified standard with no caller" shape avoided
+        rather than repeated."""
+        self.assertEqual(self.providers["foundry_codebook"]["_BOOTSTRAP_ROOT"], ())
+        fixture = ('from pathlib import Path\n'
+                   'REPO_ROOT = Path(__file__).resolve().parents[1]\n'
+                   'DATA = REPO_ROOT / "data" / "artifacts" / "latest.json"\n')
+        got = layout_census.provider_layout(
+            fixture, Path("experiments/fixture.py"), paths_layout={})
+        self.assertEqual(got, {"REPO_ROOT": (),
+                               "DATA": ("data", "artifacts", "latest.json")})
 
     def test_the_pre_repair_rule_cannot_see_the_migrated_providers(self):
         """THE DEFECT, kept demonstrable. The chain-only rule finds only the two
@@ -3650,10 +3672,15 @@ class TestTheProviderRepair(unittest.TestCase):
             self.assertNotIn(name, old)
 
     def test_the_pre_repair_rule_collapses_the_delegation_census(self):
-        """Reproduces the collapse the Manager reported: with the old rule the
-        scoped legacy-production path-constructing delegation surface falls from
-        135 to 1 -- the single survivor being an expression on the peer provider
-        that has not been migrated yet."""
+        """Reproduces the collapse the Manager reported, now complete.
+
+        C8.5B measured 135 -> 1: the single survivor was an expression on
+        `foundry_codebook`, the peer provider a chain rule could still see.
+        C8.5C migrated it, so the pre-repair rule now finds NO layout provider
+        at all and the surface falls 136 -> 0. The guard is strictly stronger
+        than the one it replaces -- zero is only reachable because there is no
+        longer any independently derived public provider anywhere in legacy
+        production, which is exactly what this migration set out to prove."""
         old_providers = {
             m: layout_census.legacy_chain_provider_layout(
                 (EXPERIMENTS / f"{m}.py").read_text(encoding="utf-8"),
@@ -3668,7 +3695,7 @@ class TestTheProviderRepair(unittest.TestCase):
                 source, rel, old_providers) if r.form == "PATH_JOIN")
             repaired += sum(1 for r in layout_census.delegation_references(
                 source, rel, self.providers) if r.form == "PATH_JOIN")
-        self.assertEqual(collapsed, 1)
+        self.assertEqual(collapsed, 0)
         self.assertEqual(repaired, CENSUS_HEAD["delegations_by_form"]["PATH_JOIN"])
 
     def test_a_wrong_ProjectPaths_property_turns_the_guard_red(self):
@@ -3873,9 +3900,7 @@ class TestTheFreshCountsAndTheirReconciliation(unittest.TestCase):
     def setUpClass(cls):
         _, cls.providers = _census_inputs()
         cls.refs, cls.sites = [], []
-        cls.raw = {"foundry_common.FOUNDRY_OUT_DIR": 0,
-                   "foundry_common.REPO_ROOT": 0,
-                   "foundry_codebook.REPO_ROOT": 0}
+        cls.raw = {name: 0 for name in CENSUS_HEAD["delegations_by_provider"]}
         for rel in layout_census.tracked_python(REPO_ROOT):
             if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
                 continue
@@ -3980,6 +4005,388 @@ class TestTheFreshCountsAndTheirReconciliation(unittest.TestCase):
     def test_the_boundary_is_not_counted_as_delegating_to_itself(self):
         self.assertEqual([r for r in self.refs
                           if r.path == "experiments/foundry_common.py"], [])
+
+
+# ===========================================================================
+# C8.5C — THE LAST LEGACY LAYOUT PROVIDER
+# ===========================================================================
+#
+# `foundry_codebook` was the second independently derived layout authority in
+# legacy production: it exported `REPO_ROOT = Path(__file__).resolve().parents[1]`
+# and built `data/artifacts/latest.json` from it, and two expressions in
+# `foundry_consolidate_run1_apply` consumed that peer root. C8.5C ends it.
+#
+# WHY THE ROOT IS NOT SIMPLY BORROWED FROM THE BOUNDARY. Writing
+# `fc.REPO_ROOT / "data" / "artifacts" / "latest.json"` would have removed the
+# peer PROVIDER while leaving the layout FACT stated outside the owner — the
+# same trade C8.5A already refused. The Manager ruled accordingly
+# (issue:1#issuecomment-5471643888): `ProjectPaths` names the existing legacy
+# directory, `foundry_common` exposes the owned value, and the consumer appends
+# only the filename. NAMING IS NOT MOVING — nothing relocated.
+#
+# What remains in `foundry_codebook` is a PRIVATE `_BOOTSTRAP_ROOT` whose only
+# job is putting `experiments` on `sys.path` so `import foundry_common` can
+# resolve at all. That is the same irreducible knowledge as C8.5A's `src`
+# bootstrap: nothing can import the boundary before knowing where it is.
+
+FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
+CONSOLIDATE_APPLY = EXPERIMENTS / "foundry_consolidate_run1_apply.py"
+
+
+def _module_bindings(source: str) -> dict[str, str]:
+    """Module-level `NAME = <expr>` as unparsed text, for structural assertions."""
+    out = {}
+    for statement in ast.parse(source).body:
+        if isinstance(statement, ast.Assign):
+            for target in statement.targets:
+                if isinstance(target, ast.Name):
+                    out[target.id] = ast.unparse(statement.value)
+    return out
+
+
+class TestTheOwnerNamesTheDataArtifactsDirectory(unittest.TestCase):
+    """One new ProjectPaths property, and it is pure."""
+
+    def test_it_resolves_to_the_existing_legacy_location(self):
+        self.assertEqual(ProjectPaths.for_root("/r").legacy_data_artifacts,
+                         Path("/r") / "data" / "artifacts")
+
+    def test_it_touches_no_filesystem(self):
+        paths = ProjectPaths.for_root("/definitely/not/a/real/path")
+        self.assertFalse(paths.legacy_data_artifacts.exists())
+        self.assertTrue(
+            str(paths.legacy_data_artifacts).startswith("/definitely"))
+
+    def test_the_static_and_live_resolutions_agree(self):
+        """The census parses this property; the package executes it. If those
+        two ever disagreed, every C8.5C count would be measured against a
+        different directory than the one the code uses."""
+        layout = layout_census.project_paths_layout(
+            PATHS_SOURCE.read_text(encoding="utf-8"))
+        self.assertEqual(layout["legacy_data_artifacts"], ("data", "artifacts"))
+        self.assertEqual(
+            Path("/r").joinpath(*layout["legacy_data_artifacts"]),
+            ProjectPaths.for_root("/r").legacy_data_artifacts)
+
+    def test_it_did_not_disturb_its_siblings(self):
+        paths = ProjectPaths.for_root("/r")
+        self.assertEqual(paths.legacy_foundry_out,
+                         Path("/r/experiments/out/foundry"))
+        self.assertEqual(paths.legacy_experiments_out,
+                         Path("/r/experiments/out"))
+        self.assertNotEqual(paths.legacy_data_artifacts,
+                            paths.legacy_experiments_out)
+
+
+class TestTheBoundaryExposesTheOwnedDirectory(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
+        cls.fc = load_legacy("foundry_common")
+
+    def test_the_export_comes_from_the_owner_not_from_a_literal(self):
+        self.assertEqual(_module_bindings(self.source)["DATA_ARTIFACTS_DIR"],
+                         "_PATHS.legacy_data_artifacts")
+
+    def test_it_is_not_derived_from_the_private_bootstrap_names(self):
+        """The bootstrap root locates the OWNER. Using it to build a data path
+        would make it a general-purpose root, which is the one thing C8.5A's
+        guards exist to prevent."""
+        binding = _module_bindings(self.source)["DATA_ARTIFACTS_DIR"]
+        self.assertNotIn("_BOOTSTRAP_ROOT", binding)
+        self.assertNotIn("_BOOTSTRAP_SRC", binding)
+
+    def test_the_live_value_equals_an_independently_built_ProjectPaths(self):
+        root = Path(self.fc.__file__).resolve().parents[1]
+        paths = ProjectPaths.for_root(root)
+        self.assertEqual(self.fc.DATA_ARTIFACTS_DIR, paths.legacy_data_artifacts)
+        self.assertEqual(self.fc.DATA_ARTIFACTS_DIR, root / "data" / "artifacts")
+        self.assertEqual(str(self.fc.DATA_ARTIFACTS_DIR),
+                         str(root / "data" / "artifacts"))
+
+    def test_the_boundary_still_states_exactly_one_layout_fact_of_its_own(self):
+        """C8.5C adds an export, not a layout statement. The count must NOT move."""
+        got = foundry_common_independent_layout(self.source)
+        self.assertEqual(len(got), 1, got)
+        self.assertIn("'src'", got[0])
+
+    def test_the_src_bootstrap_and_the_engine_edge_are_untouched(self):
+        self.assertIn("_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]",
+                      self.source)
+        self.assertIn("if str(_BOOTSTRAP_SRC) not in sys.path:", self.source)
+        self.assertIn("sys.path.insert(0, str(_PATHS.legacy_experiments))",
+                      self.source)
+        top = [n for n in ast.parse(self.source).body if isinstance(n, ast.Import)
+               and any(a.name == "tier_engine" for a in n.names)]
+        self.assertEqual(len(top), 1)
+
+
+class TestTheLastPeerProviderIsGone(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.source = FOUNDRY_CODEBOOK.read_text(encoding="utf-8")
+        cls.fcb = load_legacy("foundry_codebook")
+        cls.bindings = _module_bindings(cls.source)
+
+    def test_foundry_codebook_exports_no_public_layout_provider(self):
+        _, providers = _census_inputs()
+        public = [n for n in providers["foundry_codebook"]
+                  if not n.startswith("_")]
+        self.assertEqual(public, [])
+
+    def test_the_module_no_longer_defines_a_public_REPO_ROOT(self):
+        self.assertNotIn("REPO_ROOT", self.bindings)
+        self.assertFalse(hasattr(self.fcb, "REPO_ROOT"))
+
+    def test_the_surviving_root_is_private_and_still_the_same_derivation(self):
+        self.assertEqual(self.bindings["_BOOTSTRAP_ROOT"],
+                         "Path(__file__).resolve().parents[1]")
+
+    def test_the_private_root_is_used_for_exactly_one_thing(self):
+        """Structural, not a line-distance heuristic: every LOAD of the private
+        root must occur in the single `sys.path.insert` statement. A second use
+        would be it becoming a general-purpose root again."""
+        loads = []
+        for statement in ast.parse(self.source).body:
+            for node in ast.walk(statement):
+                if (isinstance(node, ast.Name) and node.id == "_BOOTSTRAP_ROOT"
+                        and isinstance(node.ctx, ast.Load)):
+                    loads.append(ast.unparse(statement))
+                    break
+        self.assertEqual(
+            loads, ["sys.path.insert(0, str(_BOOTSTRAP_ROOT / 'experiments'))"])
+
+    def test_the_artifact_path_now_delegates_to_the_boundary(self):
+        self.assertEqual(self.bindings["LATEST_ARTIFACT_PATH"],
+                         "fc.DATA_ARTIFACTS_DIR / 'latest.json'")
+
+    def test_the_consumer_appends_only_the_filename(self):
+        """The whole point of the Manager's ruling: no repository-relative
+        DIRECTORY literal is restated outside the owner. `latest.json` is a file
+        name, not layout."""
+        binding = self.bindings["LATEST_ARTIFACT_PATH"]
+        for directory in ("'data'", '"data"', "'artifacts'", '"artifacts"'):
+            self.assertNotIn(directory, binding)
+
+    def test_the_codebook_paths_still_delegate_as_before(self):
+        self.assertEqual(self.bindings["CODEBOOK_PATH"],
+                         "fc.FOUNDRY_OUT_DIR / 'codebook.json'")
+        self.assertEqual(self.bindings["BACKUPS_DIR"],
+                         "fc.FOUNDRY_OUT_DIR / 'backups'")
+
+    def test_every_value_is_byte_identical_to_its_pre_change_construction(self):
+        root = Path(load_legacy("foundry_common").__file__).resolve().parents[1]
+        expected = {
+            "CODEBOOK_PATH": root / "experiments" / "out" / "foundry" / "codebook.json",
+            "BACKUPS_DIR": root / "experiments" / "out" / "foundry" / "backups",
+            "LATEST_ARTIFACT_PATH": root / "data" / "artifacts" / "latest.json",
+        }
+        for name, want in expected.items():
+            with self.subTest(name=name):
+                self.assertEqual(getattr(self.fcb, name), want)
+                self.assertEqual(str(getattr(self.fcb, name)), str(want))
+
+    def test_the_sys_path_bootstrap_inserts_the_same_directory_at_the_same_place(self):
+        calls = layout_census.sys_path_call_nodes(ast.parse(self.source))
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(ast.unparse(calls[0]),
+                         "sys.path.insert(0, str(_BOOTSTRAP_ROOT / 'experiments'))")
+        self.assertEqual(calls[0].args[0].value, 0)
+
+    def test_the_bootstrap_precedes_the_boundary_import(self):
+        """It has to: the insert is what makes `import foundry_common` resolve."""
+        lines = self.source.splitlines()
+        insert = next(i for i, l in enumerate(lines) if "sys.path.insert" in l)
+        boundary = next(i for i, l in enumerate(lines)
+                        if l.startswith("import foundry_common as fc"))
+        self.assertLess(insert, boundary)
+
+    def test_it_is_labelled_temporary_and_non_authoritative(self):
+        head = self.source.split("SCHEMA_V2")[0]
+        self.assertIn("C8.5C COMPATIBILITY BOOTSTRAP", head)
+        self.assertIn("TEMPORARY", head)
+        self.assertIn("NOT A LAYOUT API", head)
+
+
+class TestTheDownstreamPeerConsumersAreGone(unittest.TestCase):
+    def test_no_tracked_file_anywhere_consumes_the_peer_root(self):
+        """ALL scopes, not just legacy production, and through each file's own
+        import aliases rather than a text match."""
+        found = []
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            aliases = {a for n in ast.walk(ast.parse(source))
+                       if isinstance(n, ast.Import) for a in
+                       [x.asname or x.name for x in n.names
+                        if x.name == "foundry_codebook"]}
+            for node in ast.walk(ast.parse(source)):
+                if (isinstance(node, ast.Attribute) and node.attr == "REPO_ROOT"
+                        and isinstance(node.value, ast.Name)
+                        and node.value.id in aliases):
+                    found.append(f"{rel}:{node.lineno}")
+        self.assertEqual(found, [])
+
+    def test_the_two_sites_now_read_from_the_compatibility_boundary(self):
+        source = CONSOLIDATE_APPLY.read_text(encoding="utf-8")
+        rows = [f"{n.lineno}: {ast.unparse(n)}"
+                for n in ast.walk(ast.parse(source))
+                if isinstance(n, ast.Attribute) and n.attr == "REPO_ROOT"
+                and isinstance(n.value, ast.Name) and n.value.id == "fc"]
+        self.assertEqual(len(rows), 2, rows)
+        self.assertEqual(_module_bindings(source)["GAMECHANGERS_PATH"],
+                         "fc.REPO_ROOT / 'tags' / 'gamechangers.yaml'")
+
+    def test_it_needed_no_new_import(self):
+        source = CONSOLIDATE_APPLY.read_text(encoding="utf-8")
+        self.assertIn("import foundry_common as fc", source)
+
+    def test_the_relative_to_value_is_unchanged(self):
+        """The one delegation that is not a path construction. `relative_to`
+        returns a DIFFERENT object depending on the root it is given, so the
+        two roots must be equal as Path AND as str, not merely resolve nearby."""
+        fc = load_legacy("foundry_common")
+        root = Path(fc.__file__).resolve().parents[1]
+        stale = root / "experiments" / "out" / "foundry" / \
+            "corpus_pass_run1_consolidation_dry_run.json"
+        self.assertEqual(fc.REPO_ROOT, root)
+        self.assertEqual(str(fc.REPO_ROOT), str(root))
+        self.assertEqual(
+            str(stale.relative_to(fc.REPO_ROOT)),
+            "experiments/out/foundry/corpus_pass_run1_consolidation_dry_run.json")
+
+    def test_every_scoped_delegation_now_terminates_at_one_boundary(self):
+        """The transition claim, asserted rather than narrated."""
+        _, providers = _census_inputs()
+        modules = set()
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
+                continue
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            modules |= {r.module for r in layout_census.delegation_references(
+                source, rel, providers)}
+        self.assertEqual(modules, {"foundry_common"})
+
+    def test_the_remaining_data_artifacts_site_is_named_not_hidden(self):
+        """`foundry_verify_migration.py` builds its OWN
+        `data/artifacts/latest.json` from a local root. It is outside this
+        task's authorized scope — P0.4P assigns that module to step 8 — so it
+        is recorded here rather than left to look like absence. It is one of the
+        60 remaining local consumption sites."""
+        source = (EXPERIMENTS / "foundry_verify_migration.py").read_text(
+            encoding="utf-8")
+        self.assertIn('LATEST_ARTIFACT_PATH = REPO_ROOT / "data" / "artifacts"'
+                      ' / "latest.json"', source)
+
+
+class TestC85CNegativeControls(unittest.TestCase):
+    """The four controls the task requires, aimed at the exact changed property
+    rather than at a name. Each mutates a SOURCE STRING in memory; no file is
+    written."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paths_source = PATHS_SOURCE.read_text(encoding="utf-8")
+        cls.paths_layout = layout_census.project_paths_layout(cls.paths_source)
+        cls.codebook = FOUNDRY_CODEBOOK.read_text(encoding="utf-8")
+        cls.common = FOUNDRY_COMMON.read_text(encoding="utf-8")
+        cls.rel = Path("experiments/foundry_codebook.py")
+
+    def test_NC1_reverting_the_artifact_path_to_a_local_construction_is_caught(self):
+        broken = self.codebook.replace(
+            'LATEST_ARTIFACT_PATH = fc.DATA_ARTIFACTS_DIR / "latest.json"',
+            'LATEST_ARTIFACT_PATH = _BOOTSTRAP_ROOT / "data" / "artifacts"'
+            ' / "latest.json"')
+        self.assertNotEqual(broken, self.codebook)
+
+        # the module states a repository-relative layout fact again
+        sites = layout_census.local_layout_sites(broken, self.rel)
+        consumption = [s for s in sites if not s.bootstrap]
+        self.assertEqual(len(consumption), 1)
+        self.assertEqual(consumption[0].expr,
+                         "_BOOTSTRAP_ROOT / 'data' / 'artifacts' / 'latest.json'")
+        # and the private root is used for a second thing
+        loads = []
+        for statement in ast.parse(broken).body:
+            for node in ast.walk(statement):
+                if (isinstance(node, ast.Name) and node.id == "_BOOTSTRAP_ROOT"
+                        and isinstance(node.ctx, ast.Load)):
+                    loads.append(ast.unparse(statement))
+                    break
+        self.assertEqual(len(loads), 2)
+        # the true state has neither
+        self.assertEqual(
+            [s for s in layout_census.local_layout_sites(self.codebook, self.rel)
+             if not s.bootstrap], [])
+
+    def test_NC2_a_wrong_but_REAL_directory_is_caught_by_VALUE_not_ownership(self):
+        """`data/cache` is a real legacy directory, so the assignment stays a
+        genuine ProjectPaths delegation and an ownership-only check is still
+        GREEN. Only resolving to components sees it."""
+        broken_paths = self.paths_source.replace(
+            'return self.root / "data" / "artifacts"',
+            'return self.root / "data" / "cache"')
+        self.assertNotEqual(broken_paths, self.paths_source)
+        broken_layout = layout_census.project_paths_layout(broken_paths)
+
+        # OWNERSHIP arm: unchanged and still satisfied
+        self.assertEqual(_module_bindings(self.common)["DATA_ARTIFACTS_DIR"],
+                         "_PATHS.legacy_data_artifacts")
+        self.assertIn("legacy_data_artifacts", broken_layout)
+
+        # VALUE arm: red
+        self.assertEqual(broken_layout["legacy_data_artifacts"], ("data", "cache"))
+        self.assertNotEqual(broken_layout["legacy_data_artifacts"],
+                            ("data", "artifacts"))
+        providers = layout_census.provider_layout(
+            self.common, Path("experiments/foundry_common.py"), broken_layout)
+        self.assertEqual(providers["DATA_ARTIFACTS_DIR"], ("data", "cache"))
+        self.assertNotEqual(providers["DATA_ARTIFACTS_DIR"],
+                            self.paths_layout["legacy_data_artifacts"])
+
+    def test_NC3_restoring_a_public_peer_provider_is_caught(self):
+        broken = self.codebook.replace(
+            "_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]",
+            "REPO_ROOT = Path(__file__).resolve().parents[1]").replace(
+            "str(_BOOTSTRAP_ROOT / \"experiments\")", 'str(REPO_ROOT / "experiments")')
+        self.assertNotEqual(broken, self.codebook)
+        providers = layout_census.provider_layout(
+            broken, self.rel, self.paths_layout)
+        public = [n for n in providers if not n.startswith("_")]
+        self.assertEqual(public, ["REPO_ROOT"])
+        self.assertEqual(providers["REPO_ROOT"], ())
+        # the true state has no public provider at all
+        self.assertEqual(
+            [n for n in layout_census.provider_layout(
+                self.codebook, self.rel, self.paths_layout)
+             if not n.startswith("_")], [])
+
+    def test_NC4_restoring_a_downstream_peer_consumer_is_caught(self):
+        """Aimed at the census, not at the text: the restored expression must be
+        counted as a delegation to `foundry_codebook` again."""
+        rel = Path("experiments/foundry_consolidate_run1_apply.py")
+        source = CONSOLIDATE_APPLY.read_text(encoding="utf-8")
+        broken = source.replace(
+            'GAMECHANGERS_PATH = fc.REPO_ROOT / "tags" / "gamechangers.yaml"',
+            'GAMECHANGERS_PATH = fcb.REPO_ROOT / "tags" / "gamechangers.yaml"')
+        self.assertNotEqual(broken, source)
+        # a peer provider must exist for the reference to resolve, which is the
+        # NC3 state; the two failures compose exactly as the real regression would
+        peer = layout_census.provider_layout(
+            self.codebook.replace(
+                "_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]",
+                "REPO_ROOT = Path(__file__).resolve().parents[1]"),
+            self.rel, self.paths_layout)
+        providers = {"foundry_common": layout_census.provider_layout(
+            self.common, Path("experiments/foundry_common.py"), self.paths_layout),
+            "foundry_codebook": peer}
+        refs = layout_census.delegation_references(broken, rel, providers)
+        peers = [r for r in refs if r.module == "foundry_codebook"]
+        self.assertEqual([(r.lineno, r.name, r.form) for r in peers],
+                         [(697, "REPO_ROOT", "PATH_JOIN")])
+        # the true state has none
+        self.assertEqual(
+            [r for r in layout_census.delegation_references(
+                source, rel, providers) if r.module == "foundry_codebook"], [])
 
 
 if __name__ == "__main__":
