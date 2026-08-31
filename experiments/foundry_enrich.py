@@ -7,9 +7,9 @@ lane membership (which axis/other_lane a card is in) -- this is a read-only
 enrichment for a human reviewing the JSON directly, not a reconciliation
 step (that's foundry_reconcile.py's job against decisions/batch-N.json).
 
-Corpus source (Captain's ruling, this session): tier_engine's own loader
-(foundry_common.load_corpus() -> te.load_cards() over oracle-cards.jsonl.gz,
-38,233 cards), NOT data/artifacts/cards.sqlite. cards.sqlite is the
+Corpus source (Captain's ruling, this session): the shared corpus loader
+(foundry_common.load_corpus(), which since C8.5G reads oracle-cards.jsonl.gz
+through mtj_foundry.corpus, 38,233 cards), NOT data/artifacts/cards.sqlite. cards.sqlite is the
 production-shipped artifact and pipeline/build_db.py deliberately excludes
 token/emblem/art_series/vanguard/scheme/planar layouts (EXCLUDED_LAYOUTS) --
 6 of batch-1's own 476 cards (5 tokens + Mojave Desert, a Plane) are exactly
@@ -25,9 +25,9 @@ reminder text conceptually (207.2a's definition, glossary cross-references)
 -- it never prints a single literal reminder-text string, so "CR 702
 keyword reminder texts" cannot be extracted from that file. The actual
 printed reminder text lives in the corpus itself; this script rebuilds the
-canonical set by replaying tier_engine's own v2.9 Mechanism 2 detection
-(is_keyword_only_paragraph + parse_keyword_instances + extract_reminder_
-spans + normalize_reminder_body) over every face of every corpus card --
+canonical set by replaying the v2.9 Mechanism 2 detection
+(ot.is_keyword_only + ot.keyword_instances + ot.reminder_bodies +
+ot.normalize_reminder) over every face of every corpus card --
 the same logic build_card_doc() already uses to identify and inject
 reminder text, just run standalone here to collect the set rather than
 build a scoring index. This intentionally skips strip_bespoke_ability_label
@@ -47,9 +47,15 @@ from collections import defaultdict
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
-import tier_engine as te  # noqa: E402
 import foundry_common as fc  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
+
+# C8.5I: oracle-text normalisation now comes from the permanent package. The
+# import sits AFTER `foundry_common`, which is what establishes the C8.5A
+# package bootstrap -- this module adds no bootstrap and no sys.path mutation of
+# its own. `tier_engine` is no longer imported here at all; the engine keeps its
+# own copies for its nine other consumers and remains the differential oracle.
+from mtj_foundry import oracle_text as ot  # noqa: E402
 
 MIN_TOKENS_TO_GROUP = 2  # same floor as foundry_consolidate.cluster_instances' MIN_TOKENS_TO_MERGE
 
@@ -59,10 +65,10 @@ MIN_TOKENS_TO_GROUP = 2  # same floor as foundry_consolidate.cluster_instances' 
 # ---------------------------------------------------------------------------
 
 def full_oracle_text(card: dict) -> str:
-    """All faces, joined -- reuses te.get_raw_faces so single-face and
+    """All faces, joined -- reuses fc.raw_faces so single-face and
     multi-face cards go through the identical code path the engine itself
     uses (never re-derives the card_faces-vs-root-oracle_text branch)."""
-    return "\n".join(f["oracle_text"] for f in te.get_raw_faces(card) if f["oracle_text"])
+    return "\n".join(f["oracle_text"] for f in fc.raw_faces(card) if f["oracle_text"])
 
 
 def build_card_attachment(card: dict) -> dict:
@@ -109,15 +115,15 @@ def normalize_full_text_for_df(card: dict) -> str:
     """Per-card DF-search text: self-name substituted (engine's own
     self_name_candidates/normalize_self_references, run over ALL faces
     joined), then lowercased and whitespace-collapsed. Deliberately does
-    NOT strip reminder text (normalize_clause_text does, but reminder text
+    NOT strip reminder text (ot.normalize_clause does, but reminder text
     must stay searchable here -- REMINDER-TEXT FLAG needs quotes that ARE
     reminder restatements to actually substring-match against it)."""
-    candidates = te.self_name_candidates(card.get("name") or "")
+    candidates = ot.self_name_candidates(card.get("name") or "")
     keywords = card.get("keywords") or []
     text = full_oracle_text(card)
-    text = te.normalize_self_references(text, candidates, keywords)
+    text = ot.normalize_self_references(text, candidates, keywords)
     text = text.lower()
-    return te.WS_RE.sub(" ", text).strip()
+    return ot.collapse_whitespace(text)
 
 
 def normalize_quote_for_df(quote: str, origin_card: dict) -> str:
@@ -126,11 +132,11 @@ def normalize_quote_for_df(quote: str, origin_card: dict) -> str:
     mention its own card's name normalizes to '~' exactly like the corpus
     text it's being searched against, keeping cross-card generic-pattern
     matching apples-to-apples (DERIVED-TAG-LAYER-SPEC Lesson 2/N2)."""
-    candidates = te.self_name_candidates(origin_card.get("name") or "")
+    candidates = ot.self_name_candidates(origin_card.get("name") or "")
     keywords = origin_card.get("keywords") or []
-    text = te.normalize_self_references(quote, candidates, keywords)
+    text = ot.normalize_self_references(quote, candidates, keywords)
     text = text.lower()
-    return te.WS_RE.sub(" ", text).strip()
+    return ot.collapse_whitespace(text)
 
 
 def compute_quote_df(batch: dict, cards: dict) -> dict:
@@ -156,31 +162,31 @@ def compute_quote_df(batch: dict, cards: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def build_reminder_text_set(cards: dict) -> set:
-    """Replays tier_engine's v2.9 Mechanism 2 (build_card_doc) over every
+    """Replays the v2.9 Mechanism 2 reminder extraction over every
     face of every corpus card to collect the canonical set of printed
-    reminder-text bodies, normalized identically to normalize_reminder_body
+    reminder-text bodies, normalized identically to ot.normalize_reminder
     (lowercase + whitespace-collapse -- reminder bodies carry no reminder
     text of their own to strip). All-paragraph, all-face scanning
     (mandatory per standing ruling -- Vexing Shusher lesson)."""
     reminders = set()
     for card in cards.values():
-        candidates = te.self_name_candidates(card.get("name") or "")
+        candidates = ot.self_name_candidates(card.get("name") or "")
         keywords = card.get("keywords") or []
-        for face in te.get_raw_faces(card):
-            substituted = te.normalize_self_references(face["oracle_text"], candidates, keywords)
+        for face in fc.raw_faces(card):
+            substituted = ot.normalize_self_references(face["oracle_text"], candidates, keywords)
             for p in substituted.split("\n"):
                 if not p.strip():
                     continue
-                norm = te.normalize_clause_text(p)
-                if not norm or not te.is_keyword_only_paragraph(norm, keywords):
+                norm = ot.normalize_clause(p)
+                if not norm or not ot.is_keyword_only(norm, keywords):
                     continue
-                frag_instances = te.parse_keyword_instances(norm, keywords)
+                frag_instances = ot.keyword_instances(norm, keywords)
                 if len(frag_instances) != 1:
                     continue
-                spans = te.extract_reminder_spans(p)
-                if not spans:
+                bodies = ot.reminder_bodies(p)
+                if not bodies:
                     continue
-                reminder_text = te.normalize_reminder_body(" ".join(spans))
+                reminder_text = ot.normalize_reminder(" ".join(bodies))
                 if reminder_text:
                     reminders.add(reminder_text)
     return reminders
@@ -268,7 +274,7 @@ def build_discard_audit(cards: dict, raw_results_path: Path) -> list:
         card = cards[oid]
         quote = d["axis"]["evidence_quote"]
         quote_lower = quote.lower()
-        faces = te.get_raw_faces(card)
+        faces = fc.raw_faces(card)
         face_hits = [f["name"] for f in faces if quote_lower in (f["oracle_text"] or "").lower()]
         audit.append({
             "oracle_id": oid,

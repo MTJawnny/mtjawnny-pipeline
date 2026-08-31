@@ -3244,10 +3244,12 @@ FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
 CENSUS_HEAD = {
     # 126 tracked files at the C8.5A head be52961, plus this task's own new
     # census helper, which lands in the `tests` bucket and in no measured scope.
-    # C8.5G adds src/mtj_foundry/corpus.py and the capability test module.
-    "tracked_python": 129,
+    # C8.5G added src/mtj_foundry/corpus.py and its capability test module;
+    # C8.5I adds src/mtj_foundry/oracle_text.py and its own. Neither lands in a
+    # measured scope, so no layout row moves — only the file census.
+    "tracked_python": 131,
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
-                       "aq4_PAUSED": 6, "pipeline": 11, "src": 5, "tests": 14},
+                       "aq4_PAUSED": 6, "pipeline": 11, "src": 6, "tests": 15},
     "delegations_total": 141,                      # C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
