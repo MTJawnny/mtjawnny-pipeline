@@ -36,18 +36,45 @@ contexts:
         machine has no setuptools in the system interpreter and `python -m venv`
         on Python 3.14 does not seed one, so the provisioning STEP is not
         reproducible offline here.
-    what_is_proven_offline: >-
-      The IMPORT CONTRACT, which is the part anything depends on. A modern
-      editable install makes the package importable by placing a path
-      configuration file in the target environment's site-packages; the
-      committed test builds exactly that condition in a scratch environment and
-      proves the import from an unrelated cwd with no PYTHONPATH. It does not
-      shell out to pip and needs no network.
-    what_is_NOT_claimed: >-
-      That `pip install -e .` runs offline in this environment. It does not, for
-      the reason above. A real editable install was separately observed to
-      succeed when setuptools was obtainable (C8.5D, on a copy outside the
-      repository).
+    evidence_boundary:
+      # Two different things, kept apart on purpose. C8.5E's first attempt blurred
+      # them and the Manager stopped it (issue:1#issuecomment-5472076171).
+
+      - class: REAL_INSTALL_PROVISIONING
+        what: 'an actual `pip install -e .`, running the declared build backend'
+        status: OBSERVED_ONCE
+        where: 'C8.5D, on a scratch copy outside the repository, when setuptools was obtainable'
+        evidence_kind: WORKER_LOCAL
+        is_it_what_the_committed_test_does: NO
+        note: >-
+          No committed test runs pip, executes a build backend, or produces a
+          distribution. Nothing here should be read as claiming otherwise.
+
+      - class: METADATA_DRIVEN_EDITABLE_IMPORT_PROOF
+        what: >-
+          The committed offline guard. It copies THIS pyproject.toml and src/
+          into a scratch directory outside the repository, parses the scratch
+          metadata with stdlib `tomllib`, derives from `package-dir` and
+          `packages.find` (where / include / exclude) both whether `mtj_foundry`
+          is discoverable and which directory an editable install would map, and
+          provisions the throwaway interpreter from THAT derived scratch
+          location. It then imports from an unrelated cwd with no PYTHONPATH.
+        status: COMMITTED_AND_ENFORCED
+        evidence_kind: 'runs in tests/refoundation on every suite run'
+        what_it_guards: >-
+          The installed-import CONDITION, coupled to the metadata that would
+          produce it. Corrupting `package-dir`, `packages.find.where` or
+          `include` in the scratch copy turns the SAME import witness red, and a
+          committed control proves each of those three.
+        what_it_is_NOT: >-
+          It is not a claim that pip ran, and it is not EXPLICIT_SOURCE_LAYOUT
+          wearing a different hat: it never names the repository source tree, and
+          a guard asserts the derived location is not the repository's `src`.
+        why_it_is_built_this_way: >-
+          `pip install -e .` cannot run offline in this environment at all, and
+          the committed suite may not require network. A test that shelled out to
+          pip would fail for an environment reason and say nothing about the
+          contract.
 
   - id: LEGACY_LOOSE_SCRIPT_BOOTSTRAP
     status: SUPPORTED_TRANSITIONAL
@@ -174,6 +201,7 @@ non_claims:
 # WHAT THIS CONTRACT CHANGED
 # ---------------------------------------------------------------------------
 transition:
+  # C8.5E.R1 repaired the install-proof coupling only. No count below moved.
   layout_census_movement: ZERO
   bootstraps_deleted: 0
   legacy_modules_moved: 0

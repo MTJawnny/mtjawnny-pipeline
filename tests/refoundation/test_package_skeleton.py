@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import fnmatch
+import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -132,72 +135,200 @@ CONTRACT = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
 CLEAN_ENV = {"PATH": "/usr/bin:/bin"}   # deliberately no PYTHONPATH
 
 
-class TestTheInstalledPackageContext(unittest.TestCase):
-    """Context INSTALLED_PACKAGE — the permanent, supported one."""
+def derive_editable_source(project_root: Path) -> Path | None:
+    """Where an editable install of THIS pyproject would map `mtj_foundry` from.
 
-    def _installed_env(self, tmp: Path) -> Path:
-        """A throwaway environment with the package made importable, no network."""
-        env_dir = tmp / "env"
+    Returns the directory that must reach the interpreter's path, or None when
+    the metadata does not make `mtj_foundry` discoverable at all.
+
+    THE WHOLE POINT IS THE COUPLING. C8.5E's first attempt wrote a path
+    configuration file naming the repository's `SRC` constant. That proved only
+    that putting `src` on the path makes the package importable — which is
+    EXPLICIT_SOURCE_LAYOUT, the context the contract says may never stand in for
+    INSTALLED_PACKAGE. Corrupting `package-dir` or `packages.find` left it green.
+    Here every value comes from the parsed metadata, so breaking discovery breaks
+    the SAME witness (Manager review issue:1#issuecomment-5472076171).
+
+    This is the setuptools src-layout contract, not a general build: the root
+    package namespace maps through `package-dir[""]`, and discovery searches
+    `packages.find.where` filtered by `include`/`exclude`.
+    """
+    data = tomllib.loads((project_root / "pyproject.toml").read_text(encoding="utf-8"))
+    setuptools_cfg = data.get("tool", {}).get("setuptools", {})
+    package_dir = setuptools_cfg.get("package-dir", {})
+    find = setuptools_cfg.get("packages", {}).get("find", {})
+    where = find.get("where", ["."])
+    include = find.get("include", ["*"])
+    exclude = find.get("exclude", [])
+
+    discovered = set()
+    for location in where:
+        search = project_root / location
+        if not search.is_dir():
+            continue
+        for candidate in search.iterdir():
+            if not (candidate / "__init__.py").is_file():
+                continue
+            name = candidate.name
+            if not any(fnmatch.fnmatch(name, pattern) for pattern in include):
+                continue
+            if any(fnmatch.fnmatch(name, pattern) for pattern in exclude):
+                continue
+            discovered.add(name)
+    if "mtj_foundry" not in discovered:
+        return None
+
+    mapped = project_root / package_dir.get("", ".")
+    if not (mapped / "mtj_foundry" / "__init__.py").is_file():
+        # The metadata maps the root namespace somewhere the package is not.
+        return None
+    return mapped
+
+
+class TestTheInstalledPackageContext(unittest.TestCase):
+    """Context INSTALLED_PACKAGE — the permanent, supported one.
+
+    EVIDENCE BOUNDARY, stated because the distinction is the whole repair:
+
+    * REAL_INSTALL_PROVISIONING — an actual `pip install -e .` running the build
+      backend. Observed under C8.5D on a scratch copy when setuptools was
+      obtainable. It is Worker-local evidence and is NOT what runs here.
+    * METADATA_DRIVEN_EDITABLE_IMPORT_PROOF — what these tests are. They build,
+      offline, the import condition an editable install produces, deriving it
+      from a scratch copy of the real pyproject.toml + src tree. No pip runs, no
+      build backend executes, and nothing here claims otherwise.
+
+    MEASURED 2026-08-30: pip cannot run offline in this environment at all —
+    `[build-system] requires` names setuptools>=68, the system interpreter has
+    none, and Python 3.14's venv seeds none. A committed test that shelled out to
+    pip would fail for an environment reason and say nothing about the contract.
+    """
+
+    def _scratch_project(self, tmp: Path) -> Path:
+        """A copy of the distribution's metadata and sources, outside the repo."""
+        project = tmp / "project"
+        project.mkdir()
+        shutil.copy2(REPO_ROOT / "pyproject.toml", project / "pyproject.toml")
+        shutil.copytree(SRC, project / "src",
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        return project
+
+    def _witness(self, project: Path, tmp: Path, *, provision: bool = True):
+        """Run the installed-context import against a scratch project.
+
+        The editable mapping is DERIVED from the scratch metadata. If the
+        metadata does not make `mtj_foundry` discoverable, there is nothing to
+        provision and the witness runs without it — which is exactly how a
+        broken package configuration presents.
+        """
+        env_dir = tmp / f"env{len(list(tmp.iterdir()))}"
         subprocess.run([sys.executable, "-m", "venv", "--without-pip", str(env_dir)],
                        check=True, capture_output=True)
         sites = list(env_dir.glob("lib/*/site-packages"))
         self.assertEqual(len(sites), 1, sites)
-        (sites[0] / "mtj_foundry_editable.pth").write_text(f"{SRC}\n", encoding="utf-8")
-        return env_dir / "bin" / "python"
+        derived = derive_editable_source(project) if provision else None
+        if derived is not None:
+            self.assertNotEqual(derived.resolve(), SRC.resolve(),
+                                "the mapping must come from the SCRATCH copy, "
+                                "never from the repository source tree")
+            (sites[0] / "mtj_foundry_editable.pth").write_text(
+                f"{derived}\n", encoding="utf-8")
+        outside = tmp / f"cwd{len(list(tmp.iterdir()))}"
+        outside.mkdir()
+        self.assertFalse((outside / ".git").exists())
+        proc = subprocess.run(
+            [str(env_dir / "bin" / "python"), "-c",
+             "import os, mtj_foundry\n"
+             "from mtj_foundry.paths import ProjectPaths\n"
+             "assert 'PYTHONPATH' not in os.environ\n"
+             "assert ProjectPaths.for_root('/r').baselines.as_posix() == "
+             "'/r/config/baselines'\n"
+             "print('ok', mtj_foundry.__file__)\n"],
+            cwd=outside, capture_output=True, text=True, env=CLEAN_ENV)
+        return derived, proc
+
+    def test_the_derivation_reads_the_real_metadata(self):
+        derived = derive_editable_source(REPO_ROOT)
+        self.assertIsNotNone(derived, "mtj_foundry is not discoverable")
+        self.assertEqual(derived.resolve(), SRC.resolve())
 
     def test_import_succeeds_from_an_unrelated_cwd_with_no_PYTHONPATH(self):
-        code = ("import os, sys, mtj_foundry\n"
-                "from mtj_foundry.paths import ProjectPaths\n"
-                "assert 'PYTHONPATH' not in os.environ\n"
-                "assert ProjectPaths.for_root('/r').baselines.as_posix() == "
-                "'/r/config/baselines'\n"
-                "print('ok', mtj_foundry.__file__)\n")
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            python = self._installed_env(tmp)
-            outside = tmp / "unrelated"
-            outside.mkdir()
-            self.assertFalse((outside / ".git").exists())
-            proc = subprocess.run([str(python), "-c", code], cwd=outside,
-                                  capture_output=True, text=True, env=CLEAN_ENV)
+            project = self._scratch_project(tmp)
+            derived, proc = self._witness(project, tmp)
+        self.assertEqual(derived, project / "src")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("ok", proc.stdout)
+        self.assertIn(str(project), proc.stdout,
+                      "the package must have been imported from the SCRATCH copy")
 
-    def test_NEGATIVE_CONTROL_without_the_package_the_same_context_fails(self):
-        """Same environment, same command, package NOT made importable. If this
-        passed, the test above would be proving something about the machine
-        rather than about the contract."""
+    def test_NEGATIVE_CONTROL_corrupting_package_dir_reddens_the_SAME_witness(self):
+        """The control the Manager found missing. `package-dir` is repointed in
+        the scratch metadata; the identical import witness must fail."""
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            env_dir = tmp / "env"
-            subprocess.run([sys.executable, "-m", "venv", "--without-pip",
-                            str(env_dir)], check=True, capture_output=True)
-            outside = tmp / "unrelated"
-            outside.mkdir()
-            proc = subprocess.run([str(env_dir / "bin" / "python"), "-c",
-                                   "import mtj_foundry"], cwd=outside,
-                                  capture_output=True, text=True, env=CLEAN_ENV)
-        self.assertNotEqual(proc.returncode, 0)
+            project = self._scratch_project(tmp)
+            text = (project / "pyproject.toml").read_text(encoding="utf-8")
+            broken = text.replace('package-dir = {"" = "src"}',
+                                  'package-dir = {"" = "experiments"}')
+            self.assertNotEqual(broken, text)
+            (project / "pyproject.toml").write_text(broken, encoding="utf-8")
+            derived, proc = self._witness(project, tmp)
+        self.assertIsNone(derived, "a mapping was derived from broken metadata")
+        self.assertNotEqual(proc.returncode, 0, proc.stdout)
         self.assertIn("No module named 'mtj_foundry'", proc.stderr)
 
-    def test_NEGATIVE_CONTROL_a_broken_source_root_fails_loudly(self):
-        """If the path configuration points somewhere the package is not, the
-        import must fail rather than silently resolve something else."""
+    def test_NEGATIVE_CONTROL_corrupting_find_where_reddens_the_SAME_witness(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            env_dir = tmp / "env"
-            subprocess.run([sys.executable, "-m", "venv", "--without-pip",
-                            str(env_dir)], check=True, capture_output=True)
-            sites = list(env_dir.glob("lib/*/site-packages"))[0]
-            (sites / "mtj_foundry_editable.pth").write_text(
-                f"{REPO_ROOT / 'experiments'}\n", encoding="utf-8")
-            outside = tmp / "unrelated"
-            outside.mkdir()
-            proc = subprocess.run([str(env_dir / "bin" / "python"), "-c",
-                                   "import mtj_foundry"], cwd=outside,
-                                  capture_output=True, text=True, env=CLEAN_ENV)
-        self.assertNotEqual(proc.returncode, 0)
+            project = self._scratch_project(tmp)
+            text = (project / "pyproject.toml").read_text(encoding="utf-8")
+            broken = text.replace('where = ["src"]', 'where = ["experiments"]')
+            self.assertNotEqual(broken, text)
+            (project / "pyproject.toml").write_text(broken, encoding="utf-8")
+            derived, proc = self._witness(project, tmp)
+        self.assertIsNone(derived)
+        self.assertNotEqual(proc.returncode, 0, proc.stdout)
         self.assertIn("No module named 'mtj_foundry'", proc.stderr)
+
+    def test_NEGATIVE_CONTROL_excluding_the_package_reddens_the_SAME_witness(self):
+        """`include` no longer matches `mtj_foundry`, so discovery yields nothing
+        even though the source tree is untouched and sitting right there."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            project = self._scratch_project(tmp)
+            text = (project / "pyproject.toml").read_text(encoding="utf-8")
+            broken = text.replace('include = ["mtj_foundry*"]',
+                                  'include = ["something_else*"]')
+            self.assertNotEqual(broken, text)
+            (project / "pyproject.toml").write_text(broken, encoding="utf-8")
+            self.assertTrue((project / "src" / "mtj_foundry" / "__init__.py").is_file())
+            derived, proc = self._witness(project, tmp)
+        self.assertIsNone(derived)
+        self.assertNotEqual(proc.returncode, 0, proc.stdout)
+        self.assertIn("No module named 'mtj_foundry'", proc.stderr)
+
+    def test_NEGATIVE_CONTROL_without_the_derived_mapping_the_same_command_fails(self):
+        """Metadata intact, mapping deliberately not provisioned. Without this,
+        the positive test could be proving something about the machine."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            project = self._scratch_project(tmp)
+            derived, proc = self._witness(project, tmp, provision=False)
+        self.assertIsNone(derived)
+        self.assertNotEqual(proc.returncode, 0, proc.stdout)
+        self.assertIn("No module named 'mtj_foundry'", proc.stderr)
+
+    def test_the_witness_never_reaches_the_repository_source_tree(self):
+        """Belt and braces on the coupling: with the scratch sources deleted but
+        the metadata intact, the derivation must find nothing rather than fall
+        back to the repository."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            project = self._scratch_project(tmp)
+            shutil.rmtree(project / "src" / "mtj_foundry")
+            self.assertIsNone(derive_editable_source(project))
 
 
 class TestThePackagingMetadataTheContractDependsOn(unittest.TestCase):
@@ -312,6 +443,54 @@ class TestTheExplicitSourceLayoutContextIsNotTheContract(unittest.TestCase):
         text = CONTRACT.read_text(encoding="utf-8")
         self.assertIn("MUST NOT be confused with", text)
         self.assertIn("does NOT demonstrate the install contract", text)
+
+
+class TestTheContractStatesTheEvidenceBoundaryExactly(unittest.TestCase):
+    """C8.5E.R1. The contract must keep the two evidence classes apart.
+
+    Blurring them is what the Manager stopped: a committed harness that names the
+    repository source tree proves EXPLICIT_SOURCE_LAYOUT, and calling it an
+    install proof would let the weakest available evidence carry the strongest
+    claim."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = CONTRACT.read_text(encoding="utf-8")
+
+    def test_both_evidence_classes_are_named(self):
+        self.assertIn("REAL_INSTALL_PROVISIONING", self.text)
+        self.assertIn("METADATA_DRIVEN_EDITABLE_IMPORT_PROOF", self.text)
+
+    def test_the_real_install_evidence_is_marked_worker_local_and_not_the_test(self):
+        self.assertIn("status: OBSERVED_ONCE", self.text)
+        self.assertIn("evidence_kind: WORKER_LOCAL", self.text)
+        self.assertIn("is_it_what_the_committed_test_does: NO", self.text)
+        self.assertIn("C8.5D", self.text)
+
+    def test_the_committed_proof_is_marked_committed_and_metadata_coupled(self):
+        self.assertIn("status: COMMITTED_AND_ENFORCED", self.text)
+        for term in ("tomllib", "package-dir", "packages.find",
+                     "turns the SAME import witness red"):
+            with self.subTest(term=term):
+                self.assertIn(term, self.text)
+
+    def test_the_contract_denies_that_the_committed_test_runs_pip(self):
+        self.assertIn("No committed test runs pip", self.text)
+
+    def test_the_contract_denies_that_it_is_explicit_source_layout_in_disguise(self):
+        self.assertIn("it never names the repository source tree", self.text)
+
+    def test_NEGATIVE_CONTROL_dropping_the_boundary_is_caught(self):
+        """In memory; no file is written."""
+        broken = self.text.replace("METADATA_DRIVEN_EDITABLE_IMPORT_PROOF", "X")
+        self.assertNotEqual(broken, self.text)
+        self.assertNotIn("METADATA_DRIVEN_EDITABLE_IMPORT_PROOF", broken)
+
+    def test_NEGATIVE_CONTROL_claiming_the_committed_test_installs_is_caught(self):
+        broken = self.text.replace("is_it_what_the_committed_test_does: NO",
+                                   "is_it_what_the_committed_test_does: YES")
+        self.assertNotEqual(broken, self.text)
+        self.assertNotIn("is_it_what_the_committed_test_does: NO", broken)
 
 
 if __name__ == "__main__":
