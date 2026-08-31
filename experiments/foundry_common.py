@@ -41,12 +41,22 @@ _PATHS = ProjectPaths.for_root(_BOOTSTRAP_ROOT)
 # values -- 134 legacy expressions delegate to them and none of them moves.
 REPO_ROOT = _PATHS.root
 
-# UNCHANGED ON PURPOSE: the engine still needs `experiments` on sys.path, and the
-# upward foundry_common -> tier_engine dependency is NOT this task's to solve.
-# Inserting at 0 after the bootstrap keeps `experiments` at the same precedence
-# it has always had.
+# THE `experiments` PATH INSERT STAYS, AND IS STILL LOAD-BEARING. C8.5G removed
+# this module's own `import tier_engine`, but the insert is not that import's
+# private scaffolding: it is the LEGACY_SIBLING_IMPORT bootstrap family recorded
+# in refoundation/PACKAGE-EXECUTION-CONTRACT.yaml, 87 sites strong, and its
+# deletion prerequisite (the legacy tree becoming importable) is nowhere near
+# satisfied. Inserting at 0 after the src bootstrap keeps `experiments` at the
+# same precedence it has always had.
 sys.path.insert(0, str(_PATHS.legacy_experiments))
-import tier_engine as te  # noqa: E402
+
+# C8.5G: corpus access now comes from the permanent package, not from the engine.
+# This module no longer imports `tier_engine` at all — the upward dependency that
+# P0.2 named as the shared foundation's structural defect is gone from HERE. The
+# engine keeps its own copies of these helpers for its ten other consumers; they
+# are untouched, and the two implementations coexist and are differentially
+# compared while that remains true.
+from mtj_foundry import corpus as _corpus  # noqa: E402
 
 FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
 REVIEW_DIR = _PATHS.legacy_foundry_review
@@ -182,8 +192,15 @@ def load_corpus():
     so this function's output must not change shape based on foundry-specific
     rulings. Foundry pipeline stages should use load_corpus_gated() instead
     (see Gate #0, batch-6 D1)."""
-    cards = te.load_cards(te.CARDS_PATH)
-    name_index = te.build_name_index(cards)
+    try:
+        cards = _corpus.load_cards(_PATHS.legacy_oracle_cards)
+    except _corpus.CorpusLoadError as error:
+        # THE ERROR BOUNDARY. The permanent library raises; this transitional
+        # facade turns that back into the legacy halt-loudly behavior, so every
+        # legacy caller keeps the stderr line and the exit code it always had
+        # while the library itself stays free of process-exit semantics.
+        halt(str(error))
+    name_index = _corpus.build_name_index(cards)
     return cards, name_index
 
 
@@ -208,7 +225,7 @@ def load_corpus_gated():
     load_corpus() is untouched and still available for reference/debugging."""
     cards, _ = load_corpus()
     gated_cards = {oid: c for oid, c in cards.items() if gate_passes(c)}
-    gated_name_index = te.build_name_index(gated_cards)
+    gated_name_index = _corpus.build_name_index(gated_cards)
     return gated_cards, gated_name_index, len(cards) - len(gated_cards)
 
 
@@ -222,7 +239,7 @@ def resolve_name(name: str, cards: dict, name_index: dict) -> str:
     split exactly this way, auto-resolve to the non-token entry ('paper' per
     the seed's own notes field); any OTHER ambiguity halts loudly rather than
     guessing."""
-    matches = name_index.get(te.normalize_name(name), [])
+    matches = name_index.get(_corpus.normalize_name(name), [])
     if len(matches) == 0:
         halt(f"card {name!r} matched 0 cards in the corpus — check spelling, no fuzzy fallback")
     if len(matches) == 1:
@@ -257,11 +274,26 @@ def _extract_faces(card: dict) -> list:
 def full_oracle_text(card: dict) -> str:
     """All-faces oracle text, newline-joined -- the root-level 'oracle_text'
     field is empty for multi-face layouts (transform/modal_dfc/adventure/
-    prepare/etc.), so this always goes through te.get_raw_faces() (which
-    falls back to the root field itself for single-face cards) rather than
-    reading card['oracle_text'] directly. Mirrors foundry_enrich.py's own
+    prepare/etc.), so this always goes through raw_faces() -- the permanent
+    corpus capability, which falls back to the root field itself for single-face
+    cards -- rather than reading card['oracle_text'] directly. Mirrors foundry_enrich.py's own
     full_oracle_text() -- same source, same join convention."""
-    return "\n".join(f["oracle_text"] for f in te.get_raw_faces(card) if f["oracle_text"])
+    return "\n".join(f["oracle_text"] for f in raw_faces(card) if f["oracle_text"])
+
+
+def raw_faces(card: dict) -> list:
+    """TEMPORARY COMPATIBILITY FACADE for the permanent corpus capability.
+
+    Legacy modules used to reach the shared face reader as `fc.te.get_raw_faces`
+    -- through this module's `tier_engine` binding. C8.5G removed that binding,
+    so this is the one place they reach it now. It DELEGATES; it must never grow
+    a copy of the implementation, because two face readers is exactly the drift
+    this capability exists to prevent.
+
+    It deletes when its callers import `mtj_foundry.corpus` directly, which is
+    gated on the installed-package context, not on anything in this file.
+    """
+    return _corpus.card_faces(card)
 
 
 CARDNAME_TOKEN = "~"
