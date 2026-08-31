@@ -64,10 +64,26 @@ import foundry_common as fc  # noqa: E402,F401
 from mtj_foundry import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
+# C8.5K: ONE ProjectPaths view, used for both owned paths. C8.5J built this
+# view inline for the ratchet baseline alone; binding it once is what lets the
+# generated JSON below delegate without a second boundary load, so this slice
+# adds no delegation row.
+#
+# The wording above avoids spelling the boundary attribute: the layout census
+# cross-checks its AST count against a RAW TEXTUAL count of that expression, and
+# a mention inside a comment moves the textual side only -- 22 vs 23 on the
+# first draft of this line. A comment is not a load, and the census is right to
+# be literal; the prose is what has to be careful.
+PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
-RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
+RATCHET_BASELINE = PATHS.foundry_audit_baseline
 DOCS = REPO_ROOT / "docs"
-OUT_JSON = REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"
+# C8.5K: the GENERATED machine-readable output now comes from the layout owner.
+# `REPO_ROOT`, `DOCS` and `OUT_MD` deliberately do NOT -- they are Step-6
+# knowledge about a TRACKED document, and their continued presence here is debt
+# that this Step-5 slice is not authorized to pay.
+OUT_JSON = PATHS.legacy_ruling_registry_json
 OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"
 
 # Generated artifact -- never a harvest source (it would cite every ruling

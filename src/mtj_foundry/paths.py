@@ -181,6 +181,24 @@ class ProjectPaths:
         return self.legacy_experiments_out / "foundry"
 
     @property
+    def legacy_ruling_registry_json(self) -> Path:
+        """The ruling registry's GENERATED machine-readable output, where it is.
+
+        Named here for the same reason as its siblings: `foundry_ruling_registry`
+        was appending `"experiments" / "out" / "foundry" / "ruling_registry.json"`
+        to a root of its own, which is a repository-relative layout fact stated
+        outside the one component that owns layout. Deriving it from
+        `legacy_foundry_out` is what lets that restatement go away.
+
+        NAMING IS NOT CLASSIFYING. This does not relocate the file, create it,
+        assert it exists, make it authoritative, or decide its artifact class --
+        the `legacy_` prefix says exactly that and carries no future ruling. The
+        registry's two `docs/` paths are deliberately NOT named here; they are
+        Step-6 knowledge and are out of this slice.
+        """
+        return self.legacy_foundry_out / "ruling_registry.json"
+
+    @property
     def legacy_foundry_review(self) -> Path:
         """The legacy foundry review directory.
 
