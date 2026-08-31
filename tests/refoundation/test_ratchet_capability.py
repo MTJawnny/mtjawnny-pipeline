@@ -81,6 +81,14 @@ CONSUMERS = {
 
 BASELINE_FILENAME = "foundry-audit-baseline.json"
 
+# The consumers authorized to bind ONE `ProjectPaths` view rather than stating
+# `ProjectPaths.for_root(fc.REPO_ROOT)` inline (C8.5K). A consumer earns this by
+# owning MORE THAN ONE path on the view: `foundry_ruling_registry` owns the
+# ratchet baseline and its generated JSON, and constructing the view twice would
+# add a second boundary load and move the delegation census. The set is pinned
+# so a consumer cannot drift into the bound form without a reason.
+ONE_VIEW_CONSUMERS = {"foundry_ruling_registry"}
+
 
 def load_oracle():
     """The legacy module, by PATH, with no `sys.path` mutation.
@@ -669,11 +677,62 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
                 self.assertIn("from mtj_foundry import ratchet", source)
 
     def test_each_of_them_obtains_the_baseline_from_the_layout_owner(self):
+        """All eight reach the baseline through a ProjectPaths view built from
+        the boundary's root. Seven state it inline; one binds the view first.
+
+        C8.5K RE-AIMS THIS GUARD WITHOUT WEAKENING IT. The C8.5J form required
+        the inline expression LITERALLY in all eight, which was correct while all
+        eight owned exactly one path. `foundry_ruling_registry` now owns two --
+        the ratchet baseline and its generated JSON -- and building the view
+        twice would add a second `fc.REPO_ROOT` load, moving the delegation
+        census for no reason. So that one consumer binds the view once and reads
+        both properties off it.
+
+        What is asserted is therefore the PROPERTY rather than one spelling of
+        it: the baseline comes from `.foundry_audit_baseline` on a ProjectPaths
+        made from the boundary root, in every one of the eight. The inline form
+        is still required exactly for the seven that have no reason to change.
+        """
         for name, source in self.sources.items():
             with self.subTest(consumer=name):
-                self.assertIn(
-                    "RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT)"
-                    ".foundry_audit_baseline", source)
+                if name in ONE_VIEW_CONSUMERS:
+                    view = self.bound_view_name(source)
+                    self.assertIsNotNone(
+                        view, f"{name} binds no module-scope ProjectPaths view")
+                    self.assertIn(f"RATCHET_BASELINE = {view}.foundry_audit_baseline",
+                                  source)
+                else:
+                    self.assertIn(
+                        "RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT)"
+                        ".foundry_audit_baseline", source)
+
+    def bound_view_name(self, source: str):
+        """The name bound to a module-scope `ProjectPaths.for_root(fc.REPO_ROOT)`.
+
+        Exactly one such binding is permitted: two would be two boundary loads
+        wearing one name, which is the census movement this arrangement exists to
+        avoid. Returns None when there is no binding at all.
+        """
+        tree = ast.parse(source)
+        bindings = [n for n in tree.body if isinstance(n, ast.Assign)
+                    and ast.unparse(n.value) == "ProjectPaths.for_root(fc.REPO_ROOT)"]
+        if not bindings:
+            return None
+        self.assertEqual(len(bindings), 1, "more than one bound ProjectPaths view")
+        targets = bindings[0].targets
+        self.assertEqual(len(targets), 1)
+        self.assertIsInstance(targets[0], ast.Name)
+        return targets[0].id
+
+    def test_the_one_bound_view_consumer_builds_exactly_one_view(self):
+        """The whole reason the bound form is allowed. A second construction
+        would be a second `fc.REPO_ROOT` delegation row."""
+        for name in ONE_VIEW_CONSUMERS:
+            with self.subTest(consumer=name):
+                source = self.sources[name]
+                self.assertEqual(
+                    source.count("ProjectPaths.for_root("), 1,
+                    "the bound-view consumer must construct exactly one view")
 
     def test_none_of_them_restates_the_baseline_filename_or_path(self):
         for name, source in self.sources.items():
@@ -747,13 +806,37 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
 
     def test_the_ruling_registry_docs_knowledge_is_untouched(self):
         """The one consumer whose import block had to be restructured. Its
-        output-document knowledge is Step-6 scope and stays exactly as it was."""
+        output-DOCUMENT knowledge is Step-6 scope and stays exactly as it was.
+
+        C8.5K CORRECTS THIS PIN'S AIM. The C8.5J form froze `OUT_JSON` alongside
+        the three `docs/` facts, which over-reached by one line: the generated
+        JSON is a Step-5 layout site, not Step-6 document knowledge, and C8.5K
+        exists to give it an owner. The three genuine Step-6 facts are still
+        pinned verbatim -- and `OUT_MD`, which the old form omitted, is added, so
+        the frozen set is now complete rather than merely unchanged.
+        """
         source = self.sources["foundry_ruling_registry"]
         for line in ('REPO_ROOT = Path(__file__).resolve().parent.parent',
                      'DOCS = REPO_ROOT / "docs"',
-                     'OUT_JSON = REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"'):
+                     'OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"'):
             with self.subTest(line=line):
                 self.assertIn(line, source)
+
+    def test_the_ruling_registry_generated_output_comes_from_the_layout_owner(self):
+        """What replaced the obsolete `OUT_JSON` literal pin (C8.5K).
+
+        The old assertion said "this restatement is still here". The Step-5 cut
+        makes the opposite true, so the guard now says where the value comes
+        from instead -- the same bound view the ratchet baseline uses -- and that
+        the restatement is gone.
+        """
+        source = self.sources["foundry_ruling_registry"]
+        view = self.bound_view_name(source)
+        self.assertIsNotNone(view)
+        self.assertIn(f"OUT_JSON = {view}.legacy_ruling_registry_json", source)
+        self.assertNotIn(
+            'OUT_JSON = REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"',
+            source)
 
 
 class TestTheLegacyOracleIsUntouched(RatchetTestCase):

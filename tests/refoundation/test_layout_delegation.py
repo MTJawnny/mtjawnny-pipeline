@@ -3171,7 +3171,8 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
 
     def test_no_other_public_property_was_added(self):
         """C8.5C added `legacy_data_artifacts`; C8.5G adds `legacy_oracle_cards`;
-        C8.5J adds `foundry_audit_baseline`.
+        C8.5J adds `foundry_audit_baseline`; C8.5K adds
+        `legacy_ruling_registry_json`.
         Pinned in full rather than counted, because a count cannot see a
         substitution.
 
@@ -3193,6 +3194,7 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             "legacy_foundry_out", "legacy_foundry_review",
             "legacy_oracle_cards",          # C8.5G
             "legacy_pipeline",
+            "legacy_ruling_registry_json",  # C8.5K
             "refoundation", "src", "tests"])
 
 
@@ -3245,6 +3247,170 @@ class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
 
 PATHS_SOURCE = (REPO_ROOT / "src" / "mtj_foundry" / "paths.py")
 FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
+RULING_REGISTRY = EXPERIMENTS / "foundry_ruling_registry.py"
+
+
+# ---------------------------------------------------------------------------
+# C8.5K — the ruling registry's GENERATED output gets an owner
+# ---------------------------------------------------------------------------
+#
+# The last Step-5 layout site in `foundry_ruling_registry`. The module built
+# `REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"` from
+# a root of its own, which is four layout facts stated outside the component
+# that owns layout.
+#
+# WHAT IS DELIBERATELY NOT IN THIS SLICE. The same module states `DOCS` and
+# `OUT_MD`, and they stay. They are knowledge about a TRACKED DOCUMENT -- which
+# document the registry writes, and that it is the one the deletion gate reads
+# -- and that is Step-6 scope. Their continued presence is debt; it is not a
+# reason to widen a Step-5 cut, and the guards below assert they are still here
+# rather than quietly allowing them to drift out.
+
+
+class TestTheGeneratedRegistryOutputDelegates(unittest.TestCase):
+    """The property, its resolution, and the consumer's route to it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = RULING_REGISTRY.read_text(encoding="utf-8")
+        cls.module = load_legacy("foundry_ruling_registry")
+
+    def test_the_owner_resolves_it_exactly_from_an_arbitrary_root(self):
+        paths = ProjectPaths.for_root("/definitely/not/here")
+        self.assertEqual(
+            paths.legacy_ruling_registry_json,
+            Path("/definitely/not/here") / "experiments" / "out" / "foundry"
+            / "ruling_registry.json")
+
+    def test_it_derives_from_legacy_foundry_out_rather_than_restating_it(self):
+        """A sibling that re-joined `experiments/out/foundry` would be a second
+        statement of the same layout fact inside the owner itself."""
+        paths = ProjectPaths.for_root("/r")
+        self.assertEqual(paths.legacy_ruling_registry_json.parent,
+                         paths.legacy_foundry_out)
+        self.assertEqual(paths.legacy_ruling_registry_json.name,
+                         "ruling_registry.json")
+
+    def test_the_static_parse_agrees_with_the_live_property(self):
+        layout = layout_census.project_paths_layout(
+            PATHS_SOURCE.read_text(encoding="utf-8"))
+        self.assertEqual(layout["legacy_ruling_registry_json"],
+                         ("experiments", "out", "foundry", "ruling_registry.json"))
+
+    def test_the_live_OUT_JSON_is_byte_identical_to_its_pre_change_value(self):
+        """The delegation may not move the file by one character."""
+        self.assertEqual(
+            self.module.OUT_JSON,
+            self.module.REPO_ROOT / "experiments" / "out" / "foundry"
+            / "ruling_registry.json")
+        self.assertEqual(self.module.OUT_JSON,
+                         PATHS.legacy_foundry_out / "ruling_registry.json")
+
+    def test_the_consumer_obtains_it_from_the_owner(self):
+        view = self.bound_view()
+        self.assertIn(f"OUT_JSON = {view}.legacy_ruling_registry_json", self.source)
+
+    def test_the_consumer_does_not_reconstruct_the_generated_json_path(self):
+        """Structural, so a re-added restatement is caught before it ships.
+
+        The surviving construction is PINNED rather than forbidden. A first
+        version asserted `local_root_relative_constructions(...) == []` and
+        failed on `REPO_ROOT / 'docs'` -- which is a FROZEN Step-6 fact that must
+        remain, so the probe was demanding the opposite of the contract. Pinning
+        the exact remainder says both things at once: the generated JSON is gone
+        from the local set, and the `docs/` debt is still there to be paid by a
+        later, separately authorized slice.
+        """
+        self.assertNotIn('"ruling_registry.json"', self.source)
+        self.assertNotIn("'ruling_registry.json'", self.source)
+        self.assertNotIn('"experiments" / "out"', self.source)
+        # The LINE NUMBER is stripped before comparison. Pinning it would make
+        # this guard fail on any import edit above it -- a location-only shift
+        # reported as a layout finding, which is the noise the diagnostic
+        # fingerprint rule exists to separate out.
+        remaining = [r.split(": ", 1)[1] for r
+                     in local_root_relative_constructions(self.source)]
+        self.assertEqual(remaining, ["REPO_ROOT / 'docs'"],
+                         "the only local root-relative construction left in this "
+                         "module must be the frozen Step-6 docs/ one")
+
+    def bound_view(self) -> str:
+        tree = ast.parse(self.source)
+        bindings = [n for n in tree.body if isinstance(n, ast.Assign)
+                    and ast.unparse(n.value) == "ProjectPaths.for_root(fc.REPO_ROOT)"]
+        self.assertEqual(len(bindings), 1,
+                         "exactly one bound ProjectPaths view is expected")
+        return bindings[0].targets[0].id
+
+    def test_one_view_serves_both_owned_paths(self):
+        """Why the bound form is used at all: two constructions would be two
+        boundary loads, and the delegation census would move for no reason."""
+        view = self.bound_view()
+        self.assertEqual(self.source.count("ProjectPaths.for_root("), 1)
+        self.assertIn(f"RATCHET_BASELINE = {view}.foundry_audit_baseline", self.source)
+        self.assertIn(f"OUT_JSON = {view}.legacy_ruling_registry_json", self.source)
+
+
+class TestTheStep6KnowledgeIsStillFrozen(unittest.TestCase):
+    """The three facts C8.5K is NOT allowed to touch, asserted verbatim."""
+
+    FROZEN = ('REPO_ROOT = Path(__file__).resolve().parent.parent',
+              'DOCS = REPO_ROOT / "docs"',
+              'OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"')
+
+    def setUp(self):
+        self.source = RULING_REGISTRY.read_text(encoding="utf-8")
+
+    def test_every_frozen_source_fact_is_present_exactly(self):
+        for line in self.FROZEN:
+            with self.subTest(line=line):
+                self.assertIn(line, self.source)
+
+    def test_the_two_docs_sites_are_still_LOCAL_and_are_still_counted(self):
+        """They are debt, and the census still says so. A slice that quietly
+        migrated them would be Step 6 arriving without authorization."""
+        sites = layout_census.local_layout_sites(
+            self.source, Path("experiments/foundry_ruling_registry.py"))
+        self.assertEqual(
+            sorted(s.expr for s in sites),
+            ["DOCS / 'RATIFIED-RULINGS-REGISTRY.md'", "REPO_ROOT / 'docs'"])
+
+    def test_the_import_order_and_bootstrap_are_unchanged(self):
+        tree = ast.parse(self.source)
+        lines = [(n.lineno, a.name) for n in ast.walk(tree)
+                 if isinstance(n, ast.Import) for a in n.names]
+        lines += [(n.lineno, n.module) for n in ast.walk(tree)
+                  if isinstance(n, ast.ImportFrom) and n.module]
+        common = [ln for ln, mod in lines if mod == "foundry_common"]
+        package = [ln for ln, mod in lines if mod.split(".")[0] == "mtj_foundry"]
+        self.assertEqual(len(common), 1)
+        self.assertTrue(package)
+        self.assertLess(common[0], min(package),
+                        "foundry_common must establish the bootstrap first")
+
+    def test_no_sys_path_or_bootstrap_was_added(self):
+        """This module has never had one and must not grow one: it reaches the
+        package only because `foundry_common` puts `src` on the path."""
+        tree = ast.parse(self.source)
+        inserts = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
+                   and isinstance(n.func, ast.Attribute)
+                   and n.func.attr in ("insert", "append")
+                   and isinstance(n.func.value, ast.Attribute)
+                   and n.func.value.attr == "path"]
+        self.assertEqual(inserts, [])
+        self.assertEqual(
+            len(layout_census.sys_path_call_nodes(tree)), 0)
+
+    def test_the_registry_semantics_below_the_layout_boundary_are_untouched(self):
+        """No rewrite, no refactor. The tracked-doc population, the deletion
+        gate and the check-only halt are asserted present, not merely assumed."""
+        for fragment in ("git", "ls-files",
+                         "--check-only", "--update-baseline",
+                         "contradict"):
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, self.source)
+
+
 
 # Measured fresh from the AST of every tracked Python file. Re-measured at the
 # C8.5C head: the migration moved 23 of these numbers in exactly the direction
@@ -3300,11 +3466,28 @@ CENSUS_HEAD = {
         "CALL_ARG": 9,                             # C8.5I: 1 (+8 C8.5J)
     },
     "delegation_files": 55,                        # C8.5I: 52 (+3 C8.5J)
-    "local_sites_total": 88,                       # C8.5B: 89
+    #
+    # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
+    # ruling registry's generated JSON was built as
+    # `REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"`
+    # -- a module-scope hop1 consumption site -- and now comes from
+    # `ProjectPaths.legacy_ruling_registry_json`. Delegating a restatement
+    # DELETES the site rather than converting it, so the four rows below fall by
+    # one each and nothing else moves: `local_sites_bootstrap` is untouched
+    # because the site was never a bootstrap, and `consumption_files` is
+    # untouched because the file still carries its two `docs/` sites, which are
+    # Step-6 knowledge and deliberately out of that slice.
+    #
+    # The delegation rows do NOT move with it. The consumer binds ONE
+    # `ProjectPaths` view and reads both properties off it, so the boundary is
+    # still loaded exactly once: delegations 149, REPO_ROOT 22, CALL_ARG 9 and
+    # delegation_files 55 are all unchanged. Building the view twice would have
+    # moved every one of them.
+    "local_sites_total": 87,                       # C8.5J: 88; C8.5B: 89
     "local_sites_bootstrap": 28,                   # unchanged
-    "local_sites_consumption": 60,                 # C8.5B: 61
-    "consumption_origin": {"hop1": 44, "hop2": 14, "inline": 2},   # hop1 was 45
-    "consumption_scope": {"module": 43, "function": 17},           # module was 44
+    "local_sites_consumption": 59,                 # C8.5J: 60; C8.5B: 61
+    "consumption_origin": {"hop1": 43, "hop2": 14, "inline": 2},   # hop1 C8.5J: 44
+    "consumption_scope": {"module": 42, "function": 17},           # module C8.5J: 43
     "consumption_files": 29,                       # C8.5B: 30
     "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
 }
