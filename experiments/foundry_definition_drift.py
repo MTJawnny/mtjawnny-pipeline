@@ -39,8 +39,16 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
-import foundry_audit_baseline as base  # noqa: E402
 
+# C8.5J: the standing ratchet now comes from the permanent package. The import
+# sits AFTER `foundry_common`, which is what establishes the C8.5A package
+# bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+# The baseline is a PARAMETER now, and its one repository-relative fact comes
+# from the layout owner rather than from a module global inside the ratchet.
+from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
+
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 REPORT_MD = REPO_ROOT.parent / "docs" / "DEFINITION-DRIFT-AUDIT-2026-08-02.md"
 REPORT_JSON = fc.FOUNDRY_OUT_DIR / "definition_drift_report.json"
 
@@ -643,8 +651,8 @@ def main():
     print("\n" + "=" * 62)
     print("BASELINE — definition drift")
     print("=" * 62)
-    return 1 if base.report("definition_drift", metrics,
-                            args.update_baseline) else 0
+    return 1 if ratchet.report(RATCHET_BASELINE, "definition_drift", metrics,
+                               args.update_baseline) else 0
 
 
 if __name__ == "__main__":

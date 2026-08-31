@@ -48,14 +48,24 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import foundry_audit_baseline as base
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
+# C8.5J: the standing ratchet now comes from the permanent package. This module
+# is invoked as a loose script, so `mtj_foundry` is reachable only once the
+# C8.5A compatibility bootstrap has run -- and `foundry_common` is what runs it.
+# Importing the boundary FIRST is therefore load-bearing, and is the reason this
+# import sits outside the otherwise alphabetical block above. No sys.path
+# mutation and no second bootstrap is added here.
+import foundry_common as fc  # noqa: E402,F401
+from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 DOCS = REPO_ROOT / "docs"
 OUT_JSON = REPO_ROOT / "experiments" / "out" / "foundry" / "ruling_registry.json"
 OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"
@@ -630,8 +640,8 @@ def main() -> int:
     print("\n" + "=" * 62)
     print("BASELINE — ruling registry")
     print("=" * 62)
-    return 1 if base.report("ruling_registry", metrics,
-                            args.update_baseline) else 0
+    return 1 if ratchet.report(RATCHET_BASELINE, "ruling_registry", metrics,
+                               args.update_baseline) else 0
 
 
 if __name__ == "__main__":

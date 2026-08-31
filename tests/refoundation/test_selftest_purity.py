@@ -19,23 +19,44 @@ could not show:
      tracked ratchet carrying a `reachability_selftest` section that nobody put
      there on purpose.
 
-The fix is a different WRITE TARGET, not a more careful cleanup: the synthetic pin
-now goes to a temporary control input outside the repository, and
-`foundry_audit_baseline.BASELINE` is rebound at it BEFORE anything is written. The
-tracked baseline is never the write target at any instant, so there is no window
-for an interrupt to land in.
+The fix is a different WRITE TARGET, not a more careful cleanup.
+
+## WHAT C8.5J CHANGED, AND WHY THIS FILE IS STRONGER FOR IT
+
+P0.3F expressed that different write target as a REBINDING: the temporary path was
+assigned onto `foundry_audit_baseline.BASELINE`, a mutable module global, and
+restored in a `finally`. This file's guards therefore asserted the MECHANISM —
+that a rebind exists, that it precedes the first `save()`, that a `finally`
+restores it, that it targets the module object the comparator reads rather than
+this file's globals.
+
+C8.5J removed the mechanism by removing the global. The permanent ratchet
+(`mtj_foundry.ratchet`) takes its baseline as the FIRST ARGUMENT of `load`,
+`save`, `compare` and `report`, so redirecting a control is now passing a
+different value, not mutating shared process state.
+
+**The protected invariant is unchanged and is now asserted directly instead of
+through a proxy.** What the rebind guards were really protecting was: *the
+tracked ratchet is never the thing this control reads or writes.* Under the old
+seam that could only be checked indirectly, by policing the global. Under the new
+seam it is checkable head-on — every ratchet call in `selftest` is examined and
+its baseline argument must be the locally created temporary file.
+
+That is a strictly stronger property than the rebind guards could express. A
+rebind could be present, ordered correctly, and restored in a `finally`, and the
+control would still have been rigged if some other call had reached the tracked
+file; the argument check cannot be satisfied that way.
 
 **What must NOT change is what the control PROVES.** `save()` and `compare()` are
-still the real ones, so `WORSE_IF_DOWN` and `_direction()` still decide whether the
-synthetic lost wire is fatal. A control that reimplemented that comparison would be
-a copy of the comparator instead of a test of it.
+still the real ones, so the shipped direction tables still decide whether the
+synthetic lost wire is fatal. A control that reimplemented that comparison would
+be a copy of the comparator instead of a test of it.
 """
 
 from __future__ import annotations
 
 import ast
 import contextlib
-import importlib.util
 import io
 import json
 import subprocess
@@ -56,10 +77,20 @@ from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)
 EXPERIMENTS = PATHS.legacy_experiments
-RATCHET = PATHS.baselines / "foundry-audit-baseline.json"
+# C8.5J: the tracked control input now has a NAME on the layout owner, so this
+# test states it the same way production does instead of re-joining the filename.
+RATCHET = PATHS.foundry_audit_baseline
 REACHABILITY = EXPERIMENTS / "foundry_reachability.py"
 
 SELFTEST_SECTION = "reachability_selftest"
+
+# The module-level constant in `foundry_reachability` that holds the TRACKED
+# baseline. Naming it once here is what lets the checker below say "the selftest
+# must not reach for this" without hardcoding a path.
+TRACKED_CONST = "RATCHET_BASELINE"
+
+# The ratchet entry points that take a baseline as their FIRST argument.
+BASELINE_ARG_CALLS = ("load", "save", "compare", "report")
 
 
 def selftest_ast() -> ast.FunctionDef:
@@ -78,8 +109,12 @@ def purity_violations(source: str) -> list[str]:
     """Ways `selftest` could still reach the TRACKED ratchet, as findings.
 
     A checker, not an assertion, so the tests below can run it against a
-    deliberately reverted source and require it to FIRE. "A guard that has never
+    deliberately rigged source and require it to FIRE. "A guard that has never
     been shown to fail is not known to be a guard."
+
+    Under the C8.5J seam the question is answered by reading ARGUMENTS rather
+    than by policing a global: a ratchet call is pure exactly when the baseline
+    it is handed is the temporary file this function created.
     """
     tree = ast.parse(source)
     fn = next((n for n in ast.walk(tree)
@@ -89,33 +124,69 @@ def purity_violations(source: str) -> list[str]:
 
     findings = []
 
-    # 1. A direct write through the module attribute, whatever it is bound to.
+    # 1. A direct write through the tracked-baseline constant, whatever it is
+    #    bound to.
     for node in ast.walk(fn):
         if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                 and node.func.attr in ("write_text", "write_bytes", "open")
-                and "BASELINE" in ast.unparse(node.func.value)):
-            findings.append(f"line {node.lineno}: direct write to baseline.BASELINE")
+                and TRACKED_CONST in ast.unparse(node.func.value)):
+            findings.append(
+                f"line {node.lineno}: direct write to {TRACKED_CONST}")
 
-    # 2. The rebind must exist, and must LEXICALLY PRECEDE every call that
-    #    writes through the comparator. A rebind that happens after the first
-    #    `save()` would put the tracked file back in the line of fire, which is
-    #    exactly the state this slice removes.
-    rebinds = [n.lineno for n in ast.walk(fn)
-               if isinstance(n, ast.Assign)
-               and any(isinstance(t, ast.Attribute) and t.attr == "BASELINE"
-                       for t in n.targets)]
-    writes = [n.lineno for n in ast.walk(fn)
-              if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
-              and n.func.attr == "save"]
-    if writes and not rebinds:
-        findings.append("baseline.save() is called and BASELINE is never rebound")
-    elif writes and min(rebinds) > min(writes):
-        findings.append("baseline.save() is reached before BASELINE is rebound")
+    # 2. THE CORE CHECK. Every ratchet call must be handed the temporary
+    #    baseline. The temporary is identified as the name bound from
+    #    `tempfile.NamedTemporaryFile`, so renaming the local cannot silently
+    #    disarm this, and hardcoding "tmp" cannot either.
+    # The temporary is whatever local is bound FROM a `tempfile` construction --
+    # `tmp = Path(fh.name)` under `with tempfile.NamedTemporaryFile(...) as fh`
+    # is the live spelling. Derived rather than hardcoded as "tmp", so renaming
+    # the local cannot silently disarm the check and a local merely NAMED `tmp`
+    # cannot satisfy it.
+    handles = {w.optional_vars.id
+               for node in ast.walk(fn) if isinstance(node, ast.With)
+               for w in node.items
+               if "tempfile." in ast.unparse(w.context_expr)
+               and isinstance(w.optional_vars, ast.Name)}
+    temporaries = set()
+    for node in ast.walk(fn):
+        if not isinstance(node, ast.Assign):
+            continue
+        src = ast.unparse(node.value)
+        if ("tempfile." in src
+                or any(f"{h}.name" in src for h in handles)):
+            temporaries |= {t.id for t in node.targets if isinstance(t, ast.Name)}
 
-    # 3. The rebind must be RESTORED on every path, including a raised one.
-    if rebinds and not any(isinstance(n, ast.Try) and n.finalbody
-                           for n in ast.walk(fn)):
-        findings.append("BASELINE is rebound without a finally that restores it")
+    calls = [n for n in ast.walk(fn)
+             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+             and n.func.attr in BASELINE_ARG_CALLS]
+    if not calls:
+        findings.append("selftest makes no ratchet call at all")
+    for node in calls:
+        if not node.args:
+            findings.append(
+                f"line {node.lineno}: {node.func.attr}() is called with no "
+                f"baseline argument")
+            continue
+        first = ast.unparse(node.args[0])
+        if first in temporaries:
+            continue
+        findings.append(
+            f"line {node.lineno}: {node.func.attr}() is handed {first!r} "
+            f"instead of the temporary baseline")
+
+    # 3. The temporary must be CREATED before any ratchet call writes through
+    #    it, and removed on every path including a raised one.
+    creations = [n.lineno for n in ast.walk(fn) if isinstance(n, ast.With)
+                 and any("NamedTemporaryFile" in ast.unparse(w.context_expr)
+                         for w in n.items)]
+    writes = [n.lineno for n in calls if n.func.attr in ("save", "report")]
+    if writes and not creations:
+        findings.append("a ratchet write happens and no temporary baseline is created")
+    elif writes and creations and min(creations) > min(writes):
+        findings.append("a ratchet write is reached before the temporary baseline exists")
+    if creations and not any(isinstance(n, ast.Try) and n.finalbody
+                             for n in ast.walk(fn)):
+        findings.append("the temporary baseline is created without a finally that removes it")
 
     return findings
 
@@ -130,23 +201,24 @@ class TestTheSelftestCannotReachTheTrackedRatchet(unittest.TestCase):
     def test_the_synthetic_pin_goes_to_a_temporary_file(self):
         source = ast.unparse(selftest_ast())
         self.assertIn("tempfile", source)
-        self.assertIn("baseline.BASELINE = tmp", source)
+        self.assertIn("NamedTemporaryFile", source)
 
-    def test_the_rebind_is_restored_in_a_finally(self):
+    def test_the_temporary_baseline_is_removed_in_a_finally(self):
+        """The old form asserted that a REBIND was restored. There is nothing to
+        restore now — nothing shared was mutated — so what must survive is that
+        the temporary file does not outlive the control."""
         fn = selftest_ast()
         tries = [n for n in ast.walk(fn) if isinstance(n, ast.Try) and n.finalbody]
         self.assertTrue(tries)
-        restored = "\n".join(ast.unparse(s) for t in tries for s in t.finalbody)
-        self.assertIn("baseline.BASELINE = real_baseline", restored)
+        finalized = "\n".join(ast.unparse(s) for t in tries for s in t.finalbody)
+        self.assertIn("unlink", finalized)
 
-    def test_the_rebind_targets_the_module_the_comparator_reads(self):
-        """Not this file's globals.
+    def test_no_mutable_module_global_is_rebound_anywhere_in_the_control(self):
+        """The seam C8.5J removed, asserted as ABSENT rather than as required.
 
-        "A module run as __main__ is a second, separate copy of itself, and
-        monkeypatching the wrong one reads as a passing test." The attribute is
-        set on the imported `foundry_audit_baseline` object — which is never
-        __main__, so it has exactly one instance — and `_document()` reads
-        `BASELINE` at call time.
+        This is the inverse of the P0.3F guard it replaces. A reintroduced
+        rebinding would mean the permanent ratchet had grown a mutable baseline
+        global again, which the C8.5J contract forbids outright.
         """
         source = ast.unparse(selftest_ast())
         self.assertNotIn('globals()["BASELINE"]', source)
@@ -155,15 +227,17 @@ class TestTheSelftestCannotReachTheTrackedRatchet(unittest.TestCase):
                    if isinstance(n, ast.Assign)
                    and any(isinstance(t, ast.Attribute) and t.attr == "BASELINE"
                            for t in n.targets)]
-        self.assertEqual(len(assigns), 2)  # rebind, and the restore
-        for node in assigns:
-            target = node.targets[0]
-            self.assertEqual(ast.unparse(target.value), "baseline")
+        self.assertEqual(assigns, [])
+
+    def test_the_tracked_baseline_constant_is_never_named_in_the_control(self):
+        """Head-on, and stronger than the rebind guards could be: the control
+        cannot read or write the tracked input because it never mentions it."""
+        self.assertNotIn(TRACKED_CONST, ast.unparse(selftest_ast()))
 
     def test_the_comparison_is_not_reimplemented_here(self):
         """The real comparator must remain the thing that decides.
 
-        The direction sets live in `foundry_audit_baseline` and nowhere else; a
+        The direction tables live in `mtj_foundry.ratchet` and nowhere else; a
         local copy would let this file pass its own control while the shipped
         ratchet disagreed.
 
@@ -177,16 +251,18 @@ class TestTheSelftestCannotReachTheTrackedRatchet(unittest.TestCase):
                  for t in n.targets if isinstance(t, ast.Name)}
         self.assertNotIn("WORSE_IF_DOWN", bound)
         self.assertNotIn("WORSE_IF_UP", bound)
+        self.assertNotIn("_WORSE_IF_DOWN", bound)
+        self.assertNotIn("_WORSE_IF_UP", bound)
         unparsed = ast.unparse(selftest_ast())
-        self.assertIn("baseline.save(", unparsed)
-        self.assertIn("baseline.compare(", unparsed)
+        self.assertIn("ratchet.save(", unparsed)
+        self.assertIn("ratchet.compare(", unparsed)
 
 
 class TestTheStructuralGuardCatchesAReversion(unittest.TestCase):
     """NEGATIVE CONTROL, aimed at the code path rather than at the tool's name.
 
-    Each case is the live source mutated back toward the pre-P0.3F arrangement.
-    Deriving them from today's source rather than pasting the old body is what
+    Each case rigs the live source toward reaching the tracked baseline again.
+    Deriving them from today's source rather than pasting an old body is what
     keeps the control aimed at the guard after the file moves on.
     """
 
@@ -195,70 +271,80 @@ class TestTheStructuralGuardCatchesAReversion(unittest.TestCase):
         self.assertEqual(purity_violations(self.source), [],
                          "the control needs a clean baseline to break")
 
-    def test_removing_the_rebind_is_caught(self):
-        """The save then lands on whatever BASELINE already pointed at — the
-        tracked ratchet.
-
-        Note WHICH finding fires: the `finally` still holds
-        `baseline.BASELINE = real_baseline`, so a rebind is still lexically
-        present and the checker reports the ORDERING violation, not the absence
-        one. Asserting the absence wording here would have been a control aimed
-        at a message instead of at the code path.
-        """
-        reverted = self.source.replace("        baseline.BASELINE = tmp\n", "")
-        self.assertNotEqual(reverted, self.source)
-        findings = purity_violations(reverted)
-        self.assertTrue(any("rebound" in f for f in findings), findings)
-
-    def test_a_selftest_with_no_rebind_at_all_is_caught(self):
-        """The absence arm of the same finding, which the case above cannot
-        reach."""
-        reverted = self.source.replace("        baseline.BASELINE = tmp\n", "")
-        reverted = reverted.replace(
-            "        baseline.BASELINE = real_baseline\n", "")
-        self.assertIn("baseline.save() is called and BASELINE is never rebound",
-                      purity_violations(reverted))
-
-    def test_restoring_the_direct_cleanup_write_is_caught(self):
-        """The exact shape the P0.3E review flagged: a `finally` that writes the
-        tracked baseline to undo the synthetic pin."""
-        reverted = self.source.replace(
-            "        tmp.unlink(missing_ok=True)\n",
-            "        baseline.BASELINE.write_text('{}', encoding='utf-8')\n")
-        self.assertNotEqual(reverted, self.source)
-        findings = purity_violations(reverted)
-        self.assertTrue(any("direct write to baseline.BASELINE" in f
+    def test_passing_the_tracked_baseline_to_save_is_caught(self):
+        """The exact shape C8.5J's seam makes possible, and the one the task
+        names: hand the real control input to the writing call."""
+        rigged = self.source.replace(
+            "ratchet.save(tmp, section, pretend)",
+            f"ratchet.save({TRACKED_CONST}, section, pretend)")
+        self.assertNotEqual(rigged, self.source)
+        findings = purity_violations(rigged)
+        self.assertTrue(any(TRACKED_CONST in f and "save()" in f
                             for f in findings), findings)
 
-    def test_rebinding_only_after_the_save_is_caught(self):
-        reverted = self.source.replace(
-            "        baseline.BASELINE = tmp\n"
-            "        baseline.save(section, pretend)\n",
-            "        baseline.save(section, pretend)\n"
-            "        baseline.BASELINE = tmp\n")
-        self.assertNotEqual(reverted, self.source)
-        self.assertIn("baseline.save() is reached before BASELINE is rebound",
-                      purity_violations(reverted))
+    def test_passing_the_tracked_baseline_to_compare_is_caught(self):
+        rigged = self.source.replace(
+            "ratchet.compare(tmp, section, metrics)",
+            f"ratchet.compare({TRACKED_CONST}, section, metrics)")
+        self.assertNotEqual(rigged, self.source)
+        findings = purity_violations(rigged)
+        self.assertTrue(any(TRACKED_CONST in f and "compare()" in f
+                            for f in findings), findings)
+
+    def test_a_direct_cleanup_write_to_the_tracked_baseline_is_caught(self):
+        """The shape the P0.3E review flagged: a `finally` that writes the
+        tracked baseline to undo the synthetic pin."""
+        rigged = self.source.replace(
+            "        tmp.unlink(missing_ok=True)\n",
+            f"        {TRACKED_CONST}.write_text('{{}}', encoding='utf-8')\n")
+        self.assertNotEqual(rigged, self.source)
+        findings = purity_violations(rigged)
+        self.assertTrue(any(f"direct write to {TRACKED_CONST}" in f
+                            for f in findings), findings)
+
+    def test_dropping_the_temporary_creation_is_caught(self):
+        """The write then lands on whatever the first argument resolves to, and
+        the checker reports the missing temporary rather than trusting the name."""
+        rigged = self.source.replace(
+            "    with tempfile.NamedTemporaryFile(\"w\", suffix=\".json\", delete=False,\n"
+            "                                     encoding=\"utf-8\") as fh:\n"
+            "        json.dump({}, fh)\n"
+            "        tmp = Path(fh.name)\n",
+            f"    tmp = {TRACKED_CONST}\n")
+        self.assertNotEqual(rigged, self.source)
+        findings = purity_violations(rigged)
+        self.assertTrue(
+            any("no temporary baseline is created" in f for f in findings)
+            or any(TRACKED_CONST in f for f in findings), findings)
 
     def test_dropping_the_finally_is_caught(self):
-        """A rebind with no restore leaks the temporary path into every later
-        consumer in the same process.
+        """A temporary with no removal leaks a file per run.
 
         The `try:` is replaced by its ANCHORED two-line form on purpose. A bare
-        `"    try:\n"` also matches `scan()`, whose `try` has an `except` — the
+        `"    try:\\n"` also matches `scan()`, whose `try` has an `except` — the
         mutation then produced a file that does not parse, and the control
         failed for a reason that had nothing to do with what it tests.
         """
-        reverted = self.source.replace(
-            "    try:\n        baseline.BASELINE = tmp\n",
-            "    if True:\n        baseline.BASELINE = tmp\n")
-        reverted = reverted.replace("    finally:\n"
-                                    "        baseline.BASELINE = real_baseline\n"
-                                    "        tmp.unlink(missing_ok=True)\n", "")
-        self.assertNotEqual(reverted, self.source)
-        ast.parse(reverted)  # the mutation must still be valid Python
-        self.assertIn("BASELINE is rebound without a finally that restores it",
-                      purity_violations(reverted))
+        rigged = self.source.replace(
+            "    try:\n        ratchet.save(tmp, section, pretend)\n",
+            "    if True:\n        ratchet.save(tmp, section, pretend)\n")
+        rigged = rigged.replace("    finally:\n"
+                                "        tmp.unlink(missing_ok=True)\n", "")
+        self.assertNotEqual(rigged, self.source)
+        ast.parse(rigged)  # the mutation must still be valid Python
+        self.assertIn("the temporary baseline is created without a finally that removes it",
+                      purity_violations(rigged))
+
+    def test_removing_the_ratchet_calls_entirely_is_caught(self):
+        """A control that stopped calling the comparator would be pure and
+        worthless. Purity alone was never the property."""
+        rigged = self.source.replace("ratchet.save(tmp, section, pretend)",
+                                     "pass").replace(
+            "regressions, changes, _ = ratchet.compare(tmp, section, metrics)",
+            "regressions, changes = [], []")
+        self.assertNotEqual(rigged, self.source)
+        self.assertIn("selftest makes no ratchet call at all",
+                      purity_violations(rigged))
 
 
 # ---------------------------------------------------------------------------
@@ -304,8 +390,8 @@ class TestTheSelftestRunLeavesTrackedStateAlone(PurityGuard):
     def test_the_synthetic_section_is_never_left_in_the_tracked_ratchet(self):
         """The interruption-unsafe failure mode, stated as its own assertion.
 
-        Under the old arrangement this section existed in the tracked file for
-        the length of the comparison. It must now never appear there at all.
+        Under the pre-P0.3F arrangement this section existed in the tracked file
+        for the length of the comparison. It must never appear there at all.
         """
         self.run_selftest()
         self.assertNotIn(SELFTEST_SECTION,
@@ -323,17 +409,16 @@ class TestTheBehaviouralGuardCatchesTheOldArrangement(unittest.TestCase):
     """
 
     def test_a_save_then_delete_cycle_is_visible_to_the_snapshot(self):
-        module = load_legacy("foundry_audit_baseline")
+        from mtj_foundry import ratchet
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
                                          encoding="utf-8") as fh:
             json.dump({"reachability": {"artifacts_reaching_product": 0}}, fh)
             stand_in = Path(fh.name)
         self.addCleanup(stand_in.unlink, True)
-        module.BASELINE = stand_in
 
         before = snapshot([stand_in])
         # Exactly what the old selftest did to the TRACKED file.
-        module.save(SELFTEST_SECTION, {"artifacts_reaching_product": 1})
+        ratchet.save(stand_in, SELFTEST_SECTION, {"artifacts_reaching_product": 1})
         doc = json.loads(stand_in.read_text(encoding="utf-8"))
         doc.pop(SELFTEST_SECTION, None)
         stand_in.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n",
@@ -356,7 +441,7 @@ class TestTheSyntheticLostWireIsStillFatalThroughTheRealComparator(unittest.Test
     @classmethod
     def setUpClass(cls):
         cls.reach = load_legacy("foundry_reachability")
-        cls.fab = cls.reach.baseline
+        cls.rt = cls.reach.ratchet
 
     METRICS = {
         "entry_points": 1,
@@ -367,22 +452,22 @@ class TestTheSyntheticLostWireIsStillFatalThroughTheRealComparator(unittest.Test
     }
 
     def test_reaching_is_governed_by_the_real_WORSE_IF_DOWN_arm(self):
-        self.assertIn("reaching", self.fab.WORSE_IF_DOWN)
-        self.assertEqual(self.fab._direction("artifacts_reaching_product"), -1)
+        self.assertIn("reaching", self.rt._WORSE_IF_DOWN)
+        self.assertEqual(self.rt.direction("artifacts_reaching_product"), -1)
 
     def test_the_selftest_returns_zero_and_the_real_comparator_saw_the_drop(self):
         seen = {}
-        real_compare = self.fab.compare
+        real_compare = self.rt.compare
 
-        def recording(section, metrics, update=False):
-            result = real_compare(section, metrics, update)
+        def recording(baseline, section, metrics, update=False):
+            result = real_compare(baseline, section, metrics, update)
             seen["section"] = section
-            seen["target"] = self.fab.BASELINE
+            seen["target"] = baseline
             seen["regressions"] = result[0]
             return result
 
-        self.fab.compare = recording
-        self.addCleanup(setattr, self.fab, "compare", real_compare)
+        self.rt.compare = recording
+        self.addCleanup(setattr, self.rt, "compare", real_compare)
         with contextlib.redirect_stdout(io.StringIO()):
             rc = self.reach.selftest(dict(self.METRICS))
 
@@ -396,16 +481,21 @@ class TestTheSyntheticLostWireIsStillFatalThroughTheRealComparator(unittest.Test
 
     def test_the_comparison_ran_against_the_temporary_input_not_the_tracked_one(self):
         """Same run, the other half: the comparator was real AND it was pointed
-        somewhere else."""
+        somewhere else.
+
+        C8.5J makes this the DIRECT reading it always wanted to be. It used to
+        record a module global and hope that was what the call consumed; it now
+        records the argument the call actually received.
+        """
         seen = {}
-        real_compare = self.fab.compare
+        real_compare = self.rt.compare
 
-        def recording(section, metrics, update=False):
-            seen["target"] = self.fab.BASELINE
-            return real_compare(section, metrics, update)
+        def recording(baseline, section, metrics, update=False):
+            seen["target"] = Path(baseline)
+            return real_compare(baseline, section, metrics, update)
 
-        self.fab.compare = recording
-        self.addCleanup(setattr, self.fab, "compare", real_compare)
+        self.rt.compare = recording
+        self.addCleanup(setattr, self.rt, "compare", real_compare)
         with contextlib.redirect_stdout(io.StringIO()):
             self.reach.selftest(dict(self.METRICS))
 
@@ -413,32 +503,44 @@ class TestTheSyntheticLostWireIsStillFatalThroughTheRealComparator(unittest.Test
         self.assertFalse(seen["target"].exists(),
                          "the temporary control input outlived the selftest")
 
-    def test_the_module_attribute_is_restored_afterwards(self):
-        before = self.fab.BASELINE
+    def test_the_write_also_went_to_the_temporary_input(self):
+        """`compare` only reads. The old file could not ask this question of
+        `save` without a second global; the argument seam answers both."""
+        seen = {}
+        real_save = self.rt.save
+
+        def recording(baseline, section, metrics):
+            seen["target"] = Path(baseline)
+            return real_save(baseline, section, metrics)
+
+        self.rt.save = recording
+        self.addCleanup(setattr, self.rt, "save", real_save)
         with contextlib.redirect_stdout(io.StringIO()):
             self.reach.selftest(dict(self.METRICS))
-        self.assertEqual(self.fab.BASELINE, before)
+        self.assertNotEqual(seen["target"], RATCHET)
 
-    def test_a_selftest_that_raises_still_restores_the_attribute(self):
+    def test_a_selftest_that_raises_still_removes_the_temporary(self):
         """The `finally` arm, exercised rather than merely present."""
-        before = self.fab.BASELINE
-        real_compare = self.fab.compare
+        seen = {}
+        real_save = self.rt.save
 
-        def exploding(*a, **kw):
+        def capturing(baseline, section, metrics):
+            seen["target"] = Path(baseline)
             raise RuntimeError("boom")
 
-        self.fab.compare = exploding
-        self.addCleanup(setattr, self.fab, "compare", real_compare)
+        self.rt.save = capturing
+        self.addCleanup(setattr, self.rt, "save", real_save)
         with contextlib.redirect_stdout(io.StringIO()):
             with self.assertRaises(RuntimeError):
                 self.reach.selftest(dict(self.METRICS))
-        self.assertEqual(self.fab.BASELINE, before)
+        self.assertFalse(seen["target"].exists(),
+                         "the temporary control input survived a raised selftest")
 
     def test_the_control_fails_when_the_drop_stops_being_reported(self):
         """The other exit arm. A control that can only return 0 proves nothing."""
-        real_compare = self.fab.compare
-        self.fab.compare = lambda section, metrics, update=False: ([], [], None)
-        self.addCleanup(setattr, self.fab, "compare", real_compare)
+        real_compare = self.rt.compare
+        self.rt.compare = lambda baseline, section, metrics, update=False: ([], [], None)
+        self.addCleanup(setattr, self.rt, "compare", real_compare)
         with contextlib.redirect_stdout(io.StringIO()) as out:
             rc = self.reach.selftest(dict(self.METRICS))
         self.assertEqual(rc, 1)
@@ -462,15 +564,29 @@ class TestNormalExecutionIsUnchanged(unittest.TestCase):
                 self.assertNotIn("--selftest", argv)
 
     def test_the_normal_path_still_reports_against_the_tracked_baseline(self):
-        """`main()` is untouched: the real ratchet is still what a normal run
-        compares against, and `--update-baseline` is still how it is re-pinned."""
+        """`main()` still compares against the REAL control input, and
+        `--update-baseline` is still how it is re-pinned. This is the positive
+        half of the purity guard: the tracked baseline must be unreachable from
+        `selftest` and must remain exactly what `main()` uses.
+        """
         tree = ast.parse(REACHABILITY.read_text(encoding="utf-8"))
         main = next(n for n in ast.walk(tree)
                     if isinstance(n, ast.FunctionDef) and n.name == "main")
         source = ast.unparse(main)
-        self.assertIn("baseline.report('reachability', metrics, args.update_baseline)",
-                      source)
-        self.assertNotIn("BASELINE", source)
+        self.assertIn(
+            f"ratchet.report({TRACKED_CONST}, 'reachability', metrics, args.update_baseline)",
+            source)
+
+    def test_the_tracked_constant_comes_from_the_layout_owner(self):
+        """And it is not a restated path. C8.5J's consumer rule, asserted here
+        because this file is what says the constant is the tracked input."""
+        source = REACHABILITY.read_text(encoding="utf-8")
+        self.assertIn(
+            f"{TRACKED_CONST} = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline",
+            source)
+        self.assertNotIn("foundry-audit-baseline.json", source)
+        module = load_legacy("foundry_reachability")
+        self.assertEqual(getattr(module, TRACKED_CONST), RATCHET)
 
     def test_the_tool_still_accepts_all_three_invocations(self):
         source = REACHABILITY.read_text(encoding="utf-8")

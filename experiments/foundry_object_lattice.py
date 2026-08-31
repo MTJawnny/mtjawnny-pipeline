@@ -66,6 +66,14 @@ import foundry_cr as cr                      # noqa: E402
 import foundry_cr702_classes as crc          # noqa: E402
 import validate_slug as vs                   # noqa: E402
 
+# C8.5J: the standing ratchet now comes from the permanent package. The import
+# sits AFTER `foundry_common`, which is what establishes the C8.5A package
+# bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import ratchet              # noqa: E402
+from mtj_foundry.paths import ProjectPaths   # noqa: E402
+
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
+
 
 # --------------------------------------------------------------------------
 # CR-derived vocabulary
@@ -1229,7 +1237,6 @@ def main() -> int:
             return 0
 
     if args.gate:
-        import foundry_audit_baseline as ab
         bad = len(fixtures()["failed"])
         # THE TRACKED FLOOR RUNS FIRST, because it is the only one of the two
         # membership checks that exists on a fresh clone.
@@ -1247,8 +1254,8 @@ def main() -> int:
                 for name, arm, cls, _q in r["unexplained"]:
                     print(f"    {name}: arm {arm!r} -> {slug_for(stem, cls)}")
                 bad += len(r["unexplained"])
-        bad += ab.report("object_lattice", baseline_metrics(),
-                         args.update_baseline)
+        bad += ratchet.report(RATCHET_BASELINE, "object_lattice",
+                              baseline_metrics(), args.update_baseline)
         if bad:
             print(f"\n  OBJECT LATTICE GATE FAILED ({bad}). No provenance "
                   f"write may proceed on this producer.")
