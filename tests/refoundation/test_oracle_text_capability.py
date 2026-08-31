@@ -234,7 +234,7 @@ class TestTheCaptainRatifiedN2Rule(unittest.TestCase):
         text = "Regenerate target creature."
         out = ot.normalize_self_references(text, {"Regenerate"}, ["Regenerate"])
         self.assertEqual(out, "Regenerate target creature.")
-        self.assertNotIn(ot.SELF_TOKEN, out)
+        self.assertNotIn("~", out)
         self.assertEqual(out.lower(), "regenerate target creature.")
 
     def test_an_ORDINARY_self_name_occurrence_still_becomes_the_token(self):
@@ -393,14 +393,33 @@ class TestThePermanentModuleIsALibrary(unittest.TestCase):
         assigned = [t.id for n in self.tree.body if isinstance(n, ast.Assign)
                     for t in n.targets if isinstance(t, ast.Name)]
         self.assertEqual(sorted(assigned),
-                         ["SELF_TOKEN", "_CURLY_QUOTES", "_WHITESPACE", "__all__"])
+                         ["_CURLY_QUOTES", "_SELF_TOKEN", "_WHITESPACE", "__all__"])
 
-    def test_the_public_surface_is_exactly_the_contracted_one(self):
+    def test_the_public_surface_is_exactly_the_contracted_ten_functions(self):
         self.assertEqual(sorted(ot.__all__), [
-            "SELF_TOKEN", "collapse_whitespace", "is_keyword_only",
+            "collapse_whitespace", "is_keyword_only",
             "keyword_instances", "normalize_clause", "normalize_reminder",
             "normalize_self_references", "paren_spans", "reminder_bodies",
             "self_name_candidates", "strip_reminders"])
+        self.assertEqual(len(ot.__all__), 10)
+        for name in ot.__all__:
+            with self.subTest(name=name):
+                self.assertTrue(callable(getattr(ot, name)), name)
+
+    def test_the_self_reference_token_is_INTERNAL_and_not_exported(self):
+        """The token is an implementation constant, not a supported surface.
+
+        Behavioral equality does not authorize API growth: exporting it would
+        create a dependency surface no contracted function needs, and a consumer
+        that borrowed it would be coupled to a detail this module is free to
+        change. Asserted three ways, because `__all__` alone governs only
+        `from ... import *` — a plain attribute access ignores it entirely.
+        """
+        self.assertNotIn("SELF_TOKEN", ot.__all__)
+        self.assertFalse(hasattr(ot, "SELF_TOKEN"))
+        self.assertEqual([n for n in vars(ot) if "SELF_TOKEN" in n],
+                         ["_SELF_TOKEN"])
+        self.assertEqual(ot._SELF_TOKEN, "~")
 
 
 class TestTheConsumerLeftTheEngine(unittest.TestCase):

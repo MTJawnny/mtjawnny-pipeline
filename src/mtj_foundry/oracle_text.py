@@ -53,7 +53,6 @@ from __future__ import annotations
 import re
 
 __all__ = [
-    "SELF_TOKEN",
     "collapse_whitespace",
     "is_keyword_only",
     "keyword_instances",
@@ -66,8 +65,10 @@ __all__ = [
     "strip_reminders",
 ]
 
-#: The canonical stand-in for a card's own printed name.
-SELF_TOKEN = "~"
+# The canonical stand-in for a card's own printed name. INTERNAL: it is an
+# implementation constant, not a supported surface — a consumer that imported it
+# would be coupled to a detail no contracted function requires it to know.
+_SELF_TOKEN = "~"
 
 _WHITESPACE = re.compile(r"\s+")
 _CURLY_QUOTES = {"’": "'", "‘": "'", "“": '"', "”": '"'}
@@ -187,7 +188,7 @@ def self_name_candidates(name: str) -> set[str]:
 
 
 def normalize_self_references(text: str, candidates: set, keywords: list = None) -> str:
-    """Replace the card's own printed name with `SELF_TOKEN`, except under N2.
+    """Replace the card's own printed name with `~`, except under N2.
 
     N2 (Captain-ratified 2026-08-30): when a candidate is also one of the card's
     own keyword-action names, an occurrence that is BOTH sentence-initial AND
@@ -212,7 +213,7 @@ def normalize_self_references(text: str, candidates: set, keywords: list = None)
                     re.search(r"[.\n]\s*$", _text[:start]))
                 if sentence_initial and re.match(r"target\b", _text[match.end():].lstrip()):
                     return match.group(0)
-            return SELF_TOKEN
+            return _SELF_TOKEN
 
         text = re.sub(pattern, _sub, text)
     return text
