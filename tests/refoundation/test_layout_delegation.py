@@ -3117,18 +3117,29 @@ class TestTheBootstrapStaysCompatibilityOnly(unittest.TestCase):
 
 
 class TestTheTierEngineEdgeIsUnchanged(unittest.TestCase):
-    """Explicitly NOT this task's problem, and asserted so a later reader cannot
-    mistake C8.5A for having solved the upward engine dependency."""
+    """C8.5A left the upward engine dependency alone and said so. C8.5G is the
+    task that legitimately removed it.
+
+    The original guard asserted exactly one top-level `import tier_engine`, which
+    was how C8.5A proved it had NOT quietly solved the upward dependency. That
+    claim is still true OF C8.5A — and this is the authorized cut that changes
+    the text, so the assertion is re-pointed rather than deleted. It now pins the
+    OPPOSITE state, which is strictly stronger: zero is a fact about the whole
+    file, where "exactly one" tolerated a second import appearing beside it."""
 
     @classmethod
     def setUpClass(cls):
         cls.source = FOUNDRY_COMMON.read_text(encoding="utf-8")
 
-    def test_the_engine_is_still_imported_at_module_import_time(self):
+    def test_the_engine_is_no_longer_imported_at_all(self):
         tree = ast.parse(self.source)
-        top = [n for n in tree.body if isinstance(n, ast.Import)
+        top = [n for n in ast.walk(tree) if isinstance(n, ast.Import)
                and any(a.name == "tier_engine" for a in n.names)]
-        self.assertEqual(len(top), 1)
+        self.assertEqual(top, [])
+        live = [ast.unparse(n) for n in ast.walk(tree)
+                if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+                and n.value.id == "te"]
+        self.assertEqual(live, [])
 
     def test_the_experiments_path_compatibility_is_preserved(self):
         self.assertIn("sys.path.insert(0, str(_PATHS.legacy_experiments))",
@@ -3159,8 +3170,9 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         self.assertTrue(str(paths.legacy_foundry_review).startswith("/definitely"))
 
     def test_no_other_public_property_was_added(self):
-        """C8.5C adds exactly one: `legacy_data_artifacts`. The list is pinned
-        in full rather than counted, because a count cannot see a substitution."""
+        """C8.5C added `legacy_data_artifacts`; C8.5G adds `legacy_oracle_cards`.
+        Pinned in full rather than counted, because a count cannot see a
+        substitution."""
         props = sorted(n for n in dir(ProjectPaths)
                        if not n.startswith("_")
                        and isinstance(getattr(ProjectPaths, n), property))
@@ -3168,7 +3180,9 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             "baselines", "config", "conservation", "decisions",
             "legacy_data_artifacts",
             "legacy_docs", "legacy_experiments", "legacy_experiments_out",
-            "legacy_foundry_out", "legacy_foundry_review", "legacy_pipeline",
+            "legacy_foundry_out", "legacy_foundry_review",
+            "legacy_oracle_cards",          # C8.5G
+            "legacy_pipeline",
             "refoundation", "src", "tests"])
 
 
@@ -3230,9 +3244,10 @@ FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
 CENSUS_HEAD = {
     # 126 tracked files at the C8.5A head be52961, plus this task's own new
     # census helper, which lands in the `tests` bucket and in no measured scope.
-    "tracked_python": 127,
+    # C8.5G adds src/mtj_foundry/corpus.py and the capability test module.
+    "tracked_python": 129,
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
-                       "aq4_PAUSED": 6, "pipeline": 11, "src": 4, "tests": 13},
+                       "aq4_PAUSED": 6, "pipeline": 11, "src": 5, "tests": 14},
     "delegations_total": 141,                      # C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
@@ -4110,15 +4125,20 @@ class TestTheBoundaryExposesTheOwnedDirectory(unittest.TestCase):
         self.assertEqual(len(got), 1, got)
         self.assertIn("'src'", got[0])
 
-    def test_the_src_bootstrap_and_the_engine_edge_are_untouched(self):
+    def test_the_src_bootstrap_and_the_experiments_insert_are_untouched(self):
         self.assertIn("_BOOTSTRAP_ROOT = Path(__file__).resolve().parents[1]",
                       self.source)
         self.assertIn("if str(_BOOTSTRAP_SRC) not in sys.path:", self.source)
         self.assertIn("sys.path.insert(0, str(_PATHS.legacy_experiments))",
                       self.source)
-        top = [n for n in ast.parse(self.source).body if isinstance(n, ast.Import)
+        # C8.5E pinned exactly one `import tier_engine` here. That arm is
+        # superseded by the authorized C8.5G cut and now pins ZERO. Both
+        # BOOTSTRAPS above are untouched — only the engine import went, and the
+        # `experiments` insert in particular is the 87-site
+        # LEGACY_SIBLING_IMPORT family, not the removed import's scaffolding.
+        top = [n for n in ast.walk(ast.parse(self.source)) if isinstance(n, ast.Import)
                and any(a.name == "tier_engine" for a in n.names)]
-        self.assertEqual(len(top), 1)
+        self.assertEqual(top, [])
 
 
 class TestTheLastPeerProviderIsGone(unittest.TestCase):

@@ -352,7 +352,7 @@ def main():
     faces_checked = 0
     face_spans = []
     for oid, card in cards.items():
-        faces = [f["oracle_text"] for f in fc.te.get_raw_faces(card) if f["oracle_text"]]
+        faces = [f["oracle_text"] for f in fc.raw_faces(card) if f["oracle_text"]]
         if len(faces) < 2:
             continue
         faces_checked += 1

@@ -177,6 +177,21 @@ class ProjectPaths:
         return self.legacy_foundry_out / "review"
 
     @property
+    def legacy_oracle_cards(self) -> Path:
+        """The legacy card corpus, exactly where the pipeline already writes it.
+
+        Named here for the same reason as its siblings, and for one more: the
+        legacy engine states this path as `Path("data/raw/oracle-cards.jsonl.gz")`
+        — RELATIVE, so it resolves against the working directory rather than the
+        repository. Naming it in the layout owner is what lets a consumer stop
+        being cwd-dependent without restating the layout fact.
+
+        NAMING IS NOT MOVING OR CLASSIFYING. Nothing here relocates the corpus,
+        creates it, asserts it exists, or decides its artifact class.
+        """
+        return self.root / "data" / "raw" / "oracle-cards.jsonl.gz"
+
+    @property
     def legacy_data_artifacts(self) -> Path:
         """The legacy pipeline-artifact directory, exactly where it already is.
 

@@ -104,7 +104,6 @@ REPO = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO))
 import foundry_common as fc                    # noqa: E402
 import foundry_codebook as fcb                 # noqa: E402
-import tier_engine as te                       # noqa: E402
 
 
 # Resolution statuses. Deliberately four, not two: "we know where the evidence
@@ -131,7 +130,7 @@ def units(card: dict, strict: bool = True):
     """[(coord, raw_paragraph, canonical_paragraph)] for one card.
 
     `coord` is `(face_index, paragraph_index)` — derived from
-    `tier_engine.get_raw_faces`, the ONE shared face reader that
+    `foundry_common.raw_faces`, the ONE shared face reader that
     `foundry_common.full_oracle_text` also delegates to. **No parallel
     indexing is invented here**; this is the coordinate `build_card_doc` and
     `emit_viewer` already use for Searcher A, written down where a fact can
@@ -152,7 +151,7 @@ def units(card: dict, strict: bool = True):
     is a structural guarantee rather than an observed condition.
     """
     out = []
-    for fi, face in enumerate(te.get_raw_faces(card)):
+    for fi, face in enumerate(fc.raw_faces(card)):
         raw = face["oracle_text"] or ""
         canon = fc.canonicalize_self_reference(raw, card)
         raw_lines = [x for x in raw.split("\n") if x.strip()]
