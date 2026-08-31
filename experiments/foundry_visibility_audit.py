@@ -49,7 +49,13 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
-import foundry_audit_baseline as ab     # noqa: E402
+# C8.5J: the standing ratchet now comes from the permanent package. The import
+# sits AFTER `foundry_common`, which is what establishes the C8.5A package
+# bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
+
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 
 
 def rule(t):
@@ -390,7 +396,8 @@ def main():
         "band_uncontexted": len(band_uncontexted),
         "face_spans": len(face_spans),
     }
-    n_regressions = ab.report("visibility", metrics, args.update_baseline)
+    n_regressions = ratchet.report(RATCHET_BASELINE, "visibility", metrics,
+                                   args.update_baseline)
 
     rule("VERDICT")
     invisible = len(dropped) + len(unscanned) + len(band_unscanned)

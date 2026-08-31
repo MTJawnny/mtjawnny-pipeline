@@ -133,6 +133,22 @@ class ProjectPaths:
         return self.config / "baselines"
 
     @property
+    def foundry_audit_baseline(self) -> Path:
+        """The ONE tracked ratchet control input the standing audits compare against.
+
+        Named here because eight tools consume it and the alternative is eight
+        restatements of the same repository-relative fact. Before C8.5J each of
+        them reached it through a module-level constant inside
+        `experiments/foundry_audit_baseline.py`, which derived a repository root
+        of its own — layout knowledge stated outside the layout owner, and the
+        seam that made the file a mutable process-global.
+
+        NAMING IS NOT MOVING. The file stays exactly where P0.3A tracked it, and
+        no value or byte of it changes here.
+        """
+        return self.baselines / "foundry-audit-baseline.json"
+
+    @property
     def refoundation(self) -> Path:
         return self.root / "refoundation"
 

@@ -21,7 +21,7 @@ WHAT IT DOES
 2. Walks the transitive local-import closure of those entry points.
 3. Collects every path literal the closure can read, by AST, not by regex.
 4. Reports which FOUNDRY artifacts land inside that closure, and which do not.
-5. Rides the existing ratchet (`foundry_audit_baseline.py`), so a wire that
+5. Rides the standing ratchet (`mtj_foundry.ratchet`), so a wire that
    appears and later disappears is FATAL rather than merely printed.
 
 WHY IT IS NOT JUST A REPORTER
@@ -46,8 +46,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "experiments"))
 import foundry_common as fc                # noqa: E402
-import foundry_audit_baseline as baseline  # noqa: E402
 
+# C8.5J: the standing ratchet now comes from the permanent package. The import
+# sits AFTER `foundry_common`, which is what establishes the C8.5A package
+# bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import ratchet             # noqa: E402
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
+
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 WORKFLOWS = fc.REPO_ROOT / ".github" / "workflows"
 SEARCH_DIRS = ("pipeline", "experiments")
 
@@ -253,7 +259,8 @@ def main() -> int:
     if args.selftest:
         return selftest(metrics)
 
-    regressions = baseline.report("reachability", metrics, args.update_baseline)
+    regressions = ratchet.report(RATCHET_BASELINE, "reachability", metrics,
+                                 args.update_baseline)
     return 1 if regressions else 0
 
 
@@ -284,17 +291,24 @@ def selftest(metrics: dict) -> int:
     not even transiently — and an interrupt has nothing to leave behind.
 
     THE COMPARISON ITSELF IS UNCHANGED, AND IS STILL THE REAL ONE. `save()` and
-    `compare()` still come from `foundry_audit_baseline`, so `WORSE_IF_DOWN`
-    and `_direction()` are what decide whether the lost wire is fatal.
+    `compare()` still come from the shipped ratchet, so its WORSE_IF_DOWN table
+    and its `direction()` are what decide whether the lost wire is fatal.
     Re-deciding that here would turn the control into a copy of the comparator
     instead of a test of it — which is the `foundry_probe` principle applied to
     a negative control.
 
-    The rebinding is set on the MODULE OBJECT the comparator reads, never on
-    this file's globals: "a module run as `__main__` is a second, separate copy
-    of itself, and monkeypatching the wrong one reads as a passing test."
-    `foundry_audit_baseline` is never `__main__`, so it has exactly one
-    instance, and `_document()` reads `BASELINE` at call time.
+    HOW THE REDIRECTION IS EXPRESSED, AND WHY IT CHANGED (C8.5J). This used to
+    REBIND `foundry_audit_baseline.BASELINE`, a mutable module global, for the
+    length of the control. That worked, and it carried the standing hazard:
+    "a module run as `__main__` is a second, separate copy of itself, and
+    monkeypatching the wrong one reads as a passing test", so the rebinding had
+    to be aimed at the module object the comparator reads, and a `finally` had
+    to restore it or the temporary path leaked into every later consumer in the
+    same process. The permanent ratchet takes its baseline as an ARGUMENT, so
+    the redirection is now simply the value passed below: nothing shared is
+    mutated, nothing has to be restored, and an interrupt has nothing to leave
+    behind. The tracked baseline is not merely left unwritten here — it is not
+    reachable from this function at all.
     """
     import json
     import tempfile
@@ -303,20 +317,18 @@ def selftest(metrics: dict) -> int:
     pretend["artifacts_reaching_product"] = metrics["artifacts_reaching_product"] + 1
     pretend["consumers"] = dict(metrics["consumers"])
 
-    # The temporary control input is created and the module attribute REBOUND
-    # BEFORE anything is written, so the tracked baseline is never the write
-    # target at any instant. An empty JSON object is a valid document for
-    # `_document()`: `save()` adds the synthetic section to it, and there is no
-    # other section for a fresh file to drop.
-    real_baseline = baseline.BASELINE
+    # The temporary control input is created BEFORE anything is written and is
+    # the only baseline this function ever names, so the tracked baseline is
+    # never the write target at any instant. An empty JSON object is a valid
+    # document for the ratchet's reader: `save()` adds the synthetic section to
+    # it, and there is no other section for a fresh file to drop.
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
                                      encoding="utf-8") as fh:
         json.dump({}, fh)
         tmp = Path(fh.name)
     try:
-        baseline.BASELINE = tmp
-        baseline.save(section, pretend)
-        regressions, changes, _ = baseline.compare(section, metrics)
+        ratchet.save(tmp, section, pretend)
+        regressions, changes, _ = ratchet.compare(tmp, section, metrics)
         keys = [k for k, *_ in regressions]
         print("\n" + "=" * 78)
         print("SELFTEST — can this check REPORT a lost wire?")
@@ -335,7 +347,6 @@ def selftest(metrics: dict) -> int:
             print("  This check cannot fail and must not be listed as a gate.")
         return 0 if ok else 1
     finally:
-        baseline.BASELINE = real_baseline
         tmp.unlink(missing_ok=True)
 
 

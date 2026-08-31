@@ -105,6 +105,14 @@ sys.path.insert(0, str(REPO))
 import foundry_common as fc                    # noqa: E402
 import foundry_codebook as fcb                 # noqa: E402
 
+# C8.5J: the standing ratchet now comes from the permanent package. The import
+# sits AFTER `foundry_common`, which is what establishes the C8.5A package
+# bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import ratchet                # noqa: E402
+from mtj_foundry.paths import ProjectPaths     # noqa: E402
+
+RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
+
 
 # Resolution statuses. Deliberately four, not two: "we know where the evidence
 # is" and "we know what owns the fact" are different answers (§15 of the
@@ -676,7 +684,7 @@ def census(cards, codebook_path=None) -> dict:
 
 
 # Every locality metric that is supposed to ratchet, and the direction it is
-# supposed to ratchet in. `foundry_audit_baseline` resolves direction by
+# supposed to ratchet in. The ratchet resolves direction by
 # SUBSTRING MATCH on the metric name, so renaming a metric silently downgrades
 # it to neutral -- reported on movement, never fatal. That is the "ratified
 # token with no emitter" shape aimed at the ratchet itself, and it is invisible
@@ -696,16 +704,20 @@ RATCHET_DIRECTIONS = {
 
 def load_baseline_locality():
     """The pinned locality numbers, or None if nothing is pinned yet."""
-    import foundry_audit_baseline as ab
-    return ab.load("locality")
+    return ratchet.load(RATCHET_BASELINE, "locality")
 
 
 def assert_ratchet_directions() -> None:
-    """Halts if any locality metric has stopped resolving to its direction."""
-    import foundry_audit_baseline as ab
+    """Halts if any locality metric has stopped resolving to its direction.
+
+    C8.5J: this reads the ratchet's PUBLIC `direction()`. It used to reach
+    through `foundry_audit_baseline._direction`, and a consumer that has to
+    cross an underscore to do its job is the surface telling you it is wrong.
+    The function it calls is unchanged.
+    """
     wrong = []
     for metric, want in sorted(RATCHET_DIRECTIONS.items()):
-        got = ab._direction(f"locality.{metric}")
+        got = ratchet.direction(f"locality.{metric}")
         if got != want:
             wrong.append((metric, want, got))
     if wrong:
@@ -716,7 +728,7 @@ def assert_ratchet_directions() -> None:
                         for m, w, g in wrong)
             + ". A metric that resolves NEUTRAL is reported on movement and "
               "never fatal, so this gate would keep passing while the thing it "
-              "guards degraded. Fix the marker in foundry_audit_baseline.py or "
+              "guards degraded. Fix the marker in mtj_foundry/ratchet.py or "
               "the metric name here — do not delete this check.")
 
 
@@ -1072,8 +1084,7 @@ def main() -> int:
             tmp = tf.name
         try:
             m = census(cards, codebook_path=tmp)
-            import foundry_audit_baseline as ab
-            regressions, _, _ = ab.compare("locality", m)
+            regressions, _, _ = ratchet.compare(RATCHET_BASELINE, "locality", m)
         finally:
             Path(tmp).unlink()
 
@@ -1104,15 +1115,21 @@ def main() -> int:
         if base is not None:
             masked = dict(base)
             masked["stored_owned"] = m["stored_owned"]   # growth hid the loss
-            real_load = ab.load
-
-            def masked_load(section):
-                return masked if section == "locality" else real_load(section)
-            ab.load = masked_load
+            # C8.5J: the mask is an EXPLICIT TEMPORARY BASELINE, not a
+            # monkeypatched `load`. Rebinding a shared module attribute made the
+            # control depend on a `finally` to un-rig the comparator for every
+            # later caller in the process; the ratchet now takes its baseline as
+            # an argument, so the rigged document is a file this block owns and
+            # deletes. The comparator itself is still the real one -- what is
+            # substituted is the INPUT, which is the whole point of the control.
+            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
+                                             encoding="utf-8") as mf:
+                _json.dump({"locality": masked}, mf)
+                masked_baseline = Path(mf.name)
             try:
-                mask_regs, _, _ = ab.compare("locality", m)
+                mask_regs, _, _ = ratchet.compare(masked_baseline, "locality", m)
             finally:
-                ab.load = real_load
+                masked_baseline.unlink(missing_ok=True)
             mask_keys = {k for k, *_ in mask_regs}
             checks += [
                 ("MASKED: stored_owned reads clean when growth hides the loss",
@@ -1183,10 +1200,10 @@ def main() -> int:
         print(f"    addressable_missing : {m['addressable_missing']:,}   "
               f"<- resolver says OWNER but nothing is stored (must be 0)")
         if args.gate:
-            import foundry_audit_baseline as ab
             # Before trusting the ratchet, prove it still points the right way.
             assert_ratchet_directions()
-            bad += ab.report("locality", m, args.update_baseline)
+            bad += ratchet.report(RATCHET_BASELINE, "locality", m,
+                                  args.update_baseline)
 
     if args.gate:
         if bad:

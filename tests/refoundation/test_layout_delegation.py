@@ -3170,14 +3170,24 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         self.assertTrue(str(paths.legacy_foundry_review).startswith("/definitely"))
 
     def test_no_other_public_property_was_added(self):
-        """C8.5C added `legacy_data_artifacts`; C8.5G adds `legacy_oracle_cards`.
+        """C8.5C added `legacy_data_artifacts`; C8.5G adds `legacy_oracle_cards`;
+        C8.5J adds `foundry_audit_baseline`.
         Pinned in full rather than counted, because a count cannot see a
-        substitution."""
+        substitution.
+
+        C8.5J ADVANCES THIS PIN RATHER THAN LOOSENING IT. The tracked ratchet
+        baseline is consumed by eight tools; before C8.5J each of them reached it
+        through a module global inside `experiments/foundry_audit_baseline.py`,
+        which derived a repository root of its own. Naming it here is what lets
+        that global go away. The property is still enumerated in full and it is
+        still the case that an unlisted addition fails this test.
+        """
         props = sorted(n for n in dir(ProjectPaths)
                        if not n.startswith("_")
                        and isinstance(getattr(ProjectPaths, n), property))
         self.assertEqual(props, [
             "baselines", "config", "conservation", "decisions",
+            "foundry_audit_baseline",       # C8.5J
             "legacy_data_artifacts",
             "legacy_docs", "legacy_experiments", "legacy_experiments_out",
             "legacy_foundry_out", "legacy_foundry_review",
@@ -3247,22 +3257,49 @@ CENSUS_HEAD = {
     # C8.5G added src/mtj_foundry/corpus.py and its capability test module;
     # C8.5I adds src/mtj_foundry/oracle_text.py and its own. Neither lands in a
     # measured scope, so no layout row moves — only the file census.
-    "tracked_python": 131,
+    #
+    # C8.5J IS THE FIRST CAPABILITY SLICE THAT MOVES A DELEGATION ROW, and the
+    # movement is mechanical rather than discretionary. The permanent ratchet
+    # takes its baseline as an explicit argument, so each of the EIGHT consumers
+    # must construct a `ProjectPaths` view to obtain it. The only root available
+    # to them that does not restate layout is the boundary's own `fc.REPO_ROOT`,
+    # and `experiments/foundry_common.py` is frozen, so the one shared-instance
+    # alternative is unavailable. That is one new `fc.REPO_ROOT` load per
+    # consumer, in CALL_ARG position, and it is the whole of the movement:
+    #
+    #     delegations_total          141 -> 149   (+8, one per consumer)
+    #     foundry_common.REPO_ROOT    14 ->  22   (+8, same eight loads)
+    #     CALL_ARG                     1 ->   9   (+8, same eight loads)
+    #     delegation_files            52 ->  55   (+3)
+    #
+    # `delegation_files` moves by THREE, not eight, and the three are derived
+    # from the BASE rather than counted afterwards: five of the eight consumers
+    # already carried a recognized delegation at 175650cc, so only
+    # `foundry_punctuation_audit.py`, `foundry_visibility_audit.py` and
+    # `foundry_ruling_registry.py` are newly delegating files.
+    # `PATH_JOIN`, `DIRECT_BIND`, `ATTRIBUTE_NAV`, `FOUNDRY_OUT_DIR`,
+    # `DATA_ARTIFACTS_DIR`, every local-site row and every `sys.path` row are
+    # UNCHANGED, and the two new C8.5J Python files land in `src`/`tests`, which
+    # are outside every measured scope.
+    "tracked_python": 133,                         # C8.5I: 131 (+2 C8.5J files)
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
-                       "aq4_PAUSED": 6, "pipeline": 11, "src": 6, "tests": 15},
-    "delegations_total": 141,                      # C8.5B: 140
+                       "aq4_PAUSED": 6, "pipeline": 11,
+                       "src": 7,                   # C8.5I: 6 (+ ratchet.py)
+                       "tests": 16},               # C8.5I: 15 (+ its contract test)
+    "delegations_total": 149,                      # C8.5I: 141; C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
-        "foundry_common.REPO_ROOT": 14,            # C8.5B: 12 (+2 re-pointed)
+        "foundry_common.REPO_ROOT": 22,            # C8.5I: 14; C8.5B: 12
         "foundry_common.DATA_ARTIFACTS_DIR": 1,    # C8.5B: name did not exist
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
         "PATH_JOIN": 136,                          # C8.5B: 135
-        "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1, "CALL_ARG": 1,
+        "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
+        "CALL_ARG": 9,                             # C8.5I: 1 (+8 C8.5J)
     },
-    "delegation_files": 52,                        # unchanged
+    "delegation_files": 55,                        # C8.5I: 52 (+3 C8.5J)
     "local_sites_total": 88,                       # C8.5B: 89
     "local_sites_bootstrap": 28,                   # unchanged
     "local_sites_consumption": 60,                 # C8.5B: 61

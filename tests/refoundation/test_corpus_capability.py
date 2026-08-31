@@ -466,16 +466,62 @@ class TestTheLegacyConsumersLeftTheEngine(unittest.TestCase):
         self.assertIn("fc.raw_faces(card)", self.locality)
         self.assertIn("fc.raw_faces(card)", self.visibility)
 
-    def test_the_visibility_audit_added_no_package_import_and_no_bootstrap(self):
-        """R1's added file may use the facade and nothing else. A direct package
-        import there would need a bootstrap it must not have."""
+    def test_the_visibility_audit_added_no_bootstrap_of_its_own(self):
+        """WHAT THIS GUARD IS ACTUALLY FOR, restated by C8.5J.
+
+        The C8.5G form of this test asserted `"mtj_foundry" not in the source`.
+        That was a proxy: at C8.5G the visibility audit had no business reaching
+        the package directly, so "names the package at all" and "carries a
+        bootstrap it must not have" were the same sentence. C8.5J separates them
+        — the audit now takes the standing ratchet from `mtj_foundry.ratchet`,
+        which is a required consumer route — so the proxy is replaced by the
+        property it was standing in for.
+
+        The invariant is UNCHANGED and is asserted more directly than before:
+        this module may not establish its own path to the package. It must reach
+        `mtj_foundry` only after `foundry_common` has run the C8.5A compatibility
+        bootstrap, and its own `sys.path` call count must not move.
+        """
         import ast
-        self.assertNotIn("mtj_foundry", self.visibility)
         tree = ast.parse(self.visibility)
         inserts = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
                    and isinstance(n.func, ast.Attribute) and n.func.attr in ("insert", "append")
                    and isinstance(n.func.value, ast.Attribute) and n.func.value.attr == "path"]
         self.assertEqual(len(inserts), 1, "the visibility audit's bootstrap count moved")
+
+        # The one insert it is allowed is the pre-existing legacy-sibling one,
+        # and it points at `experiments`, never at `src`.
+        self.assertNotIn("src", ast.unparse(inserts[0]))
+
+        # ORDER IS THE WHOLE GUARD. `mtj_foundry` is importable from a loose
+        # script only because `foundry_common` puts `src` on the path, so a
+        # package import placed above it would fail — or, worse, would be
+        # "fixed" by adding the second bootstrap this test forbids.
+        imports = [(n.lineno, n.module) for n in ast.walk(tree)
+                   if isinstance(n, ast.ImportFrom) and n.module]
+        imports += [(n.lineno, a.name) for n in ast.walk(tree)
+                    if isinstance(n, ast.Import) for a in n.names]
+        common = [ln for ln, mod in imports if mod == "foundry_common"]
+        package = [ln for ln, mod in imports if mod.split(".")[0] == "mtj_foundry"]
+        self.assertEqual(len(common), 1)
+        self.assertTrue(package, "the C8.5J ratchet route is missing")
+        self.assertLess(common[0], min(package),
+                        "foundry_common must establish the bootstrap first")
+
+    def test_the_visibility_audit_reaches_only_the_authorized_package_modules(self):
+        """A widened route would be a silent scope expansion. Exactly the two
+        C8.5J names, and nothing else from the package."""
+        import ast
+        tree = ast.parse(self.visibility)
+        reached = sorted({n.module for n in ast.walk(tree)
+                          if isinstance(n, ast.ImportFrom) and n.module
+                          and n.module.split(".")[0] == "mtj_foundry"})
+        self.assertEqual(reached, ["mtj_foundry", "mtj_foundry.paths"])
+        self.assertIn("from mtj_foundry import ratchet", self.visibility)
+        self.assertIn("from mtj_foundry.paths import ProjectPaths", self.visibility)
+        # The corpus capability is still reached through the FACADE, not around
+        # it — the C8.5G invariant this file exists for.
+        self.assertNotIn("mtj_foundry import corpus", self.visibility)
 
     def test_the_engine_oracle_is_byte_identical(self):
         import hashlib
