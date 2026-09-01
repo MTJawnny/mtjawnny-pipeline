@@ -3447,11 +3447,25 @@ CENSUS_HEAD = {
     # `DATA_ARTIFACTS_DIR`, every local-site row and every `sys.path` row are
     # UNCHANGED, and the two new C8.5J Python files land in `src`/`tests`, which
     # are outside every measured scope.
-    "tracked_python": 133,                         # C8.5I: 131 (+2 C8.5J files)
+    #
+    # C8.5M MOVES THE FILE CENSUS AND NOTHING ELSE. The codebook semantic model
+    # becomes `src/mtj_foundry/codebook.py` and gains
+    # `tests/refoundation/test_codebook_capability.py`; both land in `src`/
+    # `tests`, which are outside every measured scope, so this is the C8.5G and
+    # C8.5I shape rather than the C8.5J/C8.5K shape.
+    #
+    # `experiments/foundry_codebook.py` IS edited -- most of it is deleted -- and
+    # still moves no layout row. Its three delegations (`fc.FOUNDRY_OUT_DIR` x2,
+    # `fc.DATA_ARTIFACTS_DIR` x1) and its one local site (the `_BOOTSTRAP_ROOT`
+    # bootstrap) are in the constants block above the migrated code and are
+    # untouched; the facade's new import names no layout value; and no
+    # `sys.path` call is added, because `foundry_common` already put `src` on the
+    # path before the new import runs.
+    "tracked_python": 135,                         # C8.5J: 133 (+2 C8.5M files)
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 7,                   # C8.5I: 6 (+ ratchet.py)
-                       "tests": 16},               # C8.5I: 15 (+ its contract test)
+                       "src": 8,                   # C8.5J: 7 (+ codebook.py)
+                       "tests": 17},               # C8.5J: 16 (+ its capability test)
     "delegations_total": 149,                      # C8.5I: 141; C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
