@@ -92,6 +92,7 @@ LATEST_ARTIFACT_PATH = fc.DATA_ARTIFACTS_DIR / "latest.json"
 # those seams live until their dedicated repoint slice re-aims them at an
 # injected argument.
 from mtj_foundry import codebook as _codebook  # noqa: E402
+from mtj_foundry import codebook_store as _codebook_store  # noqa: E402
 
 SCHEMA_V2 = _codebook.SCHEMA_V2
 SCHEMA_V1 = _codebook.SCHEMA_V1
@@ -208,8 +209,17 @@ def lint_or_halt(codebook: dict, path_label: str = "codebook") -> dict:
 # atomic write (A13)
 # --------------------------------------------------------------------------
 
-def _serialize(codebook: dict) -> str:
-    return json.dumps(codebook, indent=2, ensure_ascii=False) + "\n"
+# C8.5N: THE WRITE PROTOCOL LIVES IN `mtj_foundry.codebook_store` AND NOWHERE
+# ELSE. `_serialize` is a direct alias -- the same function object -- because its
+# behaviour and its failure behaviour are both unchanged; five modules read it
+# for candidate bytes without writing anything, and they keep the object they
+# always had.
+#
+# `sha256_of` STAYS. It is the generic legacy file digest, used by twelve
+# modules on arbitrary files, and it is deliberately NOT the store's private
+# post-install helper: making one serve the other would create a shared digest
+# abstraction neither caller asked for. Its disposition belongs to a later slice.
+_serialize = _codebook_store.serialize
 
 
 def sha256_of(path: Path) -> str:
@@ -217,38 +227,22 @@ def sha256_of(path: Path) -> str:
 
 
 def write_codebook_atomic(path: Path, codebook: dict, path_label: str = None) -> str:
-    """Temp file -> flush+fsync -> re-read and lint the TEMP -> atomic rename
-    over the live file (A13). The live file is never in a half-written state,
-    and a file that fails lint never becomes the live file: the temp is what
-    gets validated, so a crash between validation and rename leaves the good
-    old file in place plus an inert .tmp for a human to notice.
+    """Legacy failure translation for `mtj_foundry.codebook_store.write_atomic`.
 
-    Returns the sha256 of the file now at `path`."""
-    path = Path(path)
-    label = path_label or str(path)
-    lint_or_halt(codebook, f"{label} (pre-write, in memory)")
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = path.with_suffix(path.suffix + ".tmp")
-    payload = _serialize(codebook)
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        f.write(payload)
-        f.flush()
-        os.fsync(f.fileno())
-
-    with open(tmp_path, "r", encoding="utf-8") as f:
-        readback = json.load(f)
-    lint_or_halt(readback, f"{label} (readback of temp)")
-    if _serialize(readback) != payload:
-        fc.halt(f"{tmp_path}: re-serializing the readback does not reproduce the written bytes — "
-                f"non-deterministic serialization, refusing to install this file")
-
-    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    os.replace(tmp_path, path)
-    if sha256_of(path) != digest:
-        fc.halt(f"{path}: post-rename sha256 does not match the verified temp — filesystem-level "
-                f"corruption, do not trust this file")
-    return digest
+    THE THREE CAUGHT ERRORS ARE THE THREE THE LEGACY BODY USED TO HALT ON, and
+    the list is closed on purpose. `OSError` is NOT among them: the ratified A13
+    interruption control in `foundry_verify_migration.negative_tests` patches
+    `os.replace` to raise one and requires it to escape RAW, with the live file
+    byte-identical and an inert `.tmp` left behind. Catching it here -- or
+    catching `Exception` -- would turn that control green while deleting what it
+    proves.
+    """
+    try:
+        return _codebook_store.write_atomic(path, codebook, path_label)
+    except (_codebook.LintError,
+            _codebook_store.SerializationMismatchError,
+            _codebook_store.PostWriteDigestError) as error:
+        fc.halt(str(error))
 
 
 def backup_codebook(tag: str, path: Path = None) -> Path:

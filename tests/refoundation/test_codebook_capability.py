@@ -791,8 +791,17 @@ class TestLegacyFailureParity(unittest.TestCase):
 
 class TestTheDeferredLegacyBoundariesAreUntouched(unittest.TestCase):
     """C8.5M amendment 1. These still exist, still live in the legacy file, and
-    are explicitly NOT part of this slice — their presence is the intended
-    transitional boundary, not leftover duplication."""
+    are explicitly NOT part of that slice — their presence is the intended
+    transitional boundary, not leftover duplication.
+
+    RE-AIMED BY C8.5N, WHICH MOVED TWO OF THEM ON PURPOSE. `_serialize` and
+    `write_codebook_atomic` were deferred boundaries at C8.5M and are the
+    SUBJECT of C8.5N, so requiring them to remain local definitions here would
+    be this file forbidding the next authorized slice. They keep a guard — a
+    stricter one — in `test_codebook_store.py`: `_serialize` must be the
+    permanent function OBJECT, and the writer must be exactly one thin
+    translation wrapper. What this class still owns is everything C8.5N did NOT
+    touch."""
 
     @classmethod
     def setUpClass(cls):
@@ -802,10 +811,18 @@ class TestTheDeferredLegacyBoundariesAreUntouched(unittest.TestCase):
 
     def test_the_deferred_surfaces_are_still_legacy_definitions(self):
         for name in ("corpus_ref_current", "load_codebook", "lint_or_halt",
-                     "_serialize", "sha256_of", "write_codebook_atomic",
-                     "backup_codebook", "cmd_add_member", "cmd_lint", "main"):
+                     "sha256_of", "backup_codebook", "cmd_add_member",
+                     "cmd_lint", "main"):
             with self.subTest(name=name):
                 self.assertIn(name, self.functions)
+
+    def test_the_generic_legacy_hash_helper_did_NOT_move_with_the_writer(self):
+        """`sha256_of` is the boundary C8.5N deliberately left alone. Twelve
+        modules read it for arbitrary files; the store's post-install digest is
+        private and narrower. A slice that quietly aliased one to the other
+        would have created a shared digest abstraction nobody asked for."""
+        self.assertIn("sha256_of", self.functions)
+        self.assertFalse(hasattr(codebook, "sha256_of"))
 
     def test_the_paths_and_bootstrap_are_still_legacy(self):
         for name in ("CODEBOOK_PATH", "BACKUPS_DIR", "LATEST_ARTIFACT_PATH",

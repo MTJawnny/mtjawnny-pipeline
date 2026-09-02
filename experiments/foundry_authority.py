@@ -108,6 +108,7 @@ import json
 import shutil
 import hashlib
 import argparse
+import ast
 import subprocess
 import tempfile
 from pathlib import Path
@@ -1309,6 +1310,31 @@ def _check(results: list, name: str, passed: bool, detail: str) -> None:
     results.append((name, passed, detail))
 
 
+def _persistence_closure() -> dict:
+    """`{module name: source}` for the permanent local-persistence closure.
+
+    Resolved by MODULE IDENTITY, never by a repository path: the store is
+    imported, `__file__` is read off the imported object, and its one permanent
+    dependency is discovered from its own import statements rather than assumed.
+    That is what makes the guard survive a rename and refuse to be satisfied by
+    a file that merely still exists at the old location.
+    """
+    from mtj_foundry import codebook_store
+    out = {}
+    pending = [codebook_store]
+    while pending:
+        module = pending.pop()
+        if module.__name__ in out:
+            continue
+        out[module.__name__] = Path(module.__file__).read_text(encoding="utf-8")
+        for name in ast.walk(ast.parse(out[module.__name__])):
+            if isinstance(name, ast.ImportFrom) and name.module == "mtj_foundry":
+                for alias in name.names:
+                    pending.append(__import__(f"mtj_foundry.{alias.name}",
+                                              fromlist=[alias.name]))
+    return out
+
+
 def selftest() -> int:
     r = []
     fixture_sha = sha256_of_bytes(FIXTURE_BYTES)
@@ -2096,11 +2122,47 @@ def selftest() -> int:
                f"B={stB} E={stE}")
 
     # BOUNDARY — no networking leaked into the codebook writer (P3 §17).
-    writer_src = (REPO_ROOT / "experiments" / "foundry_codebook.py").read_text(encoding="utf-8")
-    leaked = [tok for tok in ("rclone", "subprocess", "urllib", "requests", "foundry_authority")
-              if tok in writer_src]
-    _check(r, "BOUND write_codebook_atomic's module stays local-only",
-           not leaked, f"network tokens in foundry_codebook.py: {leaked or 'none'}")
+    #
+    # RE-AIMED BY C8.5N, BECAUSE ITS SUBJECT MOVED. This used to read the source
+    # of `experiments/foundry_codebook.py` and grep it for network tokens. That
+    # was exact while the file WAS the writer; after C8.5N it owns none of the
+    # A13 write protocol, so the same check would keep passing while inspecting
+    # a file that no longer does the thing being guarded -- a guard that cannot
+    # fail, which this repository has measured twice before.
+    #
+    # The invariant is unchanged and the mechanism is stronger. The subject is
+    # now the permanent local-persistence CLOSURE, reached by MODULE IDENTITY
+    # (`sys.modules` / `__file__` of the imported object) rather than by a
+    # hardcoded repository filename -- so a future rename cannot silently
+    # disarm it -- and the test is the IMPORT GRAPH rather than a substring
+    # search, so a token inside a docstring is not a finding and an indirect
+    # reach is not invisible.
+    #
+    # `os` is legitimately in the closure (fsync, replace), so the process-
+    # spawning families are rejected by NAME instead of banning the module.
+    _closure = _persistence_closure()
+    _allowed_imports = {"__future__", "hashlib", "json", "os", "pathlib",
+                        "mtj_foundry", "re"}
+    _forbidden_call = ("os.system", "os.popen", "os.spawn", "os.exec", "os.fork",
+                       "os.posix_spawn")
+    leaked = []
+    for _name, _src in _closure.items():
+        _tree = ast.parse(_src)
+        for _node in ast.walk(_tree):
+            if isinstance(_node, ast.Import):
+                for _a in _node.names:
+                    if _a.name.split(".")[0] not in _allowed_imports:
+                        leaked.append(f"{_name}: import {_a.name}")
+            elif isinstance(_node, ast.ImportFrom) and _node.module:
+                if _node.module.split(".")[0] not in _allowed_imports:
+                    leaked.append(f"{_name}: from {_node.module}")
+            elif isinstance(_node, ast.Call):
+                _callee = ast.unparse(_node.func)
+                if _callee.startswith(_forbidden_call):
+                    leaked.append(f"{_name}: {_callee}()")
+    _check(r, "BOUND the permanent codebook-write closure stays local-only",
+           not leaked and len(_closure) == 2,
+           f"closure={sorted(_closure)} forbidden={leaked or 'none'}")
 
     # CANARY, closing. Nothing above may have touched the live codebook.
     _canary_after = sha256_of_file(_canary_path) if _canary_path.exists() else "ABSENT"
