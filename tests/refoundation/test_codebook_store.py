@@ -39,10 +39,16 @@ from tests.refoundation.test_gate2_purity import load_legacy
 
 from mtj_foundry import codebook, codebook_store
 
+# C8.5P: 5 -> 9. Written out rather than derived from `codebook_store.__all__`;
+# a guard that reads its subject's own answer back to it proves nothing.
 EXPECTED_ALL = [
+    "CodebookNotFoundError",
+    "CodebookReadError",
     "CodebookStoreError",
     "PostWriteDigestError",
+    "SchemaMismatchError",
     "SerializationMismatchError",
+    "read",
     "serialize",
     "write_atomic",
 ]
@@ -121,9 +127,9 @@ class TempTargetTestCase(unittest.TestCase):
 
 class TestTheStoreSurface(unittest.TestCase):
 
-    def test_the_public_api_is_exactly_the_contracted_five(self):
+    def test_the_public_api_is_exactly_the_contracted_nine(self):
         self.assertEqual(sorted(codebook_store.__all__), EXPECTED_ALL)
-        self.assertEqual(len(codebook_store.__all__), 5)
+        self.assertEqual(len(codebook_store.__all__), 9)
         for name in EXPECTED_ALL:
             with self.subTest(name=name):
                 self.assertTrue(hasattr(codebook_store, name))
@@ -143,9 +149,16 @@ class TestTheStoreSurface(unittest.TestCase):
         self.assertFalse(issubclass(codebook.LintError,
                                     codebook_store.CodebookStoreError))
 
-    def test_it_exposes_no_loader_default_path_backup_or_generic_hash(self):
-        """The four capabilities C8.5N deliberately did NOT take."""
-        for absent in ("load", "load_codebook", "read", "CODEBOOK_PATH",
+    def test_it_exposes_no_default_path_backup_or_generic_hash(self):
+        """The capabilities still NOT taken.
+
+        C8.5P RE-AIM, NOT RELAXATION. `read` and `load` left this list because
+        the read capability was added by contract; every other name stays, and
+        the two that matter most stay for the same reason they were listed:
+        `CODEBOOK_PATH` would make the store a second layout authority, and
+        `sha256_of`/`digest_file` would turn one caller's private helper into a
+        digest service."""
+        for absent in ("load_codebook", "CODEBOOK_PATH",
                        "BACKUPS_DIR", "LATEST_ARTIFACT_PATH", "backup",
                        "backup_codebook", "sha256_of", "digest_file",
                        "corpus_ref_current"):
@@ -227,6 +240,157 @@ class TestTheStoreIsLocalOnly(unittest.TestCase):
             if isinstance(node, ast.ImportFrom):
                 with self.subTest(module=node.module):
                     self.assertNotIn(node.module, ("os", "json"))
+
+
+class TestTheTwoErrorHierarchiesStaySeparate(unittest.TestCase):
+    """C8.5P.V correction C1. Read failures are NOT integrity failures.
+
+    `CodebookStoreError`'s accepted definition is "the store's own INTEGRITY
+    failures, and only those". A missing file or a /1 document is neither, so
+    hanging them under it would widen an accepted definition by stealth and make
+    one `except` clause catch two different kinds of fact."""
+
+    def test_read_errors_are_NOT_under_the_integrity_base(self):
+        self.assertFalse(issubclass(codebook_store.CodebookReadError,
+                                    codebook_store.CodebookStoreError))
+        for leaf in ("CodebookNotFoundError", "SchemaMismatchError"):
+            with self.subTest(leaf=leaf):
+                self.assertFalse(issubclass(getattr(codebook_store, leaf),
+                                            codebook_store.CodebookStoreError))
+
+    def test_integrity_errors_are_NOT_under_the_read_base(self):
+        for leaf in ("SerializationMismatchError", "PostWriteDigestError"):
+            with self.subTest(leaf=leaf):
+                self.assertFalse(issubclass(getattr(codebook_store, leaf),
+                                            codebook_store.CodebookReadError))
+
+    def test_each_hierarchy_is_rooted_and_populated_as_contracted(self):
+        self.assertTrue(issubclass(codebook_store.CodebookReadError, RuntimeError))
+        self.assertTrue(issubclass(codebook_store.CodebookStoreError, RuntimeError))
+        for leaf in ("CodebookNotFoundError", "SchemaMismatchError"):
+            self.assertTrue(issubclass(getattr(codebook_store, leaf),
+                                       codebook_store.CodebookReadError))
+        for leaf in ("SerializationMismatchError", "PostWriteDigestError"):
+            self.assertTrue(issubclass(getattr(codebook_store, leaf),
+                                       codebook_store.CodebookStoreError))
+
+    def test_a_lint_failure_is_still_neither(self):
+        self.assertFalse(issubclass(codebook.LintError, codebook_store.CodebookStoreError))
+        self.assertFalse(issubclass(codebook.LintError, codebook_store.CodebookReadError))
+
+
+class TestRead(unittest.TestCase):
+    """Explicit path in, document out — and everything the legacy loader did not
+    translate still arrives raw."""
+
+    def setUp(self):
+        self._d = tempfile.TemporaryDirectory(prefix="c85p-read-")
+        self.addCleanup(self._d.cleanup)
+        self.tmp = Path(self._d.name)
+
+    def write(self, name, payload):
+        p = self.tmp / name
+        p.write_text(payload if isinstance(payload, str) else json.dumps(payload),
+                     encoding="utf-8")
+        return p
+
+    def test_a_valid_v2_document_round_trips(self):
+        doc = document(quote="C’tan 日本語")
+        p = self.write("cb.json", doc)
+        self.assertEqual(codebook_store.read(p), doc)
+        self.assertEqual(codebook_store.read(p),
+                         json.loads(p.read_text(encoding="utf-8")))
+
+    def test_it_accepts_a_string_path_as_well_as_a_Path(self):
+        p = self.write("cb.json", document())
+        self.assertEqual(codebook_store.read(str(p)), codebook_store.read(p))
+
+    def test_read_has_NO_default_path(self):
+        """The whole reason ProjectPaths gained `legacy_codebook_json`."""
+        params = inspect.signature(codebook_store.read).parameters
+        self.assertIs(params["path"].default, inspect.Parameter.empty)
+        with self.assertRaises(TypeError):
+            codebook_store.read()
+
+    def test_a_missing_file_raises_CodebookNotFoundError_carrying_the_path(self):
+        target = self.tmp / "absent.json"
+        with self.assertRaises(codebook_store.CodebookNotFoundError) as raised:
+            codebook_store.read(target)
+        self.assertEqual(raised.exception.path, Path(target))
+        self.assertEqual(str(raised.exception), f"{target} not found")
+
+    def test_a_v1_document_raises_SchemaMismatchError_with_structured_facts(self):
+        p = self.write("v1.json", {"schema": codebook.SCHEMA_V1, "axes": {}})
+        with self.assertRaises(codebook_store.SchemaMismatchError) as raised:
+            codebook_store.read(p)
+        e = raised.exception
+        self.assertEqual((e.path, e.actual, e.expected),
+                         (Path(p), codebook.SCHEMA_V1, codebook.SCHEMA_V2))
+
+    def test_any_other_schema_raises_the_same_type(self):
+        for bad in ("wat/9", None, 7):
+            with self.subTest(schema=bad):
+                p = self.write("o.json", {"schema": bad, "axes": {}} if bad is not None
+                               else {"axes": {}})
+                with self.assertRaises(codebook_store.SchemaMismatchError) as raised:
+                    codebook_store.read(p)
+                self.assertEqual(
+                    str(raised.exception),
+                    f"{p}: unexpected schema {bad!r}, expected {codebook.SCHEMA_V2!r}")
+
+    def test_the_permanent_message_carries_NO_legacy_repository_guidance(self):
+        """C8.5P.V correction C3. The `/1` sentence names two `experiments/`
+        scripts; a permanent library may not. The facade owns that text."""
+        p = self.write("v1.json", {"schema": codebook.SCHEMA_V1, "axes": {}})
+        with self.assertRaises(codebook_store.SchemaMismatchError) as raised:
+            codebook_store.read(p)
+        text = str(raised.exception)
+        for leaked in ("experiments/", "foundry_migrate_codebook_v2",
+                       "foundry_reconcile", "pre-migration", ".py"):
+            with self.subTest(leaked=leaked):
+                self.assertNotIn(leaked, text)
+        # ON THE AST, AND DOCSTRINGS EXCLUDED. The module's prose names these
+        # very strings to explain why it must not carry them — the first draft
+        # of this guard scanned raw source and went red on its own explanation,
+        # which is the trap this repository already has a name for. What matters
+        # is that no RUNTIME string literal carries the guidance.
+        tree = ast.parse(inspect.getsource(codebook_store))
+        docstrings = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                                 ast.AsyncFunctionDef)):
+                doc = ast.get_docstring(node, clean=False)
+                if doc is not None:
+                    docstrings.add(doc)
+        literals = [n.value for n in ast.walk(tree)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                    and n.value not in docstrings]
+        for leaked in ("experiments/", "foundry_migrate_codebook_v2",
+                       "foundry_reconcile", "codebook.json", "REPO_ROOT",
+                       "pre-migration"):
+            with self.subTest(literal=leaked):
+                self.assertFalse([x for x in literals if leaked in x])
+        # ProjectPaths must not be reachable at all, in any form.
+        self.assertNotIn("mtj_foundry.paths",
+                         {i for i in normalized_imports(inspect.getsource(codebook_store))})
+
+    def test_malformed_json_propagates_RAW(self):
+        p = self.write("bad.json", "{not json")
+        with self.assertRaises(json.JSONDecodeError) as raised:
+            codebook_store.read(p)
+        self.assertNotIsInstance(raised.exception, codebook_store.CodebookReadError)
+
+    def test_an_os_level_failure_propagates_RAW(self):
+        d = self.tmp / "adir"
+        d.mkdir()
+        with self.assertRaises(OSError) as raised:
+            codebook_store.read(d)
+        self.assertNotIsInstance(raised.exception, codebook_store.CodebookReadError)
+
+    def test_a_non_mapping_document_propagates_RAW(self):
+        p = self.write("list.json", [1, 2, 3])
+        with self.assertRaises(AttributeError):
+            codebook_store.read(p)
 
 
 # ===========================================================================
@@ -415,6 +579,102 @@ class TestTheProtocolRefusesBeforeInstalling(TempTargetTestCase):
 # ===========================================================================
 # 4. THE LEGACY FACADE
 # ===========================================================================
+
+class TestTheLegacyLoaderBoundary(unittest.TestCase):
+    """C8.5P.V correction C2. THE VERIFIER CANNOT WITNESS THIS.
+
+    `foundry_verify_migration`'s "/2 loader x /1 file" control asserts only that
+    the subprocess exit code is non-zero. If `load_codebook` were aliased
+    straight to `codebook_store.read`, an UNCAUGHT `SchemaMismatchError` would
+    also exit non-zero, so that control would stay green while the legacy
+    contract — a `STOP — ` line on stderr and exit 1 — had been silently
+    replaced by a traceback. The verifier is a regression witness, not a
+    wrapper-shape witness, and its source may not be edited. So the shape is
+    asserted HERE, structurally, and the alias is rigged as a negative control."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.fcb = load_legacy("foundry_codebook")
+        cls.tree = ast.parse(inspect.getsource(cls.fcb))
+        # `.get`, not `[...]`. Under the alias rig the name is not a FunctionDef
+        # at all, and a KeyError in setUpClass would take the whole class down
+        # with an error that names nothing. Every test below then reports the
+        # actual defect instead of a fixture crash.
+        cls.fn = {n.name: n for n in cls.tree.body
+                  if isinstance(n, ast.FunctionDef)}.get("load_codebook")
+
+    def require_wrapper(self):
+        if self.fn is None:
+            self.fail("`load_codebook` is not a module-level function in the "
+                      "facade — it has been aliased or deleted, so the legacy "
+                      "`STOP — `/exit-1 contract is gone. The verifier's /1 "
+                      "control CANNOT see this: an uncaught typed error also "
+                      "exits non-zero.")
+        return self.fn
+
+    def test_it_is_a_module_level_function_not_an_alias(self):
+        self.assertIsInstance(self.require_wrapper(), ast.FunctionDef)
+        self.assertIsNot(self.fcb.load_codebook, codebook_store.read)
+
+    def test_it_keeps_the_exact_legacy_signature(self):
+        params = inspect.signature(self.fcb.load_codebook).parameters
+        self.assertEqual(list(params), ["path"])
+        self.assertIsNone(params["path"].default)
+
+    def test_it_delegates_to_the_permanent_read(self):
+        calls = [ast.unparse(n.func) for n in ast.walk(self.require_wrapper())
+                 if isinstance(n, ast.Call)]
+        self.assertIn("_codebook_store.read", calls)
+        for reimplemented in ("json.load", "open", "Path.exists"):
+            with self.subTest(call=reimplemented):
+                self.assertNotIn(reimplemented, calls)
+
+    def test_it_resolves_the_default_path_here_not_in_the_store(self):
+        body = ast.unparse(self.require_wrapper())
+        self.assertIn("CODEBOOK_PATH", body)
+        self.assertFalse(hasattr(codebook_store, "CODEBOOK_PATH"))
+
+    def test_it_catches_exactly_the_two_contracted_read_errors(self):
+        caught = []
+        for node in ast.walk(self.require_wrapper()):
+            if isinstance(node, ast.ExceptHandler):
+                caught += [t.strip().replace("_codebook_store.", "")
+                           for t in ast.unparse(node.type).strip("()").split(",")]
+        self.assertEqual(sorted(caught),
+                         ["CodebookNotFoundError", "SchemaMismatchError"])
+
+    def test_it_MUST_NOT_catch_OSError_or_a_bare_Exception(self):
+        """Asserted on handler TYPES, never on text: the docstring names these
+        to explain the rule, and a textual guard would forbid its own
+        explanation."""
+        caught = set()
+        for node in ast.walk(self.require_wrapper()):
+            if isinstance(node, ast.ExceptHandler) and node.type is not None:
+                t = node.type
+                for part in (t.elts if isinstance(t, ast.Tuple) else [t]):
+                    caught.add(ast.unparse(part).rsplit(".", 1)[-1])
+        for banned in ("OSError", "JSONDecodeError", "UnicodeDecodeError",
+                       "Exception", "BaseException"):
+            with self.subTest(banned=banned):
+                self.assertNotIn(banned, caught)
+
+    def test_every_handler_ends_the_process_through_the_legacy_halt(self):
+        for node in ast.walk(self.require_wrapper()):
+            if isinstance(node, ast.ExceptHandler):
+                calls = [ast.unparse(c.func) for c in ast.walk(node)
+                         if isinstance(c, ast.Call)]
+                self.assertIn("fc.halt", calls)
+
+    def test_the_v1_guidance_text_lives_HERE_and_only_here(self):
+        """C3's other half: the facade must still carry the exact legacy
+        sentence, rebuilt from the typed error's structured attributes."""
+        body = ast.unparse(self.require_wrapper())
+        for required in ("experiments/foundry_migrate_codebook_v2.py",
+                         "foundry_reconcile.py", "pre-migration",
+                         "SCHEMA_V1", "error.actual"):
+            with self.subTest(required=required):
+                self.assertIn(required, body)
+
 
 class TestTheLegacyWriterBoundary(TempTargetTestCase):
 
