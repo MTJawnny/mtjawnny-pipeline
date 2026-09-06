@@ -1310,14 +1310,61 @@ def _check(results: list, name: str, passed: bool, detail: str) -> None:
     results.append((name, passed, detail))
 
 
+_PERMANENT_PACKAGE = "mtj_foundry"
+
+
+def normalized_imports(source: str) -> set:
+    """Every direct dependency of `source`, as a FULL module identity.
+
+    C8.5N.R2. THE TWO SPELLINGS OF ONE DEPENDENCY MUST NORMALIZE TO ONE STRING.
+    Python writes the same edge two ways, and the first version of this guard
+    only understood one of them:
+
+        from mtj_foundry import codebook   ->  mtj_foundry.codebook
+        import mtj_foundry.codebook        ->  mtj_foundry.codebook
+
+    The original reduced every import to `name.split(".")[0]`, so
+    `import mtj_foundry.paths` was scored as the allowed top-level `mtj_foundry`
+    and the forbidden layout capability rode in behind it, while the
+    `from ... import paths` spelling was caught. One syntax form guarded and an
+    equivalent form open is the guard-aim defect this arc has refused before
+    (Manager review issue:1#issuecomment-5561128789).
+
+    The rule, and it FAILS CLOSED:
+
+    * `import a.b.c` / `import a.b.c as x`  -> `a.b.c`, never `a`.
+    * `from mtj_foundry import x`           -> `mtj_foundry.x`, because the
+      permanent package's members ARE the dependencies worth distinguishing.
+    * `from a.b import x`                   -> `a.b`; the alias is a name inside
+      an already-identified module, not a module.
+    * a RELATIVE import keeps its leading dots and therefore matches no allowed
+      identity. It cannot silently resolve to something permitted.
+    """
+    found = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            found |= {alias.name for alias in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                found.add("." * node.level + (node.module or ""))
+            elif node.module == _PERMANENT_PACKAGE:
+                found |= {f"{_PERMANENT_PACKAGE}.{a.name}" for a in node.names}
+            elif node.module:
+                found.add(node.module)
+    return found
+
+
 def _persistence_closure() -> dict:
     """`{module name: source}` for the permanent local-persistence closure.
 
     Resolved by MODULE IDENTITY, never by a repository path: the store is
-    imported, `__file__` is read off the imported object, and its one permanent
-    dependency is discovered from its own import statements rather than assumed.
-    That is what makes the guard survive a rename and refuse to be satisfied by
-    a file that merely still exists at the old location.
+    imported, `__file__` is read off the imported object, and its permanent
+    dependencies are discovered from its own import statements rather than
+    assumed. That is what makes the guard survive a rename and refuse to be
+    satisfied by a file that merely still exists at the old location.
+
+    Discovery walks `normalized_imports`, so BOTH spellings of a permanent
+    dependency enter the closure and a dotted one can no longer hide.
     """
     from mtj_foundry import codebook_store
     out = {}
@@ -1327,11 +1374,10 @@ def _persistence_closure() -> dict:
         if module.__name__ in out:
             continue
         out[module.__name__] = Path(module.__file__).read_text(encoding="utf-8")
-        for name in ast.walk(ast.parse(out[module.__name__])):
-            if isinstance(name, ast.ImportFrom) and name.module == "mtj_foundry":
-                for alias in name.names:
-                    pending.append(__import__(f"mtj_foundry.{alias.name}",
-                                              fromlist=[alias.name]))
+        for identity in normalized_imports(out[module.__name__]):
+            if identity.startswith(f"{_PERMANENT_PACKAGE}."):
+                pending.append(__import__(identity,
+                                          fromlist=[identity.rsplit(".", 1)[-1]]))
     return out
 
 
@@ -2140,29 +2186,35 @@ def selftest() -> int:
     #
     # `os` is legitimately in the closure (fsync, replace), so the process-
     # spawning families are rejected by NAME instead of banning the module.
+    #
+    # C8.5N.R2: the dependency test is now an EXACT set per module, keyed on the
+    # FULL normalized identity. A top-level allow-list could not tell
+    # `mtj_foundry.codebook` from `mtj_foundry.paths`, and the second carries the
+    # ProjectPaths/layout capability this store is explicitly denied. Widening
+    # either set is a contract change, not a fix.
     _closure = _persistence_closure()
-    _allowed_imports = {"__future__", "hashlib", "json", "os", "pathlib",
-                        "mtj_foundry", "re"}
+    _expected_imports = {
+        "mtj_foundry.codebook_store": {"__future__", "hashlib", "json", "os",
+                                       "pathlib", "mtj_foundry.codebook"},
+        "mtj_foundry.codebook": {"__future__", "re"},
+    }
     _forbidden_call = ("os.system", "os.popen", "os.spawn", "os.exec", "os.fork",
                        "os.posix_spawn")
     leaked = []
-    for _name, _src in _closure.items():
-        _tree = ast.parse(_src)
-        for _node in ast.walk(_tree):
-            if isinstance(_node, ast.Import):
-                for _a in _node.names:
-                    if _a.name.split(".")[0] not in _allowed_imports:
-                        leaked.append(f"{_name}: import {_a.name}")
-            elif isinstance(_node, ast.ImportFrom) and _node.module:
-                if _node.module.split(".")[0] not in _allowed_imports:
-                    leaked.append(f"{_name}: from {_node.module}")
-            elif isinstance(_node, ast.Call):
+    if set(_closure) != set(_expected_imports):
+        leaked.append(f"closure is {sorted(_closure)}, expected "
+                      f"{sorted(_expected_imports)}")
+    for _name, _src in sorted(_closure.items()):
+        for _identity in sorted(normalized_imports(_src)
+                                - _expected_imports.get(_name, set())):
+            leaked.append(f"{_name}: imports {_identity}")
+        for _node in ast.walk(ast.parse(_src)):
+            if isinstance(_node, ast.Call):
                 _callee = ast.unparse(_node.func)
                 if _callee.startswith(_forbidden_call):
                     leaked.append(f"{_name}: {_callee}()")
     _check(r, "BOUND the permanent codebook-write closure stays local-only",
-           not leaked and len(_closure) == 2,
-           f"closure={sorted(_closure)} forbidden={leaked or 'none'}")
+           not leaked, f"closure={sorted(_closure)} forbidden={leaked or 'none'}")
 
     # CANARY, closing. Nothing above may have touched the live codebook.
     _canary_after = sha256_of_file(_canary_path) if _canary_path.exists() else "ABSENT"

@@ -47,8 +47,45 @@ EXPECTED_ALL = [
     "write_atomic",
 ]
 
-# The exact dependency set C8.5N allows the store to reach.
-ALLOWED_IMPORTS = {"__future__", "hashlib", "json", "os", "pathlib", "mtj_foundry"}
+# The exact dependency set C8.5N allows each permanent module to reach, keyed on
+# FULL normalized module identity.
+#
+# C8.5N.R2 REPLACED A TOP-LEVEL SET WITH THIS ONE. The first version reduced
+# every import to `name.split(".")[0]`, so `mtj_foundry` was the allowed entry
+# and `import mtj_foundry.paths` — the layout capability this store is
+# explicitly denied — scored as allowed, while the `from mtj_foundry import
+# paths` spelling of the SAME edge was caught. A set that cannot tell two
+# members of a package apart cannot express "only the model"
+# (Manager review issue:1#issuecomment-5561128789).
+STORE_IMPORTS = {"__future__", "hashlib", "json", "os", "pathlib",
+                 "mtj_foundry.codebook"}
+MODEL_IMPORTS = {"__future__", "re"}
+
+# The permanent closure at this slice, and it is exact: a third permanent module
+# is a W5 failure until a contract widens it.
+EXPECTED_CLOSURE = {"mtj_foundry.codebook_store", "mtj_foundry.codebook"}
+
+
+def normalized_imports(source: str) -> set:
+    """Direct dependencies of `source` as full module identities.
+
+    Written out here rather than imported from `foundry_authority`: a guard that
+    asks its subject to grade itself proves nothing, and this rule is exactly
+    what the shipped one got wrong. `test_the_shipped_normalizer_agrees` then
+    compares the two, so the duplication is the control.
+    """
+    found = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            found |= {alias.name for alias in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:                       # relative: never resolves away
+                found.add("." * node.level + (node.module or ""))
+            elif node.module == "mtj_foundry":
+                found |= {f"mtj_foundry.{a.name}" for a in node.names}
+            elif node.module:
+                found.add(node.module)
+    return found
 
 # Reachable from `os`, and rejected by name rather than by banning the module —
 # `os.fsync` and `os.replace` are the protocol.
@@ -132,20 +169,22 @@ class TestTheStoreIsLocalOnly(unittest.TestCase):
         cls.tree = ast.parse(cls.source)
 
     def test_it_imports_only_the_allowed_set(self):
-        imported = set()
-        for node in ast.walk(self.tree):
-            if isinstance(node, ast.Import):
-                imported |= {a.name.split(".")[0] for a in node.names}
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                imported.add(node.module.split(".")[0])
-        self.assertEqual(imported, ALLOWED_IMPORTS)
+        self.assertEqual(normalized_imports(self.source), STORE_IMPORTS)
 
     def test_its_only_permanent_dependency_is_the_codebook_model(self):
-        reached = set()
-        for node in ast.walk(self.tree):
-            if isinstance(node, ast.ImportFrom) and node.module == "mtj_foundry":
-                reached |= {a.name for a in node.names}
-        self.assertEqual(reached, {"codebook"})
+        """Full identity, so a sibling of the model is not the model. Both
+        spellings of a permanent import normalize into this set, which is what
+        makes `mtj_foundry.paths` visible here in either form."""
+        permanent = {i for i in normalized_imports(self.source)
+                     if i.split(".")[0] == "mtj_foundry"}
+        self.assertEqual(permanent, {"mtj_foundry.codebook"})
+
+    def test_the_model_keeps_its_accepted_two_import_boundary(self):
+        """C8.5M's `{__future__, re}` purity is the other half of the closure and
+        is re-asserted through the SAME normalizer, so neither half can be
+        widened by a spelling the other half's guard cannot see."""
+        self.assertEqual(normalized_imports(inspect.getsource(codebook)),
+                         MODEL_IMPORTS)
 
     def test_it_never_prints_exits_or_spawns_a_process(self):
         calls = [ast.unparse(n.func) for n in ast.walk(self.tree)
@@ -634,8 +673,62 @@ class TestTheW5LocalWriterBoundary(unittest.TestCase):
         cls.closure = cls.authority._persistence_closure()
 
     def test_the_closure_is_the_store_and_the_model_and_nothing_else(self):
-        self.assertEqual(sorted(self.closure),
-                         ["mtj_foundry.codebook", "mtj_foundry.codebook_store"])
+        self.assertEqual(set(self.closure), EXPECTED_CLOSURE)
+
+    def test_closure_discovery_follows_BOTH_import_spellings(self):
+        """The C8.5N.R2 defect, asserted directly on the shipped discovery rule.
+
+        `_persistence_closure` used to follow only `ast.ImportFrom`, so
+        `import mtj_foundry.paths` never entered the closure and the exact-set
+        check never saw it. Feeding the shipped normalizer both spellings of the
+        same edge must yield one identical identity — and it must be the FULL
+        one, because `mtj_foundry` alone is what let a denied sibling through.
+        """
+        dotted = self.authority.normalized_imports("import mtj_foundry.paths")
+        from_form = self.authority.normalized_imports(
+            "from mtj_foundry import paths")
+        self.assertEqual(dotted, from_form)
+        self.assertEqual(dotted, {"mtj_foundry.paths"})
+        self.assertNotIn("mtj_foundry", dotted)
+
+        healthy_dotted = self.authority.normalized_imports(
+            "import mtj_foundry.codebook")
+        healthy_from = self.authority.normalized_imports(
+            "from mtj_foundry import codebook")
+        self.assertEqual(healthy_dotted, healthy_from, {"mtj_foundry.codebook"})
+
+    def test_a_dotted_import_does_not_collapse_to_its_top_level_package(self):
+        """The exact bug, in one line: `a.b.c` must never be scored as `a`."""
+        self.assertEqual(self.authority.normalized_imports("import os.path"),
+                         {"os.path"})
+        self.assertEqual(
+            self.authority.normalized_imports("import xml.etree.ElementTree as e"),
+            {"xml.etree.ElementTree"})
+
+    def test_a_relative_import_cannot_resolve_to_something_allowed(self):
+        """Fails closed: a relative import keeps its dots and so matches no
+        allowed identity, rather than silently normalizing to a permitted name."""
+        self.assertEqual(self.authority.normalized_imports("from . import paths"),
+                         {"."})
+        self.assertEqual(
+            self.authority.normalized_imports("from ..pkg import thing"),
+            {"..pkg"})
+
+    def test_the_shipped_normalizer_agrees_with_this_files_own(self):
+        """Two independent implementations of one rule, compared over the real
+        closure. If they ever disagree, one of them is the defect."""
+        for name, src in self.closure.items():
+            with self.subTest(module=name):
+                self.assertEqual(self.authority.normalized_imports(src),
+                                 normalized_imports(src))
+
+    def test_each_closure_member_matches_its_exact_allowed_identity_set(self):
+        expected = {"mtj_foundry.codebook_store": STORE_IMPORTS,
+                    "mtj_foundry.codebook": MODEL_IMPORTS}
+        self.assertEqual(set(self.closure), set(expected))
+        for name, src in self.closure.items():
+            with self.subTest(module=name):
+                self.assertEqual(normalized_imports(src), expected[name])
 
     def test_the_closure_is_resolved_by_module_identity_not_a_filename(self):
         """A hardcoded `src/mtj_foundry/codebook_store.py` would be the same
@@ -650,18 +743,37 @@ class TestTheW5LocalWriterBoundary(unittest.TestCase):
         self.assertNotIn('"experiments" / "foundry_codebook.py"', source)
 
     def test_no_forbidden_dependency_is_reachable_from_the_closure(self):
+        """Named prohibitions on top of the exact set, kept because they say
+        WHY. Matched on the identity's root so `urllib.request` is caught as
+        `urllib`, while the exact-set test above is what catches a denied
+        sibling inside an allowed package."""
         for name, src in self.closure.items():
-            tree = ast.parse(src)
-            imported = set()
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Import):
-                    imported |= {a.name.split(".")[0] for a in node.names}
-                elif isinstance(node, ast.ImportFrom) and node.module:
-                    imported.add(node.module.split(".")[0])
+            roots = {i.split(".")[0] for i in normalized_imports(src)}
             with self.subTest(module=name):
                 for banned in ("subprocess", "socket", "ssl", "http", "urllib",
                                "requests", "foundry_authority", "foundry_common"):
-                    self.assertNotIn(banned, imported)
+                    self.assertNotIn(banned, roots)
+
+    def test_a_denied_permanent_sibling_is_rejected_in_either_spelling(self):
+        """`mtj_foundry.paths` owns ProjectPaths and is denied to this store.
+        Both spellings must fail the exact-set test — the root-based check above
+        cannot see either, because their root is the ALLOWED `mtj_foundry`."""
+        store_src = inspect.getsource(codebook_store)
+        for spelling in ("from mtj_foundry import paths",
+                         "import mtj_foundry.paths"):
+            with self.subTest(spelling=spelling):
+                # APPENDED, not substituted. An anchor-and-replace rig silently
+                # no-ops the day the anchor's spelling changes -- and this test
+                # is precisely about the store having two spellings available,
+                # so it would have been the first casualty of its own subject.
+                rigged = store_src + "\n" + spelling + "\n"
+                identities = normalized_imports(rigged)
+                self.assertIn("mtj_foundry.paths", identities)
+                self.assertNotEqual(identities, STORE_IMPORTS)
+                self.assertEqual(
+                    {i.split(".")[0] for i in identities} - {"mtj_foundry"},
+                    {i.split(".")[0] for i in STORE_IMPORTS} - {"mtj_foundry"},
+                    "the root-only view is blind to this, which is the defect")
 
     def test_no_process_spawning_call_is_reachable_from_the_closure(self):
         for name, src in self.closure.items():
@@ -674,13 +786,8 @@ class TestTheW5LocalWriterBoundary(unittest.TestCase):
     def test_the_model_half_keeps_its_accepted_re_only_boundary(self):
         """The store's dependency is not exempt from the purity C8.5M accepted
         for it — the closure is only as local as its weakest member."""
-        imported = set()
-        for node in ast.walk(ast.parse(self.closure["mtj_foundry.codebook"])):
-            if isinstance(node, ast.Import):
-                imported |= {a.name.split(".")[0] for a in node.names}
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                imported.add(node.module.split(".")[0])
-        self.assertEqual(imported, {"__future__", "re"})
+        self.assertEqual(normalized_imports(self.closure["mtj_foundry.codebook"]),
+                         MODEL_IMPORTS)
 
 
 if __name__ == "__main__":
