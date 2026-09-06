@@ -3461,11 +3461,27 @@ CENSUS_HEAD = {
     # untouched; the facade's new import names no layout value; and no
     # `sys.path` call is added, because `foundry_common` already put `src` on the
     # path before the new import runs.
-    "tracked_python": 135,                         # C8.5J: 133 (+2 C8.5M files)
+    #
+    # C8.5N MOVES THE FILE CENSUS **AND ONE LOCAL-SITE ROW**, and the second
+    # movement is the whole reason the first attempt at this slice STOPPED
+    # (issue:1#issuecomment-5489415908, ruled a VALID_STOP against a Manager
+    # contract contradiction in issue:1#issuecomment-5503078237).
+    #
+    # Local codebook persistence becomes `src/mtj_foundry/codebook_store.py` and
+    # gains `tests/refoundation/test_codebook_store.py`; both land in `src`/
+    # `tests`, outside every measured scope, so the file census moves by two.
+    #
+    # `foundry_codebook` loses the A13 write body and moves no layout row: its
+    # constants block sits untouched above the cut. `foundry_authority` DOES
+    # move one, and deliberately -- see the `local_sites_total` comment below.
+    # An earlier draft of this comment asserted the opposite; it was wrong, and
+    # it is corrected here rather than deleted, because a census pin defended by
+    # a false sentence is the failure mode this file exists to prevent.
+    "tracked_python": 137,                         # C8.5M: 135 (+2 C8.5N files)
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 8,                   # C8.5J: 7 (+ codebook.py)
-                       "tests": 17},               # C8.5J: 16 (+ its capability test)
+                       "src": 9,                   # C8.5M: 8 (+ codebook_store.py)
+                       "tests": 18},               # C8.5M: 17 (+ its store test)
     "delegations_total": 149,                      # C8.5I: 141; C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
@@ -3497,11 +3513,35 @@ CENSUS_HEAD = {
     # still loaded exactly once: delegations 149, REPO_ROOT 22, CALL_ARG 9 and
     # delegation_files 55 are all unchanged. Building the view twice would have
     # moved every one of them.
-    "local_sites_total": 87,                       # C8.5J: 88; C8.5B: 89
+    #
+    # C8.5N REMOVES EXACTLY ONE MORE, AND IT IS THE SAME SHAPE AS C8.5K's. The
+    # standing P3 §17/W5 boundary check read the writer's source by repository
+    # filename:
+    #
+    #     writer_src = (REPO_ROOT / "experiments" / "foundry_codebook.py")...
+    #
+    # -- a hop1 consumption site inside `selftest`. Once the A13 write protocol
+    # moves behind `mtj_foundry.codebook_store`, that file no longer owns the
+    # thing being guarded, so the check is re-aimed at the permanent closure by
+    # MODULE IDENTITY and the path read is retired. The replacement names no
+    # repository path at all, so the site is DELETED rather than converted, and
+    # the four rows below fall by one each.
+    #
+    # Nothing else moves, and each hold is derived rather than observed:
+    # `local_sites_bootstrap` because the site never fed a `sys.path` call;
+    # `consumption_files` because `foundry_authority.py` keeps its other two
+    # sites (`docs/codebook-authority.json` and the `experiments` bootstrap);
+    # `consumption_origin.hop2`/`inline` and `consumption_scope.module` because
+    # the retired site was hop1 and function-scoped.
+    #
+    # No delegation row moves either: the re-aimed guard loads no provider
+    # layout name, and the new `_persistence_closure()` helper reaches the store
+    # through `__file__` of the imported module.
+    "local_sites_total": 86,                       # C8.5M: 87; C8.5J: 88
     "local_sites_bootstrap": 28,                   # unchanged
-    "local_sites_consumption": 59,                 # C8.5J: 60; C8.5B: 61
-    "consumption_origin": {"hop1": 43, "hop2": 14, "inline": 2},   # hop1 C8.5J: 44
-    "consumption_scope": {"module": 42, "function": 17},           # module C8.5J: 43
+    "local_sites_consumption": 58,                 # C8.5M: 59; C8.5J: 60
+    "consumption_origin": {"hop1": 42, "hop2": 14, "inline": 2},   # hop1 C8.5M: 43
+    "consumption_scope": {"module": 42, "function": 16},           # function C8.5M: 17
     "consumption_files": 29,                       # C8.5B: 30
     "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
 }

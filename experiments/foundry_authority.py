@@ -108,6 +108,7 @@ import json
 import shutil
 import hashlib
 import argparse
+import ast
 import subprocess
 import tempfile
 from pathlib import Path
@@ -1309,6 +1310,77 @@ def _check(results: list, name: str, passed: bool, detail: str) -> None:
     results.append((name, passed, detail))
 
 
+_PERMANENT_PACKAGE = "mtj_foundry"
+
+
+def normalized_imports(source: str) -> set:
+    """Every direct dependency of `source`, as a FULL module identity.
+
+    C8.5N.R2. THE TWO SPELLINGS OF ONE DEPENDENCY MUST NORMALIZE TO ONE STRING.
+    Python writes the same edge two ways, and the first version of this guard
+    only understood one of them:
+
+        from mtj_foundry import codebook   ->  mtj_foundry.codebook
+        import mtj_foundry.codebook        ->  mtj_foundry.codebook
+
+    The original reduced every import to `name.split(".")[0]`, so
+    `import mtj_foundry.paths` was scored as the allowed top-level `mtj_foundry`
+    and the forbidden layout capability rode in behind it, while the
+    `from ... import paths` spelling was caught. One syntax form guarded and an
+    equivalent form open is the guard-aim defect this arc has refused before
+    (Manager review issue:1#issuecomment-5561128789).
+
+    The rule, and it FAILS CLOSED:
+
+    * `import a.b.c` / `import a.b.c as x`  -> `a.b.c`, never `a`.
+    * `from mtj_foundry import x`           -> `mtj_foundry.x`, because the
+      permanent package's members ARE the dependencies worth distinguishing.
+    * `from a.b import x`                   -> `a.b`; the alias is a name inside
+      an already-identified module, not a module.
+    * a RELATIVE import keeps its leading dots and therefore matches no allowed
+      identity. It cannot silently resolve to something permitted.
+    """
+    found = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            found |= {alias.name for alias in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                found.add("." * node.level + (node.module or ""))
+            elif node.module == _PERMANENT_PACKAGE:
+                found |= {f"{_PERMANENT_PACKAGE}.{a.name}" for a in node.names}
+            elif node.module:
+                found.add(node.module)
+    return found
+
+
+def _persistence_closure() -> dict:
+    """`{module name: source}` for the permanent local-persistence closure.
+
+    Resolved by MODULE IDENTITY, never by a repository path: the store is
+    imported, `__file__` is read off the imported object, and its permanent
+    dependencies are discovered from its own import statements rather than
+    assumed. That is what makes the guard survive a rename and refuse to be
+    satisfied by a file that merely still exists at the old location.
+
+    Discovery walks `normalized_imports`, so BOTH spellings of a permanent
+    dependency enter the closure and a dotted one can no longer hide.
+    """
+    from mtj_foundry import codebook_store
+    out = {}
+    pending = [codebook_store]
+    while pending:
+        module = pending.pop()
+        if module.__name__ in out:
+            continue
+        out[module.__name__] = Path(module.__file__).read_text(encoding="utf-8")
+        for identity in normalized_imports(out[module.__name__]):
+            if identity.startswith(f"{_PERMANENT_PACKAGE}."):
+                pending.append(__import__(identity,
+                                          fromlist=[identity.rsplit(".", 1)[-1]]))
+    return out
+
+
 def selftest() -> int:
     r = []
     fixture_sha = sha256_of_bytes(FIXTURE_BYTES)
@@ -2096,11 +2168,53 @@ def selftest() -> int:
                f"B={stB} E={stE}")
 
     # BOUNDARY — no networking leaked into the codebook writer (P3 §17).
-    writer_src = (REPO_ROOT / "experiments" / "foundry_codebook.py").read_text(encoding="utf-8")
-    leaked = [tok for tok in ("rclone", "subprocess", "urllib", "requests", "foundry_authority")
-              if tok in writer_src]
-    _check(r, "BOUND write_codebook_atomic's module stays local-only",
-           not leaked, f"network tokens in foundry_codebook.py: {leaked or 'none'}")
+    #
+    # RE-AIMED BY C8.5N, BECAUSE ITS SUBJECT MOVED. This used to read the source
+    # of `experiments/foundry_codebook.py` and grep it for network tokens. That
+    # was exact while the file WAS the writer; after C8.5N it owns none of the
+    # A13 write protocol, so the same check would keep passing while inspecting
+    # a file that no longer does the thing being guarded -- a guard that cannot
+    # fail, which this repository has measured twice before.
+    #
+    # The invariant is unchanged and the mechanism is stronger. The subject is
+    # now the permanent local-persistence CLOSURE, reached by MODULE IDENTITY
+    # (`sys.modules` / `__file__` of the imported object) rather than by a
+    # hardcoded repository filename -- so a future rename cannot silently
+    # disarm it -- and the test is the IMPORT GRAPH rather than a substring
+    # search, so a token inside a docstring is not a finding and an indirect
+    # reach is not invisible.
+    #
+    # `os` is legitimately in the closure (fsync, replace), so the process-
+    # spawning families are rejected by NAME instead of banning the module.
+    #
+    # C8.5N.R2: the dependency test is now an EXACT set per module, keyed on the
+    # FULL normalized identity. A top-level allow-list could not tell
+    # `mtj_foundry.codebook` from `mtj_foundry.paths`, and the second carries the
+    # ProjectPaths/layout capability this store is explicitly denied. Widening
+    # either set is a contract change, not a fix.
+    _closure = _persistence_closure()
+    _expected_imports = {
+        "mtj_foundry.codebook_store": {"__future__", "hashlib", "json", "os",
+                                       "pathlib", "mtj_foundry.codebook"},
+        "mtj_foundry.codebook": {"__future__", "re"},
+    }
+    _forbidden_call = ("os.system", "os.popen", "os.spawn", "os.exec", "os.fork",
+                       "os.posix_spawn")
+    leaked = []
+    if set(_closure) != set(_expected_imports):
+        leaked.append(f"closure is {sorted(_closure)}, expected "
+                      f"{sorted(_expected_imports)}")
+    for _name, _src in sorted(_closure.items()):
+        for _identity in sorted(normalized_imports(_src)
+                                - _expected_imports.get(_name, set())):
+            leaked.append(f"{_name}: imports {_identity}")
+        for _node in ast.walk(ast.parse(_src)):
+            if isinstance(_node, ast.Call):
+                _callee = ast.unparse(_node.func)
+                if _callee.startswith(_forbidden_call):
+                    leaked.append(f"{_name}: {_callee}()")
+    _check(r, "BOUND the permanent codebook-write closure stays local-only",
+           not leaked, f"closure={sorted(_closure)} forbidden={leaked or 'none'}")
 
     # CANARY, closing. Nothing above may have touched the live codebook.
     _canary_after = sha256_of_file(_canary_path) if _canary_path.exists() else "ABSENT"
