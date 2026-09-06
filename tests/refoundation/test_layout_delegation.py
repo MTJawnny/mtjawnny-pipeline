@@ -3182,6 +3182,19 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         which derived a repository root of its own. Naming it here is what lets
         that global go away. The property is still enumerated in full and it is
         still the case that an unlisted addition fails this test.
+
+        C8.5P ADVANCES IT AGAIN, FOR THE SAME REASON AND NO OTHER.
+        `mtj_foundry.codebook_store.read` takes an EXPLICIT path and owns no
+        default, so without `legacy_codebook_json` the only source of the
+        operational codebook's path is the legacy facade's own `CODEBOOK_PATH` --
+        and no consumer could ever stop importing the facade. Measured at C8.5O:
+        five of the six unblockable consumers call `load_codebook()` with no
+        argument.
+
+        THE LIST IS STILL EXHAUSTIVE. One name was appended; nothing was removed,
+        renamed or loosened, and an unlisted addition still fails. That this pin
+        went red on the property is the guard working -- it is why C8.5P.R1
+        stopped rather than editing this file without authorization.
         """
         props = sorted(n for n in dir(ProjectPaths)
                        if not n.startswith("_")
@@ -3189,6 +3202,7 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         self.assertEqual(props, [
             "baselines", "config", "conservation", "decisions",
             "foundry_audit_baseline",       # C8.5J
+            "legacy_codebook_json",         # C8.5P
             "legacy_data_artifacts",
             "legacy_docs", "legacy_experiments", "legacy_experiments_out",
             "legacy_foundry_out", "legacy_foundry_review",

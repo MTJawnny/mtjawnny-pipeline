@@ -199,6 +199,26 @@ class ProjectPaths:
         return self.legacy_foundry_out / "ruling_registry.json"
 
     @property
+    def legacy_codebook_json(self) -> Path:
+        """The operational codebook, where it is.
+
+        Same shape and same reason as `legacy_ruling_registry_json`. C8.5P adds
+        it because `mtj_foundry.codebook_store.read` takes an EXPLICIT path and
+        has no default: without a layout owner naming this file, the only source
+        of the default is the legacy facade's own `CODEBOOK_PATH`, and no
+        consumer could ever stop importing the facade. Measured at C8.5O: five
+        of the six unblockable consumers call `load_codebook()` with no argument.
+
+        NAMING IS NOT CLASSIFYING. This does not relocate the file, create it,
+        assert it exists, read or write it, make it authoritative, or decide its
+        artifact class -- the `legacy_` prefix says exactly that and carries no
+        future ruling. `foundry_codebook.CODEBOOK_PATH` is UNCHANGED and remains
+        the facade's default; repointing consumers at this property is a later
+        slice, not this one.
+        """
+        return self.legacy_foundry_out / "codebook.json"
+
+    @property
     def legacy_foundry_review(self) -> Path:
         """The legacy foundry review directory.
 

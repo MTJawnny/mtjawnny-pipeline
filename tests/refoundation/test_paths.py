@@ -49,6 +49,25 @@ class TestExplicitRoot(unittest.TestCase):
         self.assertEqual(paths.legacy_foundry_out, Path("/r/experiments/out/foundry"))
         self.assertEqual(paths.legacy_experiments_out, Path("/r/experiments/out"))
 
+    def test_the_operational_codebook_is_named_here(self):
+        """C8.5P. `codebook_store.read` takes an explicit path and owns no
+        default, so the default has to come from the layout owner — otherwise
+        the only source is the legacy facade's `CODEBOOK_PATH` and no consumer
+        can ever stop importing it. Same shape as its registry sibling."""
+        paths = ProjectPaths.for_root("/r")
+        self.assertEqual(paths.legacy_codebook_json,
+                         Path("/r/experiments/out/foundry/codebook.json"))
+        self.assertEqual(paths.legacy_codebook_json,
+                         paths.legacy_foundry_out / "codebook.json")
+
+    def test_naming_the_codebook_performs_no_io_and_asserts_no_existence(self):
+        """NAMING IS NOT CLASSIFYING: the property is pure derivation. Proven on
+        a root that cannot exist, so any stat/open would fail or lie."""
+        paths = ProjectPaths.for_root("/nonexistent-root-9d2f")
+        value = paths.legacy_codebook_json
+        self.assertEqual(value, Path("/nonexistent-root-9d2f/experiments/out/foundry/codebook.json"))
+        self.assertFalse(value.exists())
+
 
 class TestExplicitRootIsStable(unittest.TestCase):
     """R2: a constructed ProjectPaths must not depend on the process working directory.

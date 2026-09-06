@@ -179,23 +179,34 @@ def corpus_ref_current() -> str:
 # --------------------------------------------------------------------------
 
 def load_codebook(path: Path = None) -> dict:
-    """Loads a /2 codebook. Halts on /1 (or anything else) in BOTH directions
-    per the discovery's sec.3 recommendation -- /1-era tooling meeting a /2
-    file already dies on `set()` of dicts, but that is an accident of Python
-    semantics, not a designed failure. This is the designed one."""
-    path = Path(path) if path is not None else CODEBOOK_PATH
-    if not path.exists():
-        fc.halt(f"{path} not found")
-    with open(path, "r", encoding="utf-8") as f:
-        cb = json.load(f)
-    schema = cb.get("schema")
-    if schema != SCHEMA_V2:
-        if schema == SCHEMA_V1:
-            fc.halt(f"{path} is schema {SCHEMA_V1!r} (pre-migration). This loader reads {SCHEMA_V2!r} only "
+    """Legacy failure translation for `mtj_foundry.codebook_store.read`, plus
+    the DEFAULT PATH, which stays here.
+
+    TWO THINGS THIS BOUNDARY OWNS AND THE PERMANENT STORE MUST NOT.
+
+    The DEFAULT. `read()` takes an explicit path and knows no repository; the
+    `path is None` case is resolved here against `CODEBOOK_PATH`, unchanged.
+
+    The `/1` GUIDANCE. The legacy halt names `experiments/foundry_migrate_codebook_v2.py`
+    and `foundry_reconcile.py` — repository-relative advice about where a
+    migration script lives. A permanent library may not carry that (C8.5P.V
+    correction C3), so `SchemaMismatchError` carries the FACTS (`path`,
+    `actual`, `expected`) and this wrapper rebuilds the exact legacy sentence
+    from them. The `/1` branch is therefore deliberate, not incidental: it is
+    the one case whose text is richer than the error's own.
+
+    `OSError`, `json.JSONDecodeError` and `UnicodeDecodeError` are NOT caught,
+    exactly as before -- the old body translated none of them either."""
+    try:
+        return _codebook_store.read(path if path is not None else CODEBOOK_PATH)
+    except _codebook_store.CodebookNotFoundError as error:
+        fc.halt(str(error))
+    except _codebook_store.SchemaMismatchError as error:
+        if error.actual == SCHEMA_V1:
+            fc.halt(f"{error.path} is schema {SCHEMA_V1!r} (pre-migration). This loader reads {SCHEMA_V2!r} only "
                     f"— run experiments/foundry_migrate_codebook_v2.py, or use the frozen /1 producer "
                     f"(foundry_reconcile.py) if you genuinely meant the legacy shape")
-        fc.halt(f"{path}: unexpected schema {schema!r}, expected {SCHEMA_V2!r}")
-    return cb
+        fc.halt(str(error))
 
 
 def lint_or_halt(codebook: dict, path_label: str = "codebook") -> dict:

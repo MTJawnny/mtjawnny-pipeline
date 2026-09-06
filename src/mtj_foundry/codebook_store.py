@@ -71,9 +71,13 @@ from pathlib import Path
 from mtj_foundry import codebook
 
 __all__ = [
+    "CodebookNotFoundError",
+    "CodebookReadError",
     "CodebookStoreError",
     "PostWriteDigestError",
+    "SchemaMismatchError",
     "SerializationMismatchError",
+    "read",
     "serialize",
     "write_atomic",
 ]
@@ -90,6 +94,20 @@ class CodebookStoreError(RuntimeError):
     """
 
 
+class CodebookReadError(RuntimeError):
+    """Base for LOAD failures, and DELIBERATELY NOT a `CodebookStoreError`.
+
+    C8.5P.V correction C1. The integrity hierarchy's accepted definition is
+    "the store's own INTEGRITY failures, and only those" — a file that is absent
+    or carries the wrong schema is neither. Hanging read failures under it would
+    silently widen a definition this arc already accepted, and would make
+    `except CodebookStoreError` start catching two different kinds of fact.
+
+    Both hierarchies are `RuntimeError` siblings, so a caller that genuinely
+    wants everything still has one base to name.
+    """
+
+
 class SerializationMismatchError(CodebookStoreError):
     """Re-serializing the readback did not reproduce the written bytes.
 
@@ -103,6 +121,64 @@ class PostWriteDigestError(CodebookStoreError):
 
     Filesystem-level corruption between `os.replace` and the read-back digest.
     """
+
+
+class CodebookNotFoundError(CodebookReadError):
+    """No file at the requested path. Carries `path`."""
+
+    def __init__(self, path):
+        self.path = path
+        super().__init__(f"{path} not found")
+
+
+class SchemaMismatchError(CodebookReadError):
+    """The document is not a `foundry-codebook/2`. Carries `path`, `actual`,
+    `expected`.
+
+    C8.5P.V correction C3: the message states the FACT and nothing else. The
+    legacy loader's `/1` text names `experiments/foundry_migrate_codebook_v2.py`
+    and `foundry_reconcile.py` — repository-relative guidance about where a
+    migration script lives, which a permanent library must not carry. The
+    structured attributes are what let the legacy facade rebuild that exact
+    sentence at its own boundary, where the guidance belongs.
+    """
+
+    def __init__(self, path, actual, expected):
+        self.path = path
+        self.actual = actual
+        self.expected = expected
+        super().__init__(
+            f"{path}: unexpected schema {actual!r}, expected {expected!r}")
+
+
+def read(path) -> dict:
+    """Load the `foundry-codebook/2` document at an EXPLICIT path.
+
+    The other half of local persistence, and it takes the same shape as
+    `write_atomic`: an explicit path, no default, no repository root. Where the
+    codebook lives is `ProjectPaths`' fact, not this module's — a default here
+    would make the store a second layout authority, which is the thing C8.5C
+    ended.
+
+    The schema gate is the point. `B-MIGRATION-DISCOVERY.md` sec.3: a /1-era
+    consumer meeting a /2 file already dies on `set()` of dicts, but that is an
+    accident of Python semantics rather than a designed failure. This is the
+    designed one, and it runs in both directions.
+
+    Raises `CodebookNotFoundError` and `SchemaMismatchError`. Everything else —
+    `OSError`, `json.JSONDecodeError`, `UnicodeDecodeError`, an `AttributeError`
+    from a non-mapping document — propagates RAW, exactly as it did from the
+    legacy loader, which translated none of them either.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise CodebookNotFoundError(path)
+    with open(path, "r", encoding="utf-8") as handle:
+        document = json.load(handle)
+    schema = document.get("schema")
+    if schema != codebook.SCHEMA_V2:
+        raise SchemaMismatchError(path, schema, codebook.SCHEMA_V2)
+    return document
 
 
 def serialize(codebook_document: dict) -> str:
