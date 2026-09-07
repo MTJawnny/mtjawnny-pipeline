@@ -87,7 +87,19 @@ BASELINE_FILENAME = "foundry-audit-baseline.json"
 # ratchet baseline and its generated JSON, and constructing the view twice would
 # add a second boundary load and move the delegation census. The set is pinned
 # so a consumer cannot drift into the bound form without a reason.
-ONE_VIEW_CONSUMERS = {"foundry_ruling_registry"}
+#
+# C8.5R adds the second consumer to meet that same condition, on the same reason.
+# `foundry_object_lattice` now owns the ratchet baseline AND the codebook path it
+# hands to `mtj_foundry.codebook_store.read`, which takes an EXPLICIT path.
+#
+# WIDENING THIS SET IS NOT WEAKENING THE GUARD, and the distinction is worth
+# stating because the set looks like a waiver list. Membership does not exempt a
+# consumer from anything; it selects WHICH of two equally strict forms it is held
+# to. A member is still required to obtain the baseline from a ProjectPaths view
+# built from the boundary root, and is additionally held to
+# `test_the_bound_view_consumers_each_build_exactly_one_view`, which non-members
+# never face. The six inline consumers keep their literal pin unchanged.
+ONE_VIEW_CONSUMERS = {"foundry_ruling_registry", "foundry_object_lattice"}
 
 
 def load_oracle():
@@ -678,20 +690,24 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
 
     def test_each_of_them_obtains_the_baseline_from_the_layout_owner(self):
         """All eight reach the baseline through a ProjectPaths view built from
-        the boundary's root. Seven state it inline; one binds the view first.
+        the boundary's root. SIX state it inline; TWO bind the view first.
 
-        C8.5K RE-AIMS THIS GUARD WITHOUT WEAKENING IT. The C8.5J form required
+        HISTORY, and the counts in it are the counts AT THE TIME. C8.5J required
         the inline expression LITERALLY in all eight, which was correct while all
-        eight owned exactly one path. `foundry_ruling_registry` now owns two --
-        the ratchet baseline and its generated JSON -- and building the view
-        twice would add a second `fc.REPO_ROOT` load, moving the delegation
-        census for no reason. So that one consumer binds the view once and reads
-        both properties off it.
+        eight owned exactly one path. C8.5K re-aimed it when `foundry_ruling_
+        registry` came to own two paths -- the ratchet baseline and its generated
+        JSON -- because building the view twice would add a second `fc.REPO_ROOT`
+        load and move the delegation census for no reason; that made it seven
+        inline and one bound. C8.5R is the second consumer to meet the same
+        condition: `foundry_object_lattice` came to own the ratchet baseline and
+        the codebook path it hands to `mtj_foundry.codebook_store.read`. Six and
+        two is the CURRENT state, and `ONE_VIEW_CONSUMERS` above is its only
+        authority -- read the set, never a count written in prose.
 
-        What is asserted is therefore the PROPERTY rather than one spelling of
-        it: the baseline comes from `.foundry_audit_baseline` on a ProjectPaths
-        made from the boundary root, in every one of the eight. The inline form
-        is still required exactly for the seven that have no reason to change.
+        What is asserted is the PROPERTY rather than one spelling of it: the
+        baseline comes from `.foundry_audit_baseline` on a ProjectPaths made from
+        the boundary root, in every one of the eight. The inline form is still
+        required of every consumer outside the set.
         """
         for name, source in self.sources.items():
             with self.subTest(consumer=name):
@@ -724,9 +740,13 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
         self.assertIsInstance(targets[0], ast.Name)
         return targets[0].id
 
-    def test_the_one_bound_view_consumer_builds_exactly_one_view(self):
-        """The whole reason the bound form is allowed. A second construction
-        would be a second `fc.REPO_ROOT` delegation row."""
+    def test_the_bound_view_consumers_each_build_exactly_one_view(self):
+        """The whole reason the bound form is allowed, asserted of EACH member.
+
+        A second construction would be a second `fc.REPO_ROOT` delegation row, so
+        this is what stops the set from being a waiver: a consumer added to it
+        that has not actually collapsed to one view fails here.
+        """
         for name in ONE_VIEW_CONSUMERS:
             with self.subTest(consumer=name):
                 source = self.sources[name]
