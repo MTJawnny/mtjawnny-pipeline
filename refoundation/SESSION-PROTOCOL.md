@@ -39,13 +39,16 @@ promoted to law by accident.
 ## 3. The loop
 
 ```text
-M:T  ->  W:X  ->  M:V  ->  M:K (accept, name next T)
+M:T -> W:X -> M:V -> M:T|K
 ```
 
 - `T` — Manager issues one bounded task.
 - `X` — Worker posts one durable, detailed result.
 - `V` — Manager audits it. **The Worker never self-accepts.**
-- `K` — Manager records acceptance and names the next `T`.
+- `M:T|K` — **the audit branches, and both arms are normal.** `V` may return a
+  repair `T` against the unaccepted work, or record acceptance as `K`. A `V` is
+  not an acceptance, and a repair `T` is not a failure of the loop; it is the
+  loop. Nothing may assume `V` leads to `K`.
 
 Captain's decisions enter the loop directly as `D` and outrank all of it.
 

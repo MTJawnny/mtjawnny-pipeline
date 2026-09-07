@@ -23,8 +23,13 @@ It is current operating law only. History lives in Git; chronology is not law.
 3. `refoundation/` current-state files (phase context, not task authority).
 
 Chat, session memory, scrollback and prior-session claims are **not** authority.
-Neither is a filename, a date in a filename, or an mtime. If a document and a
-measurement disagree, measure again and believe the measurement.
+Neither is a filename, a date in a filename, or an mtime.
+
+**A measurement is evidence, not authority, and it never self-authorizes.** If
+measured state disagrees with the selected durable authority or with the active
+`T`, re-measure — and then **STOP and report the conflict**. Evidence can expose
+drift; it cannot promote itself into law, and it never silently overwrites an
+authority. Resolving the conflict is the Manager's call or Captain's, not yours.
 
 ## Startup
 
@@ -93,7 +98,8 @@ Standing controls: `{AQ4: PAUSED, BRIDGE0: UNUSED, STEP6: NOT_STARTED, MERGE: NO
   in for a list the CR enumerates is a defect with a delay. Reach the CR only
   through `experiments/foundry_cr.py`.
 - **Evidence-quote-or-discard** on every per-card assignment; quotes come from
-  oracle text only. Rank buries, never excludes.
+  oracle text only. Rank buries, never excludes (sole exception:
+  corroboration gate).
 - Every scoring constant is a ratified ruling, not a tuning knob.
 
 ## Verification

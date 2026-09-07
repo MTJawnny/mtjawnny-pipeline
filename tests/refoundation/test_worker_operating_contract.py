@@ -102,6 +102,74 @@ ACTIVE_PHASE_REQUIRED = (
 )
 ACTIVE_PHASE_CONTROLS = ("AQ4", "BRIDGE0", "STEP6", "MERGE")
 
+# C8.5W.R2 -- three laws the R1 rewrite got wrong. Each is asserted BOTH ways:
+# the correct form must be present AND the rejected form must be absent, because
+# a document can carry both and a presence-only check would pass it.
+
+# The contracted protocol form. The final arm is `T|K` and it is a BRANCH: an
+# audit may return a repair `T` against unaccepted work, or record `K`. R1
+# collapsed it to mandatory `K`, which writes "every review ends in acceptance"
+# into the control plane -- and this very slice is the counter-example.
+PROTOCOL_FORM = "M:T -> W:X -> M:V -> M:T|K"
+MANDATORY_K_RE = re.compile(r"M:V\s*->\s*M:K")
+
+# Measurement is evidence. R1 instructed the Worker to "believe the measurement"
+# when a document and a measurement disagree, which promotes evidence to
+# authority silently -- contradicting SESSION-PROTOCOL's own EVIDENCE class.
+REJECTED_AUTHORITY_INSTRUCTION = "believe the measurement"
+AUTHORITY_LAW_PHRASES = (
+    "evidence, not authority",
+    "never self-authorizes",
+    "STOP and report the conflict",
+)
+
+# The standing rank law keeps its standing exception. R1 dropped the parenthesis
+# and thereby stated a BROADER law than the ratified one -- a semantic change
+# nothing authorized.
+RANK_RULE = "Rank buries, never excludes"
+RANK_LAW = "Rank buries, never excludes (sole exception: corroboration gate)."
+
+
+def flat(text: str) -> str:
+    """Whitespace- and emphasis-insensitive view, for prose that line-wraps.
+
+    A law that wraps across two source lines is the same law. Matching raw text
+    would make the guard depend on where the paragraph happened to break, which
+    is exactly the kind of accidental-plumbing dependency it exists to prevent.
+    """
+    return re.sub(r"\s+", " ", text.replace("*", "").replace("`", ""))
+
+
+def protocol_form_problems(text: str):
+    problems = []
+    if PROTOCOL_FORM not in text:
+        problems.append(f"missing exact protocol form {PROTOCOL_FORM!r}")
+    for m in MANDATORY_K_RE.finditer(text):
+        problems.append(f"collapses the T|K branch into mandatory K: {m.group(0)!r}")
+    return problems
+
+
+def authority_law_problems(text: str):
+    flattened = flat(text)
+    problems = [f"missing authority law phrase {phrase!r}"
+                for phrase in AUTHORITY_LAW_PHRASES if phrase not in flattened]
+    if REJECTED_AUTHORITY_INSTRUCTION in flattened.lower():
+        problems.append("promotes evidence to authority: "
+                        f"{REJECTED_AUTHORITY_INSTRUCTION!r}")
+    return problems
+
+
+def rank_law_problems(text: str):
+    """Conditional by contract: only binding if the rank rule is retained."""
+    flattened = flat(text)
+    if RANK_RULE not in flattened:
+        return []
+    if RANK_LAW not in flattened:
+        return ["rank rule retained without its standing corroboration-gate "
+                "exception; this states a BROADER law than the ratified one"]
+    return []
+
+
 # Rules that must survive the compaction. A byte budget is not a licence to drop
 # a live rule, and a LINE COUNT CANNOT SEE ONE GOING MISSING -- which is why this
 # is asserted positively rather than inferred from the file still being large.
@@ -260,6 +328,17 @@ class TestTheWorkerOperatingContract(unittest.TestCase):
     def test_the_compaction_dropped_no_every_session_rule(self):
         self.assertEqual(retained_invariant_problems(self.texts["CLAUDE.md"]), [])
 
+    def test_the_session_protocol_keeps_the_contracted_branching_form(self):
+        self.assertEqual(
+            protocol_form_problems(self.texts["refoundation/SESSION-PROTOCOL.md"]),
+            [])
+
+    def test_measurement_is_evidence_and_never_self_authorizes(self):
+        self.assertEqual(authority_law_problems(self.texts["CLAUDE.md"]), [])
+
+    def test_the_retained_rank_rule_keeps_its_standing_exception(self):
+        self.assertEqual(rank_law_problems(self.texts["CLAUDE.md"]), [])
+
 
 # --------------------------------------------------------------------------
 # NEGATIVE CONTROLS -- a guard never shown to fail is not known to be a guard.
@@ -272,6 +351,7 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         self.claude = CLAUDE_MD.read_text(encoding="utf-8")
         self.phase = ACTIVE_PHASE.read_text(encoding="utf-8")
         self.bootstrap = BOOTSTRAP_STATE.read_text(encoding="utf-8")
+        self.protocol = SESSION_PROTOCOL.read_text(encoding="utf-8")
 
     def test_NC1_an_inflated_root_contract_turns_the_size_guard_red(self):
         rigged = self.claude + "\nfiller\n" * CLAUDE_MAX_LINES
@@ -343,6 +423,38 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         self.assertNotEqual(rigged, self.claude)
         self.assertNotEqual(retained_invariant_problems(rigged), [])
 
+    def test_NC10_the_mandatory_K_protocol_shape_turns_it_red(self):
+        """The exact defect C8.5W.R1.V rejected."""
+        rigged = self.protocol.replace(
+            "M:T -> W:X -> M:V -> M:T|K",
+            "M:T  ->  W:X  ->  M:V  ->  M:K (accept, name next T)")
+        self.assertNotEqual(rigged, self.protocol)
+        self.assertNotEqual(protocol_form_problems(rigged), [])
+
+    def test_NC11_restoring_believe_the_measurement_turns_it_red(self):
+        rigged = self.claude.replace(
+            "**A measurement is evidence, not authority, and it never "
+            "self-authorizes.**",
+            "If a document and a measurement disagree, measure again and "
+            "believe the measurement.")
+        self.assertNotEqual(rigged, self.claude)
+        self.assertNotEqual(authority_law_problems(rigged), [])
+
+    def test_NC12_dropping_only_the_corroboration_gate_exception_turns_it_red(self):
+        """The rank RULE survives the rig; only its EXCEPTION is removed. A
+        presence-only check on "Rank buries, never excludes" stays green here,
+        which is precisely why the check is written against the full law."""
+        rigged = self.claude.replace(
+            "Rank buries, never excludes (sole exception:\n  corroboration gate).",
+            "Rank buries, never excludes.")
+        self.assertNotEqual(rigged, self.claude)
+        self.assertIn(RANK_RULE, flat(rigged))      # the rule is still there
+        self.assertNotEqual(rank_law_problems(rigged), [])
+
+    def test_NC12b_the_rank_check_is_conditional_as_contracted(self):
+        """Contract: binding only "if the rank rule remains in CLAUDE.md"."""
+        self.assertEqual(rank_law_problems("a contract with no rank rule"), [])
+
     def test_the_unrigged_documents_are_the_green_control(self):
         """Every rig above is only meaningful because this is clean."""
         self.assertEqual(size_problems(self.claude, CLAUDE_MAX_LINES,
@@ -352,6 +464,9 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         self.assertEqual(stale_human_contract_problems(self.claude), [])
         self.assertEqual(active_phase_problems(self.phase), [])
         self.assertEqual(bootstrap_state_problems(self.bootstrap), [])
+        self.assertEqual(protocol_form_problems(self.protocol), [])
+        self.assertEqual(authority_law_problems(self.claude), [])
+        self.assertEqual(rank_law_problems(self.claude), [])
 
 
 if __name__ == "__main__":
