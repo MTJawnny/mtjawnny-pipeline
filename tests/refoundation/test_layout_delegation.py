@@ -3496,10 +3496,30 @@ CENSUS_HEAD = {
                        "aq4_PAUSED": 6, "pipeline": 11,
                        "src": 9,                   # C8.5M: 8 (+ codebook_store.py)
                        "tests": 18},               # C8.5M: 17 (+ its store test)
-    "delegations_total": 149,                      # C8.5I: 141; C8.5B: 140
+    #
+    # C8.5U MOVES FOUR ROWS AND THEY ARE ONE EVENT COUNTED FOUR WAYS.
+    # `foundry_cr_checks` reads the codebook through `mtj_foundry.codebook_store.
+    # read`, which takes an EXPLICIT path, so the path must come from the layout
+    # owner. That file carried NO delegation reference at all before this slice,
+    # so it gains exactly one -- `ProjectPaths.for_root(fc.REPO_ROOT)`, a
+    # CALL_ARG load of `foundry_common.REPO_ROOT`. That single new reference
+    # increments the total, its provider key, its form bucket, and -- because the
+    # file had none before -- the distinct-file count.
+    #
+    # THIS IS THE OPPOSITE SHAPE FROM C8.5K/C8.5N ABOVE, which DELETED a local
+    # site and moved no delegation row, and from C8.5R, which moved no row at all
+    # because `foundry_object_lattice` was already binding a view for the ratchet
+    # baseline. `foundry_cr_checks` binds none, so +1 is the floor rather than an
+    # avoidable second construction.
+    #
+    # NO LOCAL SITE MOVES. `OUT` keeps its one hop1 module-scope consumption site;
+    # only its line number changes. `local_sites_total`, the bootstrap count, the
+    # consumption rows and `consumption_files` are all unchanged, and each hold is
+    # derived: the repoint deletes no repository-relative statement and adds none.
+    "delegations_total": 150,                      # C8.5U: 149; C8.5I: 141; C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
-        "foundry_common.REPO_ROOT": 22,            # C8.5I: 14; C8.5B: 12
+        "foundry_common.REPO_ROOT": 23,            # C8.5U: 22; C8.5I: 14; C8.5B: 12
         "foundry_common.DATA_ARTIFACTS_DIR": 1,    # C8.5B: name did not exist
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
@@ -3507,9 +3527,9 @@ CENSUS_HEAD = {
     "delegations_by_form": {
         "PATH_JOIN": 136,                          # C8.5B: 135
         "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
-        "CALL_ARG": 9,                             # C8.5I: 1 (+8 C8.5J)
+        "CALL_ARG": 10,                            # C8.5U: 9; C8.5I: 1 (+8 C8.5J)
     },
-    "delegation_files": 55,                        # C8.5I: 52 (+3 C8.5J)
+    "delegation_files": 56,                        # C8.5U: 55; C8.5I: 52 (+3 C8.5J)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as
