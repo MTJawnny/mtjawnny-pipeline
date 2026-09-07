@@ -42,9 +42,32 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
-import foundry_codebook as fcb  # noqa: E402
 import foundry_cr as fcr  # noqa: E402
 
+# C8.5U: the codebook read comes from the permanent package, at the path the
+# layout owner states. The imports sit AFTER `foundry_common`, which is what
+# establishes the C8.5A package bootstrap -- this module adds no bootstrap and no
+# `sys.path` mutation of its own, and the one insert above is untouched.
+#
+# THE VIEW IS BUILT FROM THE BOUNDARY ROOT, NOT FROM THIS MODULE'S OWN
+# `REPO_ROOT`. The local name is `Path(__file__).resolve().parent`, which is the
+# `experiments` DIRECTORY rather than the repository -- `OUT` below compensates
+# with `.parent`. Building the view from it yields
+# `experiments/experiments/out/foundry/codebook.json`, so the misnaming is a live
+# trap and not a cosmetic one.
+#
+# THIS COMMENT MAY NOT SPELL THE BOUNDARY ROOT EXPRESSION OUT.
+# `test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to` reconciles the
+# AST census against a LITERAL SUBSTRING count whose docstring says "comments and
+# shell commands included", so naming the dotted form in prose is ingested as a
+# second delegation and the raw total goes to 24 against a scoped 23. That is the
+# repository's standing "a document is an API" trap aimed at a comment, and
+# C8.5R's sibling note in `foundry_object_lattice` records the same hazard for
+# the view constructor. Written out because it was hit here first, not avoided.
+from mtj_foundry import codebook_store       # noqa: E402
+from mtj_foundry.paths import ProjectPaths   # noqa: E402
+
+PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
 CR_PATH = fcr.CR_PATH        # location and formatting both owned by foundry_cr
 OUT = REPO_ROOT.parent / "docs" / "cr-checks.json"
 
@@ -135,8 +158,22 @@ def build(cr: str) -> dict:
 
 
 def coverage(reg: dict) -> None:
-    """Which CR terms does the codebook model, and which does it not?"""
-    cb = fcb.load_codebook()
+    """Which CR terms does the codebook model, and which does it not?
+
+    C8.5U: the permanent read, at the layout owner's explicit path. This
+    consumer has NO enclosing handler anywhere -- no module imports it -- so
+    C8.5S.V's DISCARD_LEGACY_STOP_FORMAT applies cleanly: a missing or
+    wrong-schema codebook still ends the process nonzero, and only the stderr
+    shape changes from the facade's `STOP -- ` line to the typed error's own
+    traceback. Exit status, stdout and `docs/cr-checks.json` are unaffected.
+
+    THE WRITE ORDERING IS THE REASON THAT IS SAFE, and it is not incidental.
+    `main()` writes `docs/cr-checks.json` and only then calls this function, and
+    only under `--coverage`. So the generated artifact is already complete and
+    on disk before this line can fail, and the default invocation never reads
+    the codebook at all.
+    """
+    cb = codebook_store.read(PATHS.legacy_codebook_json)
     tokens = set()
     for slug, e in cb["axes"].items():
         if e.get("status") == "active":
