@@ -1,0 +1,40 @@
+schema: mtj-active-phase/1
+
+# CURRENT REPLACEABLE STATE. Not chronology, not task authority.
+# Replace fields when the phase changes; never append history.
+# Per-task authority is GitHub Issue #1: latest accepted K -> active T.
+
+phase: C8.5_CODEBOOK_BOUNDARY_REFOUNDATION
+
+goal: >-
+  Migrate legacy codebook boundaries into permanent capabilities without
+  losing semantic or output truth.
+
+current_strategy: >-
+  Compact the Worker control plane, then materialize reusable transitive
+  consumer reasoning, then resume derived safe cohorts.
+
+principle: PRESERVE_TRUTH_NOT_PLUMBING
+
+ctl: {AQ4: P, BRIDGE0: U, STEP6: N, MERGE: N}
+# P=paused  U=unused  N=not started / no
+
+permanent_namespace: mtj_foundry
+layout_owner: mtj_foundry.paths.ProjectPaths
+
+task_authority: GitHub Issue #1 latest accepted K -> active T
+phase_update_rule: replace fields; never append history
+
+# A slice is safe to reason about only at this unit. File-local syntax is
+# not sufficient evidence; a transitive handler can swallow the failure.
+safe_reasoning_unit: transitive_behavior_boundary
+required_axes:
+  - binding
+  - read_owner
+  - callers
+  - reachability
+  - handlers
+  - failure_observability
+  - bootstrap
+  - facade_disposition
+  - output_truth
