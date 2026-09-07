@@ -35,7 +35,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.refoundation.test_gate2_purity import load_legacy
+from tests.refoundation.test_gate2_purity import EXPERIMENTS, load_legacy
 
 from mtj_foundry import codebook, codebook_store
 
@@ -1048,6 +1048,352 @@ class TestTheW5LocalWriterBoundary(unittest.TestCase):
         for it — the closure is only as local as its weakest member."""
         self.assertEqual(normalized_imports(self.closure["mtj_foundry.codebook"]),
                          MODEL_IMPORTS)
+
+
+# ===========================================================================
+# 5. THE FIRST REPOINTED CONSUMER (C8.5R)
+# ===========================================================================
+
+OBJECT_LATTICE = EXPERIMENTS / "foundry_object_lattice.py"
+
+
+def read_call_sites(tree: ast.AST, dotted: str) -> list:
+    """Every `ast.Call` whose unparsed func is exactly `dotted`."""
+    return [n for n in ast.walk(tree)
+            if isinstance(n, ast.Call) and ast.unparse(n.func) == dotted]
+
+
+def enclosing_try(tree: ast.AST, node: ast.AST):
+    """The innermost `ast.Try` whose BODY -- not its handlers -- contains `node`.
+
+    Written on the body deliberately. A read moved into an `except` or a
+    `finally` is still lexically "inside a try" and would pass a containment
+    test that did not say which arm; `finally` in particular would run the read
+    on the very failure path it is supposed to be protected from.
+    """
+    for candidate in ast.walk(tree):
+        if not isinstance(candidate, ast.Try):
+            continue
+        if any(node is d for stmt in candidate.body for d in ast.walk(stmt)):
+            return candidate
+    return None
+
+
+def handler_types(try_node) -> set:
+    caught = set()
+    for handler in try_node.handlers:
+        if handler.type is None:
+            caught.add("BARE")
+            continue
+        t = handler.type
+        for part in (t.elts if isinstance(t, ast.Tuple) else [t]):
+            caught.add(ast.unparse(part).rsplit(".", 1)[-1])
+    return caught
+
+
+def imported_module_names(tree: ast.AST) -> set:
+    """Modules a file imports, by the name the import statement writes.
+
+    Deliberately NOT `normalized_imports`: that one answers the permanent
+    closure's question about `mtj_foundry.<sibling>` identity, and this one has
+    to see a bare legacy `import foundry_codebook` as well.
+    """
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names |= {a.name for a in node.names}
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module)
+            names |= {f"{node.module}.{a.name}" for a in node.names}
+    return names
+
+
+def paths_view_bindings(tree: ast.AST) -> list:
+    """`<name> = ProjectPaths.for_root(...)` assignments, as target names.
+
+    The invariant is stated on the BINDING as well as on the call, because they
+    are not the same claim: a second call bound to a second name is what moves
+    the delegation census, and a second call that is never bound would still
+    state the repository root twice.
+    """
+    bound = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) \
+                and ast.unparse(node.value.func) == "ProjectPaths.for_root":
+            bound += [ast.unparse(t) for t in node.targets]
+    return bound
+
+
+def attribute_reads(tree: ast.AST, base: str) -> set:
+    return {n.attr for n in ast.walk(tree)
+            if isinstance(n, ast.Attribute) and ast.unparse(n.value) == base}
+
+
+class ObjectLatticeConsumer:
+    """The C8.5R properties, derived from SOURCE so the rigs can be graded.
+
+    A negative control has to be able to feed this a broken file. Asserting
+    against the live module object instead would make four of the five rigs
+    inexpressible, and the fifth would need an import that runs the module's
+    whole CR parse.
+    """
+
+    def __init__(self, source: str):
+        self.source = source
+        self.tree = ast.parse(source)
+        self.imports = imported_module_names(self.tree)
+        self.views = paths_view_bindings(self.tree)
+        self.for_root_calls = read_call_sites(self.tree, "ProjectPaths.for_root")
+        self.reads = read_call_sites(self.tree, "codebook_store.read")
+        self.legacy_loads = read_call_sites(self.tree, "fcb.load_codebook")
+
+    @property
+    def view(self):
+        return self.views[0] if len(self.views) == 1 else None
+
+    def write_report(self):
+        return next(n for n in ast.walk(self.tree)
+                    if isinstance(n, ast.FunctionDef) and n.name == "write_report")
+
+    def protected_read(self):
+        if len(self.reads) != 1:
+            return None
+        return enclosing_try(self.tree, self.reads[0])
+
+
+class TestTheFirstRepointedConsumer(unittest.TestCase):
+    """C8.5R. `experiments/foundry_object_lattice.py` reads the codebook through
+    the permanent store, at the layout owner's explicit path.
+
+    C8.5Q measured why this file could move and the other five could not.
+    `fc.halt` raises `SystemExit`, which `except Exception` does NOT catch;
+    `codebook_store` raises a `RuntimeError`, which it does. So the repoint
+    changes the CLASS of the failure, and what that costs is decided entirely by
+    the enclosing handler. The six seed consumers fall into THREE groups, not
+    two, and the difference between the second and the third is the whole reason
+    the other five are out of scope:
+
+        except BaseException   this consumer               no delta -- both
+                               (foundry_object_lattice)    classes are caught
+                                                           and discarded alike
+
+        except Exception       foundry_shape_extractor     a hard exit becomes a
+                               foundry_system_map          SILENT FALLBACK; in
+                                                           `codebook_covered_actions`
+                                                           an empty set, which is a
+                                                           wrong answer that reads
+                                                           as clean
+
+        no handler             foundry_cr_checks           exit 1 EITHER WAY. Not a
+                               foundry_slug_dossier        fallback: the process
+                               foundry_consolidate_run1    still dies, but a clean
+                                                           `STOP -- ` line becomes a
+                                                           traceback, and restoring
+                                                           it would need the
+                                                           consumer-local `fc.halt`
+                                                           translation the
+                                                           architecture forbids
+
+    THE HANDLER IS THEREFORE THE SAFETY PROPERTY, NOT AN INCIDENTAL DETAIL, and
+    it is asserted as one: the first negative control narrows it to `Exception`
+    and this class must go red. Without that, a later tidy-up could delete the
+    reason this slice was allowed to happen and nothing would notice.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = OBJECT_LATTICE.read_text(encoding="utf-8")
+        cls.c = ObjectLatticeConsumer(cls.source)
+
+    # -- 1. the facade import is gone, not split -----------------------------
+
+    def test_it_imports_the_permanent_store(self):
+        self.assertIn("mtj_foundry.codebook_store", self.c.imports)
+
+    def test_the_legacy_facade_is_referenced_nowhere_in_the_file(self):
+        """`load_codebook` was this file's ONLY facade symbol, so the import
+        goes entirely -- this is not a split import. Checked on identifiers as
+        well as on import statements, because the call this replaced was itself
+        a FUNCTION-SCOPED `import foundry_codebook as fcb`, and a guard reading
+        only module-level imports would not have seen the thing it replaced."""
+        self.assertNotIn("foundry_codebook", self.c.imports)
+        self.assertEqual(self.c.legacy_loads, [])
+        for node in ast.walk(self.c.tree):
+            if isinstance(node, ast.Name):
+                self.assertNotEqual(node.id, "foundry_codebook")
+            if isinstance(node, ast.Attribute):
+                self.assertNotEqual(node.attr, "load_codebook")
+
+    # -- 2. exactly one layout view, feeding both facts ----------------------
+
+    def test_there_is_exactly_one_ProjectPaths_view_and_one_for_root_call(self):
+        self.assertEqual(len(self.c.for_root_calls), 1)
+        self.assertEqual(len(self.c.views), 1)
+
+    def test_the_one_view_is_built_from_the_delegated_root(self):
+        call = self.c.for_root_calls[0]
+        self.assertEqual([ast.unparse(a) for a in call.args], ["fc.REPO_ROOT"])
+
+    def test_the_same_view_feeds_the_ratchet_and_the_codebook_path(self):
+        """The C8.5Q census finding, asserted rather than restated: reading both
+        properties off ONE view is what holds `delegations_by_provider` at
+        126/22/1. A second view moves three counts while changing nothing."""
+        self.assertIsNotNone(self.c.view, "not exactly one ProjectPaths view")
+        self.assertEqual(attribute_reads(self.c.tree, self.c.view),
+                         {"foundry_audit_baseline", "legacy_codebook_json"})
+
+    def test_the_read_takes_its_path_from_that_view(self):
+        self.assertEqual(len(self.c.reads), 1)
+        self.assertEqual([ast.unparse(a) for a in self.c.reads[0].args],
+                         [f"{self.c.view}.legacy_codebook_json"])
+
+    def test_the_store_still_offers_no_default_path_to_fall_back_on(self):
+        self.assertFalse(hasattr(codebook_store, "CODEBOOK_PATH"))
+
+    # -- 3. the read stays inside the BaseException boundary -----------------
+
+    def test_the_read_is_inside_a_try_body(self):
+        self.assertIsNotNone(
+            self.c.protected_read(),
+            "the codebook read is not in the BODY of any try -- an unprotected "
+            "read turns a swallowed failure into a crash")
+
+    def test_that_try_catches_BaseException_and_nothing_narrower(self):
+        self.assertEqual(handler_types(self.c.protected_read()), {"BaseException"})
+
+    def test_the_failure_path_leaves_cb_axes_None(self):
+        """Both halves. `cb_axes = None` is established BEFORE the try, and the
+        handler assigns nothing. Either half alone permits a defect: a handler
+        that re-raised, or a pre-set that a handler then overwrote."""
+        try_node = self.c.protected_read()
+        function = self.c.write_report()
+        before = function.body[:function.body.index(try_node)]
+        presets = [ast.unparse(n.value) for n in before
+                   if isinstance(n, ast.Assign)
+                   and [ast.unparse(t) for t in n.targets] == ["cb_axes"]]
+        self.assertEqual(presets, ["None"])
+        for handler in try_node.handlers:
+            self.assertEqual([type(n).__name__ for n in handler.body], ["Pass"])
+
+    def test_the_downstream_read_is_still_written_for_None(self):
+        self.assertIn("if cb_axes else None", self.source)
+
+    # -- 4. no consumer-local translation ------------------------------------
+
+    def test_the_consumer_translates_nothing(self):
+        """`no_duplicate_legacy_translation_in_consumers`. The three handler-less
+        consumers were excluded from this slice precisely because they WOULD
+        need an `except CodebookReadError: fc.halt(...)` of their own. This one
+        must not grow one either, and it does not need to."""
+        calls = [ast.unparse(n.func) for n in ast.walk(self.c.write_report())
+                 if isinstance(n, ast.Call)]
+        for translation in ("fc.halt", "sys.exit"):
+            with self.subTest(call=translation):
+                self.assertNotIn(translation, calls)
+        caught = handler_types(self.c.protected_read())
+        for typed in ("CodebookReadError", "CodebookNotFoundError",
+                      "SchemaMismatchError", "CodebookStoreError"):
+            with self.subTest(caught=typed):
+                self.assertNotIn(typed, caught)
+
+    def test_the_module_adds_no_bootstrap_and_no_second_root(self):
+        """The permanent imports ride the bootstrap that is ALREADY THERE.
+
+        Stated as a count, not as an absence. THE FIRST VERSION OF THIS TEST
+        ASSERTED `sys.path` WAS NEVER TOUCHED AND WENT RED ON THE UNMODIFIED
+        FILE: this module has carried its own legacy `sys.path.insert` since
+        long before the refoundation, and that line is what lets the bare
+        `import foundry_common` below it resolve at all. The C8.5R claim is that
+        the count did not change and that the permanent imports sit AFTER the
+        `foundry_common` line, which is what establishes the C8.5A package
+        bootstrap -- not that this file has no bootstrap.
+        """
+        order = [ast.unparse(n) for n in self.c.tree.body
+                 if isinstance(n, (ast.Import, ast.ImportFrom))]
+        fc_at = next(i for i, line in enumerate(order) if "foundry_common" in line)
+        for permanent in ("from mtj_foundry import codebook_store",
+                          "from mtj_foundry.paths import ProjectPaths"):
+            with self.subTest(imp=permanent):
+                self.assertGreater(order.index(permanent), fc_at)
+
+        mutations = [n for n in ast.walk(self.c.tree)
+                     if isinstance(n, ast.Call)
+                     and ast.unparse(n.func) in ("sys.path.insert",
+                                                 "sys.path.append")]
+        self.assertEqual(len(mutations), 1, "C8.5R must add no bootstrap")
+        fc_import = next(n for n in self.c.tree.body
+                         if isinstance(n, ast.Import)
+                         and any(a.name == "foundry_common" for a in n.names))
+        self.assertLess(mutations[0].lineno, fc_import.lineno)
+
+
+class TestTheRepointGuardCanFail(unittest.TestCase):
+    """Five negative controls, each aimed at the CODE PATH rather than at a
+    tool's name.
+
+    Every rig asserts its own substitution actually landed before grading the
+    result. An anchor-and-replace rig that silently no-ops reads as a passing
+    negative control, which is the worst available outcome for a test whose
+    entire job is to be able to fail.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = OBJECT_LATTICE.read_text(encoding="utf-8")
+
+    def rig(self, old, new):
+        self.assertIn(old, self.source,
+                      "the rig anchor is gone -- this negative control is no "
+                      "longer aimed at anything")
+        rigged = self.source.replace(old, new)
+        self.assertNotEqual(rigged, self.source)
+        return ObjectLatticeConsumer(rigged)
+
+    def test_narrowing_the_handler_to_Exception_is_caught(self):
+        """The safety property itself. `except Exception` would not have caught
+        today's `SystemExit`, so this narrowing is exactly the edit that makes
+        the failure-class change observable."""
+        c = self.rig("    except BaseException:", "    except Exception:")
+        self.assertEqual(handler_types(c.protected_read()), {"Exception"})
+
+    def test_reintroducing_the_legacy_facade_is_caught(self):
+        c = self.rig("        cb_axes = codebook_store.read(",
+                     "        import foundry_codebook as fcb\n"
+                     "        cb_axes = codebook_store.read(")
+        self.assertIn("foundry_codebook", c.imports)
+
+    def test_a_second_ProjectPaths_view_is_caught(self):
+        c = self.rig("RATCHET_BASELINE = PATHS.foundry_audit_baseline",
+                     "_OTHER = ProjectPaths.for_root(fc.REPO_ROOT)\n"
+                     "RATCHET_BASELINE = _OTHER.foundry_audit_baseline")
+        self.assertEqual(len(c.for_root_calls), 2)
+        self.assertEqual(len(c.views), 2)
+        self.assertIsNone(c.view)
+
+    def test_moving_the_read_out_of_the_protected_try_is_caught(self):
+        """Dedented out of the `try` entirely, which is what a tidy-up that
+        "simplifies away the pointless wrapper" would produce."""
+        c = self.rig(
+            "    cb_axes = None\n    try:\n",
+            "    cb_axes = None\n"
+            "    cb_axes = codebook_store.read(PATHS.legacy_codebook_json)['axes']\n"
+            "    try:\n")
+        self.assertEqual(len(c.reads), 2)
+        self.assertIsNone(c.protected_read())
+
+    def test_moving_the_read_into_the_handler_is_caught(self):
+        """`enclosing_try` reads the BODY, not the whole statement. A read in
+        the `except` arm is lexically inside a try and would pass a containment
+        test that did not say which arm."""
+        c = self.rig(
+            "        cb_axes = codebook_store.read(PATHS.legacy_codebook_json)[\"axes\"]\n"
+            "    except BaseException:\n"
+            "        pass\n",
+            "        pass\n"
+            "    except BaseException:\n"
+            "        cb_axes = codebook_store.read(PATHS.legacy_codebook_json)[\"axes\"]\n")
+        self.assertEqual(len(c.reads), 1)
+        self.assertIsNone(c.protected_read())
 
 
 if __name__ == "__main__":

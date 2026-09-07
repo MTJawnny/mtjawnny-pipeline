@@ -69,10 +69,23 @@ import validate_slug as vs                   # noqa: E402
 # C8.5J: the standing ratchet now comes from the permanent package. The import
 # sits AFTER `foundry_common`, which is what establishes the C8.5A package
 # bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
+#
+# C8.5R adds the codebook READ beside it, for the same reason and under the same
+# constraint. `codebook_store.read` takes an EXPLICIT path, so the path has to
+# come from the layout owner -- and it comes from the SAME view bound below.
+# Constructing a second view would state the repository root twice and move
+# three delegation-census counts while changing nothing.
+#
+# THIS COMMENT MAY NOT SPELL THE VIEW CONSTRUCTOR OUT. `test_ratchet_capability`
+# asserts the bound-view consumers build exactly one view by COUNTING that call
+# in the source TEXT, so prose naming it is ingested as a second construction --
+# the repository's standing "a document is an API" trap, aimed at a comment.
+from mtj_foundry import codebook_store       # noqa: E402
 from mtj_foundry import ratchet              # noqa: E402
 from mtj_foundry.paths import ProjectPaths   # noqa: E402
 
-RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
+PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
+RATCHET_BASELINE = PATHS.foundry_audit_baseline
 
 
 # --------------------------------------------------------------------------
@@ -1078,8 +1091,26 @@ def write_report(seed: int, n: int) -> dict:
     cards, _, _ = fc.load_corpus_gated()
     cb_axes = None
     try:
-        import foundry_codebook as fcb
-        cb_axes = fcb.load_codebook()["axes"]
+        # C8.5R: the permanent read, at the layout owner's explicit path.
+        #
+        # THE HANDLER IS THE REASON THIS CONSUMER COULD MOVE FIRST, so it is not
+        # tidied. `fc.halt` raises `SystemExit`, which `except Exception` does
+        # NOT catch; `codebook_store` raises a `RuntimeError`, which it does. So
+        # the repoint changes the CLASS of the failure, and whether that is
+        # observable depends entirely on the enclosing handler. C8.5Q measured
+        # all six seed consumers, and they fall into three groups, not two:
+        #
+        #   except BaseException  this module                  -> no delta
+        #   except Exception      foundry_shape_extractor      -> hard exit becomes
+        #                         foundry_system_map              a silent fallback
+        #   no handler            foundry_cr_checks            -> exit 1 either way,
+        #                         foundry_slug_dossier            but a clean `STOP -- `
+        #                         foundry_consolidate_run1        becomes a traceback
+        #
+        # Only the first row is unobservable, which is why this slice is one file.
+        # Here the failure is discarded either way and `cb_axes` stays None, which
+        # the `if cb_axes else None` read below is already written for.
+        cb_axes = codebook_store.read(PATHS.legacy_codebook_json)["axes"]
     except BaseException:
         pass
 
