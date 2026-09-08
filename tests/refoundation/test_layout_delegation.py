@@ -3191,6 +3191,20 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         five of the six unblockable consumers call `load_codebook()` with no
         argument.
 
+        PATH E MILESTONE 1 ADVANCES IT AGAIN, FOR THE SAME REASON AND NO OTHER.
+        The read-only runtime resolves the selected codebook THROUGH its tracked
+        authority selector, and without `codebook_authority_selector` the only
+        source of that file's location is the composition boundary appending the
+        literal name to a directory this owner already knows -- a
+        repository-relative layout fact stated outside the layout owner, which is
+        exactly what C8.5C ended.
+
+        IT IS THE ONE PROPERTY WITHOUT A `legacy_` PREFIX SINCE `foundry_audit_
+        baseline`, and for the same kind of reason: the selector is a TRACKED
+        governance record the refoundation reads and keeps, not generated output
+        awaiting a disposition. Its LOCATION is still derived from `legacy_docs`,
+        so naming it moves nothing and classifies nothing.
+
         THE LIST IS STILL EXHAUSTIVE. One name was appended; nothing was removed,
         renamed or loosened, and an unlisted addition still fails. That this pin
         went red on the property is the guard working -- it is why C8.5P.R1
@@ -3200,7 +3214,9 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
                        if not n.startswith("_")
                        and isinstance(getattr(ProjectPaths, n), property))
         self.assertEqual(props, [
-            "baselines", "config", "conservation", "decisions",
+            "baselines",
+            "codebook_authority_selector",  # PATH E M1
+            "config", "conservation", "decisions",
             "foundry_audit_baseline",       # C8.5J
             "legacy_codebook_json",         # C8.5P
             "legacy_data_artifacts",
@@ -3210,6 +3226,9 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             "legacy_pipeline",
             "legacy_ruling_registry_json",  # C8.5K
             "refoundation", "src", "tests"])
+        self.assertEqual(
+            ProjectPaths.for_root("/r").codebook_authority_selector,
+            Path("/r/docs/codebook-authority.json"))
 
 
 class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
@@ -3491,17 +3510,45 @@ CENSUS_HEAD = {
     # An earlier draft of this comment asserted the opposite; it was wrong, and
     # it is corrected here rather than deleted, because a census pin defended by
     # a false sentence is the failure mode this file exists to prevent.
-    "tracked_python": 139,                         # C8.5M: 135 (+2 C8.5N files);
+    # PATH E M1 MOVES THE FILE CENSUS AND NOTHING ELSE, and the hold is DERIVED
+    # rather than observed after the fact. Three tracked Python files are added:
+    # `src/mtj_foundry/runtime.py` and `src/mtj_foundry/cli.py` land in `src`,
+    # and `tests/refoundation/test_readonly_runtime.py` lands in `tests`. Both
+    # buckets are OUTSIDE every measured scope, so this is the C8.5G/C8.5I/C8.5M
+    # shape, not the C8.5J/C8.5K/C8.5U shape.
+    #
+    # Neither new module can move a delegation or a local-site row, and that is a
+    # structural guarantee rather than a lucky result: every measured row is
+    # counted over `experiments/` and `pipeline/` only, and both new modules take
+    # their root as an explicit PARAMETER, state no repository-relative path of
+    # their own (a committed guard asserts that over their string constants), and
+    # make no `sys.path` call. `experiments/` and `pipeline/` are untouched by
+    # this task -- no legacy production file is edited at all.
+    "tracked_python": 142,                         # C8.5M: 135 (+2 C8.5N files);
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
-                                                   # analysis module)
+                                                   # analysis module);
+                                                   # PATH E M1: 142 (+ runtime.py,
+                                                   # cli.py, their test module).
+                                                   # NOTE: the C8.5X annotations
+                                                   # above under-count the base by
+                                                   # one in both rows -- the pinned
+                                                   # values at that head were 139
+                                                   # and 20. The prose is left as
+                                                   # written rather than rewritten
+                                                   # from a guess; the VALUES are
+                                                   # what the test asserts.
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 9,                   # C8.5M: 8 (+ codebook_store.py)
-                       "tests": 20},               # C8.5M: 17 (+ its store test);
+                       "src": 11,                  # C8.5M: 8 (+ codebook_store.py);
+                                                   # PATH E M1: 11 (+ runtime.py,
+                                                   # cli.py)
+                       "tests": 21},               # C8.5M: 17 (+ its store test);
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
-                                                   # analysis module)
+                                                   # analysis module);
+                                                   # PATH E M1: 21 (+ the runtime
+                                                   # test module)
     #
     # C8.5X MOVES THE FILE CENSUS AND NOTHING ELSE, and the hold is derived
     # rather than hoped for. `tests/refoundation/codebook_consumer_analysis.py`

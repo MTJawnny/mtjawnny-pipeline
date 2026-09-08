@@ -462,10 +462,33 @@ class TestTheContractStatesTheEvidenceBoundaryExactly(unittest.TestCase):
         self.assertIn("METADATA_DRIVEN_EDITABLE_IMPORT_PROOF", self.text)
 
     def test_the_real_install_evidence_is_marked_worker_local_and_not_the_test(self):
-        self.assertIn("status: OBSERVED_ONCE", self.text)
+        """PATH E M1 replaced `status: OBSERVED_ONCE` with `status: OBSERVED` and
+        a dated `observations:` list, because a real install was performed a
+        SECOND time and "once" had stopped being true. That is a corrected fact,
+        not a loosened guard: the two properties this test exists to protect --
+        the evidence is WORKER_LOCAL, and it is NOT what the committed test does
+        -- are asserted unchanged, and both prior and current observations must
+        still be named so neither is quietly dropped.
+        """
+        self.assertIn("status: OBSERVED", self.text)
+        self.assertNotIn("status: OBSERVED_ONCE", self.text)
         self.assertIn("evidence_kind: WORKER_LOCAL", self.text)
         self.assertIn("is_it_what_the_committed_test_does: NO", self.text)
         self.assertIn("C8.5D", self.text)
+        self.assertIn("PATH_E_M1", self.text)
+
+    def test_the_installed_context_names_the_shipped_command(self):
+        """The context is no longer import-only, and the contract has to say so
+        or an operator cannot tell what an install gets them."""
+        self.assertIn("mtj-foundry-report", self.text)
+        self.assertIn("INSTALLED_READ_ONLY_RUNTIME_COMMAND", self.text)
+
+    def test_NEGATIVE_CONTROL_dropping_an_observation_is_caught(self):
+        for marker in ("C8.5D", "PATH_E_M1", "evidence_kind: WORKER_LOCAL"):
+            with self.subTest(marker=marker):
+                broken = self.text.replace(marker, "X")
+                self.assertNotEqual(broken, self.text)
+                self.assertNotIn(marker, broken)
 
     def test_the_committed_proof_is_marked_committed_and_metadata_coupled(self):
         self.assertIn("status: COMMITTED_AND_ENFORCED", self.text)

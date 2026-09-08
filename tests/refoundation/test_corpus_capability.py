@@ -376,7 +376,20 @@ class TestThePermanentModuleIsALibrary(unittest.TestCase):
 
         Asserted on STRING CONSTANTS in the code, not on the file text: the
         docstring quotes the legacy constant precisely in order to explain why
-        it is not reproduced."""
+        it is not reproduced.
+
+        PATH E MILESTONE 1 ADVANCES THE CONSTANT PIN RATHER THAN LOOSENING IT.
+        The module gained `GATE0_LEGAL_VALUES`, which is the Gate #0 ruling's
+        CLOSED VOCABULARY -- `("legal", "restricted")`. That is a ratified value
+        set, not a repository-relative layout fact, and the two are different
+        kinds of thing: a layout constant makes the module depend on where files
+        sit, and a vocabulary constant makes a ruling readable at the one place
+        it is applied.
+
+        THE LIST IS STILL EXHAUSTIVE, and the fragment checks above are
+        untouched. An unlisted addition still fails this test, and a layout
+        constant added under any name still fails the fragment sweep -- so the
+        property this guard protects is unchanged in both directions."""
         import ast
         literals = [n.value for n in ast.walk(self.tree)
                     if isinstance(n, ast.Constant) and isinstance(n.value, str)]
@@ -387,7 +400,8 @@ class TestThePermanentModuleIsALibrary(unittest.TestCase):
                     [x for x in code_literals if fragment in x], [])
         module_constants = [t.id for n in self.tree.body if isinstance(n, ast.Assign)
                             for t in n.targets if isinstance(t, ast.Name)]
-        self.assertEqual(module_constants, ["__all__"])
+        self.assertEqual(module_constants, ["__all__", "GATE0_LEGAL_VALUES"])
+        self.assertEqual(corpus.GATE0_LEGAL_VALUES, ("legal", "restricted"))
 
     def test_the_error_type_is_a_typed_exception_not_a_process_exit(self):
         self.assertTrue(issubclass(corpus.CorpusLoadError, Exception))

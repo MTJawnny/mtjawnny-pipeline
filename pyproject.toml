@@ -1,10 +1,15 @@
 # Packaging for the refounded Foundry namespace.
 #
-# P0.3A adds this ALONGSIDE the legacy tree. Nothing under experiments/, pipeline/
+# P0.3A added this ALONGSIDE the legacy tree. Nothing under experiments/, pipeline/
 # or docs/ is moved, imported, or made to depend on this package, and no legacy
-# dependency is migrated or pinned here yet (P0.3A constraint:
+# dependency is migrated or pinned here (P0.3A constraint:
 # `deps: do_not_migrate_or_pin_legacy_dependencies_yet`). The dependency list is
-# therefore EMPTY ON PURPOSE and is not a claim that the system has no dependencies.
+# therefore EMPTY ON PURPOSE and is not a claim that the system has no dependencies
+# -- it is a claim about THIS package, which is stdlib-only and stays that way.
+#
+# PATH E MILESTONE 1 adds the first console script. The package is no longer
+# zero-behavior: it now ships one read-only command. That is a metadata change and
+# an entry point, not a dependency migration and not a legacy move.
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -12,10 +17,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mtjawnny-foundry"
-version = "0.0.0"
-description = "MTG Thesaurus Foundry — refoundation package skeleton (zero behavior)"
+version = "0.1.0"
+description = "MTG Thesaurus Foundry — permanent capabilities and the read-only runtime"
 requires-python = ">=3.11"
 dependencies = []
+
+# The installed command. It is what makes INSTALLED_PACKAGE a context an operator
+# can actually USE rather than only import: `mtj-foundry-report` is on PATH after
+# an install, runs from any working directory, and needs no PYTHONPATH.
+[project.scripts]
+mtj-foundry-report = "mtj_foundry.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

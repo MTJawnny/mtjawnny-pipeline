@@ -1,0 +1,43 @@
+{
+  "schema": "mtj-foundry-input-lock/1",
+  "id": "path-e-pilot-corpus-lock",
+  "status": "PROPOSED_PILOT_INPUT_LOCK",
+  "ratified": false,
+  "what_this_is": "A MEASURED identity for the corpus bytes the Path E milestone-1 acceptance run used, plus the provenance that was verified for them. It is a PROPOSAL. No durable authority pins a raw-corpus digest at the base of this task, and this document does not create one: it records what was measured so a reviewer can ratify, correct or reject it.",
+  "what_this_is_not": "Not an authority selector, not a ratified snapshot, and not a claim that these bytes were previously selected. docs/codebook-authority.json is the ratified selector for the CODEBOOK; the corpus has no counterpart and that gap is the reason this file exists.",
+  "corpus": {
+    "path": "data/raw/oracle-cards.jsonl.gz",
+    "path_is": "repository-relative; resolved against the runtime's explicit --root",
+    "sha256": "2be88ba86da7ecbbb541094f28439c4888c5585c9ca8155e097f1cd0b548d872",
+    "byte_size": 22735516,
+    "content_sha256": "5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c",
+    "content_sha256_is": "sha256 of the DECOMPRESSED bytes. a gzip header carries an mtime field, so two containers holding identical data have different file digests; this is the digest that survives recompression and the one that matches the archive",
+    "format": "Scryfall oracle-cards bulk data, gzip JSONL, one card record per line",
+    "provenance": {
+      "declared_corpus_ref": "2026-07-04",
+      "declared_corpus_ref_source": "docs/codebook-authority.json corpus_ref, and every assertion corpus_ref in the selected codebook. it is a SNAPSHOT LABEL, not a byte identity",
+      "local_path_owner": "mtj_foundry.paths.ProjectPaths.legacy_oracle_cards",
+      "local_file_mtime_utc": "2026-07-04T06:53:06Z",
+      "gzip_header_mtime_utc": "2026-07-03T21:01:00Z",
+      "archived_copy": {
+        "remote": "r2:mtjawnny/data/snapshots/2026-07-03/oracle-cards.jsonl.gz",
+        "byte_size": 22735516,
+        "container_sha256": "b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217",
+        "content_sha256": "5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c",
+        "gzip_header_mtime_utc": "2026-07-03T09:00:58Z",
+        "relationship_to_local_file": "CONTENT_BYTE_IDENTICAL",
+        "measured_container_difference": "the two containers are the same length and differ at exactly three byte offsets -- 4, 5 and 6 -- which is the gzip header MTIME field. every other byte of both files is identical, and the decompressed streams hash to the same value",
+        "how_verified": "read-only rclone copy of the archived object into a scratch directory outside the repository, then a full byte comparison and two digests. no repository byte was written and the archive was not modified"
+      },
+      "corroboration": {
+        "pipeline_manifest_version": "2026-07-04",
+        "pipeline_manifest_card_count": 38233,
+        "note": "data/artifacts/manifest.json records 38,233 cards for snapshot version 2026-07-04, and this corpus loads 38,233 unique oracle_ids. that is CONSISTENCY, not byte-pinning: the manifest was produced from this same corpus, so it corroborates the snapshot label and cannot certify bytes"
+      }
+    }
+  },
+  "review_required": [
+    "ratify, correct or reject this as the pinned pilot corpus identity",
+    "decide whether the corpus deserves a tracked selector of its own, as the codebook has"
+  ]
+}
