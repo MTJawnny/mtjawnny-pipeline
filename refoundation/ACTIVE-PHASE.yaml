@@ -4,15 +4,16 @@ schema: mtj-active-phase/1
 # Replace fields when the phase changes; never append history.
 # Per-task authority is GitHub Issue #1: latest K -> active T.
 
-phase: C8.5_CODEBOOK_BOUNDARY_REFOUNDATION
+phase: PATH_E_M1_READONLY_PERMANENT_RUNTIME
 
 goal: >-
-  Migrate legacy codebook boundaries into permanent capabilities without
-  losing semantic or output truth.
+  Reach a useful Foundry by the shortest honest route: a reproducible installed
+  read-only runtime, then a full-population evidence index, then a static pilot.
 
 current_strategy: >-
-  Compact the Worker control plane, then materialize reusable transitive
-  consumer reasoning, then resume derived safe cohorts.
+  Build the permanent operational path first. Freeze speculative migration
+  infrastructure and historical consumers unless the selected product path
+  actually needs them.
 
 principle: PRESERVE_TRUTH_NOT_PLUMBING
 
@@ -25,16 +26,16 @@ layout_owner: mtj_foundry.paths.ProjectPaths
 task_authority: GitHub Issue #1 latest K -> active T
 phase_update_rule: replace fields; never append history
 
-# A slice is safe to reason about only at this unit. File-local syntax is
-# not sufficient evidence; a transitive handler can swallow the failure.
-safe_reasoning_unit: transitive_behavior_boundary
+# A slice is safe to reason about only at this unit. A green library test is not
+# evidence about the shipped command; a synthetic fixture is not evidence about
+# the selected bytes.
+safe_reasoning_unit: installed_runtime_boundary
 required_axes:
-  - binding
-  - read_owner
-  - callers
-  - reachability
-  - handlers
+  - input_identity
+  - provenance
+  - installation
+  - composition
   - failure_observability
-  - bootstrap
-  - facade_disposition
-  - output_truth
+  - population_accounting
+  - determinism
+  - conservation

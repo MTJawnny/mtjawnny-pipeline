@@ -25,9 +25,11 @@ contexts:
     definition: >-
       `import mtj_foundry` succeeds from an unrelated working directory with no
       PYTHONPATH set, because the package has been installed into the
-      interpreter that is running.
+      interpreter that is running. Since Path E milestone 1 the context also
+      carries a COMMAND: the declared console script is on PATH after an install
+      and runs with no repository on the path and no PYTHONPATH set.
     this_is_the_target: true
-    provisioning: 'pip install -e . (from the repository root)'
+    provisioning: 'pip install -e . (from the repository root), or pip install <repository>'
     provisioning_requires:
       - 'setuptools>=68, per [build-system] requires in pyproject.toml'
       - >-
@@ -41,14 +43,36 @@ contexts:
       # them and the Manager stopped it (issue:1#issuecomment-5472076171).
 
       - class: REAL_INSTALL_PROVISIONING
-        what: 'an actual `pip install -e .`, running the declared build backend'
-        status: OBSERVED_ONCE
-        where: 'C8.5D, on a scratch copy outside the repository, when setuptools was obtainable'
+        what: 'an actual pip install, running the declared build backend'
+        status: OBSERVED
         evidence_kind: WORKER_LOCAL
         is_it_what_the_committed_test_does: NO
         note: >-
           No committed test runs pip, executes a build backend, or produces a
           distribution. Nothing here should be read as claiming otherwise.
+        observations:
+          # Each entry is a dated Worker-local observation, kept as HISTORY. A
+          # later observation does not rewrite an earlier one; the environment
+          # fact each recorded was true when it was measured.
+          - when: C8.5D
+            where: 'a scratch copy outside the repository, when setuptools was obtainable'
+            what_ran: 'pip install -e .'
+            what_it_proved: 'the metadata installs'
+          - when: PATH_E_M1
+            where: 'a fresh venv built from the system interpreter, outside the repository'
+            what_ran: >-
+              python -m venv, then `pip install <repository>` against the
+              candidate checkout, with setuptools resolved from an index
+            what_it_proved: >-
+              the declared console script `mtj-foundry-report` is installed onto
+              the environment's PATH, imports the package from site-packages
+              rather than from the repository source tree, and runs to a
+              successful report from a working directory unrelated to the
+              repository with the environment emptied of PYTHONPATH.
+            why_it_is_not_a_committed_test: >-
+              it needs an index to obtain the build dependency. The committed
+              suite may not require network, and a test that failed for an
+              environment reason would say nothing about the contract.
 
       - class: METADATA_DRIVEN_EDITABLE_IMPORT_PROOF
         what: >-
@@ -201,13 +225,20 @@ non_claims:
 # WHAT THIS CONTRACT CHANGED
 # ---------------------------------------------------------------------------
 transition:
-  # C8.5E.R1 repaired the install-proof coupling only. No count below moved.
+  # PATH E M1. The two fields that moved are named; every other one is unchanged
+  # and is repeated here rather than dropped, because a removed line reads as a
+  # fact nobody measured.
   layout_census_movement: ZERO
   bootstraps_deleted: 0
   legacy_modules_moved: 0
   legacy_modules_reimplemented: 0
   production_python_changed: 0
-  pyproject_changed: false
-  new_capability: SUPPORTED_INSTALLED_MTJ_FOUNDRY_IMPORT_CONTEXT
+  pyproject_changed: true
+  pyproject_change_is: >-
+    one [project.scripts] console-script entry point, an accurate description,
+    and a version. `dependencies = []` is UNCHANGED and still true of the code:
+    the runtime and its CLI are stdlib-only, and a committed guard asserts it
+    over their import statements rather than over the metadata alone.
+  new_capability: INSTALLED_READ_ONLY_RUNTIME_COMMAND
   debt_removed: 0
   debt_made_explicitly_removable: true

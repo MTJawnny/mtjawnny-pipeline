@@ -199,6 +199,29 @@ class ProjectPaths:
         return self.legacy_foundry_out / "ruling_registry.json"
 
     @property
+    def codebook_authority_selector(self) -> Path:
+        """The TRACKED selector naming the codebook snapshot that is authoritative.
+
+        Same shape and same reason as its siblings: without a layout owner naming
+        this file, a composition boundary that wants to resolve the selected
+        codebook has to append the literal `"codebook-authority.json"` to a
+        directory this module already owns -- a repository-relative layout fact
+        stated outside the one component that owns layout.
+
+        It carries no `legacy_` prefix ON PURPOSE, and the distinction is a fact
+        about the file rather than a decision made here: the selector is a
+        tracked governance record that the refoundation reads and keeps, not
+        generated output pending a disposition. Where it currently SITS is still
+        `legacy_docs`, which is why the location is derived from that sibling
+        instead of restated.
+
+        NAMING IS NOT SELECTING. This does not read the file, assert it exists,
+        verify a digest, or choose a snapshot; a reader does all of that with the
+        path in hand.
+        """
+        return self.legacy_docs / "codebook-authority.json"
+
+    @property
     def legacy_codebook_json(self) -> Path:
         """The operational codebook, where it is.
 

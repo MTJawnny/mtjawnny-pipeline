@@ -47,7 +47,7 @@ import json
 from pathlib import Path
 
 __all__ = ["CorpusLoadError", "load_cards", "card_faces", "normalize_name",
-           "build_name_index"]
+           "build_name_index", "GATE0_LEGAL_VALUES", "is_gate0_eligible"]
 
 
 class CorpusLoadError(RuntimeError):
@@ -146,3 +146,38 @@ def build_name_index(cards: dict) -> dict:
     for oracle_id, card in cards.items():
         index.setdefault(normalize_name(card["name"]), []).append(oracle_id)
     return index
+
+
+# Gate #0's ratified vocabulary, named rather than inlined, so the predicate below
+# is one expression over a stated set instead of two string literals buried in a
+# comprehension. The set is CLOSED by the ruling, not by observation of the corpus.
+GATE0_LEGAL_VALUES = ("legal", "restricted")
+
+
+def is_gate0_eligible(card: dict) -> bool:
+    """Gate #0 (ratified batch-6 D1, 2026-07-30): is this card a valid target for
+    the Foundry pipeline -- legal or restricted in at least one Scryfall
+    `legalities` format?
+
+    Nowhere-legal rows (playtest/CMB1/CMB2/MB2, Unknown Event promos, bare token
+    printings) return False. A card with no `legalities` key at all returns
+    False, which is the legacy behaviour: `card.get("legalities") or {}` makes an
+    absent or null map an EMPTY one, and `any()` over nothing is False.
+
+    ## What this is NOT
+
+    * **Not a filter, and not a population.** This answers a question about ONE
+      card. The legacy boundary bundles the predicate with rebuilding a name
+      index and returning a gated-out COUNT, so a caller that wants the question
+      has to take the filtering with it -- and a filtered corpus is exactly how a
+      full-population accounting silently loses rows. Anything here that wants
+      both numbers keeps the full corpus and applies this per card.
+    * **Not a semantic judgement.** Eligibility is a dataset-level scope ruling.
+      It says nothing about whether a card is similar to, substitutable for, or
+      related to any other card, and it is independent of the corroboration gate.
+    * **Not a widening.** The value set is the ratified one, verbatim. It is
+      VALUE_EXACT against its legacy oracle over the full corpus; the oracle is
+      the behaviour reference, and its boundary is deliberately not reproduced.
+    """
+    legalities = card.get("legalities") or {}
+    return any(value in GATE0_LEGAL_VALUES for value in legalities.values())
