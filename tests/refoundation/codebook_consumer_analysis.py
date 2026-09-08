@@ -73,6 +73,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import builtins
 import json
 import subprocess
 import sys
@@ -457,34 +458,306 @@ def enclosing_tries(tree: ast.AST, node: ast.AST) -> list:
     return sorted(try_body_map(tree).get(id(node), []), key=lambda t: t.lineno)
 
 
+def except_classes(handler: ast.ExceptHandler) -> set:
+    """The exception classes ONE `except` arm names; `{"BARE"}` for a bare one.
+
+    Leaf names, so `except codebook_store.CodebookReadError` and
+    `except CodebookReadError` are one answer — the module spelling is the
+    importer's business and the class is the same class.
+    """
+    if handler.type is None:
+        return {"BARE"}
+    node = handler.type
+    return {ast.unparse(part).rsplit(".", 1)[-1]
+            for part in (node.elts if isinstance(node, ast.Tuple) else [node])}
+
+
 def handler_classes(try_node) -> list:
     """The exception classes a `try` catches; `[]` for a `try/finally`.
 
-    A bare `except:` reports `BARE`. The EMPTY LIST is the load-bearing case:
-    `try/finally` catches nothing, and calling it a handler would charge a caller
-    with observing a failure it never sees — while `finally` in fact runs on the
-    failure path.
+    The EMPTY LIST is the load-bearing case: `try/finally` catches nothing, and
+    calling it a handler would charge a caller with observing a failure it never
+    sees — while `finally` in fact runs on the failure path.
     """
     caught: set = set()
     for handler in try_node.handlers:
-        if handler.type is None:
-            caught.add("BARE")
-            continue
-        node = handler.type
-        for part in (node.elts if isinstance(node, ast.Tuple) else [node]):
-            caught.add(ast.unparse(part).rsplit(".", 1)[-1])
+        caught |= except_classes(handler)
     return sorted(caught)
 
 
-# What each side of the read boundary raises, and who catches it. The legacy
-# facade halts through `fc.halt`, which raises SystemExit; the permanent store
-# raises a RuntimeError subclass. C8.5T's whole finding is the first row: an
-# `except SystemExit` sees the legacy failure and does NOT see the permanent one,
-# so the repoint changes what that caller observes.
-SYSTEMEXIT_CATCHERS = frozenset({"SystemExit", "BaseException", "BARE"})
-EXCEPTION_CATCHERS = frozenset({"Exception", "RuntimeError", "BaseException",
-                                "BARE", "CodebookStoreError", "CodebookReadError",
-                                "CodebookNotFoundError", "SchemaMismatchError"})
+# ---------------------------------------------------------------------------
+# The failure transition
+# ---------------------------------------------------------------------------
+#
+# C8.5X SHIPPED A FALSE BLOCKER HERE AND THE MANAGER REJECTED IT
+# (issue:1#issuecomment-5585684318). Two frozen name sets stood in for the
+# question, and `observes_read_failure` was then `bool(catch_classes)` — so ANY
+# reaching handler became a blocker. `except BaseException` catches the legacy
+# `SystemExit` AND the permanent typed error, so the repoint changes nothing it
+# observes; C8.5R's accepted result says exactly that about
+# `foundry_object_lattice`, and this analyzer contradicted it. A conservative
+# false blocker is still false derived infrastructure.
+#
+# The repair is to DERIVE the transition instead of naming it, and the facade is
+# its own translation table: `foundry_codebook.load_codebook` catches the store's
+# typed read errors and calls `fc.halt`, which prints a STOP line and exits. So
+# the classes that get translated, the class the legacy side raises instead, and
+# the side effect that disappears are all parsed out of the two modules that
+# perform the translation — the same law the CR work runs on. A universe where
+# that cannot be parsed answers UNKNOWN rather than inheriting this
+# repository's arrangement.
+
+
+def class_hierarchy(universe: dict) -> dict:
+    """`{class name: [base class names]}` for every class defined in the universe.
+
+    Leaf names only, because that is how a handler is written: `except
+    codebook_store.CodebookReadError` and `except CodebookReadError` are the same
+    handler. Two classes of the same name in different modules would merge, which
+    is declared rather than defended — this analyzer is scoped to one migration,
+    and the classes that matter are defined once.
+    """
+    found: dict = {}
+    for _, module in sorted(universe.items()):
+        for node in ast.walk(module.tree):
+            if isinstance(node, ast.ClassDef):
+                found.setdefault(node.name, sorted(
+                    {ast.unparse(base).rsplit(".", 1)[-1] for base in node.bases}))
+    return found
+
+
+def ancestors_of(name: str, hierarchy: dict):
+    """Every class `except <ancestor>` would catch `name` by, or None.
+
+    Builtin exceptions are resolved through the RUNNING INTERPRETER's `__mro__`
+    rather than a written-out table: `SystemExit` is not an `Exception`, and that
+    fact is the whole difference between the old-only and symmetric cases. A
+    table would be a hand-list of the standard exception tree, which is the
+    defect family this repository names most often.
+
+    None means the name resolves nowhere — not a builtin exception, not a class
+    the universe defines. That is UNKNOWN, never "no".
+    """
+    seen: set = set()
+    stack = [name]
+    resolved = False
+    while stack:
+        current = stack.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        builtin = getattr(builtins, current, None)
+        if isinstance(builtin, type) and issubclass(builtin, BaseException):
+            seen |= {cls.__name__ for cls in builtin.__mro__}
+            resolved = True
+            continue
+        if current in hierarchy:
+            resolved = True
+            stack += hierarchy[current]
+    return seen if resolved else None
+
+
+def catches(handler_classes: list, target: str, hierarchy: dict):
+    """Does a handler catching `handler_classes` catch a `target` failure?
+
+    True / False / "UNKNOWN". A bare `except:` catches everything. An unresolved
+    handler class cannot be ruled out, so it produces UNKNOWN unless some other
+    class in the same handler already answers True — a handler that definitely
+    catches is not made uncertain by a second name nobody can resolve.
+    """
+    if "BARE" in handler_classes:
+        return True
+    family = ancestors_of(target, hierarchy)
+    if family is None:
+        return "UNKNOWN"
+    unresolved = False
+    for name in handler_classes:
+        if name in family:
+            return True
+        if ancestors_of(name, hierarchy) is None:
+            unresolved = True
+    return "UNKNOWN" if unresolved else False
+
+
+def failure_transition(universe: dict) -> dict:
+    """What the codebook read raises on each side of the repoint, DERIVED.
+
+    Read out of the facade, which is the translation itself:
+
+        def load_codebook(path=None):
+            try:
+                return _codebook_store.read(...)
+            except _codebook_store.CodebookNotFoundError as error:
+                fc.halt(str(error))
+            except _codebook_store.SchemaMismatchError as error:
+                ...
+                fc.halt(str(error))
+
+    The caught classes ARE the translated failures — the ones a repoint changes
+    the class of. Everything the facade does not catch (`OSError`,
+    `json.JSONDecodeError`, `UnicodeDecodeError`) propagates raw on both sides
+    and is a pass-through, which needs no list here: a handler catching only
+    those is an ancestor of neither side and falls out as NEITHER.
+
+    The legacy class comes from the halt: `foundry_common.halt` prints a STOP
+    line to stderr and calls `sys.exit`, so the class is `SystemExit` and the
+    stderr line is the side effect that disappears. Both are parsed; a universe
+    whose facade or halt cannot be read reports `status: UNKNOWN` and every
+    catchability answer downstream becomes UNKNOWN with it.
+    """
+    facade = next((m for _, m in sorted(universe.items())
+                   if m.name == FACADE_MODULE), None)
+    if facade is None:
+        return {"status": "UNKNOWN", "legacy_class": None, "permanent_classes": [],
+                "evidence": [f"no {FACADE_MODULE} module in this universe"]}
+    reader = next((n for n in ast.walk(facade.tree)
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                   and n.name == READ_SYMBOL), None)
+    if reader is None:
+        return {"status": "UNKNOWN", "legacy_class": None, "permanent_classes": [],
+                "evidence": [f"{FACADE_MODULE} defines no {READ_SYMBOL}"]}
+
+    translated: set = set()
+    halts: set = set()
+    for node in ast.walk(reader):
+        if not isinstance(node, ast.Try):
+            continue
+        for handler in node.handlers:
+            calls = {ast.unparse(c.func) for c in ast.walk(handler)
+                     if isinstance(c, ast.Call)}
+            halt_calls = {name for name in calls
+                          if name == "halt" or name.endswith(".halt")}
+            if not halt_calls:
+                continue
+            translated |= {name for name in except_classes(handler)
+                           if name != "BARE"}
+            halts |= halt_calls
+    if not translated or not halts:
+        return {"status": "UNKNOWN", "legacy_class": None,
+                "permanent_classes": sorted(translated),
+                "evidence": [f"{READ_SYMBOL} translates no typed failure through "
+                             f"a halt call that this model can read"]}
+
+    legacy, stderr_line, halt_evidence = _halt_behavior(facade, halts, universe)
+    if legacy is None:
+        return {"status": "UNKNOWN", "legacy_class": None,
+                "permanent_classes": sorted(translated),
+                "evidence": halt_evidence}
+    return {
+        "status": "DERIVED",
+        "legacy_class": legacy,
+        "permanent_classes": sorted(translated),
+        "legacy_side_effect": stderr_line,
+        "evidence": [f"{facade.rel.as_posix()}:{READ_SYMBOL} translates "
+                     f"{', '.join(sorted(translated))} through "
+                     f"{', '.join(sorted(halts))}"] + halt_evidence,
+        "pass_through_rule": "a class the facade does not catch propagates "
+                             "unchanged on both sides and is not a transition",
+    }
+
+
+def _halt_behavior(facade: Module, halts: set, universe: dict) -> tuple:
+    """`(exception class, stderr side effect, evidence)` for the legacy halt.
+
+    Followed through the facade's own import alias to the module that defines
+    `halt`, and read there. `sys.exit` raises `SystemExit`, which is a fact about
+    the interpreter and not about this repository — so the class NAME is taken
+    from the call, and its position in the exception tree comes from `__mro__`
+    like every other class here.
+    """
+    by_name = {m.name: m for _, m in sorted(universe.items())}
+    for spelling in sorted(halts):
+        alias = spelling.rsplit(".", 1)[0] if "." in spelling else None
+        owner = facade
+        if alias is not None:
+            target = next((module for module, entry
+                           in sorted(facade._bindings.items())
+                           if alias in entry["aliases"]), None)
+            owner = by_name.get(target.split(".")[0]) if target else None
+        if owner is None:
+            continue
+        function = next((n for n in ast.walk(owner.tree)
+                         if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                         and n.name == spelling.rsplit(".", 1)[-1]), None)
+        if function is None:
+            continue
+        stderr = ("a line is printed to stderr before the exit"
+                  if any(ast.unparse(keyword.value).endswith("stderr")
+                         for call in ast.walk(function)
+                         if isinstance(call, ast.Call)
+                         for keyword in call.keywords if keyword.arg == "file")
+                  else "no stderr line accompanies the exit")
+        for node in ast.walk(function):
+            if isinstance(node, ast.Raise) and node.exc is not None:
+                name = ast.unparse(node.exc).split("(")[0].rsplit(".", 1)[-1]
+                return name, stderr, [f"{owner.rel.as_posix()}:{function.name} "
+                                      f"raises {name}"]
+            if isinstance(node, ast.Call) and ast.unparse(node.func) in (
+                    "sys.exit", "exit", "os._exit"):
+                return "SystemExit", stderr, [
+                    f"{owner.rel.as_posix()}:{function.name} calls "
+                    f"{ast.unparse(node.func)}, which raises SystemExit"]
+    return None, None, ["the halt function could not be read in this universe"]
+
+
+def handler_catchability(classes: list, model: dict) -> dict:
+    """Whether a handler's catchability CHANGES across the read repoint.
+
+    The two sides are asked SEPARATELY, which is the repair. Five answers:
+
+    * OLD_ONLY — catches the legacy `SystemExit` and none of the permanent
+      classes. The C8.5T shape, and a real blocker.
+    * NEW_ONLY — catches the permanent typed failure and not the legacy one.
+      `except Exception` is the whole group: it never caught `SystemExit`, so the
+      repoint hands it a failure it now swallows.
+    * SYMMETRIC_BOTH — catches both. NO catchability delta, which is C8.5R's
+      accepted finding about `except BaseException`. Reported as a fact, not
+      promoted to "safe": the legacy STOP line on stderr still disappears, and
+      that output delta is a separate question this axis does not answer.
+    * NEITHER — catches neither side. `except CodebookStoreError` is the sharp
+      case: the store's read errors descend from `RuntimeError` DIRECTLY, not
+      from `CodebookStoreError`, so that handler sees no read failure at all. So
+      is `except OSError`, which is a pass-through unchanged on both sides.
+    * PARTIAL_OLD_ONLY — catches the legacy class and only SOME permanent
+      classes. A change for the rest, named.
+    """
+    if model["status"] != "DERIVED":
+        return {"legacy_caught": "UNKNOWN", "permanent_caught": "UNKNOWN",
+                "permanent_caught_classes": [], "permanent_uncaught_classes": [],
+                "transition": "UNKNOWN", "changes_catchability": "UNKNOWN",
+                "evidence": model["evidence"]}
+    hierarchy = model["hierarchy"]
+    legacy = catches(classes, model["legacy_class"], hierarchy)
+    caught, uncaught, unknown = [], [], []
+    for name in model["permanent_classes"]:
+        answer = catches(classes, name, hierarchy)
+        (caught if answer is True else uncaught if answer is False
+         else unknown).append(name)
+    if legacy == "UNKNOWN" or unknown:
+        return {"legacy_caught": legacy, "permanent_caught": "UNKNOWN",
+                "permanent_caught_classes": sorted(caught),
+                "permanent_uncaught_classes": sorted(uncaught),
+                "transition": "UNKNOWN", "changes_catchability": "UNKNOWN",
+                "evidence": [f"unresolved handler class against {name}"
+                             for name in sorted(unknown)] or
+                            ["the legacy class could not be resolved"]}
+    permanent = ("ALL" if caught and not uncaught else
+                 "NONE" if not caught else "SOME")
+    if legacy and permanent == "ALL":
+        transition, changes = "SYMMETRIC_BOTH", False
+    elif legacy and permanent == "NONE":
+        transition, changes = "OLD_ONLY", True
+    elif legacy:
+        transition, changes = "PARTIAL_OLD_ONLY", True
+    elif permanent == "NONE":
+        transition, changes = "NEITHER", False
+    else:
+        transition, changes = "NEW_ONLY", True
+    return {"legacy_caught": bool(legacy), "permanent_caught": permanent,
+            "permanent_caught_classes": sorted(caught),
+            "permanent_uncaught_classes": sorted(uncaught),
+            "transition": transition, "changes_catchability": changes,
+            "evidence": []}
 
 
 # ---------------------------------------------------------------------------
@@ -890,7 +1163,7 @@ def _handlers_around(caller: Module, node: ast.AST) -> list:
 
 
 def _caller_rows(caller: Module, candidate: Module, entries: list,
-                 origin: str) -> tuple:
+                 origin: str, model: dict) -> tuple:
     """Call rows and handler rows for one caller of one candidate.
 
     A HANDLER IS CHARGED ONLY WHEN THE CALL REACHES A READ OWNER, which is the
@@ -911,8 +1184,28 @@ def _caller_rows(caller: Module, candidate: Module, entries: list,
                       "reaching_paths": reach["paths"]})
         for row in _handlers_around(caller, node):
             classes = handler_classes(row["try"])
-            observes = "UNKNOWN" if (classes and reach["reaches"] == "UNKNOWN") \
-                else bool(classes and reach["reaches"] is True)
+            catchability = (handler_catchability(classes, model) if classes else
+                            {"legacy_caught": False, "permanent_caught": "NONE",
+                             "permanent_caught_classes": [],
+                             "permanent_uncaught_classes": [],
+                             "transition": "NOT_A_HANDLER",
+                             "changes_catchability": False,
+                             "evidence": ["try/finally catches nothing"]})
+            # TWO CONDITIONS, AND BOTH MUST HOLD. A handler observes the
+            # class change only if the failure can REACH it and its
+            # catchability actually differs across the transition. C8.5X
+            # asserted the first and assumed the second, which made every
+            # reaching handler a blocker and contradicted C8.5R's accepted
+            # `except BaseException` result.
+            change = catchability["changes_catchability"]
+            if change is False:
+                observes = False
+            elif change == "UNKNOWN" and reach["reaches"] is not False:
+                observes = "UNKNOWN"
+            elif reach["reaches"] == "UNKNOWN":
+                observes = "UNKNOWN"
+            else:
+                observes = bool(reach["reaches"] is True)
             handlers.append({
                 "caller": caller.rel.as_posix(), "origin": origin,
                 "handler_origin": row["origin"], "through": row["through"],
@@ -920,8 +1213,9 @@ def _caller_rows(caller: Module, candidate: Module, entries: list,
                 "try_lineno": row["try"].lineno,
                 "catches": classes,
                 "is_catching_handler": bool(classes),
+                "catchability": catchability,
                 "reaches_read_owner": reach["reaches"],
-                "observes_read_failure": observes})
+                "observes_failure_class_change": observes})
     return calls, handlers
 
 
@@ -1025,12 +1319,14 @@ def _classify(record: dict) -> str:
     retained facade symbol is a blocker in `blockers`, not a downgrade here.
     """
     for handler in record["catching_handlers"]:
-        if handler["observes_read_failure"] is True:
-            if set(handler["catches"]) & SYSTEMEXIT_CATCHERS:
-                return "BLOCK_SYSTEMEXIT_DEPENDENCY"
-            if set(handler["catches"]) & EXCEPTION_CATCHERS:
-                return "BLOCK_EXCEPTION_CATCH"
-            return "BLOCK_OTHER"
+        if handler["observes_failure_class_change"] is not True:
+            continue
+        transition = handler["catchability"]["transition"]
+        if transition in ("OLD_ONLY", "PARTIAL_OLD_ONLY"):
+            return "BLOCK_SYSTEMEXIT_DEPENDENCY"
+        if transition == "NEW_ONLY":
+            return "BLOCK_EXCEPTION_CATCH"
+        return "BLOCK_OTHER"
     if not record["read_sites"]:
         return "NOT_A_READ_CONSUMER"
     if record["failure_observability"]["status"] == "UNKNOWN":
@@ -1039,28 +1335,53 @@ def _classify(record: dict) -> str:
         return "UNKNOWN"
     if record["unresolved"]:
         return "UNKNOWN"
+    if record["failure_observability"]["status"] == "SYMMETRIC_CATCH_NO_CLASS_DELTA":
+        # SAID AS ITS OWN VERDICT, not folded into the no-handler one. There IS a
+        # reaching handler here; what there is not is a catchability delta. The
+        # two facts have different consequences for a reviewer, and C8.5R's
+        # accepted stderr question still applies to this row and not to the
+        # other.
+        return "SAFE_NO_FAILURE_CLASS_DELTA"
     return "SAFE_NO_TRANSITIVE_HANDLER"
 
 
 def _observability(record: dict) -> dict:
-    observing = [h for h in record["catching_handlers"]
-                 if h["observes_read_failure"] is True]
-    undecided = [h for h in record["catching_handlers"]
-                 if h["observes_read_failure"] == "UNKNOWN"]
+    """What a reaching handler would see differently after the repoint.
+
+    FOUR STATUSES, and the second one is the repair. A handler that catches BOTH
+    sides is reported as a symmetric catch with NO class delta rather than as an
+    observer — C8.5R accepted exactly that about `foundry_object_lattice`'s
+    `except BaseException`, and the first cut of this module contradicted it.
+    Symmetric is not promoted to "safe": the legacy STOP line on stderr still
+    disappears for a translated failure, and that output delta is a different
+    question, answered by `failure_model.legacy_side_effect`, not here.
+    """
+    handlers = record["catching_handlers"]
+    observing = [h for h in handlers if h["observes_failure_class_change"] is True]
+    undecided = [h for h in handlers
+                 if h["observes_failure_class_change"] == "UNKNOWN"]
+    symmetric = [h for h in handlers
+                 if h["catchability"]["transition"] == "SYMMETRIC_BOTH"]
+    neither = [h for h in handlers
+               if h["catchability"]["transition"] == "NEITHER"]
     if observing:
-        status = "OBSERVED_BY_HANDLER"
+        status = "CHANGED_BY_HANDLER"
     elif undecided or record["unresolved"] \
             or record["bootstrap_dependency"]["status"] == "UNKNOWN":
         status = "UNKNOWN"
+    elif symmetric:
+        status = "SYMMETRIC_CATCH_NO_CLASS_DELTA"
     else:
         status = "UNOBSERVED_NO_REACHING_HANDLER"
     return {"status": status,
             "observing_handlers": observing,
             "undecided_handlers": undecided,
-            "non_catching_try_sites": [h for h in record["catching_handlers"]
+            "symmetric_handlers": symmetric,
+            "handlers_catching_neither_side": neither,
+            "non_catching_try_sites": [h for h in handlers
                                        if not h["is_catching_handler"]],
             "handled_calls_not_reaching_read": [
-                h for h in record["catching_handlers"]
+                h for h in handlers
                 if h["is_catching_handler"] and h["reaches_read_owner"] is False]}
 
 
@@ -1079,12 +1400,15 @@ def _blockers(record: dict) -> list:
         out.append({"kind": "TRANSITIVE_HANDLER",
                     "detail": f"{handler['caller']}:{handler['try_lineno']} "
                               f"catches {'|'.join(handler['catches'])} around "
-                              f"{handler['entry']}"})
+                              f"{handler['entry']}: "
+                              f"{handler['catchability']['transition']}"})
     for handler in record["failure_observability"]["undecided_handlers"]:
         out.append({"kind": "TRANSITIVE_HANDLER_UNKNOWN",
                     "detail": f"{handler['caller']}:{handler['try_lineno']} "
                               f"catches {'|'.join(handler['catches'])} around "
-                              f"{handler['entry']}, reachability unresolved"})
+                              f"{handler['entry']}: "
+                              f"{handler['catchability']['transition']}, "
+                              f"reachability {handler['reaches_read_owner']}"})
     if record["bootstrap_dependency"]["status"] == "UNKNOWN":
         out.append({"kind": "BOOTSTRAP_UNKNOWN",
                     "detail": "; ".join(record["bootstrap_dependency"]["evidence"])})
@@ -1094,7 +1418,8 @@ def _blockers(record: dict) -> list:
     return sorted(out, key=lambda r: (r["kind"], r["detail"]))
 
 
-def _consumer_record(candidate: Module, universe: dict) -> dict:
+def _consumer_record(candidate: Module, universe: dict,
+                     model: dict) -> dict:
     calls: list = []
     handlers: list = []
     static_importers: list = []
@@ -1121,7 +1446,7 @@ def _consumer_record(candidate: Module, universe: dict) -> dict:
                                      "symbols": sorted(bindings["symbols"].values()),
                                      "call_count": len(entries)})
             new_calls, new_handlers = _caller_rows(caller, candidate, entries,
-                                                   "STATIC_IMPORT")
+                                                   "STATIC_IMPORT", model)
             calls += new_calls
             handlers += new_handlers
 
@@ -1134,7 +1459,7 @@ def _consumer_record(candidate: Module, universe: dict) -> dict:
                                   "bindings": dyn_bindings,
                                   "call_count": len(entries)})
             new_calls, new_handlers = _caller_rows(caller, candidate, entries,
-                                                   "DYNAMIC_LOAD")
+                                                   "DYNAMIC_LOAD", model)
             calls += new_calls
             handlers += new_handlers
 
@@ -1165,6 +1490,7 @@ def _consumer_record(candidate: Module, universe: dict) -> dict:
         "catching_handlers": sorted(
             handlers, key=lambda r: (r["caller"], r["lineno"], r["try_lineno"],
                                      r["handler_origin"])),
+        "failure_model_status": model["status"],
         "bootstrap_dependency": bootstrap_dependency(candidate, universe),
         "facade_symbols": symbols,
         "facade_symbols_after_read_repoint": retained,
@@ -1202,19 +1528,29 @@ def _totals(records: list) -> dict:
     return dict(sorted(totals.items()))
 
 
+def _failure_model(universe: dict) -> dict:
+    """The derived transition plus the hierarchy every catchability test needs."""
+    model = failure_transition(universe)
+    model["hierarchy"] = class_hierarchy(universe)
+    return model
+
+
 def analyze_repository(root) -> dict:
     """The whole facade read population, one record per read-owning file."""
     root = Path(root)
     universe = _universe(root)
+    model = _failure_model(universe)
     fan_in = sorted(rel.as_posix() for rel, m in universe.items()
                     if m.facade["aliases"] or m.facade["symbols"] or m.facade["star"])
     read_owning = sorted((rel for rel, m in universe.items() if m.reads),
                          key=lambda rel: rel.as_posix())
-    records = [_consumer_record(universe[rel], universe)
+    records = [_consumer_record(universe[rel], universe, model)
                for rel in read_owning]
     return {
         "schema": SCHEMA,
         "facade": {"module": FACADE_MODULE, "read_symbol": READ_SYMBOL},
+        "failure_model": {k: v for k, v in sorted(model.items())
+                          if k != "hierarchy"},
         "population": {
             "python_files": len(universe),
             "facade_fan_in_files": len(fan_in),
@@ -1237,7 +1573,7 @@ def analyze_consumer(root, module_path) -> dict:
     universe = _universe(root)
     if rel not in universe:
         raise SystemExit(f"STOP — {rel.as_posix()} is not in the analysis universe")
-    return _consumer_record(universe[rel], universe)
+    return _consumer_record(universe[rel], universe, _failure_model(universe))
 
 
 def main(argv=None) -> int:

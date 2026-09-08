@@ -1716,6 +1716,16 @@ EXPECTED_READ_CALL_SITES = 25
 EXPECTED_READ_OWNING_FILES = 19
 
 REAUDIT_REL = "experiments/foundry_reaudit.py"
+SHAPE_EXTRACTOR_REL = "experiments/foundry_shape_extractor.py"
+
+# The fifteen C8.5V measured and nominated from. Written out, because the count
+# alone cannot tell this population from a different one of the same size.
+C8_5V_FIFTEEN = [f"experiments/foundry_{name}.py" for name in sorted([
+    "any_damage_split", "authority", "axis_merge_pointer_correction",
+    "cdr09_derive", "cdr09_walk", "consolidate_run1_apply",
+    "consolidate_run1_classify", "consolidate_run1_enumerate",
+    "definition_drift", "det_pass", "family_sweep", "gate0_scrub",
+    "locality_backfill", "membership_move", "reaudit"])]
 RUN1_REL = "experiments/foundry_consolidate_run1.py"
 RUN1_CLASSIFY_REL = "experiments/foundry_consolidate_run1_classify.py"
 R5_REL = "experiments/foundry_r5_attribution.py"
@@ -1735,6 +1745,56 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parents[1]
 _SRC = _ROOT / "src"
 sys.path.insert(0, str(_SRC))
+
+
+def halt(message):
+    print(f"STOP - {message}", file=sys.stderr)
+    sys.exit(1)
+'''
+
+# THE FIXTURE UNIVERSE CARRIES THE TRANSITION ITSELF (C8.5X.R1). The analyzer
+# derives which failure classes change across the repoint by reading the facade
+# that translates them and the halt it translates them into; a fixture without
+# those two modules would answer UNKNOWN on every catchability question, and the
+# eight controls below would grade nothing. So the fixture ships a facade whose
+# `load_codebook` catches the store's typed read errors and halts, exactly the
+# shape the live one has — which also means a rig can CHANGE that shape and the
+# controls must follow it.
+FIXTURE_STORE = '''\
+class CodebookStoreError(RuntimeError):
+    pass
+
+
+class CodebookReadError(RuntimeError):
+    pass
+
+
+class CodebookNotFoundError(CodebookReadError):
+    pass
+
+
+class SchemaMismatchError(CodebookReadError):
+    pass
+
+
+def read(path):
+    if not path.exists():
+        raise CodebookNotFoundError(path)
+    raise SchemaMismatchError(path)
+'''
+
+FIXTURE_FACADE = '''\
+import foundry_common as fc
+from mtj_foundry import codebook_store as _codebook_store
+
+
+def load_codebook(path=None):
+    try:
+        return _codebook_store.read(path)
+    except _codebook_store.CodebookNotFoundError as error:
+        fc.halt(str(error))
+    except _codebook_store.SchemaMismatchError as error:
+        fc.halt(str(error))
 '''
 
 FIXTURE_CANDIDATE = '''\
@@ -1969,6 +2029,13 @@ class TestTheKnownTransitiveTrapIsFoundMechanically(unittest.TestCase):
             self.assertEqual(handler["handler_origin"], "TRANSITIVE")
             self.assertIsNotNone(handler["through"])
             self.assertTrue(handler["reaches_read_owner"])
+            # C8.5X.R1: the blocker is the CATCHABILITY delta, not the presence
+            # of a catch. `except SystemExit` catches the legacy halt and none
+            # of the permanent classes, so this row is genuinely old-only.
+            catchability = handler["catchability"]
+            self.assertEqual(catchability["transition"], "OLD_ONLY")
+            self.assertTrue(catchability["legacy_caught"])
+            self.assertEqual(catchability["permanent_caught"], "NONE")
 
     def test_no_handler_lexically_encloses_the_call_that_is_blocked(self):
         """The reason a call-site-local scan misses it, stated as a measurement
@@ -1989,15 +2056,45 @@ class TestTheKnownTransitiveTrapIsFoundMechanically(unittest.TestCase):
         self.assertTrue(any(h["caller"] == R5_REL and h["catches"] == ["SystemExit"]
                             for h in not_reaching))
 
-    def test_the_fifteen_C8_5V_candidates_are_all_still_splits(self):
+    def test_the_fifteen_C8_5V_candidates_are_named_and_all_still_splits(self):
         """C8.5V's second axis, re-derived: no remaining candidate can DROP the
         facade, so fan-in cannot fall in this slice or a near one. Reported here
-        because a record showing only the handler answer reads as 'ready'."""
+        because a record showing only the handler answer reads as 'ready'.
+
+        NAMED, not counted. The first cut of this test asserted `len(...) == 15`
+        over the SAFE set, and C8.5X.R1 moved one file out of that set for a
+        reason unrelated to these fifteen -- the count stayed 15 and the test
+        would have passed while measuring a different population."""
         analysis = cca.analyze_repository(REPO_ROOT)
-        safe = [r for r in analysis["consumers"]
-                if r["classification"] == "SAFE_NO_TRANSITIVE_HANDLER"]
-        self.assertEqual(len([r for r in safe
-                              if r["facade_disposition"] == "SPLIT"]), 15)
+        by_module = {r["module"]: r for r in analysis["consumers"]}
+        for module in C8_5V_FIFTEEN:
+            with self.subTest(module=module):
+                self.assertEqual(by_module[module]["classification"],
+                                 "SAFE_NO_TRANSITIVE_HANDLER")
+                self.assertEqual(by_module[module]["facade_disposition"], "SPLIT")
+        self.assertEqual(len(C8_5V_FIFTEEN), 15)
+
+    def test_the_one_reclassified_file_is_explained_by_the_corrected_model(self):
+        """C8.5X reported `foundry_shape_extractor` UNKNOWN because
+        `foundry_gate_audit` calls into it under a catch whose reachability is
+        unresolved. The catch is `except (Exception, SystemExit)`, which is
+        SYMMETRIC -- it catches the legacy failure and the permanent one alike --
+        so it cannot produce a class delta whether or not the call reaches the
+        read, and the unresolved reachability stops being load-bearing.
+
+        The reclassification is asserted WITH its cause. It is outside the
+        fifteen above, and it is the only classification this repair moves."""
+        record = cca.analyze_consumer(REPO_ROOT, SHAPE_EXTRACTOR_REL)
+        self.assertEqual(record["classification"], "SAFE_NO_FAILURE_CLASS_DELTA")
+        symmetric = record["failure_observability"]["symmetric_handlers"]
+        self.assertTrue(symmetric)
+        for handler in symmetric:
+            self.assertEqual(handler["catchability"]["transition"], "SYMMETRIC_BOTH")
+            self.assertTrue(handler["catchability"]["legacy_caught"])
+            self.assertEqual(handler["catchability"]["permanent_caught"], "ALL")
+        self.assertTrue(any(h["reaches_read_owner"] == "UNKNOWN"
+                            for h in symmetric))
+        self.assertEqual(record["failure_observability"]["observing_handlers"], [])
 
 
 class TestTheSyntheticControls(unittest.TestCase):
@@ -2010,6 +2107,8 @@ class TestTheSyntheticControls(unittest.TestCase):
 
     def analyze(self, **overrides) -> dict:
         files = {"experiments/foundry_common.py": FIXTURE_COMMON,
+                 "experiments/foundry_codebook.py": FIXTURE_FACADE,
+                 "src/mtj_foundry/codebook_store.py": FIXTURE_STORE,
                  "experiments/candidate.py": FIXTURE_CANDIDATE}
         files.update(overrides)
         return fixture_repository(files)
@@ -2273,14 +2372,246 @@ def other():
         self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
 
     def test_an_unresolved_bootstrap_cannot_be_reported_as_SAFE(self):
-        """The second UNKNOWN path, and it is a different one: a universe with
-        no module that reaches `mtj_foundry` cannot say the repoint would need
-        no new bootstrap. The fixture drops `foundry_common` and nothing else."""
-        analysis = fixture_repository(
-            {"experiments/candidate.py": FIXTURE_CANDIDATE.replace(
-                "import foundry_common as fc\n", "")})
+        """The second UNKNOWN path, and it is a different one: a universe where
+        nothing puts `src` on `sys.path` cannot say the repoint would need no new
+        bootstrap. ONE construct is removed — the insert — and the rest of the
+        universe stands, so the failure model still derives and the bootstrap is
+        the only thing unresolved. (An earlier version of this control dropped
+        every other module too, which made it pass for whichever reason fired
+        first.)"""
+        analysis = self.analyze(**{
+            "experiments/foundry_common.py": FIXTURE_COMMON.replace(
+                'sys.path.insert(0, str(_SRC))\n', '')})
         record = record_for(analysis, "experiments/candidate.py")
         self.assertEqual(record["bootstrap_dependency"]["status"], "UNKNOWN")
+        self.assertEqual(record["classification"], "UNKNOWN")
+        self.assertEqual(analysis["failure_model"]["status"], "DERIVED")
+
+# ===========================================================================
+# 8. THE FAILURE-CLASS TRANSITION (C8.5X.R1)
+# ===========================================================================
+#
+# C8.5X marked a handler as observing the read failure when it merely HAD a
+# catch class, and the Manager rejected that (issue:1#issuecomment-5585684318).
+# `except BaseException` catches the legacy `SystemExit` AND the permanent typed
+# error, so the repoint changes nothing it observes -- which is precisely what
+# C8.5R's accepted result says about `foundry_object_lattice`
+# (issue:1#issuecomment-5563058243). The analyzer contradicted an accepted
+# finding, and a conservative false blocker is still false.
+#
+# The repair derives the transition instead of naming it. These controls grade
+# that derivation from BOTH ends: the model read out of the live repository, and
+# nine catch shapes measured against a fixture universe that carries its own
+# facade, store and halt -- eight of which do not exist anywhere in this
+# repository, and one of which (`except SystemExit`) is the only one that does.
+
+
+class TestTheDerivedFailureModel(unittest.TestCase):
+    """The transition, read out of the two modules that perform it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.model = cca.analyze_repository(REPO_ROOT)["failure_model"]
+
+    def test_the_model_is_derived_and_not_declared(self):
+        self.assertEqual(self.model["status"], "DERIVED")
+        self.assertIn("foundry_codebook.py:load_codebook", self.model["evidence"][0])
+        self.assertIn("foundry_common.py:halt", self.model["evidence"][1])
+
+    def test_the_legacy_class_comes_from_the_halt(self):
+        """`fc.halt` calls `sys.exit`, so the legacy read failure is
+        `SystemExit`. Derived through the facade's own import alias, not
+        assumed from the name."""
+        self.assertEqual(self.model["legacy_class"], "SystemExit")
+        self.assertIn("sys.exit", self.model["evidence"][1])
+
+    def test_the_permanent_classes_are_the_ones_the_facade_translates(self):
+        """The facade IS the translation table: the classes it catches from the
+        store are exactly the failures whose class changes. Everything it does
+        not catch — `OSError`, `json.JSONDecodeError`, `UnicodeDecodeError` —
+        propagates raw on both sides, which is why no pass-through list is
+        needed anywhere in this module."""
+        self.assertEqual(self.model["permanent_classes"],
+                         ["CodebookNotFoundError", "SchemaMismatchError"])
+
+    def test_the_stderr_side_effect_is_reported_and_not_collapsed(self):
+        """The legacy STOP line disappears for a translated failure. That is an
+        OUTPUT delta and it is reported here; it is deliberately not folded into
+        catchability, because doing so is how a symmetric handler became a false
+        SystemExit blocker."""
+        self.assertIn("stderr", self.model["legacy_side_effect"])
+
+    def test_the_interpreter_supplies_the_exception_tree(self):
+        """`SystemExit` is not an `Exception`, and that single fact separates
+        the old-only case from the symmetric one. It comes from the running
+        interpreter's `__mro__`, never from a table written here."""
+        hierarchy = cca.class_hierarchy({})
+        self.assertIn("BaseException", cca.ancestors_of("SystemExit", hierarchy))
+        self.assertNotIn("Exception", cca.ancestors_of("SystemExit", hierarchy))
+        self.assertIsNone(cca.ancestors_of("NotAnExceptionAnywhere", hierarchy))
+
+
+class TestHandlerCatchabilityAcrossTheTransition(unittest.TestCase):
+    """Nine catch shapes, one construct apart, on the shipped analyzer.
+
+    Every case below is the SAME fixture universe with the same reaching call,
+    differing only in the `except` arm — so each is the others' contrast and no
+    verdict can come from anything else. The intended `(legacy, permanent,
+    transition, classification)` tuple is pinned in every case, not merely
+    "something was found"."""
+
+    def record_for_catch(self, arm: str, **overrides) -> dict:
+        caller = ("import candidate\n\n\n"
+                  "def main():\n"
+                  "    try:\n"
+                  "        return candidate.entry()\n"
+                  f"    {arm}:\n"
+                  "        return None\n")
+        files = {"experiments/foundry_common.py": FIXTURE_COMMON,
+                 "experiments/foundry_codebook.py": FIXTURE_FACADE,
+                 "src/mtj_foundry/codebook_store.py": FIXTURE_STORE,
+                 "experiments/candidate.py": FIXTURE_CANDIDATE,
+                 "experiments/caller.py": caller}
+        files.update(overrides)
+        analysis = fixture_repository(files)
+        self.assertEqual(analysis["failure_model"]["status"], "DERIVED")
+        return record_for(analysis, "experiments/candidate.py")
+
+    def assertCase(self, arm, legacy, permanent, transition, classification,
+                   **overrides):
+        record = self.record_for_catch(arm, **overrides)
+        handlers = [h for h in record["catching_handlers"]
+                    if h["is_catching_handler"]]
+        self.assertEqual(len(handlers), 1)
+        catchability = handlers[0]["catchability"]
+        self.assertEqual(catchability["legacy_caught"], legacy)
+        self.assertEqual(catchability["permanent_caught"], permanent)
+        self.assertEqual(catchability["transition"], transition)
+        self.assertTrue(handlers[0]["reaches_read_owner"])
+        self.assertEqual(record["classification"], classification)
+        return record
+
+    def test_OLD_ONLY_SYSTEMEXIT(self):
+        self.assertCase("except SystemExit", True, "NONE", "OLD_ONLY",
+                        "BLOCK_SYSTEMEXIT_DEPENDENCY")
+
+    def test_NEW_ONLY_EXCEPTION(self):
+        """`except Exception` never caught the legacy halt and does catch the
+        permanent error, so the repoint hands it a failure it now swallows."""
+        self.assertCase("except Exception", False, "ALL", "NEW_ONLY",
+                        "BLOCK_EXCEPTION_CATCH")
+
+    def test_BOTH_BASEEXCEPTION(self):
+        """THE C8.5R PRECEDENT, and the case C8.5X got wrong. Both sides are
+        caught, so there is no catchability delta and neither asymmetric blocker
+        may fire."""
+        record = self.assertCase("except BaseException", True, "ALL",
+                                 "SYMMETRIC_BOTH", "SAFE_NO_FAILURE_CLASS_DELTA")
+        self.assertNotEqual(record["classification"], "BLOCK_SYSTEMEXIT_DEPENDENCY")
+        self.assertNotEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        self.assertEqual(record["failure_observability"]["status"],
+                         "SYMMETRIC_CATCH_NO_CLASS_DELTA")
+        self.assertEqual(record["failure_observability"]["observing_handlers"], [])
+        self.assertTrue(record["failure_observability"]["symmetric_handlers"])
+
+    def test_BOTH_BARE(self):
+        record = self.assertCase("except", True, "ALL", "SYMMETRIC_BOTH",
+                                 "SAFE_NO_FAILURE_CLASS_DELTA")
+        self.assertEqual(record["catching_handlers"][0]["catches"], ["BARE"])
+
+    def test_BOTH_TUPLE(self):
+        self.assertCase("except (SystemExit, Exception)", True, "ALL",
+                        "SYMMETRIC_BOTH", "SAFE_NO_FAILURE_CLASS_DELTA")
+
+    def test_NEITHER_CODEBOOKSTOREERROR(self):
+        """The store's read errors descend from `RuntimeError` DIRECTLY, not
+        from `CodebookStoreError` — accepted store law — so this handler sees
+        neither side. C8.5X had `CodebookStoreError` in a frozen catcher set and
+        called it a permanent-read catcher."""
+        self.assertCase("except _codebook_store.CodebookStoreError",
+                        False, "NONE", "NEITHER", "SAFE_NO_TRANSITIVE_HANDLER")
+
+    def test_NEW_ONLY_CODEBOOKREADERROR(self):
+        self.assertCase("except CodebookReadError", False, "ALL", "NEW_ONLY",
+                        "BLOCK_EXCEPTION_CATCH")
+
+    def test_SAME_PASSTHROUGH(self):
+        """`OSError` is raised identically on both sides — the facade translates
+        it on neither — so catching it is not a transition. No pass-through list
+        states this; it falls out of the ancestry test."""
+        self.assertCase("except OSError", False, "NONE", "NEITHER",
+                        "SAFE_NO_TRANSITIVE_HANDLER")
+
+    def test_PARTIAL_OLD_ONLY_IS_STILL_A_CHANGE(self):
+        """Catching the legacy class and only ONE of the two permanent classes
+        is a change for the other, and the uncaught one is named rather than
+        averaged away."""
+        record = self.assertCase("except (SystemExit, CodebookNotFoundError)",
+                                 True, "SOME", "PARTIAL_OLD_ONLY",
+                                 "BLOCK_SYSTEMEXIT_DEPENDENCY")
+        catchability = record["catching_handlers"][0]["catchability"]
+        self.assertEqual(catchability["permanent_caught_classes"],
+                         ["CodebookNotFoundError"])
+        self.assertEqual(catchability["permanent_uncaught_classes"],
+                         ["SchemaMismatchError"])
+
+    def test_an_UNRESOLVABLE_handler_class_is_UNKNOWN_not_no(self):
+        """A handler naming a class defined nowhere in the universe cannot be
+        ruled out as an ancestor of either side, so its catchability is UNKNOWN
+        and the candidate follows it. Answering "no" here is the same error as
+        answering "unreachable" from an incomplete call graph: an absence of
+        evidence read as evidence."""
+        record = self.record_for_catch("except SomeClassDefinedNowhere")
+        catchability = record["catching_handlers"][0]["catchability"]
+        self.assertEqual(catchability["transition"], "UNKNOWN")
+        self.assertEqual(record["classification"], "UNKNOWN")
+        self.assertNotEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+
+    def test_a_definitely_catching_class_is_not_made_uncertain_by_a_second_name(self):
+        """The contrast, and it is the reason `catches` returns on the first
+        True. `except (BaseException, SomeClassDefinedNowhere)` already catches
+        both sides whatever the second name turns out to be; reporting UNKNOWN
+        there would make every handler with a project-specific class unreadable."""
+        self.assertCase("except (BaseException, SomeClassDefinedNowhere)",
+                        True, "ALL", "SYMMETRIC_BOTH", "SAFE_NO_FAILURE_CLASS_DELTA")
+
+    # -- the two rigs that prove the model is READ, not assumed --------------
+
+    def test_the_class_hierarchy_is_parsed_from_the_store_source(self):
+        """One base class changed in the fixture store, and `CodebookStoreError`
+        flips from catching NEITHER side to catching the permanent one. Nothing
+        else in the universe moves. A hardcoded hierarchy could not follow it."""
+        rigged = FIXTURE_STORE.replace("class CodebookReadError(RuntimeError):",
+                                       "class CodebookReadError(CodebookStoreError):")
+        self.assertNotEqual(rigged, FIXTURE_STORE)
+        self.assertCase("except _codebook_store.CodebookStoreError",
+                        False, "ALL", "NEW_ONLY", "BLOCK_EXCEPTION_CATCH",
+                        **{"src/mtj_foundry/codebook_store.py": rigged})
+
+    def test_a_facade_that_translates_nothing_makes_catchability_UNKNOWN(self):
+        """The transition is derived FROM the facade, so a facade that no longer
+        halts leaves the model unable to say what changes — and UNKNOWN is the
+        answer, never SAFE and never a blocker. This is the rig that proves the
+        eight cases above are reading the fixture rather than a constant."""
+        rigged = FIXTURE_FACADE.replace("        fc.halt(str(error))",
+                                        "        raise")
+        self.assertNotEqual(rigged, FIXTURE_FACADE)
+        caller = ("import candidate\n\n\n"
+                  "def main():\n"
+                  "    try:\n"
+                  "        return candidate.entry()\n"
+                  "    except SystemExit:\n"
+                  "        return None\n")
+        analysis = fixture_repository({
+            "experiments/foundry_common.py": FIXTURE_COMMON,
+            "experiments/foundry_codebook.py": rigged,
+            "src/mtj_foundry/codebook_store.py": FIXTURE_STORE,
+            "experiments/candidate.py": FIXTURE_CANDIDATE,
+            "experiments/caller.py": caller})
+        self.assertEqual(analysis["failure_model"]["status"], "UNKNOWN")
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["catching_handlers"][0]["catchability"]["transition"],
+                         "UNKNOWN")
         self.assertEqual(record["classification"], "UNKNOWN")
 
 
