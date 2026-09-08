@@ -85,7 +85,11 @@ from pathlib import Path
 
 # The output contract. Bumped only when the record shape changes, so a
 # consumer of this JSON can tell a shape change from a repository change.
-SCHEMA = "mtj-codebook-consumer-analysis/1"
+# /2 (C8.5X.R3): every handler row gains `unresolved_frontier`. `_reachability`
+# always computed that evidence and every caller dropped it, so an UNKNOWN row
+# said "UNKNOWN" and nothing about WHY. Leaving the constant at /1 while adding a
+# field is the failure this constant exists to prevent.
+SCHEMA = "mtj-codebook-consumer-analysis/2"
 
 # The facade under migration and the one symbol a READ repoint retires.
 FACADE_MODULE = "foundry_codebook"
@@ -327,7 +331,7 @@ def _resolved_call_edges(tree: ast.AST, scopes: dict, edges: dict) -> list:
 
 
 def call_graph(tree: ast.AST) -> tuple:
-    """`({caller qname: {callee qname}}, [unresolved edges])`.
+    """`({caller qname: {callee qname}}, [(node, unresolved edge), ...])`.
 
     Two shapes resolve, and they are the two the legacy tree uses:
 
@@ -341,6 +345,15 @@ def call_graph(tree: ast.AST) -> tuple:
     someone else to call. A negative reachability answer is only as good as the
     graph it was computed on, so these are what `_reachability` needs in order to
     return UNKNOWN instead of False.
+
+    THE NODE TRAVELS WITH THE EDGE (C8.5X.R3). An unresolved edge answers two
+    different questions, and R1/R2 only ever asked the first: *why is a negative
+    reachability answer untrustworthy* needs the edge, but *is this uncertainty
+    sitting inside a candidate-local `try`* needs the NODE. Rediscovering these
+    two families a second time somewhere else to get the node is how one rule
+    becomes two implementations that drift, so the node is carried here and
+    `Module` keeps the JSON-safe view beside it. `defines` names the function the
+    edge is uncertain about, which is what a forward pass has to ask about.
     """
     scopes = _qualified_scopes(tree)
     defined = {scopes[id(n)] for n in ast.walk(tree)
@@ -365,20 +378,23 @@ def call_graph(tree: ast.AST) -> tuple:
             if qname in defined:
                 callee = qname
         elif isinstance(func, ast.Attribute) and func.attr in defined:
-            unresolved.append({"caller": caller, "lineno": node.lineno,
-                               "expr": ast.unparse(func),
-                               "reason": "call through an object whose attribute "
-                                         "names a function this module defines"})
+            unresolved.append((node, {
+                "caller": caller, "lineno": node.lineno,
+                "expr": ast.unparse(func), "defines": func.attr,
+                "reason": "call through an object whose attribute "
+                          "names a function this module defines"}))
         if callee is not None:
             edges.setdefault(caller, set()).add(callee)
     for node in ast.walk(tree):
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load) \
                 and node.id in defined and id(node) not in called_directly:
-            unresolved.append({"caller": owner_of(scopes, node),
-                               "lineno": node.lineno, "expr": node.id,
-                               "reason": "a defined function is referenced "
-                                         "without being called here"})
-    return edges, sorted(unresolved, key=lambda e: (e["lineno"], e["expr"]))
+            unresolved.append((node, {
+                "caller": owner_of(scopes, node), "lineno": node.lineno,
+                "expr": node.id, "defines": node.id,
+                "reason": "a defined function is referenced "
+                          "without being called here"}))
+    return edges, sorted(unresolved, key=lambda pair: (pair[1]["lineno"],
+                                                       pair[1]["expr"]))
 
 
 def reachable(edges: dict, start: str) -> set:
@@ -778,7 +794,11 @@ class Module:
         self.source = (root / rel).read_text(encoding="utf-8")
         self.tree = ast.parse(self.source)
         self.scopes = _qualified_scopes(self.tree)
-        self.edges, self.unresolved_edges = call_graph(self.tree)
+        self.edges, self.unresolved_surfaces = call_graph(self.tree)
+        # TWO VIEWS OF ONE LIST. `unresolved_edges` is the JSON-safe one every
+        # reachability answer carries; `unresolved_surfaces` keeps the AST node
+        # beside it so a forward pass can ask which of them a `try` protects.
+        self.unresolved_edges = [edge for _, edge in self.unresolved_surfaces]
         self.facade = module_bindings(self.tree, FACADE_MODULE)
         self.reads = read_call_sites(self.tree, self.facade)
         self.read_owners = sorted({owner_of(self.scopes, node)
@@ -810,6 +830,15 @@ class Module:
         for name in sorted(names):
             found += [(name, node) for node in self._calls_by_callee.get(name, ())]
         return found
+
+    def resolved_calls(self) -> list:
+        """`(callee qname, call node)` for EVERY resolved local call edge.
+
+        The forward-pass counterpart of `calls_to`, which asks about a named set
+        decided in advance. A forward pass cannot name the set in advance --
+        that is the backward walk whose resolved-only `ancestors_of` set is
+        exactly what hid the C8.5X.R2 UNKNOWN class."""
+        return self.calls_to(set(self._calls_by_callee))
 
     def ancestors_of(self, target: str) -> set:
         if target not in self._ancestors:
@@ -1152,8 +1181,7 @@ def _handlers_around(caller: Module, node: ast.AST) -> list:
     caller's own call graph, so it terminates on the graph and needs no depth
     limit.
     """
-    found = [{"try": try_node, "origin": "DIRECT", "through": None,
-              "callee": None, "call_lineno": node.lineno}
+    found = [{"try": try_node, "origin": "DIRECT", "through": None}
              for try_node in caller.tries_around(node)]
     owner = owner_of(caller.scopes, node)
     if owner == MODULE_SCOPE:
@@ -1163,8 +1191,7 @@ def _handlers_around(caller: Module, node: ast.AST) -> list:
             if any(try_node is row["try"] for row in found):
                 continue
             found.append({"try": try_node, "origin": "TRANSITIVE",
-                          "through": f"{name} (line {call.lineno})",
-                          "callee": name, "call_lineno": call.lineno})
+                          "through": f"{name} (line {call.lineno})"})
     return sorted(found, key=lambda row: (row["try"].lineno, row["origin"]))
 
 
@@ -1235,63 +1262,126 @@ def _handler_row(caller_rel: str, origin: str, row: dict, entry: str,
             "is_catching_handler": bool(classes),
             "catchability": catchability,
             "reaches_read_owner": reach["reaches"],
+            # WHY, NOT JUST WHETHER (C8.5X.R3). `_reachability` has always
+            # computed the unresolved frontier behind an UNKNOWN and every
+            # caller dropped it, so a reviewer met a bare "UNKNOWN" with nothing
+            # to check. Empty on a decided row, by construction.
+            "unresolved_frontier": reach["unresolved"],
             "observes_failure_class_change": observes}
 
 
 def _local_rows(candidate: Module, model: dict) -> list:
-    """The candidate's OWN catching handlers around its OWN read.
+    """The candidate's OWN handlers around its OWN read — as a FORWARD pass.
 
-    THE C8.5X.R2 REPAIR. `_consumer_record` walks the universe for EXTERNAL
-    callers and skips `rel == candidate.rel`, so a handler living inside the
-    candidate itself had no way into `catching_handlers` at all — and two live
-    consumers are exactly that shape:
+    C8.5X.R2 established that a handler inside the candidate is a real handler:
+    `_consumer_record` walks the universe for EXTERNAL callers and skips
+    `rel == candidate.rel`, so `foundry_system_map.main` and
+    `foundry_shape_extractor.codebook_covered_actions` — each performing
+    `fcb.load_codebook()` directly inside `try/except Exception` — came back SAFE.
 
-        def codebook_covered_actions() -> set:      # foundry_shape_extractor
+    R2 FOUND THOSE ROWS BY WALKING BACKWARD AND THAT DIRECTION HAS A FALSE-SAFE
+    CLASS (C8.5X.R3, issue:1#issuecomment-5589050334). It reused
+    `_handlers_around`, whose transitive arm asks `ancestors_of(read owner)` — a
+    set built from RESOLVED edges only. So:
+
+        def read_owner():
+            return fcb.load_codebook()
+
+        def helper():
+            obj.read_owner()        # unresolved: an attribute names a function
+                                    # this module defines
+        def main():
             try:
-                import foundry_codebook as fcb
-                cb = fcb.load_codebook()            # <- the read is IN the try
+                helper()            # resolved entry; its route to the read is UNKNOWN
             except Exception:
-                return set()
+                return fallback
 
-    `except Exception` never caught the legacy `SystemExit` and does catch the
-    permanent `CodebookReadError`, so the repoint converts a hard stop into a
-    silent empty set. That is a NEW_ONLY blocker, and the analyzer reported both
-    of these files as SAFE. A handler is not less real for being in the same
-    file as the read; it is the SHORTEST path to it.
+    `_reachability(helper)` is UNKNOWN — the unresolved edge sits on helper's
+    frontier — but `helper` is not in `ancestors_of(read_owner)`, so the backward
+    walk produced NO ROW AT ALL and the candidate classified SAFE. The importer
+    side never had this hole, because `_caller_rows` asks `_reachability` per
+    entry and can therefore say UNKNOWN. R2 declared the asymmetry a resolution
+    boundary; it is not one, because the candidate's own unresolved edges have no
+    second route into `record["unresolved"]` either. An absence the analyzer
+    manufactured was being read as evidence.
 
-    THE WALK IS THE SAME WALK. `_handlers_around` already separates a handler
-    that lexically encloses a call from one that encloses a call to a function
-    reaching it, and here it is pointed at the read call site instead of an
-    importer's call site. DIRECT therefore means the try protects the read
-    itself, and TRANSITIVE means the try protects a call to a function of this
-    same module whose call graph reaches a read owner — which is why every row
-    here reaches by construction: `_handlers_around`'s transitive arm walks
-    `ancestors_of(read owner)`, a set built from RESOLVED edges only. A local
-    try around a call the graph cannot resolve produces no row, exactly as it
-    produces none on the importer side; that silence is the accepted C8.5X
-    resolution boundary and not a new one.
+    SO THE QUESTION IS ASKED FORWARD, FROM WHAT A `try` PROTECTS, in three
+    surfaces — and every one of them ends at the SAME `_reachability` and the
+    SAME `_handler_row` the importer rows use:
 
-    Reachability is not asserted, it is asked — `_reachability` is the same
-    function the importer rows use, so a row that stopped reaching would report
-    it rather than inherit a `True` written here.
+    1. DIRECT — the try protects the read itself. Reachability is not in doubt
+       and is still asked rather than written in as True.
+    2. TRANSITIVE, RESOLVED — the try protects a call to a local function.
+       `True` charges the handler (this is R2's set, reproduced exactly);
+       `False` does not charge it; `UNKNOWN` charges nothing and hides nothing —
+       it emits the row carrying its frontier, which is the repair.
+    3. TRANSITIVE, UNRESOLVED — the try protects one of the two unresolved-edge
+       families `call_graph` already emits: a call through an object whose
+       attribute names a function defined here, or a reference to a defined
+       function handed to somebody else to call. The EDGE is the uncertainty, so
+       these are UNKNOWN by construction; they are emitted only when the function
+       named could reach a read owner, since one that provably cannot is not
+       uncertainty about this migration.
+
+    WHAT AN UNKNOWN ROW MAY AND MAY NOT DO IS NOT DECIDED HERE. It goes through
+    `_handler_row` like every other row, so a SYMMETRIC_BOTH or NEITHER handler
+    still observes nothing whatever its reachability — an unresolved route does
+    not manufacture an asymmetric blocker — while a handler whose catchability
+    WOULD change becomes undecided rather than absent, and `_classify` keeps
+    UNKNOWN below a proven blocker and above SAFE.
     """
     rel = candidate.rel.as_posix()
-    seen: dict = {}
+    rows: dict = {}
+
+    def add(try_node, origin, through, entry, lineno, reach):
+        # Two read sites can share one enclosing try around one call that
+        # reaches both, and a surface can be named by more than one family.
+        # That is one handler, not several.
+        key = (origin, entry, try_node.lineno, lineno)
+        if key not in rows:
+            rows[key] = _handler_row(
+                rel, "LOCAL_READ",
+                {"try": try_node, "origin": origin, "through": through},
+                entry, lineno, reach, model)
+
+    # 1. the try protects the read itself.
+    direct = set()
     for node in sorted(candidate.reads, key=lambda n: n.lineno):
         owner = owner_of(candidate.scopes, node)
-        for row in _handlers_around(candidate, node):
-            # A DIRECT row protects the read itself, so the read owner IS the
-            # entry; a TRANSITIVE row's entry is the function the try wraps.
-            entry = owner if row["origin"] == "DIRECT" else row["callee"]
-            key = (row["origin"], entry, row["try"].lineno, row["call_lineno"])
-            if key in seen:
-                # Two read sites can share one enclosing try around one call to
-                # a function reaching both. That is one handler, not two.
+        reach = _reachability(candidate, owner)
+        for try_node in candidate.tries_around(node):
+            direct.add(id(try_node))
+            add(try_node, "DIRECT", None, owner, node.lineno, reach)
+
+    # 2. the try protects a resolved call to a local function.
+    for callee, call in candidate.resolved_calls():
+        reach = _reachability(candidate, callee)
+        if reach["reaches"] is False:
+            continue
+        for try_node in candidate.tries_around(call):
+            if id(try_node) in direct:
                 continue
-            seen[key] = _handler_row(rel, "LOCAL_READ", row, entry,
-                                     row["call_lineno"],
-                                     _reachability(candidate, entry), model)
-    return [seen[key] for key in sorted(seen)]
+            add(try_node, "TRANSITIVE", f"{callee} (line {call.lineno})",
+                callee, call.lineno, reach)
+
+    # 3. the try protects an unresolved edge that names a local function.
+    for node, edge in candidate.unresolved_surfaces:
+        if _reachability(candidate, edge["defines"])["reaches"] is False:
+            continue
+        # NOT `_reachability`'s answer about the NAME. The name may well reach a
+        # read owner -- it may BE one -- and that is not the question. The
+        # question is whether THIS protected surface reaches the read, and the
+        # edge into it is the thing nobody can resolve. So the answer is UNKNOWN
+        # and the edge is the frontier that says why.
+        reach = {"reaches": "UNKNOWN", "paths": [], "unresolved": [edge]}
+        for try_node in candidate.tries_around(node):
+            if id(try_node) in direct:
+                continue
+            add(try_node, "TRANSITIVE",
+                f"{edge['expr']} (line {edge['lineno']}, unresolved)",
+                edge["defines"], edge["lineno"], reach)
+
+    return [rows[key] for key in sorted(rows)]
 
 
 def _loader_calls(module) -> list:

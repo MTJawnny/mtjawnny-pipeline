@@ -2125,15 +2125,26 @@ class TestTheKnownTransitiveTrapIsFoundMechanically(unittest.TestCase):
         self.assertEqual(record["facade_disposition"], "SPLIT")
         local = [h for h in record["catching_handlers"]
                  if h["origin"] == "LOCAL_READ"]
-        self.assertEqual(len(local), 1)
-        self.assertEqual(local[0]["caller"], RUN1_APPLY_REL)
-        self.assertEqual(local[0]["handler_origin"], "TRANSITIVE")
-        self.assertEqual(local[0]["entry"], "apply_pass")
+        # TWO ROWS, ONE HANDLER, TWO PROTECTED CALL SITES. `main` calls
+        # `apply_pass` twice inside the same try -- "pass 1" and "pass 2 (from
+        # backup)" -- and a row is a (handler, protected surface) pair, which is
+        # what `lineno` means. C8.5X.R2's backward walk deduplicated by try node
+        # and reported one; the C8.5X.R3 forward pass reports both, which is also
+        # what `_caller_rows` has always done on the importer side for two calls
+        # to one entry. Same try, same entry, same verdict.
+        self.assertEqual(len(local), 2)
+        self.assertEqual({h["try_lineno"] for h in local}, {952})
+        self.assertEqual(len({h["lineno"] for h in local}), 2)
         self.assertIn("apply_pass", record["read_owner_functions"])
-        self.assertEqual(local[0]["catches"], ["BaseException"])
-        self.assertTrue(local[0]["reaches_read_owner"])
-        self.assertEqual(local[0]["catchability"]["transition"], "SYMMETRIC_BOTH")
-        self.assertIs(local[0]["observes_failure_class_change"], False)
+        for row in local:
+            self.assertEqual(row["caller"], RUN1_APPLY_REL)
+            self.assertEqual(row["handler_origin"], "TRANSITIVE")
+            self.assertEqual(row["entry"], "apply_pass")
+            self.assertEqual(row["catches"], ["BaseException"])
+            self.assertTrue(row["reaches_read_owner"])
+            self.assertEqual(row["catchability"]["transition"], "SYMMETRIC_BOTH")
+            self.assertIs(row["observes_failure_class_change"], False)
+            self.assertEqual(row["unresolved_frontier"], [])
         self.assertEqual(record["failure_observability"]["observing_handlers"], [])
         self.assertEqual(record["failure_observability"]["status"],
                          "SYMMETRIC_CATCH_NO_CLASS_DELTA")
@@ -3094,6 +3105,385 @@ def main():
                     self.assertNotIn(name, node.value)
             if isinstance(node, ast.Name):
                 self.assertNotIn(node.id, live)
+
+# ===========================================================================
+# 10. LOCAL UNKNOWN REACHABILITY (C8.5X.R3)
+# ===========================================================================
+#
+# C8.5X.R2 established that a handler inside the candidate is a real handler,
+# and found those handlers by walking BACKWARD from the read owner through
+# `_handlers_around`, whose transitive arm asks `ancestors_of(read owner)` -- a
+# set built from RESOLVED edges only. That direction has a false-safe class
+# (issue:1#issuecomment-5589050334):
+#
+#     def owner():   return fcb.load_codebook()
+#     def helper():  obj.owner()          # unresolved edge, on helper's frontier
+#     def main():
+#         try:       helper()             # resolved entry, route to read UNKNOWN
+#         except Exception: ...
+#
+# `_reachability(helper)` is UNKNOWN, but `helper` is not a resolved ancestor of
+# `owner`, so R2 produced NO ROW and the candidate classified SAFE. The importer
+# side never had this hole -- `_caller_rows` asks `_reachability` per entry -- and
+# the candidate's own unresolved edges have no second route into
+# `record["unresolved"]`, so nothing else could force UNKNOWN either. R2 called
+# the asymmetry a resolution boundary; it was an absence the analyzer
+# manufactured, read as evidence.
+#
+# The repair asks the question FORWARD, from what a `try` protects, over three
+# surfaces -- the read itself, a resolved local call, and the two unresolved-edge
+# families `call_graph` already emits -- all ending at the same `_reachability`
+# and the same `_handler_row`. These controls grade all three, and the two
+# conservation cases that must NOT move.
+
+
+class TestLocalUnknownReachability(unittest.TestCase):
+    """The three UNKNOWN surfaces and their contrasts, on the shipped analyzer.
+
+    Every candidate here is `FIXTURE_CANDIDATE` with ONE construct changed, and
+    each UNKNOWN case is paired with a resolved contrast and a non-reaching
+    contrast that differ from it by a single expression -- so the UNKNOWN verdict
+    is attributable to the unresolved edge and to nothing else."""
+
+    def analyze(self, **overrides) -> dict:
+        files = {"experiments/foundry_common.py": FIXTURE_COMMON,
+                 "experiments/foundry_codebook.py": FIXTURE_FACADE,
+                 "src/mtj_foundry/codebook_store.py": FIXTURE_STORE,
+                 "experiments/candidate.py": FIXTURE_CANDIDATE}
+        files.update(overrides)
+        analysis = fixture_repository(files)
+        self.assertEqual(analysis["failure_model"]["status"], "DERIVED")
+        return analysis
+
+    def candidate(self, source: str, **overrides) -> dict:
+        overrides["experiments/candidate.py"] = source
+        return record_for(self.analyze(**overrides), "experiments/candidate.py")
+
+    def local_rows(self, record: dict) -> list:
+        return [h for h in record["catching_handlers"]
+                if h["origin"] == "LOCAL_READ"]
+
+    # -- the sources ---------------------------------------------------------
+
+    # `helper` is a RESOLVED local entry; its route onward to `owner` is the
+    # unresolved `obj.owner()` edge. This is the exact shape of the finding.
+    UNKNOWN_FRONTIER = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    return fcb.load_codebook()
+
+
+def helper():
+    return obj.owner()
+
+
+def main():
+    try:
+        return helper()
+    except Exception:
+        return None
+
+
+def other():
+    return 1
+'''
+
+    # The unresolved edge is INSIDE the try body itself, rather than one frame
+    # down: `call_graph`'s first unresolved family, protected directly.
+    UNRESOLVED_METHOD = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    return fcb.load_codebook()
+
+
+def main():
+    try:
+        return obj.owner()
+    except Exception:
+        return None
+
+
+def other():
+    return 1
+'''
+
+    # `call_graph`'s second unresolved family: a defined function handed to
+    # somebody else to call, so the graph cannot say whether it runs here.
+    CALLBACK_REFERENCE = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    return fcb.load_codebook()
+
+
+def main():
+    try:
+        return sorted([1, 2], key=owner)
+    except Exception:
+        return None
+
+
+def other():
+    return 1
+'''
+
+    # One PROVEN direct blocker and one UNKNOWN route, in one file.
+    BLOCKER_PLUS_UNKNOWN = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    try:
+        return fcb.load_codebook()
+    except Exception:
+        return None
+
+
+def helper():
+    return obj.owner()
+
+
+def main():
+    try:
+        return helper()
+    except Exception:
+        return None
+
+
+def other():
+    return 1
+'''
+
+    # -- LOCAL_TRANSITIVE_UNKNOWN_FRONTIER -----------------------------------
+
+    def test_LOCAL_TRANSITIVE_UNKNOWN_FRONTIER(self):
+        """THE FINDING, AS A CONTROL. R2 answered SAFE_NO_TRANSITIVE_HANDLER
+        here, because the row it needed was discovered by a resolved-only
+        backward walk. The handler is real, the route to the read is unresolved,
+        and the honest answer is UNKNOWN with the frontier named."""
+        record = self.candidate(self.UNKNOWN_FRONTIER)
+        self.assertNotEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertNotEqual(record["classification"], "SAFE_NO_FAILURE_CLASS_DELTA")
+        self.assertEqual(record["classification"], "UNKNOWN")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["handler_origin"], "TRANSITIVE")
+        self.assertEqual(rows[0]["entry"], "helper")
+        self.assertEqual(rows[0]["catches"], ["Exception"])
+        self.assertEqual(rows[0]["reaches_read_owner"], "UNKNOWN")
+        self.assertEqual(rows[0]["observes_failure_class_change"], "UNKNOWN")
+        self.assertEqual(rows[0]["catchability"]["transition"], "NEW_ONLY")
+        frontier = rows[0]["unresolved_frontier"]
+        self.assertEqual([e["expr"] for e in frontier], ["obj.owner"])
+        self.assertEqual(frontier[0]["defines"], "owner")
+        self.assertEqual(frontier[0]["caller"], "helper")
+        self.assertIn("attribute", frontier[0]["reason"])
+        self.assertTrue(record["failure_observability"]["undecided_handlers"])
+        self.assertEqual(record["failure_observability"]["status"], "UNKNOWN")
+        self.assertIn("LOCAL_HANDLER_UNKNOWN",
+                      [b["kind"] for b in record["blockers"]])
+
+    def test_LOCAL_UNKNOWN_RESOLVED_CONTRAST(self):
+        """ONE EXPRESSION apart -- `obj.owner()` becomes `owner()` -- and the
+        route resolves, so the same handler becomes a proven NEW_ONLY blocker.
+        This is what keeps the UNKNOWN above from being a blanket refusal."""
+        resolved = self.UNKNOWN_FRONTIER.replace("obj.owner()", "owner()")
+        self.assertNotEqual(resolved, self.UNKNOWN_FRONTIER)
+        record = self.candidate(resolved)
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertTrue(rows[0]["reaches_read_owner"])
+        self.assertEqual(rows[0]["unresolved_frontier"], [])
+        self.assertEqual(rows[0]["catchability"]["transition"], "NEW_ONLY")
+        self.assertIs(rows[0]["observes_failure_class_change"], True)
+
+    def test_LOCAL_UNKNOWN_NONREACHING_CONTRAST(self):
+        """The other direction, also one expression apart: `helper` now has a
+        COMPLETE resolved graph that cannot reach the read owner, so the handler
+        is not attributed at all. UNKNOWN is a property of the evidence -- an
+        incomplete graph -- not of every negative answer."""
+        nonreaching = self.UNKNOWN_FRONTIER.replace("obj.owner()", "other()")
+        self.assertNotEqual(nonreaching, self.UNKNOWN_FRONTIER)
+        record = self.candidate(nonreaching)
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(self.local_rows(record), [])
+        self.assertEqual(record["failure_observability"]["status"],
+                         "UNOBSERVED_NO_REACHING_HANDLER")
+
+    # -- LOCAL_UNRESOLVED_DEFINED_METHOD_CALL --------------------------------
+
+    def test_LOCAL_UNRESOLVED_DEFINED_METHOD_CALL(self):
+        """The unresolved edge inside the try body itself. The EDGE is the
+        uncertainty -- nobody can say `obj.owner` is this module's `owner` -- so
+        reachability is UNKNOWN however reachable the NAME is, and the row says
+        which edge made it so."""
+        record = self.candidate(self.UNRESOLVED_METHOD)
+        self.assertEqual(record["classification"], "UNKNOWN")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["handler_origin"], "TRANSITIVE")
+        self.assertEqual(rows[0]["entry"], "owner")
+        self.assertEqual(rows[0]["reaches_read_owner"], "UNKNOWN")
+        self.assertEqual([e["expr"] for e in rows[0]["unresolved_frontier"]],
+                         ["obj.owner"])
+        self.assertIn("unresolved", rows[0]["through"])
+        self.assertEqual(rows[0]["observes_failure_class_change"], "UNKNOWN")
+
+    def test_the_same_call_spelled_resolvably_is_a_proven_blocker(self):
+        """`obj.owner()` -> `owner()`: the same try, the same arm, and the
+        verdict moves from UNKNOWN to a proven block."""
+        record = self.candidate(
+            self.UNRESOLVED_METHOD.replace("obj.owner()", "owner()"))
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        self.assertTrue(self.local_rows(record)[0]["reaches_read_owner"])
+
+    # -- LOCAL_CALLBACK_REFERENCE_UNKNOWN ------------------------------------
+
+    def test_LOCAL_CALLBACK_REFERENCE_UNKNOWN(self):
+        """The second unresolved family. `sorted(key=owner)` hands the read
+        owner to somebody else to call, so the graph cannot say the read runs
+        under this handler -- and cannot say it does not. Never SAFE by
+        disappearance."""
+        record = self.candidate(self.CALLBACK_REFERENCE)
+        self.assertEqual(record["classification"], "UNKNOWN")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["entry"], "owner")
+        self.assertEqual(rows[0]["reaches_read_owner"], "UNKNOWN")
+        frontier = rows[0]["unresolved_frontier"]
+        self.assertEqual([e["expr"] for e in frontier], ["owner"])
+        self.assertIn("referenced", frontier[0]["reason"])
+        self.assertEqual(rows[0]["observes_failure_class_change"], "UNKNOWN")
+
+    def test_calling_the_reference_directly_is_a_proven_blocker(self):
+        """One expression apart, and the callback becomes a call."""
+        record = self.candidate(
+            self.CALLBACK_REFERENCE.replace("sorted([1, 2], key=owner)",
+                                            "owner()"))
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        self.assertTrue(self.local_rows(record)[0]["reaches_read_owner"])
+
+    # -- PROVEN_LOCAL_BLOCKER_OUTRANKS_LOCAL_UNKNOWN -------------------------
+
+    def test_PROVEN_LOCAL_BLOCKER_OUTRANKS_LOCAL_UNKNOWN(self):
+        """The standing precedence law, both halves. A proven blocker is the
+        stronger statement and decides the record; the UNKNOWN row is still
+        carried, with its frontier, because an outranked uncertainty is not a
+        resolved one."""
+        record = self.candidate(self.BLOCKER_PLUS_UNKNOWN)
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 2)
+        by_origin = {h["handler_origin"]: h for h in rows}
+        self.assertEqual(sorted(by_origin), ["DIRECT", "TRANSITIVE"])
+        self.assertIs(by_origin["DIRECT"]["observes_failure_class_change"], True)
+        self.assertEqual(by_origin["TRANSITIVE"]["reaches_read_owner"], "UNKNOWN")
+        self.assertEqual(
+            by_origin["TRANSITIVE"]["observes_failure_class_change"], "UNKNOWN")
+        self.assertEqual(record["failure_observability"]["status"],
+                         "CHANGED_BY_HANDLER")
+        undecided = record["failure_observability"]["undecided_handlers"]
+        self.assertEqual([h["entry"] for h in undecided], ["helper"])
+        self.assertEqual([e["expr"] for e in undecided[0]["unresolved_frontier"]],
+                         ["obj.owner"])
+        kinds = [b["kind"] for b in record["blockers"]]
+        self.assertIn("LOCAL_HANDLER", kinds)
+        self.assertIn("LOCAL_HANDLER_UNKNOWN", kinds)
+
+    # -- the two conservation cases that must NOT move -----------------------
+
+    def test_an_UNKNOWN_route_does_not_make_a_SYMMETRIC_handler_a_blocker(self):
+        """R1 CONSERVATION. `except BaseException` catches both sides, so there
+        is no catchability delta to observe whether or not the read is reached --
+        exactly C8.5R's accepted result. An unresolved route may not manufacture
+        an asymmetric blocker, and the evidence is still carried on the row."""
+        record = self.candidate(
+            self.UNKNOWN_FRONTIER.replace("except Exception",
+                                          "except BaseException"))
+        self.assertEqual(record["classification"], "SAFE_NO_FAILURE_CLASS_DELTA")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["catchability"]["transition"], "SYMMETRIC_BOTH")
+        self.assertEqual(rows[0]["reaches_read_owner"], "UNKNOWN")
+        self.assertIs(rows[0]["observes_failure_class_change"], False)
+        self.assertEqual([e["expr"] for e in rows[0]["unresolved_frontier"]],
+                         ["obj.owner"])
+        self.assertEqual(record["failure_observability"]["undecided_handlers"], [])
+
+    def test_an_UNKNOWN_route_does_not_make_a_NEITHER_handler_a_blocker(self):
+        """The same conservation on the other harmless arm. `except OSError` is
+        a pass-through on both sides, so it observes nothing from any distance."""
+        record = self.candidate(
+            self.UNKNOWN_FRONTIER.replace("except Exception", "except OSError"))
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        rows = self.local_rows(record)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["catchability"]["transition"], "NEITHER")
+        self.assertEqual(rows[0]["reaches_read_owner"], "UNKNOWN")
+        self.assertIs(rows[0]["observes_failure_class_change"], False)
+
+    def test_an_unresolved_edge_naming_an_unreachable_function_is_not_charged(self):
+        """The bound on family three. An unresolved edge naming a function that
+        provably cannot reach a read owner is uncertainty about something else,
+        and this analyzer is scoped to one migration."""
+        source = self.UNRESOLVED_METHOD.replace("obj.owner()", "obj.other()")
+        self.assertNotEqual(source, self.UNRESOLVED_METHOD)
+        record = self.candidate(source)
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(self.local_rows(record), [])
+
+    # -- the frontier is evidence, and the schema says the shape moved -------
+
+    def test_a_decided_row_carries_an_EMPTY_frontier(self):
+        """The field is evidence for an UNKNOWN, not decoration on every row.
+        Asserted against the R2 direct-blocker fixture, which is decided."""
+        record = self.candidate(TestCandidateLocalHandlers.LOCAL_DIRECT)
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        self.assertEqual(self.local_rows(record)[0]["unresolved_frontier"], [])
+
+    def test_the_live_external_UNKNOWN_rows_now_say_why(self):
+        """The same field on the importer side, where `_reachability` has always
+        computed the frontier and every caller dropped it. `foundry_gate_audit`'s
+        symmetric row into `foundry_shape_extractor` was reported UNKNOWN with
+        nothing a reviewer could check; the edges are now named."""
+        record = cca.analyze_consumer(REPO_ROOT, SHAPE_EXTRACTOR_REL)
+        undecided_reach = [h for h in record["catching_handlers"]
+                           if h["reaches_read_owner"] == "UNKNOWN"]
+        self.assertTrue(undecided_reach)
+        for row in undecided_reach:
+            self.assertTrue(row["unresolved_frontier"])
+            for edge in row["unresolved_frontier"]:
+                self.assertEqual(sorted(edge),
+                                 ["caller", "defines", "expr", "lineno", "reason"])
+
+    def test_the_schema_records_that_the_record_shape_moved(self):
+        """`unresolved_frontier` is a new key on every handler row, and the
+        constant exists precisely so a consumer can tell that from a repository
+        change. Leaving it at /1 would be the defect the constant guards."""
+        self.assertEqual(cca.SCHEMA, "mtj-codebook-consumer-analysis/2")
+        self.assertEqual(cca.analyze_repository(REPO_ROOT)["schema"], cca.SCHEMA)
+
+    def test_the_two_unresolved_views_are_one_list(self):
+        """`unresolved_surfaces` carries the AST node, `unresolved_edges` is the
+        JSON-safe projection of the SAME entries in the SAME order. Two lists
+        built by two walks would be the drift this repair exists to remove."""
+        analyzer = Path(cca.__file__)
+        module = cca.Module(analyzer.parent, Path(analyzer.name))
+        self.assertEqual([edge for _, edge in module.unresolved_surfaces],
+                         module.unresolved_edges)
+        for node, edge in module.unresolved_surfaces:
+            self.assertIsInstance(node, ast.AST)
+            self.assertEqual(node.lineno, edge["lineno"])
 
 if __name__ == "__main__":
     unittest.main()
