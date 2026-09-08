@@ -1,10 +1,19 @@
 {
   "schema": "mtj-foundry-input-lock/1",
   "id": "path-e-pilot-corpus-lock",
-  "status": "PROPOSED_PILOT_INPUT_LOCK",
+  "status": "MANAGER_SELECTED_PATH_E_PILOT_INPUT",
   "ratified": false,
-  "what_this_is": "A MEASURED identity for the corpus bytes the Path E milestone-1 acceptance run used, plus the provenance that was verified for them. It is a PROPOSAL. No durable authority pins a raw-corpus digest at the base of this task, and this document does not create one: it records what was measured so a reviewer can ratify, correct or reject it.",
-  "what_this_is_not": "Not an authority selector, not a ratified snapshot, and not a claim that these bytes were previously selected. docs/codebook-authority.json is the ratified selector for the CODEBOOK; the corpus has no counterpart and that gap is the reason this file exists.",
+  "selection": {
+    "authority": "MANAGER",
+    "basis": "CAPTAIN_APPROVED_PATH_E",
+    "decision_id": "D-20260908-PATH-E-PILOT-CORPUS-SELECTED",
+    "decision_ref": "GitHub Issue #1 comment 5592977288",
+    "scope": "PATH_E_PILOT_ONLY",
+    "accepted_head_at_selection": "2246caefef65c467c824636ca7153b021cdfa634",
+    "worker_obligation": "re-measure BOTH the container sha256 and the decompressed-content sha256 before any successful real-data result, and STOP on mismatch. no measurement may silently promote a different file."
+  },
+  "what_this_is": "The MEASURED identity of the corpus bytes selected as the bounded Path E pilot corpus, plus the provenance that was verified for them. Manager selected these bytes by durable decision D-20260908-PATH-E-PILOT-CORPUS-SELECTED (GitHub Issue #1 comment 5592977288), under the Captain-approved Path E strategy. It was a PROPOSAL until that decision; it is now a recorded operational selection.",
+  "what_this_is_not": "Not global corpus authority, not a ratified MTG semantic ruling, not codebook authority, and not permission to replace the corpus with a newer download. `ratified` stays false ON PURPOSE: the selecting decision states in its own words that it is an operational input selection and not a semantic ratification. docs/codebook-authority.json remains the ratified selector for the CODEBOOK; the corpus still has no counterpart, and the selecting decision explicitly declines to require one for the pilot.",
   "corpus": {
     "path": "data/raw/oracle-cards.jsonl.gz",
     "path_is": "repository-relative; resolved against the runtime's explicit --root",
@@ -37,7 +46,6 @@
     }
   },
   "review_required": [
-    "ratify, correct or reject this as the pinned pilot corpus identity",
-    "decide whether the corpus deserves a tracked selector of its own, as the codebook has"
+    "the corpus identity itself is SELECTED and no longer awaits ratification; what remains open is whether the corpus deserves a tracked selector of its own, as the codebook has. the selecting decision leaves that open and does not require it for the pilot."
   ]
 }

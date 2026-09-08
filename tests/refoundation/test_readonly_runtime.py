@@ -31,6 +31,7 @@ substitute for the acceptance run and it is not a substitute for them.
 from __future__ import annotations
 
 import gzip
+import importlib
 import json
 import os
 import shutil
@@ -1197,12 +1198,25 @@ class TestThePermanentBoundaryHolds(unittest.TestCase):
                         self.assertIn(root, allowed)
 
     def test_the_declared_console_script_resolves_to_the_shipped_callable(self):
+        """PATH E M2 added a SECOND script, so the exact-set assertion had to name
+        it. The property this test protects is unchanged and is still exact: every
+        declared entry point resolves to a real callable in the shipped package,
+        and no undeclared or dangling script may appear. Milestone 1's own command
+        is asserted by name below so widening the set cannot quietly drop it."""
         data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
         scripts = data["project"]["scripts"]
-        self.assertEqual(scripts, {"mtj-foundry-report": "mtj_foundry.cli:main"})
+        self.assertEqual(scripts, {
+            "mtj-foundry-report": "mtj_foundry.cli:main",
+            "mtj-foundry-evidence": "mtj_foundry.evidence_cli:main",
+        })
         module, _, attribute = scripts["mtj-foundry-report"].partition(":")
         self.assertEqual(module, cli.__name__)
         self.assertTrue(callable(getattr(cli, attribute)))
+        for target in scripts.values():
+            module_name, _, attribute = target.partition(":")
+            with self.subTest(script=target):
+                module = importlib.import_module(module_name)
+                self.assertTrue(callable(getattr(module, attribute)))
 
     def test_the_metadata_version_and_the_package_version_agree(self):
         import mtj_foundry
