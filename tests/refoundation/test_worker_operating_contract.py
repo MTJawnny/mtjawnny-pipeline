@@ -215,10 +215,36 @@ def k_checkpoint_problems(text: str):
     return problems
 
 
+# C8.5W.R4 -- ONE canonical spelling for a load-bearing selector. "latest
+# accepted K" was carried in three startup surfaces after R3 and reads as a
+# DIFFERENT rule: it invites selecting a K because it accepted something, when a
+# K is selected because it is the LATEST. `flat()` strips backticks, so the
+# markdown "latest `K` -> active `T`" and the YAML "latest K -> active T" are
+# the same string here and one checker covers both spellings.
+STALE_SELECTOR_RE = re.compile(r"latest\s+accepted\s+K")
+
+# Every startup document that routes a Worker to its task.
+ROUTING_DOCS = ("CLAUDE.md", "refoundation/WORKER-START.md",
+                "refoundation/SESSION-PROTOCOL.md",
+                "refoundation/ACTIVE-PHASE.yaml",
+                "refoundation/BOOTSTRAP-STATE.yaml")
+
+
 def k_selector_problems(text: str):
-    """The selector alone, so a doc may carry it without the full definition."""
-    return ([] if K_SELECTOR in flat(text)
-            else [f"missing canonical selector {K_SELECTOR!r}"])
+    """Canonical selector present AND the stale synonym absent.
+
+    Both arms are needed, and the REJECTION arm is the load-bearing one: a
+    document that states the selector twice keeps a canonical occurrence after
+    one is corrupted, so a presence-only check stays green on a half-broken doc.
+    That is the R3 lesson (a rig removed one of two statements and the guard was
+    right to stay green) turned into a positive requirement.
+    """
+    flattened = flat(text)
+    problems = ([] if K_SELECTOR in flattened
+                else [f"missing canonical selector {K_SELECTOR!r}"])
+    problems += [f"stale selector spelling: {m.group(0)!r}"
+                 for m in STALE_SELECTOR_RE.finditer(flattened)]
+    return problems
 
 
 # Rules that must survive the compaction. A byte budget is not a licence to drop
@@ -398,10 +424,18 @@ class TestTheWorkerOperatingContract(unittest.TestCase):
             k_checkpoint_problems(self.texts["refoundation/SESSION-PROTOCOL.md"]),
             [])
 
-    def test_both_worker_facing_docs_carry_the_latest_K_to_active_T_selector(self):
-        for name in ("CLAUDE.md", "refoundation/SESSION-PROTOCOL.md"):
+    def test_every_routing_document_carries_the_one_canonical_selector(self):
+        """All five, not just the two Worker-facing ones. ACTIVE-PHASE is
+        auto-imported by CLAUDE.md and BOOTSTRAP-STATE is the forward pointer,
+        so a stale spelling there routes a fresh session just as wrongly."""
+        for name in ROUTING_DOCS:
             with self.subTest(doc=name):
                 self.assertEqual(k_selector_problems(self.texts[name]), [])
+
+    def test_no_startup_document_carries_the_stale_selector_spelling(self):
+        for name, text in self.texts.items():
+            with self.subTest(doc=name):
+                self.assertEqual(STALE_SELECTOR_RE.findall(flat(text)), [])
 
 
 # --------------------------------------------------------------------------
@@ -570,6 +604,30 @@ class TestTheContractGuardCanFail(unittest.TestCase):
                             for p in k_selector_problems(rigged)),
                         k_selector_problems(rigged))
 
+    def test_NC15_a_stale_selector_in_any_routing_document_turns_it_red(self):
+        """One rig per routing document. Only ONE occurrence is corrupted, so a
+        doc that states the selector twice still carries a canonical one -- the
+        presence arm stays green and the REJECTION arm is what must fire. Each
+        subTest asserts the rig was non-no-op and pins the firing problem."""
+        for name in ROUTING_DOCS:
+            with self.subTest(doc=name):
+                text = STARTUP_DOCS[name].read_text(encoding="utf-8")
+                for canonical, stale in (
+                        ("latest `K` -> active `T`",
+                         "latest accepted `K` -> active `T`"),
+                        ("latest K -> active T",
+                         "latest accepted K -> active T")):
+                    if canonical in text:
+                        rigged = text.replace(canonical, stale, 1)
+                        break
+                else:
+                    self.fail(f"{name} states no canonical selector to rig")
+                self.assertNotEqual(rigged, text)
+                self.assertTrue(
+                    any("stale selector spelling" in p
+                        for p in k_selector_problems(rigged)),
+                    k_selector_problems(rigged))
+
     def test_the_unrigged_documents_are_the_green_control(self):
         """Every rig above is only meaningful because this is clean."""
         self.assertEqual(size_problems(self.claude, CLAUDE_MAX_LINES,
@@ -585,6 +643,10 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         self.assertEqual(k_checkpoint_problems(self.claude), [])
         self.assertEqual(k_checkpoint_problems(self.protocol), [])
         self.assertEqual(k_selector_problems(self.claude), [])
+        for name in ROUTING_DOCS:
+            self.assertEqual(
+                k_selector_problems(STARTUP_DOCS[name].read_text(encoding="utf-8")),
+                [], name)
 
 
 if __name__ == "__main__":

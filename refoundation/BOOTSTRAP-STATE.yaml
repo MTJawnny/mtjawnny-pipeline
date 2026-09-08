@@ -6,7 +6,7 @@ status: SUPERSEDED
 # rather than relocated.
 
 current_phase_pointer: refoundation/ACTIVE-PHASE.yaml
-task_state_pointer: GitHub Issue #1 latest accepted K -> active T
+task_state_pointer: GitHub Issue #1 latest K -> active T
 worker_contract_pointer: CLAUDE.md
 
 note: >-

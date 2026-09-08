@@ -2,7 +2,7 @@ schema: mtj-active-phase/1
 
 # CURRENT REPLACEABLE STATE. Not chronology, not task authority.
 # Replace fields when the phase changes; never append history.
-# Per-task authority is GitHub Issue #1: latest accepted K -> active T.
+# Per-task authority is GitHub Issue #1: latest K -> active T.
 
 phase: C8.5_CODEBOOK_BOUNDARY_REFOUNDATION
 
@@ -22,7 +22,7 @@ ctl: {AQ4: P, BRIDGE0: U, STEP6: N, MERGE: N}
 permanent_namespace: mtj_foundry
 layout_owner: mtj_foundry.paths.ProjectPaths
 
-task_authority: GitHub Issue #1 latest accepted K -> active T
+task_authority: GitHub Issue #1 latest K -> active T
 phase_update_rule: replace fields; never append history
 
 # A slice is safe to reason about only at this unit. File-local syntax is

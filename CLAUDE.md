@@ -57,9 +57,9 @@ not an anomaly; it is the normal repair path. The acceptance verdict lives in
 
 So:
 
-- **Canonical selector: latest `K` -> active `T`.** Where the phase files or a
-  Manager message say "latest accepted `K`", they mean this same selector — the
-  latest checkpoint — **not** "a `K` that accepted an implementation".
+- **Canonical selector: latest `K` -> active `T`.** That is the only spelling.
+  A `K` is selected because it is the latest, never because it accepted
+  anything.
 - **A `T` is not executable merely because it was posted.** It becomes yours to
   run only when the latest `K` selects it as `a`. Execute only that one.
 - A `V` does not have to end in acceptance, and a repair `T` is the loop
