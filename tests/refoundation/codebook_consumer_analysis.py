@@ -39,7 +39,11 @@ WHAT IS DERIVED, AND WHY EACH IS SEPARATE
    `foundry_consolidate_run1_classify`, whose `classify_a15` does not reach the
    read owner.
 6. CATCHING HANDLER — only counted when 5 succeeds. A `try/finally` with no
-   `except` catches nothing and is reported as such.
+   `except` catches nothing and is reported as such. TWO ORIGINS, because a
+   handler does not have to be an importer's: `LOCAL_READ` rows are the
+   candidate's OWN try/except around its OWN read (C8.5X.R2), which is the
+   shortest reaching path of all and was missing entirely while the analyzer
+   walked only external callers.
 7. FAILURE OBSERVABILITY — the conclusion of 5 and 6 together.
 8. BOOTSTRAP DEPENDENCY — whether the candidate can reach `mtj_foundry` at all
    from its existing execution context. Derived, including the fact that
@@ -1148,7 +1152,8 @@ def _handlers_around(caller: Module, node: ast.AST) -> list:
     caller's own call graph, so it terminates on the graph and needs no depth
     limit.
     """
-    found = [{"try": try_node, "origin": "DIRECT", "through": None}
+    found = [{"try": try_node, "origin": "DIRECT", "through": None,
+              "callee": None, "call_lineno": node.lineno}
              for try_node in caller.tries_around(node)]
     owner = owner_of(caller.scopes, node)
     if owner == MODULE_SCOPE:
@@ -1158,7 +1163,8 @@ def _handlers_around(caller: Module, node: ast.AST) -> list:
             if any(try_node is row["try"] for row in found):
                 continue
             found.append({"try": try_node, "origin": "TRANSITIVE",
-                          "through": f"{name} (line {call.lineno})"})
+                          "through": f"{name} (line {call.lineno})",
+                          "callee": name, "call_lineno": call.lineno})
     return sorted(found, key=lambda row: (row["try"].lineno, row["origin"]))
 
 
@@ -1183,40 +1189,109 @@ def _caller_rows(caller: Module, candidate: Module, entries: list,
                       "reaches_read_owner": reach["reaches"],
                       "reaching_paths": reach["paths"]})
         for row in _handlers_around(caller, node):
-            classes = handler_classes(row["try"])
-            catchability = (handler_catchability(classes, model) if classes else
-                            {"legacy_caught": False, "permanent_caught": "NONE",
-                             "permanent_caught_classes": [],
-                             "permanent_uncaught_classes": [],
-                             "transition": "NOT_A_HANDLER",
-                             "changes_catchability": False,
-                             "evidence": ["try/finally catches nothing"]})
-            # TWO CONDITIONS, AND BOTH MUST HOLD. A handler observes the
-            # class change only if the failure can REACH it and its
-            # catchability actually differs across the transition. C8.5X
-            # asserted the first and assumed the second, which made every
-            # reaching handler a blocker and contradicted C8.5R's accepted
-            # `except BaseException` result.
-            change = catchability["changes_catchability"]
-            if change is False:
-                observes = False
-            elif change == "UNKNOWN" and reach["reaches"] is not False:
-                observes = "UNKNOWN"
-            elif reach["reaches"] == "UNKNOWN":
-                observes = "UNKNOWN"
-            else:
-                observes = bool(reach["reaches"] is True)
-            handlers.append({
-                "caller": caller.rel.as_posix(), "origin": origin,
-                "handler_origin": row["origin"], "through": row["through"],
-                "lineno": node.lineno, "entry": entry,
-                "try_lineno": row["try"].lineno,
-                "catches": classes,
-                "is_catching_handler": bool(classes),
-                "catchability": catchability,
-                "reaches_read_owner": reach["reaches"],
-                "observes_failure_class_change": observes})
+            handlers.append(_handler_row(caller.rel.as_posix(), origin, row,
+                                         entry, node.lineno, reach, model))
     return calls, handlers
+
+
+def _handler_row(caller_rel: str, origin: str, row: dict, entry: str,
+                 lineno: int, reach: dict, model: dict) -> dict:
+    """ONE handler row, and the ONLY place a handler's verdict is computed.
+
+    Extracted rather than repeated (C8.5X.R2). The candidate's own handlers ask
+    the identical question of the identical machinery — `handler_classes`,
+    `handler_catchability`, and the two-condition observability rule below — so
+    a second, local-only exception model cannot drift away from this one. The
+    caller supplies WHERE the handler was found; nothing about the verdict
+    depends on that.
+    """
+    classes = handler_classes(row["try"])
+    catchability = (handler_catchability(classes, model) if classes else
+                    {"legacy_caught": False, "permanent_caught": "NONE",
+                     "permanent_caught_classes": [],
+                     "permanent_uncaught_classes": [],
+                     "transition": "NOT_A_HANDLER",
+                     "changes_catchability": False,
+                     "evidence": ["try/finally catches nothing"]})
+    # TWO CONDITIONS, AND BOTH MUST HOLD. A handler observes the class change
+    # only if the failure can REACH it and its catchability actually differs
+    # across the transition. C8.5X asserted the first and assumed the second,
+    # which made every reaching handler a blocker and contradicted C8.5R's
+    # accepted `except BaseException` result.
+    change = catchability["changes_catchability"]
+    if change is False:
+        observes = False
+    elif change == "UNKNOWN" and reach["reaches"] is not False:
+        observes = "UNKNOWN"
+    elif reach["reaches"] == "UNKNOWN":
+        observes = "UNKNOWN"
+    else:
+        observes = bool(reach["reaches"] is True)
+    return {"caller": caller_rel, "origin": origin,
+            "handler_origin": row["origin"], "through": row["through"],
+            "lineno": lineno, "entry": entry,
+            "try_lineno": row["try"].lineno,
+            "catches": classes,
+            "is_catching_handler": bool(classes),
+            "catchability": catchability,
+            "reaches_read_owner": reach["reaches"],
+            "observes_failure_class_change": observes}
+
+
+def _local_rows(candidate: Module, model: dict) -> list:
+    """The candidate's OWN catching handlers around its OWN read.
+
+    THE C8.5X.R2 REPAIR. `_consumer_record` walks the universe for EXTERNAL
+    callers and skips `rel == candidate.rel`, so a handler living inside the
+    candidate itself had no way into `catching_handlers` at all — and two live
+    consumers are exactly that shape:
+
+        def codebook_covered_actions() -> set:      # foundry_shape_extractor
+            try:
+                import foundry_codebook as fcb
+                cb = fcb.load_codebook()            # <- the read is IN the try
+            except Exception:
+                return set()
+
+    `except Exception` never caught the legacy `SystemExit` and does catch the
+    permanent `CodebookReadError`, so the repoint converts a hard stop into a
+    silent empty set. That is a NEW_ONLY blocker, and the analyzer reported both
+    of these files as SAFE. A handler is not less real for being in the same
+    file as the read; it is the SHORTEST path to it.
+
+    THE WALK IS THE SAME WALK. `_handlers_around` already separates a handler
+    that lexically encloses a call from one that encloses a call to a function
+    reaching it, and here it is pointed at the read call site instead of an
+    importer's call site. DIRECT therefore means the try protects the read
+    itself, and TRANSITIVE means the try protects a call to a function of this
+    same module whose call graph reaches a read owner — which is why every row
+    here reaches by construction: `_handlers_around`'s transitive arm walks
+    `ancestors_of(read owner)`, a set built from RESOLVED edges only. A local
+    try around a call the graph cannot resolve produces no row, exactly as it
+    produces none on the importer side; that silence is the accepted C8.5X
+    resolution boundary and not a new one.
+
+    Reachability is not asserted, it is asked — `_reachability` is the same
+    function the importer rows use, so a row that stopped reaching would report
+    it rather than inherit a `True` written here.
+    """
+    rel = candidate.rel.as_posix()
+    seen: dict = {}
+    for node in sorted(candidate.reads, key=lambda n: n.lineno):
+        owner = owner_of(candidate.scopes, node)
+        for row in _handlers_around(candidate, node):
+            # A DIRECT row protects the read itself, so the read owner IS the
+            # entry; a TRANSITIVE row's entry is the function the try wraps.
+            entry = owner if row["origin"] == "DIRECT" else row["callee"]
+            key = (row["origin"], entry, row["try"].lineno, row["call_lineno"])
+            if key in seen:
+                # Two read sites can share one enclosing try around one call to
+                # a function reaching both. That is one handler, not two.
+                continue
+            seen[key] = _handler_row(rel, "LOCAL_READ", row, entry,
+                                     row["call_lineno"],
+                                     _reachability(candidate, entry), model)
+    return [seen[key] for key in sorted(seen)]
 
 
 def _loader_calls(module) -> list:
@@ -1385,6 +1460,14 @@ def _observability(record: dict) -> dict:
                 if h["is_catching_handler"] and h["reaches_read_owner"] is False]}
 
 
+def _blocker_kind(handler: dict) -> str:
+    """`LOCAL_HANDLER` for the candidate's own try, `TRANSITIVE_HANDLER` for an
+    importer's. The row already carries the distinction in `origin`; this is the
+    same fact spelled where a reader of `blockers` alone will see it."""
+    return ("LOCAL_HANDLER" if handler["origin"] == "LOCAL_READ"
+            else "TRANSITIVE_HANDLER")
+
+
 def _blockers(record: dict) -> list:
     """Everything standing between this candidate and a READ-only repoint.
 
@@ -1397,13 +1480,16 @@ def _blockers(record: dict) -> list:
     for symbol in record["facade_symbols_after_read_repoint"]:
         out.append({"kind": "RETAINED_FACADE_SYMBOL", "detail": symbol})
     for handler in record["failure_observability"]["observing_handlers"]:
-        out.append({"kind": "TRANSITIVE_HANDLER",
+        # NAMED BY WHERE IT LIVES (C8.5X.R2). A candidate-local handler is not a
+        # transitive one, and calling it that in the blocker list would hide the
+        # very distinction this repair exists to restore.
+        out.append({"kind": _blocker_kind(handler),
                     "detail": f"{handler['caller']}:{handler['try_lineno']} "
                               f"catches {'|'.join(handler['catches'])} around "
                               f"{handler['entry']}: "
                               f"{handler['catchability']['transition']}"})
     for handler in record["failure_observability"]["undecided_handlers"]:
-        out.append({"kind": "TRANSITIVE_HANDLER_UNKNOWN",
+        out.append({"kind": f"{_blocker_kind(handler)}_UNKNOWN",
                     "detail": f"{handler['caller']}:{handler['try_lineno']} "
                               f"catches {'|'.join(handler['catches'])} around "
                               f"{handler['entry']}: "
@@ -1426,6 +1512,15 @@ def _consumer_record(candidate: Module, universe: dict,
     dynamic_sites: list = []
     unresolved: list = []
     inert_dynamic: list = []
+
+    # THE CANDIDATE'S OWN HANDLERS, FIRST AND SEPARATELY (C8.5X.R2). The loop
+    # below is the EXTERNAL-caller loop and skips `rel == candidate.rel` for a
+    # good reason -- a module is not its own importer, and listing it as one
+    # would put it in `static_importers`. But that skip also deleted every
+    # handler the candidate has around its own read, which is the shortest
+    # reaching path there is. `_local_rows` supplies exactly those, tagged
+    # `origin: LOCAL_READ` so a reader can tell them from an importer's.
+    handlers += _local_rows(candidate, model)
 
     for rel, caller in sorted(universe.items()):
         if rel == candidate.rel:
