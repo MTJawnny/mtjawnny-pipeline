@@ -1,118 +1,30 @@
-# FRESH CLAUDE CODE WORKER — START HERE
+# FRESH WORKER — START HERE
 
-Use this at the beginning of a new Claude Code session for the MTG Thesaurus / Foundry refoundation.
+This file is a pointer, not a manual. Nothing here is authority on its own.
 
-## Role
+## Where the rules actually live
 
-You are the **Worker**.
+- **Root `CLAUDE.md` is the canonical Worker contract**, auto-loaded every
+  session. Read it there; it is not duplicated here.
+- It imports `refoundation/ACTIVE-PHASE.yaml`, which carries the current phase.
+  That is replaceable state, not task authority.
+- **Live task authority is GitHub Issue #1**, through one canonical selector:
+  **latest `K` -> active `T`**. Nothing else assigns you work.
 
-Captain owns final human decisions.
+## What a fresh session does
 
-ChatGPT is the Manager and issues bounded tasks through GitHub.
+1. Inspect local state before mutating anything.
+2. Read Issue #1 — **latest `K` -> active `T`**.
+3. Verify the exact base and scope against measured state.
+4. Execute exactly that one task.
+5. Post the detailed terminal `X` to Issue #1.
+6. Reply to the human with exactly: `Claude done`
 
-Do not infer authorization from prior Claude session history.
+## What a fresh session does not do
 
-## Startup sequence
-
-### 1. Inspect local state before mutation
-
-From `/Users/jawnny/Projects/mtjawnny-pipeline` measure:
-- current branch;
-- HEAD;
-- `git status --short`;
-- configured remotes;
-- worktrees/stashes if relevant.
-
-Do not clean, stash, checkout, reset, merge, rebase, or alter files merely to make the tree look clean.
-
-Known forensic checkpoint before bootstrap work:
-- local committed HEAD: `11d63633919146a9be7a5dcdeb55efa0b8dc058d`;
-- modified tracked: `docs/RATIFIED-RULINGS-REGISTRY.md`;
-- nine untracked documents;
-- no staged files.
-
-Later durable work may supersede that measurement. Detect; do not assume.
-
-### 2. Fetch remote refs safely
-
-A normal `git fetch origin` is allowed when needed to read durable Manager state, provided the assigned task does not prohibit it.
-
-Do not pull.
-
-### 3. Read bootstrap control plane without requiring checkout
-
-If the current local branch does not contain these files, read them from:
-
-`origin/refoundation-manager-bootstrap-2026-08-28`
-
-using `git show` or equivalent read-only commands.
-
-Read:
-1. `refoundation/BOOTSTRAP-STATE.yaml`
-2. `refoundation/CAPTAIN-DIRECTION.md`
-3. `refoundation/SESSION-PROTOCOL.md`
-4. this file
-
-Do not switch branches merely to read bootstrap state.
-
-### 4. Read exactly one READY task
-
-Work only from the GitHub issue explicitly identified by Manager/Captain.
-
-The issue contract outranks remembered instructions from a previous Claude session.
-
-Verify:
-- task schema;
-- exact base;
-- allow/deny scope;
-- STOP conditions;
-- result delivery;
-- `next` authorization.
-
-### 5. Verify base/state
-
-If the task's expected base or required state differs from the measured repository in an unexplained way, STOP and report the mismatch.
-
-Do not silently adapt a task to a different repository state.
-
-### 6. Read narrowly
-
-Read the subsystem files required by the task.
-
-Do not reconstruct the entire project from old handoffs unless the task specifically requires historical evidence.
-
-Durable current state and exact authority routing should progressively replace transcript-style bootstrap reading.
-
-## Execution discipline
-
-- one task at a time;
-- bounded scope;
-- STOP on drift;
-- no self-authorized successor;
-- no architecture minting inside implementation unless task explicitly delegates it;
-- preserve semantic truth unless a semantic change is separately authorized.
-
-## Result delivery
-
-Post `mtj-result/1` or the schema named by the task to the GitHub issue/PR.
-
-Include:
-- measured base;
-- status;
-- exact mutations;
-- commit/branch/PR refs if any;
-- validation;
-- conservation;
-- discrepancies;
-- `decision_required`;
-- `next: NONE` unless externally authorized.
-
-After posting the result, stop.
-
-Do not rely on Captain to copy the result into ChatGPT.
-
-## Session reset rule
-
-A new Claude session is normal, not exceptional.
-
-If this protocol plus durable GitHub/repository state is insufficient to resume correctly, report that as a refoundation architecture defect rather than compensating by asking for old transcript dumps.
+- Do not ask for a transcript, a scrollback dump, or a session handoff. A new
+  session is normal, not exceptional. If the contract plus durable
+  repository/GitHub state is not enough to resume, that is a refoundation
+  defect to report — not a reason to request old chat history.
+- Do not treat a prior session's claims, a filename, or an mtime as authority.
+- Do not take a successor task you authorized yourself.

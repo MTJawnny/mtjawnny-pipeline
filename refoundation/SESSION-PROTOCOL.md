@@ -1,179 +1,139 @@
 # MANAGER / WORKER SESSION PROTOCOL
 
-Status: **BOOTSTRAP CONTROL-PLANE RULES**
+Status: **CURRENT CONTROL-PLANE RULES**
 
-Purpose: prevent session drift by making ChatGPT and Claude Code sessions disposable.
+Purpose: make ChatGPT and Claude Code sessions disposable, so that losing one
+loses no truth.
 
 ## 1. Core rule
 
-> **No important state may exist only inside a ChatGPT conversation or Claude Code session.**
+> **No important state may exist only inside a ChatGPT conversation or a Claude
+> Code session.**
 
-A session may reason, investigate, propose, or execute a bounded task. Once information matters to future work, it must be represented durably in GitHub/repository state.
+A session may reason, investigate, propose or execute a bounded task. The moment
+information matters to future work, it must be durable in GitHub/repository
+state.
 
 ## 2. Durable state classes
 
-### STATE
-What is true about the project right now?
+Seven kinds, deliberately not collapsed. Confusing them is how evidence gets
+promoted to law by accident.
 
-Examples:
-- accepted baseline/ref;
-- current phase;
-- active task;
-- blocked work;
-- open Captain decisions;
-- current authority pointers.
+- **STATE** — what is true right now: current phase, active task, controls,
+  authority pointers. Lives in `refoundation/ACTIVE-PHASE.yaml`. Replaced, never
+  appended.
+- **TASK** — what exactly one Worker is authorized to do. A `T` on Issue #1,
+  pinning base, objective, allow/deny scope, required validation, STOP
+  conditions, delivery form, and successor authorization (normally `NONE`).
+- **RESULT** — what happened. An `X` on Issue #1: status `P`/`S`/`F`, exact
+  mutations, evidence, refs, discrepancies, decision required.
+- **IMPLEMENTATION** — the technical state actually proposed: a commit, branch
+  or PR diff. Never a prose claim alone.
+- **DECISION** — what Captain (or another explicit authority) decided. Must be
+  durable and referenceable, never buried in chat.
+- **EVIDENCE** — why a law is believed. Evidence supports authority; it is not
+  automatically authority.
+- **HISTORY** — what happened before. May be true and useful without being
+  current state or current law.
 
-During bootstrap this is `refoundation/BOOTSTRAP-STATE.yaml`.
+## 3. The loop
 
-### TASK
-What is one Worker authorized to do?
+```text
+M:T -> W:X -> M:V -> M:T|K
+```
 
-GitHub Issue using `mtj-task/1` or successor schema.
+- `T` — Manager issues one bounded task.
+- `X` — Worker posts one durable, detailed result.
+- `V` — Manager audits it. **The Worker never self-accepts.**
+- `M:T|K` — **the audit branches, and both arms are normal.** `V` may return a
+  repair `T` against the unaccepted work, or carry an accept. A repair `T` is
+  not a failure of the loop; it is the loop. Nothing may assume `V` accepts.
 
-A task must state at least:
-- exact base;
-- objective;
-- allow/deny scope;
-- invariants;
-- required validation/evidence;
-- STOP conditions;
-- delivery form;
-- successor authorization (normally `NONE`).
+**`K` is a CHECKPOINT, not the acceptance arm.** It is posted either way and
+carries two independent fields: `h`, the **accepted_head**, and `a`, the
+**active_task** pointer. A `K` whose `h` is unchanged while `a` selects a repair
+`T` is the normal repair path, not an anomaly. **The acceptance verdict lives in
+`V`; `K` records where the project stands and what runs next.** Task selection
+and implementation acceptance are separate dimensions; never collapse them.
 
-### RESULT
-What happened when the task was executed?
+**Canonical Worker selector: latest `K` -> active `T`.** A `T` becomes
+executable only once the latest `K` names it as `a`; being posted is not enough.
 
-Durable issue/PR comment using `mtj-result/1` or successor schema.
+Captain's decisions enter the loop directly as `D` and outrank all of it.
 
-A result should distinguish:
-- PASS/COMPLETE;
-- STOP;
-- FAIL;
-- mutations;
-- tests/evidence;
-- commit/PR refs;
-- discrepancies;
-- decision required.
+## 4. Manager startup
 
-### IMPLEMENTATION
-What technical state is actually proposed or accepted?
+1. Read `refoundation/ACTIVE-PHASE.yaml` for current phase.
+2. Read Issue #1: the latest `K`, its active `T`, and the `X` under review.
+3. Verify recorded refs against live GitHub state.
+4. Inspect only the repository evidence that result needs.
+5. Mutate nothing until current state is understood.
+6. Issue at most one next task unless Captain says otherwise.
 
-Git commit / branch / PR diff, never a prose claim alone.
+Status, hashes and PR numbers are **read from the Worker's `X`** by the Manager
+directly. Captain is not a courier and must not be asked to relay them.
 
-### DECISION
-What did Captain or another explicitly authorized authority decide?
+## 5. Worker startup
 
-Must become durable and referenceable. Do not leave important decisions buried only in chats, handoffs, or prose chronology.
+Governed by root `CLAUDE.md`, which is auto-loaded. In short: inspect local
+state, read Issue #1's latest `K` -> active `T`, verify the exact base
+and scope, execute exactly that one task.
 
-### EVIDENCE
-Why is a law/decision believed?
+There is no bootstrap-branch read step and no handoff-document read step. Those
+are removed, not relocated.
 
-Evidence supports authority but is not automatically authority.
+## 6. Worker session end
 
-### HISTORY
-What happened before?
+A Worker session must not end with completed work living only in scrollback.
 
-Historical truth may remain useful without being current state or current law.
+Before finishing:
 
-## 3. Manager startup
+- post the detailed `X` to Issue #1;
+- push any authorized branch/PR and name the exact commit;
+- include validation, conservation and every discrepancy — including ones that
+  make the result look worse;
+- state `next: NONE` unless a successor was authorized externally.
 
-A fresh GitHub-enabled ChatGPT Manager should:
+The human-facing reply is then exactly `Claude done`, and nothing else,
+whatever the `X` status is. The detail is already durable; repeating it to the
+human is noise, and summarizing it invites a summary to be trusted over the
+record.
 
-1. identify the repository and bootstrap/refoundation branch;
-2. read `refoundation/BOOTSTRAP-STATE.yaml`;
-3. verify the recorded refs against GitHub;
-4. read `refoundation/CAPTAIN-DIRECTION.md`;
-5. inspect only the active/pending GitHub issue/result;
-6. inspect repository evidence needed to review that specific result;
-7. make no mutation until it understands current state;
-8. issue at most one next task unless Captain explicitly chooses otherwise.
-
-## 4. Worker startup
-
-A fresh Claude Code Worker should:
-
-1. inspect local Git status before mutation;
-2. `git fetch` if needed, without altering the working tree;
-3. read the bootstrap state from the remote bootstrap branch if it is not in the current local branch;
-4. verify the assigned task's `base` against local/relevant Git state;
-5. read exactly one READY GitHub task;
-6. read only the subsystem files that task requires;
-7. execute within scope;
-8. post a durable result;
-9. stop unless a successor is separately authorized.
-
-## 5. Worker session end
-
-A Worker session must not end with important completed work only in scrollback.
-
-Before declaring success:
-- post the task result to GitHub;
-- push any authorized branch/PR;
-- include the exact commit/ref;
-- include validation and discrepancies;
-- state `next: NONE` unless a successor was already authorized externally.
-
-If the session dies mid-task, the durable issue and Git state must be sufficient for a new Worker to determine what was and was not completed.
-
-## 6. Manager session end
-
-Before deliberately moving to a fresh Manager session:
-- update durable bootstrap/current state if the accepted project state changed;
-- ensure pending review/task refs are explicit;
-- do not rely on a final chat summary as the sole handoff;
-- leave the next Manager with a deterministic read order.
+If the session dies mid-task, Issue #1 plus Git state must be enough for a new
+Worker to determine what was and was not completed.
 
 ## 7. Task sizing
 
-Do not split work merely because it is technical.
-
-Split at **durable verification boundaries**.
-
-Preferred shape:
+Split at **durable verification boundaries**, never merely because work is
+technical.
 
 ```text
-bounded change
-→ deterministic validation
-→ durable result / commit
-→ Manager review
-→ next bounded change
+bounded change -> deterministic validation -> durable result -> review -> next
 ```
 
-Avoid:
-
-```text
-refactor the entire engine
-→ hope one long session survives
-```
+Not: refactor the engine and hope one long session survives.
 
 ## 8. Drift detection
 
-Task/state schemas should increasingly pin:
-- base commit;
-- state/version identifier;
-- authority manifest identity where relevant;
-- required frozen-input hashes where relevant.
+Tasks pin the base commit, and pin state/version or frozen-input identity where
+it matters.
 
-If expected state differs from measured state, STOP rather than silently adapting.
+If expected state differs from measured state in an unexplained way, **STOP**
+and report the mismatch. Do not silently adapt. The point is to convert context
+drift from a reasoning hazard into an explicit, visible state mismatch.
 
-The purpose is to convert context drift from a reasoning hazard into an explicit state mismatch.
+A task that cannot be satisfied inside its own declared scope is the same event:
+report the exact conflict and return it. Routine is not the same as authorized.
 
 ## 9. Capability asymmetry
 
-Different ChatGPT conversations may expose different tools. A Manager session intended for repository work must have GitHub access.
-
-A non-GitHub Manager session may reason about supplied evidence but should not pretend to have inspected live repository state.
+Different sessions expose different tools. A Manager session doing repository
+work needs live GitHub access; one without it may reason about supplied evidence
+but must not claim to have inspected live state.
 
 ## 10. No uncontrolled autonomy
 
-The GitHub bridge is not authorization for an autonomous development loop.
-
-Initial model:
-- one READY task;
-- one Worker execution;
-- one durable result;
-- one Manager review;
-- Captain decisions when needed;
-- explicit next authorization.
-
-This can be automated later only after the state machine itself is trustworthy.
+The GitHub bridge is a control plane, not authorization for an autonomous loop:
+one task, one execution, one durable result, one review, Captain decisions when
+needed, explicit next authorization. Automation of the loop itself waits until
+the state machine is trustworthy.

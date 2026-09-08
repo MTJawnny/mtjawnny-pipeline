@@ -3491,11 +3491,13 @@ CENSUS_HEAD = {
     # An earlier draft of this comment asserted the opposite; it was wrong, and
     # it is corrected here rather than deleted, because a census pin defended by
     # a false sentence is the failure mode this file exists to prevent.
-    "tracked_python": 137,                         # C8.5M: 135 (+2 C8.5N files)
+    "tracked_python": 138,                         # C8.5M: 135 (+2 C8.5N files);
+                                                   # C8.5W: 137 (+ contract guard)
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
                        "src": 9,                   # C8.5M: 8 (+ codebook_store.py)
-                       "tests": 18},               # C8.5M: 17 (+ its store test)
+                       "tests": 19},               # C8.5M: 17 (+ its store test);
+                                                   # C8.5W: 18 (+ contract guard)
     #
     # C8.5U MOVES FOUR ROWS AND THEY ARE ONE EVENT COUNTED FOUR WAYS.
     # `foundry_cr_checks` reads the codebook through `mtj_foundry.codebook_store.
