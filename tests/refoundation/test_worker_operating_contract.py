@@ -170,6 +170,57 @@ def rank_law_problems(text: str):
     return []
 
 
+# C8.5W.R3 -- K is a CHECKPOINT (protocol P 5561304392: `kmap.K: checkpoint`,
+# `K.sem.h: accepted_head`, `K.sem.a: active_task_comment_or_0`, canonical relay
+# "Issue#1 latest K -> active T"). R2 described K as the acceptance arm, which
+# collapses two independent state dimensions: what has been ACCEPTED (`h`) and
+# what is SELECTED to run (`a`). The live control plane is the counter-example --
+# the K that issued this very repair carries an unchanged `h` beside an `a` that
+# selects a repair T.
+K_CHECKPOINT_PHRASES = (
+    "K is a CHECKPOINT",
+    "accepted_head",
+    "active_task",
+)
+K_SELECTOR = "latest K -> active T"
+# Equating K with implementation acceptance, in the forms that actually occurred.
+K_AS_ACCEPTANCE_RE = (
+    r"records? acceptance \(K\)",
+    r"record acceptance as K",
+    r"K\s*=\s*acceptance",
+    # NOTE: no lookahead here. A first draft wrote `(?! )`, which can never
+    # match "K is the acceptance arm OF THE AUDIT" because a space follows
+    # "arm" -- so this arm was DEAD and NC13b was passing only because the rig
+    # also removed the "K is a CHECKPOINT" phrase. The correct sentence in these
+    # docs reads "K is a CHECKPOINT, not the acceptance arm", which does not
+    # contain this literal, so no exclusion is needed. Each NC below now pins
+    # WHICH problem it fires, so a control cannot drift back to passing for an
+    # unrelated reason.
+    r"K is the acceptance arm",
+    r"acceptance token K",
+)
+
+
+def k_checkpoint_problems(text: str):
+    """K must read as a selecting checkpoint, never as an acceptance token."""
+    flattened = flat(text)
+    problems = [f"missing checkpoint semantics {phrase!r}"
+                for phrase in K_CHECKPOINT_PHRASES if phrase not in flattened]
+    if K_SELECTOR not in flattened:
+        problems.append(f"missing canonical selector {K_SELECTOR!r}")
+    for pat in K_AS_ACCEPTANCE_RE:
+        for m in re.finditer(pat, flattened):
+            problems.append(f"equates K with implementation acceptance: "
+                            f"{m.group(0)!r}")
+    return problems
+
+
+def k_selector_problems(text: str):
+    """The selector alone, so a doc may carry it without the full definition."""
+    return ([] if K_SELECTOR in flat(text)
+            else [f"missing canonical selector {K_SELECTOR!r}"])
+
+
 # Rules that must survive the compaction. A byte budget is not a licence to drop
 # a live rule, and a LINE COUNT CANNOT SEE ONE GOING MISSING -- which is why this
 # is asserted positively rather than inferred from the file still being large.
@@ -339,6 +390,19 @@ class TestTheWorkerOperatingContract(unittest.TestCase):
     def test_the_retained_rank_rule_keeps_its_standing_exception(self):
         self.assertEqual(rank_law_problems(self.texts["CLAUDE.md"]), [])
 
+    def test_the_root_contract_defines_K_as_a_selecting_checkpoint(self):
+        self.assertEqual(k_checkpoint_problems(self.texts["CLAUDE.md"]), [])
+
+    def test_the_session_protocol_defines_K_as_a_selecting_checkpoint(self):
+        self.assertEqual(
+            k_checkpoint_problems(self.texts["refoundation/SESSION-PROTOCOL.md"]),
+            [])
+
+    def test_both_worker_facing_docs_carry_the_latest_K_to_active_T_selector(self):
+        for name in ("CLAUDE.md", "refoundation/SESSION-PROTOCOL.md"):
+            with self.subTest(doc=name):
+                self.assertEqual(k_selector_problems(self.texts[name]), [])
+
 
 # --------------------------------------------------------------------------
 # NEGATIVE CONTROLS -- a guard never shown to fail is not known to be a guard.
@@ -455,6 +519,57 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         """Contract: binding only "if the rank rule remains in CLAUDE.md"."""
         self.assertEqual(rank_law_problems("a contract with no rank rule"), [])
 
+    def test_NC13_equating_K_with_acceptance_turns_it_red(self):
+        """The exact R2 defect, in the exact wording that shipped."""
+        rigged = self.claude.replace(
+            "and posts the checkpoint (`K`) that selects what runs next.",
+            "records acceptance (`K`).")
+        self.assertNotEqual(rigged, self.claude)
+        self.assertTrue(any("equates K with implementation acceptance" in p
+                            for p in k_checkpoint_problems(rigged)),
+                        k_checkpoint_problems(rigged))
+
+    def test_NC13b_the_protocol_acceptance_arm_wording_turns_it_red(self):
+        rigged = self.protocol.replace(
+            "**`K` is a CHECKPOINT, not the acceptance arm.**",
+            "`K` is the acceptance arm of the audit.")
+        self.assertNotEqual(rigged, self.protocol)
+        self.assertTrue(any("equates K with implementation acceptance" in p
+                            for p in k_checkpoint_problems(rigged)),
+                        k_checkpoint_problems(rigged))
+
+    def test_NC13c_smuggling_K_equals_acceptance_alongside_the_law_turns_it_red(self):
+        """Presence of the correct definition must not excuse a rival sentence."""
+        rigged = self.claude + "\n\nIn short, K = acceptance.\n"
+        self.assertNotEqual(rigged, self.claude)
+        self.assertIn("K is a CHECKPOINT", flat(rigged))   # correct law survives
+        self.assertTrue(any("equates K with implementation acceptance" in p
+                            for p in k_checkpoint_problems(rigged)),
+                        k_checkpoint_problems(rigged))
+
+    def test_NC14_removing_the_latest_K_to_active_T_selector_turns_it_red(self):
+        rigged = self.claude.replace("latest `K` -> active `T`",
+                                     "whichever task looks current")
+        self.assertNotEqual(rigged, self.claude)
+        self.assertTrue(any("missing canonical selector" in p
+                            for p in k_selector_problems(rigged)),
+                        k_selector_problems(rigged))
+
+    def test_NC14b_removing_the_selector_from_the_protocol_turns_it_red(self):
+        """SESSION-PROTOCOL states the selector TWICE -- in the loop section and
+        again in Worker startup. A rig that removed only one left the selector
+        present and the guard correctly stayed green; the first draft of this
+        control read that as a guard defect. Removing a law means removing every
+        statement of it, so this rig does, and the count is asserted so the rig
+        cannot silently become partial again."""
+        self.assertEqual(self.protocol.count("latest `K` -> active `T`"), 2)
+        rigged = self.protocol.replace("latest `K` -> active `T`",
+                                       "whichever task looks current")
+        self.assertNotEqual(rigged, self.protocol)
+        self.assertTrue(any("missing canonical selector" in p
+                            for p in k_selector_problems(rigged)),
+                        k_selector_problems(rigged))
+
     def test_the_unrigged_documents_are_the_green_control(self):
         """Every rig above is only meaningful because this is clean."""
         self.assertEqual(size_problems(self.claude, CLAUDE_MAX_LINES,
@@ -467,6 +582,9 @@ class TestTheContractGuardCanFail(unittest.TestCase):
         self.assertEqual(protocol_form_problems(self.protocol), [])
         self.assertEqual(authority_law_problems(self.claude), [])
         self.assertEqual(rank_law_problems(self.claude), [])
+        self.assertEqual(k_checkpoint_problems(self.claude), [])
+        self.assertEqual(k_checkpoint_problems(self.protocol), [])
+        self.assertEqual(k_selector_problems(self.claude), [])
 
 
 if __name__ == "__main__":

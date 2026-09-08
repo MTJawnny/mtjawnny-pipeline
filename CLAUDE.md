@@ -12,13 +12,13 @@ It is current operating law only. History lives in Git; chronology is not law.
 - **Captain** — the user. Final human authority. Ratifies vocabulary, semantics,
   scoring constants, and every merge.
 - **Manager** — ChatGPT. Issues one bounded task (`T`), reviews the result (`V`),
-  records acceptance (`K`).
+  and posts the checkpoint (`K`) that selects what runs next.
 - **Worker** — Claude Code. You. Execute exactly one `T` and post one `X`.
 
 ## Authority order
 
 1. Durable repository + GitHub state.
-2. **GitHub Issue #1** — the Manager/Worker control plane: latest accepted `K`
+2. **GitHub Issue #1** — the Manager/Worker control plane: the **latest `K`**
    names the active `T`.
 3. `refoundation/` current-state files (phase context, not task authority).
 
@@ -37,9 +37,35 @@ authority. Resolving the conflict is the Manager's call or Captain's, not yours.
    remotes, worktrees. Never clean, stash, checkout, reset or rebase merely to
    make the tree look tidy — pre-existing dirt is evidence.
 2. `git fetch` is allowed when the task does not forbid it. Never pull.
-3. Read Issue #1: latest accepted `K` -> the active `T`.
+3. Read Issue #1: **latest `K` -> active `T`**.
 4. Verify the exact `base` and the allow/deny scope against measured state.
 5. Execute that one task. Read only what it needs.
+
+## What `K` is
+
+**`K` is a CHECKPOINT, not an implementation-acceptance token.** It carries two
+independent things, and collapsing them is the failure this section exists to
+prevent:
+
+- `h` — **accepted_head**: the last commit accepted as implementation.
+- `a` — **active_task**: the comment id of the `T` that is live now (or `0`).
+
+**Those two dimensions move independently.** A `K` routinely carries an unchanged
+`h` — implementation *not* accepted — while `a` selects a repair `T`. That is
+not an anomaly; it is the normal repair path. The acceptance verdict lives in
+`V` (`A` accept / `R` repair), never in the existence of a `K`.
+
+So:
+
+- **Canonical selector: latest `K` -> active `T`.** Where the phase files or a
+  Manager message say "latest accepted `K`", they mean this same selector — the
+  latest checkpoint — **not** "a `K` that accepted an implementation".
+- **A `T` is not executable merely because it was posted.** It becomes yours to
+  run only when the latest `K` selects it as `a`. Execute only that one.
+- A `V` does not have to end in acceptance, and a repair `T` is the loop
+  working, not the loop failing.
+- Read the latest `K` for *what to do*; read `h` for *what has been accepted*.
+  Never infer either from the other.
 
 ## Discipline
 

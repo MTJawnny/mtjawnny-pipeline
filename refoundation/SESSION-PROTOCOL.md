@@ -46,16 +46,25 @@ M:T -> W:X -> M:V -> M:T|K
 - `X` — Worker posts one durable, detailed result.
 - `V` — Manager audits it. **The Worker never self-accepts.**
 - `M:T|K` — **the audit branches, and both arms are normal.** `V` may return a
-  repair `T` against the unaccepted work, or record acceptance as `K`. A `V` is
-  not an acceptance, and a repair `T` is not a failure of the loop; it is the
-  loop. Nothing may assume `V` leads to `K`.
+  repair `T` against the unaccepted work, or carry an accept. A repair `T` is
+  not a failure of the loop; it is the loop. Nothing may assume `V` accepts.
+
+**`K` is a CHECKPOINT, not the acceptance arm.** It is posted either way and
+carries two independent fields: `h`, the **accepted_head**, and `a`, the
+**active_task** pointer. A `K` whose `h` is unchanged while `a` selects a repair
+`T` is the normal repair path, not an anomaly. **The acceptance verdict lives in
+`V`; `K` records where the project stands and what runs next.** Task selection
+and implementation acceptance are separate dimensions; never collapse them.
+
+**Canonical Worker selector: latest `K` -> active `T`.** A `T` becomes
+executable only once the latest `K` names it as `a`; being posted is not enough.
 
 Captain's decisions enter the loop directly as `D` and outrank all of it.
 
 ## 4. Manager startup
 
 1. Read `refoundation/ACTIVE-PHASE.yaml` for current phase.
-2. Read Issue #1: latest accepted `K`, active `T`, and the `X` under review.
+2. Read Issue #1: the latest `K`, its active `T`, and the `X` under review.
 3. Verify recorded refs against live GitHub state.
 4. Inspect only the repository evidence that result needs.
 5. Mutate nothing until current state is understood.
@@ -67,7 +76,7 @@ directly. Captain is not a courier and must not be asked to relay them.
 ## 5. Worker startup
 
 Governed by root `CLAUDE.md`, which is auto-loaded. In short: inspect local
-state, read Issue #1's latest accepted `K` -> active `T`, verify the exact base
+state, read Issue #1's latest `K` -> active `T`, verify the exact base
 and scope, execute exactly that one task.
 
 There is no bootstrap-branch read step and no handoff-document read step. Those
