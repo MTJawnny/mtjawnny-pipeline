@@ -421,12 +421,36 @@ class TestInputVerificationRefuses(RuntimeFixtureCase):
             self.report(root)
         self.assertIn("line 2", str(caught.exception))
 
-    def test_a_missing_corpus_propagates_as_a_corpus_load_error(self):
+    def test_a_missing_corpus_raises_a_typed_input_access_failure(self):
+        """R1 BLOCKING FINDING 1, at the library boundary.
+
+        This test previously asserted a raw `FileNotFoundError`, and in doing so
+        it PROVED the defect it was written to describe: the runtime hashes the
+        corpus before any loader sees it, so a missing file surfaced as an
+        untyped exception the CLI did not catch, and the promised exit-1 boundary
+        became a traceback. The permanent `corpus` capability is unchanged --
+        `CorpusLoadError` still covers exactly what it always did -- and the
+        translation happens only here, at the composition boundary that owes a
+        shell contract.
+        """
         root = self.build()
         lock = lock_for(root)
         ProjectPaths.for_root(root).legacy_oracle_cards.unlink()
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(runtime.InputAccessError) as caught:
             runtime.run(root, lock_path=str(lock))
+        self.assertIsInstance(caught.exception.cause, FileNotFoundError)
+        self.assertEqual(caught.exception.what, "selected corpus")
+
+    def test_an_unreadable_input_is_not_reported_as_an_identity_mismatch(self):
+        """"could not read these bytes" and "these are the wrong bytes" are
+        different facts, and only one of them was measured."""
+        root = self.build()
+        lock = lock_for(root)
+        ProjectPaths.for_root(root).legacy_oracle_cards.unlink()
+        with self.assertRaises(runtime.InputAccessError) as caught:
+            runtime.run(root, lock_path=str(lock))
+        self.assertNotIsInstance(caught.exception, runtime.InputIdentityError)
+        self.assertNotIn("sha256", str(caught.exception))
 
     def test_a_run_with_no_declared_corpus_identity_refuses(self):
         root = self.build()
@@ -561,6 +585,402 @@ class TestTheShippedCommandBoundary(RuntimeFixtureCase):
         self.assertEqual(status, 0)
         self.assertNotEqual(out, "")
         self.assertEqual(snapshot(), before)
+
+
+# ===========================================================================
+# 4b. R1 — THE EXPECTED-INPUT FAILURE BOUNDARY, AT THE SHIPPED COMMAND
+#
+# Review finding EXPECTED_INPUT_FAILURE_ESCAPES_CLI. The runtime hashes the
+# codebook and the corpus BEFORE their permanent loaders run, so it is the first
+# thing to touch either file. A missing file, a directory in a file's place,
+# malformed selector or lock JSON, and a damaged gzip container all surfaced as
+# raw exceptions that `cli.main` did not catch — a traceback where the T requires
+# exit 1, one `STOP — ...` line, and empty stdout.
+#
+# Each control below drives the SHIPPED path and pins all three facts together.
+# Asserting the exit status alone would miss the one that actually matters: a
+# redirected report file left holding a success-shaped document.
+# ===========================================================================
+
+class TestExpectedInputFailuresReachTheShellContract(RuntimeFixtureCase):
+
+    def _main(self, argv):
+        import contextlib
+        import io
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            status = cli.main(argv)
+        return status, out.getvalue(), err.getvalue()
+
+    def _assert_stop(self, argv, *, expect_in_stderr=None):
+        """exit 1, `STOP — ...` on stderr, and ZERO bytes on stdout. All three."""
+        status, out, err = self._main(argv)
+        self.assertEqual(status, 1, f"stderr was: {err!r}")
+        self.assertEqual(out, "", "a failing run wrote a success-shaped stdout")
+        self.assertTrue(err.startswith("STOP — "), err)
+        if expect_in_stderr:
+            self.assertIn(expect_in_stderr, err)
+        return err
+
+    # -- 1 / 2: the codebook, before any loader sees it -------------------
+
+    def test_CLI_MISSING_CODEBOOK_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        ProjectPaths.for_root(root).legacy_codebook_json.unlink()
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="selected codebook")
+
+    def test_CLI_UNREADABLE_CODEBOOK_IS_STOP(self):
+        """Unreadable via a DETERMINISTIC seam, not via chmod.
+
+        A permission bit behaves differently for a privileged user and across
+        platforms, so a chmod-based control can pass or fail for reasons that have
+        nothing to do with the boundary. A DIRECTORY where a file is expected is
+        the same class of failure -- `OSError`, raised by `open` before a single
+        byte is hashed -- and it is the same everywhere.
+        """
+        root = self.build()
+        lock = lock_for(root)
+        codebook_path = ProjectPaths.for_root(root).legacy_codebook_json
+        codebook_path.unlink()
+        codebook_path.mkdir()
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="selected codebook")
+
+    # -- 3 / 4: the corpus, before and inside decompression ---------------
+
+    def test_CLI_MISSING_CORPUS_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        ProjectPaths.for_root(root).legacy_oracle_cards.unlink()
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="selected corpus")
+
+    def test_CLI_CORRUPT_GZIP_IS_STOP(self):
+        """The declared identity is made to MATCH the corrupt bytes on purpose.
+
+        Otherwise the run stops at the sha256 comparison and this control proves
+        only that the digest check works -- which is already pinned elsewhere.
+        Locking the corrupt file's own digest is what carries execution past
+        verification and into decompression, which is the layer under test.
+        """
+        root = self.build()
+        corpus_path = ProjectPaths.for_root(root).legacy_oracle_cards
+        corpus_path.write_bytes(b"this is not a gzip container at all\n")
+        lock = lock_for(root)   # measures the corrupt bytes, so identity passes
+        err = self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                                expect_in_stderr="selected corpus")
+        self.assertIn("BadGzipFile", err)
+        self.assertNotIn("sha256", err, "a damaged container was reported as a "
+                                        "digest mismatch")
+
+    def test_CLI_TRUNCATED_GZIP_IS_STOP(self):
+        """The other half of container damage, and it raises a DIFFERENT type.
+
+        A truncated stream ends in `EOFError`, which is not an `OSError` and would
+        not be caught by a translation aimed only at `gzip.BadGzipFile`.
+        """
+        root = self.build()
+        corpus_path = ProjectPaths.for_root(root).legacy_oracle_cards
+        whole = corpus_path.read_bytes()
+        corpus_path.write_bytes(whole[:len(whole) // 2])
+        lock = lock_for(root)
+        err = self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                                expect_in_stderr="selected corpus")
+        self.assertIn("EOFError", err)
+
+    def test_a_damaged_container_is_caught_when_a_CONTENT_digest_is_declared_too(self):
+        """The content digest is measured on a separate pass, so it is a separate
+        place the same damage can surface."""
+        root = self.build()
+        corpus_path = ProjectPaths.for_root(root).legacy_oracle_cards
+        corpus_path.write_bytes(b"not gzip\n")
+        lock = lock_for(root, content_sha256="d" * 64)
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="selected corpus")
+
+    # -- 5 / 6: the two JSON control documents ---------------------------
+
+    def test_CLI_MALFORMED_AUTHORITY_JSON_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        ProjectPaths.for_root(root).codebook_authority_selector.write_text(
+            "{ this is not json", encoding="utf-8")
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="authority selector")
+
+    def test_CLI_NON_OBJECT_AUTHORITY_JSON_IS_STOP(self):
+        """Valid JSON of the wrong SHAPE. `document.get(...)` on a list is an
+        `AttributeError`, which is a programmer-defect type and must never be the
+        way a bad input presents."""
+        root = self.build()
+        lock = lock_for(root)
+        ProjectPaths.for_root(root).codebook_authority_selector.write_text(
+            '["not", "an", "object"]', encoding="utf-8")
+        err = self._assert_stop(["--root", str(root), "--input-lock", str(lock)])
+        self.assertIn("expected a JSON object", err)
+
+    def test_CLI_MALFORMED_INPUT_LOCK_JSON_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        lock.write_text("{ nope", encoding="utf-8")
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="input lock")
+
+    def test_CLI_NON_OBJECT_INPUT_LOCK_JSON_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        lock.write_text("42", encoding="utf-8")
+        err = self._assert_stop(["--root", str(root), "--input-lock", str(lock)])
+        self.assertIn("expected a JSON object", err)
+
+    def test_CLI_UNREADABLE_INPUT_LOCK_IS_STOP(self):
+        root = self.build()
+        lock = lock_for(root)
+        lock.unlink()
+        lock.mkdir()
+        self._assert_stop(["--root", str(root), "--input-lock", str(lock)],
+                          expect_in_stderr="input lock")
+
+    # -- 7: the stdout property, over EVERY added case -------------------
+
+    def test_CLI_EXPECTED_FAILURE_STDOUT_EMPTY(self):
+        """One sweep over every expected-input state, asserting the property that
+        makes the boundary worth having: a redirected report file is never left
+        holding a success-shaped document.
+
+        Each case builds its OWN fixture root. Sharing one directory silently
+        repairs the earlier breakages -- the last build wins -- which is how four
+        deliberate failures reported success during M1.
+        """
+        cases = {}
+
+        missing_codebook = self.build()
+        lock = lock_for(missing_codebook)
+        ProjectPaths.for_root(missing_codebook).legacy_codebook_json.unlink()
+        cases["missing codebook"] = ["--root", str(missing_codebook),
+                                     "--input-lock", str(lock)]
+
+        unreadable = self.build()
+        lock = lock_for(unreadable)
+        target = ProjectPaths.for_root(unreadable).legacy_codebook_json
+        target.unlink()
+        target.mkdir()
+        cases["unreadable codebook"] = ["--root", str(unreadable),
+                                        "--input-lock", str(lock)]
+
+        missing_corpus = self.build()
+        lock = lock_for(missing_corpus)
+        ProjectPaths.for_root(missing_corpus).legacy_oracle_cards.unlink()
+        cases["missing corpus"] = ["--root", str(missing_corpus),
+                                   "--input-lock", str(lock)]
+
+        corrupt = self.build()
+        ProjectPaths.for_root(corrupt).legacy_oracle_cards.write_bytes(b"nope\n")
+        cases["corrupt gzip"] = ["--root", str(corrupt),
+                                 "--input-lock", str(lock_for(corrupt))]
+
+        bad_selector = self.build()
+        lock = lock_for(bad_selector)
+        ProjectPaths.for_root(bad_selector).codebook_authority_selector.write_text(
+            "{{{", encoding="utf-8")
+        cases["malformed selector"] = ["--root", str(bad_selector),
+                                       "--input-lock", str(lock)]
+
+        bad_lock_root = self.build()
+        bad_lock = lock_for(bad_lock_root)
+        bad_lock.write_text("[]", encoding="utf-8")
+        cases["non-object lock"] = ["--root", str(bad_lock_root),
+                                    "--input-lock", str(bad_lock)]
+
+        missing_lock = self.build()
+        cases["missing lock"] = ["--root", str(missing_lock), "--input-lock",
+                                 str(missing_lock / "no" / "such" / "lock.json")]
+
+        for name, argv in cases.items():
+            with self.subTest(case=name):
+                self._assert_stop(argv)
+
+    # -- 8: and the boundary is NOT a catch-all --------------------------
+
+    def test_UNEXPECTED_PROGRAMMER_ERROR_STILL_ESCAPES(self):
+        """THE control on the control.
+
+        Every test above would also pass if `cli.main` caught `Exception`. That
+        would be strictly worse than the defect being repaired: a logic error in
+        this package would present as an operator input problem, and the operator
+        would go looking at their files. The patch targets the module the CLI
+        ACTUALLY REACHES -- `cli` binds `runtime` and calls `runtime.run`, so
+        patching this test's own globals would patch a copy nobody calls.
+        """
+        import unittest.mock
+
+        root = self.build()
+        lock = lock_for(root)
+        argv = ["--root", str(root), "--input-lock", str(lock)]
+
+        def defect(*_args, **_kwargs):
+            raise AssertionError("a deliberate implementation defect")
+
+        with unittest.mock.patch.object(runtime, "build_report", defect):
+            with self.assertRaises(AssertionError):
+                cli.main(argv)
+
+        # And the same argv succeeds without the patch, so the escape above is
+        # the patch and not the fixture.
+        self.assertEqual(self._main(argv)[0], 0)
+
+    def test_the_command_catches_no_broad_exception_class(self):
+        """Asserted over the SOURCE, because a behavioural test can only sample
+        the exception types it happens to think of."""
+        import ast
+
+        for name in ("cli.py", "runtime.py"):
+            tree = ast.parse((SRC / "mtj_foundry" / name).read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.ExceptHandler):
+                    continue
+                named = []
+                if isinstance(node.type, ast.Name):
+                    named = [node.type.id]
+                elif isinstance(node.type, ast.Tuple):
+                    named = [e.id for e in node.type.elts if isinstance(e, ast.Name)]
+                with self.subTest(module=name, handler=named):
+                    self.assertIsNotNone(node.type, "a bare except clause")
+                    for banned in ("Exception", "BaseException"):
+                        self.assertNotIn(banned, named)
+
+
+# ===========================================================================
+# 4c. R1 — EVERY RELATIVE INPUT OVERRIDE IS ANCHORED TO THE DECLARED ROOT
+#
+# Review finding RELATIVE_INPUT_OVERRIDE_CWD_DEPENDENCE. The corpus path was
+# anchored to the root; the authority selector, the codebook and the input lock
+# were built as bare `Path(...)` and therefore resolved against the process
+# working directory. The M1 unrelated-cwd controls passed defaults plus an
+# ABSOLUTE lock, so the asymmetry was invisible to them.
+# ===========================================================================
+
+class TestRelativeOverridesAreRootAnchored(RuntimeFixtureCase):
+
+    def _run_from(self, cwd: Path, argv):
+        env = dict(CLEAN_ENV)
+        env["PYTHONPATH"] = str(SRC)
+        return subprocess.run([sys.executable, "-m", "mtj_foundry.cli", *argv],
+                              cwd=cwd, capture_output=True, text=True, env=env)
+
+    def test_RELATIVE_INPUT_OVERRIDES_ARE_ROOT_ANCHORED(self):
+        """All four overrides relative, run from two unrelated working
+        directories. Both succeed, and the bytes are identical."""
+        root = self.build()
+        lock = lock_for(root)
+        paths = ProjectPaths.for_root(root)
+        argv = [
+            "--root", str(root),
+            "--authority", paths.codebook_authority_selector.relative_to(root).as_posix(),
+            "--codebook", paths.legacy_codebook_json.relative_to(root).as_posix(),
+            "--corpus", paths.legacy_oracle_cards.relative_to(root).as_posix(),
+            "--input-lock", lock.relative_to(root).as_posix(),
+        ]
+        one = self.tmp / "anchored-cwd-one"
+        two = self.tmp / "anchored-cwd-two" / "deeper"
+        one.mkdir()
+        two.mkdir(parents=True)
+
+        first = self._run_from(one, argv)
+        second = self._run_from(two, argv)
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(first.stdout, second.stdout)
+        self.assertEqual(json.loads(first.stdout)["schema"], runtime.REPORT_SCHEMA)
+
+    def test_the_relative_form_produces_the_SAME_bytes_as_the_absolute_form(self):
+        """Anchoring must be a no-op on the payload, not merely non-fatal."""
+        root = self.build()
+        lock = lock_for(root)
+        paths = ProjectPaths.for_root(root)
+        outside = self.tmp / "cwd-for-equivalence"
+        outside.mkdir()
+
+        absolute = self._run_from(outside, [
+            "--root", str(root),
+            "--authority", str(paths.codebook_authority_selector),
+            "--codebook", str(paths.legacy_codebook_json),
+            "--corpus", str(paths.legacy_oracle_cards),
+            "--input-lock", str(lock)])
+        relative = self._run_from(outside, [
+            "--root", str(root),
+            "--authority", paths.codebook_authority_selector.relative_to(root).as_posix(),
+            "--codebook", paths.legacy_codebook_json.relative_to(root).as_posix(),
+            "--corpus", paths.legacy_oracle_cards.relative_to(root).as_posix(),
+            "--input-lock", lock.relative_to(root).as_posix()])
+        self.assertEqual(absolute.returncode, 0, absolute.stderr)
+        self.assertEqual(relative.returncode, 0, relative.stderr)
+        self.assertEqual(absolute.stdout, relative.stdout)
+
+    def test_NEGATIVE_CONTROL_a_relative_override_is_not_read_from_the_cwd(self):
+        """The control that would have caught the defect.
+
+        A DECOY file is planted at the same relative path inside the working
+        directory, holding a valid lock that points at a DIFFERENT corpus. If the
+        override resolved against the cwd, the run would consume the decoy; the
+        anchored run must ignore it entirely and produce the same bytes as a run
+        from a directory with no decoy in it.
+        """
+        root = self.build()
+        real_lock = lock_for(root)
+        relative = real_lock.relative_to(root).as_posix()
+
+        decoy_cwd = self.tmp / "decoy-cwd"
+        decoy = decoy_cwd / relative
+        decoy.parent.mkdir(parents=True)
+        planted = json.loads(real_lock.read_text())
+        planted["corpus"]["sha256"] = "9" * 64          # would fail if consumed
+        decoy.write_text(json.dumps(planted), encoding="utf-8")
+
+        clean_cwd = self.tmp / "clean-cwd"
+        clean_cwd.mkdir()
+
+        argv = ["--root", str(root), "--input-lock", relative]
+        with_decoy = self._run_from(decoy_cwd, argv)
+        without = self._run_from(clean_cwd, argv)
+
+        self.assertEqual(with_decoy.returncode, 0,
+                         "the decoy beside the cwd was consumed: " + with_decoy.stderr)
+        self.assertEqual(without.returncode, 0, without.stderr)
+        self.assertEqual(with_decoy.stdout, without.stdout)
+
+    def test_the_anchoring_helper_leaves_an_absolute_path_alone(self):
+        paths = ProjectPaths.for_root("/r")
+        self.assertEqual(runtime._anchored(paths, "/somewhere/else.json"),
+                         Path("/somewhere/else.json"))
+        self.assertEqual(runtime._anchored(paths, "docs/x.json"),
+                         Path("/r/docs/x.json"))
+
+    def test_no_input_path_is_resolved_against_the_process_cwd(self):
+        """Asserted over CALLS in the AST, not over the file text.
+
+        The module explains in prose why it does not read the working directory,
+        and a text search would flag that explanation -- the same trap the
+        ratchet's own boundary check hit. What must be absent is the CALL:
+        `ProjectPaths` anchors the DECLARED root at construction, which is the one
+        place a working directory may legitimately be read, and it is not here.
+        """
+        import ast
+
+        tree = ast.parse((SRC / "mtj_foundry" / "runtime.py").read_text(encoding="utf-8"))
+        called = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                target = node.func
+                if isinstance(target, ast.Attribute):
+                    called.add(target.attr)
+                elif isinstance(target, ast.Name):
+                    called.add(target.id)
+        for banned in ("getcwd", "cwd", "abspath", "realpath"):
+            with self.subTest(call=banned):
+                self.assertNotIn(banned, called)
 
 
 # ===========================================================================
@@ -762,7 +1182,8 @@ class TestThePermanentBoundaryHolds(unittest.TestCase):
         import ast
 
         allowed = {"mtj_foundry", "__future__", "argparse", "dataclasses", "gzip",
-                   "hashlib", "json", "os", "pathlib", "sys", "re", "typing"}
+                   "hashlib", "json", "os", "pathlib", "sys", "re", "typing",
+                   "zlib"}   # R1: zlib.error is a named corrupt-stream failure
         for name in self.NEW_MODULES:
             tree = ast.parse((SRC / "mtj_foundry" / name).read_text(encoding="utf-8"))
             for node in ast.walk(tree):

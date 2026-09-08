@@ -52,6 +52,7 @@ import gzip
 import hashlib
 import json
 import os
+import zlib
 from pathlib import Path
 
 from mtj_foundry import __version__, codebook, codebook_store, corpus
@@ -61,6 +62,7 @@ __all__ = [
     "AUTHORITY_SCHEMA",
     "AuthoritySelectorError",
     "CorpusSelection",
+    "InputAccessError",
     "FileIdentity",
     "FoundryRuntimeError",
     "INPUT_LOCK_SCHEMA",
@@ -104,6 +106,46 @@ class FoundryRuntimeError(RuntimeError):
 
 class AuthoritySelectorError(FoundryRuntimeError):
     """The tracked selector is missing, unreadable, or not the expected schema."""
+
+
+class InputAccessError(FoundryRuntimeError):
+    """A declared input could not be READ, DECOMPRESSED or PARSED as its format.
+
+    The distinction this class exists to hold is between an input that is in a
+    bad STATE and a defect in this code. A missing file, a directory where a file
+    should be, an unreadable file, truncated gzip, or a byte sequence that is not
+    the JSON it is declared to be are all facts about the input; the operator can
+    see them, fix them, and try again. An `AttributeError` from a wrong call is
+    not, and must keep escaping with its traceback.
+
+    So the translation here is narrow and named. It covers `OSError` (which is
+    where `FileNotFoundError`, `PermissionError`, `IsADirectoryError` and
+    `gzip.BadGzipFile` all live), `EOFError` and `zlib.error` from a damaged
+    compressed stream, `UnicodeDecodeError` from bytes that are not the declared
+    encoding, and `json.JSONDecodeError` from bytes that are not JSON. There is
+    no `except Exception` anywhere in this module, and adding one would erase
+    exactly the line this class is drawn to keep.
+
+    IT IS NOT AN IDENTITY MISMATCH. `InputIdentityError` means "these are the
+    wrong bytes"; this means "these bytes could not be read at all". Reporting an
+    unreadable file as a digest mismatch would name a fact nobody measured.
+    """
+
+    def __init__(self, what: str, path, cause: BaseException):
+        self.what = what
+        self.path = Path(path)
+        self.cause = cause
+        super().__init__(
+            f"{what} at {self.path}: {type(cause).__name__}: {cause}")
+
+
+# The exception classes that mean "the INPUT is in a bad state", enumerated once
+# so every boundary below translates the same set and a reader can see the whole
+# list at a glance. `gzip.BadGzipFile` is an `OSError` and `json.JSONDecodeError`
+# is a `ValueError`; both are reached through their bases, and both are named in
+# the comment rather than left to be rediscovered.
+_INPUT_STATE_ERRORS = (OSError, EOFError, zlib.error, UnicodeDecodeError,
+                       json.JSONDecodeError)
 
 
 class InputIdentityError(FoundryRuntimeError):
@@ -156,6 +198,39 @@ def measure_file(path) -> FileIdentity:
     return FileIdentity(path=path, sha256=digest.hexdigest(), byte_size=size)
 
 
+def _anchored(paths: ProjectPaths, value) -> Path:
+    """Resolve an explicit input path against the DECLARED ROOT, never the cwd.
+
+    An absolute value is returned unchanged. A relative one is joined onto
+    `paths.root`, which `ProjectPaths` already made absolute and lexically stable
+    at construction — so the answer cannot change if the process later moves.
+
+    This is the whole of R1's second repair, in one place on purpose. Before it,
+    the corpus path was anchored here while the authority selector, the codebook
+    and the input lock were built as bare `Path(...)` and therefore resolved
+    against the working directory. Three of the four inputs silently disagreed
+    with the fourth about what a relative path means, and the unrelated-cwd
+    controls could not see it because they passed defaults and one absolute path.
+    """
+    candidate = Path(value)
+    return candidate if candidate.is_absolute() else paths.resolve(*candidate.parts)
+
+
+def _measure_declared_input(what: str, path) -> FileIdentity:
+    """`measure_file`, with an unreadable file translated into a typed refusal.
+
+    This runs BEFORE any loader, which is exactly why it needs the translation:
+    it is the first thing to touch the file, so a missing or unreadable input
+    surfaces here as a raw `OSError` and nowhere else. `measure_file` itself stays
+    raw — it is a general helper with other callers — and the composition
+    boundary is where the shell contract is owed.
+    """
+    try:
+        return measure_file(path)
+    except OSError as error:
+        raise InputAccessError(what, path, error) from error
+
+
 def measure_gzip_content(path) -> str:
     """sha256 of what a gzip file DECOMPRESSES to, streamed.
 
@@ -190,8 +265,15 @@ def read_authority_selector(path) -> dict:
         raise AuthoritySelectorError(
             f"{path} not found — the codebook authority selector is a tracked "
             "file and there is no default selection without it")
-    with open(path, "r", encoding="utf-8") as handle:
-        document = json.load(handle)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            document = json.load(handle)
+    except _INPUT_STATE_ERRORS as error:
+        raise InputAccessError("authority selector", path, error) from error
+    if not isinstance(document, dict):
+        raise AuthoritySelectorError(
+            f"{path}: the selector is a {type(document).__name__}, expected a JSON "
+            "object — a selection has to be a mapping before it can name anything")
     schema = document.get("schema")
     if schema != AUTHORITY_SCHEMA:
         raise AuthoritySelectorError(
@@ -226,8 +308,15 @@ def load_input_lock(path) -> dict:
     path = Path(path)
     if not path.exists():
         raise InputLockError(f"{path} not found — no corpus identity to verify against")
-    with open(path, "r", encoding="utf-8") as handle:
-        document = json.load(handle)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            document = json.load(handle)
+    except _INPUT_STATE_ERRORS as error:
+        raise InputAccessError("input lock", path, error) from error
+    if not isinstance(document, dict):
+        raise InputLockError(
+            f"{path}: the lock is a {type(document).__name__}, expected a JSON "
+            "object")
     schema = document.get("schema")
     if schema != INPUT_LOCK_SCHEMA:
         raise InputLockError(
@@ -251,6 +340,7 @@ def resolve_corpus_selection(paths: ProjectPaths, *, lock_path=None,
     A lock's `path` is repository-relative when it is not absolute, so the
     document stays portable and the root stays the caller's explicit input.
     """
+    lock_path = _anchored(paths, lock_path) if lock_path is not None else None
     lock = load_input_lock(lock_path) if lock_path is not None else None
     lock_corpus = (lock or {}).get("corpus", {})
 
@@ -275,12 +365,8 @@ def resolve_corpus_selection(paths: ProjectPaths, *, lock_path=None,
     raw_path = corpus_path
     if raw_path is None:
         raw_path = lock_corpus.get("path")
-    if raw_path is None:
-        resolved_path = paths.legacy_oracle_cards
-    else:
-        resolved_path = Path(raw_path)
-        if not resolved_path.is_absolute():
-            resolved_path = paths.resolve(*Path(raw_path).parts)
+    resolved_path = (paths.legacy_oracle_cards if raw_path is None
+                     else _anchored(paths, raw_path))
 
     if not resolved_sha:
         raise InputLockError(
@@ -301,7 +387,7 @@ def resolve_corpus_selection(paths: ProjectPaths, *, lock_path=None,
         expected_sha256=resolved_sha,
         expected_content_sha256=resolved_content,
         provenance=resolved_provenance,
-        lock_source=str(Path(lock_path)) if lock_path is not None else "caller-arguments",
+        lock_source=str(lock_path) if lock_path is not None else "caller-arguments",
         status=(lock or {}).get("status", "DECLARED_BY_CALLER"),
     )
 
@@ -326,13 +412,18 @@ def resolve_inputs(root, *, authority_path=None, codebook_path=None,
     module states no repository-relative literal of its own. Nothing here touches
     the filesystem except through the resolver for the input lock, which must be
     read to know what the corpus identity even is.
+
+    EVERY relative override is anchored to the DECLARED ROOT, not to the process
+    working directory — the authority selector, the codebook, the corpus and the
+    input lock alike. One rule for all four, through `_anchored`, because the
+    defect R1 repairs was three of them quietly following a different one.
     """
     paths = ProjectPaths.for_root(root)
     return RuntimeInputs(
         paths=paths,
-        authority_path=(Path(authority_path) if authority_path is not None
+        authority_path=(_anchored(paths, authority_path) if authority_path is not None
                         else paths.codebook_authority_selector),
-        codebook_path=(Path(codebook_path) if codebook_path is not None
+        codebook_path=(_anchored(paths, codebook_path) if codebook_path is not None
                        else paths.legacy_codebook_json),
         corpus=resolve_corpus_selection(
             paths, lock_path=lock_path, corpus_path=corpus_path,
@@ -357,16 +448,45 @@ def load_verified_codebook(inputs: RuntimeInputs):
     were about the selection.
     """
     selector = read_authority_selector(inputs.authority_path)
-    identity = measure_file(inputs.codebook_path)
+    identity = _measure_declared_input("selected codebook", inputs.codebook_path)
     if identity.byte_size != selector["byte_size"]:
         raise InputIdentityError("selected codebook", "byte_size",
                                  selector["byte_size"], identity.byte_size)
     if identity.sha256 != selector["sha256"]:
         raise InputIdentityError("selected codebook", "sha256",
                                  selector["sha256"], identity.sha256)
-    document = codebook_store.read(inputs.codebook_path)
+    try:
+        document = codebook_store.read(inputs.codebook_path)
+    except _INPUT_STATE_ERRORS as error:
+        raise InputAccessError("selected codebook", inputs.codebook_path,
+                               error) from error
+    except AttributeError as error:
+        # The store's DOCUMENTED raw failure for a document that is not a mapping
+        # (`document.get("schema")` on a list). Classified by a POSITIVE TEST on
+        # the bytes rather than by trusting the exception type: an
+        # `AttributeError` raised for any other reason is a defect in this code
+        # and must still escape with its traceback.
+        if _is_not_a_json_object(inputs.codebook_path):
+            raise InputAccessError("selected codebook", inputs.codebook_path,
+                                   error) from error
+        raise
     stats = codebook.lint(document, str(inputs.codebook_path))
     return document, stats, identity, selector
+
+
+def _is_not_a_json_object(path: Path) -> bool:
+    """True iff `path` parses as JSON that is not an object.
+
+    Only ever called on a failure path, over bytes whose digest has ALREADY been
+    verified against the tracked selector, so this re-read cannot introduce a
+    different file. Anything that will not parse at all is not this shape and
+    returns False, leaving the original exception to escape unchanged.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return not isinstance(json.load(handle), dict)
+    except _INPUT_STATE_ERRORS:
+        return False
 
 
 def load_verified_corpus(inputs: RuntimeInputs):
@@ -378,7 +498,7 @@ def load_verified_corpus(inputs: RuntimeInputs):
     was never compared invites it to be read as verified.
     """
     selection = inputs.corpus
-    identity = measure_file(selection.path)
+    identity = _measure_declared_input("selected corpus", selection.path)
     if identity.sha256 != selection.expected_sha256:
         raise InputIdentityError("selected corpus", "sha256",
                                  selection.expected_sha256, identity.sha256)
@@ -388,11 +508,22 @@ def load_verified_corpus(inputs: RuntimeInputs):
                                  declared_size, identity.byte_size)
     content_sha256 = None
     if selection.expected_content_sha256:
-        content_sha256 = measure_gzip_content(selection.path)
+        try:
+            content_sha256 = measure_gzip_content(selection.path)
+        except _INPUT_STATE_ERRORS as error:
+            raise InputAccessError("selected corpus", selection.path, error) from error
         if content_sha256 != selection.expected_content_sha256:
             raise InputIdentityError("selected corpus", "content_sha256",
                                      selection.expected_content_sha256, content_sha256)
-    cards = corpus.load_cards(selection.path)
+    try:
+        cards = corpus.load_cards(selection.path)
+    except _INPUT_STATE_ERRORS as error:
+        # Damaged CONTAINER, which the permanent loader deliberately does not
+        # translate: `CorpusLoadError` covers a missing file, an unparseable LINE
+        # and a record with no oracle_id, and a corrupt gzip stream is none of
+        # those. `corpus.CorpusLoadError` is a `RuntimeError` and is not in this
+        # tuple, so it still reaches the CLI as itself.
+        raise InputAccessError("selected corpus", selection.path, error) from error
     return cards, identity, content_sha256
 
 
@@ -644,9 +775,15 @@ def _label(paths: ProjectPaths, target: Path) -> str:
     absolute path would quietly prevent. A path outside the root keeps its
     absolute form rather than growing a chain of `..` segments that would read as
     if it were repository-relative.
+
+    IT DOES NOT CONSULT THE WORKING DIRECTORY, and since R1 it cannot: every path
+    that reaches here has already been anchored to the declared root by
+    `_anchored`, so a relative value arriving at this point would mean an input
+    escaped that anchoring. Falling back to `os.getcwd()` would silently paper
+    over exactly the defect R1 repairs, so a relative path is normalized and
+    labelled as it stands rather than being resolved against anything.
     """
-    target = Path(os.path.normpath(
-        target if target.is_absolute() else Path(os.getcwd()) / target))
+    target = Path(os.path.normpath(target))
     try:
         return target.relative_to(paths.root).as_posix()
     except ValueError:

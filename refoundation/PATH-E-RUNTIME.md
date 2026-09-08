@@ -44,10 +44,23 @@ with nothing on stdout, so a redirected report file can never hold a
 success-shaped document for a run that failed. Redirect stdout wherever you like
 — that is an operator choice, not a side effect of the command.
 
+**Every expected input state exits 1 with one `STOP — …` line and empty stdout**:
+a missing, unreadable or wrong-shaped file; malformed selector or input-lock
+JSON; a damaged, truncated or non-gzip corpus container; a digest, size or schema
+mismatch; a lint failure; an unparseable corpus line. An unreadable file is
+reported as unreadable, never as a digest mismatch. A defect in the package
+itself still escapes with a traceback rather than being dressed up as a bad
+input — the command is not a catch-all.
+
 Overrides, all optional: `--codebook`, `--authority`, `--corpus`,
 `--corpus-sha256`, `--corpus-content-sha256`, `--corpus-provenance`. A value
 supplied both by the input lock and on the command line must AGREE; a
 disagreement is refused rather than resolved by precedence.
+
+**A relative path in `--codebook`, `--authority`, `--corpus` or `--input-lock` is
+resolved against `--root`, never against the working directory.** Absolute values
+stay absolute. So the same argv run from two unrelated directories reads the same
+files and produces byte-identical output.
 
 ## Which inputs, and which of them are ratified
 
@@ -107,8 +120,9 @@ ratifies nothing, and it says so in its own payload.
 
 ## Determinism
 
-Two runs over the same inputs produce byte-identical output. Nothing
-time-dependent, machine-dependent or cwd-dependent enters the payload: paths are
+Two runs over the same inputs produce byte-identical output, including from two
+different working directories with relative overrides. Nothing time-dependent,
+machine-dependent or cwd-dependent enters the payload: paths are
 repository-relative to the declared root, and the root itself is deliberately not
 in the report so two checkouts remain comparable.
 
