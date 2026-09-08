@@ -3491,13 +3491,28 @@ CENSUS_HEAD = {
     # An earlier draft of this comment asserted the opposite; it was wrong, and
     # it is corrected here rather than deleted, because a census pin defended by
     # a false sentence is the failure mode this file exists to prevent.
-    "tracked_python": 138,                         # C8.5M: 135 (+2 C8.5N files);
-                                                   # C8.5W: 137 (+ contract guard)
+    "tracked_python": 139,                         # C8.5M: 135 (+2 C8.5N files);
+                                                   # C8.5W: 137 (+ contract guard);
+                                                   # C8.5X: 138 (+ the consumer
+                                                   # analysis module)
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
                        "src": 9,                   # C8.5M: 8 (+ codebook_store.py)
-                       "tests": 19},               # C8.5M: 17 (+ its store test);
-                                                   # C8.5W: 18 (+ contract guard)
+                       "tests": 20},               # C8.5M: 17 (+ its store test);
+                                                   # C8.5W: 18 (+ contract guard);
+                                                   # C8.5X: 19 (+ the consumer
+                                                   # analysis module)
+    #
+    # C8.5X MOVES THE FILE CENSUS AND NOTHING ELSE, and the hold is derived
+    # rather than hoped for. `tests/refoundation/codebook_consumer_analysis.py`
+    # lands in the `tests` bucket, which is outside every measured scope — the
+    # C8.5G/C8.5I/C8.5M shape, not the C8.5J/C8.5U shape. It states no
+    # repository-relative path of its own (its root is a PARAMETER, defaulting to
+    # `Path(__file__).resolve().parents[2]`, which is a bootstrap-shaped ascent
+    # and not a `/`-join, so it is not a local layout SITE), it consumes no
+    # provider name, and it makes no `sys.path` call. Every delegation, local
+    # site and bootstrap row therefore holds, and the two integers above are the
+    # whole of the movement.
     #
     # C8.5U MOVES FOUR ROWS AND THEY ARE ONE EVENT COUNTED FOUR WAYS.
     # `foundry_cr_checks` reads the codebook through `mtj_foundry.codebook_store.

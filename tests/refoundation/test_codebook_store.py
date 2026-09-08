@@ -31,10 +31,12 @@ import inspect
 import io
 import json
 import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests.refoundation.helpers import REPO_ROOT
 from tests.refoundation.test_gate2_purity import EXPERIMENTS, load_legacy
 
 from mtj_foundry import codebook, codebook_store
@@ -1686,6 +1688,600 @@ class TestTheCrChecksRepointGuardCanFail(unittest.TestCase):
         self.assertEqual(len(c.for_root_calls), 1)
         self.assertEqual([ast.unparse(a) for a in c.for_root_calls[0].args],
                          ["REPO_ROOT"])
+
+
+# ===========================================================================
+# 7. THE REUSABLE TRANSITIVE CONSUMER ANALYSIS (C8.5X)
+# ===========================================================================
+#
+# C8.5V answered the transitive-handler question for fifteen candidates in
+# prose. `codebook_consumer_analysis` answers it as code, and this section is
+# what makes that answer gradeable: the live population, the nominated
+# candidate's record, the ONE known transitive trap in the repository, and six
+# synthetic fixtures whose shapes the live repository does not contain.
+#
+# The fixtures are not decoration. Five of the six axes below cannot be
+# exercised against this repository at all — it has no `from foundry_codebook
+# import load_codebook` importer, no try/finally around a reaching call, and no
+# unresolvable frontier on a handled path — so a suite that only measured the
+# live tree would ship those code paths untested and call the analyzer green.
+
+from tests.refoundation import codebook_consumer_analysis as cca
+
+# Derived once against the head this slice is based on, and asserted rather
+# than inherited: C8.5V reported the same three numbers, and a carried-forward
+# count is not a measurement.
+EXPECTED_FAN_IN_FILES = 28
+EXPECTED_READ_CALL_SITES = 25
+EXPECTED_READ_OWNING_FILES = 19
+
+REAUDIT_REL = "experiments/foundry_reaudit.py"
+RUN1_REL = "experiments/foundry_consolidate_run1.py"
+RUN1_CLASSIFY_REL = "experiments/foundry_consolidate_run1_classify.py"
+R5_REL = "experiments/foundry_r5_attribution.py"
+
+# A minimal legacy universe. Every fixture below is this dictionary with ONE
+# thing changed, so a fixture's verdict is attributable to that one thing.
+#
+# `foundry_common.py` is present because the bootstrap axis is real: without a
+# module that puts `src` on `sys.path`, every fixture would answer UNKNOWN on
+# bootstrap and no other axis could be observed through it. Its stub also
+# spells the insert through a NAME, which is the shape the live boundary uses
+# and the shape a literal-only scan missed.
+FIXTURE_COMMON = '''\
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1]
+_SRC = _ROOT / "src"
+sys.path.insert(0, str(_SRC))
+'''
+
+FIXTURE_CANDIDATE = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    return fcb.load_codebook()
+
+
+def entry():
+    return owner()
+
+
+def other():
+    return 1
+'''
+
+
+def fixture_repository(files: dict) -> dict:
+    """Analyze a synthetic universe written into a temp directory.
+
+    A temp root has no `.git`, which is why `python_files` has a walk mode: a
+    control that had to initialise a repository to be graded would be testing
+    git as much as the analyzer.
+    """
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        for name, source in files.items():
+            target = root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(source, encoding="utf-8")
+        return cca.analyze_repository(root)
+
+
+def record_for(analysis: dict, name: str) -> dict:
+    return next(r for r in analysis["consumers"] if r["module"] == name)
+
+
+class TestTheAnalyzerIsItselfReadOnly(unittest.TestCase):
+    """The analyzer is code and gets audited like code.
+
+    Its whole claim is that a repointing decision can be derived without running
+    the thing being analyzed. A module that imported a legacy module to answer a
+    question would be making the measurement by executing the subject — the
+    habit this arc removes — and one that wrote a report would make a
+    verification mutate tracked state, which C8 step 3 already closed."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = Path(cca.__file__).read_text(encoding="utf-8")
+        cls.tree = ast.parse(cls.source)
+
+    def test_it_imports_only_the_standard_library(self):
+        imported = {name.split(".")[0] for name in imported_module_names(self.tree)}
+        self.assertEqual(imported - set(sys.stdlib_module_names), set())
+
+    def test_it_imports_no_legacy_module_and_no_permanent_sibling(self):
+        """Named separately from the stdlib test because they fail differently:
+        a legacy import would EXECUTE the subject, and that is the defect."""
+        for name in imported_module_names(self.tree):
+            self.assertFalse(name.startswith("foundry_"), name)
+            self.assertFalse(name.startswith("mtj_foundry"), name)
+
+    def test_its_only_subprocess_is_a_read_only_git_query(self):
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Call) and \
+                    ast.unparse(node.func).startswith("subprocess."):
+                self.assertEqual(ast.unparse(node.func), "subprocess.run")
+                self.assertIn("ls-files", ast.unparse(node.args[0]))
+
+    def test_its_only_write_is_the_json_report_into_stdout(self):
+        """Asserted with the analyzer's OWN write-call vocabulary, so the guard
+        widens whenever that list does rather than drifting behind it — and
+        stated as what it IS rather than as an absence. There is exactly one
+        write-family call, it is `json.dump`, and its destination is
+        `sys.stdout`; a report written to a path would be a verification that
+        mutates repository state, which C8 step 3 closed."""
+        analyzer = Path(cca.__file__)
+        module = cca.Module(analyzer.parent, Path(analyzer.name))
+        writes = cca.output_truth_boundary(module)["sites"]
+        self.assertEqual([site["expr"] for site in writes], ["json.dump"])
+        dumps = [n for n in ast.walk(self.tree) if isinstance(n, ast.Call)
+                 and ast.unparse(n.func) == "json.dump"]
+        self.assertEqual(len(dumps), 1)
+        self.assertEqual(ast.unparse(dumps[0].args[1]), "sys.stdout")
+
+    def test_it_opens_no_file_for_writing(self):
+        """The other half, and a separate failure: `output_truth_boundary`
+        reports `open(..., "w")` as a write, so a rewrite of the entry point that
+        wrote a report through `open` instead of `json.dump` would move the test
+        above and this one together, and neither alone would be enough."""
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Call):
+                self.assertNotEqual(cca._is_write_call(node), "OPEN_FOR_WRITE")
+                self.assertNotEqual(cca._is_write_call(node), "METHOD")
+
+
+class TestTheLivePopulation(unittest.TestCase):
+    """The three numbers C8.5V reported, re-derived by the shipped analyzer."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.analysis = cca.analyze_repository(REPO_ROOT)
+
+    def test_the_population_reproduces_the_accepted_C8_5V_arithmetic(self):
+        population = self.analysis["population"]
+        self.assertEqual(population["facade_fan_in_files"], EXPECTED_FAN_IN_FILES)
+        self.assertEqual(population["facade_read_call_sites"],
+                         EXPECTED_READ_CALL_SITES)
+        self.assertEqual(population["facade_read_owning_files"],
+                         EXPECTED_READ_OWNING_FILES)
+
+    def test_the_three_numbers_are_three_different_questions(self):
+        """Fan-in, call sites and owning files are not the same count, and the
+        arc has already been warned not to equate a population with a yield.
+        Every read-owning file is a fan-in file; the converse is false, and 25
+        sites live in 19 files because three files read more than once."""
+        population = self.analysis["population"]
+        self.assertEqual(len(population["facade_fan_in"]),
+                         population["facade_fan_in_files"])
+        self.assertTrue(set(population["read_owning"])
+                        <= set(population["facade_fan_in"]))
+        self.assertGreater(population["facade_read_call_sites"],
+                           population["facade_read_owning_files"])
+
+    def test_the_two_already_repointed_consumers_are_absent(self):
+        """Verified, not assumed. C8.5R and C8.5U moved these two off the
+        facade read; if either reappeared, the population would still be 28/25/19
+        only by coincidence."""
+        for done in ("experiments/foundry_object_lattice.py",
+                     "experiments/foundry_cr_checks.py"):
+            self.assertNotIn(done, self.analysis["population"]["read_owning"])
+
+    def test_the_analysis_is_byte_identical_on_a_second_run(self):
+        again = cca.analyze_repository(REPO_ROOT)
+        self.assertEqual(json.dumps(self.analysis, sort_keys=False),
+                         json.dumps(again, sort_keys=False))
+
+
+class TestTheNominatedCandidateRecord(unittest.TestCase):
+    """`foundry_reaudit`, the candidate C8.5V nominated and C8.5W repointed's
+    predecessor slice measured by hand. Every axis below was stated in that
+    result; here the analyzer states it, so the next nomination is a query."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.record = cca.analyze_consumer(REPO_ROOT, REAUDIT_REL)
+
+    def test_exactly_one_read_site_and_main_owns_it(self):
+        self.assertEqual(len(self.record["read_sites"]), 1)
+        self.assertEqual(self.record["read_sites"][0]["owner"], "main")
+        self.assertEqual(self.record["read_owner_functions"], ["main"])
+        self.assertFalse(self.record["import_time_read"])
+
+    def test_the_read_is_bound_through_the_module_alias(self):
+        self.assertEqual(self.record["facade_bindings"]["aliases"], ["fcb"])
+        self.assertEqual(self.record["facade_bindings"]["symbols"], {})
+        self.assertFalse(self.record["facade_bindings"]["star"])
+
+    def test_it_has_no_in_repository_caller_of_any_kind(self):
+        self.assertEqual(self.record["static_importers"], [])
+        self.assertEqual(self.record["dynamic_loader_sites"], [])
+        self.assertEqual(self.record["reaching_call_paths"], [])
+
+    def test_no_catching_handler_reaches_its_read(self):
+        self.assertEqual(self.record["catching_handlers"], [])
+        self.assertEqual(self.record["failure_observability"]["status"],
+                         "UNOBSERVED_NO_REACHING_HANDLER")
+
+    def test_the_facade_is_a_split_and_the_retained_symbol_is_named(self):
+        self.assertIn("lint_or_halt",
+                      self.record["facade_symbols_after_read_repoint"])
+        self.assertEqual(self.record["facade_disposition"], "SPLIT")
+        self.assertIn({"kind": "RETAINED_FACADE_SYMBOL", "detail": "lint_or_halt"},
+                      self.record["blockers"])
+
+    def test_the_bootstrap_chain_is_walked_and_not_assumed(self):
+        """Two hops of evidence, not a constant: reaudit imports
+        `foundry_common`, and `foundry_common` is what inserts `src`."""
+        bootstrap = self.record["bootstrap_dependency"]
+        self.assertEqual(bootstrap["status"], "SATISFIED_VIA_PROVIDER")
+        self.assertEqual(bootstrap["chain"],
+                         [REAUDIT_REL, "experiments/foundry_common.py"])
+
+    def test_its_artifact_write_is_ordered_after_the_read(self):
+        """The order IS the artifact-truth argument for this file, and it is the
+        opposite of `foundry_cr_checks`, which writes first. Reaudit reads first,
+        so no artifact is produced on any failure path."""
+        boundary = self.record["output_truth_boundary"]
+        self.assertEqual(boundary["ordered_after_read"], 1)
+        self.assertEqual(boundary["ordered_before_read"], 0)
+        self.assertEqual([s["expr"] for s in boundary["sites"]], ["out.write_text"])
+
+    def test_a_string_replace_is_not_scored_as_an_artifact_write(self):
+        """The probe defect this file's own quote normalizer would have caused.
+        `f.replace(...)` and `q.replace(...)` are `str.replace`; a name-only
+        write list scored both as output mutations of the codebook consumer."""
+        self.assertIn("_PUNCT.sub", cca.Module(REPO_ROOT, Path(REAUDIT_REL)).source)
+        exprs = [s["expr"] for s in self.record["output_truth_boundary"]["sites"]]
+        self.assertNotIn("f.replace", exprs)
+        self.assertNotIn("q.replace", exprs)
+
+
+class TestTheKnownTransitiveTrapIsFoundMechanically(unittest.TestCase):
+    """THE C8.5T REGRESSION CONTROL, ON THE REAL REPOSITORY.
+
+    C8.5T found by hand that `foundry_r5_attribution` catches `SystemExit`
+    across a module boundary, and that finding cut a two-file cohort to one
+    AFTER the cohort had been drawn. `foundry_r5_attribution` has NO try around
+    its call into `foundry_consolidate_run1` — the handler is in `main`, around a
+    call to a function of its own that reaches it — so a file-local or even a
+    call-site-local handler scan reports that file as unhandled.
+
+    Both directions are asserted here, because the analyzer's value is entirely
+    in telling them apart: the same `except SystemExit` in the same file is a
+    BLOCKER for one candidate and NOT ATTRIBUTED for the other."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.run1 = cca.analyze_consumer(REPO_ROOT, RUN1_REL)
+        cls.classify = cca.analyze_consumer(REPO_ROOT, RUN1_CLASSIFY_REL)
+
+    def test_the_transitive_handler_blocks_consolidate_run1(self):
+        self.assertEqual(self.run1["classification"], "BLOCK_SYSTEMEXIT_DEPENDENCY")
+        observing = self.run1["failure_observability"]["observing_handlers"]
+        self.assertTrue(observing)
+        for handler in observing:
+            self.assertEqual(handler["caller"], R5_REL)
+            self.assertEqual(handler["catches"], ["SystemExit"])
+            self.assertEqual(handler["handler_origin"], "TRANSITIVE")
+            self.assertIsNotNone(handler["through"])
+            self.assertTrue(handler["reaches_read_owner"])
+
+    def test_no_handler_lexically_encloses_the_call_that_is_blocked(self):
+        """The reason a call-site-local scan misses it, stated as a measurement
+        rather than as a claim: every blocking handler here is TRANSITIVE, and
+        the file has no DIRECT one around that call at all."""
+        origins = {h["handler_origin"] for h in self.run1["catching_handlers"]
+                   if h["caller"] == R5_REL and h["entry"] == "classify_run1_instances"}
+        self.assertEqual(origins, {"TRANSITIVE"})
+
+    def test_the_same_handler_is_not_charged_against_the_classifier(self):
+        """`clf.classify_a15` IS lexically inside the `except SystemExit`, and
+        it still cannot observe a read its call graph never reaches. Charging it
+        would block a candidate C8.5V measured as safe."""
+        self.assertEqual(self.classify["classification"],
+                         "SAFE_NO_TRANSITIVE_HANDLER")
+        not_reaching = self.classify["failure_observability"][
+            "handled_calls_not_reaching_read"]
+        self.assertTrue(any(h["caller"] == R5_REL and h["catches"] == ["SystemExit"]
+                            for h in not_reaching))
+
+    def test_the_fifteen_C8_5V_candidates_are_all_still_splits(self):
+        """C8.5V's second axis, re-derived: no remaining candidate can DROP the
+        facade, so fan-in cannot fall in this slice or a near one. Reported here
+        because a record showing only the handler answer reads as 'ready'."""
+        analysis = cca.analyze_repository(REPO_ROOT)
+        safe = [r for r in analysis["consumers"]
+                if r["classification"] == "SAFE_NO_TRANSITIVE_HANDLER"]
+        self.assertEqual(len([r for r in safe
+                              if r["facade_disposition"] == "SPLIT"]), 15)
+
+
+class TestTheSyntheticControls(unittest.TestCase):
+    """Six fixtures, each a shape the live repository does not contain.
+
+    Every one is graded on the SHIPPED analyzer, and every one is paired with a
+    contrast that differs by one construct — so a fixture cannot pass because an
+    unrelated assertion fired. The pinned value is the classification or the
+    attribution itself, never merely 'something was found'."""
+
+    def analyze(self, **overrides) -> dict:
+        files = {"experiments/foundry_common.py": FIXTURE_COMMON,
+                 "experiments/candidate.py": FIXTURE_CANDIDATE}
+        files.update(overrides)
+        return fixture_repository(files)
+
+    # -- TRANSITIVE_SYSTEMEXIT_REACHES_READ ----------------------------------
+
+    TRANSITIVE_CALLER = '''\
+import candidate
+
+
+def replay():
+    return candidate.entry()
+
+
+def main():
+    try:
+        return replay()
+    except SystemExit:
+        return None
+'''
+
+    def test_TRANSITIVE_SYSTEMEXIT_REACHES_READ_blocks(self):
+        """The permanent control for the C8.5T failure mode. The handler is two
+        frames above the call into the candidate, and the call it encloses is a
+        function of the CALLER."""
+        analysis = self.analyze(**{"experiments/caller.py": self.TRANSITIVE_CALLER})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "BLOCK_SYSTEMEXIT_DEPENDENCY")
+        handlers = record["failure_observability"]["observing_handlers"]
+        self.assertEqual([h["handler_origin"] for h in handlers], ["TRANSITIVE"])
+        self.assertEqual(handlers[0]["catches"], ["SystemExit"])
+        self.assertEqual(handlers[0]["entry"], "entry")
+        self.assertEqual(record["reaching_call_paths"][0]["reaching_paths"],
+                         ["entry -> owner"])
+
+    def test_the_same_fixture_without_the_handler_is_SAFE(self):
+        """The contrast that makes the fixture non-vacuous: one construct
+        removed, and the verdict moves. Without it, the BLOCK above could be
+        coming from anything else in the fixture."""
+        unhandled = self.TRANSITIVE_CALLER.replace(
+            "    try:\n        return replay()\n    except SystemExit:\n"
+            "        return None\n", "    return replay()\n")
+        self.assertNotEqual(unhandled, self.TRANSITIVE_CALLER)
+        analysis = self.analyze(**{"experiments/caller.py": unhandled})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(record["failure_observability"]["observing_handlers"], [])
+
+    # -- HANDLER_CALL_DOES_NOT_REACH_READ ------------------------------------
+
+    def test_HANDLER_CALL_DOES_NOT_REACH_READ_is_not_attributed(self):
+        """The same caller shape, aimed at a function whose call graph does not
+        reach the read owner. The handler is real and is reported as real; what
+        it may not do is count against this candidate."""
+        caller = self.TRANSITIVE_CALLER.replace("candidate.entry()",
+                                                "candidate.other()")
+        analysis = self.analyze(**{"experiments/caller.py": caller})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(record["failure_observability"]["observing_handlers"], [])
+        not_reaching = record["failure_observability"][
+            "handled_calls_not_reaching_read"]
+        self.assertEqual([h["entry"] for h in not_reaching], ["other"])
+        self.assertEqual(not_reaching[0]["catches"], ["SystemExit"])
+
+    # -- TRY_FINALLY_IS_NOT_CATCH --------------------------------------------
+
+    FINALLY_CALLER = '''\
+import candidate
+
+
+def main():
+    try:
+        return candidate.entry()
+    finally:
+        pass
+'''
+
+    def test_TRY_FINALLY_IS_NOT_CATCH(self):
+        analysis = self.analyze(**{"experiments/caller.py": self.FINALLY_CALLER})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(len(record["catching_handlers"]), 1)
+        self.assertEqual(record["catching_handlers"][0]["catches"], [])
+        self.assertFalse(record["catching_handlers"][0]["is_catching_handler"])
+        self.assertTrue(record["catching_handlers"][0]["reaches_read_owner"])
+
+    def test_the_same_try_with_an_except_arm_does_block(self):
+        """One construct different, opposite verdict — and it pins WHICH block,
+        so a fixture that merely stopped being SAFE would not pass."""
+        catching = self.FINALLY_CALLER.replace("    finally:\n        pass\n",
+                                               "    except Exception:\n"
+                                               "        return None\n")
+        analysis = self.analyze(**{"experiments/caller.py": catching})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+        self.assertEqual(record["catching_handlers"][0]["catches"], ["Exception"])
+
+    # -- ALIAS_BINDING -------------------------------------------------------
+
+    FROM_IMPORT_CANDIDATE = '''\
+import foundry_common as fc
+from foundry_codebook import load_codebook as load
+
+
+def owner():
+    return load()
+
+
+def entry():
+    return owner()
+
+
+def other():
+    return 1
+'''
+
+    NAME_ONLY_CANDIDATE = '''\
+import foundry_common as fc
+
+
+class Cache:
+    def load_codebook(self):
+        return {}
+
+
+def owner(cache):
+    # load_codebook() is named here, in a string, and on an unrelated object.
+    return cache.load_codebook(), "fcb.load_codebook"
+
+
+def entry(cache):
+    return owner(cache)
+'''
+
+    def test_ALIAS_BINDING_resolves_both_import_forms_identically(self):
+        """The two spellings are one read. Asserted as an equality between the
+        two records' read axes rather than as two separate counts, because the
+        claim is that they mean the same thing."""
+        alias = record_for(self.analyze(), "experiments/candidate.py")
+        other = record_for(
+            self.analyze(**{"experiments/candidate.py": self.FROM_IMPORT_CANDIDATE}),
+            "experiments/candidate.py")
+        for record in (alias, other):
+            self.assertEqual(len(record["read_sites"]), 1)
+            self.assertEqual(record["read_sites"][0]["owner"], "owner")
+            self.assertEqual(record["facade_symbols"], ["load_codebook"])
+            self.assertEqual(record["facade_disposition"],
+                             "DROP_AFTER_READ_REPOINT")
+        self.assertEqual(alias["facade_bindings"]["aliases"], ["fcb"])
+        self.assertEqual(other["facade_bindings"]["symbols"],
+                         {"load": "load_codebook"})
+
+    def test_the_name_without_a_binding_is_not_a_read(self):
+        """The control for the other direction, and it carries the name THREE
+        ways: in a comment, inside a string literal, and as a real method call on
+        an unrelated object. A text search scores the first two; an AST search
+        that skipped binding resolution scores the third. The file binds no
+        facade, so it owns no read — `foundry_authority` really does define its
+        own same-named helpers, so this collision is not hypothetical."""
+        analysis = self.analyze(
+            **{"experiments/candidate.py": self.NAME_ONLY_CANDIDATE})
+        self.assertEqual(analysis["population"]["facade_read_call_sites"], 0)
+        self.assertEqual(analysis["population"]["facade_read_owning_files"], 0)
+        self.assertEqual(analysis["consumers"], [])
+
+    # -- DYNAMIC_LOAD_NOT_AUTOMATIC_READ -------------------------------------
+
+    DYNAMIC_CALLER = '''\
+def load_legacy(name):
+    import importlib
+    return importlib.import_module(name)
+
+
+class Harness:
+    @classmethod
+    def setUpClass(cls):
+        cls.mod = load_legacy("candidate")
+
+    def exercise(self):
+        try:
+            return self.mod.other()
+        except Exception:
+            return None
+'''
+
+    def test_DYNAMIC_LOAD_NOT_AUTOMATIC_READ(self):
+        """The load is REPORTED — a static-import scan is blind to it — and it
+        does not become a read-observing caller, because the function it calls
+        does not reach the read owner and the read is not at module scope."""
+        analysis = self.analyze(**{"tests/harness.py": self.DYNAMIC_CALLER})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["static_importers"], [])
+        self.assertEqual(len(record["dynamic_loader_sites"]), 1)
+        self.assertEqual(record["dynamic_loader_sites"][0]["bindings"], ["mod"])
+        self.assertFalse(record["import_time_read"])
+        self.assertEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+        self.assertEqual(record["failure_observability"]["observing_handlers"], [])
+
+    def test_the_same_dynamic_caller_reaching_the_read_does_block(self):
+        """Reachability governs, not the loading mechanism. One attribute
+        different, and the same dynamic load becomes a blocker."""
+        reaching = self.DYNAMIC_CALLER.replace("self.mod.other()",
+                                               "self.mod.entry()")
+        analysis = self.analyze(**{"tests/harness.py": reaching})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(len(record["dynamic_loader_sites"]), 1)
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+
+    # -- UNKNOWN_STAYS_UNKNOWN -----------------------------------------------
+
+    OPAQUE_CANDIDATE = '''\
+import foundry_common as fc
+import foundry_codebook as fcb
+
+
+def owner():
+    return fcb.load_codebook()
+
+
+def entry():
+    return sorted([1, 2], key=owner)
+
+
+def other():
+    return 1
+'''
+
+    def test_UNKNOWN_STAYS_UNKNOWN(self):
+        """`entry` hands `owner` to somebody else to call, so the graph cannot
+        say the read is unreachable — only that it found no path. A negative
+        reachability answer is exactly as good as the graph it was computed on,
+        and this one is incomplete on the frontier of the very entry under
+        test."""
+        analysis = self.analyze(
+            **{"experiments/candidate.py": self.OPAQUE_CANDIDATE,
+               "experiments/caller.py": self.FINALLY_CALLER.replace(
+                   "    finally:\n        pass\n",
+                   "    except Exception:\n        return None\n")})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "UNKNOWN")
+        self.assertEqual(record["reaching_call_paths"][0]["reaches_read_owner"],
+                         "UNKNOWN")
+        self.assertEqual(record["failure_observability"]["status"], "UNKNOWN")
+        self.assertTrue(record["failure_observability"]["undecided_handlers"])
+        self.assertNotEqual(record["classification"], "SAFE_NO_TRANSITIVE_HANDLER")
+
+    def test_resolving_that_one_edge_is_what_makes_it_answerable(self):
+        """The contrast: the same file with a direct call instead of a callback
+        reaches a verdict. UNKNOWN here is a property of the evidence, not a
+        blanket refusal — otherwise the axis would be useless in both
+        directions."""
+        resolved = self.OPAQUE_CANDIDATE.replace("sorted([1, 2], key=owner)",
+                                                 "owner()")
+        analysis = self.analyze(
+            **{"experiments/candidate.py": resolved,
+               "experiments/caller.py": self.FINALLY_CALLER.replace(
+                   "    finally:\n        pass\n",
+                   "    except Exception:\n        return None\n")})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["classification"], "BLOCK_EXCEPTION_CATCH")
+
+    def test_an_unresolved_bootstrap_cannot_be_reported_as_SAFE(self):
+        """The second UNKNOWN path, and it is a different one: a universe with
+        no module that reaches `mtj_foundry` cannot say the repoint would need
+        no new bootstrap. The fixture drops `foundry_common` and nothing else."""
+        analysis = fixture_repository(
+            {"experiments/candidate.py": FIXTURE_CANDIDATE.replace(
+                "import foundry_common as fc\n", "")})
+        record = record_for(analysis, "experiments/candidate.py")
+        self.assertEqual(record["bootstrap_dependency"]["status"], "UNKNOWN")
+        self.assertEqual(record["classification"], "UNKNOWN")
 
 
 if __name__ == "__main__":
