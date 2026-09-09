@@ -1056,8 +1056,40 @@ def _validated_replacement_targets(previous: dict, manifest_path: Path,
     the consumption and catching what falls out: `except (KeyError, TypeError)`
     would also swallow a defect in this module and report it as a malformed
     input, which is the wrong story told confidently.
+
+    ## M3.R2 — two more shapes that reached past this boundary
+
+    Both from Manager review `5596543305`, and both are the same mistake made
+    twice: **a value this function CONSUMES was being accepted on a weaker test
+    than the one the consumption actually needs.**
+
+    * **`files` had to be a list, and absence is not a list.** The first draft
+      opened with `previous.get("files", [])`, so a schema-correct manifest with
+      no `files` field at all was read as "this bundle contained no files" — a
+      confident empty answer to a question the document never answered. The
+      damage is not in this function: `_prepare_output` would then delete the
+      manifest, `write_bundle` would write the new bundle over the top, and
+      every unrecorded old file in that directory would survive underneath a
+      manifest that does not mention it. Without `--verify` the command exits 0.
+      **Absent and empty are different facts, and only one of them is safe.**
+    * **A listed path may not be the manifest itself.** The convention is that
+      `manifest.json` is self-excluded from `files` and removed separately by
+      `_prepare_output` AFTER the stale targets. Containment alone accepts
+      `manifest.json` — it is inside the output root — so the stale loop would
+      unlink it and the unconditional `manifest_path.unlink()` two lines later
+      would raise a raw `FileNotFoundError`, straight past the installed
+      command's one-line `STOP` contract. The check is on the RESOLVED path, not
+      on the string, so `./manifest.json` and `data/../manifest.json` are caught
+      by the same test.
     """
-    files = previous.get("files", [])
+    if "files" not in previous:
+        raise PilotOutputError(
+            f"{manifest_path}: it has no 'files' — refusing to treat an absent "
+            f"field as an empty bundle. an absent 'files' does not say this "
+            f"directory held no files, it says the manifest does not describe "
+            f"its contents, and replacing on that basis would leave unrecorded "
+            f"files under a manifest that never mentions them")
+    files = previous["files"]
     if not isinstance(files, list):
         raise PilotOutputError(
             f"{manifest_path}: its 'files' is a {type(files).__name__}, not a "
@@ -1081,7 +1113,15 @@ def _validated_replacement_targets(previous: dict, manifest_path: Path,
                 f"{path!r}, expected a non-empty string — refusing to delete "
                 f"anything from a directory whose manifest is malformed")
         # Raises PilotOutputError itself if the path escapes the output root.
-        targets.append(_resolved_target(output, path))
+        target = _resolved_target(output, path)
+        if target == _resolved_target(output, MANIFEST_NAME):
+            raise PilotOutputError(
+                f"{manifest_path}: files[{position}]['path'] is {path!r}, which "
+                f"resolves to the manifest itself — refusing to delete anything. "
+                f"{MANIFEST_NAME} is self-excluded from 'files' by construction "
+                f"and is removed separately after the stale files, so a manifest "
+                f"listing itself is malformed for this replacement")
+        targets.append(target)
     return targets
 
 

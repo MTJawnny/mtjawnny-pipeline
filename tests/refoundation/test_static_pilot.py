@@ -1316,3 +1316,287 @@ class TestMalformedPriorManifestFailsClosed(PilotFixture):
             self._corrupt(out, drop_unconsumed_fields)
             pilot.build(self.index_path, self.evaluation_path, out)
             pilot.verify_manifest(out)
+
+
+# ===========================================================================
+# M3.R2 -- the last two malformed-prior-manifest shapes
+# ===========================================================================
+
+class TestMissingAndSelfListedFilesFailClosed(PilotFixture):
+    """Two shapes that escaped R1's first-pass validator, from V `5596543305`.
+
+    Both are the same mistake made twice: a value the replacement CONSUMES was
+    accepted on a weaker test than the consumption needs. Neither is a browser,
+    retrieval or artifact concern -- they are local shape validation, and the
+    proof for each is the same pair of claims R1 established: the refusal is a
+    `PilotOutputError`, and NOTHING on disk moved.
+    """
+
+    def _prior_bundle(self, tmp):
+        out = pathlib.Path(tmp) / "bundle"
+        pilot.build(self.index_path, self.evaluation_path, out)
+        return out
+
+    def _snapshot(self, out):
+        """Every byte under the directory, INCLUDING the corrupted manifest.
+
+        The manifest is deliberately in the snapshot. A refusal that rewrote or
+        removed the malformed manifest would be a mutation of caller state on a
+        path that is supposed to change nothing, and a snapshot that skipped it
+        could not see that.
+        """
+        return {str(p.relative_to(out)): p.read_bytes()
+                for p in out.rglob("*") if p.is_file()}
+
+    def _assert_unchanged(self, out, before):
+        after = self._snapshot(out)
+        self.assertEqual(sorted(before), sorted(after),
+                         "a file was created or deleted by a refusal")
+        for name in sorted(before):
+            with self.subTest(file=name):
+                self.assertEqual(before[name], after[name])
+
+    def _corrupt(self, out, mutate):
+        manifest_path = out / pilot.MANIFEST_NAME
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+        mutate(document)
+        manifest_path.write_text(json.dumps(document), encoding="utf-8")
+
+    def _cli(self, out):
+        import contextlib
+        import io
+
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            status = pilot_cli.main(["--index", str(self.index_path),
+                                     "--evaluation", str(self.evaluation_path),
+                                     "--output", str(out)])
+        return status, stdout.getvalue(), stderr.getvalue()
+
+    # ---- Repair A: `files` must be PRESENT -------------------------------
+
+    def test_a_manifest_with_no_files_key_is_refused(self):
+        """`previous.get("files", [])` read an ABSENT field as an empty bundle --
+        a confident empty answer to a question the document never answered."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.pop("files"))
+            before = self._snapshot(out)
+            with self.assertRaises(pilot.PilotOutputError) as caught:
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertIn("no 'files'", str(caught.exception))
+            self._assert_unchanged(out, before)
+
+    def test_the_missing_files_refusal_reaches_the_cli_contract(self):
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.pop("files"))
+            before = self._snapshot(out)
+            status, stdout, stderr = self._cli(out)
+            self.assertEqual(status, 1)
+            self.assertEqual(stdout, "")
+            self.assertEqual(len(stderr.splitlines()), 1)
+            self.assertTrue(stderr.startswith("STOP — "))
+            self._assert_unchanged(out, before)
+
+    def test_absent_files_and_empty_files_are_not_the_same_state(self):
+        """The distinction the defect erased, asserted directly. An EMPTY list is
+        a legitimate statement ('this bundle recorded no files') and is accepted;
+        an ABSENT field is a manifest that does not describe its directory."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.__setitem__("files", []))
+            manifest_path = out / pilot.MANIFEST_NAME
+            document = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                pilot._validated_replacement_targets(document, manifest_path, out),
+                [])
+            del document["files"]
+            with self.assertRaises(pilot.PilotOutputError):
+                pilot._validated_replacement_targets(document, manifest_path, out)
+
+    def test_the_missing_files_hole_would_have_orphaned_unrecorded_files(self):
+        """WHY IT MATTERED, demonstrated rather than argued.
+
+        With `files` absent and the field defaulted to `[]`, replacement deleted
+        nothing, removed the manifest, and wrote the new bundle over the top --
+        leaving an unrecorded file underneath a manifest that never mentions it,
+        and exiting 0. The repaired code refuses instead, so the stray file is
+        still there to be reported by `verify_manifest` rather than buried.
+        """
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            orphan = out / "data" / "text" / "zz.json"
+            orphan.write_text("{}", encoding="utf-8")
+            self._corrupt(out, lambda d: d.pop("files"))
+            with self.assertRaises(pilot.PilotOutputError):
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertTrue(orphan.is_file())
+
+    # ---- Repair B: `files` may not list the manifest ---------------------
+
+    def test_a_manifest_listing_itself_is_refused(self):
+        """Containment alone accepts `manifest.json` -- it IS inside the output
+        root. The stale loop would unlink it, and the unconditional
+        `manifest_path.unlink()` two lines later would raise a raw
+        `FileNotFoundError` straight past the CLI's typed boundary."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d["files"].append(
+                {"path": pilot.MANIFEST_NAME, "sha256": "0" * 64, "byte_size": 1}))
+            before = self._snapshot(out)
+            with self.assertRaises(pilot.PilotOutputError) as caught:
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertIn("resolves to the manifest itself", str(caught.exception))
+            self._assert_unchanged(out, before)
+
+    def test_it_is_not_a_raw_filenotfounderror(self):
+        """Named explicitly because `PilotOutputError` is not a subclass of it --
+        so `assertRaises(PilotOutputError)` above already excludes it -- but the
+        review's finding was about the EXCEPTION TYPE reaching the operator, and
+        that deserves its own assertion rather than an inference."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d["files"].append(
+                {"path": pilot.MANIFEST_NAME}))
+            try:
+                pilot.build(self.index_path, self.evaluation_path, out)
+            except pilot.PilotOutputError:
+                pass
+            except Exception as error:            # noqa: BLE001 - the assertion
+                self.fail(f"raised {type(error).__name__}, not PilotOutputError")
+            else:
+                self.fail("no refusal was raised")
+
+    def test_an_indirect_spelling_of_the_manifest_is_also_refused(self):
+        """The check is on the RESOLVED path, not the string, so a manifest
+        cannot smuggle itself in by spelling. A string comparison against
+        `"manifest.json"` would pass every one of these."""
+        for spelling in ("./manifest.json", "data/../manifest.json",
+                         "data/text/../../manifest.json"):
+            with TemporaryDirectory() as tmp:
+                out = self._prior_bundle(tmp)
+                self._corrupt(out, lambda d, s=spelling: d["files"].append(
+                    {"path": s}))
+                before = self._snapshot(out)
+                with self.subTest(spelling=spelling):
+                    with self.assertRaises(pilot.PilotOutputError):
+                        pilot.build(self.index_path, self.evaluation_path, out)
+                    self._assert_unchanged(out, before)
+
+    def test_the_self_listed_refusal_reaches_the_cli_contract(self):
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d["files"].append(
+                {"path": pilot.MANIFEST_NAME}))
+            before = self._snapshot(out)
+            status, stdout, stderr = self._cli(out)
+            self.assertEqual(status, 1)
+            self.assertEqual(stdout, "")
+            self.assertEqual(len(stderr.splitlines()), 1)
+            self.assertTrue(stderr.startswith("STOP — "))
+            self._assert_unchanged(out, before)
+
+    def test_a_self_listing_placed_last_still_deletes_nothing(self):
+        """The ordering property R1 established, re-asserted for the new rule:
+        the malformed entry is LAST, so a check that ran inside the delete loop
+        would already have erased every real file before reaching it."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d["files"].append(
+                {"path": pilot.MANIFEST_NAME}))
+            before = self._snapshot(out)
+            recorded = len(json.loads(
+                (out / pilot.MANIFEST_NAME).read_text(encoding="utf-8"))["files"])
+            with self.assertRaises(pilot.PilotOutputError):
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self._assert_unchanged(out, before)
+            # The property this test needs: the bad entry was preceded by REAL
+            # targets, so a lazy check inside the delete loop would have erased
+            # them first. Derived from the manifest rather than guessed -- the
+            # first draft asserted `len(before) > 100`, which was a guess about
+            # the fixture (it has 20 files) and not a statement about ordering.
+            self.assertGreater(recorded, 1)
+
+    # ---- nothing that already worked was weakened ------------------------
+
+    def test_the_r1_validations_are_all_still_enforced(self):
+        """R2 must not have traded one refusal for another. Every shape R1
+        refused is re-checked here against the repaired validator."""
+        with TemporaryDirectory() as tmp:
+            out = self._prior_bundle(tmp)
+            manifest_path = out / pilot.MANIFEST_NAME
+            valid = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for label, mutate in [
+                ("non-list files", lambda d: d.__setitem__("files", {})),
+                ("entry not an object",
+                 lambda d: d["files"].append("data/cards.json")),
+                ("entry without path", lambda d: d["files"].append({})),
+                ("path not a string",
+                 lambda d: d["files"].append({"path": 7})),
+                ("empty path", lambda d: d["files"].append({"path": ""})),
+                ("path escaping the root",
+                 lambda d: d["files"].append({"path": "../escaped.txt"})),
+            ]:
+                document = json.loads(json.dumps(valid))
+                mutate(document)
+                with self.subTest(shape=label):
+                    with self.assertRaises(pilot.PilotOutputError):
+                        pilot._validated_replacement_targets(
+                            document, manifest_path, out)
+
+    def test_a_valid_prior_bundle_still_replaces_deterministically(self):
+        """The acceptance case, re-proved after tightening: a real prior bundle
+        is still replaced, and the result is byte-equal to a fresh build."""
+        with TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / "bundle"
+            first = pilot.build(self.index_path, self.evaluation_path, out)
+            second = pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertEqual(first, second)
+            fresh = pathlib.Path(tmp) / "fresh"
+            pilot.build(self.index_path, self.evaluation_path, fresh)
+            replaced = {str(p.relative_to(out)): p.read_bytes()
+                        for p in out.rglob("*") if p.is_file()}
+            clean = {str(p.relative_to(fresh)): p.read_bytes()
+                     for p in fresh.rglob("*") if p.is_file()}
+            self.assertEqual(sorted(replaced), sorted(clean))
+            for name in sorted(clean):
+                with self.subTest(file=name):
+                    self.assertEqual(replaced[name], clean[name])
+            pilot.verify_manifest(out)
+
+    def test_the_validator_still_has_no_generic_catch(self):
+        import ast
+
+        tree = ast.parse(pathlib.Path(pilot.__file__).read_text(encoding="utf-8"))
+        target = next(node for node in ast.walk(tree)
+                      if isinstance(node, ast.FunctionDef)
+                      and node.name == "_validated_replacement_targets")
+        self.assertEqual([h for h in ast.walk(target)
+                          if isinstance(h, ast.ExceptHandler)], [])
+
+
+class TestTheR1NormalizationBoundaryIsUntouched(PilotFixture):
+    """R2 must not have disturbed the accepted R1 repair.
+
+    Confirmation only, per the active task -- the Unicode design is closed and is
+    not re-derived or re-argued here. These assert that the emitted bundle still
+    carries the same boundary and that the shipped JavaScript still consumes it.
+    """
+
+    def test_the_bundle_still_emits_the_derived_normalization_table(self):
+        emitted = self.emitted("data/normalization.json")
+        derived = pilot.build_normalization_table()
+        self.assertEqual(emitted["schema"], pilot.NORMALIZATION_SCHEMA)
+        self.assertEqual(emitted["fold"], derived["fold"])
+        self.assertEqual(emitted["strip"], derived["strip"])
+        self.assertIn("data/normalization.json",
+                      {entry["path"] for entry in self.manifest["files"]})
+
+    def test_the_shipped_javascript_still_consumes_it(self):
+        code = _javascript_code_only(
+            (self.output / "assets" / "pilot.js").read_text(encoding="utf-8"))
+        self.assertIn("normalization.strip", code)
+        self.assertIn("normalization.fold", code)
+        self.assertNotIn("toLowerCase", code)
+        self.assertNotIn(".trim(", code)

@@ -68,8 +68,14 @@ its absence from the import closure, not from the prose.
 
 **A recognised prior manifest is fully validated before anything is deleted**
 (M3.R1). Matching the schema proves only that the document *claims* to be ours;
-`files` must also be a list, every entry an object with a non-empty string
-`path`, and every path must pass the output-root containment check. All of that
+`files` must also be **present** and a list, every entry an object with a
+non-empty string `path`, every path must pass the output-root containment
+check, and no path may resolve to `manifest.json` itself — that file is
+self-excluded from `files` by construction and is removed separately, so a
+manifest listing itself is malformed for this replacement. An **absent**
+`files` is not an empty one: it says the manifest does not describe its
+directory, and replacing on that basis would leave unrecorded files under a
+manifest that never mentions them. All of that
 runs in one pass that unlinks nothing, so a manifest whose last entry is
 malformed does not leave its first nine files deleted. A malformed
 schema-correct manifest raises `PilotOutputError` and reaches the operator as
