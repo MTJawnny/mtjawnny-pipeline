@@ -68,10 +68,12 @@ from mtj_foundry import __version__, corpus, runtime
 __all__ = [
     "ACTIVE_AXIS_STATUS",
     "EVIDENCE_STATE_ASSIGNED",
+    "EVIDENCE_STATE_MEANINGS",
     "EVIDENCE_STATE_UNASSIGNED",
     "INDEX_SCHEMA",
     "EvidenceIndexConservationError",
     "build_index",
+    "evidence_state_semantics",
     "generate",
     "render_index",
 ]
@@ -86,10 +88,11 @@ ACTIVE_AXIS_STATUS = runtime.ACTIVE_AXIS_STATUS
 EVIDENCE_STATE_ASSIGNED = "ACTIVE_EVIDENCE_PRESENT"
 EVIDENCE_STATE_UNASSIGNED = "UNASSIGNED_NO_ACTIVE_EVIDENCE"
 
-# What the two states mean, carried INTO the artifact so a static consumer that
-# never reads this module cannot invent a third reading. The wording is the
-# operative constraint of this milestone and is deliberately verbose.
-EVIDENCE_STATE_SEMANTICS = {
+# The MEANING of the two states. Fixed prose, because it is a statement about
+# what the vocabulary means and not about any particular corpus — it is true of
+# every index this module will ever build. Carried INTO the artifact so a static
+# consumer that never reads this module cannot invent a third reading.
+EVIDENCE_STATE_MEANINGS = {
     EVIDENCE_STATE_ASSIGNED: (
         "the selected codebook records at least one membership for this card on "
         "an axis whose status is 'active'. the memberships and their stored "
@@ -104,11 +107,60 @@ EVIDENCE_STATE_SEMANTICS = {
         "not a claim that the card is semantically empty",
         "not a claim that the card was ever looked at",
     ],
-    "absent_membership_is": (
-        "UNKNOWN, never FALSE. 31,958 of 38,233 corpus ids are uncovered on the "
-        "selected codebook; treating absence as a negative signal would convert "
-        "an unreviewed majority into a fabricated judgement"),
 }
+
+
+def _absent_membership_clause(coverage: dict) -> str:
+    """The UNKNOWN-never-FALSE sentence, with its POPULATION FACTS DERIVED.
+
+    M2.R1 repair B, from Manager review `5593405124`. This clause used to be a
+    module-level constant reading "31,958 of 38,233 corpus ids are uncovered".
+    Those counts were true of the selected pilot on the day they were typed, and
+    that is exactly the defect: a permanent capability that can build an index
+    over ANY verified inputs was carrying one measurement as though it were part
+    of the vocabulary's meaning. The next verified index with different coverage
+    would have shipped the old sentence and read as authoritative.
+
+    So the numbers now come from `coverage` — the same re-derived block the
+    artifact publishes and `_conserve` checks against the accepted milestone-1
+    report — and no replacement literal is substituted for them.
+
+    **The QUANTIFIER is derived too, and that is not incidental.** "an unreviewed
+    majority" is as much a population claim as "31,958" is; fixing the digits and
+    leaving the adjective would have moved the same defect one word to the right,
+    where it would be harder to see. On the selected pilot 31,958 of 38,233 are
+    uncovered, so the derived word is "majority" and the emitted sentence is
+    byte-identical to the constant it replaces — which is why this repair does
+    not move the artifact's digest.
+
+    The MEANING does not move and must not: absence of an active membership is
+    UNKNOWN, never FALSE. Only the measured facts inside the sentence are
+    derived.
+    """
+    uncovered = coverage["corpus_ids_uncovered"]
+    total = coverage["corpus_ids_total"]
+    if uncovered * 2 > total:
+        share = "majority"
+    elif uncovered * 2 < total:
+        share = "minority"
+    else:
+        share = "half"
+    return (f"UNKNOWN, never FALSE. {uncovered:,} of {total:,} corpus ids are "
+            f"uncovered on the selected codebook; treating absence as a negative "
+            f"signal would convert an unreviewed {share} into a fabricated "
+            f"judgement")
+
+
+def evidence_state_semantics(report: dict) -> dict:
+    """The semantics block for ONE artifact: fixed meanings plus derived facts.
+
+    A function rather than a constant, because half of this block is a statement
+    about vocabulary (true always) and half is a statement about the inputs this
+    particular artifact was built from (true only of them). Keeping them in one
+    module-level dict is what let a measurement masquerade as a definition.
+    """
+    return {**EVIDENCE_STATE_MEANINGS,
+            "absent_membership_is": _absent_membership_clause(report["coverage"])}
 
 
 class EvidenceIndexConservationError(RuntimeError):
@@ -286,7 +338,7 @@ def build_index(document: dict, cards: dict, report: dict) -> dict:
                                   "claim about any card, and none may be derived from "
                                   "an absence in it"),
         },
-        "evidence_state_semantics": EVIDENCE_STATE_SEMANTICS,
+        "evidence_state_semantics": evidence_state_semantics(report),
         "selected_inputs": report["inputs"],
         "conservation": {
             "source": ("re-derived by this module's per-card walk and required to "

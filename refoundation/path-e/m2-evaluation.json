@@ -14,7 +14,8 @@
   "historical_regression_context": {
     "document": "docs/WIRE-RESULT-2026-08-09.md",
     "git_blob_sha": "385d8abe6913c48afffca8ca75a145197f15b6f6",
-    "use": "CONTEXT ONLY. it records that the naive membership wire failed 1 of its 3 pre-committed criteria. milestone 2 does not lower, rewrite or re-grade that bar, and does not reuse its scoring",
+    "use": "CONTEXT ONLY. it records that the naive membership wire FAILED 2 of its 3 pre-committed criteria and PASSED 1. section 5 grades criterion 1 (an anchor gains a named-correct neighbour it could not reach) FAIL, criterion 2 (no anchor loses a correct neighbour) FAIL, and criterion 3 (the controls come back byte-identical) PASS. milestone 2 does not lower, rewrite or re-grade that bar, and does not reuse its scoring",
+    "count_correction": "M2.R1 repair A, from Manager review 5593405124. an earlier draft of the field above stated the inverse count -- one failure instead of two -- by reading the source document's own summary line, which reports the single PASS, as though it reported a single FAILURE. the verdict ROWS of section 5 are the authority for this field, not that summary line, and the historical document itself was not edited. recorded rather than silently overwritten, so a reviewer can see which statement moved and why.",
     "measured_axis_recall_against_this_panel": "13 of 33 = 39%, per its section 4"
   },
   "identity_rule": "oracle_id is the only card key. names below are the printed names as the source document writes them, and are resolved against the selected corpus at evaluation time. a name that resolves to more than one oracle_id must HALT, never be disambiguated.",

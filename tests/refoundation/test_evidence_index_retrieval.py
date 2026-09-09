@@ -263,6 +263,49 @@ class TestUnassignedSemantics(IndexFixtureCase):
             with self.subTest(word=word):
                 self.assertIn(word, text)
 
+    def test_the_population_clause_is_DERIVED_not_a_pilot_literal(self):
+        """M2.R1 repair B. `absent_membership_is` used to be a module-level
+        constant reading "31,958 of 38,233 corpus ids are uncovered" -- one
+        measurement of one input, sitting inside reusable semantics where the next
+        verified index would have inherited it as though it were a definition.
+
+        Built over a three-card fixture, the artifact must state the FIXTURE's
+        counts and must not claim the pilot's. The quantifier is checked too: on
+        this fixture the uncovered rows are a majority of three, and the word must
+        follow the data rather than be carried over.
+        """
+        index = self.index()
+        coverage = index["conservation"]["coverage"]
+        clause = index["evidence_state_semantics"]["absent_membership_is"]
+
+        for pilot_literal in ("31,958", "38,233"):
+            with self.subTest(literal=pilot_literal):
+                self.assertNotIn(pilot_literal, clause)
+        self.assertIn(f"{coverage['corpus_ids_uncovered']} of "
+                      f"{coverage['corpus_ids_total']} corpus ids are uncovered",
+                      clause)
+        self.assertIn("UNKNOWN, never FALSE", clause)
+
+    def test_the_derived_quantifier_follows_the_data_in_both_directions(self):
+        """The adjective is a population claim as much as the digits are, so it is
+        derived. Fixing the number and leaving "an unreviewed majority" hardcoded
+        would have moved the same defect one word to the right.
+        """
+        cases = {(9, 10): "majority", (1, 10): "minority", (5, 10): "half"}
+        for (uncovered, total), word in cases.items():
+            with self.subTest(uncovered=uncovered, total=total):
+                clause = evidence_index._absent_membership_clause(
+                    {"corpus_ids_uncovered": uncovered, "corpus_ids_total": total})
+                self.assertIn(f"an unreviewed {word} into a fabricated", clause)
+
+    def test_the_fixed_MEANINGS_carry_no_population_fact_at_all(self):
+        """The half of the block that is a statement about VOCABULARY must stay
+        free of any measurement, or the split this repair made is cosmetic."""
+        import re
+
+        text = json.dumps(evidence_index.EVIDENCE_STATE_MEANINGS)
+        self.assertEqual(re.findall(r"\d", text), [])
+
     def test_the_two_states_are_the_only_two_and_they_partition_the_rows(self):
         index = self.index()
         states = {r["evidence_state"] for r in index["cards"]}
@@ -725,6 +768,48 @@ class TestTheFrozenPanelFixture(unittest.TestCase):
             with self.subTest(anchor=anchor["label"]):
                 self.assertEqual(len(anchor["named_correct"]),
                                  len(set(anchor["named_correct"])))
+
+    def test_the_historical_verdict_count_matches_the_pinned_RESULT_document(self):
+        """M2.R1 repair A. The fixture said the 2026-08-09 wire "failed 1 of its 3
+        pre-committed criteria". It failed TWO and passed one.
+
+        The inversion came from reading the source's own summary line "One of
+        three" as one FAILURE when it names the one PASS -- so the guard is
+        derived from the §5 verdict ROWS rather than from that sentence, and from
+        the document whose blob id the test above pins. A fixture that inverts the
+        count again cannot agree with the rows.
+        """
+        section = [s for s in FROZEN_RESULT.read_text(encoding="utf-8").split("\n## ")
+                   if s.startswith("5. GRADED")]
+        self.assertEqual(len(section), 1, "the §5 verdict table moved or was renamed")
+        failed = section[0].count("**FAIL.**")
+        passed = section[0].count("**PASS.**")
+        self.assertEqual((failed, passed), (2, 1))
+
+        context = self.panel["historical_regression_context"]
+        use = context["use"]
+        self.assertIn(f"FAILED {failed} of its 3", use)
+        self.assertIn(f"PASSED {passed}", use)
+
+        # The CLAIM field must carry no other count. The correction note lives in
+        # its own key ON PURPOSE: the first draft of this guard searched `use` for
+        # the old wrong phrase, and the corrected sentence quoted that phrase to
+        # explain itself, so the probe read the correction as the defect. Same
+        # family as "a rejected term in backticks is ingested as vocabulary" --
+        # a document is an API, and a field that states a verdict must not also
+        # narrate a superseded one.
+        for wrong in ("FAILED 1 ", "failed 1 of", "PASSED 2 ", "1 of its 3"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, use)
+        self.assertIn("M2.R1 repair A", context["count_correction"])
+
+    def test_NEGATIVE_CONTROL_an_inverted_historical_verdict_is_caught(self):
+        """A guard never shown to fail is not known to be a guard: the inverted
+        text must fail the same assertions the correct text passes."""
+        broken = self.panel["historical_regression_context"]["use"].replace(
+            "FAILED 2 of its 3", "FAILED 1 of its 3")
+        self.assertNotIn("FAILED 2 of its 3", broken)
+        self.assertIn("FAILED 1 ", broken)
 
     def test_NEGATIVE_CONTROL_an_edited_source_is_detected(self):
         with tempfile.TemporaryDirectory() as tmp:
