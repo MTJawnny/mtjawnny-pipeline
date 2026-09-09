@@ -1,0 +1,139 @@
+{
+  "schema": "mtj-foundry-m2-evaluation-panel/1",
+  "id": "path-e-m2-frozen-evaluation-panel",
+  "what_this_is": "A machine-readable TRANSCRIPTION of the named-correct neighbour lists that were frozen in docs/WIRE-PREDICTIONS-2026-08-09.md BEFORE the 2026-08-09 wire experiment ran. It exists so the milestone-2 retrieval can be graded against a panel written by a human before the thing being graded existed.",
+  "what_this_is_not": "Not new relevance labels, not a model-generated judgement, not semantic authority, and not a target. No name below was added, removed, corrected or substituted during transcription. Nothing in this file may be edited to improve a measurement result; a disagreement between this file and the source document is a defect in this file.",
+  "source": {
+    "document": "docs/WIRE-PREDICTIONS-2026-08-09.md",
+    "git_blob_sha": "cff13bb5aa78a354a48fe50e65fe6da2f699316f",
+    "git_blob_sha_is": "the git object id of the file's exact content, verifiable with `git rev-parse HEAD:docs/WIRE-PREDICTIONS-2026-08-09.md`. it pins the bytes this transcription was taken from",
+    "section_transcribed": "3. THE ANCHORS AND THEIR PREDICTED CORRECT NEIGHBOURS",
+    "document_status": "IMMUTABLE HISTORICAL PRECOMMIT. the document states its own rule: nothing in it may be edited after the first run of the 2026-08-09 harness",
+    "not_transcribed": "anchor E (Zurgo, Thunder's Decree) names no correct-neighbour list in the source -- it is a purely structural prediction about a ratified scoring ceiling in the legacy engine -- and the active milestone-2 task names four anchors and two controls. it is recorded here as deliberately out of panel, not as an omission"
+  },
+  "historical_regression_context": {
+    "document": "docs/WIRE-RESULT-2026-08-09.md",
+    "git_blob_sha": "385d8abe6913c48afffca8ca75a145197f15b6f6",
+    "use": "CONTEXT ONLY. it records that the naive membership wire FAILED 2 of its 3 pre-committed criteria and PASSED 1. section 5 grades criterion 1 (an anchor gains a named-correct neighbour it could not reach) FAIL, criterion 2 (no anchor loses a correct neighbour) FAIL, and criterion 3 (the controls come back byte-identical) PASS. milestone 2 does not lower, rewrite or re-grade that bar, and does not reuse its scoring",
+    "count_correction": "M2.R1 repair A, from Manager review 5593405124. an earlier draft of the field above stated the inverse count -- one failure instead of two -- by reading the source document's own summary line, which reports the single PASS, as though it reported a single FAILURE. the verdict ROWS of section 5 are the authority for this field, not that summary line, and the historical document itself was not edited. recorded rather than silently overwritten, so a reviewer can see which statement moved and why.",
+    "measured_axis_recall_against_this_panel": "13 of 33 = 39%, per its section 4"
+  },
+  "identity_rule": "oracle_id is the only card key. names below are the printed names as the source document writes them, and are resolved against the selected corpus at evaluation time. a name that resolves to more than one oracle_id must HALT, never be disambiguated.",
+  "anchors": [
+    {
+      "label": "A",
+      "name": "Rampant Growth",
+      "document_axis_annotation": "rule:land-fetch-to-battlefield",
+      "document_axis_annotation_is": "the axis the source document names beside the anchor. RECORDED, NOT USED: retrieval discovers candidates from the selected evidence, and pre-filtering by this string would grade the evaluation on its own assumption",
+      "named_correct": [
+        "Farseek",
+        "Nature's Lore",
+        "Three Visits",
+        "Into the North",
+        "Search for Tomorrow",
+        "Wood Elves",
+        "Sakura-Tribe Elder",
+        "Skyshroud Claim",
+        "Explosive Vegetation",
+        "Harrow",
+        "Solemn Simulacrum"
+      ]
+    },
+    {
+      "label": "B",
+      "name": "Beast Within",
+      "document_axis_annotation": "rule:targeted-destruction + rule:compensates-controller-with-token",
+      "document_axis_annotation_is": "the axis the source document names beside the anchor. RECORDED, NOT USED",
+      "named_correct": [
+        "Generous Gift",
+        "Rapid Hybridization",
+        "Pongify",
+        "Chaos Warp",
+        "Reality Shift"
+      ]
+    },
+    {
+      "label": "C",
+      "name": "Reanimate",
+      "document_axis_annotation": "rule:reanimate-from-graveyard",
+      "document_axis_annotation_is": "the axis the source document names beside the anchor. RECORDED, NOT USED",
+      "named_correct": [
+        "Animate Dead",
+        "Necromancy",
+        "Exhume",
+        "Dance of the Dead",
+        "Stitch Together",
+        "Victimize",
+        "Corpse Dance",
+        "Life // Death"
+      ]
+    },
+    {
+      "label": "D",
+      "name": "Reliquary Tower",
+      "document_axis_annotation": "rule:no-maximum-hand-size",
+      "document_axis_annotation_is": "the axis the source document names beside the anchor. RECORDED, NOT USED",
+      "named_correct": [
+        "Thought Vessel",
+        "Venser's Journal",
+        "Spellbook",
+        "Kruphix, God of Horizons"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "label": "F",
+      "name": "Sol Ring",
+      "document_statement": "CONTROL, 0 memberships",
+      "milestone_2_expectation": "must acquire no fabricated semantic evidence. if it carries no active membership, the correct result is an explicit unassigned/no-evidence result and zero candidates"
+    },
+    {
+      "label": "G",
+      "name": "Grand Abolisher",
+      "document_statement": "CONTROL 2, 0 memberships but carries rule:turn-scoped today",
+      "document_statement_is": "the source document's 2026-08-09 statement about the LEGACY tier engine's own derived tag, which is not a codebook axis. recorded verbatim; the milestone-2 measurement reports what the SELECTED codebook actually records",
+      "milestone_2_expectation": "must acquire no fabricated semantic evidence"
+    }
+  ],
+  "known_failure_probes": {
+    "what_these_are": "cards the 2026-08-09 RESULT document names as concretely displaced by the naive membership wire. they are reported so a reviewer can see whether the old membership-gap failure is present as ABSENCE rather than disguised as a low score. they are NOT relevance labels and are NOT scored.",
+    "probes": [
+      {
+        "name": "Chaos Warp",
+        "source_section": "3b",
+        "historical_finding": "a named-correct neighbour of Beast Within; went T3#1 -> T3#12, out of the displayed list"
+      },
+      {
+        "name": "Dance of the Dead",
+        "source_section": "3c",
+        "historical_finding": "the near-twin of Animate Dead; rule:reanimate-from-graveyard contains Animate Dead and does NOT contain Dance of the Dead, and the wire promoted one to #2 while burying the other at #56 on that difference alone"
+      },
+      {
+        "name": "Unearth",
+        "source_section": "3c",
+        "historical_finding": "displaced #10 -> #62 at the Reanimate anchor"
+      },
+      {
+        "name": "Recommission",
+        "source_section": "3c",
+        "historical_finding": "displaced #9 -> #61 at the Reanimate anchor"
+      },
+      {
+        "name": "Emergency Eject",
+        "source_section": "3b",
+        "historical_finding": "functional twin of Beast Within (destroy target nonland permanent; its controller creates a token); fell #5 -> #19"
+      },
+      {
+        "name": "Excavation Technique",
+        "source_section": "3b",
+        "historical_finding": "functional twin of Beast Within; fell #6 -> #20"
+      },
+      {
+        "name": "Stroke of Midnight",
+        "source_section": "3b",
+        "historical_finding": "functional twin of Beast Within; fell #7 -> #21"
+      }
+    ]
+  }
+}

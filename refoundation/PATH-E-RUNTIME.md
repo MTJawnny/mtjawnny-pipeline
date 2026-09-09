@@ -70,12 +70,18 @@ files and produces byte-identical output.
 bytes and refuses unless BOTH match. That is a LOCAL verification; the report
 says so, and says explicitly that remote durability was not verified.
 
-**The corpus is PINNED BY PROPOSAL and is NOT ratified.** No durable authority
-pins a raw-corpus digest. `refoundation/path-e/input-lock.json` records what was
-measured and how its provenance was checked, marked
-`status: PROPOSED_PILOT_INPUT_LOCK`, `ratified: false`. The runtime carries that
-status into the report unchanged; nothing in the code can promote it. Ratifying,
-correcting or rejecting that lock is a Manager/Captain decision.
+**The corpus is MANAGER-SELECTED for the Path E pilot and is still NOT
+ratified.** No durable authority pins a raw-corpus digest in general.
+`refoundation/path-e/input-lock.json` records what was measured and how its
+provenance was checked, and Manager selected exactly these bytes as the bounded
+pilot corpus by decision `D-20260908-PATH-E-PILOT-CORPUS-SELECTED` (Issue #1
+comment `5592977288`), so the lock now carries
+`status: MANAGER_SELECTED_PATH_E_PILOT_INPUT`, `ratified: false`. The runtime
+carries that status into the report unchanged; nothing in the code can promote
+it. It was `status: PROPOSED_PILOT_INPUT_LOCK` when this page was written under
+milestone 1 — that is the ONE fact on this page milestone 2 changed, and it is
+corrected here rather than left to read as an open question that has since been
+decided.
 
 The provenance that WAS established: the local corpus decompresses to bytes
 identical to the archived snapshot object

@@ -3524,12 +3524,27 @@ CENSUS_HEAD = {
     # their own (a committed guard asserts that over their string constants), and
     # make no `sys.path` call. `experiments/` and `pipeline/` are untouched by
     # this task -- no legacy production file is edited at all.
-    "tracked_python": 142,                         # C8.5M: 135 (+2 C8.5N files);
+    # PATH E M2 MOVES THE FILE CENSUS AND NOTHING ELSE, and the hold is DERIVED,
+    # not observed afterwards. Five tracked Python files are added: the evidence
+    # index, the retrieval layer, the evaluation and the M2 CLI land in `src`, and
+    # one new test module lands in `tests`. Both buckets are OUTSIDE every measured
+    # scope, so this is the C8.5G/C8.5I/C8.5M/PATH-E-M1 shape.
+    #
+    # None of the five can move a delegation or a local-site row, for the same
+    # structural reason milestone 1 could not: every measured row is counted over
+    # `experiments/` and `pipeline/` only, the new modules take their root as an
+    # explicit PARAMETER or read an artifact path handed to them, they state no
+    # repository-relative path of their own, and they make no `sys.path` call.
+    # No legacy production file is edited by this task at all.
+    "tracked_python": 147,                         # C8.5M: 135 (+2 C8.5N files);
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
                                                    # analysis module);
                                                    # PATH E M1: 142 (+ runtime.py,
-                                                   # cli.py, their test module).
+                                                   # cli.py, their test module);
+                                                   # PATH E M2: 147 (+ the four
+                                                   # evidence modules and their
+                                                   # test module).
                                                    # NOTE: the C8.5X annotations
                                                    # above under-count the base by
                                                    # one in both rows -- the pinned
@@ -3540,15 +3555,21 @@ CENSUS_HEAD = {
                                                    # what the test asserts.
     "files_by_scope": {"experiments": 87, "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 11,                  # C8.5M: 8 (+ codebook_store.py);
+                       "src": 15,                  # C8.5M: 8 (+ codebook_store.py);
                                                    # PATH E M1: 11 (+ runtime.py,
-                                                   # cli.py)
-                       "tests": 21},               # C8.5M: 17 (+ its store test);
+                                                   # cli.py);
+                                                   # PATH E M2: 15 (+ evidence_
+                                                   # index.py, retrieval.py,
+                                                   # evaluation.py,
+                                                   # evidence_cli.py)
+                       "tests": 22},               # C8.5M: 17 (+ its store test);
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
                                                    # analysis module);
                                                    # PATH E M1: 21 (+ the runtime
-                                                   # test module)
+                                                   # test module);
+                                                   # PATH E M2: 22 (+ the evidence
+                                                   # index/retrieval test module)
     #
     # C8.5X MOVES THE FILE CENSUS AND NOTHING ELSE, and the hold is derived
     # rather than hoped for. `tests/refoundation/codebook_consumer_analysis.py`

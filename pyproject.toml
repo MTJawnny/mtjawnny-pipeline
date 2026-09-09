@@ -28,6 +28,12 @@ dependencies = []
 [project.scripts]
 mtj-foundry-report = "mtj_foundry.cli:main"
 
+# PATH E MILESTONE 2. One subcommand-style script for the whole evidence
+# capability -- `index`, `query`, `evaluate` -- rather than three entry points
+# for one thing. `mtj-foundry-report` is the accepted milestone-1 surface and is
+# deliberately not folded into it.
+mtj-foundry-evidence = "mtj_foundry.evidence_cli:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
