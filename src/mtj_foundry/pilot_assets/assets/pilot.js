@@ -23,6 +23,7 @@
 
 const state = {
   meta: null, cards: null, names: null, axes: null, evidence: null,
+  normalization: null,          // {strip: Set, fold: Map} from the bundle
   positionById: new Map(),      // oracle_id -> card index
   membershipsByCard: new Map(), // card index -> [[axis index, member], ...]
   nameKeys: [],                 // normalized names, artifact order
@@ -50,13 +51,49 @@ async function getJSON(path) {
   return response.json();
 }
 
-/* The bundle's own normalization, kept in one place. The artifact's name index
- * was keyed with Python's `str.strip().casefold()`; JavaScript's closest match
- * for a QUERY is trim + toLowerCase. They differ on a few characters, which is
- * exactly why the bundle carries the artifact's key list verbatim instead of
- * rebuilding it: this function normalizes what the USER TYPED so it can be
- * looked up against those keys, and it never re-derives a card's own key. */
-function normalizeQuery(text) { return text.trim().toLowerCase(); }
+/* THE ACCEPTED NORMALIZATION, RUN IN THE BROWSER. M3.R1 repair A.
+ *
+ * The artifact's name index is keyed with Python `str.strip().casefold()`. The
+ * first M3 candidate approximated that here as `trim().toLowerCase()` and said
+ * in a comment that they differ, which made it a known contract deviation
+ * rather than an edge case. Both halves are wrong:
+ *
+ *   - `toLowerCase()` is not full case folding. U+017F folds to "s", U+00DF to
+ *     "ss", U+FB01 to "fi"; toLowerCase leaves all three alone. So `ſol ring`
+ *     resolved to Sol Ring in Python and MISSED in the browser -- a real query
+ *     against the real bundle, not a hypothetical.
+ *   - `trim()` is not `str.strip()`. Python strips U+001C-001F and U+0085,
+ *     which trim keeps; trim removes U+FEFF, which Python keeps. Neither set
+ *     contains the other, so no amount of care with toLowerCase fixes it.
+ *
+ * The table in `data/normalization.json` is DERIVED by `mtj_foundry.pilot`
+ * asking Python about every Unicode code point, and is proven against
+ * `str.strip().casefold()` at build time over every card name in the index,
+ * every code point the table mentions, and fixed synthetic witnesses. Nothing
+ * is hardcoded here and no character is special-cased.
+ *
+ * Full case folding is context-free, so folding a string is exactly folding
+ * each code point and concatenating -- which is why a table is faithful here
+ * and would NOT be for lowercasing.
+ *
+ * THIS IS NOT A SEARCH FEATURE. It turns a typed query into a KEY. Every lookup
+ * downstream is still exact, prefix or substring against the artifact's own key
+ * list: no fuzzy matching, no similarity, no scoring, no ranking, no threshold.
+ * A card's own key is never re-derived -- those come from the artifact. */
+function normalizeQuery(text) {
+  const table = state.normalization;
+  const chars = Array.from(text);          // code points, not UTF-16 units
+  let start = 0;
+  let end = chars.length;
+  while (start < end && table.strip.has(chars[start])) start += 1;
+  while (end > start && table.strip.has(chars[end - 1])) end -= 1;
+  let out = "";
+  for (let i = start; i < end; i += 1) {
+    const folded = table.fold.get(chars[i]);
+    out += folded === undefined ? chars[i] : folded;
+  }
+  return out;
+}
 
 function cardCount() { return state.cards.count; }
 function nameOf(i) { return state.cards.name[i]; }
@@ -68,13 +105,17 @@ function isAssigned(i) { return state.cards.assigned[i] === 1; }
 
 async function boot() {
   try {
-    const [meta, cards, names, axes, evidence] = await Promise.all([
+    const [meta, cards, names, axes, evidence, normalization] = await Promise.all([
       getJSON("data/meta.json"), getJSON("data/cards.json"),
       getJSON("data/names.json"), getJSON("data/axes.json"),
-      getJSON("data/evidence.json"),
+      getJSON("data/evidence.json"), getJSON("data/normalization.json"),
     ]);
     state.meta = meta; state.cards = cards; state.names = names;
     state.axes = axes; state.evidence = evidence;
+    state.normalization = {
+      strip: new Set(normalization.strip),
+      fold: new Map(Object.entries(normalization.fold)),
+    };
     for (let i = 0; i < cards.count; i += 1) state.positionById.set(cards.oracle_id[i], i);
     for (const [cardIndex, rows] of evidence.rows) state.membershipsByCard.set(cardIndex, rows);
     state.nameKeys = Object.keys(names.names);
@@ -202,15 +243,30 @@ function passesFilters(i) {
 
 /* Matching is a LOOKUP, never a similarity. Exact normalized name first, then
  * prefix, then substring, then a direct oracle_id hit. Nothing is scored. */
+function stripOnly(text) {
+  const table = state.normalization;
+  const chars = Array.from(text);
+  let start = 0;
+  let end = chars.length;
+  while (start < end && table.strip.has(chars[start])) start += 1;
+  while (end > start && table.strip.has(chars[end - 1])) end -= 1;
+  return chars.slice(start, end).join("");
+}
+
 function findMatches(raw) {
   const query = normalizeQuery(raw);
   if (!query) return { groups: [], total: 0 };
   const groups = [];
   const seen = new Set();
 
-  const direct = state.positionById.get(raw.trim());
+  /* An oracle_id is matched EXACTLY, after only the accepted strip -- an id is
+   * a key, not a name, and case-folding one would be inventing an identity
+   * rule the artifact does not have. `stripOnly` uses the same derived set as
+   * the normalizer so the two cannot disagree about what whitespace is. */
+  const bare = stripOnly(raw);
+  const direct = state.positionById.get(bare);
   if (direct !== undefined) {
-    groups.push({ label: "oracle_id", key: raw.trim(), indices: [direct] });
+    groups.push({ label: "oracle_id", key: bare, indices: [direct] });
     seen.add(direct);
   }
 
@@ -243,7 +299,7 @@ function renderResults(raw) {
   const list = document.querySelector("#results");
   const count = document.querySelector("#result-count");
   list.replaceChildren();
-  if (!raw.trim()) {
+  if (!stripOnly(raw)) {
     count.textContent = "Type a card name or a full oracle_id.";
     return;
   }

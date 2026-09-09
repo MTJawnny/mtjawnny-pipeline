@@ -87,13 +87,16 @@ __all__ = [
     "MANIFEST_SCHEMA",
     "PILOT_SCHEMA",
     "PILOT_STATUS",
+    "NORMALIZATION_SCHEMA",
     "PilotConservationError",
     "PilotError",
     "PilotInputError",
     "PilotOutputError",
     "build",
     "build_bundle",
+    "build_normalization_table",
     "load_evaluation",
+    "normalize_with_table",
     "reconcile_selected_inputs",
     "verify_manifest",
     "verify_population",
@@ -242,6 +245,188 @@ def _shard_of(oracle_id: str) -> str:
             f"corpus where that stops being true needs a shard rule decided, not "
             f"defaulted")
     return match.group(0)
+
+
+# ---------------------------------------------------------------------------
+# Name normalization — the browser's copy of an accepted Python semantic
+# ---------------------------------------------------------------------------
+#
+# M3.R1 repair A, from Manager review `5595913819`.
+#
+# THE DEFECT. The accepted artifact's name index is keyed by `corpus.
+# normalize_name`, which is `str.strip().casefold()`. The first M3 candidate
+# normalized the user's QUERY with `trim().toLowerCase()` and said in a comment
+# that the two differ — a known contract deviation, not an unknown edge case,
+# and the reviewer was right to reject it. Both halves diverge:
+#
+#   * `casefold()` is FULL Unicode case folding and `toLowerCase()` is not.
+#     211 code points fold differently, and some EXPAND: U+017F LATIN SMALL
+#     LETTER LONG S folds to `s`, U+00DF folds to `ss`, U+FB01 folds to `fi`.
+#     `toLowerCase()` leaves all three unchanged.
+#   * `str.strip()` and `String.prototype.trim()` remove DIFFERENT sets.
+#     Python strips U+001C-001F and U+0085, which JS keeps; JS trims U+FEFF,
+#     which Python keeps. Neither set is a subset of the other, so no amount of
+#     care with `toLowerCase` would have fixed the second half.
+#
+# THE FIX IS DERIVED, NOT ENUMERATED BY HAND. `build_normalization_table()`
+# walks every code point in the Unicode space and asks PYTHON what it does,
+# recording the two answers. Nothing is transcribed from a standard, nothing is
+# special-cased, and no example is hardcoded — the table is a measurement of the
+# accepted implementation, and it is regenerated from that implementation every
+# time a bundle is built. Cost: ~0.15 s and roughly 27 KB in the bundle.
+#
+# WHY A TABLE IS SOUND HERE, stated because "reimplement Unicode in the browser"
+# would not be. Full case folding is defined per code point with no context
+# rules — unlike LOWERCASING, which has them (Greek final sigma). So folding a
+# string is exactly concatenating the fold of each of its code points, and a
+# per-code-point table composes. That is not assumed: `_verify_normalization`
+# re-derives it below and the test suite proves it over the whole Unicode space
+# and over random multi-code-point strings.
+#
+# WHAT THIS IS NOT. It is not a search feature. Normalization is what turns a
+# typed query into a KEY; every lookup downstream of it is still exact, prefix
+# or substring against the artifact's own key list. No fuzzy matching, no
+# similarity, no scoring, no ranking, no threshold, no model, no library.
+
+NORMALIZATION_SCHEMA = "mtj-foundry-name-normalization/1"
+
+#: The exact accepted semantics, in one place, so the guard and the emitter
+#: cannot drift apart. This is `corpus.normalize_name` restated as the property
+#: being reproduced rather than imported, because what must be reproduced is the
+#: BEHAVIOUR and a shared import would make the guard test itself.
+def _accepted_normalize(text: str) -> str:
+    return text.strip().casefold()
+
+
+def build_normalization_table() -> dict:
+    """Derive Python's strip set and full case-fold map by asking Python.
+
+    One pass over the Unicode scalar space. A code point is in `strip` when
+    Python's argument-less `str.strip()` removes it, and in `fold` when its
+    case-folded form differs from itself. Both are emitted in code point order,
+    so the bytes are deterministic.
+    """
+    strip = []
+    fold = {}
+    for code_point in range(0x110000):
+        if 0xD800 <= code_point <= 0xDFFF:
+            continue  # surrogates are not scalar values and cannot appear here
+        char = chr(code_point)
+        if char.strip() == "":
+            strip.append(char)
+        folded = char.casefold()
+        if folded != char:
+            fold[char] = folded
+    return {
+        "schema": NORMALIZATION_SCHEMA,
+        "reproduces": ("python str.strip().casefold(), which is the accepted "
+                       "artifact's corpus.normalize_name"),
+        "derived_by": ("walking every Unicode scalar value and recording what "
+                       "THIS python does. nothing is transcribed from a standard "
+                       "and no character is special-cased"),
+        "why_not_tolowercase": (
+            "javascript toLowerCase() is not full case folding and trim() is not "
+            "str.strip(). the two strip sets are not subsets of one another: "
+            "python removes U+001C-001F and U+0085, javascript removes U+FEFF"),
+        "algorithm": ("remove leading and trailing characters in `strip`, then "
+                      "replace each remaining code point by `fold[c]` if present. "
+                      "full case folding is context-free, so per-code-point "
+                      "replacement composes exactly"),
+        "is_not": ["a search feature", "fuzzy or approximate matching",
+                   "similarity, scoring, ranking or any threshold",
+                   "a re-derivation of the artifact's name index, which is "
+                   "carried verbatim"],
+        "strip": strip,
+        "fold": fold,
+    }
+
+
+def normalize_with_table(text: str, table: dict) -> str:
+    """The REFERENCE implementation of the algorithm the browser runs.
+
+    Deliberately written to mirror the JavaScript step for step rather than to
+    be idiomatic Python: its whole job is to be the thing the guard below can
+    compare against `_accepted_normalize`, so if it were cleverer than the
+    browser's version it would stop being evidence about the browser.
+    """
+    strip = set(table["strip"])
+    fold = table["fold"]
+    start, end = 0, len(text)
+    while start < end and text[start] in strip:
+        start += 1
+    while end > start and text[end - 1] in strip:
+        end -= 1
+    return "".join(fold.get(char, char) for char in text[start:end])
+
+
+def _verify_normalization(table: dict, index: dict) -> dict:
+    """HALT-GUARD: the table must reproduce the accepted semantics exactly.
+
+    Checked against three populations, because each can fail while the others
+    pass:
+
+    * **every card name in the source index**, raw and with whitespace padding —
+      real data, and the only population whose failure would be visible to a
+      user today;
+    * **every code point the table itself mentions**, which is where a
+      transcription error would live if this were transcribed;
+    * **fixed synthetic witnesses**, including a case-fold EXPANSION and both
+      directions of the strip disagreement — the cases the corpus does not
+      currently contain and therefore cannot test.
+
+    A single disagreement raises. There is no tolerance and no repair path: a
+    normalization that is nearly right is a lookup that silently answers about a
+    different card.
+    """
+    checked = 0
+    for row in index["cards"]:
+        for probe in (row["name"], " " + row["name"] + " "):
+            if normalize_with_table(probe, table) != _accepted_normalize(probe):
+                raise PilotError(
+                    f"normalization table disagrees with python on the card name "
+                    f"{probe!r}: table gives "
+                    f"{normalize_with_table(probe, table)!r}, "
+                    f"str.strip().casefold() gives {_accepted_normalize(probe)!r}")
+            checked += 1
+    for char in list(table["fold"]) + list(table["strip"]):
+        for probe in (char, char + "x", "x" + char, char + "x" + char):
+            if normalize_with_table(probe, table) != _accepted_normalize(probe):
+                raise PilotError(
+                    f"normalization table disagrees with python on "
+                    f"{probe!r} (U+{ord(char):04X})")
+            checked += 1
+    for probe in _NORMALIZATION_WITNESSES:
+        if normalize_with_table(probe, table) != _accepted_normalize(probe):
+            raise PilotError(
+                f"normalization table disagrees with python on the synthetic "
+                f"witness {probe!r}")
+        checked += 1
+    return {"expressions_checked": checked,
+            "strip_points": len(table["strip"]),
+            "fold_points": len(table["fold"]),
+            "fold_points_where_lower_differs": sum(
+                1 for char, folded in table["fold"].items()
+                if char.lower() != folded)}
+
+
+#: Cases the selected corpus does not contain, kept as constants so the guard
+#: tests them on every build rather than only when a corpus happens to have one.
+#: Built with `chr()` rather than pasted, so a control character cannot be
+#: silently lost or "helpfully" normalized by an editor on its way into the file.
+_NORMALIZATION_WITNESSES = (
+    "\u017fol ring",                       # LONG S -> s. toLowerCase leaves it.
+    "\u00dfol",                            # SHARP S -> ss. An EXPANSION.
+    "\ufb01nal",                           # LATIN SMALL LIGATURE FI -> fi.
+    "\u1e9eol",                            # CAPITAL SHARP S -> ss.
+    "\u0130",                              # DOTTED CAPITAL I -> i + U+0307.
+    "\u03a3\u03c2\u03c3",                  # sigma forms all fold together.
+    chr(0x1c) + "sol ring" + chr(0x1c),   # python strips these, JS trim does not.
+    chr(0x85) + "sol ring",               # NEXT LINE: python strips, JS does not.
+    "\ufeffsol ring",                      # BOM: JS trims this, python does NOT.
+    "  \t\n mixed \u00dfpacing \r\n  ",
+    "",
+    "   ",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -667,6 +852,12 @@ def build_bundle(index: dict, evaluation: dict, identities: dict) -> dict:
                      for number, axis_id in enumerate(index["axes"])}
 
     files = dict(_assets())
+    # Derived from THIS python, then proven against it before anything is
+    # emitted. The guard runs here rather than in `write_bundle` so a table that
+    # disagrees with `str.strip().casefold()` never reaches a file at all.
+    normalization = build_normalization_table()
+    _verify_normalization(normalization, index)
+    files["data/normalization.json"] = _render(normalization)
     files["data/meta.json"] = _render(_meta(index, evaluation, identities, reconciled))
     files["data/cards.json"] = _render(_card_directory(index))
     files["data/names.json"] = _render(_name_lookup(index, position))
@@ -821,11 +1012,77 @@ def _prepare_output(output: Path) -> None:
         raise PilotOutputError(
             f"{manifest_path} is not a {MANIFEST_SCHEMA!r} — refusing to replace "
             f"the contents of a directory this builder did not write")
-    for entry in previous.get("files", []):
-        stale = _resolved_target(output, entry["path"])
-        if stale.is_file():
-            stale.unlink()
+    # M3.R1 REPAIR B: VALIDATE THE WHOLE SHAPE BEFORE DELETING ANYTHING.
+    #
+    # The schema check above proves the document CLAIMS to be one of ours; it
+    # proves nothing about the fields the replacement then consumes. The first
+    # M3 candidate went straight from that check to `entry["path"]`, so a
+    # schema-correct manifest carrying `"files": [{}]` or a non-list `files`
+    # raised a raw `KeyError`/`TypeError` — which escapes the CLI's declared
+    # contract, because `pilot_cli` catches `FoundryRuntimeError` and nothing
+    # else. The operator would have seen a traceback where the contract promises
+    # one `STOP — …` line.
+    #
+    # So every path is resolved and containment-checked in a FIRST pass that
+    # unlinks nothing, and deletion only starts once the whole list has been
+    # accepted. That ordering is the point: a manifest whose tenth entry is
+    # malformed must not have had its first nine files deleted. The alternative
+    # — validating lazily inside the delete loop — fails half-done, and a
+    # half-deleted bundle is exactly the state whose manifest can no longer be
+    # trusted to describe it.
+    stale = _validated_replacement_targets(previous, manifest_path, output)
+    for target in stale:
+        if target.is_file():
+            target.unlink()
     manifest_path.unlink()
+
+
+def _validated_replacement_targets(previous: dict, manifest_path: Path,
+                                   output: Path) -> list:
+    """Every file a recognised prior manifest says to remove, or a refusal.
+
+    Deletes nothing and is called before anything is deleted. Validates exactly
+    the shape the replacement consumes and no more — this is not a schema
+    validator for the manifest as a whole, and it deliberately does not check
+    `sha256`, `byte_size` or any field the replacement never reads. Validating
+    fields nobody consumes would refuse bundles that are fine, which is its own
+    kind of wrong answer.
+
+    Every refusal is a `PilotOutputError` naming the offending entry, and every
+    path additionally passes `_resolved_target`'s containment check, so a
+    manifest cannot direct a delete outside the output directory it lives in.
+
+    NO GENERIC CATCH. Each condition is tested positively rather than by running
+    the consumption and catching what falls out: `except (KeyError, TypeError)`
+    would also swallow a defect in this module and report it as a malformed
+    input, which is the wrong story told confidently.
+    """
+    files = previous.get("files", [])
+    if not isinstance(files, list):
+        raise PilotOutputError(
+            f"{manifest_path}: its 'files' is a {type(files).__name__}, not a "
+            f"list — refusing to delete anything from a directory whose manifest "
+            f"does not describe its contents")
+    targets = []
+    for position, entry in enumerate(files):
+        if not isinstance(entry, dict):
+            raise PilotOutputError(
+                f"{manifest_path}: files[{position}] is a "
+                f"{type(entry).__name__}, not an object — refusing to delete "
+                f"anything from a directory whose manifest is malformed")
+        if "path" not in entry:
+            raise PilotOutputError(
+                f"{manifest_path}: files[{position}] has no 'path' — refusing to "
+                f"delete anything from a directory whose manifest is malformed")
+        path = entry["path"]
+        if not isinstance(path, str) or not path:
+            raise PilotOutputError(
+                f"{manifest_path}: files[{position}]['path'] is "
+                f"{path!r}, expected a non-empty string — refusing to delete "
+                f"anything from a directory whose manifest is malformed")
+        # Raises PilotOutputError itself if the path escapes the output root.
+        targets.append(_resolved_target(output, path))
+    return targets
 
 
 def write_bundle(files: dict, output) -> dict:

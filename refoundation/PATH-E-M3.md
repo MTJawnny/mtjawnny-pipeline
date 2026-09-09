@@ -66,6 +66,17 @@ builder wrote (removing exactly the files that manifest lists), and **refuse
 everything else**. There is no `shutil.rmtree` in the module and a test asserts
 its absence from the import closure, not from the prose.
 
+**A recognised prior manifest is fully validated before anything is deleted**
+(M3.R1). Matching the schema proves only that the document *claims* to be ours;
+`files` must also be a list, every entry an object with a non-empty string
+`path`, and every path must pass the output-root containment check. All of that
+runs in one pass that unlinks nothing, so a manifest whose last entry is
+malformed does not leave its first nine files deleted. A malformed
+schema-correct manifest raises `PilotOutputError` and reaches the operator as
+the usual exit 1 with one `STOP — …` line. Only the fields the replacement
+actually consumes are checked — refusing a bundle over a missing `sha256` would
+reject bundles that are fine.
+
 ## The bundle
 
 `mtj-foundry-static-pilot/1`, status `DIAGNOSTIC_NOT_PRODUCT_QUALIFIED`.
@@ -75,6 +86,7 @@ index.html                  assets/pilot.css   assets/pilot.js
 data/meta.json              identities, population, frozen metrics, disclosure
 data/cards.json             columnar directory of EVERY card in the corpus
 data/names.json             the artifact's own name index, ids -> card indices
+data/normalization.json     python's strip set + full case-fold map, derived
 data/axes.json              the active-axis catalogue
 data/evidence.json          every active membership, member objects verbatim
 data/text/<xx>.json         faces, sharded by oracle_id[:2]
@@ -112,6 +124,19 @@ would be a number the artifact does not mean.
 ## What the page shows
 
 Every card of the selected corpus is findable, by name or by `oracle_id`.
+
+**Query normalization is the accepted Python semantic, run in the browser**
+(M3.R1). The artifact's name index is keyed by `str.strip().casefold()`, so the
+bundle carries `data/normalization.json` — Python's own strip set and full
+case-fold map, derived at build time by asking this Python about every Unicode
+code point, and proven against `str.strip().casefold()` before a byte is written.
+`toLowerCase()` is not full case folding (U+017F folds to `s`, U+00DF to `ss`)
+and `trim()` is not `str.strip()` (Python strips U+001C–001F and U+0085, which
+`trim` keeps; `trim` removes U+FEFF, which Python keeps — neither set contains
+the other). **This is a lookup boundary, not a search feature**: it turns typed
+text into a key, and every lookup after it is still exact, prefix or substring
+against the artifact's own key list. An `oracle_id` is matched after the strip
+only — case-folding an identity would invent a rule the artifact does not have.
 Gate #0 eligibility and evidence coverage are **badges**, never filters the
 bundle applied; the two checkboxes in the finder are the reader's own view
 state and say so. An ambiguous normalized name is announced as ambiguous and

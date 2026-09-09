@@ -16,6 +16,7 @@ carried-forward-count trap aimed at the test suite.
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 import unittest
 from pathlib import Path
@@ -50,6 +51,17 @@ ID_GAMMA = "33333333-0000-0000-0000-000000000003"
 ID_LONE = "44444444-0000-0000-0000-000000000004"   # unassigned
 ID_TWIN_A = "55555555-0000-0000-0000-000000000005"  # shares a name with TWIN_B
 ID_TWIN_B = "66666666-0000-0000-0000-000000000006"  # ...and is gate0-ineligible
+ID_FOLD = "77777777-0000-0000-0000-000000000007"   # M3.R1: casefold != lower
+
+#: A name whose Python `.casefold()` differs from its `.lower()`. U+00DF folds to
+#: "ss" -- a case-fold EXPANSION, so the normalized key is two characters longer
+#: than the printed name is. `.lower()` leaves the sharp s alone, so a browser
+#: normalizing with `toLowerCase()` produces a key that is not in the index and
+#: the card becomes unreachable by its own printed name. The selected corpus
+#: happens to contain no such name today, which is exactly why the FIXTURE must.
+FOLD_NAME = "Stra\u00dfburg Ritual"
+FOLD_KEY = "strassburg ritual"        # == FOLD_NAME.strip().casefold()
+FOLD_LOWER = "stra\u00dfburg ritual"  # == FOLD_NAME.strip().lower(), NOT a key
 
 
 def build_fixture_index() -> dict:
@@ -91,6 +103,9 @@ def build_fixture_index() -> dict:
         # TWIN_A / TWIN_B share a normalized name; TWIN_B is gate0-INELIGIBLE.
         (ID_TWIN_A, "Twin Card", True, [_face("Twin Card", "Draw a card.")], []),
         (ID_TWIN_B, "twin card", False, [_face("twin card", "Draw a card.")], []),
+        # M3.R1: the normalization witness. Unassigned and eligible, so it moves
+        # no retrieval or tie-block expectation -- only the name space.
+        (ID_FOLD, FOLD_NAME, True, [_face(FOLD_NAME, "Gain 1 life.")], []),
     ]
     cards = []
     for oracle_id, name, eligible, faces, memberships in rows:
@@ -670,7 +685,14 @@ class TestTheDiagnosticDisclosure(PilotFixture):
         # that is right for two populations and wrong for the third is exactly
         # what a single-case check cannot see.
         self.assertIn("a majority", prose)
-        self.assertIn("exactly half", " ".join(self.disclosure["points"]))
+        # The base fixture's own share, DERIVED here rather than typed, so adding
+        # a card to the fixture moves the expectation with it instead of failing.
+        coverage = self.index["conservation"]["coverage"]
+        covered = coverage["corpus_ids_covered"]
+        total = coverage["corpus_ids_total"]
+        expected = ("a majority" if covered * 2 > total else
+                    "a minority" if covered * 2 < total else "exactly half")
+        self.assertIn(expected, " ".join(self.disclosure["points"]))
         scarce = json.loads(json.dumps(document))
         scarce["conservation"]["coverage"].update(
             {"corpus_ids_total": 100, "corpus_ids_covered": 1,
@@ -905,3 +927,392 @@ class TestNoLegacyOrPausedImportClosure(unittest.TestCase):
                               "aq4", "AQ4", "experiments.", "pipeline."):
                 with self.subTest(module=module.__name__, forbidden=forbidden):
                     self.assertNotIn(forbidden, source)
+
+
+# ===========================================================================
+# M3.R1 REPAIR A -- the browser reproduces `str.strip().casefold()`
+# ===========================================================================
+
+#: Built with `chr()` rather than pasted. A literal C0 control character in a
+#: source file is invisible, survives no copy/paste reliably, and is exactly the
+#: kind of thing an editor silently "fixes" -- so the witnesses that matter most
+#: are the ones least safe to write literally.
+_PY_STRIPS_JS_KEEPS = tuple(chr(c) for c in (0x1C, 0x1D, 0x1E, 0x1F, 0x85))
+_JS_TRIMS_PY_KEEPS = "﻿"
+
+
+class TestNormalizationTableIsDerivedAndFaithful(unittest.TestCase):
+    """The table is a MEASUREMENT of Python, and it must agree with Python.
+
+    These tests need no bundle: the table is the unit, and its contract is one
+    sentence -- for every string, applying it equals `str.strip().casefold()`.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.table = pilot.build_normalization_table()
+
+    def test_it_reproduces_python_on_every_single_code_point(self):
+        """Exhaustive over the whole scalar space. Cheap, and it is the only
+        version of this check that cannot be accused of choosing its examples."""
+        bad = []
+        for code_point in range(0x110000):
+            if 0xD800 <= code_point <= 0xDFFF:
+                continue
+            char = chr(code_point)
+            if (pilot.normalize_with_table(char, self.table)
+                    != char.strip().casefold()):
+                bad.append(hex(code_point))
+        self.assertEqual(bad, [])
+
+    def test_per_code_point_folding_composes_over_multi_character_strings(self):
+        """THE ASSUMPTION THE WHOLE DESIGN RESTS ON. Full case folding is
+        context-free, so folding a string is folding each of its code points --
+        unlike LOWERCASING, which has context rules (Greek final sigma). That is
+        asserted here rather than believed, over a seeded sample drawn from the
+        ranges where it could fail."""
+        import random
+
+        rng = random.Random(20260909)
+        pool = [ord(c) for c in self.table["fold"]]
+        pool += [ord(c) for c in self.table["strip"]]
+        pool += [rng.randrange(0x110000) for _ in range(3000)]
+        pool = [c for c in pool if not (0xD800 <= c <= 0xDFFF)]
+        for _ in range(20000):
+            probe = "".join(chr(rng.choice(pool))
+                            for _ in range(rng.randint(1, 6)))
+            if (pilot.normalize_with_table(probe, self.table)
+                    != probe.strip().casefold()):
+                self.fail(f"composition failed on {ascii(probe)}")
+
+    def test_it_differs_from_lowercase_on_a_large_named_population(self):
+        """If the table agreed with `lower()` everywhere it would be an elaborate
+        no-op, and every other test in this class would still pass."""
+        differing = [char for char, folded in self.table["fold"].items()
+                     if char.lower() != folded]
+        self.assertGreater(len(differing), 100)
+        for char in ("ſ", "ß", "ﬁ", "ẞ"):
+            with self.subTest(char=ascii(char)):
+                self.assertIn(char, self.table["fold"])
+                self.assertEqual(self.table["fold"][char], char.casefold())
+                self.assertNotEqual(char.casefold(), char.lower())
+
+    def test_the_strip_set_disagrees_with_javascript_trim_in_both_directions(self):
+        """Neither strip set contains the other, which is why fixing only the
+        case half could never have been the whole repair.
+
+        Python strips U+001C-001F and U+0085, which JS `trim()` keeps; JS trims
+        U+FEFF, which Python keeps. The SECOND direction is the one a
+        'just strip more characters' fix gets wrong.
+        """
+        for char in _PY_STRIPS_JS_KEEPS:
+            with self.subTest(char=ascii(char), direction="python strips, JS keeps"):
+                self.assertIn(char, self.table["strip"])
+        self.assertNotIn(_JS_TRIMS_PY_KEEPS, self.table["strip"])
+        padded = _JS_TRIMS_PY_KEEPS + "sol ring"
+        self.assertEqual(pilot.normalize_with_table(padded, self.table), padded)
+        self.assertEqual(padded.strip().casefold(), padded)
+
+    def test_nothing_in_the_table_is_hand_written(self):
+        """Every entry must equal what Python says about that code point. A
+        hand-added 'helpful' pair fails here, which is the guard against this
+        repair quietly degenerating into a substitution list."""
+        for char, folded in self.table["fold"].items():
+            if folded != char.casefold() or folded == char:
+                self.fail(f"fold entry {ascii(char)} is not derived")
+        for char in self.table["strip"]:
+            if char.strip() != "":
+                self.fail(f"strip entry {ascii(char)} is not derived")
+
+    def test_a_corrupted_table_is_caught_by_the_build_guard(self):
+        """Negative control for `_verify_normalization`. Without it, the guard is
+        a function that has never been shown to fail."""
+        index = build_fixture_index()
+        wrong_value = pilot.build_normalization_table()
+        wrong_value["fold"]["ß"] = "z"
+        with self.assertRaises(pilot.PilotError):
+            pilot._verify_normalization(wrong_value, index)
+
+        dropped = pilot.build_normalization_table()
+        del dropped["fold"]["ß"]
+        with self.assertRaises(pilot.PilotError):
+            pilot._verify_normalization(dropped, index)
+
+        no_strip = pilot.build_normalization_table()
+        no_strip["strip"] = [c for c in no_strip["strip"]
+                             if c not in _PY_STRIPS_JS_KEEPS]
+        with self.assertRaises(pilot.PilotError):
+            pilot._verify_normalization(no_strip, index)
+
+    def test_a_table_that_strips_the_bom_is_caught(self):
+        """The 'just use trim()' mistake, aimed at directly: a table that strips
+        U+FEFF is closer to JavaScript and further from the accepted semantics,
+        and the guard must reject it rather than reward it."""
+        wrong = pilot.build_normalization_table()
+        wrong["strip"] = list(wrong["strip"]) + [_JS_TRIMS_PY_KEEPS]
+        with self.assertRaises(pilot.PilotError):
+            pilot._verify_normalization(wrong, build_fixture_index())
+
+
+class TestTheBundleCarriesTheNormalizationBoundary(PilotFixture):
+
+    def test_the_emitted_table_matches_the_derived_one(self):
+        emitted = self.emitted("data/normalization.json")
+        derived = pilot.build_normalization_table()
+        self.assertEqual(emitted["schema"], pilot.NORMALIZATION_SCHEMA)
+        self.assertEqual(emitted["fold"], derived["fold"])
+        self.assertEqual(emitted["strip"], derived["strip"])
+
+    def test_the_emitted_table_resolves_the_fixtures_casefold_name(self):
+        """END TO END over the bundle's own bytes: the printed name normalizes,
+        through the EMITTED table, to a key that is in the EMITTED name index --
+        and the `lower()` form is not a key at all."""
+        emitted = self.emitted("data/normalization.json")
+        names = self.emitted("data/names.json")["names"]
+        self.assertNotEqual(FOLD_KEY, FOLD_LOWER)
+        self.assertEqual(pilot.normalize_with_table(FOLD_NAME, emitted), FOLD_KEY)
+        self.assertIn(FOLD_KEY, names)
+        self.assertNotIn(FOLD_LOWER, names)
+        positions = [row["oracle_id"] for row in self.index["cards"]]
+        self.assertEqual([positions[i] for i in names[FOLD_KEY]], [ID_FOLD])
+
+    def test_the_already_expanded_spelling_reaches_the_same_key(self):
+        """`Strassburg Ritual` and the sharp-s spelling fold to ONE key, so both
+        resolve to the same oracle_id. That is the accepted semantics reproduced,
+        not a similarity feature: the two strings have the same normalized form,
+        and the lookup that follows is still exact."""
+        emitted = self.emitted("data/normalization.json")
+        self.assertEqual(pilot.normalize_with_table("Strassburg Ritual", emitted),
+                         pilot.normalize_with_table(FOLD_NAME, emitted))
+
+    def test_the_browser_no_longer_uses_the_rejected_approximation(self):
+        """`toLowerCase` and `trim` must be gone from the EXECUTABLE text.
+        Comments explaining why they were removed are fine and are stripped
+        first -- the same code-not-prose aim as the other controls here."""
+        code = _javascript_code_only(
+            (self.output / "assets" / "pilot.js").read_text(encoding="utf-8"))
+        for forbidden in ("toLowerCase", ".trim(", "toUpperCase", "localeCompare"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, code)
+        self.assertIn("normalization.strip", code)
+        self.assertIn("normalization.fold", code)
+
+    def test_the_browser_normalizer_mirrors_the_reference_algorithm(self):
+        """A structural check that the two implementations were not allowed to
+        drift into different algorithms. NOT a substitute for the headless-Chrome
+        witness, which is what actually proves the browser behaves."""
+        code = _javascript_code_only(
+            (self.output / "assets" / "pilot.js").read_text(encoding="utf-8"))
+        normalizer = code.split("function normalizeQuery")[1].split("\n}")[0]
+        self.assertIn("Array.from", normalizer)       # code points, not UTF-16
+        self.assertIn("table.strip.has", normalizer)
+        self.assertIn("table.fold.get", normalizer)
+        for forbidden in ("sort", "score", "includes("):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, normalizer)
+
+    def test_normalization_stayed_a_lookup_boundary(self):
+        """Ambiguity, prefix and substring behaviour are unchanged by the repair:
+        still exact key lookup against the artifact's own list, in its order."""
+        names = self.emitted("data/names.json")
+        positions = [row["oracle_id"] for row in self.index["cards"]]
+        self.assertEqual([positions[i] for i in names["names"]["twin card"]],
+                         [ID_TWIN_A, ID_TWIN_B])
+        self.assertEqual(names["ambiguous_names"], 1)
+        for key, ids in self.index["name_index"].items():
+            with self.subTest(name=key):
+                self.assertEqual([positions[i] for i in names["names"][key]], ids)
+
+    def test_the_table_is_emitted_as_a_manifest_covered_bundle_file(self):
+        recorded = {entry["path"] for entry in self.manifest["files"]}
+        self.assertIn("data/normalization.json", recorded)
+
+
+# ===========================================================================
+# M3.R1 REPAIR B -- a malformed prior manifest fails closed, deleting nothing
+# ===========================================================================
+
+class TestMalformedPriorManifestFailsClosed(PilotFixture):
+    """A schema-correct manifest is not a well-formed one.
+
+    The rejected candidate checked `schema` and then indexed `entry["path"]`, so
+    a prior bundle carrying `"files": [{}]` raised a raw `KeyError` -- which
+    escapes `pilot_cli`'s declared contract, because that handler catches
+    `FoundryRuntimeError` and nothing else. The operator got a traceback where
+    the contract promises one `STOP -- ...` line.
+
+    Every case below asserts BOTH halves: the refusal is a `PilotOutputError`,
+    AND nothing was deleted. The second half is the one that matters -- a
+    validation that runs inside the delete loop would raise correctly and still
+    leave a half-erased bundle behind.
+    """
+
+    def _prior_bundle(self, tmp):
+        """A real, valid bundle, plus a snapshot of its bytes to compare against."""
+        out = pathlib.Path(tmp) / "bundle"
+        pilot.build(self.index_path, self.evaluation_path, out)
+        before = {str(p.relative_to(out)): p.read_bytes()
+                  for p in out.rglob("*") if p.is_file()}
+        return out, before
+
+    def _still_intact(self, out, before):
+        after = {str(p.relative_to(out)): p.read_bytes()
+                 for p in out.rglob("*") if p.is_file()}
+        self.assertEqual(sorted(before), sorted(after),
+                         "files were deleted before the manifest was validated")
+        for name in before:
+            self.assertEqual(before[name], after[name], name)
+
+    def _corrupt(self, out, mutate):
+        manifest_path = out / pilot.MANIFEST_NAME
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+        mutate(document)
+        manifest_path.write_text(json.dumps(document), encoding="utf-8")
+
+    def test_case_1_files_holding_an_empty_object_is_refused(self):
+        """Manager V's own example: correct schema, `files: [{}]`."""
+        with TemporaryDirectory() as tmp:
+            out, before = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.__setitem__("files", [{}]))
+            before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+            with self.assertRaises(pilot.PilotOutputError) as caught:
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertIn("no 'path'", str(caught.exception))
+            self._still_intact(out, before)
+
+    def test_case_2_a_non_list_files_value_is_refused(self):
+        with TemporaryDirectory() as tmp:
+            for value in ({}, "data/cards.json", 7, None):
+                out, before = self._prior_bundle(pathlib.Path(tmp) / str(id(value)))
+                self._corrupt(out, lambda d, v=value: d.__setitem__("files", v))
+                before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+                with self.subTest(files=value):
+                    with self.assertRaises(pilot.PilotOutputError) as caught:
+                        pilot.build(self.index_path, self.evaluation_path, out)
+                    self.assertIn("not a", str(caught.exception))
+                    self._still_intact(out, before)
+
+    def test_an_entry_that_is_not_an_object_is_refused(self):
+        with TemporaryDirectory() as tmp:
+            out, before = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.__setitem__(
+                "files", [d["files"][0], "data/cards.json"]))
+            before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+            with self.assertRaises(pilot.PilotOutputError) as caught:
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertIn("files[1]", str(caught.exception))
+            self._still_intact(out, before)
+
+    def test_a_non_string_or_empty_path_is_refused(self):
+        for bad in (None, 12, ["data/cards.json"], ""):
+            with TemporaryDirectory() as tmp:
+                out, before = self._prior_bundle(tmp)
+                self._corrupt(out, lambda d, b=bad: d["files"][0].__setitem__("path", b))
+                before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+                with self.subTest(path=bad):
+                    with self.assertRaises(pilot.PilotOutputError):
+                        pilot.build(self.index_path, self.evaluation_path, out)
+                    self._still_intact(out, before)
+
+    def test_a_path_escaping_the_output_root_is_refused_before_any_deletion(self):
+        """A prior manifest is caller-controlled data, so it must not be able to
+        direct a delete outside the directory it lives in. The containment check
+        runs in the SAME validating pass, before the first unlink."""
+        with TemporaryDirectory() as tmp:
+            out, before = self._prior_bundle(tmp)
+            bystander = pathlib.Path(tmp) / "not-mine.txt"
+            bystander.write_text("untouched", encoding="utf-8")
+            self._corrupt(out, lambda d: d["files"].append(
+                {"path": "../not-mine.txt", "sha256": "0" * 64, "byte_size": 9}))
+            before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+            with self.assertRaises(pilot.PilotOutputError):
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertEqual(bystander.read_text(encoding="utf-8"), "untouched")
+            self._still_intact(out, before)
+
+    def test_validation_precedes_deletion_even_when_the_bad_entry_is_last(self):
+        """THE ORDERING TEST, and the reason validation is a separate pass. If the
+        check ran inside the delete loop, every entry before the malformed one
+        would already be gone -- a half-erased bundle whose manifest no longer
+        describes it. The malformed entry is put LAST on purpose."""
+        with TemporaryDirectory() as tmp:
+            out, before = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d["files"].append({"sha256": "0" * 64}))
+            before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+            with self.assertRaises(pilot.PilotOutputError):
+                pilot.build(self.index_path, self.evaluation_path, out)
+            self._still_intact(out, before)
+
+    def test_case_3_the_installed_cli_surfaces_it_as_stop_and_exit_1(self):
+        """The whole point of the repair: this state must reach the operator
+        through the declared contract -- exit 1, exactly one `STOP -- ...` line
+        on stderr, nothing on stdout -- and not as a traceback."""
+        import contextlib
+        import io
+
+        with TemporaryDirectory() as tmp:
+            out, before = self._prior_bundle(tmp)
+            self._corrupt(out, lambda d: d.__setitem__("files", [{}]))
+            before[pilot.MANIFEST_NAME] = (out / pilot.MANIFEST_NAME).read_bytes()
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                status = pilot_cli.main(["--index", str(self.index_path),
+                                         "--evaluation", str(self.evaluation_path),
+                                         "--output", str(out)])
+            self.assertEqual(status, 1)
+            self.assertEqual(stdout.getvalue(), "")
+            lines = stderr.getvalue().splitlines()
+            self.assertEqual(len(lines), 1)
+            self.assertTrue(lines[0].startswith("STOP — "))
+            self._still_intact(out, before)
+
+    def test_case_4_a_valid_prior_bundle_still_replaces_deterministically(self):
+        """The repair must not have made replacement stricter than the documented
+        rule. A real prior bundle is still replaced, and the result is byte-equal
+        to a build into a fresh directory."""
+        with TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / "bundle"
+            first = pilot.build(self.index_path, self.evaluation_path, out)
+            second = pilot.build(self.index_path, self.evaluation_path, out)
+            self.assertEqual(first, second)
+            fresh = pathlib.Path(tmp) / "fresh"
+            pilot.build(self.index_path, self.evaluation_path, fresh)
+            replaced = {str(p.relative_to(out)): p.read_bytes()
+                        for p in out.rglob("*") if p.is_file()}
+            clean = {str(p.relative_to(fresh)): p.read_bytes()
+                     for p in fresh.rglob("*") if p.is_file()}
+            self.assertEqual(sorted(replaced), sorted(clean))
+            for name in sorted(clean):
+                with self.subTest(file=name):
+                    self.assertEqual(replaced[name], clean[name])
+            pilot.verify_manifest(out)
+
+    def test_the_validator_uses_no_generic_catch(self):
+        """`except (KeyError, TypeError)` around the consumption would also
+        swallow a defect in this module and report it as a malformed input --
+        the wrong story, told confidently. Each condition is tested positively,
+        and that is checked structurally rather than by reading the prose."""
+        import ast
+
+        source = pathlib.Path(pilot.__file__).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        target = next(node for node in ast.walk(tree)
+                      if isinstance(node, ast.FunctionDef)
+                      and node.name == "_validated_replacement_targets")
+        self.assertEqual([h for h in ast.walk(target)
+                          if isinstance(h, ast.ExceptHandler)], [])
+
+    def test_the_validator_does_not_check_fields_replacement_never_reads(self):
+        """Refusing a bundle for a missing `sha256` would reject bundles that are
+        fine. The validator's scope is exactly what the deletion consumes."""
+        with TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / "bundle"
+            pilot.build(self.index_path, self.evaluation_path, out)
+            def drop_unconsumed_fields(document):
+                for entry in document["files"]:
+                    entry.pop("sha256", None)
+                    entry.pop("byte_size", None)
+
+            self._corrupt(out, drop_unconsumed_fields)
+            pilot.build(self.index_path, self.evaluation_path, out)
+            pilot.verify_manifest(out)
