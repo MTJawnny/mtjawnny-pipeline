@@ -116,9 +116,11 @@ any label.
 
 **Candidate discovery: 12 of 28 named-correct cards, 42.9%.** Per anchor:
 Rampant Growth 3/11, Beast Within 2/5, Reanimate 3/8, Reliquary Tower 4/4. Of
-the 16 not discoverable, **15 carry no active membership at all** and the
-sixteenth (Solemn Simulacrum) sits on an unrelated axis. This is the same
-coverage wall the 2026-08-09 result measured at 13/33; it has not moved.
+the 16 not discoverable, **14 carry no active membership at all** and **2 carry
+active membership only on unrelated axes** — Solemn Simulacrum on
+`rule:death-trigger-draw-card`, Rapid Hybridization on
+`rule:prevents-regeneration`. This is the same coverage wall the 2026-08-09
+result measured at 13/33; it has not moved.
 
 **Presentation: of the 12 discoverable, 3 reach the top 10 and 7 the top 25 —
 and all 12 sit in a tie block larger than one.** Three of the four anchors carry
