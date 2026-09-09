@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MTJawnny Foundry — Path E diagnostic pilot</title>
+<!-- Inline data: URI, so the bundle makes no request the server has to 404
+     and still depends on no external host. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%236b4f2a%27/%3E%3Ctext x=%278%27 y=%2712%27 font-size=%2711%27 text-anchor=%27middle%27 fill=%27%23fff%27 font-family=%27monospace%27%3EF%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/pilot.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-title">
+    <h1>MTJawnny Foundry — Path&nbsp;E static diagnostic pilot</h1>
+    <p class="status" id="status-badge">loading…</p>
+  </div>
+  <button type="button" id="disclosure-toggle" class="ghost" aria-expanded="true"
+          aria-controls="disclosure">hide notice</button>
+</header>
+
+<!-- The persistent diagnostic disclosure. Every number in it is written by the
+     builder from the source artifacts; nothing here is a hand-typed count. -->
+<section class="disclosure" id="disclosure" aria-label="Diagnostic disclosure">
+  <p class="disclosure-headline" id="disclosure-headline"></p>
+  <ul id="disclosure-points"></ul>
+  <details id="disclosure-detail">
+    <summary>What this pilot does not prove, and how candidates are ordered</summary>
+    <div class="detail-grid">
+      <div>
+        <h3>What this does not prove</h3>
+        <ul id="does-not-prove"></ul>
+      </div>
+      <div>
+        <h3>Presentation order (unratified, from the accepted artifact)</h3>
+        <ul id="ordering-keys"></ul>
+        <p class="muted" id="ordering-note"></p>
+      </div>
+      <div>
+        <h3><code>UNASSIGNED_NO_ACTIVE_EVIDENCE</code> means</h3>
+        <p id="unassigned-means"></p>
+        <ul id="unassigned-is-not"></ul>
+      </div>
+      <div>
+        <h3>Selected inputs</h3>
+        <dl id="source-identities"></dl>
+      </div>
+    </div>
+  </details>
+</section>
+
+<main>
+  <aside class="finder">
+    <h2>Find a card</h2>
+    <label class="visually-hidden" for="query">Card name or oracle_id</label>
+    <input type="search" id="query" autocomplete="off" spellcheck="false"
+           placeholder="card name, or a full oracle_id">
+    <p class="finder-hint" id="finder-hint"></p>
+    <fieldset class="view-filters">
+      <legend>View filters — your choice, not the data</legend>
+      <label><input type="checkbox" id="filter-eligible"> Gate&nbsp;#0 eligible only</label>
+      <label><input type="checkbox" id="filter-assigned"> has active evidence only</label>
+      <p class="muted">Off by default. Every card in the selected corpus is present
+        and selectable whether or not these are on; eligibility and coverage are
+        fields on a card, never filters the bundle applied.</p>
+    </fieldset>
+    <p class="result-count" id="result-count"></p>
+    <ol class="results" id="results"></ol>
+  </aside>
+
+  <section class="card-pane" id="card-pane" aria-live="polite">
+    <p class="empty">Search for a card to begin. All cards in the selected corpus
+      are reachable, including Gate&nbsp;#0-ineligible cards and cards with no
+      recorded evidence.</p>
+  </section>
+</main>
+
+<footer>
+  <p id="footer-note"></p>
+</footer>
+
+<script src="assets/pilot.js"></script>
+</body>
+</html>

@@ -34,6 +34,14 @@ mtj-foundry-report = "mtj_foundry.cli:main"
 # deliberately not folded into it.
 mtj-foundry-evidence = "mtj_foundry.evidence_cli:main"
 
+# PATH E MILESTONE 3. A SEPARATE script rather than a fourth `mtj-foundry-evidence`
+# subcommand, and the reason is the accepted M2 contract's own sentence: that
+# command "writes no file and creates no directory". A bundle builder writes several
+# hundred files, so folding it in would falsify an accepted contract line and force
+# an edit to accepted prose for tidiness -- exactly what `evidence_cli` declined to
+# do to `mtj-foundry-report`. M2's surface is untouched.
+mtj-foundry-pilot = "mtj_foundry.pilot_cli:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -42,3 +50,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["mtj_foundry*"]
+
+# The milestone-3 bundle template. PACKAGE-OWNED so an installed command can find
+# it with no repository present, which is the same reason milestone 1 made the
+# repository root an explicit parameter. These three files are inert markup, style
+# and rendering code; they are not a dependency and they add none.
+[tool.setuptools.package-data]
+"mtj_foundry.pilot_assets" = ["index.html", "assets/*.css", "assets/*.js"]

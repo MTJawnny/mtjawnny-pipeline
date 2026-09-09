@@ -4,7 +4,7 @@ schema: mtj-active-phase/1
 # Replace fields when the phase changes; never append history.
 # Per-task authority is GitHub Issue #1: latest K -> active T.
 
-phase: PATH_E_M2_FULL_POPULATION_EVIDENCE_INDEX_RETRIEVAL
+phase: PATH_E_M3_STATIC_DIAGNOSTIC_PILOT
 
 goal: >-
   Reach a useful Foundry by the shortest honest route: a reproducible installed
@@ -28,8 +28,10 @@ phase_update_rule: replace fields; never append history
 
 # A slice is safe to reason about only at this unit. A green library test is not
 # evidence about the shipped command; a synthetic fixture is not evidence about
-# the selected bytes.
-safe_reasoning_unit: installed_artifact_boundary
+# the selected bytes; and a green Python build is not evidence about what a
+# BROWSER does with the bytes -- M3 extends the unit through to a page served by
+# a plain static file server.
+safe_reasoning_unit: served_static_bundle_boundary
 required_axes:
   - input_identity
   - provenance
@@ -41,3 +43,5 @@ required_axes:
   - conservation
   - evidence_polarity
   - measurement_honesty
+  - browser_runtime_independence
+  - presentation_honesty
