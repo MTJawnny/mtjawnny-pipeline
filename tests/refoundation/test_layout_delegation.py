@@ -1252,22 +1252,35 @@ class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
         own. Asserting only "zero root delegations" would have been a count going
         to zero, which proves nothing about where the file is actually read.
 
-        S6 CARRY-FORWARD (case B). Slice 6 moved the CR path fact ITSELF out of
-        the legacy file into `mtj_foundry.mtg.cr.edition`, so the legacy shell now
-        states no repository layout at all -- it re-exports the owner's value.
-        The property P0.4H and S3 established is unchanged and is asserted where
-        it now lives: the edition is reached through the accepted `config/cr`
-        owner, exactly once, with no local construction and no `docs/` fallback.
+        S6.R1 CORRECTION. The first S6 candidate put the path fact in the
+        PERMANENT module and manufactured the root with
+        `Path(__file__).resolve().parents[4]`. That is repository-root inference
+        inside an ordinary library, it only works from the source checkout, and
+        the Manager rejected it. The fact now sits at the COMPOSITION BOUNDARY,
+        which is where `ProjectPaths` context legitimately lives -- so this
+        asserts the shell delegating `fc.CONFIG_CR` and the permanent module
+        owning no root at all.
         """
         legacy = CR.read_text(encoding="utf-8")
         permanent = CR_EDITION.read_text(encoding="utf-8")
-        # the legacy shell no longer states the layout, in either provider form
-        self.assertEqual(config_delegating_expressions(legacy, "CONFIG_CR"), [])
+        # the boundary supplies the accepted owner's directory, exactly once
+        self.assertIn("CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)", legacy)
+        self.assertEqual(
+            len(config_delegating_expressions(legacy, "CONFIG_CR")), 0,
+            "CONFIG_CR is passed as an argument here, not joined")
         self.assertEqual(root_delegating_expressions(legacy), [])
-        self.assertIn("CR_PATH = _edition.CR_PATH", legacy)
-        # and the permanent owner states it exactly once, through ProjectPaths
-        self.assertIn("CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME", permanent)
-        self.assertEqual(permanent.count("CR_PATH = _PATHS.config_cr"), 1)
+        # and the permanent module manufactures NO root and imports no owner
+        # Read from the AST: this module's own docstring explains the rejected
+        # shape, and a substring check would score documentation as code.
+        ptree = ast.parse(permanent)
+        imported = {n.module for n in ast.walk(ptree)
+                    if isinstance(n, ast.ImportFrom) and n.module}
+        self.assertNotIn("mtj_foundry.paths", imported)
+        ancestry = [ast.unparse(n) for n in ast.walk(ptree)
+                    if isinstance(n, ast.Attribute)
+                    and n.attr in {"parent", "parents", "resolve"}
+                    and "__file__" in ast.unparse(n)]
+        self.assertEqual(ancestry, [])
         self.assertNotIn("legacy_docs", permanent)
 
     def test_no_local_root_relative_construction_remains(self):
@@ -1306,18 +1319,15 @@ class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
         ONE layout name taken from the compatibility boundary. The surface did
         not widen; the owner it names moved.
 
-        S6 CARRY-FORWARD (case B). Slice 6 took the CR path out of this file, so
-        the boundary symbol it consumed goes with it: the surface narrows back to
-        `{halt}` alone, which is the pre-P0.4H surface -- not because the
-        delegation was undone, but because the thing being delegated is now owned
-        one layer down. `fc.halt` remains because the legacy shell is where the
-        process boundary is re-established.
+        S6.R1 CORRECTION: the boundary consumes `fc.CONFIG_CR` again, because
+        the repair moved the path fact back out of the permanent library and the
+        shell is where the accepted owner's value legitimately enters.
         """
         tree = ast.parse(CR.read_text(encoding="utf-8"))
         used = {n.attr for n in ast.walk(tree)
                 if isinstance(n, ast.Attribute)
                 and isinstance(n.value, ast.Name) and n.value.id == "fc"}
-        self.assertEqual(used, {"halt"})
+        self.assertEqual(used, {"halt", "CONFIG_CR"})
 
 
 class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
@@ -1336,12 +1346,15 @@ class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
     # slice 6 moved the assignment into the permanent owner, so the control is
     # aimed at `mtg/cr/edition.py`. A control whose `NOW` no longer appears in
     # the file it reads is a control that can never fire.
-    NOW = "CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME"
+    # S6.R1: `NOW` follows the subject back to the composition boundary, where
+    # the repair put it. `BEFORE` is still the GENUINE pre-P0.4H local
+    # construction -- unchanged, and still the hazard.
+    NOW = "CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)"
     BEFORE = ('CR_PATH = REPO_ROOT.parent / "docs" / '
               '"MTG_Comprehensive_Rules_2026-08-07_LLM.md"')
 
     def reverted(self) -> str:
-        source = CR_EDITION.read_text(encoding="utf-8")
+        source = CR.read_text(encoding="utf-8")
         self.assertIn(self.NOW, source, "the live text moved; fix the control")
         out = source.replace(self.NOW, self.BEFORE, 1)
         self.assertNotEqual(out, source)
@@ -1363,12 +1376,15 @@ class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
         neither checker may react to it in either direction — its base is a CALL
         (`Path.home()`), not a root NAME. Asserting this is what proves the
         controls above fired on the CR path and not on its neighbour."""
-        for source in (CR_EDITION.read_text(encoding="utf-8"), self.reverted()):
-            joins = [u for _, u in outermost_path_joins(source)]
-            self.assertTrue(any("home()" in u for u in joins), joins)
+        # S6.R1: `PRIOR_CR_PATH` stayed in the permanent module (it is a
+        # user-home path to an external sibling, not repository layout), while
+        # the reverted subject is now the boundary. Each is read where it is.
+        joins = [u for _, u in outermost_path_joins(
+            CR_EDITION.read_text(encoding="utf-8"))]
+        self.assertTrue(any("home()" in u for u in joins), joins)
         self.assertEqual(len(local_root_relative_constructions(self.reverted())), 1)
-        # S6: the live positive form is the owner assignment in the permanent module
-        self.assertIn(self.NOW, CR_EDITION.read_text(encoding="utf-8"))
+        # S6.R1: the live positive form is the boundary's composition call
+        self.assertIn(self.NOW, CR.read_text(encoding="utf-8"))
 
 
 class TestTheFifthSliceResolvedPathIsByteIdentical(unittest.TestCase):
@@ -1429,10 +1445,12 @@ class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
         home = [u for u in by_line.values() if "home()" in u]
         self.assertEqual(len(repo), 1, repo)
         self.assertEqual(len(home), 1, home)
-        # S6 CARRY-FORWARD (case B). Still exactly one repository-layout join,
-        # still taken from the accepted owner -- slice 6 moved the fact into the
-        # permanent module, so it now reads through `ProjectPaths.config_cr`.
-        self.assertIn("_PATHS.config_cr", repo[0])
+        # S6.R1 CORRECTION. The permanent module's one repository-shaped join is
+        # now `Path(config_cr) / CR_EDITION_FILENAME` -- a join over the CALLER'S
+        # directory, not over a root this module derived. That is the difference
+        # the repair is about.
+        self.assertIn("config_cr", repo[0])
+        self.assertNotIn("__file__", repo[0])
 
     def test_prior_cr_path_is_untouched_and_still_home_rooted(self):
         """It points OUTSIDE the repository at the 2026-06-19 edition, so no
@@ -1445,25 +1463,40 @@ class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(self.cr.PRIOR_CR_PATH.name, "mtg-comprehensive-rules.md")
         self.assertNotIn(PATHS.root, self.cr.PRIOR_CR_PATH.parents)
 
-    def test_the_MTJ_CR_PATH_override_text_is_untouched(self):
-        """S6 CARRY-FORWARD (case B): unchanged text, now in the permanent owner."""
+    def test_the_MTJ_CR_PATH_override_is_preserved_as_a_pure_helper(self):
+        """S6.R1 CORRECTION. The override RULE is unchanged and still takes
+        precedence; it is now expressed as `env_override()` rather than a
+        module-level `if`, because the repair removed the module-level
+        `CR_PATH` it used to reassign. It reads the environment and never the
+        filesystem, which is what keeps it out of root inference."""
         permanent = CR_EDITION.read_text(encoding="utf-8")
-        self.assertIn('if "MTJ_CR_PATH" in __import__("os").environ:', permanent)
-        self.assertIn('CR_PATH = Path(__import__("os").environ["MTJ_CR_PATH"])'
-                      '.expanduser()', permanent)
+        self.assertIn('raw = os.environ.get("MTJ_CR_PATH")', permanent)
+        self.assertIn("return Path(raw).expanduser() if raw else None", permanent)
+        self.assertIn("override if override is not None else", permanent)
 
     def test_the_MTJ_CR_PATH_override_still_runs_AFTER_the_migrated_assignment(self):
         """ORDER, not just presence. If the override moved above the delegated
         assignment it would be silently dead, and `MTJ_CR_PATH=<file>` is the one
-        mechanism that turns a CR refresh into a measurement instead of a leap."""
-        tree = ast.parse(CR_EDITION.read_text(encoding="utf-8"))
-        assign = next(n.lineno for n in tree.body
-                      if isinstance(n, ast.Assign)
-                      and any(isinstance(t, ast.Name) and t.id == "CR_PATH"
-                              for t in n.targets))
-        override = next(n.lineno for n in tree.body
-                        if isinstance(n, ast.If) and "MTJ_CR_PATH" in ast.unparse(n))
-        self.assertLess(assign, override)
+        mechanism that turns a CR refresh into a measurement instead of a leap.
+
+        S6.R1 CORRECTION: there is no longer a module-level assignment for an
+        override to run after -- `select_cr_path` applies the override FIRST,
+        inside one function, which makes the ordering structural instead of
+        positional. Asserted as precedence rather than as line order.
+        """
+        from mtj_foundry.mtg.cr import edition
+        import os, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            alt = Path(tmp) / "alt.md"
+            alt.write_text("x", encoding="utf-8")
+            os.environ["MTJ_CR_PATH"] = str(alt)
+            try:
+                self.assertEqual(edition.select_cr_path(Path("/ignored")), alt)
+            finally:
+                del os.environ["MTJ_CR_PATH"]
+        self.assertEqual(edition.select_cr_path(Path("/r/config/cr")),
+                         Path("/r/config/cr") / edition.CR_EDITION_FILENAME)
+
 
     def test_the_root_decision_and_bootstrap_survive(self):
         self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
@@ -1838,13 +1871,14 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
-        # S6 CARRY-FORWARD (case B): the CR path fact moved to the permanent
-        # owner, so the legacy shell holds none and the owner holds exactly one.
-        self.assertEqual(
-            config_delegating_expressions(CR.read_text(encoding="utf-8"),
-                                          "CONFIG_CR"), [])
-        self.assertIn("CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME",
-                      CR_EDITION.read_text(encoding="utf-8"))
+        # S6.R1: the CR path fact is composed at the boundary from the accepted
+        # owner's directory, and the permanent module derives no root.
+        self.assertIn("CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)",
+                      CR.read_text(encoding="utf-8"))
+        self.assertNotIn("mtj_foundry.paths",
+                         {n.module for n in ast.walk(
+                             ast.parse(CR_EDITION.read_text(encoding="utf-8")))
+                          if isinstance(n, ast.ImportFrom) and n.module})
 
 # ---------------------------------------------------------------------------
 # P0.4J — the seventh slice
@@ -2267,13 +2301,14 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
-        # S6 CARRY-FORWARD (case B): the CR path fact moved to the permanent
-        # owner, so the legacy shell holds none and the owner holds exactly one.
-        self.assertEqual(
-            config_delegating_expressions(CR.read_text(encoding="utf-8"),
-                                          "CONFIG_CR"), [])
-        self.assertIn("CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME",
-                      CR_EDITION.read_text(encoding="utf-8"))
+        # S6.R1: the CR path fact is composed at the boundary from the accepted
+        # owner's directory, and the permanent module derives no root.
+        self.assertIn("CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)",
+                      CR.read_text(encoding="utf-8"))
+        self.assertNotIn("mtj_foundry.paths",
+                         {n.module for n in ast.walk(
+                             ast.parse(CR_EDITION.read_text(encoding="utf-8")))
+                          if isinstance(n, ast.ImportFrom) and n.module})
         # S4 CARRY-FORWARD (case B). P0.4I's ground-truth delegation stands;
         # slice 4 moved its subject to the test-fixture owner, so the arm reads
         # the owner resolution instead of a root delegation.
@@ -2563,13 +2598,14 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
-        # S6 CARRY-FORWARD (case B): the CR path fact moved to the permanent
-        # owner, so the legacy shell holds none and the owner holds exactly one.
-        self.assertEqual(
-            config_delegating_expressions(CR.read_text(encoding="utf-8"),
-                                          "CONFIG_CR"), [])
-        self.assertIn("CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME",
-                      CR_EDITION.read_text(encoding="utf-8"))
+        # S6.R1: the CR path fact is composed at the boundary from the accepted
+        # owner's directory, and the permanent module derives no root.
+        self.assertIn("CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)",
+                      CR.read_text(encoding="utf-8"))
+        self.assertNotIn("mtj_foundry.paths",
+                         {n.module for n in ast.walk(
+                             ast.parse(CR_EDITION.read_text(encoding="utf-8")))
+                          if isinstance(n, ast.ImportFrom) and n.module})
         # S4 CARRY-FORWARD (case B). P0.4I's ground-truth delegation stands;
         # slice 4 moved its subject to the test-fixture owner, so the arm reads
         # the owner resolution instead of a root delegation.
@@ -2877,13 +2913,14 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
-        # S6 CARRY-FORWARD (case B): the CR path fact moved to the permanent
-        # owner, so the legacy shell holds none and the owner holds exactly one.
-        self.assertEqual(
-            config_delegating_expressions(CR.read_text(encoding="utf-8"),
-                                          "CONFIG_CR"), [])
-        self.assertIn("CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME",
-                      CR_EDITION.read_text(encoding="utf-8"))
+        # S6.R1: the CR path fact is composed at the boundary from the accepted
+        # owner's directory, and the permanent module derives no root.
+        self.assertIn("CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)",
+                      CR.read_text(encoding="utf-8"))
+        self.assertNotIn("mtj_foundry.paths",
+                         {n.module for n in ast.walk(
+                             ast.parse(CR_EDITION.read_text(encoding="utf-8")))
+                          if isinstance(n, ast.ImportFrom) and n.module})
         # S4 CARRY-FORWARD (case B). The ground-truth guard left `experiments/`
         # and its fixture path now resolves through the tests owner, so it holds
         # no root delegation; the live binding is asserted positively below.
@@ -4049,7 +4086,7 @@ CENSUS_HEAD = {
     # `PATH_JOIN` takes all 17; `DIRECT_BIND`, `ATTRIBUTE_NAV` and `CALL_ARG` are
     # unchanged, because every repoint is an owner-property-plus-filename join and
     # none of them changed how a value is bound or passed.
-    "delegations_total": 162,                      # S6: 163 (-1, CR path moved to L2)
+    "delegations_total": 163,                      # S6.R1: back to 163 -- see below
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 124,     # S4: 126 (-2)
         "foundry_common.REPO_ROOT": 19,            # S4: 21 (-2)
@@ -4058,21 +4095,23 @@ CENSUS_HEAD = {
         "foundry_common.CONFIG_SEMANTIC": 13,
         "foundry_common.CONFIG_GENERATED": 2,
         "foundry_common.CONFIG_SELECTORS": 1,
-        # S6: `foundry_common.CONFIG_CR` is GONE from this table, not zeroed.
-        # The census counts observed delegations, so a provider with none
-        # does not appear -- and after slice 6 nothing in legacy production
-        # delegates the CR path, because `mtg/cr/edition.py` owns it.
+        # S6.R1: `CONFIG_CR` is BACK, and that is the repair working. The
+        # first S6 candidate moved the CR path fact into the permanent library
+        # and manufactured a root there; the repair returns the fact to the
+        # composition boundary, where delegating the accepted owner is exactly
+        # what a boundary is for. It is passed as a CALL_ARG rather than joined.
+        "foundry_common.CONFIG_CR": 1,
         "foundry_common.CONFIG_REGISTERS": 1,
         "foundry_common.CONFIG_THESAURUS": 1,
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
-        "PATH_JOIN": 149,                          # S6: 150 (-1, the same CR site)
+        "PATH_JOIN": 149,                          # S6: 150 (-1, the CR join left)
         "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
-        "CALL_ARG": 9,                             # S4: 10 (-1)
+        "CALL_ARG": 10,                            # S6.R1: 9 (+1, CONFIG_CR passed)
     },
-    "delegation_files": 55,                        # S6: 56 (-1, foundry_cr.py)
+    "delegation_files": 56,                        # S6.R1: 55 (+1, foundry_cr.py)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as

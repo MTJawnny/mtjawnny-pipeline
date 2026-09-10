@@ -102,9 +102,19 @@ MULTI_HINT = _keywords.MULTI_HINT
 MEANS = _keywords.MEANS
 
 
-def _halting(fn):
-    """Wrap a permanent CR entry point in the legacy process boundary."""
+def _halting(fn, default_path=False):
+    """Wrap a permanent CR entry point in the legacy process boundary.
+
+    `default_path` restores THIS boundary's default edition for callers that
+    pass none. The permanent functions have no default on purpose -- they do not
+    know where the repository is -- so supplying it is the boundary's job, and
+    nine legacy callers depend on the no-argument form.
+    """
     def wrapper(*args, **kwargs):
+        if default_path and not args and "path" not in kwargs:
+            args = (CR_PATH,)
+        elif default_path and args and args[0] is None:
+            args = (CR_PATH,) + args[1:]
         try:
             return fn(*args, **kwargs)
         except _keywords.CRKeywordError as exc:
@@ -114,11 +124,16 @@ def _halting(fn):
     return wrapper
 
 
-load_702 = _halting(_keywords.load_702)
-type_vocabulary = _halting(_keywords.type_vocabulary)
+load_702 = _halting(_keywords.load_702, default_path=True)
+type_vocabulary = _halting(_keywords.type_vocabulary, default_path=True)
 classify = _keywords.classify                 # pure, no halt path
 effective_classes = _keywords.effective_classes   # pure, no halt path
-keyword_rows = _halting(_keywords.keyword_rows)
+def keyword_rows(path=None):
+    """Every CR 702 keyword as a pure row, defaulting to this boundary's CR."""
+    try:
+        return _keywords.keyword_rows(path if path is not None else CR_PATH)
+    except _keywords.CRKeywordError as exc:
+        fc.halt(str(exc))
 
 
 def find_home(kw: dict, ratified: dict) -> tuple:

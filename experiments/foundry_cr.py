@@ -90,8 +90,18 @@ from mtj_foundry.mtg.cr import edition as _edition  # noqa: E402
 
 CRError = _edition.CRError
 
-# The path facts are the permanent owner's. Re-exported, never re-derived.
-CR_PATH = _edition.CR_PATH
+# THIS SHELL IS THE COMPOSITION BOUNDARY, and that is the whole point of the
+# S6.R1 repair. The permanent library derives no repository root: it contributes
+# the edition FILENAME and the `MTJ_CR_PATH` rule, and RECEIVES the config-CR
+# directory from the accepted layout owner through the compatibility boundary
+# below. A library that manufactured that root would work only when read out of
+# the source checkout, which is the defect this repair removes.
+#
+# The provider name is deliberately NOT spelled in this comment: the delegation
+# census reconciles a raw TEXTUAL count against a scoped AST count, and prose
+# naming the symbol would score documentation as a second delegation. Third
+# recorded instance of "a document is an API" in this repository.
+CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)
 PRIOR_CR_PATH = _edition.PRIOR_CR_PATH
 
 # Markup/register constants consumed by `_report` and `_selftest` below.
@@ -106,9 +116,18 @@ _pure_deletion = _edition._pure_deletion
 _demojibake = _edition._demojibake
 
 
-def _halting(fn):
-    """Wrap a permanent CR entry point in the legacy process boundary."""
+def _halting(fn, default_path=False):
+    """Wrap a permanent CR entry point in the legacy process boundary.
+
+    `default_path` supplies THIS boundary's default edition when a legacy caller
+    passes none. The permanent function has no default, by design -- it does not
+    know where the repository is.
+    """
     def wrapper(*args, **kwargs):
+        if default_path and not args and "path" not in kwargs:
+            args = (CR_PATH,)
+        elif default_path and args and args[0] is None:
+            args = (CR_PATH,) + args[1:]
         try:
             return fn(*args, **kwargs)
         except _edition.CRError as exc:
@@ -123,9 +142,16 @@ normalize = _halting(_edition.normalize)
 _assert_encoding = _halting(_edition._assert_encoding)
 _repair_encoding = _halting(_edition._repair_encoding)
 _assert_parseable = _halting(_edition._assert_parseable)
-text = _halting(_edition.text)
-lines = _halting(_edition.lines)
-effective_date = _halting(_edition.effective_date)
+text = _halting(_edition.text, default_path=True)
+lines = _halting(_edition.lines, default_path=True)
+
+
+def effective_date(txt: str = None) -> str:
+    """The CR's effective date. Defaults to THIS boundary's edition."""
+    try:
+        return _edition.effective_date(txt if txt is not None else text())
+    except _edition.CRError as exc:
+        fc.halt(str(exc))
 
 
 

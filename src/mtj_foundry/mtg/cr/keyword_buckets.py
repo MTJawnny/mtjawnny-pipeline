@@ -40,12 +40,15 @@ class KeywordBucketError(RuntimeError):
     """A CR 702 bucket parse the pipeline refuses to proceed on."""
 
 
-CR_PATH = _edition.CR_PATH
+# NO DEFAULT CR PATH HERE. This library derives no repository root and holds no
+# module-level CR location: the caller supplies the edition path, which it gets
+# from the accepted layout owner through its own composition boundary. See
+# `edition.select_cr_path`.
 
 
-def cr_text(path=None) -> str:
-    """The normalized CR. Location and formatting both owned by `edition`."""
-    return _edition.text(path or CR_PATH)
+def cr_text(path) -> str:
+    """The normalized CR at an EXPLICIT path. Formatting owned by `edition`."""
+    return _edition.text(path)
 
 
 def cr_date(text: str = None) -> str:
@@ -313,7 +316,7 @@ def classify_entry(num: int, name: str, subrules: list) -> dict:
 
 
 
-def build_registry(text: str = None) -> dict:
+def build_registry(text: str) -> dict:
     """The DERIVED keyword-bucket registry. No metadata, no I/O, no printing.
 
     Lifted out of the legacy `main()` (R5): the derivation was always pure, but
@@ -329,7 +332,6 @@ def build_registry(text: str = None) -> dict:
     header two independently-classified abilities, and each is classified from
     its own sub-rule rather than the pair being collapsed.
     """
-    text = text if text is not None else cr_text()
     entries = split_entries(text)
 
     keywords = {}

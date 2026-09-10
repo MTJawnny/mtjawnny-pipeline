@@ -76,9 +76,13 @@ def find_cr_date(text):
 
 
 def build_registry(text=None):
-    """The pure derivation, with the legacy process boundary restored."""
+    """The pure derivation, with the legacy process boundary restored.
+
+    The CR text defaults to THIS boundary's edition; the permanent derivation
+    has no default, because it does not know where the repository is.
+    """
     try:
-        return _buckets.build_registry(text)
+        return _buckets.build_registry(text if text is not None else load_cr_text())
     except _buckets.KeywordBucketError as exc:
         fc.halt(str(exc))
 

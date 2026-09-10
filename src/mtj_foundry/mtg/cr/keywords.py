@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import re
 import collections
+from pathlib import Path
 
 from mtj_foundry.mtg.cr import edition as _edition
 
@@ -49,7 +50,10 @@ class CRKeywordError(RuntimeError):
     """A CR 702/205 parse the pipeline refuses to proceed on."""
 
 
-CR_PATH = _edition.CR_PATH
+# NO DEFAULT CR PATH HERE. This library derives no repository root and holds no
+# module-level CR location: the caller supplies the edition path, which it gets
+# from the accepted layout owner through its own composition boundary. See
+# `edition.select_cr_path`.
 
 
 HEADER = re.compile(r"^702\.(\d+)\.\s+(.+?)\s*$")
@@ -128,7 +132,7 @@ PREAMBLE_RULE = 1
 CR_CLASSES = set()
 
 
-def load_702(path: Path = CR_PATH) -> dict:
+def load_702(path: Path) -> dict:
     # Read through the normalizing loader, never `path.read_text()`. The
     # 2026-08-07 edition prints `**702.6a.**`, which HEADER/SUBRULE below do
     # not match — parsing it raw returns zero keywords.
@@ -161,7 +165,7 @@ def load_702(path: Path = CR_PATH) -> dict:
     return keywords
 
 
-def type_vocabulary(path: Path = CR_PATH) -> dict:
+def type_vocabulary(path: Path) -> dict:
     """Every CR 205 type list -> sets, read from the CR at run time.
 
     Card types (205.2a), supertypes (205.4a), and ALL TEN subtype lists
@@ -288,7 +292,7 @@ def effective_classes(kw: dict) -> list:
 
 
 
-def keyword_rows(path=None) -> list:
+def keyword_rows(path) -> list:
     """Every CR 702 keyword as a pure row. NO reporting, NO delivery lookup.
 
     Lifted verbatim out of the legacy `main()`'s reporting flow (R5/R6): the
@@ -298,7 +302,7 @@ def keyword_rows(path=None) -> list:
     the rows carry no `home` key at all. The legacy shell adds that, one layer
     up, where delivery parsing is allowed to be reached.
     """
-    keywords = load_702(path or CR_PATH)
+    keywords = load_702(path)
     named = {n: k for n, k in keywords.items()
              if k["name"] and n != PREAMBLE_RULE}
 

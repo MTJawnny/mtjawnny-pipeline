@@ -40,10 +40,9 @@ import re
 import collections
 from pathlib import Path
 
-from mtj_foundry.paths import ProjectPaths
-
-__all__ = ["CRError", "CR_PATH", "PRIOR_CR_PATH", "cr_path", "repo_relative_source",
-           "normalize", "normalize_line", "text", "lines", "effective_date"]
+__all__ = ["CRError", "CR_EDITION_FILENAME", "PRIOR_CR_PATH", "env_override",
+           "select_cr_path", "repo_relative_source", "normalize",
+           "normalize_line", "text", "lines", "effective_date"]
 
 
 class CRError(RuntimeError):
@@ -55,53 +54,81 @@ class CRError(RuntimeError):
 
 
 # ---------------------------------------------------------------------------
-# WHERE THE CR LIVES
+# WHERE THE CR LIVES — AND WHY THIS MODULE DOES NOT DECIDE
 # ---------------------------------------------------------------------------
-# The location comes from the ONE layout owner. S1 named `config/cr` and S3 put
-# the edition there; this module states neither a repository root nor a
-# directory of its own, and performs no discovery -- `_ROOT` is a pure lexical
-# derivation from this file's own position inside the installed package, which
-# is what `ProjectPaths` then consumes.
-_ROOT = Path(__file__).resolve().parents[4]
-_PATHS = ProjectPaths.for_root(_ROOT)
+# THIS LIBRARY DERIVES NO REPOSITORY ROOT. It has no `_ROOT`, reads no
+# `__file__` ancestry, counts no parents, searches for no `.git`, consults no
+# working directory, and resolves nothing at import time. `paths.py` is the one
+# component that defines repository-relative layout, and an ordinary library
+# RECEIVES that context from a composition boundary rather than inventing it.
+#
+# The first S6 candidate got this wrong: `Path(__file__).resolve().parents[4]`
+# happens to land on the repository only when the package is being read out of
+# the source checkout. From a real site-packages install the same ancestry walks
+# into the environment, and the module would then compose `config/cr/...` under
+# the wrong root -- a defect no source-tree test could see. It is removed here
+# rather than renamed or relocated.
+#
+# What remains is a FACT ABOUT THE EDITION, not about the repository: its
+# filename. Callers supply the directory.
 
 CR_EDITION_FILENAME = "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
-CR_PATH = _PATHS.config_cr / CR_EDITION_FILENAME
 
 # The 2026-06-19 edition, kept reachable so a refresh can be VERIFIED as a
 # comparison rather than taken on trust. Never read by the pipeline, and its
-# ABSENCE is not an error -- every use is guarded by `.exists()`.
+# ABSENCE is not an error -- every use is guarded by `.exists()`. This is a
+# USER-HOME path to an external sibling repository, not repository-root
+# inference: no provider can supply it and it states no layout of this repo.
 PRIOR_CR_PATH = (Path.home() / "Projects" / "mtjawnny.github.io" / "docs"
                  / "mtg-comprehensive-rules.md")
 
-# `MTJ_CR_PATH=<file>` runs the WHOLE pipeline against another edition. This is
-# what makes a CR refresh a measurement instead of a leap: the routing diff can
-# hold the code fixed and move only the rules, which is the one thing that
-# separates "the refresh moved this line" from "my edit moved this line". A CR
-# refresh is the only change in this system that can move routing with no code
-# edit at all, because the vocabulary is parsed at run time.
-if "MTJ_CR_PATH" in __import__("os").environ:
-    CR_PATH = Path(__import__("os").environ["MTJ_CR_PATH"]).expanduser()
+
+def env_override() -> Path | None:
+    """`MTJ_CR_PATH`, if set. Reads the environment, never the filesystem.
+
+    `MTJ_CR_PATH=<file>` runs the WHOLE pipeline against another edition. This
+    is what makes a CR refresh a measurement instead of a leap: the routing diff
+    can hold the code fixed and move only the rules, which is the one thing that
+    separates "the refresh moved this line" from "my edit moved this line". A CR
+    refresh is the only change in this system that can move routing with no code
+    edit at all, because the vocabulary is parsed at run time.
+    """
+    import os
+    raw = os.environ.get("MTJ_CR_PATH")
+    return Path(raw).expanduser() if raw else None
 
 
-def cr_path() -> Path:
-    """The edition in force, after any `MTJ_CR_PATH` override."""
-    return CR_PATH
+def select_cr_path(config_cr: Path) -> Path:
+    """The edition in force, given the CONFIG_CR DIRECTORY the caller owns.
+
+    `config_cr` comes from the accepted layout owner -- `ProjectPaths.config_cr`,
+    reached through whatever composition boundary the caller already has. This
+    function contributes only the two things that are genuinely CR facts: the
+    edition filename, and the `MTJ_CR_PATH` override taking precedence.
+
+    Pure lexical join. No probing, no resolution, no default root: hand it a
+    directory that does not exist and it still answers.
+    """
+    override = env_override()
+    return override if override is not None else Path(config_cr) / CR_EDITION_FILENAME
 
 
-def repo_relative_source(path: Path = None) -> str:
+def repo_relative_source(path: Path, root: Path) -> str:
     """How a GENERATED artifact should record which CR it was built from.
 
     A tracked artifact must not carry a developer-specific absolute path: the
     same CR built in two worktrees would then produce two different files, and
     the recorded provenance would be a fact about a machine rather than about
     the repository. So this returns the POSIX repository-relative path when the
-    edition is inside the repository, and the bare filename otherwise (an
+    edition is inside the supplied root, and the bare filename otherwise (an
     `MTJ_CR_PATH` pointing outside it). Deterministic either way.
+
+    BOTH arguments are explicit. The root is the caller's -- this module does
+    not know where the repository is and must not guess.
     """
-    path = Path(path) if path else CR_PATH
+    path, root = Path(path), Path(root)
     try:
-        return path.resolve().relative_to(_ROOT).as_posix()
+        return path.resolve().relative_to(Path(root).resolve()).as_posix()
     except ValueError:
         return path.name
 
@@ -430,9 +457,9 @@ def _assert_parseable(norm: str, path: Path) -> None:
                 f"{survivors}. Fix _BOLD_RULE.")
 
 
-def text(path: Path = None) -> str:
+def text(path: Path) -> str:
     """The CR, normalized to the plain shape every parser here expects."""
-    path = Path(path) if path else CR_PATH
+    path = Path(path)
     key = str(path)
     if key not in _cache:
         if not path.exists():
@@ -456,7 +483,7 @@ def text(path: Path = None) -> str:
     return _cache[key]
 
 
-def lines(path: Path = None) -> list:
+def lines(path: Path) -> list:
     return text(path).splitlines()
 
 

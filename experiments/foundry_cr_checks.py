@@ -95,10 +95,33 @@ from mtj_foundry.mtg.cr import checks as _checks  # noqa: E402
 
 ERA_VARIANTS = _checks.ERA_VARIANTS
 SCOPE_TERMS = _checks.SCOPE_TERMS
-load_cr = _checks.load_cr
 keyword_actions = _checks.keyword_actions
 keywords = _checks.keywords
-build = _checks.build
+
+
+def load_cr():
+    """The normalized CR at THIS boundary's edition path."""
+    return _checks.load_cr(CR_PATH)
+
+
+def build(cr):
+    """The registry, with provenance composed HERE.
+
+    The permanent generator is handed the provenance STRING rather than being
+    asked where the repository is: `PATHS.root` is this boundary's, from the
+    accepted layout owner. That is what keeps the tracked artifact
+    repository-portable without a library inventing a root.
+    """
+    return _checks.build(cr, _checks_source())
+
+
+def _checks_source():
+    return _edition_module().repo_relative_source(CR_PATH, PATHS.root)
+
+
+def _edition_module():
+    from mtj_foundry.mtg.cr import edition
+    return edition
 
 
 def coverage(reg: dict) -> None:

@@ -41,7 +41,10 @@ from mtj_foundry.mtg.cr import edition as _edition
 __all__ = ["ERA_VARIANTS", "SCOPE_TERMS", "load_cr", "keyword_actions",
            "keywords", "build"]
 
-CR_PATH = _edition.CR_PATH
+# NO DEFAULT CR PATH HERE. This library derives no repository root and holds no
+# module-level CR location: the caller supplies the edition path, which it gets
+# from the accepted layout owner through its own composition boundary. See
+# `edition.select_cr_path`.
 
 
 ERA_VARIANTS = {
@@ -66,10 +69,10 @@ SCOPE_TERMS = [
 ]
 
 
-def load_cr(path=None) -> str:
+def load_cr(path) -> str:
     # Normalized: `keyword_actions` and `keywords` below anchor on `^701.N. `
     # and `^702.N. `, which the 2026-08-07 edition writes in bold.
-    return _edition.text(path or CR_PATH)
+    return _edition.text(path)
 
 
 def keyword_actions(cr: str) -> list:
@@ -106,7 +109,7 @@ def keywords(cr: str) -> list:
     return rows
 
 
-def build(cr: str) -> dict:
+def build(cr: str, source: str) -> dict:
     rows = keyword_actions(cr) + keywords(cr)
     for term, rule, forms, kind in SCOPE_TERMS:
         rows.append({"term": term, "cr": rule, "kind": kind,
@@ -121,7 +124,7 @@ def build(cr: str) -> dict:
         seen.add(k)
         out.append(r)
     return {"schema": "cr-checks/1",
-            "source": _edition.repo_relative_source(),
+            "source": source,
             "generated_from_cr_lines": cr.count("\n") + 1,
             "n_terms": len(out),
             "terms": out}
