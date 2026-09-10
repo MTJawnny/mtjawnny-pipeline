@@ -74,87 +74,31 @@ OUT = fc.CONFIG_GENERATED / "cr-checks.json"
 # Templating-era equivalences. Each entry is one CR object written two ways
 # across printing eras; a check that knows only one form manufactures defects.
 # Captain-ratified terms only -- this table is law, not convenience.
-ERA_VARIANTS = {
-    "defending player": ["the player or planeswalker it's attacking",
-                         "the player or planeswalker that creature is attacking"],
-    "activate only as a sorcery": ["activate this ability only as a sorcery",
-                                   "play only as a sorcery"],
-    "enters": ["enters the battlefield"],
-    "dies": ["is put into a graveyard from the battlefield"],
-}
 
-# Scope / targeting terms. These are not keyword actions; they are the words
-# that decide WHO and HOW MANY, and they are where C4's findings came from.
-SCOPE_TERMS = [
-    ("target", "601.2c", ["target", "targets"], "scope"),
-    ("each", "n/a", ["each", "all", "every"], "scope"),
-    ("defending player", "506.2", ["defending player"], "scope"),
-    ("opponent", "102.1", ["opponent", "opponents"], "scope"),
-    ("you control", "108.4", ["you control", "your"], "scope"),
-    ("another", "109.1", ["another", "other"], "scope"),
-    ("controller", "108.4", ["controller", "controllers"], "scope"),
-]
+# ---------------------------------------------------------------------------
+# S6 — THE GENERATOR NOW LIVES IN THE PERMANENT CR SUBSTRATE
+# ---------------------------------------------------------------------------
+# Migration slice 6 moved `ERA_VARIANTS`, `SCOPE_TERMS`, `load_cr`,
+# `keyword_actions`, `keywords` and `build` into
+# `mtj_foundry.mtg.cr.checks`. NO SECOND GENERATOR REMAINS HERE.
+#
+# `coverage()` deliberately did NOT move: it reads the live codebook, and a
+# generator in the MTG substrate that imported the codebook would put a codebook
+# dependency underneath L2. R4 assigns that question to a later
+# `codebook/coverage.py`; until then it stays here with `main`.
+#
+# The tracked artifact's `source` field is now the REPOSITORY-RELATIVE path of
+# the CR, not an absolute one (Manager reconciliation R-S6-1). Same schema, same
+# 264 derived rows in the same order -- only the provenance representation is
+# corrected, so the tracked file stops being machine-specific.
+from mtj_foundry.mtg.cr import checks as _checks  # noqa: E402
 
-
-def load_cr() -> str:
-    # Normalized: `keyword_actions` and `keywords` below anchor on `^701.N. `
-    # and `^702.N. `, which the 2026-08-07 edition writes in bold.
-    return fcr.text(CR_PATH)
-
-
-def keyword_actions(cr: str) -> list:
-    """CR 701 — keyword actions. Closed vocabulary, one rule number each."""
-    rows = []
-    for m in re.finditer(r"^(701\.(\d+))\. ([A-Z][a-zA-Z' ]+?)\s*$", cr, re.M):
-        rule, name = m.group(1), m.group(3).strip()
-        if name.lower().startswith("most actions"):
-            continue          # 701.1 is prose, not an action
-        if len(name) > 30:
-            continue
-        low = name.lower()
-        rows.append({
-            "term": low,
-            "cr": rule,
-            "kind": "keyword-action",
-            "printed_forms": sorted({low, low + "s", low + "es"}
-                                    if not low.endswith("s") else {low}),
-            "era_variants": ERA_VARIANTS.get(low, []),
-        })
-    return rows
-
-
-def keywords(cr: str) -> list:
-    """CR 702 — keyword abilities. Already bucketed by foundry_keyword_buckets."""
-    rows = []
-    for m in re.finditer(r"^(702\.(\d+))\. ([A-Z][a-zA-Z' ]+?)\s*$", cr, re.M):
-        name = m.group(3).strip()
-        if len(name) > 30:
-            continue
-        rows.append({"term": name.lower(), "cr": m.group(1),
-                     "kind": "keyword", "printed_forms": [name.lower()],
-                     "era_variants": ERA_VARIANTS.get(name.lower(), [])})
-    return rows
-
-
-def build(cr: str) -> dict:
-    rows = keyword_actions(cr) + keywords(cr)
-    for term, rule, forms, kind in SCOPE_TERMS:
-        rows.append({"term": term, "cr": rule, "kind": kind,
-                     "printed_forms": forms,
-                     "era_variants": ERA_VARIANTS.get(term, [])})
-    # deterministic: sort by kind then term, and de-duplicate on (kind, term)
-    seen, out = set(), []
-    for r in sorted(rows, key=lambda r: (r["kind"], r["term"])):
-        k = (r["kind"], r["term"])
-        if k in seen:
-            continue
-        seen.add(k)
-        out.append(r)
-    return {"schema": "cr-checks/1",
-            "source": str(CR_PATH),
-            "generated_from_cr_lines": cr.count("\n") + 1,
-            "n_terms": len(out),
-            "terms": out}
+ERA_VARIANTS = _checks.ERA_VARIANTS
+SCOPE_TERMS = _checks.SCOPE_TERMS
+load_cr = _checks.load_cr
+keyword_actions = _checks.keyword_actions
+keywords = _checks.keywords
+build = _checks.build
 
 
 def coverage(reg: dict) -> None:
