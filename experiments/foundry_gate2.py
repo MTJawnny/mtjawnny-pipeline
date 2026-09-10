@@ -31,6 +31,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXP = "experiments"
+# S4: the ground-truth guard moved under the test-guard owner. Same idiom as
+# `EXP` above so the directory is stated once rather than per row.
+GATE2_GUARDS = "tests/guards/gate2"
 
 # name -> (argv, what a FAILURE means). Order is the procedure's order.
 GATES = [
@@ -66,9 +69,9 @@ GATES = [
      "text, a sentence or an ability was LOST"),
     ("visibility",       [f"{EXP}/foundry_visibility_audit.py"],
      "an option became unreachable"),
-    ("ground_truth",     [f"{EXP}/foundry_ground_truth.py"],
+    ("ground_truth",     [f"{GATE2_GUARDS}/test_ground_truth.py"],
      "a ratified assignment and the extractor disagree"),
-    ("ground_truth_wide", [f"{EXP}/foundry_ground_truth.py", "--wide"],
+    ("ground_truth_wide", [f"{GATE2_GUARDS}/test_ground_truth.py", "--wide"],
      "the 1,181-assertion fixture regressed (ratcheted, not zero-based)"),
     ("gate_audit",       [f"{EXP}/foundry_gate_audit.py"],
      "the extractor crashes on what the corpus gate excludes"),

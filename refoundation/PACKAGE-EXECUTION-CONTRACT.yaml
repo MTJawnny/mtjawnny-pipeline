@@ -151,7 +151,16 @@ bootstrap_families:
 
   - id: LEGACY_SIBLING_IMPORT
     adds: experiments
-    sites: 87
+    # S4: 87 -> 86 within legacy production. The site did NOT disappear -- the
+    # ground-truth guard moved to `tests/guards/gate2/test_ground_truth.py`, so
+    # its one bootstrap left the measured scope with it. It is still an
+    # import-only LEGACY_SIBLING_IMPORT and still D6/S15 cleanup debt; the
+    # deletion prerequisite below is unchanged and now covers it at its new
+    # location too.
+    sites: 86
+    migrated_out_of_scope_was: experiments/foundry_ground_truth.py
+    migrated_out_of_scope_now: tests/guards/gate2/test_ground_truth.py
+    migrated_out_of_scope_still: IMPORT_ONLY_TRANSITIONAL_D6_S15_DEBT
     site_list: DERIVED_FROM_SOURCE
     introduced_by: PRE_REFOUNDATION
     what_it_is_for: >-
