@@ -849,7 +849,7 @@ def fixtures() -> dict:
             "failed": failed}
 
 
-DET_PATTERNS_PATH = REPO.parent / "docs" / "det-patterns-v2.json"
+DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 
 
 def ratified_total() -> int:

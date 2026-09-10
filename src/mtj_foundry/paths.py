@@ -424,15 +424,20 @@ class ProjectPaths:
         It carries no `legacy_` prefix ON PURPOSE, and the distinction is a fact
         about the file rather than a decision made here: the selector is a
         tracked governance record that the refoundation reads and keeps, not
-        generated output pending a disposition. Where it currently SITS is still
-        `legacy_docs`, which is why the location is derived from that sibling
-        instead of restated.
+        generated output pending a disposition.
+
+        S3 MOVED THE FILE and this value moved with it: `docs/` ->
+        `config/selectors/`, the destination slice 1 named. This is the one
+        pre-S1 property whose value S3 changes, and it is the intended change --
+        the property is the owner's statement of where the selector IS, so
+        leaving it at `docs/` would have made the owner wrong. The selector's
+        BYTES, the snapshot it selects and its authority meaning are untouched.
 
         NAMING IS NOT SELECTING. This does not read the file, assert it exists,
         verify a digest, or choose a snapshot; a reader does all of that with the
         path in hand.
         """
-        return self.legacy_docs / "codebook-authority.json"
+        return self.config_selectors / "codebook-authority.json"
 
     @property
     def legacy_codebook_json(self) -> Path:

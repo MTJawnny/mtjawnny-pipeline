@@ -39,7 +39,7 @@ import validate_slug  # noqa: E402
 
 OUT_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_classification.json"
 PARSED_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_parsed_final.json"
-GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
+GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 
 EXPECTED_NODE_TOTAL = 92
 # RE-DERIVED 2026-08-09 (was 95). The guard HALTED rather than letting a moved

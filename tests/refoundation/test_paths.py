@@ -270,7 +270,9 @@ S1_DESTINATIONS: dict[str, str] = {
 # a repointed existing property fails here instead of passing a name-only check.
 PRE_S1_PROPERTIES: dict[str, str] = {
     "baselines": "config/baselines",
-    "codebook_authority_selector": "docs/codebook-authority.json",
+    # S3 MOVED THIS FILE and the owner moved with it. Bytes, selected
+    # snapshot and authority meaning are unchanged; only the location moved.
+    "codebook_authority_selector": "config/selectors/codebook-authority.json",
     "config": "config",
     "conservation": "refoundation/conservation",
     "decisions": "refoundation/decisions",

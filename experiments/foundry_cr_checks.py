@@ -69,7 +69,7 @@ from mtj_foundry.paths import ProjectPaths   # noqa: E402
 
 PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
 CR_PATH = fcr.CR_PATH        # location and formatting both owned by foundry_cr
-OUT = REPO_ROOT.parent / "docs" / "cr-checks.json"
+OUT = fc.CONFIG_GENERATED / "cr-checks.json"
 
 # Templating-era equivalences. Each entry is one CR object written two ways
 # across printing eras; a check that knows only one form manufactures defects.

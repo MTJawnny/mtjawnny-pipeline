@@ -46,8 +46,17 @@ sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 
-BATCHES = ("det-patterns-v1.json", "det-patterns-v2.json",
-           "det-patterns-cr-actions-v1.json")
+# S3: `det-patterns-v1.json` is retired from this list. `det-patterns-v2.json`
+# declares `"supersedes": "docs/det-patterns-v1.json"`, and v1 is now archived at
+# `archive/config/`, which is INERT -- no active reader may point into it.
+# Retiring it here is what makes that true.
+#
+# The dependency was PRESENCE only, proven before the move: all 44 of v1's
+# string-pattern slugs are supplied again by a later batch, none is v1-only, and
+# the effective slug -> pattern map is identical with and without it (45 entries
+# either way). v1's one non-string row, `rule:kicker-conditional-bonus-effect`,
+# was never effective in either map.
+BATCHES = ("det-patterns-v2.json", "det-patterns-cr-actions-v1.json")
 
 
 def rule(t):
@@ -60,10 +69,9 @@ def ratified_patterns() -> dict:
     `rule:kicker-conditional-bonus-effect` carries a null pattern -- the axis
     was retired in grammar §2g -- and is skipped rather than crashed on.
     """
-    docs = REPO_ROOT.parent / "docs"
     seen = {}
     for name in BATCHES:
-        path = docs / name
+        path = fc.CONFIG_SEMANTIC / name
         if not path.exists():
             fc.halt(f"ratified DET pattern batch missing: {path}. This file's "
                     f"whole premise is that those batches are the source.")
