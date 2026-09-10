@@ -55,7 +55,7 @@ from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT
 
-from mtj_foundry import ratchet
+from mtj_foundry.infra import ratchet
 from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)
@@ -273,7 +273,7 @@ class TestThePermanentPublicAPI(RatchetTestCase):
     def test_the_module_states_no_repository_path_at_module_level(self):
         """Nothing here may know where the repository is. Asserted of the AST,
         so a path built at import time is caught even if nothing reads it."""
-        tree = ast.parse((PATHS.src / "mtj_foundry" / "ratchet.py")
+        tree = ast.parse((PATHS.src / "mtj_foundry" / "infra" / "ratchet.py")
                          .read_text(encoding="utf-8"))
         for node in tree.body:
             if isinstance(node, ast.Assign):
@@ -284,7 +284,7 @@ class TestThePermanentPublicAPI(RatchetTestCase):
                     self.assertNotIn(BASELINE_FILENAME, src)
 
     def test_it_imports_neither_the_legacy_tree_nor_AQ4(self):
-        tree = ast.parse((PATHS.src / "mtj_foundry" / "ratchet.py")
+        tree = ast.parse((PATHS.src / "mtj_foundry" / "infra" / "ratchet.py")
                          .read_text(encoding="utf-8"))
         modules = {n.module for n in ast.walk(tree)
                    if isinstance(n, ast.ImportFrom) and n.module}
@@ -297,7 +297,7 @@ class TestThePermanentPublicAPI(RatchetTestCase):
         `sys.path`, so a substring search reads that sentence as a violation --
         the same shape as the reachability guard that had to stop grepping for
         `WORSE_IF_DOWN`. What must be absent is a CALL."""
-        tree = ast.parse((PATHS.src / "mtj_foundry" / "ratchet.py")
+        tree = ast.parse((PATHS.src / "mtj_foundry" / "infra" / "ratchet.py")
                          .read_text(encoding="utf-8"))
         calls = [ast.unparse(n) for n in ast.walk(tree)
                  if isinstance(n, ast.Call)
@@ -362,7 +362,7 @@ class TestTheDirectionMarkersWereCarriedNotRegenerated(RatchetTestCase):
 
     def test_the_provenance_comments_travelled_with_the_memberships(self):
         """A marker without its incident is a constant nobody can re-decide."""
-        source = (PATHS.src / "mtj_foundry" / "ratchet.py").read_text(encoding="utf-8")
+        source = (PATHS.src / "mtj_foundry" / "infra" / "ratchet.py").read_text(encoding="utf-8")
         for anchor in ("2026-08-13", "2026-08-09", "e780842",
                        "OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md",
                        "assert_ratchet_directions", "621 lines"):
@@ -696,7 +696,7 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
     def test_each_of_them_imports_the_permanent_module(self):
         for name, source in self.sources.items():
             with self.subTest(consumer=name):
-                self.assertIn("from mtj_foundry import ratchet", source)
+                self.assertIn("from mtj_foundry.infra import ratchet", source)
 
     def test_each_of_them_obtains_the_baseline_from_the_layout_owner(self):
         """All eight reach the baseline through a ProjectPaths view built from

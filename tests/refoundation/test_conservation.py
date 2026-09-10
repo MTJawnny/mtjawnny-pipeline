@@ -10,7 +10,7 @@ from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT  # noqa: F401  (sets sys.path)
 
-from mtj_foundry.conservation import (MANIFEST_SCHEMA, FileDigest, PathDomainError,
+from mtj_foundry.infra.conservation import (MANIFEST_SCHEMA, FileDigest, PathDomainError,
                                       canonical_relpath, digest_bytes, digest_file,
                                       digest_paths, manifest, manifest_digest,
                                       manifest_json, posix_label)

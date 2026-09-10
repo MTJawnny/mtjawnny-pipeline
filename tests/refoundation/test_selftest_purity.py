@@ -409,7 +409,7 @@ class TestTheBehaviouralGuardCatchesTheOldArrangement(unittest.TestCase):
     """
 
     def test_a_save_then_delete_cycle_is_visible_to_the_snapshot(self):
-        from mtj_foundry import ratchet
+        from mtj_foundry.infra import ratchet
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
                                          encoding="utf-8") as fh:
             json.dump({"reachability": {"artifacts_reaching_product": 0}}, fh)

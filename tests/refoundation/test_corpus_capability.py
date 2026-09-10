@@ -530,8 +530,11 @@ class TestTheLegacyConsumersLeftTheEngine(unittest.TestCase):
         reached = sorted({n.module for n in ast.walk(tree)
                           if isinstance(n, ast.ImportFrom) and n.module
                           and n.module.split(".")[0] == "mtj_foundry"})
-        self.assertEqual(reached, ["mtj_foundry", "mtj_foundry.paths"])
-        self.assertIn("from mtj_foundry import ratchet", self.visibility)
+        # S5: the ratchet moved to L1 infra, so the module it reaches is
+        # `mtj_foundry.infra` rather than the top-level package. Same two
+        # authorized modules, same facade discipline -- only the owner moved.
+        self.assertEqual(reached, ["mtj_foundry.infra", "mtj_foundry.paths"])
+        self.assertIn("from mtj_foundry.infra import ratchet", self.visibility)
         self.assertIn("from mtj_foundry.paths import ProjectPaths", self.visibility)
         # The corpus capability is still reached through the FACADE, not around
         # it — the C8.5G invariant this file exists for.

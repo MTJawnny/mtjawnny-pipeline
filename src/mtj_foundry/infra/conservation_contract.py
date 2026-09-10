@@ -63,7 +63,7 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
-from mtj_foundry.conservation import FileDigest, canonical_relpath, digest_file
+from mtj_foundry.infra.conservation import FileDigest, canonical_relpath, digest_file
 
 __all__ = [
     "CONTRACT_SCHEMA",

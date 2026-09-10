@@ -11,7 +11,7 @@ import unittest
 
 from tests.refoundation.helpers import REPO_ROOT, block, scalars, top_level_keys
 
-from mtj_foundry.conservation import digest_file
+from mtj_foundry.infra.conservation import digest_file
 from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)

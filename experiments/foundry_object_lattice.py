@@ -81,7 +81,7 @@ import validate_slug as vs                   # noqa: E402
 # in the source TEXT, so prose naming it is ingested as a second construction --
 # the repository's standing "a document is an API" trap, aimed at a comment.
 from mtj_foundry import codebook_store       # noqa: E402
-from mtj_foundry import ratchet              # noqa: E402
+from mtj_foundry.infra import ratchet              # noqa: E402
 from mtj_foundry.paths import ProjectPaths   # noqa: E402
 
 PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
