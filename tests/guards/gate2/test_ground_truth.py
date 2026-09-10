@@ -14,7 +14,8 @@ RE-ROUTE and a GAP CLOSED both print and pass. That is the recorded trap
 *"improving recall can hand out a WRONG ratified token"* -- caught on
 2026-08-06 by reading, and reading does not run in CI.
 
-**The fixture is not invented here.** `experiments/moves/*.json` already hold
+**The fixture is not invented here.** `tests/fixtures/ground_truth/*.json`
+already hold
 534 Captain-ratified seeds carrying `"class": "human"` (full weight, never
 discounted) and a verbatim evidence `quote`. Each seed asserts a CARD belongs
 to an AXIS; the axis slug's own head is a grammar §2 DELIVERY token. So the
@@ -30,8 +31,13 @@ silent drift this file exists to catch.
 
 Exit 1 on any mismatch. Zero tokens, deterministic, safe to gate on.
 
-    python3 experiments/foundry_ground_truth.py
-    python3 experiments/foundry_ground_truth.py --json out.json --limit 30
+    python3 tests/guards/gate2/test_ground_truth.py
+    python3 tests/guards/gate2/test_ground_truth.py --json out.json --limit 30
+
+S4 relocated this guard from `experiments/foundry_ground_truth.py` and its
+fixture from `experiments/moves/`. The grading, matching, quote resolution,
+default/wide selection, ratchet comparison, report schema, exit codes and CLI
+are unchanged -- only where the file SITS and where it READS moved.
 """
 import sys
 import re
@@ -40,8 +46,21 @@ import argparse
 import collections
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(REPO_ROOT))
+# S4 TRANSITIONAL BOOTSTRAP -- ONE SITE, IMPORT ONLY, AND IT IS DEBT.
+# This guard still imports loose legacy modules by bare name (`foundry_common`,
+# `foundry_shape_extractor`), which resolve only when `experiments/` is on the
+# path. Relocating the file to `tests/guards/gate2/` changed `__file__`, so the
+# same single bootstrap now walks up three parents instead of none. The COUNT is
+# unchanged: one `sys.path` mutation before and after.
+#
+# It exists to make those imports resolve and NOTHING else -- no fixture,
+# config, corpus, codebook or output path is derived from it; every one of those
+# comes from `foundry_common` / `ProjectPaths` below. It is the
+# LEGACY_SIBLING_IMPORT family recorded in
+# `refoundation/PACKAGE-EXECUTION-CONTRACT.yaml`, and it is D6/S15 cleanup debt,
+# not permanent architecture.
+_LEGACY_EXPERIMENTS = Path(__file__).resolve().parents[3] / "experiments"
+sys.path.insert(0, str(_LEGACY_EXPERIMENTS))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 
@@ -52,7 +71,12 @@ from mtj_foundry import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
 RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
-MOVES = fc.REPO_ROOT / "experiments" / "moves"
+# S4: the fixture owner is `tests/fixtures/ground_truth/`, reached through the
+# already-accepted `ProjectPaths.tests` owner plus the literal suffix -- the same
+# idiom as the ratchet baseline one line above. There is NO fallback to
+# `experiments/moves`: if the fixtures are not here, `collect()` finds no seeds
+# and halts, which is the behaviour the negative control exercises.
+MOVES = ProjectPaths.for_root(fc.REPO_ROOT).tests / "fixtures" / "ground_truth"
 
 
 def rule(t):

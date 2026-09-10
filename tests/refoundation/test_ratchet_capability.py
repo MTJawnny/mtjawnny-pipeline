@@ -67,6 +67,14 @@ TRACKED = PATHS.foundry_audit_baseline
 CAPTURED_SHA256 = "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601"
 CAPTURED_SIZE = 4324
 
+# S4: the ground-truth consumer moved out of `experiments/` to the Gate-2 guard
+# owner. It is STILL one of the eight ratchet consumers and still pins
+# `ground_truth_wide`; only where its source file sits changed, so the set below
+# is unchanged and the location is resolved separately.
+CONSUMER_PATHS = {
+    "foundry_ground_truth": "tests/guards/gate2/test_ground_truth.py",
+}
+
 # The exact eight consumers C8.5J migrates, and the ratchet section each pins.
 CONSUMERS = {
     "foundry_definition_drift": "definition_drift",
@@ -668,8 +676,10 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.sources = {name: (EXPERIMENTS / f"{name}.py").read_text(encoding="utf-8")
-                       for name in CONSUMERS}
+        cls.sources = {
+            name: (REPO_ROOT / CONSUMER_PATHS[name] if name in CONSUMER_PATHS
+                   else EXPERIMENTS / f"{name}.py").read_text(encoding="utf-8")
+            for name in CONSUMERS}
 
     def test_none_of_them_imports_the_legacy_module_at_runtime(self):
         """Prose may still name it — it is the oracle and the history. What must

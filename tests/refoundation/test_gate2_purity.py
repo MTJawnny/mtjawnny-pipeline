@@ -67,17 +67,46 @@ def load_legacy(name: str):
     return module
 
 
+def load_moved_guard(relative: str):
+    """Import a Gate-2 guard that has been MIGRATED out of `experiments/`.
+
+    S4 moved `foundry_ground_truth.py` to `tests/guards/gate2/test_ground_truth.py`.
+    It still imports loose legacy siblings by bare name, so `experiments/` stays
+    on `sys.path` exactly as `load_legacy` puts it there -- the difference is only
+    WHERE the module file itself is read from. Same mechanism, explicit path.
+    """
+    if str(EXPERIMENTS) not in sys.path:
+        sys.path.insert(0, str(EXPERIMENTS))
+    target = REPO_ROOT / relative
+    spec = importlib.util.spec_from_file_location(
+        f"guard_{target.stem}", target)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def gate_rows() -> list[tuple[str, list[str], str]]:
     """Gate 2's row table, read WITHOUT importing it.
 
     Parsed from the source so that reading the table cannot run it. The list is
     a literal, so `ast.literal_eval` on the assignment is the whole job — except
-    that the argv entries are f-strings, which are not literals; `EXP` is
-    substituted the way the module defines it.
+    that the argv entries are f-strings, which are not literals; the interpolated
+    directory names are substituted the way the module defines them.
+
+    S4: the substitution now RESOLVES THE NAME each f-string actually
+    interpolates, from the module's own module-level string assignments, instead
+    of assuming every hole is `EXP`. Migration slice 4 moved the ground-truth
+    guard out of `experiments/`, so Gate 2 gained a second directory name
+    (`GATE2_GUARDS`) — and the old code would have silently rendered it as `EXP`,
+    reporting a command path that Gate 2 does not run. That is the
+    "a generated view is not the source" failure, so the parser is made to read
+    what is there rather than what it expected.
     """
     tree = ast.parse(GATE2.read_text(encoding="utf-8"))
-    exp = next(n.value.value for n in tree.body
-               if isinstance(n, ast.Assign) and n.targets[0].id == "EXP")
+    names = {n.targets[0].id: n.value.value for n in tree.body
+             if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name)
+             and isinstance(n.value, ast.Constant)
+             and isinstance(n.value.value, str)}
     gates = next(n.value for n in tree.body
                  if isinstance(n, ast.Assign) and n.targets[0].id == "GATES")
     rows = []
@@ -87,9 +116,10 @@ def gate_rows() -> list[tuple[str, list[str], str]]:
         for part in row.elts[1].elts:
             if isinstance(part, ast.Constant):
                 argv.append(part.value)
-            else:  # JoinedStr: f"{EXP}/tool.py"
+            else:  # JoinedStr: f"{EXP}/tool.py" or f"{GATE2_GUARDS}/tool.py"
                 argv.append("".join(
-                    v.value if isinstance(v, ast.Constant) else exp
+                    v.value if isinstance(v, ast.Constant)
+                    else names[v.value.id]
                     for v in part.values))
         rows.append((name, argv, row.elts[2].value))
     return rows

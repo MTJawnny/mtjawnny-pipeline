@@ -39,14 +39,17 @@ from pathlib import Path
 
 from tests.refoundation import layout_census
 from tests.refoundation.helpers import REPO_ROOT
-from tests.refoundation.test_gate2_purity import gate_rows, load_legacy
+from tests.refoundation.test_gate2_purity import (gate_rows, load_legacy,
+                                                  load_moved_guard)
 
 from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)
 EXPERIMENTS = PATHS.legacy_experiments
 
-GROUND_TRUTH = EXPERIMENTS / "foundry_ground_truth.py"
+# S4 relocated this guard out of `experiments/` to the Gate-2 guard owner.
+GROUND_TRUTH_REL = "tests/guards/gate2/test_ground_truth.py"
+GROUND_TRUTH = REPO_ROOT / GROUND_TRUTH_REL
 PROBE = EXPERIMENTS / "foundry_probe.py"
 
 # The three sites the census selected, as (file, expected delegating expressions).
@@ -289,21 +292,36 @@ class TestNothingElseMoved(unittest.TestCase):
         expected text are gone rather than left standing as a claim that is
         false at HEAD.
         """
-        self.assertIn('MOVES = fc.REPO_ROOT / "experiments" / "moves"',
-                      GROUND_TRUTH.read_text(encoding="utf-8"))
-        gt = load_legacy("foundry_ground_truth")
-        self.assertEqual(gt.MOVES, PATHS.legacy_experiments / "moves")
+        # S4 CARRY-FORWARD (case A). P0.4B left `MOVES` alone and P0.4I
+        # delegated it; both statements stay true of their own slices. Slice 4
+        # then relocated the fixture itself, so the value follows it. The MEANING
+        # is unchanged and is still the point: `MOVES` resolves to the tracked
+        # seed directory, and it is still not a foundry-output site.
+        gt = load_moved_guard(GROUND_TRUTH_REL)
+        self.assertEqual(gt.MOVES, PATHS.tests / "fixtures" / "ground_truth")
         self.assertNotEqual(gt.MOVES.parent, PATHS.legacy_foundry_out)
 
     def test_the_root_derivation_and_syspath_bootstrap_are_untouched(self):
         """The 45 sys.path-only derivations the census found are blocked on an
         unauthorized package decision. This slice does not touch the mechanism."""
+        # S4 CARRY-FORWARD (case B). The guarded property is "one bootstrap per
+        # file, and this slice does not touch the mechanism". `foundry_probe`
+        # is unchanged. `GROUND_TRUTH` moved out of `experiments/` in slice 4, so
+        # its single bootstrap now derives the legacy sibling directory instead
+        # of its own parent -- still exactly one, still import-only.
         for path in MIGRATED:
             with self.subTest(file=path.name):
                 source = path.read_text(encoding="utf-8")
-                self.assertIn('REPO_ROOT = Path(__file__).resolve().parent',
-                              source)
-                self.assertIn('sys.path.insert(0, str(REPO_ROOT))', source)
+                if path == GROUND_TRUTH:
+                    self.assertIn(
+                        '_LEGACY_EXPERIMENTS = Path(__file__).resolve()'
+                        '.parents[3] / "experiments"', source)
+                    self.assertIn(
+                        'sys.path.insert(0, str(_LEGACY_EXPERIMENTS))', source)
+                else:
+                    self.assertIn(
+                        'REPO_ROOT = Path(__file__).resolve().parent', source)
+                    self.assertIn('sys.path.insert(0, str(REPO_ROOT))', source)
                 self.assertEqual(source.count("sys.path.insert"), 1)
 
     def test_foundry_common_is_not_modified_by_this_slice(self):
@@ -315,9 +333,9 @@ class TestNothingElseMoved(unittest.TestCase):
     def test_the_three_covering_gate2_rows_are_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
         self.assertEqual(argv["ground_truth"],
-                         ["experiments/foundry_ground_truth.py"])
+                         ["tests/guards/gate2/test_ground_truth.py"])            # S4
         self.assertEqual(argv["ground_truth_wide"],
-                         ["experiments/foundry_ground_truth.py", "--wide"])
+                         ["tests/guards/gate2/test_ground_truth.py", "--wide"])  # S4
         self.assertEqual(argv["probe_guards"], ["experiments/foundry_probe.py"])
 
     def test_no_gate2_row_gained_or_lost_a_flag(self):
@@ -1565,11 +1583,24 @@ def moves_uses(source: str) -> list[tuple[int, str]]:
 
 
 class TestTheSixthSliceDelegatesTheFixtureDirectory(unittest.TestCase):
-    def test_the_one_root_delegation_is_the_moves_directory(self):
-        got = root_delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))
-        self.assertEqual(len(got), 1, got)
-        self.assertIn("'moves'", got[0])
-        self.assertIn("'experiments'", got[0])
+    def test_the_fixture_directory_is_reached_through_the_accepted_owner(self):
+        """S4 CARRY-FORWARD (case B). P0.4I really did delegate this site to
+        `fc.REPO_ROOT / "experiments" / "moves"`, and that historical fact is
+        unchanged -- the reversion control below still names it.
+
+        Migration slice 4 moved the SUBJECT: the fixture is now
+        `tests/fixtures/ground_truth/` and the guard now lives under
+        `tests/guards/gate2/`. The safety property P0.4I established is what is
+        asserted here, aimed at the current owner -- the fixture directory is
+        reached through `ProjectPaths`, exactly once, and the module builds no
+        root-relative path of its own. A bare "zero root delegations" would have
+        proved nothing about where the seeds are actually read from."""
+        source = GROUND_TRUTH.read_text(encoding="utf-8")
+        self.assertIn(
+            'MOVES = ProjectPaths.for_root(fc.REPO_ROOT).tests '
+            '/ "fixtures" / "ground_truth"', source)
+        self.assertEqual(source.count("MOVES = "), 1)
+        self.assertEqual(root_delegating_expressions(source), [])
 
     def test_no_local_subdir_construction_remains(self):
         self.assertEqual(
@@ -1586,7 +1617,13 @@ class TestTheSixthSliceCheckerCatchesAReversion(unittest.TestCase):
     """NEGATIVE CONTROL — both arms, and the blindness of the P0.4E checker is
     ASSERTED rather than worked around."""
 
-    NOW = 'MOVES = fc.REPO_ROOT / "experiments" / "moves"'
+    # S4 CARRY-FORWARD (case D). `BEFORE` is the GENUINE pre-P0.4I local
+    # construction and is UNCHANGED -- the historical event is not rewritten,
+    # and a legacy reader rebuilding the fixture path from its own root is still
+    # exactly the hazard. `NOW` follows the live text, because slice 4 moved both
+    # the guard and the fixture; a control whose `NOW` is absent can never fire.
+    NOW = ('MOVES = ProjectPaths.for_root(fc.REPO_ROOT).tests '
+           '/ "fixtures" / "ground_truth"')
     BEFORE = 'MOVES = REPO_ROOT / "moves"'
 
     def reverted(self) -> str:
@@ -1601,10 +1638,14 @@ class TestTheSixthSliceCheckerCatchesAReversion(unittest.TestCase):
         found = local_subdir_constructions(self.reverted(), MOVES_SUBDIR)
         self.assertEqual(len(found), 1, found)
 
-    def test_reverting_also_drops_the_root_delegation(self):
+    def test_reverting_also_drops_the_owner_resolution(self):
         """The DELEGATION-POSITIVE arm. Both are required: a checker that only
-        counts the bad shape would pass a file that had neither."""
-        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+        counts the bad shape would pass a file that had neither.
+
+        S4 CARRY-FORWARD (case D): the positive form is now the owner
+        resolution, because that is what the live delegation is."""
+        self.assertNotIn('ProjectPaths.for_root(fc.REPO_ROOT).tests',
+                         self.reverted())
 
     def test_the_P0_4E_checker_is_blind_here_which_is_why_this_one_exists(self):
         """Recorded, not worked around. `moves` is not a top-level repository
@@ -1613,6 +1654,10 @@ class TestTheSixthSliceCheckerCatchesAReversion(unittest.TestCase):
         like a control that passed."""
         reverted = self.reverted()
         self.assertEqual(local_root_relative_constructions(reverted), [])
+        # S4: `BEFORE` still restores `MOVES = REPO_ROOT / "moves"`, so the
+        # file-specific checker still sees exactly one local subdir construction
+        # and the P0.4E checker is still blind to it. The blindness this test
+        # records is a property of the CHECKERS, and it is unchanged.
         self.assertEqual(len(local_subdir_constructions(reverted, MOVES_SUBDIR)), 1)
 
     def test_the_TOP_LEVEL_DIRS_constant_was_not_widened_to_force_the_control(self):
@@ -1628,22 +1673,36 @@ class TestTheSixthSliceResolvedPathIsByteIdentical(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.fc = load_legacy("foundry_common")
-        cls.gt = load_legacy("foundry_ground_truth")
+        cls.gt = load_moved_guard(GROUND_TRUTH_REL)
 
-    def test_moves_equals_its_pre_change_construction(self):
-        self.assertEqual(self.gt.MOVES, self.gt.REPO_ROOT / "moves")
+    def test_moves_equals_the_s4_relocated_fixture_owner(self):
+        """S4 CARRY-FORWARD (case A). P0.4I's claim -- that delegating this site
+        left the VALUE at `experiments/moves` -- was true when made and is not
+        rewritten. Slice 4 relocated the twenty tracked seeds themselves, so the
+        preserved value has legitimately moved to the test-fixture owner."""
+        self.assertEqual(self.gt.MOVES,
+                         PATHS.tests / "fixtures" / "ground_truth")
 
     def test_moves_equals_the_delegated_value(self):
-        self.assertEqual(self.gt.MOVES,
-                         self.fc.REPO_ROOT / "experiments" / "moves")
+        self.assertEqual(
+            self.gt.MOVES,
+            ProjectPaths.for_root(self.fc.REPO_ROOT).tests
+            / "fixtures" / "ground_truth")
 
-    def test_moves_equals_the_ratified_owners_experiments_directory(self):
-        self.assertEqual(self.gt.MOVES, PATHS.legacy_experiments / "moves")
+    def test_there_is_no_live_fallback_to_the_legacy_fixture_location(self):
+        """The point of the move: `experiments/moves` must not survive as a
+        second source of seeds."""
+        self.assertNotEqual(self.gt.MOVES, PATHS.legacy_experiments / "moves")
+        self.assertFalse((PATHS.legacy_experiments / "moves").exists())
 
-    def test_the_local_root_binding_still_resolves_as_before(self):
-        """CONSUMPTION delegated, the root DECISION untouched."""
-        self.assertEqual(self.gt.REPO_ROOT, self.fc.REPO_ROOT / "experiments")
-        self.assertEqual(self.gt.REPO_ROOT, PATHS.legacy_experiments)
+    def test_the_legacy_import_bootstrap_still_reaches_the_siblings(self):
+        """S4 CARRY-FORWARD (case B). P0.4I asserted the module's own root
+        DECISION was untouched while its consumption was delegated. Slice 4
+        moved the file, so the derivation walks up from `tests/guards/gate2/`;
+        what it must PRODUCE is unchanged, and it is IMPORT-ONLY."""
+        self.assertEqual(self.gt._LEGACY_EXPERIMENTS, PATHS.legacy_experiments)
+        self.assertEqual(self.gt._LEGACY_EXPERIMENTS,
+                         self.fc.REPO_ROOT / "experiments")
 
     def test_the_fixture_directory_still_holds_the_tracked_seeds(self):
         """The delegation must still land on the Captain-ratified fixture. An
@@ -1656,13 +1715,27 @@ class TestTheSixthSliceResolvedPathIsByteIdentical(unittest.TestCase):
 class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.gt = load_legacy("foundry_ground_truth")
+        cls.gt = load_moved_guard(GROUND_TRUTH_REL)
         cls.source = GROUND_TRUTH.read_text(encoding="utf-8")
 
-    def test_the_root_decision_and_bootstrap_are_untouched(self):
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent\n", self.source)
-        self.assertIn("sys.path.insert(0, str(REPO_ROOT))", self.source)
+    def test_the_bootstrap_is_still_exactly_one_and_import_only(self):
+        """S4 CARRY-FORWARD (case B). P0.4I pinned this module's single
+        `sys.path` bootstrap. Slice 4 re-aimed it because `__file__` moved out of
+        `experiments/`, and the COUNT -- the property actually guarded -- is
+        unchanged at one."""
+        self.assertIn(
+            '_LEGACY_EXPERIMENTS = Path(__file__).resolve().parents[3] / "experiments"',
+            self.source)
+        self.assertIn("sys.path.insert(0, str(_LEGACY_EXPERIMENTS))", self.source)
         self.assertEqual(self.source.count("sys.path.insert"), 1)
+        # Counted from the AST, not the text: the explanatory comment above the
+        # bootstrap names `sys.path` in prose, and a substring count would score
+        # documentation as a second mutation.
+        tree = ast.parse(self.source)
+        loads = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Attribute) and n.attr == "path"
+                 and isinstance(n.value, ast.Name) and n.value.id == "sys"]
+        self.assertEqual(len(loads), 1)
 
     def test_the_seed_bytes_are_outside_this_slice(self):
         """`MOVES` is READ and never written. Expressed as a standing property
@@ -1694,10 +1767,12 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
 
     def test_the_two_covering_gate2_rows_are_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
+        # S4 CARRY-FORWARD (case B). Row NAMES, order, flags and exit codes are
+        # unchanged; only the command PATH moved, because the guard did.
         self.assertEqual(argv["ground_truth"],
-                         ["experiments/foundry_ground_truth.py"])
+                         ["tests/guards/gate2/test_ground_truth.py"])
         self.assertEqual(argv["ground_truth_wide"],
-                         ["experiments/foundry_ground_truth.py", "--wide"])
+                         ["tests/guards/gate2/test_ground_truth.py", "--wide"])
 
     def test_neither_gate2_row_gained_a_mutating_flag(self):
         for row in ("ground_truth", "ground_truth_wide"):
@@ -2161,9 +2236,12 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(config_delegating_expressions(
                 CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
-        self.assertEqual(
-            len(root_delegating_expressions(
-                GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+        # S4 CARRY-FORWARD (case B). P0.4I's ground-truth delegation stands;
+        # slice 4 moved its subject to the test-fixture owner, so the arm reads
+        # the owner resolution instead of a root delegation.
+        self.assertIn(
+            'ProjectPaths.for_root(fc.REPO_ROOT).tests',
+            GROUND_TRUTH.read_text(encoding="utf-8"))
 
     def test_the_sibling_wire_experiment_file_is_a_different_file(self):
         """`WIRE` (P0.4C) and `WIRE_CAPABILITY` (this slice) have confusable
@@ -2450,9 +2528,12 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(config_delegating_expressions(
                 CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
-        self.assertEqual(
-            len(root_delegating_expressions(
-                GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+        # S4 CARRY-FORWARD (case B). P0.4I's ground-truth delegation stands;
+        # slice 4 moved its subject to the test-fixture owner, so the arm reads
+        # the owner resolution instead of a root delegation.
+        self.assertIn(
+            'ProjectPaths.for_root(fc.REPO_ROOT).tests',
+            GROUND_TRUTH.read_text(encoding="utf-8"))
 
     def test_this_file_is_now_fully_delegated_and_that_is_asserted_positively(self):
         """With both sites migrated the module states no repository layout of
@@ -2757,8 +2838,14 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             len(config_delegating_expressions(
                 CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
+        # S4 CARRY-FORWARD (case B). The ground-truth guard left `experiments/`
+        # and its fixture path now resolves through the tests owner, so it holds
+        # no root delegation; the live binding is asserted positively below.
         self.assertEqual(
-            len(root_delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+            len(root_delegating_expressions(
+                GROUND_TRUTH.read_text(encoding="utf-8"))), 0)
+        self.assertIn('ProjectPaths.for_root(fc.REPO_ROOT).tests',
+                      GROUND_TRUTH.read_text(encoding="utf-8"))
         # S3 CARRY-FORWARD (case C). P0.4J's corpus delegation and P0.4K's
         # anchors delegation both stand; slice 3 re-provided only the anchors
         # one, so this file reads 1 root + 1 config rather than 2 root.
@@ -3739,7 +3826,30 @@ CENSUS_HEAD = {
     # -- the durable guard for the retired DET batch. It lands in `tests`, which
     # is outside every measured layout scope, so it moves the file census and no
     # layout row: the C8.5G/C8.5I/C8.5M shape, not the C8.5J/C8.5K shape.
-    "tracked_python": 152,                         # S3: 151 (+1 retirement guard);
+    #
+    # MIGRATION SLICE 4 MOVES ONE FILE BETWEEN SCOPES, and every row below
+    # follows from that single fact: `experiments/foundry_ground_truth.py`
+    # became `tests/guards/gate2/test_ground_truth.py`, so it left
+    # LEGACY_PRODUCTION and took its own delegations and bootstrap with it.
+    # (Its twenty JSON fixtures moved too, but this census counts `.py` only.)
+    #
+    #     experiments 87 -> 86      tests 24 -> 25      tracked_python 152, SAME
+    #
+    # The guard carried FOUR measured delegations, and their departure is the
+    # whole of the delegation movement:
+    #
+    #     delegations_total   167 -> 163   (-4)
+    #     FOUNDRY_OUT_DIR     126 -> 124   (-2)
+    #     REPO_ROOT            21 ->  19   (-2)
+    #     PATH_JOIN           153 -> 150   (-3)   CALL_ARG 10 -> 9 (-1)
+    #     delegation_files     57 ->  56   (-1)
+    #     sys_path experiments 83 ->  82   (-1, its one bootstrap)
+    #
+    # EVERY LOCAL-SITE ROW IS UNCHANGED -- 69 / 28 / 41 and both breakdowns.
+    # That is the load-bearing one: P0.4I had already delegated this module's
+    # only local layout site, so there was none left to move, and slice 4
+    # introduced none. The CONFIG_* rows from slice 3 are untouched.
+    "tracked_python": 152,                         # S4: unchanged, one file changed SCOPE
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
                                                    # analysis module);
@@ -3773,7 +3883,8 @@ CENSUS_HEAD = {
                                                    # written rather than rewritten
                                                    # from a guess; the VALUES are
                                                    # what the test asserts.
-    "files_by_scope": {"experiments": 87, "experiments_measure": 6,
+    "files_by_scope": {"experiments": 86,          # S4: 87 (-1, guard left)
+                       "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
                        "src": 18,                  # C8.5M: 8 (+ codebook_store.py);
                                                    # PATH E M1: 11 (+ runtime.py,
@@ -3785,7 +3896,7 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 24},               # S3: 23 (+ the retirement guard);
+                       "tests": 25},               # S4: 24 (+1, the moved guard)
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
                                                    # analysis module);
@@ -3855,10 +3966,10 @@ CENSUS_HEAD = {
     # `PATH_JOIN` takes all 17; `DIRECT_BIND`, `ATTRIBUTE_NAV` and `CALL_ARG` are
     # unchanged, because every repoint is an owner-property-plus-filename join and
     # none of them changed how a value is bound or passed.
-    "delegations_total": 167,                      # S3: 150 (+17); C8.5U: 149; C8.5B: 140
+    "delegations_total": 163,                      # S4: 167 (-4, the guard left scope)
     "delegations_by_provider": {
-        "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
-        "foundry_common.REPO_ROOT": 21,            # S3: 23 (-2, both re-provided)
+        "foundry_common.FOUNDRY_OUT_DIR": 124,     # S4: 126 (-2)
+        "foundry_common.REPO_ROOT": 19,            # S4: 21 (-2)
         "foundry_common.DATA_ARTIFACTS_DIR": 1,    # unchanged
         # S3: the six config groups. 13 + 2 + 1 + 1 + 1 + 1 = 19.
         "foundry_common.CONFIG_SEMANTIC": 13,
@@ -3871,11 +3982,11 @@ CENSUS_HEAD = {
         # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
-        "PATH_JOIN": 153,                          # S3: 136 (+17, all of them)
+        "PATH_JOIN": 150,                          # S4: 153 (-3)
         "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
-        "CALL_ARG": 10,                            # C8.5U: 9; C8.5I: 1 (+8 C8.5J)
+        "CALL_ARG": 9,                             # S4: 10 (-1)
     },
-    "delegation_files": 57,                        # S3: 56 (+1, emit_viewer.py)
+    "delegation_files": 56,                        # S4: 57 (-1, the guard left)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as
@@ -3918,12 +4029,13 @@ CENSUS_HEAD = {
     # layout name, and the new `_persistence_closure()` helper reaches the store
     # through `__file__` of the imported module.
     "local_sites_total": 69,                       # S3: 86 (-17)
-    "local_sites_bootstrap": 28,                   # UNCHANGED -- S3 touched no bootstrap
+    "local_sites_bootstrap": 28,                   # UNCHANGED by S3 and by S4
     "local_sites_consumption": 41,                 # S3: 58 (-17)
     "consumption_origin": {"hop1": 26, "hop2": 14, "inline": 1},   # S3: hop1 -16, inline -1
     "consumption_scope": {"module": 27, "function": 14},           # S3: module -15, function -2
     "consumption_files": 16,                       # S3: 29 (-13)
-    "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
+    "sys_path_calls": {"experiments": 82,          # S4: 83 (-1, the guard left)
+                       "experiments_measure": 6},
 }
 
 # The one live site in legacy production whose LINE carries the text
@@ -5108,8 +5220,12 @@ CONTRACT_PATH = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
 # Pinned at aa003340. Keys are what the sys.path call ADDS, relative to the
 # repository root; "" is the root itself. NOT a ratchet -- a later slice that
 # legitimately deletes a bootstrap is expected to move these, in a diff.
-BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 87, "": 1}
-BOOTSTRAP_TOTAL = 89
+# S4: `experiments` 87 -> 86 and the total 89 -> 88. The ground-truth guard
+# moved to `tests/guards/gate2/`, so its one import-only bootstrap left the
+# measured legacy-production scope with the file. It was not deleted, and it
+# is recorded as migrated-out-of-scope in PACKAGE-EXECUTION-CONTRACT.yaml.
+BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 86, "": 1}
+BOOTSTRAP_TOTAL = 88
 
 
 def _resolve_path_expr(expr, rel, names, paths_instances, paths_layout):
@@ -5369,8 +5485,11 @@ class TestTheContractParityGuardActuallyFires(unittest.TestCase):
         self.assertNotIn(entries["INVENTED_FAMILY"]["adds"], self.families)
 
     def test_a_wrong_site_count_is_caught(self):
-        broken = self.text.replace("    adds: experiments\n    sites: 87",
-                                   "    adds: experiments\n    sites: 86")
+        # S4: the declared count is now 86 (the guard's bootstrap left the
+        # measured scope with the file), so the control mutates away from THAT.
+        broken = self.text.replace(
+            "    sites: 86\n    migrated_out_of_scope_was:",
+            "    sites: 87\n    migrated_out_of_scope_was:")
         self.assertNotEqual(broken, self.text)
         entry = next(e for e in contract_bootstrap_families(broken).values()
                      if e["adds"] == "experiments")
