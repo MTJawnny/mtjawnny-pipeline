@@ -45,7 +45,7 @@ import foundry_codebook as fcb  # noqa: E402
 # bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
 # The baseline is a PARAMETER now, and its one repository-relative fact comes
 # from the layout owner rather than from a module global inside the ratchet.
-from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.infra import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
 RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline

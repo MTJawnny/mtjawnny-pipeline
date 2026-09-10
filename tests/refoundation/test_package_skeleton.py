@@ -34,7 +34,8 @@ class TestPackageImportsWithoutARepository(unittest.TestCase):
 
     def test_the_package_imports_outside_any_repository(self):
         proc = self._run_in_isolation(
-            "import mtj_foundry, mtj_foundry.paths, mtj_foundry.conservation; print('ok')")
+            "import mtj_foundry, mtj_foundry.paths, "
+            "mtj_foundry.infra.conservation; print('ok')")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("ok", proc.stdout)
 
@@ -93,7 +94,8 @@ class TestMinimalSurface(unittest.TestCase):
 
     def test_no_module_defines_a_global_root(self):
         """Constraint: global_ROOT is forbidden."""
-        from mtj_foundry import conservation, paths
+        from mtj_foundry import paths
+        from mtj_foundry.infra import conservation
 
         for module in (paths, conservation):
             with self.subTest(module=module.__name__):

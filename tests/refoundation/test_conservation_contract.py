@@ -27,8 +27,8 @@ from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT, block, scalars
 
-import mtj_foundry.conservation_contract as cc
-from mtj_foundry.conservation import PathDomainError
+import mtj_foundry.infra.conservation_contract as cc
+from mtj_foundry.infra.conservation import PathDomainError
 from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)

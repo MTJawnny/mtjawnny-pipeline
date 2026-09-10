@@ -57,6 +57,7 @@ sys.path.insert(0, str(_PATHS.legacy_experiments))
 # are untouched, and the two implementations coexist and are differentially
 # compared while that remains true.
 from mtj_foundry import corpus as _corpus  # noqa: E402
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
 REVIEW_DIR = _PATHS.legacy_foundry_review
@@ -742,7 +743,14 @@ def condense_definition_for_prompt(definition: str, max_chars: int = 220) -> str
 
 
 def write_json(path: Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    """TRANSITIONAL FACADE. The byte format is owned by `infra.artifact`.
+
+    S5 promoted the serialization policy to
+    `mtj_foundry.infra.artifact.write_json` as its single permanent owner. This
+    name stays because forty-three legacy tools call it and dissolving
+    `foundry_common` is slice 10, not this one -- but it now carries NO copy of
+    the policy. Two implementations of a byte contract is how one of them drifts.
+
+    Signature, return and behaviour are unchanged.
+    """
+    _artifact.write_json(path, data)

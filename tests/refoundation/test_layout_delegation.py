@@ -3849,7 +3849,24 @@ CENSUS_HEAD = {
     # That is the load-bearing one: P0.4I had already delegated this module's
     # only local layout site, so there was none left to move, and slice 4
     # introduced none. The CONFIG_* rows from slice 3 are untouched.
-    "tracked_python": 152,                         # S4: unchanged, one file changed SCOPE
+    #
+    # MIGRATION SLICE 5 ADDS THREE TRACKED FILES AND MOVES THREE WITHIN `src`.
+    # The L1 infra owner is created and `conservation`, `conservation_contract`
+    # and `ratchet` move under it -- all three stay in the `src` scope, so the
+    # move itself shifts no count. What moves the census is what is NEW:
+    #
+    #     src   18 -> 20   (+ infra/__init__.py, + infra/artifact.py)
+    #     tests 25 -> 26   (+ tests/refoundation/test_infra_artifact.py)
+    #     tracked_python 152 -> 155   (+3, the same three)
+    #
+    # NO LAYOUT ROW MOVES. `src` and `tests` are outside every measured layout
+    # scope (LEGACY_PRODUCTION is `experiments` + `experiments_measure`), so this
+    # is the C8.5G/C8.5I/C8.5M file-census shape, not the C8.5J/C8.5K shape.
+    # Every delegation, local-site, bootstrap and sys_path row is UNCHANGED,
+    # including `experiments` at 86 -- S5 repointed seven legacy imports from
+    # `mtj_foundry` to `mtj_foundry.infra`, which changes the module a legacy
+    # file imports, not any repository-relative layout it states.
+    "tracked_python": 155,                         # S5: 152 (+3 new infra/test files)
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
                                                    # analysis module);
@@ -3886,7 +3903,7 @@ CENSUS_HEAD = {
     "files_by_scope": {"experiments": 86,          # S4: 87 (-1, guard left)
                        "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 18,                  # C8.5M: 8 (+ codebook_store.py);
+                       "src": 20,                  # S5: 18 (+ infra __init__ + artifact)
                                                    # PATH E M1: 11 (+ runtime.py,
                                                    # cli.py);
                                                    # PATH E M2: 15 (+ evidence_
@@ -3896,7 +3913,7 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 25},               # S4: 24 (+1, the moved guard)
+                       "tests": 26},               # S5: 25 (+ test_infra_artifact.py)
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
                                                    # analysis module);

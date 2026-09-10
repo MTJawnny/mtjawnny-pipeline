@@ -61,7 +61,7 @@ from pathlib import Path
 # import sits outside the otherwise alphabetical block above. No sys.path
 # mutation and no second bootstrap is added here.
 import foundry_common as fc  # noqa: E402,F401
-from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.infra import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
 # C8.5K: ONE ProjectPaths view, used for both owned paths. C8.5J built this

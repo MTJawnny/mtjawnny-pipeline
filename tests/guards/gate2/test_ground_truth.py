@@ -67,7 +67,7 @@ import foundry_shape_extractor as fx   # noqa: E402
 # C8.5J: the standing ratchet now comes from the permanent package. The import
 # sits AFTER `foundry_common`, which is what establishes the C8.5A package
 # bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
-from mtj_foundry import ratchet  # noqa: E402
+from mtj_foundry.infra import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
 RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
