@@ -3205,18 +3205,47 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
         awaiting a disposition. Its LOCATION is still derived from `legacy_docs`,
         so naming it moves nothing and classifies nothing.
 
-        THE LIST IS STILL EXHAUSTIVE. One name was appended; nothing was removed,
+        THE LIST IS STILL EXHAUSTIVE. Names are appended; nothing is removed,
         renamed or loosened, and an unlisted addition still fails. That this pin
         went red on the property is the guard working -- it is why C8.5P.R1
         stopped rather than editing this file without authorization.
+
+        MIGRATION SLICE 1 APPENDS 32 DESTINATION PROPERTIES, and it reached this
+        pin the same way: S1 as first issued allowed only `paths.py` and
+        `test_paths.py`, so naming ANY destination turned this test red in a file
+        the task did not permit. The Worker stopped rather than widen, hide the
+        names behind a `_` prefix, or soften this assertion to a count -- the
+        precedent the paragraph above records, applied a second time. The
+        allowlist was reissued to include this file for THIS APPEND ONLY.
+
+        The 32 are `config_*`, `var*`, `benchmarks*` and `archive*`: accepted
+        future destinations, named before anything moves so no later slice has
+        to restate a repository-relative fact the layout owner already knows.
+        None of those directories exists at this commit and nothing here creates
+        one. Their exact values are pinned in `test_paths.S1_DESTINATIONS`; this
+        list pins only that the public surface is EXACTLY these names.
         """
         props = sorted(n for n in dir(ProjectPaths)
                        if not n.startswith("_")
                        and isinstance(getattr(ProjectPaths, n), property))
         self.assertEqual(props, [
+            # -- migration slice 1: archive destinations ------------------ S1
+            "archive", "archive_config", "archive_engine", "archive_reports",
+            "archive_research", "archive_research_batch8",
+            "archive_research_consolidation", "archive_research_mutations",
+            "archive_research_thesaurus_measurement", "archive_research_triage",
+            # -------------------------------------------------------------
             "baselines",
+            # -- migration slice 1: frozen benchmark destinations --------- S1
+            "benchmarks", "benchmarks_aq4", "benchmarks_path_e",
+            # -------------------------------------------------------------
             "codebook_authority_selector",  # PATH E M1
-            "config", "conservation", "decisions",
+            "config",
+            # -- migration slice 1: config groups ------------------------- S1
+            "config_cr", "config_generated", "config_registers",
+            "config_selectors", "config_semantic", "config_thesaurus",
+            # -------------------------------------------------------------
+            "conservation", "decisions",
             "foundry_audit_baseline",       # C8.5J
             "legacy_codebook_json",         # C8.5P
             "legacy_data_artifacts",
@@ -3225,7 +3254,14 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             "legacy_oracle_cards",          # C8.5G
             "legacy_pipeline",
             "legacy_ruling_registry_json",  # C8.5K
-            "refoundation", "src", "tests"])
+            "refoundation", "src", "tests",
+            # -- migration slice 1: generated-output ownership ------------ S1
+            "var", "var_archive", "var_archive_engine", "var_benchmarks",
+            "var_benchmarks_aq4", "var_codebook", "var_evidence", "var_guards",
+            "var_mtg", "var_mtg_cr", "var_ops", "var_ops_axis_review",
+            "var_thesaurus",
+            # -------------------------------------------------------------
+            ])
         self.assertEqual(
             ProjectPaths.for_root("/r").codebook_authority_selector,
             Path("/r/docs/codebook-authority.json"))

@@ -160,6 +160,219 @@ class ProjectPaths:
     def conservation(self) -> Path:
         return self.refoundation / "conservation"
 
+    # ---- accepted destination layout (NAMED, NOT CREATED) ----------------
+    # Migration slice 1. The accepted experiments-migration master plan
+    # (R2/R3/R4/R5 as corrected by R6) relocates configuration, generated
+    # output, frozen benchmark evidence and history into destinations that do
+    # not exist at this commit. Naming them HERE, before anything physically
+    # moves, is what stops each later slice from restating a repository-relative
+    # fact this module already owns -- the same reason every `legacy_` sibling
+    # below exists, pointed forward instead of backward.
+    #
+    # NAMING IS NOT MOVING, CREATING, CLASSIFYING, SELECTING OR AUTHORIZING.
+    # None of these directories exists yet, no slice-1 change creates one, and a
+    # property here confers no disposition on any file that may later land in
+    # it. Every value is a pure lexical join, so a root that will never exist
+    # stays valid -- which is the whole point of naming a destination early.
+    #
+    # Intermediates (`var`, `var_mtg`, `benchmarks`, `archive_research`, ...) are
+    # deliberate: a child derives from its owner rather than restating a segment,
+    # so a group can be re-pointed in exactly one place.
+
+    # config/ -- the plan distinguishes four kinds of tracked input, and
+    # conflating them is how a generated registry starts being read as ratified
+    # law. `config` and `baselines` above are UNCHANGED; these sit beside them.
+    @property
+    def config_selectors(self) -> Path:
+        """Tracked authority selectors / governance records.
+
+        Kept apart from `config_semantic` on purpose: a selector NAMES which
+        snapshot is authoritative, it is not itself ratified configuration.
+        """
+        return self.config / "selectors"
+
+    @property
+    def config_semantic(self) -> Path:
+        """Ratified semantic configuration -- Captain-ratified law as data."""
+        return self.config / "semantic"
+
+    @property
+    def config_generated(self) -> Path:
+        """Derived-but-pinned registries. Regenerable, never hand-edited.
+
+        The distinction is load-bearing rather than tidy: a post-refresh routing
+        diff once read clean because a CR-derived list under this kind of path
+        had not been regenerated. A generated artifact is not the CR, and filing
+        it beside ratified configuration is what made that easy to forget.
+        """
+        return self.config / "generated"
+
+    @property
+    def config_registers(self) -> Path:
+        """Declared-debt / exception registers.
+
+        A register records a divergence that is KNOWN and accepted. It is not
+        ratified law and it is not generated output, so it gets its own group.
+        """
+        return self.config / "registers"
+
+    @property
+    def config_cr(self) -> Path:
+        """The Comprehensive Rules edition the pipeline reads."""
+        return self.config / "cr"
+
+    @property
+    def config_thesaurus(self) -> Path:
+        """Tracked thesaurus INPUTS.
+
+        An input that happens to live under a code path is still an input; the
+        accepted plan moves it here so that stops being ambiguous.
+        """
+        return self.config / "thesaurus"
+
+    # var/ -- one ignored root for generated output, with OWNERSHIP visible
+    # beneath it and no cross-owner catch-alls. The `.gitignore` change and the
+    # physical relocation are separate later slices, deliberately: an ignore
+    # edit that orphans a declared conservation source is a silent-loss event.
+    @property
+    def var(self) -> Path:
+        """The generated-output ownership root. Nothing tracked lives here."""
+        return self.root / "var"
+
+    @property
+    def var_codebook(self) -> Path:
+        return self.var / "codebook"
+
+    @property
+    def var_mtg(self) -> Path:
+        return self.var / "mtg"
+
+    @property
+    def var_mtg_cr(self) -> Path:
+        return self.var_mtg / "cr"
+
+    @property
+    def var_evidence(self) -> Path:
+        return self.var / "evidence"
+
+    @property
+    def var_thesaurus(self) -> Path:
+        """Retrieval outputs. Distinct from `config_thesaurus`, which is INPUT."""
+        return self.var / "thesaurus"
+
+    @property
+    def var_ops(self) -> Path:
+        return self.var / "ops"
+
+    @property
+    def var_ops_axis_review(self) -> Path:
+        return self.var_ops / "axis_review"
+
+    @property
+    def var_guards(self) -> Path:
+        """Gate reports and regression corpora written by the guards."""
+        return self.var / "guards"
+
+    @property
+    def var_benchmarks(self) -> Path:
+        return self.var / "benchmarks"
+
+    @property
+    def var_benchmarks_aq4(self) -> Path:
+        """Where AQ4 run outputs WOULD land. AQ4 is PAUSED and produces none.
+
+        Naming an output destination is not scheduling a run: this property
+        exists so that if AQ4 is ever resumed its outputs have an owner, and it
+        authorizes nothing. Its frozen tracked evidence is `benchmarks_aq4`,
+        which is a different place for a different kind of thing.
+        """
+        return self.var_benchmarks / "aq4"
+
+    @property
+    def var_archive(self) -> Path:
+        return self.var / "archive"
+
+    @property
+    def var_archive_engine(self) -> Path:
+        """Generated output of the ARCHIVED legacy engine -- caches, reports.
+
+        Separate from `archive_engine`, which holds the engine's tracked source
+        as history. Output and source are different artifact classes and the
+        plan keeps them in different roots.
+        """
+        return self.var_archive / "engine"
+
+    # benchmarks/ -- FROZEN research evidence, tracked and byte-pinned. This is
+    # not generated output and not history: it is pre-registered material that
+    # must survive the migration with its bytes and hashes intact.
+    @property
+    def benchmarks(self) -> Path:
+        return self.root / "benchmarks"
+
+    @property
+    def benchmarks_aq4(self) -> Path:
+        """Frozen AQ4 benchmark evidence -- relocated verbatim, never re-run.
+
+        The accepted plan preserves these bytes under a digest manifest and
+        explicitly does NOT claim executable equivalence: changing a
+        pre-registered benchmark's import boundary is a ruling, not a fix.
+        """
+        return self.benchmarks / "aq4"
+
+    @property
+    def benchmarks_path_e(self) -> Path:
+        return self.benchmarks / "path_e"
+
+    # archive/ -- INERT history, kept as evidence and digest-pinned. An archived
+    # file is retained BECAUSE it is historical; nothing here is a live path.
+    @property
+    def archive(self) -> Path:
+        return self.root / "archive"
+
+    @property
+    def archive_config(self) -> Path:
+        """Superseded configuration, kept so a prior result stays explicable."""
+        return self.archive / "config"
+
+    @property
+    def archive_engine(self) -> Path:
+        """The legacy tier engine and its consumers, as tracked history."""
+        return self.archive / "engine"
+
+    @property
+    def archive_reports(self) -> Path:
+        return self.archive / "reports"
+
+    @property
+    def archive_research(self) -> Path:
+        return self.archive / "research"
+
+    @property
+    def archive_research_triage(self) -> Path:
+        return self.archive_research / "triage"
+
+    @property
+    def archive_research_consolidation(self) -> Path:
+        return self.archive_research / "consolidation"
+
+    @property
+    def archive_research_mutations(self) -> Path:
+        """One-off codebook executors, archived as a group.
+
+        The plan keeps a mutator and its verifier together: the verifier is the
+        migration's only proof, so archiving them apart would retain the record
+        of a change without the evidence that it was correct.
+        """
+        return self.archive_research / "mutations"
+
+    @property
+    def archive_research_batch8(self) -> Path:
+        return self.archive_research / "batch8"
+
+    @property
+    def archive_research_thesaurus_measurement(self) -> Path:
+        return self.archive_research / "thesaurus-measurement"
+
     # ---- legacy layout (READ-ONLY KNOWLEDGE, nothing here moves it) ------
     # Recorded so that later phases have ONE place that knows where legacy state
     # lives, rather than re-deriving `experiments/out/...` at ~97 more sites.
