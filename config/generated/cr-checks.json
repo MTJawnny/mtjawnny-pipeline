@@ -2,7 +2,7 @@
  "generated_from_cr_lines": 10134,
  "n_terms": 264,
  "schema": "cr-checks/1",
- "source": "/Users/jawnny/Projects/mtjawnny-pipeline/docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+ "source": "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
  "terms": [
   {
    "cr": "702.64",

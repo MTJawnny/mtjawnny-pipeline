@@ -56,240 +56,84 @@ import foundry_cr as cr  # noqa: E402
 # The CR's LOCATION and its FORMATTING are both owned by `foundry_cr`. This
 # module is re-exported as the historical name because five other modules and
 # every ruling doc reference `k7.CR_PATH`.
+
+# ---------------------------------------------------------------------------
+# S6 — CR PARSING NOW LIVES IN THE PERMANENT SUBSTRATE
+# ---------------------------------------------------------------------------
+# Migration slice 6 moved the CR-only half of this module into
+# `mtj_foundry.mtg.cr.keywords`: the CR 702/205 constants, `load_702`,
+# `type_vocabulary`, `classify`, `effective_classes`, and the pure
+# `keyword_rows()` derivation lifted out of `main()`'s reporting flow. NO SECOND
+# PARSE REMAINS HERE.
+#
+# What stays is precisely what the permanent CR layer may not own: `find_home`,
+# which consumes `parse_delivery` and therefore belongs with S7's
+# `mtg/shapes/delivery.py`; `cmd_homes`, its operator report; and `main`. Moving
+# `find_home` into `mtg/cr/**` is the cycle R6 exists to prevent, so it stays
+# here until S7 -- NOT because it belongs here, but because S6 may not place it.
+#
+# The `--unstated` KeyError is recorded debt and is deliberately NOT fixed here.
+#
+# The halt boundary is re-established at this shell: the permanent module raises
+# `CRKeywordError`, and the wrappers below convert it to `fc.halt`, preserving
+# the historic `STOP — …` process contract for every legacy caller.
+from mtj_foundry.mtg.cr import keywords as _keywords  # noqa: E402
+
+CRKeywordError = _keywords.CRKeywordError
+
+# The CR's LOCATION and its FORMATTING are both owned by `foundry_cr`. This
+# module is re-exported as the historical name because five other modules and
+# every ruling doc reference `k7.CR_PATH`.
 CR_PATH = cr.CR_PATH
 
-HEADER = re.compile(r"^702\.(\d+)\.\s+(.+?)\s*$")
-SUBRULE = re.compile(r"^702\.(\d+)([a-z])\s+(.*)$")
-# CR 205 is the authority on the type words CR 702.14a's "[type]walk" template
-# composes from. Parsed at run time, never hand-listed -- same discipline as
-# CLASS_RULE above and as parsing grammar §2's token table.
-TYPE_RULES = {
-    "card_types": re.compile(r"^205\.2a The card types are (.+?)\. See", re.M),
-    "land_types": re.compile(r"^205\.3i .*?The land types are (.+?)\. Of that", re.M),
-    "supertypes": re.compile(r"^205\.4a .*?The supertypes are (.+?)\.\s*$", re.M),
-    # EVERY subtype list is enumerated by the CR, in one uniform sentence
-    # shape, and CR 205.3r closes the set by naming the four card types that
-    # have NO subtypes ("Phenomenon cards, scheme cards, vanguard cards, and
-    # conspiracy cards have no subtypes"). An earlier comment in this project
-    # claimed the CR "does not enumerate them in one place" and used a corpus
-    # harvest instead -- that claim was simply wrong, and CR 205.3g-q is the
-    # refutation. A harvest can only ever contain what the gated corpus holds.
-    "artifact_types": re.compile(r"^205\.3g .*?The artifact types are (.+?)\.\s*$", re.M),
-    "enchantment_types": re.compile(r"^205\.3h .*?The enchantment types are (.+?)\.\s*$", re.M),
-    "planeswalker_types": re.compile(r"^205\.3j .*?The planeswalker types are (.+?)\.\s*$", re.M),
-    "spell_types": re.compile(r"^205\.3k .*?The spell types are (.+?)\.\s*$", re.M),
-    # 205.3m states the ONE two-word type separately, then the rest.
-    "creature_types": re.compile(r"^205\.3m .*?All other creature types are one word long: (.+?)\.\s*$", re.M),
-    "creature_types_multiword": re.compile(r"^205\.3m .*?creature type is two words long: (.+?)\. All other", re.M),
-    "planar_types": re.compile(r"^205\.3n .*?The planar types are (.+?)\.\s*$", re.M),
-    "dungeon_types": re.compile(r"^205\.3p .*?That dungeon type is (.+?)\.\s*$", re.M),
-    "battle_types": re.compile(r"^205\.3q .*?That battle type is (.+?)\.\s*$", re.M),
-}
-# CR 205.3g/h names its members with cross-references -- "Attraction (see rule
-# 717)", "Aura (see rule 303.4)". Strip them before splitting, or the type is
-# `attraction (see rule 717)`.
-_CR_XREF = re.compile(r"\s*\((?:see|as in)[^)]*\)")
-SUBTYPE_KEYS = ("artifact_types", "enchantment_types", "land_types",
-                "planeswalker_types", "spell_types", "creature_types",
-                "creature_types_multiword", "planar_types", "dungeon_types",
-                "battle_types")
-# CR 113.3a-d is the authority on which ability classes EXIST. Derived at run
-# time, never hand-listed -- same discipline as parsing §2's token table.
-CLASS_RULE = re.compile(r"^113\.3([a-d])\s+([A-Za-z-]+) abilit", re.M)
-
-# "<Keyword> is a/an <class> ability" -- the CR's own sentence shape.
-CLASS_SENT = re.compile(
-    r"\bis (?:a|an) ((?:[a-z-]+ ){0,2}?)ability\b", re.I)
-
-# §2 DELIVERY token implied by each CR class word, where the CR class maps onto
-# a slot value that grammar §2 already ratifies. Anything not here is reported,
-# never guessed.
-CLASS_TO_DELIVERY = {
-    "activated": "activated",
-    "triggered": "triggered -> needs its own §2 trigger token",
-    "static": "static",
-    "spell": "(none -- spell ability, §2 omits DELIVERY)",
-}
-
-# Two CR class words are SUBCLASSES of static, and the CR says so itself. These
-# are not my inference -- each carries the quote that makes it CR-stated.
-SUBSUMES = {
-    "evasion": ("static", "CR 509.1b",
-                "an evasion ability (a static ability an attacking creature "
-                "has that restricts what can block it)"),
-    "characteristic-defining": ("static", "CR 604.3",
-                "Some static abilities are characteristic-defining abilities."),
-}
-
-# "X is a keyword ability" is the CR's GENERIC phrase, not a class claim -- so
-# these fall through to UNSTATED rather than inventing a "keyword" class.
-# CR 702.169a proves it: Solved's text "represent[s] a static ability, a
-# triggered ability, or an activated ability" -- class-polymorphic by design.
-NOT_A_CLASS = {"keyword"}
-
-# CR 702.1 is the section preamble, not a keyword.
-PREAMBLE_RULE = 1
-
-# Populated from CR 113.3a-d at load time.
-CR_CLASSES = set()
+# CR 702/205 vocabulary, constants and derivations -- the permanent owner's.
+HEADER = _keywords.HEADER
+SUBRULE = _keywords.SUBRULE
+TYPE_RULES = _keywords.TYPE_RULES
+SUBTYPE_KEYS = _keywords.SUBTYPE_KEYS
+CLASS_RULE = _keywords.CLASS_RULE
+CLASS_SENT = _keywords.CLASS_SENT
+CLASS_TO_DELIVERY = _keywords.CLASS_TO_DELIVERY
+SUBSUMES = _keywords.SUBSUMES
+NOT_A_CLASS = _keywords.NOT_A_CLASS
+PREAMBLE_RULE = _keywords.PREAMBLE_RULE
+CR_CLASSES = _keywords.CR_CLASSES
+MULTI_HINT = _keywords.MULTI_HINT
+MEANS = _keywords.MEANS
 
 
-def load_702(path: Path = CR_PATH) -> dict:
-    # Read through the normalizing loader, never `path.read_text()`. The
-    # 2026-08-07 edition prints `**702.6a.**`, which HEADER/SUBRULE below do
-    # not match — parsing it raw returns zero keywords.
-    text = cr.text(path)
-    lines = text.splitlines()
+def _halting(fn, default_path=False):
+    """Wrap a permanent CR entry point in the legacy process boundary.
 
-    global CR_CLASSES
-    CR_CLASSES = {m.group(2).lower() for m in CLASS_RULE.finditer(text)}
-    if len(CR_CLASSES) != 4:
-        fc.halt(f"CR 113.3a-d should enumerate exactly 4 ability classes; "
-                f"parsed {sorted(CR_CLASSES)}. Fix the parser, do not "
-                f"fall back to a remembered list.")
-
-    keywords = {}     # number -> {"name":..., "subrules": {letter: text}}
-    for raw in lines:
-        m = HEADER.match(raw)
-        if m:
-            keywords.setdefault(int(m.group(1)),
-                                {"name": m.group(2).strip(), "subrules": {}})
-            continue
-        m = SUBRULE.match(raw)
-        if m:
-            num = int(m.group(1))
-            keywords.setdefault(num, {"name": None, "subrules": {}})
-            keywords[num]["subrules"][m.group(2)] = m.group(3).strip()
-
-    if not keywords:
-        fc.halt("Parsed zero CR 702 keywords. The CR file's section 702 "
-                "formatting has changed; fix the parser, do not fall back.")
-    return keywords
+    `default_path` restores THIS boundary's default edition for callers that
+    pass none. The permanent functions have no default on purpose -- they do not
+    know where the repository is -- so supplying it is the boundary's job, and
+    nine legacy callers depend on the no-argument form.
+    """
+    def wrapper(*args, **kwargs):
+        if default_path and not args and "path" not in kwargs:
+            args = (CR_PATH,)
+        elif default_path and args and args[0] is None:
+            args = (CR_PATH,) + args[1:]
+        try:
+            return fn(*args, **kwargs)
+        except _keywords.CRKeywordError as exc:
+            fc.halt(str(exc))
+    wrapper.__name__ = fn.__name__
+    wrapper.__doc__ = fn.__doc__
+    return wrapper
 
 
-def type_vocabulary(path: Path = CR_PATH) -> dict:
-    """Every CR 205 type list -> sets, read from the CR at run time.
-
-    Card types (205.2a), supertypes (205.4a), and ALL TEN subtype lists
-    (205.3g-q). Required by CR 702.14a's landwalk template, which is stated as
-    a GRAMMAR over these lists rather than as a list of keyword names, and by
-    the self-reference noun set, which needs "this <subtype>" to be complete.
-
-    `subtypes` is the union of the ten, provided so a caller never has to
-    remember which ten they are."""
-    text = cr.text(path)
-    out = {}
-    for key, rx in TYPE_RULES.items():
-        m = rx.search(text)
-        if not m:
-            fc.halt(f"Could not parse {key} from the CR (rule 205). The CR's "
-                    f"wording has changed; fix the parser, do not fall back to "
-                    f"a remembered list.")
-        # The CR writes these lists with an OXFORD COMMA -- "…, scheme, and
-        # vanguard." Splitting on `,\s*` first consumed the comma and left the
-        # conjunction attached, so the final item of EVERY list parsed as
-        # garbage: `and vanguard`, `and world`, `and urza's`. The last real
-        # card type, supertype and land type were therefore all MISSING.
-        #
-        # And the count guard below did not catch it, because the junk token
-        # kept the count correct -- 15 card types, of which one was `and
-        # vanguard` and `vanguard` itself absent. **A guard that counts is
-        # satisfied by the defect it exists to catch.** So the guard now
-        # asserts CONTENT, not cardinality: a known-last member of each list,
-        # which is exactly the item this bug class destroys.
-        words = re.split(r",\s*(?:and\s+)?|\s+and\s+", _CR_XREF.sub("", m.group(1)))
-        vals = {w.strip().strip(".").lower() for w in words if w.strip()}
-        # THE CR PRINTS A CURLY APOSTROPHE (U+2019); SCRYFALL TYPE LINES PRINT
-        # A STRAIGHT ONE. `Urza’s` from CR 205.3i never equals `Urza's` from a
-        # type line, and the same mismatch hits C’tan, Shi’ar, Serra’s Realm,
-        # Bolas’s Meditation Realm and Outside Mutter’s Spiral. Landwalk has
-        # been composing over `urza’s` and could never match a printed
-        # `Urza'swalk`. Both forms are emitted -- a mechanical transformation
-        # of a CR-parsed value, not a hand-added member.
-        vals |= {w.replace("’", "'") for w in vals if "’" in w}
-        out[key] = vals
-    out["subtypes"] = set().union(*(out[k] for k in SUBTYPE_KEYS))
-    for key, least, tail in (("card_types", 15, "vanguard"),
-                             ("land_types", 17, "urza’s"),
-                             ("supertypes", 5, "world"),
-                             ("artifact_types", 20, "vibranium"),
-                             ("enchantment_types", 12, "shrine"),
-                             ("planeswalker_types", 80, "zariel"),
-                             ("spell_types", 5, "trap"),
-                             ("creature_types", 250, "zubera"),
-                             ("planar_types", 60, "zhalfir"),
-                             ("dungeon_types", 1, "undercity"),
-                             ("battle_types", 1, "siege"),
-                             ("creature_types_multiword", 1, "time lord")):
-        if len(out[key]) < least:
-            fc.halt(f"parsed only {len(out[key])} {key} from CR 205 "
-                    f"(expected >= {least}): {sorted(out[key])}")
-        if tail not in out[key]:
-            fc.halt(f"CR 205 {key} parsed without its LAST member {tail!r} — "
-                    f"the Oxford-comma split has regressed. Got: "
-                    f"{sorted(out[key])}")
-        if any(w.startswith("and ") for w in out[key]):
-            fc.halt(f"CR 205 {key} contains a conjunction fragment: "
-                    f"{sorted(w for w in out[key] if w.startswith('and '))}")
-    return out
-
-
-def classify(kw: dict) -> tuple:
-    """Return (classes, evidence) read from the keyword's own sub-rules, where
-    `classes` is the ORDERED list of every distinct class the CR states for it.
-
-    Multi-class keywords are real and must not be collapsed to the first hit.
-    CR 702.62a: "Suspend is a keyword that represents three abilities. The
-    first is a static ability... The second and third are triggered abilities."
-    Reporting that as plain "static" would be exactly the approximation this
-    tool exists to refuse. Only the CR's literal wording is used."""
-    classes, evidence, unrecognised = [], {}, kw.setdefault("_unrecognised", {})
-    for letter in sorted(kw["subrules"]):
-        body = kw["subrules"][letter]
-        for sentence in re.split(r"(?<=\.)\s+", body):
-            for m in CLASS_SENT.finditer(sentence):
-                words = m.group(1).strip().split()
-                if not words:
-                    continue
-                word = words[-1].lower()
-                if word in NOT_A_CLASS:
-                    continue     # generic phrasing, not a class claim
-                if word not in CR_CLASSES and word not in SUBSUMES:
-                    # CR 113.3 does not enumerate this as an ability class.
-                    # e.g. 702.11b's "a 'hexproof from [quality]' ability is a
-                    # hexproof ability" is self-reference, not a class claim.
-                    unrecognised.setdefault(word, sentence.strip())
-                    continue
-                if word not in classes:
-                    classes.append(word)
-                    evidence[word] = sentence.strip()
-    return classes, evidence
-
-
-# The CR also states multiplicity in prose ("represents three abilities"). Used
-# only to WARN that a single-class read may be incomplete -- never to assign.
-MULTI_HINT = re.compile(
-    r"\brepresents? (two|three|four) abilities\b|"
-    r"\bThe (second|third) (is|are)\b", re.I)
-
-
-# The CR spells out most keywords as templated text: `"Prowess" means "Whenever
-# you cast a noncreature spell, ..."`. That quote is the keyword's ACTUAL
-# printed shape, so its DELIVERY slot is derivable by running it through the
-# same extractor every card goes through -- no per-keyword ruling required.
-MEANS = re.compile(r"means\s+[“\"]([^”\"]+)[”\"]")
-
-
-def effective_classes(kw: dict) -> list:
-    """The keyword's CR-stated ability classes after the CR's own rollups."""
-    classes, _ev = classify(kw)
-    out, seen = [], set()
-    for c in classes:
-        e = SUBSUMES.get(c, (None,))[0] or c
-        if e not in seen:
-            seen.add(e)
-            out.append(e)
-    return out
+load_702 = _halting(_keywords.load_702, default_path=True)
+type_vocabulary = _halting(_keywords.type_vocabulary, default_path=True)
+classify = _keywords.classify                 # pure, no halt path
+effective_classes = _keywords.effective_classes   # pure, no halt path
+def keyword_rows(path=None):
+    """Every CR 702 keyword as a pure row, defaulting to this boundary's CR."""
+    try:
+        return _keywords.keyword_rows(path if path is not None else CR_PATH)
+    except _keywords.CRKeywordError as exc:
+        fc.halt(str(exc))
 
 
 def find_home(kw: dict, ratified: dict) -> tuple:
