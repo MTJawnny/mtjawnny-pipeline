@@ -569,6 +569,36 @@ TOP_LEVEL_DIRS = {".github", "docs", "data", "config", "tags", "experiments",
                   "pipeline", "src", "tests", "refoundation", "bridge"}
 
 
+def config_delegating_expressions(source: str, group: str) -> list[str]:
+    """Occurrences of `fc.<CONFIG_GROUP> / ...`, the S3 provider form.
+
+    MIGRATION SLICE 3 introduced a fourth provider shape. The first three
+    delegated a directory under the root (`FOUNDRY_OUT_DIR`), the root itself
+    (`REPO_ROOT`), and the artifacts directory; S3 delegates the six accepted
+    `config/` GROUPS, because it relocated the tracked inputs into them.
+
+    Counted with its own helper and PER GROUP, for the reason this file already
+    gives for `root_delegating_expressions`: a count for one provider must never
+    be able to absorb a site belonging to another. Nothing about the existing
+    three checkers changes -- this one is added beside them.
+    """
+    matches = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+        base = node
+        while isinstance(base, ast.BinOp) and isinstance(base.op, ast.Div):
+            base = base.left
+        if (isinstance(base, ast.Attribute) and base.attr == group
+                and isinstance(base.value, ast.Name) and base.value.id == "fc"):
+            matches.append(node)
+    # OUTERMOST ONLY -- the same left-nested double-count the sibling helper
+    # documents; fixed the same way rather than absorbed into an expected count.
+    inner = {id(d) for n in matches for d in ast.walk(n) if d is not n}
+    return [f"line {n.lineno}: {ast.unparse(n)}"
+            for n in matches if id(n) not in inner]
+
+
 def local_root_relative_constructions(source: str, *, exempt_bootstrap: bool = True,
                                       names=("REPO", "REPO_ROOT")) -> list[str]:
     """Path joins that reach a repository DIRECTORY through a LOCAL root variable.
@@ -1187,10 +1217,24 @@ def outermost_path_joins(source: str) -> list[tuple[int, str]]:
 
 
 class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
-    def test_the_one_root_delegation_is_the_cr_path(self):
-        got = root_delegating_expressions(CR.read_text(encoding="utf-8"))
+    def test_the_one_config_delegation_is_the_cr_path(self):
+        """S3 CARRY-FORWARD (case B). P0.4H really did delegate this site through
+        `fc.REPO_ROOT`, and that historical fact is unchanged -- it is restated,
+        not rewritten, in the reversion control below. What moved is the SUBJECT:
+        migration slice 3 relocated the CR edition into `config/cr/`, so the live
+        delegation is now `fc.CONFIG_CR`.
+
+        The executable arm carries the same safety property as before rather
+        than being zeroed out: the CR is reached through the accepted owner,
+        exactly once, and the module states no root-relative construction of its
+        own. Asserting only "zero root delegations" would have been a count going
+        to zero, which proves nothing about where the file is actually read."""
+        source = CR.read_text(encoding="utf-8")
+        got = config_delegating_expressions(source, "CONFIG_CR")
         self.assertEqual(len(got), 1, got)
         self.assertIn(CR_FILENAME, got[0])
+        # and the superseded provider is genuinely gone from this module
+        self.assertEqual(root_delegating_expressions(source), [])
 
     def test_no_local_root_relative_construction_remains(self):
         self.assertEqual(
@@ -1201,7 +1245,7 @@ class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
         self.assertIn("import foundry_common as fc", source)
         self.assertEqual(source.count("import foundry_common"), 1)
 
-    def test_the_foundry_common_symbol_surface_is_halt_plus_REPO_ROOT(self):
+    def test_the_foundry_common_symbol_surface_is_halt_plus_the_config_owner(self):
         """The compatibility-boundary surface this slice actually leaves behind.
 
         Before P0.4H the CR loader consumed exactly one `foundry_common` symbol,
@@ -1220,18 +1264,33 @@ class TestTheFifthSliceDelegatesTheCRReadPath(unittest.TestCase):
         described here rather than reproduced, so that a grep for the mistaken
         claim finds no instance of it in the tree -- the same convention the
         house rule applies to rejected vocabulary.
+
+        S3 CARRY-FORWARD (case B). P0.4H's history is exactly as described
+        above and is not rewritten. Slice 3 then relocated the CR edition, so the
+        second symbol is now `fc.CONFIG_CR` rather than `fc.REPO_ROOT`. The
+        property being pinned is unchanged and is still exactly two: `halt`, plus
+        ONE layout name taken from the compatibility boundary. The surface did
+        not widen; the owner it names moved.
         """
         tree = ast.parse(CR.read_text(encoding="utf-8"))
         used = {n.attr for n in ast.walk(tree)
                 if isinstance(n, ast.Attribute)
                 and isinstance(n.value, ast.Name) and n.value.id == "fc"}
-        self.assertEqual(used, {"halt", "REPO_ROOT"})
+        self.assertEqual(used, {"halt", "CONFIG_CR"})
 
 
 class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
     """NEGATIVE CONTROL. Both arms, measured against a reverted source."""
 
-    NOW = ('CR_PATH = fc.REPO_ROOT / "docs" / '
+    # S3 CARRY-FORWARD (case D). `BEFORE` is the GENUINE pre-P0.4H local
+    # construction and is UNCHANGED -- that historical event is not rewritten,
+    # and it is still the hazard this control exists to catch: a legacy reader
+    # rebuilding the path locally instead of taking it from the owner. `NOW` is
+    # updated to the actual current form, because slice 3 moved the CR edition
+    # into `config/cr/` and a control whose `NOW` no longer appears in the source
+    # is a control that can never fire -- the failure mode this file names
+    # elsewhere as "a control that could never fire".
+    NOW = ('CR_PATH = fc.CONFIG_CR / '
            '"MTG_Comprehensive_Rules_2026-08-07_LLM.md"')
     BEFORE = ('CR_PATH = REPO_ROOT.parent / "docs" / '
               '"MTG_Comprehensive_Rules_2026-08-07_LLM.md"')
@@ -1248,8 +1307,11 @@ class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
         self.assertEqual(len(found), 1, found)
         self.assertIn(CR_FILENAME, found[0])
 
-    def test_reverting_also_drops_the_root_delegation(self):
-        self.assertEqual(root_delegating_expressions(self.reverted()), [])
+    def test_reverting_also_drops_the_config_delegation(self):
+        """Both arms still move together: restoring the local construction must
+        also remove the owner delegation, so neither arm can pass alone."""
+        self.assertEqual(
+            config_delegating_expressions(self.reverted(), "CONFIG_CR"), [])
 
     def test_the_home_rooted_prior_edition_is_invisible_to_both_checkers(self):
         """Aimed at the code path, not at the tool's name. `PRIOR_CR_PATH` is a
@@ -1261,8 +1323,8 @@ class TestTheFifthSliceCheckerCatchesAReversion(unittest.TestCase):
             joins = [u for _, u in outermost_path_joins(source)]
             self.assertTrue(any("home()" in u for u in joins), joins)
         self.assertEqual(len(local_root_relative_constructions(self.reverted())), 1)
-        self.assertEqual(len(root_delegating_expressions(
-            CR.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(len(config_delegating_expressions(
+            CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
 
 
 class TestTheFifthSliceResolvedPathIsByteIdentical(unittest.TestCase):
@@ -1276,16 +1338,24 @@ class TestTheFifthSliceResolvedPathIsByteIdentical(unittest.TestCase):
         cls.fc = load_legacy("foundry_common")
         cls.cr = load_legacy("foundry_cr")
 
-    def test_cr_path_equals_its_pre_change_construction(self):
+    def test_cr_path_equals_the_s3_relocated_construction(self):
+        """S3 CARRY-FORWARD (case A). P0.4H's own claim -- that delegating the CR
+        path did not change its VALUE, which then equalled
+        `REPO_ROOT.parent / "docs" / CR_FILENAME` -- was true when it was made and
+        is not rewritten here. Migration slice 3 is the first slice that moves a
+        tracked input on purpose, so the value it preserved has now legitimately
+        moved to `config/cr/`. The live arm follows the file; the history does
+        not."""
         self.assertEqual(self.cr.CR_PATH,
-                         self.cr.REPO_ROOT.parent / "docs" / CR_FILENAME)
+                         self.cr.REPO_ROOT.parent / "config" / "cr" / CR_FILENAME)
 
     def test_cr_path_equals_the_delegated_value(self):
-        self.assertEqual(self.cr.CR_PATH,
-                         self.fc.REPO_ROOT / "docs" / CR_FILENAME)
+        self.assertEqual(self.cr.CR_PATH, self.fc.CONFIG_CR / CR_FILENAME)
 
-    def test_cr_path_equals_the_ratified_owners_docs_directory(self):
-        self.assertEqual(self.cr.CR_PATH, PATHS.legacy_docs / CR_FILENAME)
+    def test_cr_path_equals_the_ratified_owners_config_cr_directory(self):
+        """The point P0.4H was making, against the owner S3 moved it to: the
+        legacy reader's value is the OWNER's value, not a parallel derivation."""
+        self.assertEqual(self.cr.CR_PATH, PATHS.config_cr / CR_FILENAME)
 
     def test_the_local_root_binding_still_resolves_as_before(self):
         """CONSUMPTION delegated, the root DECISION untouched."""
@@ -1314,7 +1384,10 @@ class TestTheFifthSliceChangedNothingElse(unittest.TestCase):
         home = [u for u in by_line.values() if "home()" in u]
         self.assertEqual(len(repo), 1, repo)
         self.assertEqual(len(home), 1, home)
-        self.assertIn("fc.REPO_ROOT", repo[0])
+        # S3 CARRY-FORWARD (case B). Still exactly one repository-layout join
+        # in this module, still provided by the boundary -- slice 3 moved the
+        # CR edition, so the provider it names is `fc.CONFIG_CR`.
+        self.assertIn("fc.CONFIG_CR", repo[0])
 
     def test_prior_cr_path_is_untouched_and_still_home_rooted(self):
         """It points OUTSIDE the repository at the 2026-06-19 edition, so no
@@ -1661,7 +1734,8 @@ class TestTheSixthSliceChangedNothingElse(unittest.TestCase):
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
         self.assertEqual(
-            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+            len(config_delegating_expressions(
+                CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
 
 # ---------------------------------------------------------------------------
 # P0.4J — the seventh slice
@@ -1788,13 +1862,27 @@ class TestTheSeventhSliceDelegatesTheCorpusPath(unittest.TestCase):
         self.assertIn("'raw'", got[0])
         self.assertIn("'oracle-cards.jsonl.gz'", got[0])
 
-    def test_the_file_now_carries_exactly_two_root_delegations(self):
-        """The corpus (P0.4J) and the anchors file (P0.4K). Stated so the
-        superseded "exactly one" claim is replaced by a real count rather than
-        quietly dropped."""
+    def test_the_file_carries_one_root_delegation_and_one_config_delegation(self):
+        """S3 CARRY-FORWARD (case C -- aggregate collateral).
+
+        P0.4J delegated the CORPUS site and P0.4K delegated the ANCHORS site, so
+        this file carried exactly two `fc.REPO_ROOT` delegations. Both of those
+        events are unchanged and neither is rewritten.
+
+        Migration slice 3 moved ONLY the anchors input, into `config/thesaurus/`.
+        So the aggregate falls by exactly one, and the movement is derived rather
+        than observed: 2 - 1 (anchors re-provided) = 1. **The corpus delegation
+        is untouched and is still asserted here by name**, which is the point of
+        stating the aggregate at all -- an aggregate that merely dropped to one
+        could not tell you WHICH site survived."""
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        self.assertEqual(len(root_delegating_expressions(source)), 1)
+        # the surviving root delegation is the P0.4J corpus site, unmoved by S3
         self.assertEqual(
-            len(root_delegating_expressions(
-                WIRE_CAPABILITY.read_text(encoding="utf-8"))), 2)
+            len(root_delegated_file_constructions(source, CORPUS_FILE)), 1)
+        # and the anchors site is now provided by the S3 owner instead
+        self.assertEqual(
+            len(config_delegating_expressions(source, "CONFIG_THESAURUS")), 1)
 
     def test_no_local_root_relative_construction_remains(self):
         self.assertEqual(
@@ -1848,8 +1936,12 @@ class TestTheSeventhSliceCheckerCatchesAReversion(unittest.TestCase):
         reverted = self.reverted()
         self.assertEqual(
             root_delegated_file_constructions(reverted, CORPUS_FILE), [])
+        # S3 CARRY-FORWARD (case C). The anchors site is still asserted to
+        # survive a corpus reversion -- the property P0.4K added and the reason
+        # a bare emptiness check would be wrong -- but it now lives under the
+        # slice-3 owner, so the arm reads CONFIG_THESAURUS instead of REPO_ROOT.
         self.assertEqual(
-            len(root_delegated_file_constructions(reverted, ANCHORS_FILE)), 1,
+            len(config_delegating_expressions(reverted, "CONFIG_THESAURUS")), 1,
             "reverting the corpus site must not disturb the anchors site")
 
     def test_the_existing_checkers_cover_both_arms_so_none_was_added(self):
@@ -1930,9 +2022,12 @@ class TestTheAnchorsSiteWasOutOfSliceForP0_4J_AndIsMigratedByP0_4K(unittest.Test
         cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
 
     def test_the_anchors_site_is_now_delegated(self):
-        self.assertIn(
-            'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"',
-            self.source)
+        """S3 CARRY-FORWARD (case B). P0.4K's event is unchanged: it took this
+        site from a local construction to a delegation. Slice 3 then relocated
+        the anchors INPUT into `config/thesaurus/`, so the delegation now names
+        that owner. Still exactly one binding, still through the boundary."""
+        self.assertIn('ANCHORS_PATH = fc.CONFIG_THESAURUS / "anchors.txt"',
+                      self.source)
         self.assertEqual(self.source.count("ANCHORS_PATH = "), 1)
 
     def test_the_local_construction_is_gone(self):
@@ -1944,7 +2039,7 @@ class TestTheAnchorsSiteWasOutOfSliceForP0_4J_AndIsMigratedByP0_4K(unittest.Test
         """Unchanged from P0.4J, and it is the assertion that makes this a
         delegation rather than a change."""
         self.assertEqual(self.wc.ANCHORS_PATH,
-                         PATHS.legacy_experiments / "anchors.txt")
+                         PATHS.config_thesaurus / "anchors.txt")
         self.assertTrue(self.wc.ANCHORS_PATH.is_file())
 
     def test_the_P0_4E_checker_is_still_blind_here_which_is_why_a_file_checker_exists(self):
@@ -1953,7 +2048,7 @@ class TestTheAnchorsSiteWasOutOfSliceForP0_4J_AndIsMigratedByP0_4K(unittest.Test
         is about the checker, not about the current text happening to be clean.
         """
         reverted = self.source.replace(
-            'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"',
+            'ANCHORS_PATH = fc.CONFIG_THESAURUS / "anchors.txt"',
             'ANCHORS_PATH = REPO / "anchors.txt"', 1)
         self.assertNotEqual(reverted, self.source)
         self.assertEqual(local_root_relative_constructions(reverted), [])
@@ -2064,7 +2159,8 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
         self.assertEqual(
-            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+            len(config_delegating_expressions(
+                CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
         self.assertEqual(
             len(root_delegating_expressions(
                 GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
@@ -2108,11 +2204,17 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
 
 class TestTheEighthSliceDelegatesTheAnchorsFile(unittest.TestCase):
     def test_the_anchors_delegation_is_present_and_singular(self):
-        got = root_delegated_file_constructions(
-            WIRE_CAPABILITY.read_text(encoding="utf-8"), ANCHORS_FILE)
+        """S3 CARRY-FORWARD (case B). Same property, new owner: the anchors file
+        is reached through the boundary exactly once. P0.4K reached it as
+        `fc.REPO_ROOT / "experiments" / "anchors.txt"`; slice 3 moved the input
+        to `config/thesaurus/`, so it is now `fc.CONFIG_THESAURUS / "anchors.txt"`."""
+        source = WIRE_CAPABILITY.read_text(encoding="utf-8")
+        got = config_delegating_expressions(source, "CONFIG_THESAURUS")
         self.assertEqual(len(got), 1, got)
-        self.assertIn("'experiments'", got[0])
         self.assertIn("'anchors.txt'", got[0])
+        # the superseded root-provided form is gone from this site
+        self.assertEqual(
+            root_delegated_file_constructions(source, ANCHORS_FILE), [])
 
     def test_no_local_file_construction_remains(self):
         self.assertEqual(
@@ -2135,7 +2237,12 @@ class TestTheEighthSliceDelegatesTheAnchorsFile(unittest.TestCase):
 class TestTheEighthSliceCheckerCatchesAReversion(unittest.TestCase):
     """NEGATIVE CONTROL — both arms, aimed at the code path, not the name."""
 
-    NOW = 'ANCHORS_PATH = fc.REPO_ROOT / "experiments" / "anchors.txt"'
+    # S3 CARRY-FORWARD (case D). `BEFORE` is the GENUINE pre-P0.4K local
+    # construction, unchanged, and still the hazard: a legacy reader rebuilding
+    # the path from its own root. `NOW` follows the live text, because slice 3
+    # moved the anchors input into `config/thesaurus/` and a control whose `NOW`
+    # is absent from the source can never fire.
+    NOW = 'ANCHORS_PATH = fc.CONFIG_THESAURUS / "anchors.txt"'
     BEFORE = 'ANCHORS_PATH = REPO / "anchors.txt"'
 
     def reverted(self) -> str:
@@ -2156,7 +2263,7 @@ class TestTheEighthSliceCheckerCatchesAReversion(unittest.TestCase):
         be satisfied by the P0.4J corpus delegation sitting one line above."""
         reverted = self.reverted()
         self.assertEqual(
-            root_delegated_file_constructions(reverted, ANCHORS_FILE), [])
+            config_delegating_expressions(reverted, "CONFIG_THESAURUS"), [])
         self.assertEqual(
             len(root_delegated_file_constructions(reverted, CORPUS_FILE)), 1,
             "reverting the anchors site must not disturb the corpus site")
@@ -2197,20 +2304,26 @@ class TestTheEighthSliceResolvedPathIsByteIdentical(unittest.TestCase):
         cls.fc = load_legacy("foundry_common")
         cls.wc = load_legacy("foundry_wire_capability")
 
-    def test_anchors_equals_its_pre_change_construction(self):
-        self.assertEqual(self.wc.ANCHORS_PATH, self.wc.REPO / "anchors.txt")
+    def test_anchors_equals_the_s3_relocated_construction(self):
+        """S3 CARRY-FORWARD (case A). P0.4K's claim -- that delegating this site
+        left the VALUE at `REPO / "anchors.txt"` -- was true when made and is not
+        rewritten. Migration slice 3 then moved the tracked input itself, so the
+        preserved value has legitimately moved to `config/thesaurus/`."""
+        self.assertEqual(self.wc.ANCHORS_PATH,
+                         self.wc.REPO.parent / "config" / "thesaurus" / "anchors.txt")
 
     def test_anchors_equals_the_delegated_value(self):
         self.assertEqual(self.wc.ANCHORS_PATH,
-                         self.fc.REPO_ROOT / "experiments" / "anchors.txt")
+                         self.fc.CONFIG_THESAURUS / "anchors.txt")
 
     def test_anchors_equals_the_ratified_owners_layout(self):
         self.assertEqual(self.wc.ANCHORS_PATH,
-                         PATHS.legacy_experiments / "anchors.txt")
+                         PATHS.config_thesaurus / "anchors.txt")
 
     def test_the_equality_holds_as_strings_too(self):
-        self.assertEqual(str(self.wc.ANCHORS_PATH),
-                         str(self.wc.REPO / "anchors.txt"))
+        self.assertEqual(
+            str(self.wc.ANCHORS_PATH),
+            str(self.wc.REPO.parent / "config" / "thesaurus" / "anchors.txt"))
 
     def test_the_local_root_binding_still_resolves_as_before(self):
         self.assertEqual(self.wc.REPO, self.fc.REPO_ROOT / "experiments")
@@ -2226,7 +2339,11 @@ class TestTheEighthSliceLeftTheTrackedAnchorsFileAlone(unittest.TestCase):
         cls.wc = load_legacy("foundry_wire_capability")
 
     def test_the_anchors_file_is_tracked(self):
-        self.assertTrue((PATHS.legacy_experiments / "anchors.txt").is_file())
+        """S3 CARRY-FORWARD (case A). The DENY property is unchanged -- the
+        tracked evidence still exists and is still the thing the expression
+        points at. Slice 3 relocated the file itself, so the assertion follows
+        it to `config/thesaurus/`; the bytes are byte-identical (K1)."""
+        self.assertTrue((PATHS.config_thesaurus / "anchors.txt").is_file())
 
     def test_the_anchors_file_still_yields_its_names(self):
         """A delegation that silently pointed somewhere empty would make
@@ -2331,7 +2448,8 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
         self.assertEqual(
-            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+            len(config_delegating_expressions(
+                CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
         self.assertEqual(
             len(root_delegating_expressions(
                 GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
@@ -2343,8 +2461,14 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(local_file_constructions(self.source, ANCHORS_FILE), [])
         self.assertEqual(local_file_constructions(self.source, CORPUS_FILE), [])
         self.assertEqual(local_root_relative_constructions(self.source), [])
+        # S3 CARRY-FORWARD (case C). "Fully delegated" is unchanged as a
+        # property -- both sites still come from the boundary and neither is
+        # rebuilt locally. Slice 3 moved the anchors INPUT, so the two
+        # delegations now sit under two providers instead of one: corpus through
+        # `fc.REPO_ROOT`, anchors through `fc.CONFIG_THESAURUS`. Total still 2.
+        self.assertEqual(len(root_delegating_expressions(self.source)), 1)
         self.assertEqual(
-            len(root_delegating_expressions(self.source)), 2)
+            len(config_delegating_expressions(self.source, "CONFIG_THESAURUS")), 1)
 
 
 # ---------------------------------------------------------------------------
@@ -2631,12 +2755,19 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
             len(root_delegating_expressions(PRIOR_ART.read_text(encoding="utf-8"))),
             FOURTH_SLICE_ROOT_DELEGATIONS)
         self.assertEqual(
-            len(root_delegating_expressions(CR.read_text(encoding="utf-8"))), 1)
+            len(config_delegating_expressions(
+                CR.read_text(encoding="utf-8"), "CONFIG_CR")), 1)
         self.assertEqual(
             len(root_delegating_expressions(GROUND_TRUTH.read_text(encoding="utf-8"))), 1)
+        # S3 CARRY-FORWARD (case C). P0.4J's corpus delegation and P0.4K's
+        # anchors delegation both stand; slice 3 re-provided only the anchors
+        # one, so this file reads 1 root + 1 config rather than 2 root.
         self.assertEqual(
             len(root_delegating_expressions(
-                WIRE_CAPABILITY.read_text(encoding="utf-8"))), 2)
+                WIRE_CAPABILITY.read_text(encoding="utf-8"))), 1)
+        self.assertEqual(
+            len(config_delegating_expressions(
+                WIRE_CAPABILITY.read_text(encoding="utf-8"), "CONFIG_THESAURUS")), 1)
 
 
 # ---------------------------------------------------------------------------
@@ -2694,11 +2825,21 @@ class TestTheTenthSliceDelegatesTheGrammarReadPath(unittest.TestCase):
         source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
         self.assertEqual(local_file_constructions(source, GRAMMAR_FILE), [])
 
-    def test_the_ownership_residual_is_exactly_the_out_of_scope_sibling(self):
-        """The shared checker goes 2 -> 1 here, not 2 -> 0. Asserting `== []`
-        would silently demand that CR_CHECKS moved too."""
-        got = local_root_relative_constructions(
-            SHAPE_EXTRACTOR.read_text(encoding="utf-8"))
+    def test_the_out_of_scope_sibling_was_migrated_by_S3_not_by_this_slice(self):
+        """S3 CARRY-FORWARD (case C -- sibling collateral).
+
+        P0.4M's statement is unchanged and still true OF P0.4M: it moved the
+        GRAMMAR site and deliberately left `CR_CHECKS` alone, so the shared
+        checker read 2 -> 1 rather than 2 -> 0, and the residual was exactly the
+        generated-artifact sibling.
+
+        Migration slice 3 is the slice that moved that sibling -- `cr-checks.json`
+        is one of its ten relocated inputs -- so the residual is now zero. The
+        assertion is not "the count dropped": it names WHERE the sibling went, so
+        a residual of zero for any other reason still fails."""
+        source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
+        self.assertEqual(local_root_relative_constructions(source), [])
+        got = config_delegating_expressions(source, "CONFIG_GENERATED")
         self.assertEqual(len(got), 1, got)
         self.assertIn(CR_CHECKS_FILE, got[0])
 
@@ -2739,7 +2880,11 @@ class TestTheTenthSliceCheckerCatchesAReversion(unittest.TestCase):
         GRAMMAR-keyed checker — which cannot be satisfied by the CR_CHECKS
         sibling — returns to 1."""
         reverted = self.reverted()
-        self.assertEqual(len(local_root_relative_constructions(reverted)), 2)
+        # S3 CARRY-FORWARD (case C). Reverting GRAMMAR still restores exactly one
+        # local construction; the shared checker reads 1 rather than 2 only
+        # because slice 3 delegated the CR_CHECKS sibling that used to be the
+        # other one. The GRAMMAR-keyed arm is unchanged and still the real test.
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
         self.assertEqual(len(local_file_constructions(reverted, GRAMMAR_FILE)), 1)
 
     def test_reverting_also_drops_the_grammar_delegation(self):
@@ -2753,15 +2898,22 @@ class TestTheTenthSliceCheckerCatchesAReversion(unittest.TestCase):
         """A control that also moved CR_CHECKS would prove nothing about which
         site the guards are aimed at."""
         reverted = self.reverted()
+        # S3 CARRY-FORWARD (case C). The property is unchanged -- reverting the
+        # GRAMMAR site must not disturb the sibling -- but slice 3 delegated the
+        # sibling, so "undisturbed" is now measured at its new owner.
+        self.assertEqual(local_file_constructions(reverted, CR_CHECKS_FILE), [])
         self.assertEqual(
-            len(local_file_constructions(reverted, CR_CHECKS_FILE)), 1)
+            len(config_delegating_expressions(reverted, "CONFIG_GENERATED")), 1)
 
     def test_the_measured_helper_coverage_is_what_decided_no_new_checker(self):
         """Re-checked every run rather than trusted from a commit message."""
         live, reverted = SHAPE_EXTRACTOR.read_text(encoding="utf-8"), self.reverted()
-        self.assertEqual(len(local_root_relative_constructions(reverted)), 2)
+        # S3 CARRY-FORWARD (case C). Both counts fall by one against P0.4M
+        # because slice 3 delegated the CR_CHECKS sibling; the DIFFERENCE the
+        # measurement is about -- reverted minus live -- is unchanged at one.
+        self.assertEqual(len(local_root_relative_constructions(reverted)), 1)
         self.assertEqual(len(root_delegated_file_constructions(reverted, GRAMMAR_FILE)), 0)
-        self.assertEqual(len(local_root_relative_constructions(live)), 1)
+        self.assertEqual(len(local_root_relative_constructions(live)), 0)
         self.assertEqual(len(root_delegated_file_constructions(live, GRAMMAR_FILE)), 1)
 
     def test_no_shared_helper_constant_was_widened(self):
@@ -2797,10 +2949,14 @@ class TestTheTenthSliceResolvedPathIsByteIdentical(unittest.TestCase):
         self.assertEqual(self.fx.REPO_ROOT, self.fc.REPO_ROOT / "experiments")
         self.assertEqual(self.fx.REPO_ROOT, PATHS.legacy_experiments)
 
-    def test_the_out_of_scope_sibling_still_resolves_locally_to_the_same_file(self):
+    def test_the_sibling_resolves_to_the_S3_relocated_file(self):
+        """S3 CARRY-FORWARD (case A). P0.4M's claim -- that it left this sibling
+        resolving locally to `docs/cr-checks.json` -- was true of P0.4M and is
+        not rewritten. Slice 3 relocated the artifact, so the value now follows
+        it to `config/generated/`, byte-identically (K1)."""
         self.assertEqual(self.fx.CR_CHECKS,
-                         self.fx.REPO_ROOT.parent / "docs" / CR_CHECKS_FILE)
-        self.assertEqual(self.fx.CR_CHECKS, PATHS.legacy_docs / CR_CHECKS_FILE)
+                         self.fx.REPO_ROOT.parent / "config" / "generated" / CR_CHECKS_FILE)
+        self.assertEqual(self.fx.CR_CHECKS, PATHS.config_generated / CR_CHECKS_FILE)
 
 
 class TestTheTenthSliceLeftTheRulingDocumentAlone(unittest.TestCase):
@@ -2876,15 +3032,22 @@ class TestTheTenthSliceChangedNothingElse(unittest.TestCase):
         cls.fx = load_legacy("foundry_shape_extractor")
         cls.source = SHAPE_EXTRACTOR.read_text(encoding="utf-8")
 
-    def test_the_generated_artifact_sibling_is_deliberately_untouched(self):
-        """`docs/cr-checks.json` is a GENERATED artifact, explicitly ineligible
-        in this tranche. It sits on the very next line, so this is the guard
-        that stops one slice from quietly becoming two."""
-        self.assertIn('CR_CHECKS = REPO_ROOT.parent / "docs" / "cr-checks.json"',
+    def test_the_generated_artifact_sibling_was_moved_by_S3_and_by_nothing_else(self):
+        """S3 CARRY-FORWARD (case C). P0.4M's guard existed to stop ITS OWN slice
+        from quietly becoming two, and that historical claim stands: P0.4M did
+        not touch this line.
+
+        Slice 3 moved `cr-checks.json` into `config/generated/` as one of its ten
+        declared inputs, so the sibling is now delegated. The same safety
+        property is asserted, aimed at the current owner: the generated artifact
+        is reached through the boundary, exactly once, and is NOT rebuilt from a
+        local root. It is still NOT regenerated by this slice -- K1 holds its
+        bytes identical."""
+        self.assertIn('CR_CHECKS = fc.CONFIG_GENERATED / "cr-checks.json"',
                       self.source)
-        self.assertEqual(len(local_file_constructions(self.source, CR_CHECKS_FILE)), 1)
+        self.assertEqual(local_file_constructions(self.source, CR_CHECKS_FILE), [])
         self.assertEqual(
-            root_delegated_file_constructions(self.source, CR_CHECKS_FILE), [])
+            len(config_delegating_expressions(self.source, "CONFIG_GENERATED")), 1)
 
     def test_the_root_decision_and_bootstrap_are_unchanged(self):
         self.assertIn("REPO_ROOT = Path(__file__).resolve().parent", self.source)
@@ -3264,7 +3427,7 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             ])
         self.assertEqual(
             ProjectPaths.for_root("/r").codebook_authority_selector,
-            Path("/r/docs/codebook-authority.json"))
+            Path("/r/config/selectors/codebook-authority.json"))
 
 
 class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
@@ -3572,7 +3735,11 @@ CENSUS_HEAD = {
     # explicit PARAMETER or read an artifact path handed to them, they state no
     # repository-relative path of their own, and they make no `sys.path` call.
     # No legacy production file is edited by this task at all.
-    "tracked_python": 151,                         # C8.5M: 135 (+2 C8.5N files);
+    # S3 adds ONE tracked file, `tests/refoundation/test_det_batch_retirement.py`
+    # -- the durable guard for the retired DET batch. It lands in `tests`, which
+    # is outside every measured layout scope, so it moves the file census and no
+    # layout row: the C8.5G/C8.5I/C8.5M shape, not the C8.5J/C8.5K shape.
+    "tracked_python": 152,                         # S3: 151 (+1 retirement guard);
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
                                                    # analysis module);
@@ -3618,7 +3785,7 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 23},               # C8.5M: 17 (+ its store test);
+                       "tests": 24},               # S3: 23 (+ the retirement guard);
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
                                                    # analysis module);
@@ -3659,20 +3826,56 @@ CENSUS_HEAD = {
     # only its line number changes. `local_sites_total`, the bootstrap count, the
     # consumption rows and `consumption_files` are all unchanged, and each hold is
     # derived: the repoint deletes no repository-relative statement and adds none.
-    "delegations_total": 150,                      # C8.5U: 149; C8.5I: 141; C8.5B: 140
+    #
+    # MIGRATION SLICE 3 IS THE FIRST SLICE THAT RELOCATES TRACKED INPUT BYTES.
+    # Every row it moves is DERIVED from one fact rather than read off afterwards:
+    # ten tracked inputs left `docs/` and `experiments/` for the `config/` groups
+    # slice 1 named, so fifteen legacy modules stopped restating
+    # `REPO_ROOT / "docs" / "<file>"` and now say `fc.CONFIG_<GROUP> / "<file>"`
+    # against six aliases `foundry_common` takes straight from the owner.
+    #
+    #     LOCAL SITE  ->  DELEGATION, exactly 17 times.
+    #
+    # The two halves must agree or the slice lost something:
+    #
+    #     delegations_total   150 -> 167  (+17)
+    #     local_sites_total    86 ->  69  (-17)      the same seventeen
+    #
+    # Two of the 167 only changed PROVIDER: `foundry_cr.CR_PATH` and
+    # `foundry_wire_capability.ANCHORS_PATH` already delegated through
+    # `fc.REPO_ROOT` and now delegate through `CONFIG_CR` / `CONFIG_THESAURUS`.
+    # So `REPO_ROOT` falls by exactly 2 while 19 CONFIG_* rows appear:
+    # 150 - 2 + 19 = 167.
+    #
+    # `FOUNDRY_OUT_DIR` (126) and `DATA_ARTIFACTS_DIR` (1) are UNCHANGED -- S3
+    # moved no generated output. `local_sites_bootstrap` is UNCHANGED at 28, and
+    # that is the load-bearing one: S3 touched no `sys.path` bootstrap, so D6/S15
+    # still owns every one of them.
+    #
+    # `PATH_JOIN` takes all 17; `DIRECT_BIND`, `ATTRIBUTE_NAV` and `CALL_ARG` are
+    # unchanged, because every repoint is an owner-property-plus-filename join and
+    # none of them changed how a value is bound or passed.
+    "delegations_total": 167,                      # S3: 150 (+17); C8.5U: 149; C8.5B: 140
     "delegations_by_provider": {
         "foundry_common.FOUNDRY_OUT_DIR": 126,     # unchanged
-        "foundry_common.REPO_ROOT": 23,            # C8.5U: 22; C8.5I: 14; C8.5B: 12
-        "foundry_common.DATA_ARTIFACTS_DIR": 1,    # C8.5B: name did not exist
+        "foundry_common.REPO_ROOT": 21,            # S3: 23 (-2, both re-provided)
+        "foundry_common.DATA_ARTIFACTS_DIR": 1,    # unchanged
+        # S3: the six config groups. 13 + 2 + 1 + 1 + 1 + 1 = 19.
+        "foundry_common.CONFIG_SEMANTIC": 13,
+        "foundry_common.CONFIG_GENERATED": 2,
+        "foundry_common.CONFIG_SELECTORS": 1,
+        "foundry_common.CONFIG_CR": 1,
+        "foundry_common.CONFIG_REGISTERS": 1,
+        "foundry_common.CONFIG_THESAURUS": 1,
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
-        "PATH_JOIN": 136,                          # C8.5B: 135
+        "PATH_JOIN": 153,                          # S3: 136 (+17, all of them)
         "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
         "CALL_ARG": 10,                            # C8.5U: 9; C8.5I: 1 (+8 C8.5J)
     },
-    "delegation_files": 56,                        # C8.5U: 55; C8.5I: 52 (+3 C8.5J)
+    "delegation_files": 57,                        # S3: 56 (+1, emit_viewer.py)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as
@@ -3714,12 +3917,12 @@ CENSUS_HEAD = {
     # No delegation row moves either: the re-aimed guard loads no provider
     # layout name, and the new `_persistence_closure()` helper reaches the store
     # through `__file__` of the imported module.
-    "local_sites_total": 86,                       # C8.5M: 87; C8.5J: 88
-    "local_sites_bootstrap": 28,                   # unchanged
-    "local_sites_consumption": 58,                 # C8.5M: 59; C8.5J: 60
-    "consumption_origin": {"hop1": 42, "hop2": 14, "inline": 2},   # hop1 C8.5M: 43
-    "consumption_scope": {"module": 42, "function": 16},           # function C8.5M: 17
-    "consumption_files": 29,                       # C8.5B: 30
+    "local_sites_total": 69,                       # S3: 86 (-17)
+    "local_sites_bootstrap": 28,                   # UNCHANGED -- S3 touched no bootstrap
+    "local_sites_consumption": 41,                 # S3: 58 (-17)
+    "consumption_origin": {"hop1": 26, "hop2": 14, "inline": 1},   # S3: hop1 -16, inline -1
+    "consumption_scope": {"module": 27, "function": 14},           # S3: module -15, function -2
+    "consumption_files": 16,                       # S3: 29 (-13)
     "sys_path_calls": {"experiments": 83, "experiments_measure": 6},
 }
 
@@ -4269,11 +4472,33 @@ class TestTheBlindSpotShapesAreStillDetected(unittest.TestCase):
             sites += layout_census.local_layout_sites(
                 (REPO_ROOT / rel).read_text(encoding="utf-8"), rel)
         consumption = [s for s in sites if not s.bootstrap]
+        # All three origins are still attested by REAL production code, which is
+        # what stops the four NC fixtures above from being the only thing the
+        # checker has ever seen.
         self.assertEqual({s.origin for s in consumption}, {"hop1", "hop2", "inline"})
         self.assertTrue(any(s.scope != "module" for s in consumption))
-        self.assertIn(("experiments/foundry_visibility_audit.py", "inline"),
-                      [(s.path, s.origin) for s in consumption
-                       if s.scope != "module"])
+
+        # S3 CARRY-FORWARD (case B). Until slice 3 the live INLINE attestation
+        # was function-scoped, inside `foundry_visibility_audit._det_patterns`:
+        #
+        #     docs = Path(__file__).resolve().parent.parent / "docs"
+        #
+        # That statement was true when it was written and is not rewritten here.
+        # Slice 3 deleted that exact line -- it is where the module resolved the
+        # DET batch directory, and retiring the superseded `det-patterns-v1.json`
+        # replaced the whole construction with `fc.CONFIG_SEMANTIC / name`. So
+        # legacy production now has NO function-scoped inline site.
+        #
+        # The executable arm therefore names the inline site that IS live, by
+        # path, rather than dropping the attestation or loosening it to "some
+        # inline site exists somewhere". Detection of the function-scoped inline
+        # COMBINATION is not lost: `test_nc3_inline_chain_with_no_named_root` and
+        # `test_nc4_function_local_derivation` above prove the checker reports
+        # each dimension, and they are fixtures precisely so that a shape can
+        # stay covered when production stops exhibiting it.
+        inline = [(s.path, s.scope) for s in consumption if s.origin == "inline"]
+        self.assertEqual(inline,
+                         [("experiments/foundry_audit_baseline.py", "module")])
 
     def test_a_runtime_component_is_not_a_layout_statement(self):
         """`ROOT / name` joins a value the source does not know. It states no

@@ -199,7 +199,7 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
                          target.stat().st_size)
 
     def test_the_codebook_identity_is_the_selector_selection(self):
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         value = self.measured["CODEBOOK_AUTHORITY_IDENTITY"].value
         self.assertEqual(value["selected_sha256"], selector["sha256"])
@@ -226,7 +226,7 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         reformat that changed the selection, and fail on whitespace that changed
         nothing."""
         measurement = self.measured["CODEBOOK_AUTHORITY_IDENTITY"]
-        selector_bytes = sha256_of(PATHS.legacy_docs / "codebook-authority.json")
+        selector_bytes = sha256_of(PATHS.codebook_authority_selector)
         self.assertEqual(measurement.evidence.source_sha256, selector_bytes)
         self.assertNotEqual(measurement.value["selected_sha256"], selector_bytes)
 
@@ -235,11 +235,11 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         is read from the tracked selector. The evidence names the selector, not the
         codebook."""
         evidence = self.measured["CODEBOOK_AUTHORITY_IDENTITY"].evidence
-        self.assertEqual(evidence.source_path, "docs/codebook-authority.json")
+        self.assertEqual(evidence.source_path, "config/selectors/codebook-authority.json")
         self.assertLess(evidence.source_size_bytes, 10_000)
 
     def test_the_cr_edition_is_the_vendored_file_bytes(self):
-        target = PATHS.legacy_docs / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+        target = PATHS.config_cr / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
         value = self.measured["CR_EDITION_CONTENT"].value
         self.assertEqual(value["sha256"], sha256_of(target))
         self.assertEqual(value["size_bytes"], target.stat().st_size)
@@ -250,7 +250,7 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         and the mechanical read would be quietly conserving the wrong edition."""
         value = self.measured["CR_EDITION_CONTENT"].value
         self.assertEqual(value["effective_date"], "2026-08-07")
-        text = (PATHS.legacy_docs / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+        text = (PATHS.config_cr / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
                 ).read_text(encoding="utf-8")[:4000]
         self.assertIn("These rules are effective as of August 7, 2026.", text)
 
@@ -263,7 +263,7 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
         (root / "docs").mkdir()
-        original = PATHS.legacy_docs / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+        original = PATHS.config_cr / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
         renamed = root / "docs" / "cr-under-any-other-name.md"
         shutil.copyfile(original, renamed)
         digest, _ = cc._read_source(root, "docs/cr-under-any-other-name.md",
@@ -294,11 +294,11 @@ class FixtureTestCase(ContractTestCase):
         self.write(root, ratchet_at,
                    real_ratchet.read_bytes() if ratchet_bytes is None else ratchet_bytes)
         selector_doc = selector if selector is not None else json.loads(
-            (PATHS.legacy_docs / "codebook-authority.json").read_text(encoding="utf-8"))
-        self.write(root, "docs/codebook-authority.json",
+            (PATHS.codebook_authority_selector).read_text(encoding="utf-8"))
+        self.write(root, "config/selectors/codebook-authority.json",
                    json.dumps(selector_doc, indent=2).encode("utf-8"))
-        self.write(root, "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
-                   (PATHS.legacy_docs / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
+        self.write(root, "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+                   (PATHS.config_cr / "MTG_Comprehensive_Rules_2026-08-07_LLM.md"
                     ).read_bytes())
         return root
 
@@ -331,7 +331,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
     def test_a_reformatted_selector_does_not_read_as_drift(self):
         """Evidence moves, truth does not. The selector's own bytes differ on both
         sides; the selection it declares does not."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
@@ -339,7 +339,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
             ratchet_at="config/baselines/foundry-audit-baseline.json", selector=selector)
         # Reformat, changing bytes and key order but not one declared value.
         reformatted = json.dumps(dict(reversed(list(selector.items()))), indent=4)
-        (new_root / "docs" / "codebook-authority.json").write_text(reformatted,
+        (new_root / "config" / "selectors" / "codebook-authority.json").write_text(reformatted,
                                                                   encoding="utf-8")
 
         left = cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root)
@@ -357,7 +357,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         the selected sha256 and byte size are untouched must be CONSERVED, or the
         harness has promoted a label to truth.
         """
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         relabelled = dict(selector, snapshot_id="codebook-relabelled-by-a-human")
         self.assertNotEqual(relabelled["snapshot_id"], selector["snapshot_id"])
@@ -377,7 +377,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
     def test_a_changed_selected_byte_size_is_drift(self):
         """The other half of the contracted value, controlled separately: a check that
         only ever moves the digest cannot tell whether the size is compared at all."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         drifted = dict(selector, byte_size=selector["byte_size"] + 1)
         legacy_root = self.make_root(
@@ -397,7 +397,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
 
     def test_a_byte_identical_selector_that_selects_something_else_is_drift(self):
         """The inverse control. Same document, same length, different selection."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         drifted = dict(selector)
         drifted["sha256"] = "0" * 63 + "1"
@@ -709,7 +709,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
             cc.measure_side(self.contract, "SOME_OTHER_SIDE", root)
 
     def test_a_malformed_digest_in_the_source_stops_the_run(self):
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["sha256"] = "not-a-digest"
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
@@ -719,7 +719,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
 
     def test_an_uppercase_digest_is_refused(self):
         """Two spellings of one digest would compare unequal and read as drift."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["sha256"] = selector["sha256"].upper()
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
@@ -728,7 +728,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
 
     def test_a_byte_size_that_is_not_a_number_stops_the_run(self):
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["byte_size"] = "5066147"
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
@@ -738,7 +738,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
 
     def test_a_boolean_is_not_a_byte_size(self):
         """`bool` is an `int` subclass, so True would otherwise measure as size 1."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["byte_size"] = True
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
@@ -750,7 +750,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         """Aimed at a CONTRACTED key. It used to delete `snapshot_id`, which the
         contract no longer reads — a control pointed at a field nobody looks at
         passes for the wrong reason and proves nothing about the halt."""
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json")
+        selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         del selector["byte_size"]
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
@@ -760,14 +760,14 @@ class TestMeasurementFailsClosed(FixtureTestCase):
 
     def test_a_cr_file_with_no_declared_identity_stops_the_run(self):
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
-        self.write(root, "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+        self.write(root, "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
                    b"# Rules\n\nno front matter here\n")
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
 
     def test_front_matter_without_the_contracted_key_stops_the_run(self):
         root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
-        self.write(root, "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+        self.write(root, "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
                    b"---\ntitle: \"Rules\"\n---\n\nbody\n")
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)

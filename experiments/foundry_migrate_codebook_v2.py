@@ -65,7 +65,7 @@ CODEBOOK_PATH = FOUNDRY / "codebook.json"
 DECISIONS_DIR = FOUNDRY / "decisions"
 REVIEW_DIR = FOUNDRY / "review"
 DET_HITS_PATH = FOUNDRY / "det_pass_full_hits.json"
-DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
+DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 PAY_LIFE_REPORT_PATH = FOUNDRY / "batch7_pay_life_scrub_report.json"
 MANIFEST_PATH = FOUNDRY / "migration_manifest.json"
 

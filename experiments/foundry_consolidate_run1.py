@@ -31,7 +31,7 @@ import validate_slug  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
 
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
-GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
+GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 PARSED_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_parsed_final.json"
 DET_SYNTH_CHECK_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_det_synth_check.json"
 DISCOVERY_OUT_PATH = fc.FOUNDRY_OUT_DIR / "corpus_pass_run1_discovery.json"

@@ -50,7 +50,7 @@ sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 
 GRAMMAR = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"
-CR_CHECKS = REPO_ROOT.parent / "docs" / "cr-checks.json"
+CR_CHECKS = fc.CONFIG_GENERATED / "cr-checks.json"
 
 REMINDER = re.compile(r"\([^)]*\)")
 

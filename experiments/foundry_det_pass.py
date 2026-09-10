@@ -49,7 +49,7 @@ import foundry_det_patterns_probe as probe  # noqa: E402
 import foundry_locality as fl  # noqa: E402
 import re  # noqa: E402
 
-DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
+DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 SAMPLES_REPORT_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_samples_report.json"
 SAMPLES_REPORT_MD_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_samples_report.md"

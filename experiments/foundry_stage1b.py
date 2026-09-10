@@ -69,7 +69,7 @@ CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 batch_paths = fc.batch_paths  # canonical per-batch filenames now live in foundry_common.py
 
 
-DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
+DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 
 
 def load_det_owned_slugs() -> set:
@@ -110,7 +110,7 @@ def load_codebook_reference() -> str:
     return "\n".join(lines)
 
 
-GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
+GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 
 
 def load_ratified_grammars_reference() -> str:

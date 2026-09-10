@@ -66,6 +66,19 @@ REVIEW_DIR = _PATHS.legacy_foundry_review
 # three above, this is the OWNER's value -- it is not derived here.
 DATA_ARTIFACTS_DIR = _PATHS.legacy_data_artifacts
 
+# S3: the six tracked CONFIG GROUPS, direct aliases of the S1-accepted owner.
+# Migration slice 3 relocated ten tracked inputs into the `config/` groups slice
+# 1 named, and these names are what let fifteen legacy readers say
+# `fc.CONFIG_SEMANTIC / "x.json"` instead of each restating `"config"/"<group>"`.
+# Same shape and same reason as the four names above: the VALUE is the owner's,
+# derived nowhere here, so a group re-points in exactly one place.
+CONFIG_SELECTORS = _PATHS.config_selectors
+CONFIG_SEMANTIC = _PATHS.config_semantic
+CONFIG_GENERATED = _PATHS.config_generated
+CONFIG_REGISTERS = _PATHS.config_registers
+CONFIG_CR = _PATHS.config_cr
+CONFIG_THESAURUS = _PATHS.config_thesaurus
+
 
 def halt(message: str) -> None:
     print(f"STOP — {message}", file=sys.stderr)

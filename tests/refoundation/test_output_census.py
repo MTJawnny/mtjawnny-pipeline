@@ -233,7 +233,7 @@ class TestAgreementWithPriorEvidence(CensusTestCase):
     def test_the_codebook_mirror_matches_the_tracked_selector(self):
         import json
 
-        selector = json.loads((PATHS.legacy_docs / "codebook-authority.json").read_text())
+        selector = json.loads((PATHS.codebook_authority_selector).read_text())
         body = dict(self.entries)["experiments/out/foundry/codebook.json"]
         measured = re.search(r"sha256_measured: (\S+)", body).group(1)
         size = int(re.search(r"size_bytes: (\d+)", body).group(1))

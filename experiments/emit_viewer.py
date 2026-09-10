@@ -65,7 +65,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import tier_engine as te  # noqa: E402  (path insert must precede this import)
 
-ANCHORS_TXT = Path("experiments/anchors.txt")
+ANCHORS_TXT = Path("config/thesaurus/anchors.txt")
 VIEWER_DATA_DIR = Path("experiments/out/viewer/data")
 SLOW_ANCHOR_THRESHOLD_SECONDS = 60
 

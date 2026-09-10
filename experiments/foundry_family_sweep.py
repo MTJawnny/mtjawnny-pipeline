@@ -54,8 +54,8 @@ import foundry_consolidate as fcon  # noqa: E402
 import foundry_cr as fcr  # noqa: E402
 import validate_slug  # noqa: E402
 
-GRAMMARS_PATH = REPO_ROOT / "docs" / "grammars.json"
-DET_PATTERNS_PATH = REPO_ROOT / "docs" / "det-patterns-v2.json"
+GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
+DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 REPORT_PATH = fc.FOUNDRY_OUT_DIR / "family_sweep_report.json"
 
 # The Comprehensive Rules are the only store in this system that is NOT a
@@ -726,7 +726,7 @@ def run(include_proposed: bool):
 # the authorized-debt gate
 # --------------------------------------------------------------------------
 
-KNOWN_DEBT_PATH = REPO_ROOT / "docs" / "family-sweep-known-debt.json"
+KNOWN_DEBT_PATH = fc.CONFIG_REGISTERS / "family-sweep-known-debt.json"
 
 # Exit statuses `--gate` produces. These are the machine-stable contract with
 # `foundry_gate2.py`, which reads NOTHING else -- not this file, not stdout.

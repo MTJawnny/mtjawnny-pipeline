@@ -129,11 +129,15 @@ def det_patterns():
     """
     global _DET_PATTERNS
     if _DET_PATTERNS is None:
-        docs = Path(__file__).resolve().parent.parent / "docs"
+        # S3: `det-patterns-v1.json` retired -- superseded history, archived at
+        # `archive/config/`, which is INERT and carries no active reader. Proven
+        # before the move: all 44 v1 string-pattern slugs are supplied by a later
+        # batch, none is v1-only, and the effective map is identical with and
+        # without it (45 entries either way).
         seen = {}
-        for name in ("det-patterns-v1.json", "det-patterns-v2.json",
+        for name in ("det-patterns-v2.json",
                      "det-patterns-cr-actions-v1.json"):
-            path = docs / name
+            path = fc.CONFIG_SEMANTIC / name
             if not path.exists():
                 fc.halt(f"ratified DET pattern batch missing: {path}")
             for p in json.loads(path.read_text(encoding="utf-8")).get("patterns", []):

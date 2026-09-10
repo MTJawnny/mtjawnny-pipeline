@@ -125,7 +125,7 @@ SCHEMA = "foundry-authority/1"
 # candidate cutover -- its absence is the AUTHORITY_NOT_INITIALIZED state, not
 # an error, and a bootstrap file asserting an authority that does not exist
 # would be a lie the tooling would then believe (P3 §18).
-MANIFEST_PATH = REPO_ROOT / "docs" / "codebook-authority.json"
+MANIFEST_PATH = fc.CONFIG_SELECTORS / "codebook-authority.json"
 
 # The bucket is part of OBJECT IDENTITY: the same key in another bucket is a
 # different object, and if the manifest omits it the identity gets supplied by

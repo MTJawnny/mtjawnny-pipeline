@@ -25,7 +25,7 @@ import foundry_common as fc  # noqa: E402
 import validate_slug as vs  # noqa: E402
 
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
-GRAMMARS_PATH = REPO_ROOT.parent / "docs" / "grammars.json"
+GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 OUT_PATH = fc.FOUNDRY_OUT_DIR / "axis_walk_scaffold.json"
 
 # slug-prefix -> DELIVERY value, longest-prefix-wins (checked in this order)

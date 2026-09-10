@@ -161,12 +161,12 @@
         },
         {
           "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",
-          "source_path": "docs/codebook-authority.json",
+          "source_path": "config/selectors/codebook-authority.json",
           "availability": "TRACKED"
         },
         {
           "invariant_id": "CR_EDITION_CONTENT",
-          "source_path": "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+          "source_path": "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
           "availability": "TRACKED"
         }
       ]
@@ -182,12 +182,12 @@
         },
         {
           "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",
-          "source_path": "docs/codebook-authority.json",
+          "source_path": "config/selectors/codebook-authority.json",
           "availability": "TRACKED"
         },
         {
           "invariant_id": "CR_EDITION_CONTENT",
-          "source_path": "docs/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
+          "source_path": "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
           "availability": "TRACKED"
         }
       ]
