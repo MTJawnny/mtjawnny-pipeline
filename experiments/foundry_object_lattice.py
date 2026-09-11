@@ -83,11 +83,16 @@ import validate_slug as vs                   # noqa: E402
 # in the source TEXT, so prose naming it is ingested as a second construction --
 # the repository's standing "a document is an API" trap, aimed at a comment.
 from mtj_foundry import codebook_store       # noqa: E402
-from mtj_foundry.infra import ratchet              # noqa: E402
 from mtj_foundry.paths import ProjectPaths   # noqa: E402
 
+# S9: the C8.5J standing-ratchet import and the baseline constant it fed both
+# left with the guard that called them. Neither is NAMED here on purpose -- a
+# guard checks this file textually for the absence of that constant, and prose
+# spelling it would score documentation as a live binding. The view itself
+# STAYS: this shell still owns the codebook path it hands to
+# `codebook_store.read`, so exactly one view is still built here, for exactly
+# one path.
 PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
-RATCHET_BASELINE = PATHS.foundry_audit_baseline
 
 
 # ---------------------------------------------------------------------------
@@ -99,12 +104,17 @@ RATCHET_BASELINE = PATHS.foundry_audit_baseline
 # `classes_for_card`, and the `measure` / `residual_invariant` /
 # `anchor_coverage` measurement surfaces. NO SECOND IMPLEMENTATION REMAINS HERE.
 #
-# What stays is everything the permanent MTG layer may not own: `slug_for` and
+# What stayed was everything the permanent MTG layer may not own: `slug_for` and
 # the `rule:targeted-*` identity it builds, the ratified-membership floor and
 # its assertion, the live codebook read, `validate_slug` governance, the
 # baseline metrics, the audit and exclusivity reports, the locality binding, the
-# fixtures, the ratchet wiring, the report writer and the CLI. Those are later
-# slices.
+# fixtures, the ratchet wiring, the report writer and the CLI.
+#
+# S9 took the GUARD half of that list out. The grammar fixtures, the seven
+# recorded regressions, the per-class anchors, `--gate` and `--fixtures` are now
+# owned by `tests/guards/gate2/test_object_lattice.py`, and NO COPY OF THEM
+# REMAINS HERE. Everything else on the list is still this shell's and is still a
+# later slice's to move.
 #
 # The vocabulary used to be derived AT IMPORT TIME by reading this repository's
 # CR. That is exactly what an installed library may not do, so the derivation
@@ -179,11 +189,13 @@ def residual_invariant(stem: str, domain: set, selftest: bool = False,
                                             selftest=selftest)
 
 
-def anchor_coverage(anchors=None, cards: dict = None) -> dict:
+def anchor_coverage(anchors, cards: dict = None) -> dict:
+    # S9: `CLASS_ANCHORS` is a FIXTURE and moved with the guard, so this
+    # boundary no longer carries a default that reaches one. The anchors are
+    # now supplied by whoever owns them, which is the only caller there is.
     if cards is None:
         cards, _, _ = fc.load_corpus_gated()
-    return _halting(_tc.anchor_coverage)(
-        CLASS_ANCHORS if anchors is None else anchors, cards)
+    return _halting(_tc.anchor_coverage)(anchors, cards)
 
 
 def _assert_vocabulary_agrees() -> None:
@@ -238,168 +250,6 @@ def slug_for(stem: str, cls: str = None) -> str:
     above L2 whatever else moves."""
     base = f"rule:targeted-{stem}"
     return base if cls is None else f"{base}-{cls}"
-
-
-# --------------------------------------------------------------------------
-# grammar fixtures
-# --------------------------------------------------------------------------
-
-# THE FIXTURE IS THE GRAMMATICAL SHAPE, NEVER THE CARD NAME. Seven cards
-# regressed on 2026-08-12 and pinning those seven would leave the next card
-# printing the same shape unprotected. Each row is a clause TAIL — what
-# `classify_clause` actually receives — and the five categories are the five
-# ways the target expression's right edge can be got wrong.
-#
-# `foundry_probe.py`'s guard self-test is the precedent: fixtures inline in the
-# module they protect, replayed by a gate, every one derived from a defect that
-# really happened.
-GRAMMAR_FIXTURES = (
-    # A. INSTRUCTION TERMINATION (CR 608.2c) — a later instruction must not
-    #    contaminate this target's noun phrase.
-    ("A instruction-termination", "destroy",
-     "attacking creature, then put this card on top of your library",
-     {"creature"}),
-    ("A instruction-termination, plural", "exile",
-     "creatures you control, then return those cards to the battlefield",
-     {"creature"}),
-
-    # B. A SEPARATE LATER OBJECT (CR 601.2c) — the single printed `target` does
-    #    not reach a conjunct carrying its own determiner.
-    ("B second-object", "exile",
-     "nonland permanent and the top card of your library",
-     {"nonland-permanent"}),
-    ("B second-object, quantified", "exile",
-     "nontoken creature you own and the top two cards of your library",
-     {"creature"}),
-
-    # C. SHARED-HEAD DISTRIBUTIVE `card` — `card` applies across every arm, so
-    #    NO arm is a battlefield object. The dangerous direction: a naive arm
-    #    split turns each of these into a wrong ratified token.
-    ("C shared-head creature-or-land", "bounce",
-     "creature or land card from your graveyard to your hand", set()),
-    ("C shared-head aura-or-equipment", "bounce",
-     "aura or equipment card from your graveyard to your hand", set()),
-    ("C shared-head artifact-or-enchantment", "exile",
-     "artifact or enchantment card from your graveyard", set()),
-    # `and/or` is a coordination INSIDE one target phrase — no determiner
-    # follows, so rule B must not fire and the shared head must still hold.
-    ("C shared-head and/or", "bounce",
-     "instant and/or sorcery cards from your graveyard to your hand", set()),
-
-    # D. INDEPENDENT ALTERNATIVES — one arm is a battlefield object, the other
-    #    is a card in another zone, and no origin is printed for the target.
-    ("D independent-arms", "bounce",
-     "nonland permanent or suspended card to its owner's hand",
-     {"nonland-permanent"}),
-
-    # E. INSTRUCTION-LOCAL ZONE ORIGIN — an origin belonging to a LATER
-    #    instruction cannot retroactively make this target a card.
-    ("E zone-origin-is-instruction-local", "exile",
-     "creature you control, then reveal cards from the top of your library",
-     {"creature"}),
-
-    # NEGATIVE CONTROLS — the behaviour the repair must NOT have broken.
-    ("neg plain card-form", "bounce",
-     "creature card from your graveyard to your hand", set()),
-    ("neg plain permanent", "destroy", "creature", {"creature"}),
-    ("neg broad outranks per-type", "destroy",
-     "nonland permanent", {"nonland-permanent"}),
-)
-
-# The seven that regressed, kept as CORPUS fixtures beside the grammar ones.
-# They are a fixture, never a code path: nothing in the classifier reads a card
-# name, and each of these passes only because its SHAPE is handled.
-REGRESSION_CARDS = {
-    "Vengeful Pharaoh": ("destroy", {"creature"}),
-    "Venser's Diffusion": ("bounce", {"nonland-permanent"}),
-    "Illusionist's Stratagem": ("exile", {"creature"}),
-    "Displace": ("exile", {"creature"}),
-    "Lukka, Coppercoat Outcast": ("exile", {"creature"}),
-    "Suspend Aggression": ("exile", {"nonland-permanent"}),
-    "Become Anonymous": ("exile", {"creature"}),
-}
-
-
-# ONE ANCHOR PER RATIFIED CLASS — the only guard that sees a ZERO-SUM MOVE.
-#
-# Measured 2026-08-13: a compensating `exile-creature -7 / exile-artifact +7`
-# nets zero, so the tracked family total is silent by construction and the
-# per-class ratchet is unpinned on a fresh clone. Both count-based guards go
-# GREEN. A count cannot see a substitution either — a correct member leaving
-# and a wrong one arriving keeps every number identical.
-#
-# A per-card anchor sees both, because it names the CARD and the CLASS. It is
-# tracked (so it survives a fresh clone), and it is growth-tolerant (a new
-# Scryfall card cannot invalidate it), which is exactly the pair of properties
-# the count guards each have only one of.
-#
-# **These are FIXTURES, not a hand-list standing in for a derivation.** Nothing
-# in the classifier reads a card name; each anchor passes only because the
-# CR-derived grammar handles its shape. Every one was verified against full
-# oracle text, all faces, before being written here — classifier output is not
-# evidence for its own fixture.
-#
-# Chosen for stability: each names its type DIRECTLY ("Destroy target
-# artifact"), never through a CR 205.3 subtype, so a subtype-list refresh
-# cannot move an anchor. Single-class for their stem, so the expectation is
-# exact rather than a subset.
-CLASS_ANCHORS = (
-    ("bounce",  "artifact",              "Into Thin Air"),
-    ("bounce",  "creature",              "Flooded Shoreline"),
-    ("bounce",  "enchantment",           "Triton Cavalry"),
-    ("bounce",  "land",                  "Aven Fogbringer"),
-    ("bounce",  "nonland-permanent",     "Wail of the Forgotten"),
-    ("bounce",  "permanent",             "Surging Aether"),
-    ("destroy", "artifact",              "Goblin Trashmaster"),
-    ("destroy", "creature",              "Kalitas, Bloodchief of Ghet"),
-    ("destroy", "enchantment",           "Dawnbringer Cleric"),
-    ("destroy", "land",                  "Ogre Arsonist"),
-    ("destroy", "noncreature-permanent", "Nicol Bolas, Planeswalker"),
-    ("destroy", "nonland-permanent",     "Vraska the Unseen"),
-    ("destroy", "permanent",             "Angel of Despair"),
-    ("destroy", "planeswalker",          "Silumgar's Command"),
-    ("exile",   "artifact",              "Suplex"),
-    ("exile",   "creature",              "Astarion's Thirst"),
-    ("exile",   "enchantment",           "Erase"),
-    ("exile",   "land",                  "Sowing Mycospawn"),
-    ("exile",   "nonland-permanent",     "Kaya the Inexorable"),
-    ("exile",   "permanent",             "Karn Liberated"),
-)
-
-
-
-def fixtures() -> dict:
-    """Replay the grammar shapes, the seven regressions, and the class anchors."""
-    failed = []
-    for label, stem, tail, want in GRAMMAR_FIXTURES:
-        got = classify_clause(tail, PERMANENT_TYPES)["classes"]
-        if got != want:
-            failed.append((label, tail, sorted(want), sorted(got)))
-
-    cards, _, _ = fc.load_corpus_gated()
-    by_name = {}
-    for card in cards.values():
-        by_name.setdefault(card["name"], card)
-    for name, (stem, want) in sorted(REGRESSION_CARDS.items()):
-        card = by_name.get(name)
-        if card is None:
-            failed.append((f"corpus {name}", "absent from the gated corpus",
-                           sorted(want), ["CARD NOT FOUND"]))
-            continue
-        got = classes_for_card(card, stem, PERMANENT_TYPES)["classes"]
-        if got != want:
-            failed.append((f"corpus {name}", stem, sorted(want), sorted(got)))
-    for stem, cls, name in CLASS_ANCHORS:
-        card = by_name.get(name)
-        if card is None:
-            failed.append((f"anchor {stem}-{cls} {name}",
-                           "absent from the gated corpus", [cls], ["CARD NOT FOUND"]))
-            continue
-        got = classes_for_card(card, stem, PERMANENT_TYPES)["classes"]
-        if got != {cls}:
-            failed.append((f"anchor {stem}-{cls} {name}", stem, [cls], sorted(got)))
-    return {"n": len(GRAMMAR_FIXTURES) + len(REGRESSION_CARDS) + len(CLASS_ANCHORS),
-            "failed": failed}
 
 
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
@@ -777,13 +627,6 @@ def main() -> int:
     ap.add_argument("--audit", action="store_true",
                     help="run the negative controls (NC1-NC4) and exit 1 on "
                          "any hard failure")
-    ap.add_argument("--gate", action="store_true",
-                    help="the Gate 2 entry: grammar fixtures + residual "
-                         "invariant + the pinned membership ratchet, one exit "
-                         "code. Never run the three separately to save time.")
-    ap.add_argument("--fixtures", action="store_true",
-                    help="replay the grammar-shape fixtures and the seven "
-                         "recorded regressions")
     ap.add_argument("--update-baseline", action="store_true",
                     help="accept the current membership/residual counts ON "
                          "PURPOSE. A membership count that FELL is a "
@@ -805,47 +648,6 @@ def main() -> int:
                          "Quotes go in the FILE, never to console (A14).")
     args = ap.parse_args()
 
-    if args.gate or args.fixtures:
-        f = fixtures()
-        print(f"grammar fixtures: {f['n'] - len(f['failed'])}/{f['n']} pass")
-        cov = anchor_coverage()
-        print(f"class anchors   : {cov['anchored']}/{cov['live']} live classes"
-              + (f"  UNCOVERED (blind to zero-sum movement): "
-                 f"{', '.join(cov['uncovered'])}" if cov['uncovered'] else ""))
-        for label, ctx, want, got in f["failed"]:
-            print(f"    FAIL {label}: {ctx!r}")
-            print(f"         want {want}, got {got}")
-        if f["failed"] and not args.gate:
-            return 1
-        if not args.gate:
-            return 0
-
-    if args.gate:
-        bad = len(fixtures()["failed"])
-        # THE TRACKED FLOOR RUNS FIRST, because it is the only one of the two
-        # membership checks that exists on a fresh clone.
-        floor_fatal, floor_notes = assert_ratified_total()
-        for note in floor_notes:
-            print(f"RATIFIED TOTAL (reported, not fatal): {note}")
-        for problem in floor_fatal:
-            print(f"RATIFIED TOTAL: {problem}")
-            bad += 1
-        for stem in sorted(ACTION_VERBS):
-            r = residual_invariant(stem, PERMANENT_TYPES)
-            if r["unexplained"]:
-                print(f"targeted-{stem}: {len(r['unexplained'])} UNEXPLAINED "
-                      f"residual arm(s)")
-                for name, arm, cls, _q in r["unexplained"]:
-                    print(f"    {name}: arm {arm!r} -> {slug_for(stem, cls)}")
-                bad += len(r["unexplained"])
-        bad += ratchet.report(RATCHET_BASELINE, "object_lattice",
-                              baseline_metrics(), args.update_baseline)
-        if bad:
-            print(f"\n  OBJECT LATTICE GATE FAILED ({bad}). No provenance "
-                  f"write may proceed on this producer.")
-            return 1
-        print("\n  object lattice gate GREEN")
-        return 0
 
     if args.invariant:
         bad = 0

@@ -26,8 +26,15 @@ import argparse
 import collections
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
+# S9: this guard moved out of `experiments/`. The NAME still denotes the
+# legacy module directory, exactly as it did before the move, so every
+# expression below is unchanged; only the derivation of it moved.
+REPO_ROOT = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO_ROOT))
+# S9: `foundry_probe` is test-owned at `tests/guards/probe/`. It is still
+# imported by bare name -- the idiom CLAUDE.md records -- so what moved is
+# the directory this bootstrap names, not the import.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "probe"))
 import foundry_probe as p        # noqa: E402
 
 GRAMMAR = REPO_ROOT.parent / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"

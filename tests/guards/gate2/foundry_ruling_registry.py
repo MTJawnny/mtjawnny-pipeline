@@ -58,8 +58,16 @@ from pathlib import Path
 # is invoked as a loose script, so `mtj_foundry` is reachable only once the
 # C8.5A compatibility bootstrap has run -- and `foundry_common` is what runs it.
 # Importing the boundary FIRST is therefore load-bearing, and is the reason this
-# import sits outside the otherwise alphabetical block above. No sys.path
-# mutation and no second bootstrap is added here.
+# import sits outside the otherwise alphabetical block above.
+#
+# S9: the guard moved out of `experiments/`, so the legacy module directory is no
+# longer the script's own directory and no longer arrives on `sys.path` for free.
+# The C8.5J claim that this module adds no bootstrap was TRUE AT ITS OLD ADDRESS
+# and is false at this one, so it is restated rather than left standing: the
+# bootstrap below is the same LEGACY_SIBLING_IMPORT family every other legacy
+# caller uses, and it is stated here because the move -- not this guard -- is
+# what made it necessary.
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "experiments"))
 import foundry_common as fc  # noqa: E402,F401
 from mtj_foundry.infra import ratchet  # noqa: E402
 from mtj_foundry.paths import ProjectPaths  # noqa: E402
@@ -76,7 +84,10 @@ from mtj_foundry.paths import ProjectPaths  # noqa: E402
 # be literal; the prose is what has to be careful.
 PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+# S9: this guard moved out of `experiments/`. The NAME still denotes the
+# repository root, exactly as it did before the move, so every expression
+# below is unchanged; only the derivation of it moved.
+REPO_ROOT = Path(__file__).resolve().parents[3]
 RATCHET_BASELINE = PATHS.foundry_audit_baseline
 DOCS = REPO_ROOT / "docs"
 # C8.5K: the GENERATED machine-readable output now comes from the layout owner.

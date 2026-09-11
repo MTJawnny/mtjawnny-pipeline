@@ -51,7 +51,10 @@ EXPERIMENTS = PATHS.legacy_experiments
 # S4 relocated this guard out of `experiments/` to the Gate-2 guard owner.
 GROUND_TRUTH_REL = "tests/guards/gate2/test_ground_truth.py"
 GROUND_TRUTH = REPO_ROOT / GROUND_TRUTH_REL
-PROBE = EXPERIMENTS / "foundry_probe.py"
+# S9: the probe became test-owned. It is still one of the three P0.4B sites
+# and still delegates the same expression; only its address moved.
+PROBE_REL = "tests/guards/probe/foundry_probe.py"
+PROBE = REPO_ROOT / PROBE_REL
 
 # The three sites the census selected, as (file, expected delegating expressions).
 MIGRATED = {GROUND_TRUTH: 2, PROBE: 1}
@@ -74,7 +77,9 @@ SECOND_SLICE = {
 # (`fc.REPO_ROOT`), same boundary, and the first slice whose two consumers both
 # run GREEN in an isolated worktree -- which is why it can carry byte-identical
 # before/after runtime evidence instead of structure-only review.
-REACHABILITY = EXPERIMENTS / "foundry_reachability.py"
+# S9: the reachability guard moved to the Gate-2 guard owner.
+REACHABILITY_REL = "tests/guards/gate2/foundry_reachability.py"
+REACHABILITY = REPO_ROOT / REACHABILITY_REL
 
 THIRD_SLICE = {
     REACHABILITY: 2,   # WORKFLOWS, and the inverse_census glob base
@@ -234,7 +239,7 @@ class TestTheResolvedPathIsByteIdentical(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.fc = load_legacy("foundry_common")
-        cls.probe = load_legacy("foundry_probe")
+        cls.probe = load_moved_guard(PROBE_REL)
 
     def test_probe_codebook_equals_the_delegated_value(self):
         self.assertEqual(self.probe.CODEBOOK,
@@ -258,7 +263,7 @@ class TestNothingElseMoved(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.probe = load_legacy("foundry_probe")
+        cls.probe = load_moved_guard(PROBE_REL)
 
     def test_the_neighbouring_layout_sites_are_untouched(self):
         """`GRAMMAR` sits on the line after the migrated `CODEBOOK`.
@@ -337,7 +342,7 @@ class TestNothingElseMoved(unittest.TestCase):
                          ["tests/guards/gate2/test_ground_truth.py"])            # S4
         self.assertEqual(argv["ground_truth_wide"],
                          ["tests/guards/gate2/test_ground_truth.py", "--wide"])  # S4
-        self.assertEqual(argv["probe_guards"], ["experiments/foundry_probe.py"])
+        self.assertEqual(argv["probe_guards"], [PROBE_REL])
 
     def test_no_gate2_row_gained_or_lost_a_flag(self):
         for name, argv, _ in gate_rows():
@@ -680,9 +685,24 @@ class TestTheThirdSliceDelegatesTheRoot(unittest.TestCase):
                 self.assertEqual(len(got), expected, got)
 
     def test_the_delegations_are_the_expected_three_sites(self):
+        """S9: the census glob base is the SAME delegation, joined to a name
+        instead of a literal.
+
+        `inverse_census` used to scan `experiments/` alone. S9 moved eleven
+        Gate-2 guards and the probe out of that directory, and they read the
+        same artifacts they always did, so the scan covers `CONSUMER_DIRS` now
+        -- otherwise the census would report a fall in consumers that did not
+        happen. The DELEGATION is untouched: the root still comes from the
+        compatibility boundary, still at one site, still joined to a directory.
+        Both halves are asserted, so the literal cannot simply vanish.
+        """
         reach = root_delegating_expressions(REACHABILITY.read_text(encoding="utf-8"))
         self.assertTrue(any("'.github' / 'workflows'" in g for g in reach), reach)
-        self.assertTrue(any("'experiments'" in g for g in reach), reach)
+        self.assertTrue(any("/ directory" in g for g in reach), reach)
+        source = REACHABILITY.read_text(encoding="utf-8")
+        self.assertIn('CONSUMER_DIRS = ("experiments", "tests/guards/gate2",\n'
+                      '                 "tests/guards/probe")', source)
+        self.assertIn("for directory in CONSUMER_DIRS:", source)
         probe = root_delegating_expressions(PROBE.read_text(encoding="utf-8"))
         self.assertTrue(any("CODEBOOK-NAMING-GRAMMAR.md" in g for g in probe), probe)
 
@@ -709,8 +729,12 @@ class TestTheThirdSliceCheckerCatchesAReversion(unittest.TestCase):
             'WORKFLOWS = REPO / ".github" / "workflows"'),
         "reachability inverse_census glob base": (
             REACHABILITY,
-            '    for py in sorted((fc.REPO_ROOT / "experiments").glob("*.py")):',
-            '    for py in sorted((REPO / "experiments").glob("*.py")):'),
+            '        for py in sorted((fc.REPO_ROOT / directory).glob("*.py")):',
+            # S9: the rig reverts to a local root joined to a LITERAL, which is
+            # what a real reversion looks like and what the census counts. A rig
+            # that joined the loop VARIABLE instead would register zero local
+            # constructions and quietly stop being a control.
+            '        for py in sorted((REPO / "experiments").glob("*.py")):'),
         "probe GRAMMAR": (
             PROBE,
             'GRAMMAR = fc.REPO_ROOT / "docs" / "CODEBOOK-NAMING-GRAMMAR.md"',
@@ -759,8 +783,8 @@ class TestTheThirdSliceResolvedPathsAreByteIdentical(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.fc = load_legacy("foundry_common")
-        cls.reach = load_legacy("foundry_reachability")
-        cls.probe = load_legacy("foundry_probe")
+        cls.reach = load_moved_guard(REACHABILITY_REL)
+        cls.probe = load_moved_guard(PROBE_REL)
 
     def test_workflows_equals_its_pre_change_construction(self):
         self.assertEqual(self.reach.WORKFLOWS,
@@ -791,15 +815,20 @@ class TestTheThirdSliceResolvedPathsAreByteIdentical(unittest.TestCase):
 class TestTheThirdSliceChangedNothingElse(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.probe = load_legacy("foundry_probe")
-        cls.reach = load_legacy("foundry_reachability")
+        cls.probe = load_moved_guard(PROBE_REL)
+        cls.reach = load_moved_guard(REACHABILITY_REL)
 
     def test_the_root_decisions_and_bootstraps_survive(self):
+        # S9 moved both files three directories deeper, so each root ASCENT is
+        # re-derived and nothing else about the decision changed: `REPO` still
+        # denotes the repository root, `REPO_ROOT` still denotes the legacy
+        # module directory, and each still adds exactly that directory.
         reach = REACHABILITY.read_text(encoding="utf-8")
-        self.assertIn("REPO = Path(__file__).resolve().parent.parent", reach)
+        self.assertIn("REPO = Path(__file__).resolve().parents[3]", reach)
         self.assertIn('sys.path.insert(0, str(REPO / "experiments"))', reach)
         probe = PROBE.read_text(encoding="utf-8")
-        self.assertIn("REPO_ROOT = Path(__file__).resolve().parent", probe)
+        self.assertIn('REPO_ROOT = Path(__file__).resolve().parents[3] '
+                      '/ "experiments"', probe)
         self.assertIn("sys.path.insert(0, str(REPO_ROOT))", probe)
         for path in THIRD_SLICE:
             with self.subTest(file=path.name):
@@ -835,8 +864,8 @@ class TestTheThirdSliceChangedNothingElse(unittest.TestCase):
     def test_the_two_covering_gate2_rows_are_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
         self.assertEqual(argv["reachability"],
-                         ["experiments/foundry_reachability.py"])
-        self.assertEqual(argv["probe_guards"], ["experiments/foundry_probe.py"])
+                         [REACHABILITY_REL])
+        self.assertEqual(argv["probe_guards"], [PROBE_REL])
 
 
 # ---------------------------------------------------------------------------
@@ -2206,9 +2235,16 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
         cls.source = WIRE_CAPABILITY.read_text(encoding="utf-8")
 
     def test_the_root_decision_and_bootstrap_are_untouched(self):
+        """S9 ADDED EXACTLY ONE BOOTSTRAP HERE, AND THIS SAYS SO RATHER THAN
+        LOOSENING. `foundry_probe` became test-owned, so this consumer must put
+        its new directory on the path to keep importing it by bare name. The
+        slice's own root decision and bootstrap are unchanged and still asserted
+        verbatim; what is added is named, counted and aimed at one directory."""
         self.assertIn("REPO = Path(__file__).resolve().parent\n", self.source)
         self.assertIn("sys.path.insert(0, str(REPO))", self.source)
-        self.assertEqual(self.source.count("sys.path.insert"), 1)
+        self.assertEqual(self.source.count("sys.path.insert"), 2)
+        self.assertIn('sys.path.insert(0, str(_REPO_ROOT / "tests" / "guards" '
+                      '/ "probe"))', self.source)
 
     def test_the_corpus_path_is_consumed_READ_ONLY(self):
         """The exact current read behaviour, asserted as the call it is:
@@ -2256,7 +2292,10 @@ class TestTheSeventhSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(funcs, ["anchor_names", "name_index", "main"])
         consts = [t.id for n in tree.body if isinstance(n, ast.Assign)
                   for t in n.targets if isinstance(t, ast.Name)]
-        self.assertEqual(consts, ["REPO", "CARDS_PATH", "ANCHORS_PATH"])
+        # S9 adds `_REPO_ROOT` for the probe bootstrap; see the eighth slice's
+        # note. The three public names are unchanged and still in order.
+        self.assertEqual(consts, ["REPO", "_REPO_ROOT", "CARDS_PATH",
+                                  "ANCHORS_PATH"])
         self.assertNotIn("argparse", self.source)
         self.assertNotIn("sys.argv", self.source)
         self.assertEqual(
@@ -2546,9 +2585,16 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(opens[0].args[1].value, "rt")
 
     def test_the_root_decision_and_bootstrap_are_untouched(self):
+        """S9 ADDED EXACTLY ONE BOOTSTRAP HERE, AND THIS SAYS SO RATHER THAN
+        LOOSENING. `foundry_probe` became test-owned, so this consumer must put
+        its new directory on the path to keep importing it by bare name. The
+        slice's own root decision and bootstrap are unchanged and still asserted
+        verbatim; what is added is named, counted and aimed at one directory."""
         self.assertIn("REPO = Path(__file__).resolve().parent\n", self.source)
         self.assertIn("sys.path.insert(0, str(REPO))", self.source)
-        self.assertEqual(self.source.count("sys.path.insert"), 1)
+        self.assertEqual(self.source.count("sys.path.insert"), 2)
+        self.assertIn('sys.path.insert(0, str(_REPO_ROOT / "tests" / "guards" '
+                      '/ "probe"))', self.source)
 
     def test_the_module_still_has_no_write_primitive_at_all(self):
         tree = ast.parse(self.source)
@@ -2571,7 +2617,10 @@ class TestTheEighthSliceChangedNothingElse(unittest.TestCase):
         self.assertEqual(
             [t.id for n in tree.body if isinstance(n, ast.Assign)
              for t in n.targets if isinstance(t, ast.Name)],
-            ["REPO", "CARDS_PATH", "ANCHORS_PATH"])
+            # S9: `_REPO_ROOT` is the probe bootstrap's root, private by name
+            # and used for nothing else. The three PUBLIC names are unchanged
+            # and still in their original order.
+            ["REPO", "_REPO_ROOT", "CARDS_PATH", "ANCHORS_PATH"])
         self.assertNotIn("argparse", self.source)
         self.assertNotIn("sys.argv", self.source)
 
@@ -3685,7 +3734,9 @@ class TestTheDownstreamDelegationsAreUntouched(unittest.TestCase):
 
 PATHS_SOURCE = (REPO_ROOT / "src" / "mtj_foundry" / "paths.py")
 FOUNDRY_CODEBOOK = EXPERIMENTS / "foundry_codebook.py"
-RULING_REGISTRY = EXPERIMENTS / "foundry_ruling_registry.py"
+# S9: the ruling registry moved to the Gate-2 guard owner.
+RULING_REGISTRY_REL = "tests/guards/gate2/foundry_ruling_registry.py"
+RULING_REGISTRY = REPO_ROOT / RULING_REGISTRY_REL
 
 
 # ---------------------------------------------------------------------------
@@ -3711,7 +3762,7 @@ class TestTheGeneratedRegistryOutputDelegates(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.source = RULING_REGISTRY.read_text(encoding="utf-8")
-        cls.module = load_legacy("foundry_ruling_registry")
+        cls.module = load_moved_guard(RULING_REGISTRY_REL)
 
     def test_the_owner_resolves_it_exactly_from_an_arbitrary_root(self):
         paths = ProjectPaths.for_root("/definitely/not/here")
@@ -3792,7 +3843,10 @@ class TestTheGeneratedRegistryOutputDelegates(unittest.TestCase):
 class TestTheStep6KnowledgeIsStillFrozen(unittest.TestCase):
     """The three facts C8.5K is NOT allowed to touch, asserted verbatim."""
 
-    FROZEN = ('REPO_ROOT = Path(__file__).resolve().parent.parent',
+    # S9 moved this guard three directories deeper. The ASCENT is the file's
+    # address, which the move is allowed to change; the two DOCUMENT facts are
+    # the Step-6 knowledge that is frozen, and they are byte-identical.
+    FROZEN = ('REPO_ROOT = Path(__file__).resolve().parents[3]',
               'DOCS = REPO_ROOT / "docs"',
               'OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"')
 
@@ -3808,10 +3862,17 @@ class TestTheStep6KnowledgeIsStillFrozen(unittest.TestCase):
         """They are debt, and the census still says so. A slice that quietly
         migrated them would be Step 6 arriving without authorization."""
         sites = layout_census.local_layout_sites(
-            self.source, Path("experiments/foundry_ruling_registry.py"))
+            self.source, Path(RULING_REGISTRY_REL))
+        # S9: split by KIND rather than widened. The two Step-6 document sites
+        # are asserted exactly as before, as CONSUMPTION; the third site the
+        # census now sees is the bootstrap the move required, and it is named
+        # here as a bootstrap rather than allowed to blur the consumption set.
         self.assertEqual(
-            sorted(s.expr for s in sites),
+            sorted(s.expr for s in sites if not s.bootstrap),
             ["DOCS / 'RATIFIED-RULINGS-REGISTRY.md'", "REPO_ROOT / 'docs'"])
+        self.assertEqual(
+            [s.expr for s in sites if s.bootstrap],
+            ["Path(__file__).resolve().parents[3] / 'experiments'"])
 
     def test_the_import_order_and_bootstrap_are_unchanged(self):
         tree = ast.parse(self.source)
@@ -3826,18 +3887,35 @@ class TestTheStep6KnowledgeIsStillFrozen(unittest.TestCase):
         self.assertLess(common[0], min(package),
                         "foundry_common must establish the bootstrap first")
 
-    def test_no_sys_path_or_bootstrap_was_added(self):
-        """This module has never had one and must not grow one: it reaches the
-        package only because `foundry_common` puts `src` on the path."""
+    def test_it_has_exactly_the_one_bootstrap_the_S9_MOVE_required(self):
+        """C8.5K's claim was that this module had no bootstrap and must not grow
+        one, because `foundry_common` put `src` on the path before it was needed.
+
+        THAT CLAIM WAS TRUE AT ITS OLD ADDRESS AND IS FALSE AT THIS ONE, so it is
+        restated rather than deleted. The module used to live BESIDE
+        `foundry_common`, so the legacy directory arrived on `sys.path` for free
+        as the script's own directory. Moved out of `experiments/`, it does not,
+        and `import foundry_common` -- which is what establishes the package
+        bootstrap -- cannot resolve without it.
+
+        What is still guarded is everything that made the old claim worth making:
+        EXACTLY ONE insert, it adds the legacy module directory and nothing else,
+        and in particular it does not add `src`. A second bootstrap, or one
+        reaching for the package directly, still fails here.
+        """
         tree = ast.parse(self.source)
         inserts = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
                    and isinstance(n.func, ast.Attribute)
                    and n.func.attr in ("insert", "append")
                    and isinstance(n.func.value, ast.Attribute)
                    and n.func.value.attr == "path"]
-        self.assertEqual(inserts, [])
+        self.assertEqual(len(inserts), 1)
+        self.assertNotIn("src", ast.unparse(inserts[0]))
+        self.assertIn(
+            'sys.path.insert(0, str(Path(__file__).resolve().parents[3] '
+            '/ "experiments"))', self.source)
         self.assertEqual(
-            len(layout_census.sys_path_call_nodes(tree)), 0)
+            len(layout_census.sys_path_call_nodes(tree)), 1)
 
     def test_the_registry_semantics_below_the_layout_boundary_are_untouched(self):
         """No rewrite, no refactor. The tracked-doc population, the deletion
@@ -4030,7 +4108,45 @@ CENSUS_HEAD = {
     # No `sys.path` call is added or removed, no bootstrap moves, and no local
     # layout SITE is created or deleted -- so `local_sites_*`, `sys_path_calls`
     # and every delegation row hold at their S6.R1 values.
-    "tracked_python": 168,                         # S7: 162 (+5 shapes substrate + guard)
+    #
+    # MIGRATION SLICE 9 MOVES TWELVE FILES OUT OF LEGACY PRODUCTION, and every
+    # row below follows from that one fact plus one deliberate addition. Eleven
+    # Gate-2 guard scripts and the probe library left `experiments/` for
+    # `tests/guards/{gate2,probe}/`, so they took their delegations, their local
+    # layout sites and their bootstraps with them -- exactly the slice-4 shape,
+    # twelve times over instead of once. Three new test owners were created
+    # (`test_locality.py`, `test_object_lattice.py`, `test_cr_edition.py`), and
+    # they land in `tests`, outside every measured scope.
+    #
+    #     experiments 86 -> 74      tests 28 -> 43      tracked_python 168 -> 171
+    #
+    # THE ONE ADDITION IS A NEW BOOTSTRAP FAMILY, and it is not an accident of
+    # spelling. `foundry_probe` is now test-owned, so the four ACTIVE
+    # `experiments/` consumers that import it by bare name must put its new
+    # directory on the path. That directory is not `experiments`, so it is a
+    # FOURTH family -- declared in PACKAGE-EXECUTION-CONTRACT.yaml rather than
+    # folded into an existing row, because a family the contract cannot describe
+    # is the thing this parity check exists to catch.
+    #
+    #     bootstrap families  {"": 1, experiments: 86, src: 1}  -> the same three
+    #                         with experiments 76, plus tests/guards/probe: 4
+    #     bootstrap total     88 -> 82   (-10 that left, +4 new)
+    #     sys_path experiments 82 -> 76  (the same arithmetic, one scope)
+    #
+    # Ten of the twelve carried a bootstrap; `foundry_gate2.py` never had one
+    # (it shells out and imports no sibling) and `foundry_ruling_registry.py`
+    # relied on being run FROM `experiments/`, so it GAINED an explicit one at
+    # its new address -- outside the measured scope, which is why -10 and not
+    # -11 or -9.
+    #
+    # EVERY OTHER ROW MOVES DOWN ONLY, and by departure rather than by edit. The
+    # `foundry_common.CONFIG_REGISTERS` row reaches 0 because its sole consumer
+    # was `foundry_family_sweep.py`; `CONFIG_SEMANTIC` 13 -> 10 and
+    # `FOUNDRY_OUT_DIR` 124 -> 120 and `REPO_ROOT` 19 -> 10 are the same shape.
+    # No legacy file left behind states a layout fact it did not state before.
+    "tracked_python": 171,                         # S9: 168 (+3 new test owners,
+                                                   #   12 moved between scopes)
+                                                   # S7: 162 (+5 shapes substrate + guard)
                                                    # S6: 155 (+7 CR substrate + guard)
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
@@ -4065,7 +4181,8 @@ CENSUS_HEAD = {
                                                    # written rather than rewritten
                                                    # from a guess; the VALUES are
                                                    # what the test asserts.
-    "files_by_scope": {"experiments": 86,          # S4: 87 (-1, guard left)
+    "files_by_scope": {"experiments": 74,          # S9: 86 (-12, the guards left)
+                                                   # S4: 87 (-1, guard left)
                        "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
                        "src": 31,                  # S7: 26 (+ shapes pkg, 3 shape
@@ -4080,7 +4197,8 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 28},               # S7: 27 (+ test_mtg_shapes_substrate.py)
+                       "tests": 43},               # S9: 28 (+12 moved in, +3 new)
+                                                   # S7: 27 (+ test_mtg_shapes_substrate.py)
                                                    # S6: 26 (+ test_mtg_cr_substrate.py)
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
@@ -4151,13 +4269,14 @@ CENSUS_HEAD = {
     # `PATH_JOIN` takes all 17; `DIRECT_BIND`, `ATTRIBUTE_NAV` and `CALL_ARG` are
     # unchanged, because every repoint is an owner-property-plus-filename join and
     # none of them changed how a value is bound or passed.
-    "delegations_total": 163,                      # S6.R1: back to 163 -- see below
+    "delegations_total": 146,                      # S9: 163 (-17, all by departure)
+                                                   # S6.R1: back to 163 -- see below
     "delegations_by_provider": {
-        "foundry_common.FOUNDRY_OUT_DIR": 124,     # S4: 126 (-2)
-        "foundry_common.REPO_ROOT": 19,            # S4: 21 (-2)
+        "foundry_common.FOUNDRY_OUT_DIR": 120,     # S9: 124 (-4)
+        "foundry_common.REPO_ROOT": 10,            # S9: 19 (-9)
         "foundry_common.DATA_ARTIFACTS_DIR": 1,    # unchanged
         # S3: the six config groups. 13 + 2 + 1 + 1 + 1 + 1 = 19.
-        "foundry_common.CONFIG_SEMANTIC": 13,
+        "foundry_common.CONFIG_SEMANTIC": 10,      # S9: 13 (-3)
         "foundry_common.CONFIG_GENERATED": 2,
         "foundry_common.CONFIG_SELECTORS": 1,
         # S6.R1: `CONFIG_CR` is BACK, and that is the repair working. The
@@ -4166,17 +4285,16 @@ CENSUS_HEAD = {
         # composition boundary, where delegating the accepted owner is exactly
         # what a boundary is for. It is passed as a CALL_ARG rather than joined.
         "foundry_common.CONFIG_CR": 1,
-        "foundry_common.CONFIG_REGISTERS": 1,
         "foundry_common.CONFIG_THESAURUS": 1,
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
     },
     "delegations_by_form": {
-        "PATH_JOIN": 149,                          # S6: 150 (-1, the CR join left)
+        "PATH_JOIN": 138,                          # S9: 149 (-11)
         "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
-        "CALL_ARG": 10,                            # S6.R1: 9 (+1, CONFIG_CR passed)
+        "CALL_ARG": 4,                             # S9: 10 (-6)
     },
-    "delegation_files": 56,                        # S6.R1: 55 (+1, foundry_cr.py)
+    "delegation_files": 49,                        # S9: 56 (-7)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as
@@ -4218,13 +4336,13 @@ CENSUS_HEAD = {
     # No delegation row moves either: the re-aimed guard loads no provider
     # layout name, and the new `_persistence_closure()` helper reaches the store
     # through `__file__` of the imported module.
-    "local_sites_total": 69,                       # S3: 86 (-17)
-    "local_sites_bootstrap": 28,                   # UNCHANGED by S3 and by S4
-    "local_sites_consumption": 41,                 # S3: 58 (-17)
-    "consumption_origin": {"hop1": 26, "hop2": 14, "inline": 1},   # S3: hop1 -16, inline -1
-    "consumption_scope": {"module": 27, "function": 14},           # S3: module -15, function -2
-    "consumption_files": 16,                       # S3: 29 (-13)
-    "sys_path_calls": {"experiments": 82,          # S4: 83 (-1, the guard left)
+    "local_sites_total": 67,                       # S9: 69 (-6 left, +4 probe)
+    "local_sites_bootstrap": 30,                   # S9: 28 (-2 left, +4 probe)
+    "local_sites_consumption": 37,                 # S9: 41 (-4, all departures)
+    "consumption_origin": {"hop1": 23, "hop2": 13, "inline": 1},   # S9: hop1 -3, hop2 -1
+    "consumption_scope": {"module": 23, "function": 14},           # S9: module -4
+    "consumption_files": 13,                       # S9: 16 (-3)
+    "sys_path_calls": {"experiments": 76,          # S9: 82 (-10 left, +4 probe)
                        "experiments_measure": 6},
 }
 
@@ -5414,8 +5532,13 @@ CONTRACT_PATH = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
 # moved to `tests/guards/gate2/`, so its one import-only bootstrap left the
 # measured legacy-production scope with the file. It was not deleted, and it
 # is recorded as migrated-out-of-scope in PACKAGE-EXECUTION-CONTRACT.yaml.
-BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 86, "": 1}
-BOOTSTRAP_TOTAL = 88
+# S9: `experiments` 86 -> 76 and a FOURTH family appears. Ten of the twelve
+# moved files carried a bootstrap out of the measured scope; the four ACTIVE
+# `experiments/` consumers of the now test-owned probe each add its new
+# directory, which is a different directory and therefore a different family.
+BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 76, "": 1,
+                      "tests/guards/probe": 4}
+BOOTSTRAP_TOTAL = 82
 
 
 def _resolve_path_expr(expr, rel, names, paths_instances, paths_layout):
@@ -5675,11 +5798,14 @@ class TestTheContractParityGuardActuallyFires(unittest.TestCase):
         self.assertNotIn(entries["INVENTED_FAMILY"]["adds"], self.families)
 
     def test_a_wrong_site_count_is_caught(self):
-        # S4: the declared count is now 86 (the guard's bootstrap left the
-        # measured scope with the file), so the control mutates away from THAT.
+        # S9: the declared count is now 76 (ten more bootstraps left the
+        # measured scope with the guards that owned them), so the control
+        # mutates away from THAT. The rig anchor is re-aimed at the live value
+        # rather than the count being loosened -- a control pointed at a number
+        # the document no longer carries would silently stop rigging anything.
         broken = self.text.replace(
-            "    sites: 86\n    migrated_out_of_scope_was:",
-            "    sites: 87\n    migrated_out_of_scope_was:")
+            "    sites: 76\n    migrated_out_of_scope_was:",
+            "    sites: 77\n    migrated_out_of_scope_was:")
         self.assertNotEqual(broken, self.text)
         entry = next(e for e in contract_bootstrap_families(broken).values()
                      if e["adds"] == "experiments")

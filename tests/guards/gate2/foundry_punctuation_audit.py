@@ -34,7 +34,10 @@ import argparse
 import collections
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
+# S9: this guard moved out of `experiments/`. The NAME still denotes the
+# legacy module directory, exactly as it did before the move, so every
+# expression below is unchanged; only the derivation of it moved.
+REPO_ROOT = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402

@@ -43,7 +43,10 @@ import re
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+# S9: this guard moved out of `experiments/`. `REPO` still denotes the
+# repository root, exactly as it did before the move, so every expression
+# below is unchanged; only the derivation of it moved.
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "experiments"))
 import foundry_common as fc                # noqa: E402
 
@@ -174,19 +177,31 @@ def reaches(artifact: str, literals: dict) -> list:
     return sorted(hits)
 
 
+# S9: the directories this census scans. It was `experiments/` alone, because
+# that is where every legacy consumer lived. Eleven Gate-2 guard scripts and the
+# probe library then moved to `tests/guards/`, and they READ THE SAME ARTIFACTS
+# THEY ALWAYS DID -- so a scan still pointed at one directory would report a FALL
+# in consumers that did not happen. A census narrowed by a file move is the
+# "measurement that silently shrank" defect, and it is the one this whole module
+# exists to make visible, so it is not acceptable here of all places.
+CONSUMER_DIRS = ("experiments", "tests/guards/gate2",
+                 "tests/guards/probe")
+
+
 def inverse_census(literals_all_repo=True) -> dict:
-    """artifact -> experiments/ modules that read it. Context, not a verdict:
-    it is what makes "13 importers, all audits" a number instead of a story."""
+    """artifact -> modules that read it. Context, not a verdict: it is what
+    makes "13 importers, all audits" a number instead of a story."""
     out = {a: [] for a in FOUNDRY_ARTIFACTS}
-    for py in sorted((fc.REPO_ROOT / "experiments").glob("*.py")):
-        try:
-            _, lits = scan(py)
-        except SystemExit:
-            raise
-        for a in FOUNDRY_ARTIFACTS:
-            base = Path(a).name
-            if any(base in l for l in lits):
-                out[a].append(f"experiments/{py.name}")
+    for directory in CONSUMER_DIRS:
+        for py in sorted((fc.REPO_ROOT / directory).glob("*.py")):
+            try:
+                _, lits = scan(py)
+            except SystemExit:
+                raise
+            for a in FOUNDRY_ARTIFACTS:
+                base = Path(a).name
+                if any(base in l for l in lits):
+                    out[a].append(f"{directory}/{py.name}")
     return out
 
 
@@ -232,7 +247,7 @@ def main() -> int:
     inv = inverse_census()
     for art in sorted(FOUNDRY_ARTIFACTS):
         consumers = inv[art]
-        print(f"  {Path(art).name:<42} {len(consumers):>3} experiments/ consumer(s)")
+        print(f"  {Path(art).name:<42} {len(consumers):>3} legacy+guard consumer(s)")
 
     print("\n" + "=" * 78)
     print("VERDICT")

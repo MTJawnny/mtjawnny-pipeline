@@ -55,6 +55,21 @@ def load_legacy(name: str):
     return module
 
 
+# S9: one of the two repaired readers moved to the Gate-2 guard owner. The
+# readers are named by MODULE throughout this file, so the address is resolved
+# in one place rather than spelled at each use.
+MOVED_READERS = {
+    "foundry_visibility_audit":
+        REPO_ROOT / "tests" / "guards" / "gate2" / "foundry_visibility_audit.py",
+}
+
+
+def reader_source(module: str) -> str:
+    """The reader's source, wherever the migration put it."""
+    path = MOVED_READERS.get(module, EXPERIMENTS / f"{module}.py")
+    return path.read_text(encoding="utf-8")
+
+
 def legacy_production_python() -> list[Path]:
     """Tracked `experiments/**` plus the permanent package -- the ACTIVE trees.
 
@@ -138,7 +153,7 @@ class TestNoActiveReaderConsumesTheRetiredBatch(unittest.TestCase):
         for module, symbol in (("foundry_reminder_conformance", "BATCHES"),
                                ("foundry_visibility_audit", None)):
             with self.subTest(module=module):
-                tree = ast.parse((EXPERIMENTS / f"{module}.py").read_text(encoding="utf-8"))
+                tree = ast.parse(reader_source(module))
                 names = {n.value for n in ast.walk(tree)
                          if isinstance(n, ast.Constant) and isinstance(n.value, str)
                          and n.value.endswith(".json")
@@ -150,7 +165,7 @@ class TestNoActiveReaderConsumesTheRetiredBatch(unittest.TestCase):
         a reader cannot quietly reacquire a directory of its own."""
         for module in ("foundry_reminder_conformance", "foundry_visibility_audit"):
             with self.subTest(module=module):
-                source = (EXPERIMENTS / f"{module}.py").read_text(encoding="utf-8")
+                source = reader_source(module)
                 self.assertIn("fc.CONFIG_SEMANTIC / name", source)
 
 

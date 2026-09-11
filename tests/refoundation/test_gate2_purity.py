@@ -41,7 +41,11 @@ from mtj_foundry.paths import ProjectPaths
 
 PATHS = ProjectPaths.for_root(REPO_ROOT)
 EXPERIMENTS = PATHS.legacy_experiments
-GATE2 = EXPERIMENTS / "foundry_gate2.py"
+# S9: the runner moved to the Gate-2 guard owner. `GATE2_REL` is the
+# canonical command CLAUDE.md now names, spelled once.
+GATE2_REL = "tests/guards/gate2/foundry_gate2.py"
+GATE2 = REPO_ROOT / GATE2_REL
+GATE2_GUARDS = REPO_ROOT / "tests" / "guards" / "gate2"
 
 CHECK_ONLY_ROWS = ("definition_drift", "ruling_registry")
 
@@ -204,10 +208,12 @@ class TestTheTwoWritingRowsRunReadOnly(Gate2TestCase):
     def test_only_the_flag_was_added_to_those_two_rows(self):
         """Everything else about the row — the tool it shells out to, and the
         meaning of a failure — must be untouched."""
-        self.assertEqual(self.argv["definition_drift"],
-                         ["experiments/foundry_definition_drift.py", "--check-only"])
-        self.assertEqual(self.argv["ruling_registry"],
-                         ["experiments/foundry_ruling_registry.py", "--check-only"])
+        self.assertEqual(
+            self.argv["definition_drift"],
+            ["tests/guards/gate2/foundry_definition_drift.py", "--check-only"])
+        self.assertEqual(
+            self.argv["ruling_registry"],
+            ["tests/guards/gate2/foundry_ruling_registry.py", "--check-only"])
 
     def test_the_known_debt_waiver_is_unchanged(self):
         """One row may declare one authorized exit status. Still exactly one."""
@@ -244,7 +250,8 @@ class EmitSplitTestCase(unittest.TestCase):
 class TestDefinitionDriftEmitSplit(EmitSplitTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.module = load_legacy("foundry_definition_drift")
+        cls.module = load_moved_guard(
+            "tests/guards/gate2/foundry_definition_drift.py")
 
     def test_check_only_writes_nothing_and_reports_nothing_written(self):
         targets = self.temp_targets(self.module, ["REPORT_MD", "REPORT_JSON"])
@@ -267,7 +274,7 @@ class TestDefinitionDriftEmitSplit(EmitSplitTestCase):
                          {"findings": []})
 
     def test_the_tool_accepts_the_flag_and_defaults_to_emitting(self):
-        source = (EXPERIMENTS / "foundry_definition_drift.py").read_text(encoding="utf-8")
+        source = (GATE2_GUARDS / "foundry_definition_drift.py").read_text(encoding="utf-8")
         self.assertIn('"--check-only"', source)
         self.assertIn("emit=not args.check_only", source)
 
@@ -280,7 +287,7 @@ class TestDefinitionDriftEmitSplit(EmitSplitTestCase):
         """
         guard = PurityGuard.expect_untouched(self, [RATCHET])
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_definition_drift.py",
+            [sys.executable, "tests/guards/gate2/foundry_definition_drift.py",
              "--check-only", "--update-baseline"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         guard()
@@ -291,7 +298,8 @@ class TestDefinitionDriftEmitSplit(EmitSplitTestCase):
 class TestRulingRegistryEmitSplit(EmitSplitTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.module = load_legacy("foundry_ruling_registry")
+        cls.module = load_moved_guard(
+            "tests/guards/gate2/foundry_ruling_registry.py")
         cls.registry = cls.module.build()
 
     def test_check_only_writes_nothing_and_reports_nothing_written(self):
@@ -320,7 +328,7 @@ class TestRulingRegistryEmitSplit(EmitSplitTestCase):
 
     def test_the_metrics_the_ratchet_pins_come_from_the_registry_not_from_disk(self):
         """So suppressing the write cannot move a pinned number."""
-        source = (EXPERIMENTS / "foundry_ruling_registry.py").read_text(encoding="utf-8")
+        source = (GATE2_GUARDS / "foundry_ruling_registry.py").read_text(encoding="utf-8")
         metrics = source.split('metrics = {"documents"', 1)[1].split("}", 1)[0]
         self.assertNotIn("read_text", metrics)
         for field in ("distinct_rulings", "total_references", "corroborated",
@@ -329,7 +337,7 @@ class TestRulingRegistryEmitSplit(EmitSplitTestCase):
 
     def test_the_existing_check_doc_mode_is_untouched(self):
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_ruling_registry.py",
+            [sys.executable, "tests/guards/gate2/foundry_ruling_registry.py",
              "--check", "docs/OUT-OF-SCOPE.md"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0)
@@ -337,7 +345,7 @@ class TestRulingRegistryEmitSplit(EmitSplitTestCase):
 
     def test_an_untracked_document_still_halts_with_status_2(self):
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_ruling_registry.py",
+            [sys.executable, "tests/guards/gate2/foundry_ruling_registry.py",
              "--check", "docs/no-such-document.md"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
@@ -346,7 +354,7 @@ class TestRulingRegistryEmitSplit(EmitSplitTestCase):
     def test_check_only_and_update_baseline_contradict_each_other(self):
         guard = PurityGuard.expect_untouched(self, [RATCHET])
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_ruling_registry.py",
+            [sys.executable, "tests/guards/gate2/foundry_ruling_registry.py",
              "--check-only", "--update-baseline"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         guard()
@@ -371,7 +379,7 @@ class TestWritesAreConfinedToTheEmitFunction(unittest.TestCase):
     }
 
     def writing_functions(self, module_name: str) -> set[str]:
-        tree = ast.parse((EXPERIMENTS / f"{module_name}.py").read_text(encoding="utf-8"))
+        tree = ast.parse((GATE2_GUARDS / f"{module_name}.py").read_text(encoding="utf-8"))
         out = set()
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -398,7 +406,7 @@ class TestWritesAreConfinedToTheEmitFunction(unittest.TestCase):
         stay absent is the two OUTPUT constants: the selftest has no business
         writing the registry's own products anywhere.
         """
-        tree = ast.parse((EXPERIMENTS / "foundry_ruling_registry.py")
+        tree = ast.parse((GATE2_GUARDS / "foundry_ruling_registry.py")
                          .read_text(encoding="utf-8"))
         selftest = next(n for n in ast.walk(tree)
                         if isinstance(n, ast.FunctionDef) and n.name == "_selftest")
@@ -416,7 +424,8 @@ class TestWritesAreConfinedToTheEmitFunction(unittest.TestCase):
         watched = (DRIFT_REPORT, REGISTRY_REPORT)
         before = snapshot(watched)
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_ruling_registry.py", "--selftest"],
+            [sys.executable, "tests/guards/gate2/foundry_ruling_registry.py",
+             "--selftest"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(before, snapshot(watched))
@@ -441,7 +450,7 @@ class TestARowRunLeavesTrackedStateAlone(PurityGuard):
     def run_row(self, row: str) -> subprocess.CompletedProcess:
         guard = self.expect_untouched(self.WATCHED)
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_gate2.py", "--only", row],
+            [sys.executable, GATE2_REL, "--only", row],
             cwd=REPO_ROOT, capture_output=True, text=True)
         guard()
         return result
@@ -460,6 +469,196 @@ class TestARowRunLeavesTrackedStateAlone(PurityGuard):
         self.assertEqual(hashlib.sha256(baseline.read_bytes()).hexdigest(),
                          "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601")
         self.assertEqual(baseline.stat().st_size, 4324)
+
+
+# ---------------------------------------------------------------------------
+# S9 — the migration's own standing guards
+# ---------------------------------------------------------------------------
+
+
+class TestTheGate2OwnerIsTheTestGuard(Gate2TestCase):
+    """K6, as a committed assertion rather than a claim in a result comment."""
+
+    def test_the_runner_is_no_longer_in_the_experiments_tree(self):
+        self.assertTrue(GATE2.is_file(), GATE2)
+        self.assertFalse((EXPERIMENTS / "foundry_gate2.py").exists(),
+                         "the old runner owner must be ABSENT, not shadowed")
+
+    def test_the_table_is_sixteen_rows_over_fifteen_scripts(self):
+        self.assertEqual(len(self.rows), 16)
+        self.assertEqual(len({argv[0] for _, argv, _ in self.rows}), 15)
+
+    def test_every_row_points_at_a_file_that_exists(self):
+        """A row naming a path nothing owns would fail as a child error rather
+        than as a missing guard, which reads as the guard finding something."""
+        for name, argv, _ in self.rows:
+            with self.subTest(row=name):
+                self.assertTrue((REPO_ROOT / argv[0]).is_file(), argv[0])
+
+    def test_only_the_codebook_row_still_shells_into_experiments(self):
+        """The lint row is `foundry_codebook`'s and the codebook is a later
+        slice's to move. Everything else is test-owned now, and that is asserted
+        by PARTITION so a thirteenth straggler cannot hide."""
+        legacy = {name for name, argv, _ in self.rows
+                  if argv[0].startswith("experiments/")}
+        self.assertEqual(legacy, {"lint"})
+        for name, argv, _ in self.rows:
+            if name != "lint":
+                with self.subTest(row=name):
+                    self.assertTrue(argv[0].startswith("tests/guards/"), argv[0])
+
+    def test_the_two_extracted_guards_are_the_test_owners(self):
+        self.assertEqual(self.argv["locality"],
+                         ["tests/guards/gate2/test_locality.py", "--gate"])
+        self.assertEqual(self.argv["object_lattice"],
+                         ["tests/guards/gate2/test_object_lattice.py", "--gate"])
+
+    def test_no_row_runs_the_cr_edition_guard(self):
+        """The R5 debt is discharged on the refoundation surface, NOT as a
+        seventeenth row. Asserted so a later slice cannot quietly add one and
+        call K6 satisfied because the count still looks like a count."""
+        for _, argv, _ in self.rows:
+            self.assertNotIn("test_cr_edition.py", argv[0])
+
+
+class TestTheProbeHasExactlyOneOwner(unittest.TestCase):
+    """S9's single-owner guard for `foundry_probe`.
+
+    The failure this exists for is a compatibility second implementation left at
+    the old address, which would pass every other check in this file: Gate 2
+    would run the new one and four legacy consumers would import the old one.
+    """
+
+    PROBE_REL = "tests/guards/probe/foundry_probe.py"
+
+    def test_the_probe_lives_at_its_test_owner(self):
+        self.assertTrue((REPO_ROOT / self.PROBE_REL).is_file())
+
+    def test_no_second_implementation_remains_at_the_old_root(self):
+        self.assertFalse((EXPERIMENTS / "foundry_probe.py").exists())
+
+    def test_no_active_non_frozen_consumer_imports_the_removed_owner(self):
+        """AST, over every tracked Python file OUTSIDE the frozen AQ4 scope.
+
+        AQ4 is PAUSED and its historical import is deliberately untouched, so it
+        is excluded BY SCOPE and named here rather than silently skipped -- the
+        exclusion is the thing a reader has to be able to see.
+        """
+        from tests.refoundation import layout_census
+        offenders, frozen = [], []
+        for rel in layout_census.tracked_python(REPO_ROOT):
+            source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            try:
+                tree = ast.parse(source)
+            except SyntaxError:
+                continue
+            imports = {a.name for n in ast.walk(tree)
+                       if isinstance(n, ast.Import) for a in n.names}
+            if "foundry_probe" not in imports:
+                continue
+            if layout_census.scope_of(rel) == "aq4_PAUSED":
+                frozen.append(rel.as_posix())
+                continue
+            # An ACTIVE consumer is fine -- provided it can actually resolve
+            # the name, which means one of its OWN `sys.path` calls names the
+            # probe's new directory. Asked of the call node, not of the file's
+            # text: a mention in a comment is not a bootstrap.
+            inserts = [ast.unparse(n) for n in ast.walk(tree)
+                       if isinstance(n, ast.Call)
+                       and isinstance(n.func, ast.Attribute)
+                       and n.func.attr in ("insert", "append")
+                       and isinstance(n.func.value, ast.Attribute)
+                       and n.func.value.attr == "path"]
+            if not any("probe" in call for call in inserts):
+                offenders.append(rel.as_posix())
+        self.assertEqual(offenders, [], "active consumers still reach the "
+                                        "removed old owner")
+        self.assertEqual(sorted(frozen), [
+            "experiments/aq4_benchmark/aq4_compare.py",
+            "experiments/aq4_benchmark/aq4_population.py",
+            "experiments/foundry_aq4_probes.py",
+        ])
+
+    def test_the_probe_guards_row_runs_the_new_owner(self):
+        argv = {name: a for name, a, _ in gate_rows()}
+        self.assertEqual(argv["probe_guards"], [self.PROBE_REL])
+
+
+class TestTheCrEditionGuardIsRegisteredAndRedCapable(unittest.TestCase):
+    """R5. The debt was an ORPHAN, so registration is the whole point.
+
+    `experiments/foundry_cr.py --selftest` existed for months and nothing ran
+    it: no Gate-2 row, no test, no workflow. Moving it without running it would
+    have re-created the orphan at a new address, so this is what makes the
+    standing suite invoke it -- and prove it can go red.
+    """
+
+    GUARD_REL = "tests/guards/cr/test_cr_edition.py"
+
+    def guard(self, source_override=None, cwd=None):
+        return subprocess.run([sys.executable, self.GUARD_REL],
+                              cwd=REPO_ROOT, capture_output=True, text=True)
+
+    def test_the_guard_runs_green_against_the_live_edition(self):
+        result = self.guard()
+        self.assertEqual(result.returncode, 0, result.stdout[-3000:])
+        self.assertIn("all guards behaved", result.stdout)
+
+    def test_it_still_carries_the_ten_legacy_cases(self):
+        tree = ast.parse((REPO_ROOT / self.GUARD_REL).read_text(encoding="utf-8"))
+        cases = next(n.value for n in tree.body
+                     if isinstance(n, ast.Assign)
+                     and isinstance(n.targets[0], ast.Name)
+                     and n.targets[0].id == "_CASES")
+        self.assertEqual(len(cases.elts), 10)
+
+    def test_the_legacy_shell_kept_no_copy(self):
+        source = (EXPERIMENTS / "foundry_cr.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        names = {n.targets[0].id for n in tree.body if isinstance(n, ast.Assign)
+                 and isinstance(n.targets[0], ast.Name)}
+        self.assertNotIn("_CASES", names)
+        self.assertNotIn("_selftest", {n.name for n in ast.walk(tree)
+                                       if isinstance(n, ast.FunctionDef)})
+
+    def test_the_report_half_stayed_in_the_legacy_shell(self):
+        """The other direction. A responsibility DELETED rather than left is a
+        truth change, so the retained half is asserted too."""
+        tree = ast.parse((EXPERIMENTS / "foundry_cr.py").read_text(encoding="utf-8"))
+        funcs = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
+        self.assertIn("_report", funcs)
+        self.assertIn("main", funcs)
+
+    def test_the_permanent_cr_package_has_no_process_entrypoint(self):
+        pkg = REPO_ROOT / "src" / "mtj_foundry" / "mtg" / "cr"
+        for path in sorted(pkg.glob("*.py")):
+            with self.subTest(module=path.name):
+                source = path.read_text(encoding="utf-8")
+                self.assertNotIn('if __name__ == "__main__"', source)
+                self.assertNotIn("sys.exit(", source)
+
+    def test_the_guard_goes_RED_when_the_law_it_tests_is_broken(self):
+        """The negative control, on a DISPOSABLE copy of the repository's CR
+        semantics -- the tracked module is never written. A guard that has never
+        been shown to fail is not known to be a guard.
+        """
+        import shutil
+        edition = (REPO_ROOT / "src" / "mtj_foundry" / "mtg" / "cr" / "edition.py")
+        original = edition.read_bytes()
+        rigged = original.replace(
+            b'head = num if num[-1].isalpha() else num + "."',
+            b'head = num + "."')
+        self.assertNotEqual(rigged, original,
+                            "the rig anchor is gone -- this control is no "
+                            "longer aimed at anything")
+        try:
+            edition.write_bytes(rigged)
+            result = self.guard()
+        finally:
+            edition.write_bytes(original)
+        self.assertEqual(edition.read_bytes(), original, "restore failed")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("[FAIL] bold subrule drops its period", result.stdout)
 
 
 if __name__ == "__main__":

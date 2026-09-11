@@ -296,7 +296,9 @@ TIER_ENGINE_SHA = "54c3d189e015889ac28f304a58e3e06f5f9ceff9e0ac4586d4edf4dd77aab
 
 FOUNDRY_COMMON = EXPERIMENTS / "foundry_common.py"
 FOUNDRY_LOCALITY = EXPERIMENTS / "foundry_locality.py"
-VISIBILITY_AUDIT = EXPERIMENTS / "foundry_visibility_audit.py"
+# S9: the visibility audit moved to the Gate-2 guard owner. The guard here
+# is about what the file CONTAINS, so only its address changed.
+VISIBILITY_AUDIT = REPO_ROOT / "tests" / "guards" / "gate2" / "foundry_visibility_audit.py"
 CORPUS_MODULE = SRC / "mtj_foundry" / "corpus.py"
 
 

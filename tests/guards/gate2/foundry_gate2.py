@@ -19,9 +19,9 @@ it. That is the `foundry_probe` principle applied to the runner itself.
 `--selftest` proves the runner can REPORT a failure, by running a gate that is
 rigged to fail. A runner that always prints green is worse than no runner.
 
-    python3 experiments/foundry_gate2.py
-    python3 experiments/foundry_gate2.py --selftest
-    python3 experiments/foundry_gate2.py --only ground_truth,conservation
+    python3 tests/guards/gate2/foundry_gate2.py
+    python3 tests/guards/gate2/foundry_gate2.py --selftest
+    python3 tests/guards/gate2/foundry_gate2.py --only ground_truth,conservation
 """
 import sys
 import time
@@ -29,11 +29,23 @@ import argparse
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+# S9: this guard moved out of `experiments/`. The NAME still denotes the
+# repository root, exactly as it did before the move, so every expression
+# below is unchanged; only the derivation of it moved.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+# `EXP` survives S9 because ONE row still shells out to a legacy module:
+# `lint` is `foundry_codebook`'s, and the codebook is a later slice's to move.
 EXP = "experiments"
 # S4: the ground-truth guard moved under the test-guard owner. Same idiom as
 # `EXP` above so the directory is stated once rather than per row.
+# S9: ten more guard-only scripts, this runner itself, and the two extracted
+# test owners now live here.
 GATE2_GUARDS = "tests/guards/gate2"
+# S9: `foundry_probe` is a LIBRARY the guards import, not a Gate-2 script like
+# its neighbours, so it owns its own directory rather than sharing theirs. The
+# `probe_guards` row runs it as a script only because running the library IS
+# how its self-guards are exercised.
+PROBE_GUARDS = "tests/guards/probe"
 
 # name -> (argv, what a FAILURE means). Order is the procedure's order.
 GATES = [
@@ -46,7 +58,7 @@ GATES = [
     # blockers against the tracked authorized set by `(kind, subject)` and
     # report the answer as an exit status. `--strict` is kept for humans
     # working W6.
-    ("family_sweep",     [f"{EXP}/foundry_family_sweep.py", "--gate"],
+    ("family_sweep",     [f"{GATE2_GUARDS}/foundry_family_sweep.py", "--gate"],
      "a ratified family and its members contradict"),
     # `--check-only` on both rows since 2026-08-29 (P0.3E). Both tools DEFAULT to
     # emitting, and both emit into `docs/` — which is TRACKED. Measured on a full
@@ -61,25 +73,25 @@ GATES = [
     # verdict is unchanged; what changes is that a gate no longer mutates the
     # repository as a side effect of reading it. Standalone invocation still emits
     # by default, because emitting the reports is what those commands are FOR.
-    ("definition_drift", [f"{EXP}/foundry_definition_drift.py", "--check-only"],
+    ("definition_drift", [f"{GATE2_GUARDS}/foundry_definition_drift.py", "--check-only"],
      "an axis definition drifted from its name (ratcheted 2026-08-09)"),
-    ("ruling_registry",  [f"{EXP}/foundry_ruling_registry.py", "--check-only"],
+    ("ruling_registry",  [f"{GATE2_GUARDS}/foundry_ruling_registry.py", "--check-only"],
      "a ruling lost its home (ratcheted 2026-08-09)"),
-    ("conservation",     [f"{EXP}/foundry_punctuation_audit.py"],
+    ("conservation",     [f"{GATE2_GUARDS}/foundry_punctuation_audit.py"],
      "text, a sentence or an ability was LOST"),
-    ("visibility",       [f"{EXP}/foundry_visibility_audit.py"],
+    ("visibility",       [f"{GATE2_GUARDS}/foundry_visibility_audit.py"],
      "an option became unreachable"),
     ("ground_truth",     [f"{GATE2_GUARDS}/test_ground_truth.py"],
      "a ratified assignment and the extractor disagree"),
     ("ground_truth_wide", [f"{GATE2_GUARDS}/test_ground_truth.py", "--wide"],
      "the 1,181-assertion fixture regressed (ratcheted, not zero-based)"),
-    ("gate_audit",       [f"{EXP}/foundry_gate_audit.py"],
+    ("gate_audit",       [f"{GATE2_GUARDS}/foundry_gate_audit.py"],
      "the extractor crashes on what the corpus gate excludes"),
-    ("probe_guards",     [f"{EXP}/foundry_probe.py"],
+    ("probe_guards",     [f"{PROBE_GUARDS}/foundry_probe.py"],
      "a probe-library guard stopped being able to halt"),
-    ("recorded_numbers", [f"{EXP}/foundry_recorded_numbers.py", "--strict"],
+    ("recorded_numbers", [f"{GATE2_GUARDS}/foundry_recorded_numbers.py", "--strict"],
      "a count grammar §2 asserts no longer reproduces"),
-    ("invariance",       [f"{EXP}/foundry_routing_regression.py", "invariance",
+    ("invariance",       [f"{GATE2_GUARDS}/foundry_routing_regression.py", "invariance",
                           "--strict"],
      "a delivery depends on the CARD NAME"),
     # PRODUCT-REALITY-AUDIT-2026-08-09.md §10, added 2026-08-09. Every row
@@ -87,7 +99,7 @@ GATES = [
     # a card?" -- the question the audit found no gate could ask. It is
     # ratcheted (WORSE_IF_DOWN on `reaching`) and negative-controlled
     # (`--selftest`), so it is a gate rather than a reporter listed as one.
-    ("reachability",     [f"{EXP}/foundry_reachability.py"],
+    ("reachability",     [f"{GATE2_GUARDS}/foundry_reachability.py"],
      "a foundry artifact stopped reaching a shipped card"),
     # OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md, added 2026-08-13 with the
     # lattice's ratification. Three checks, one exit code: the grammar-shape
@@ -95,13 +107,13 @@ GATES = [
     # membership ratchet. The ratchet is the row that makes a REMOVAL fatal --
     # `e780842` removed 170 memberships, verified 83, and nothing on this list
     # could see the other 87.
-    ("object_lattice",   [f"{EXP}/foundry_object_lattice.py", "--gate"],
+    ("object_lattice",   [f"{GATE2_GUARDS}/test_object_lattice.py", "--gate"],
      "the object lattice lost memberships, or a residual went unexplained"),
     # SEMANTIC-ADDRESS ratification, 2026-08-13 (resolves FL-2). Fixtures for
     # the six ratified negative controls plus a ratchet on owner coverage.
     # Negative-controlled by `--selftest`, which swaps in a first-match-wins
     # resolver and requires the fixtures to catch it.
-    ("locality",         [f"{EXP}/foundry_locality.py", "--gate"],
+    ("locality",         [f"{GATE2_GUARDS}/test_locality.py", "--gate"],
      "semantic-locality coverage fell, or the resolution law regressed"),
     # Added 2026-08-13. THIS ROW PROTECTS REPRODUCIBILITY, NOT A NUMBER. The
     # qualifier packet's evidence base previously lived only in a scratchpad
@@ -112,7 +124,7 @@ GATES = [
     # the counting key's premise still holds, the base-class strip still
     # prevents the double count, and a missing category still cannot move the
     # rate. It ratifies no qualifier vocabulary and mints nothing.
-    ("qualifier_census", [f"{EXP}/foundry_qualifier_census.py", "--gate"],
+    ("qualifier_census", [f"{GATE2_GUARDS}/foundry_qualifier_census.py", "--gate"],
      "the qualifier census can no longer be re-derived as published"),
 ]
 

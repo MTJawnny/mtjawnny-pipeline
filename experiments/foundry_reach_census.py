@@ -45,6 +45,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+# S9: `foundry_probe` is test-owned at `tests/guards/probe/`. The bare-name
+# import below is unchanged -- the idiom CLAUDE.md records -- so what moved
+# is the directory this bootstrap names.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_REPO_ROOT / "tests" / "guards" / "probe"))
 
 import foundry_probe as p          # noqa: E402
 import foundry_common as fc        # noqa: E402

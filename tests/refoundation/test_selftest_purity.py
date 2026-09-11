@@ -69,7 +69,7 @@ from tests.refoundation.helpers import REPO_ROOT
 from tests.refoundation.test_gate2_purity import (
     PurityGuard,
     gate_rows,
-    load_legacy,
+    load_moved_guard,
     snapshot,
 )
 
@@ -80,7 +80,9 @@ EXPERIMENTS = PATHS.legacy_experiments
 # C8.5J: the tracked control input now has a NAME on the layout owner, so this
 # test states it the same way production does instead of re-joining the filename.
 RATCHET = PATHS.foundry_audit_baseline
-REACHABILITY = EXPERIMENTS / "foundry_reachability.py"
+# S9: the reachability guard moved to the Gate-2 guard owner.
+REACHABILITY_REL = "tests/guards/gate2/foundry_reachability.py"
+REACHABILITY = REPO_ROOT / REACHABILITY_REL
 
 SELFTEST_SECTION = "reachability_selftest"
 
@@ -363,7 +365,7 @@ class TestTheSelftestRunLeavesTrackedStateAlone(PurityGuard):
     def run_selftest(self) -> subprocess.CompletedProcess:
         guard = self.expect_untouched([RATCHET])
         result = subprocess.run(
-            [sys.executable, "experiments/foundry_reachability.py", "--selftest"],
+            [sys.executable, REACHABILITY_REL, "--selftest"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         guard()
         return result
@@ -381,7 +383,7 @@ class TestTheSelftestRunLeavesTrackedStateAlone(PurityGuard):
         tracked, so `git status` is the honest instrument for it."""
         before = subprocess.run(["git", "status", "--porcelain"], cwd=REPO_ROOT,
                                 capture_output=True, text=True).stdout
-        subprocess.run([sys.executable, "experiments/foundry_reachability.py",
+        subprocess.run([sys.executable, REACHABILITY_REL,
                         "--selftest"], cwd=REPO_ROOT, capture_output=True, text=True)
         after = subprocess.run(["git", "status", "--porcelain"], cwd=REPO_ROOT,
                                capture_output=True, text=True).stdout
@@ -440,7 +442,7 @@ class TestTheSyntheticLostWireIsStillFatalThroughTheRealComparator(unittest.Test
 
     @classmethod
     def setUpClass(cls):
-        cls.reach = load_legacy("foundry_reachability")
+        cls.reach = load_moved_guard(REACHABILITY_REL)
         cls.rt = cls.reach.ratchet
 
     METRICS = {
@@ -556,7 +558,7 @@ class TestNormalExecutionIsUnchanged(unittest.TestCase):
     def test_the_gate2_reachability_row_is_unchanged(self):
         argv = {name: a for name, a, _ in gate_rows()}
         self.assertEqual(argv["reachability"],
-                         ["experiments/foundry_reachability.py"])
+                         [REACHABILITY_REL])
 
     def test_no_gate2_row_runs_a_selftest(self):
         for name, argv, _ in gate_rows():
@@ -585,7 +587,7 @@ class TestNormalExecutionIsUnchanged(unittest.TestCase):
             f"{TRACKED_CONST} = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline",
             source)
         self.assertNotIn("foundry-audit-baseline.json", source)
-        module = load_legacy("foundry_reachability")
+        module = load_moved_guard(REACHABILITY_REL)
         self.assertEqual(getattr(module, TRACKED_CONST), RATCHET)
 
     def test_the_tool_still_accepts_all_three_invocations(self):
@@ -596,7 +598,7 @@ class TestNormalExecutionIsUnchanged(unittest.TestCase):
 
     def test_the_foundry_artifact_set_is_untouched(self):
         """This slice is about the write target, not about what is measured."""
-        module = load_legacy("foundry_reachability")
+        module = load_moved_guard(REACHABILITY_REL)
         self.assertEqual(sorted(module.FOUNDRY_ARTIFACTS), [
             "docs/CODEBOOK-NAMING-GRAMMAR.md",
             "experiments/out/card-tags.json.gz",

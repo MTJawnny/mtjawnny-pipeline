@@ -46,7 +46,10 @@ import itertools
 from pathlib import Path
 from collections import defaultdict, Counter
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+# S9: this guard moved out of `experiments/`. The NAME still denotes the
+# repository root, exactly as it did before the move, so every expression
+# below is unchanged; only the derivation of it moved.
+REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
