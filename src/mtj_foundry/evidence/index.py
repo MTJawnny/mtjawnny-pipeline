@@ -22,7 +22,7 @@ and can tell an absence of evidence from a claim of dissimilarity.
   `UNASSIGNED_NO_ACTIVE_EVIDENCE`.
 * **It is not a ranking policy.** No score, no weight, no threshold and no order
   other than `oracle_id`. Ranking lives one layer up in
-  `mtj_foundry.retrieval`, which consumes this. Putting a presentation decision
+  `mtj_foundry.thesaurus.retrieval`, which consumes this. Putting a presentation decision
   in the index would make the artifact an authority about similarity, which it
   is not and must never become.
 * **It is not authority, and it invents nothing.** Every membership, quote,

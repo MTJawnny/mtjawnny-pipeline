@@ -2,7 +2,7 @@
 
 ## What this is
 
-Path E milestone 2's third piece. It runs `mtj_foundry.retrieval` against the
+Path E milestone 2's third piece. It runs `mtj_foundry.thesaurus.retrieval` against the
 named-correct neighbour lists that a human froze in
 `docs/WIRE-PREDICTIONS-2026-08-09.md` **before** the 2026-08-09 wire experiment
 existed, and reports what happened.
@@ -49,7 +49,9 @@ import hashlib
 import json
 from pathlib import Path
 
-from mtj_foundry import __version__, evidence_index, retrieval
+from mtj_foundry import __version__
+from mtj_foundry.evidence import index as evidence_index
+from mtj_foundry.thesaurus import retrieval
 
 __all__ = [
     "EVALUATION_SCHEMA",

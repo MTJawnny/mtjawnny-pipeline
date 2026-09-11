@@ -161,8 +161,11 @@ class TestTheLegacyFacadeHoldsNoSecondCopy(unittest.TestCase):
         live = {p.name: policy_sites(p) for p in sorted(pkg.rglob("*.py"))
                 if policy_sites(p)}
         self.assertEqual(live, {
-            # unchanged, pre-existing owners of their own output
-            "codebook_store.py": 1, "evaluation.py": 1, "evidence_index.py": 1,
+            # unchanged, pre-existing owners of their own output. S8 moved the
+            # evidence owner to `evidence/index.py`; this map is keyed by
+            # BASENAME, so its key is now `index.py`. The policy site itself did
+            # not move, multiply or change -- only the file it lives in.
+            "codebook_store.py": 1, "evaluation.py": 1, "index.py": 1,
             "pilot.py": 1, "retrieval.py": 1, "runtime.py": 1,
             "conservation.py": 1, "conservation_contract.py": 1,
             # the one S5 adds -- the promoted write_json policy

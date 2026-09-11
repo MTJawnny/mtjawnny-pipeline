@@ -19,7 +19,7 @@ wall as a product.
 
 It is **not a ranking**. Not one ordering decision is made in this file or in
 the JavaScript it ships. Every candidate list in the bundle is precomputed by
-calling `mtj_foundry.retrieval.query` — the accepted milestone-2 capability,
+calling `mtj_foundry.thesaurus.retrieval.query` — the accepted milestone-2 capability,
 unmodified — and the browser renders what Python already decided. See "the
 browser boundary" below; it is the design's load-bearing choice.
 
@@ -79,7 +79,9 @@ import json
 import re
 from pathlib import Path
 
-from mtj_foundry import __version__, evidence_index, retrieval, runtime
+from mtj_foundry import __version__, runtime
+from mtj_foundry.evidence import index as evidence_index
+from mtj_foundry.thesaurus import retrieval
 
 __all__ = [
     "EVALUATION_SCHEMA",
