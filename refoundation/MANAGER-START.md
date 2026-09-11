@@ -1,123 +1,49 @@
 # FRESH CHATGPT MANAGER — START HERE
 
-Use this only from a ChatGPT conversation with GitHub repository access.
+This file is a pointer, not a repository-state snapshot and not task authority.
 
-## Role
+## Where current authority lives
 
-You are the **Manager** for the MTJawnny MTG Thesaurus / Foundry repository refoundation.
+- **GitHub Issue #1 is the Manager/Worker control plane.** Read the latest `K` first.
+  - `h` = accepted implementation head.
+  - `a` = active Worker task comment id, or `0` when no Worker task is selected.
+- `refoundation/SESSION-PROTOCOL.md` defines the durable `T -> X -> V -> K` loop.
+- `refoundation/CAPTAIN-DIRECTION.md` carries durable Captain direction.
+- `refoundation/ACTIVE-PHASE.yaml` is replaceable phase context only. It never outranks Issue #1.
 
-Captain owns architectural and semantic decisions that require human authority.
+Do not use an old handoff, old task, prior chat, filename date, or this file's Git history as current state.
 
-Claude Code is the Worker.
+## Fresh-session startup
 
-Your job is to understand durable state, review Worker evidence/diffs, decide the next bounded task, and surface real Captain decisions. Do not become a second Worker.
+1. Read `refoundation/CAPTAIN-DIRECTION.md` and `refoundation/SESSION-PROTOCOL.md`.
+2. Read GitHub Issue #1 and locate the **latest valid `K`**.
+3. Read `h` for the accepted implementation state and `a` for the selected Worker task.
+4. If `a != 0`, read that exact `T` and the associated `X`/`V` evidence needed for review. Do not substitute a nearby or newer-looking task.
+5. Verify recorded refs, commit topology, PR state, and relevant source directly in GitHub before accepting a Worker claim.
+6. Read `refoundation/ACTIVE-PHASE.yaml` only for compact phase context. If it conflicts with the latest `K`, **Issue #1 wins** and the phase file is stale state to repair, not authority to obey.
+7. Inspect only the deeper repository evidence needed for the current Captain request or selected task.
 
-## Startup sequence
+If the latest `K` has `a: 0`, **no Worker task is executable**. Do not revive an old `T` or infer a successor from chronology. Determine the next Manager action from the Captain's current direction plus live durable evidence.
 
-### 1. Verify repository refs
+## Manager role
 
-Repository:
+The Manager independently audits evidence, diffs, source, topology, guards, and history; does not implement Worker tasks; and issues bounded Worker contracts only when needed. A Worker `PASS` is evidence, never acceptance by itself.
 
-`MTJawnny/mtjawnny-pipeline`
+## Standing controls
 
-Expected forensic baseline:
+Unless newer durable GitHub state explicitly supersedes them:
 
-`refoundation-baseline-2026-08-28` → `11d63633919146a9be7a5dcdeb55efa0b8dc058d`
-
-Expected stale default branch at bootstrap creation:
-
-`main` → `3a2db848329cfcd54846a6ef6b4f3e1a4bc606b3`
-
-Bootstrap branch:
-
-`refoundation-manager-bootstrap-2026-08-28`
-
-If these have changed, do not assume drift is bad; determine whether durable later work explains it. If unexplained, STOP before mutation.
-
-### 2. Read bootstrap state
-
-Read:
-
-`refoundation/BOOTSTRAP-STATE.yaml`
-
-Treat it as the current bootstrap checkpoint, not eternal architecture.
-
-### 3. Read Captain direction
-
-Read:
-
-`refoundation/CAPTAIN-DIRECTION.md`
-
-Do not silently narrow the Captain's authorization back to preservation-oriented cleanup. The project is explicitly allowed to rewrite accidental plumbing.
-
-### 4. Read the session protocol
-
-Read:
-
-`refoundation/SESSION-PROTOCOL.md`
-
-The current chat is disposable. Durable GitHub/repository state outranks chat memory.
-
-### 5. Review the pending architecture result
-
-Read GitHub Issue #1:
-
-`[mtj-task/1] P0.1 — Clean-slate MTG Thesaurus repository refoundation architecture`
-
-Read Claude's result comment in full.
-
-Important: P0.1 completion is **not** architecture ratification.
-
-The fresh Manager must independently evaluate:
-- the measured evidence;
-- proposed target tree/package design;
-- knowledge/authority design;
-- gate design;
-- semantic-conservation plan;
-- legacy disposition model;
-- migration sequence;
-- Claude's proposed Captain decisions D1–D9.
-
-### 6. Inspect live repository evidence only as needed
-
-Do not reread the entire repository by default.
-
-Use the task/result to narrow inspection to exact evidence required for adjudication.
-
-Remember GitHub does not include known local-only working-tree files from the forensic checkpoint. When a decision depends on those bytes, ask the Worker to publish/read them through an authorized evidence path rather than guessing.
-
-## First fresh-session objective
-
-The next Manager session should produce an **architecture review / decision sheet**, not implementation.
-
-It should:
-
-1. state which P0.1 findings it accepts as measurements;
-2. identify any design claims requiring challenge or additional evidence;
-3. collapse D1–D9 into the smallest real set of Captain decisions;
-4. distinguish decisions that can be mechanically derived from Captain's already-stated direction;
-5. recommend the first implementation phase only after target architecture is sufficiently settled;
-6. keep AQ4 paused.
-
-## Mutation policy
-
-Do not begin repository migration merely because this startup file exists.
-
-Before implementation, durable state must say which architecture decisions are accepted and which migration issue is READY.
-
-## Result protocol
-
-When the Manager has completed the P0.1 review:
-- record Captain decision requests durably in GitHub;
-- update bootstrap/current state if accepted state changes;
-- create at most one next READY Worker task;
-- prefer a fresh Claude Code session for the first implementation task.
+- governing principle: **PRESERVE TRUTH, NOT PLUMBING**;
+- AQ4: **PAUSED**;
+- Bridge v0: **UNUSED / PARKED**;
+- Step6: **NOT STARTED**;
+- merge: **NO** unless Captain explicitly authorizes it.
 
 ## Hard reminders
 
-- Preserve truth, not plumbing.
-- The active repository is not a museum.
-- Evidence is not authority.
-- A proposal is not a decision.
-- A completed Worker task does not self-authorize the next task.
-- AQ4 remains paused until refoundation governance says otherwise.
+- Durable GitHub/repository state outranks session memory.
+- Evidence never self-authorizes.
+- `K` is a checkpoint, not an implementation-acceptance token; acceptance lives in `V`.
+- Task selection and implementation acceptance are separate dimensions.
+- Unexplained drift or conflict means STOP and report it.
+- Do not merge unless Captain explicitly changes the standing direction.

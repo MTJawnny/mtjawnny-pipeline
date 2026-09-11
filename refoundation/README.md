@@ -1,81 +1,40 @@
-# REFOUNDATION BOOTSTRAP CONTROL PLANE
+# REFOUNDATION CONTROL PLANE
 
-Status: **TEMPORARY BOOTSTRAP ARCHITECTURE**
+This directory is temporary refoundation governance/scaffolding. It exists so ChatGPT Manager and Claude Code Worker sessions can be disposable without losing durable project state.
 
-This directory exists so the MTG Thesaurus / Foundry repository refoundation can survive ChatGPT and Claude Code session resets without reconstructing state from chat transcripts.
-
-It is **not** the final repository architecture. It does not ratify the clean-slate architecture proposed in GitHub Issue #1. It is scaffolding for the refoundation itself.
+It is **not Foundry semantic law** and it is not a substitute for GitHub Issue #1.
 
 ## Governing principle
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
 
-The active repository is not a museum. Existing files, APIs, imports, paths, handoffs, and documents may later be rewritten, extracted to a separate research archive, derived from structured data, or deleted if they no longer contribute systematic weight.
+Paths, imports, handoffs, temporary plans, and scaffolding may be rewritten or removed. Semantic truth and accepted governance state must not change silently as a side effect.
 
-Semantic truth and accepted governance state must not change silently as a side effect of infrastructure refactoring.
+## Authority and current-state routing
 
-## Current read order
+- **GitHub Issue #1** — durable Manager/Worker control plane. The latest valid `K` carries accepted head `h` and active task `a`; `a` selects the only executable Worker `T`.
+- `CAPTAIN-DIRECTION.md` — durable Captain direction for the refoundation.
+- `SESSION-PROTOCOL.md` — current Manager/Worker state-machine rules.
+- `ACTIVE-PHASE.yaml` — compact, replaceable phase context only; Issue #1 outranks it.
+- `BOOTSTRAP-STATE.yaml` — superseded bootstrap pointer retained only to route old references forward.
+- `MANAGER-START.md` — cold-start pointer for a GitHub-enabled ChatGPT Manager.
+- `WORKER-START.md` — cold-start pointer for Claude Code; root `CLAUDE.md` remains the canonical Worker contract.
 
-A fresh Manager or Worker should read only what its role requires.
+## Fresh Manager read order
 
-### ChatGPT Manager
+1. `CAPTAIN-DIRECTION.md`
+2. `SESSION-PROTOCOL.md`
+3. `MANAGER-START.md`
+4. GitHub Issue #1 — latest `K`, then only its selected `T` and relevant `X`/`V`
+5. `ACTIVE-PHASE.yaml` for phase context
+6. deeper repository evidence only as required
 
-1. `refoundation/BOOTSTRAP-STATE.yaml`
-2. `refoundation/CAPTAIN-DIRECTION.md`
-3. `refoundation/MANAGER-START.md`
-4. GitHub Issue #1 and its Claude result comment
-5. Only then inspect deeper repository evidence as needed
+## Fresh Worker read order
 
-### Claude Code Worker
+Root `CLAUDE.md` is auto-loaded and authoritative for Worker operation. Follow its startup contract: inspect local state, read Issue #1 latest `K -> active T`, verify base/scope, and execute exactly that task. `WORKER-START.md` is only a short pointer.
 
-1. `refoundation/BOOTSTRAP-STATE.yaml`
-2. `refoundation/CAPTAIN-DIRECTION.md`
-3. `refoundation/WORKER-START.md`
-4. The single GitHub issue explicitly assigned for execution
-5. Only the subsystem files named by that task
+## Current standing controls
 
-## Durable control plane
+Unless a newer durable GitHub record explicitly supersedes them: AQ4 is paused, Bridge v0 is unused/parked, Step6 is not started, and merge is not authorized.
 
-The intended collaboration model is:
-
-```text
-Captain
-   |
-   v
-GitHub durable state
-   |-- accepted refs / commits
-   |-- Issues = task contracts / decisions
-   |-- PRs = proposed mutations
-   |-- issue / PR comments = results and review
-   |
-   +--> disposable ChatGPT Manager session
-   |
-   +--> disposable Claude Code Worker session
-```
-
-No important project state should exist only inside one ChatGPT or Claude session.
-
-## What this directory records
-
-- `BOOTSTRAP-STATE.yaml` — small current refoundation checkpoint; manually maintained only during bootstrap
-- `CAPTAIN-DIRECTION.md` — decisions already made by Captain about refoundation scope and philosophy
-- `SESSION-PROTOCOL.md` — session-drift controls and durable Manager/Worker protocol
-- `MANAGER-START.md` — cold-start procedure for a fresh GitHub-enabled ChatGPT Manager
-- `WORKER-START.md` — cold-start procedure for a fresh Claude Code Worker
-- `ROADMAP.md` — high-level refoundation sequence and current stop point
-
-## Authority warning
-
-This directory is **refoundation governance/scaffolding**, not Foundry semantic law.
-
-It must not be used to answer AQ4 C1–C6, mutate the codebook, change authority succession, alter W6, alter locality, or reinterpret frozen benchmark state.
-
-## Current hard stop
-
-AQ4 feature work remains paused after the Adjudicator-A STOP-breach incident record at commit:
-
-`11d63633919146a9be7a5dcdeb55efa0b8dc058d`
-
-Repository refoundation is Priority 0.
-
-No implementation phase of the clean-slate proposal is authorized merely because Issue #1 produced a recommendation.
+No old bootstrap branch, dated handoff, historical task, or README statement assigns work. History remains in Git and in the durable Issue #1 event log.

@@ -1,24 +1,25 @@
 schema: mtj-active-phase/1
 
-# CURRENT REPLACEABLE STATE. Not chronology, not task authority.
-# Replace fields when the phase changes; never append history.
-# Per-task authority is GitHub Issue #1: latest K -> active T.
+# CURRENT REPLACEABLE PHASE CONTEXT. Not chronology and not task authority.
+# Replace fields when durable state changes; never append history here.
+# GitHub Issue #1 latest K is authoritative for accepted head and active task.
 
-phase: PATH_E_M3_STATIC_DIAGNOSTIC_PILOT
+phase: EXPERIMENTS_MIGRATION_S9_ACCEPTED
 
 goal: >-
-  Reach a useful Foundry by the shortest honest route: a reproducible installed
-  read-only runtime, then a full-population evidence index, then a static pilot.
+  Complete the refoundation migration while preserving semantic and observable
+  truth. S9 is accepted; no successor Worker task is currently selected.
 
-current_strategy: >-
-  Build the permanent operational path first. Freeze speculative migration
-  infrastructure and historical consumers unless the selected product path
-  actually needs them.
-
+current_strategy: MIGRATION_FIRST
 principle: PRESERVE_TRUTH_NOT_PLUMBING
 
+accepted_head: 9f92039eb9c7132a351576c31472eb30a2957a67
+active_task: 0
+checkpoint_id: K-20260911-EXPERIMENTS-MIGRATION-S9-ACCEPTED-RECOVERY
+checkpoint_comment: 5640693531
+
 ctl: {AQ4: P, BRIDGE0: U, STEP6: N, MERGE: N}
-# P=paused  U=unused  N=not started / no
+# P=paused  U=unused/parked  N=not started / no
 
 permanent_namespace: mtj_foundry
 layout_owner: mtj_foundry.paths.ProjectPaths
@@ -26,22 +27,7 @@ layout_owner: mtj_foundry.paths.ProjectPaths
 task_authority: GitHub Issue #1 latest K -> active T
 phase_update_rule: replace fields; never append history
 
-# A slice is safe to reason about only at this unit. A green library test is not
-# evidence about the shipped command; a synthetic fixture is not evidence about
-# the selected bytes; and a green Python build is not evidence about what a
-# BROWSER does with the bytes -- M3 extends the unit through to a page served by
-# a plain static file server.
-safe_reasoning_unit: served_static_bundle_boundary
-required_axes:
-  - input_identity
-  - provenance
-  - installation
-  - composition
-  - failure_observability
-  - population_accounting
-  - determinism
-  - conservation
-  - evidence_polarity
-  - measurement_honesty
-  - browser_runtime_independence
-  - presentation_honesty
+note: >-
+  No S10 task is authorized by the current checkpoint. If this file ever
+  disagrees with the latest valid K, the K wins and this replaceable file must
+  be corrected rather than used to override durable task state.
