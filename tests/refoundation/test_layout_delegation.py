@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import ast
 import dataclasses
+import inspect
 import unittest
 from pathlib import Path
 
@@ -2981,6 +2982,10 @@ class TestTheNinthSliceChangedNothingElse(unittest.TestCase):
 # attribute at all; that is asserted rather than assumed.
 
 SHAPE_EXTRACTOR = EXPERIMENTS / "foundry_shape_extractor.py"
+# S7: the ratified DELIVERY vocabulary is parsed HERE now, out of a grammar
+# path the boundary above hands in.
+DELIVERY_OWNER = (REPO_ROOT / "src" / "mtj_foundry" / "mtg" / "shapes"
+                  / "delivery.py")
 CR_CHECKS_FILE = "cr-checks.json"
 
 
@@ -3149,18 +3154,49 @@ class TestTheTenthSliceLeftTheRulingDocumentAlone(unittest.TestCase):
         self.assertRegex(text, r"(?m)^## 2\.")
 
     def test_grammar_is_acquired_by_a_READ_and_never_by_a_write(self):
-        """The only primitives applied to the name are `exists` and `read_text`."""
+        """The only primitives applied to the document are `exists` and
+        `read_text`, and S7 moved WHERE that happens without changing WHAT
+        happens.
+
+        THE SUBJECT MOVED; THE FACT DID NOT. Migration slice 7 put the parse in
+        `mtj_foundry.mtg.shapes.delivery`, where the grammar arrives as an
+        explicit PARAMETER -- the library states no path of its own. So the
+        property is asserted in BOTH halves, which is stronger than the single
+        assertion it replaces:
+
+          * at this boundary the name is only ever PASSED, never opened;
+          * in the permanent owner the parameter takes exactly `exists` and
+            `read_text` and nothing else.
+        """
         tree = ast.parse(self.source)
         attrs = sorted(n.attr for n in ast.walk(tree)
                        if isinstance(n, ast.Attribute)
                        and isinstance(n.value, ast.Name)
                        and n.value.id == "GRAMMAR")
-        self.assertEqual(attrs, ["exists", "read_text"])
+        self.assertEqual(attrs, [], "the boundary passes GRAMMAR, it does not open it")
+
+        owner = ast.parse(DELIVERY_OWNER.read_text(encoding="utf-8"))
+        fn = next(n for n in ast.walk(owner)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "ratified_delivery_tokens")
+        param = list(inspect.signature(
+            __import__("mtj_foundry.mtg.shapes.delivery", fromlist=["x"])
+            .ratified_delivery_tokens).parameters)
+        self.assertEqual(param, ["grammar_path"])
+        self.assertEqual(
+            sorted(n.attr for n in ast.walk(fn)
+                   if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+                   and n.value.id == "grammar_path"),
+            ["exists", "read_text"])
 
     def test_the_read_feeds_the_delivery_vocabulary(self):
-        """The migrated constant is load-bearing for the printed vocabulary
-        rather than merely present."""
-        self.assertIn('text = GRAMMAR.read_text(encoding="utf-8")', self.source)
+        """The document is load-bearing for the printed vocabulary rather than
+        merely present -- asserted at the owner, and the boundary is asserted to
+        be the one that hands it over."""
+        self.assertIn('text = grammar_path.read_text(encoding="utf-8")',
+                      DELIVERY_OWNER.read_text(encoding="utf-8"))
+        self.assertIn("GRAMMAR if grammar_path is None else grammar_path",
+                      self.source)
 
     def test_every_write_in_this_module_stays_flag_gated(self):
         """The read-only premise of the runtime evidence, asserted so it cannot
@@ -3969,7 +4005,33 @@ CENSUS_HEAD = {
     #
     # Every other delegation, local-site, bootstrap and sys_path row is
     # UNCHANGED -- S6 moved no bootstrap and added no legacy layout statement.
-    "tracked_python": 162,                         # S6: 155 (+7 CR substrate + guard)
+    #
+    # MIGRATION SLICE 7 ADDS THE PERMANENT MTG SHAPES SUBSTRATE, all inside
+    # `src`: `mtg/shapes/__init__.py`, `mtg/shapes/delivery.py`,
+    # `mtg/shapes/locality.py`, `mtg/shapes/target_classes.py` and
+    # `mtg/text_match.py`, plus one `tests/refoundation` guard.
+    #
+    #     src   26 -> 31   tests 27 -> 28   tracked_python 162 -> 168  (+6)
+    #
+    # NO LAYOUT ROW MOVES, and the hold is DERIVED rather than observed after
+    # the fact. Every measured row is counted over `experiments/` and
+    # `pipeline/` only. S7 edits five `experiments/` files, and each edit is a
+    # DELEGATION OF SEMANTICS, never of layout: the five permanent modules state
+    # no repository-relative path at all (a committed guard asserts that over
+    # their AST), so each legacy boundary KEEPS the layout statement it already
+    # carried and hands the value down as an argument.
+    #
+    #     foundry_shape_extractor.py  keeps `GRAMMAR` and `CR_CHECKS` verbatim
+    #     foundry_object_lattice.py   keeps its one bound `ProjectPaths` view
+    #     foundry_locality.py         keeps its one bound view
+    #     foundry_det_pass.py         keeps every `fc.*` constant
+    #     foundry_cr702_classes.py    keeps `CR_PATH`
+    #
+    # No `sys.path` call is added or removed, no bootstrap moves, and no local
+    # layout SITE is created or deleted -- so `local_sites_*`, `sys_path_calls`
+    # and every delegation row hold at their S6.R1 values.
+    "tracked_python": 168,                         # S7: 162 (+5 shapes substrate + guard)
+                                                   # S6: 155 (+7 CR substrate + guard)
                                                    # C8.5W: 137 (+ contract guard);
                                                    # C8.5X: 138 (+ the consumer
                                                    # analysis module);
@@ -4006,7 +4068,9 @@ CENSUS_HEAD = {
     "files_by_scope": {"experiments": 86,          # S4: 87 (-1, guard left)
                        "experiments_measure": 6,
                        "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 26,                  # S6: 20 (+ mtg, mtg/cr, 4 CR modules)
+                       "src": 31,                  # S7: 26 (+ shapes pkg, 3 shape
+                                                   #   modules, text_match.py)
+                                                   # S6: 20 (+ mtg, mtg/cr, 4 CR modules)
                                                    # PATH E M1: 11 (+ runtime.py,
                                                    # cli.py);
                                                    # PATH E M2: 15 (+ evidence_
@@ -4016,7 +4080,8 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 27},               # S6: 26 (+ test_mtg_cr_substrate.py)
+                       "tests": 28},               # S7: 27 (+ test_mtg_shapes_substrate.py)
+                                                   # S6: 26 (+ test_mtg_cr_substrate.py)
                                                    # C8.5W: 18 (+ contract guard);
                                                    # C8.5X: 19 (+ the consumer
                                                    # analysis module);

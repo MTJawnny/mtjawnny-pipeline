@@ -66,11 +66,15 @@ import foundry_cr as cr  # noqa: E402
 # `keyword_rows()` derivation lifted out of `main()`'s reporting flow. NO SECOND
 # PARSE REMAINS HERE.
 #
-# What stays is precisely what the permanent CR layer may not own: `find_home`,
-# which consumes `parse_delivery` and therefore belongs with S7's
-# `mtg/shapes/delivery.py`; `cmd_homes`, its operator report; and `main`. Moving
-# `find_home` into `mtg/cr/**` is the cycle R6 exists to prevent, so it stays
-# here until S7 -- NOT because it belongs here, but because S6 may not place it.
+# S7 then moved `find_home` OUT, into `mtj_foundry.mtg.shapes.delivery`, which
+# is where R6 places it: it consumes `parse_delivery`, so the CR half cannot own
+# it without being the cycle. What remains below is a thin delegation keeping
+# this module's public surface intact, plus `cmd_homes` -- its operator report --
+# and `main`. Both are later-slice work and neither is duplicated anywhere.
+#
+# THE OLD REVERSE EDGE IS GONE. `mtg/cr/**` names no shapes symbol at all, so the
+# `_twin` cross-module-instance state sync that the edge forced has been deleted
+# rather than carried: the derived shape state now has exactly one owner.
 #
 # The `--unstated` KeyError is recorded debt and is deliberately NOT fixed here.
 #
@@ -168,24 +172,17 @@ def find_home(kw: dict, ratified: dict) -> tuple:
     a static keyword, not a contradiction of it, and §2b's ratified table
     already routes 16 keywords (Amplify, Bloodthirst, Dredge, Madness, Modular,
     Riot …) exactly that way. Widening this to "the class always wins" would
-    have destroyed all 16."""
+    have destroyed all 16.
+
+    S7: THE IMPLEMENTATION MOVED, this name did not. The reasoning above is the
+    permanent owner's and is not repeated there in a second copy -- read
+    `mtj_foundry.mtg.shapes.delivery.find_home`. The delegation goes through the
+    shapes BOUNDARY rather than straight at the library because the substrate
+    receives its card-text rules and its CR-check registry from that boundary;
+    reaching past it would ask a library to locate a repository.
+    """
     import foundry_shape_extractor as fse
-    text = None
-    for letter in sorted(kw["subrules"]):
-        m = MEANS.search(kw["subrules"][letter])
-        if m:
-            text = m.group(1).strip()
-            break
-    if effective_classes(kw) == ["activated"]:
-        if "activated" not in ratified:
-            fc.halt("grammar §2 no longer ratifies the `activated` DELIVERY "
-                    "token, which CR 113.3b's ability class requires. Refusing "
-                    "to route CR-stated activated keywords anywhere else.")
-        return "activated", "cr-class:activated (702.Na)", text
-    if text is None:
-        return None, None, None
-    tok, desc = fse.parse_delivery(text, ratified, None)
-    return tok, desc, text
+    return fse.find_home(kw, ratified)
 
 
 def cmd_homes(rows: list, keywords: dict) -> None:
@@ -195,42 +192,35 @@ def cmd_homes(rows: list, keywords: dict) -> None:
 
     Right, and it makes the 44-triggered-keyword 'gap' mostly illusory: a
     triggered keyword does not need NEW delivery vocabulary, it needs to be
-    routed to the token its own CR templated text already resolves to."""
+    routed to the token its own CR templated text already resolves to.
+
+    S7/R6: THE FALLBACK RULE IS NO LONGER DECIDED HERE. It used to exist twice
+    -- once in this loop and once inside `build_keyword_homes` -- one rule with
+    two implementations, in the two modules on opposite ends of the old cycle.
+    `keyword_homes()` is now its single owner and this report CONSUMES it. What
+    remains below is composition and printing, which is what an operator command
+    is."""
     import foundry_shape_extractor as fse
     import foundry_common as fc
     cards, _, _ = fc.load_corpus_gated()
     fse.build_self_noun_rx(cards)
     ratified = fse.ratified_delivery_tokens()
 
+    recs = fse.keyword_homes(keywords, ratified)
+
     homed = collections.defaultdict(list)
     unresolved = []
     for r in rows:
-        num = int(r["cr"].split(".")[1])
-        tok, desc, text = find_home(keywords[num], ratified)
-        r["home"] = tok
-        r["home_descriptor"] = desc
-        r["cr_text"] = text
-        if tok is not None:
-            homed[tok].append(r)
-            continue
-        # No trigger/activated shape parsed out of the templated text. Fall
-        # back to the keyword's CR ABILITY CLASS, which §2 already has a slot
-        # for -- a static keyword's home is `static`, and that is a real home,
-        # not a gap. Only keywords whose class ALSO fails to give a slot are
-        # reported unresolved.
-        eff = r["effective_classes"]
-        if eff == ["static"]:
-            r["home"] = "static"
-            r["home_via"] = "CR ability class (702.Na)"
-            homed["static"].append(r)
-        elif eff == ["spell"]:
-            r["home"] = "(none — spell ability)"
-            r["home_via"] = "CR ability class (702.Na)"
-            homed["(none — spell ability)"].append(r)
-        elif text is None:
-            unresolved.append((r, "no templated text AND no single-class fallback"))
+        rec = recs[int(r["cr"].split(".")[1])]
+        r["home"] = rec["home"]
+        r["home_descriptor"] = rec["home_descriptor"]
+        r["cr_text"] = rec["cr_text"]
+        if rec["home_via"]:
+            r["home_via"] = rec["home_via"]
+        if rec["home"] is not None:
+            homed[rec["home"]].append(r)
         else:
-            unresolved.append((r, f"templated shape has no ratified token: {desc}"))
+            unresolved.append((r, rec["unresolved_reason"]))
 
     total = sum(len(v) for v in homed.values())
     print(f"\n{'='*78}\nKEYWORD -> DELIVERY HOME, derived from the CR's own "
