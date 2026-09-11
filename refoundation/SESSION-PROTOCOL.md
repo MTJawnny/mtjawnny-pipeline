@@ -1,139 +1,159 @@
-# MANAGER / WORKER SESSION PROTOCOL
+# Manager / Worker session protocol
 
-Status: **CURRENT CONTROL-PLANE RULES**
+Status: **CURRENT STATIC CONTROL-PLANE RULES**
 
-Purpose: make ChatGPT and Claude Code sessions disposable, so that losing one
-loses no truth.
+Purpose: make ChatGPT Manager and coding-Worker sessions disposable. Losing a
+session must lose no project truth.
 
 ## 1. Core rule
 
-> **No important state may exist only inside a ChatGPT conversation or a Claude
-> Code session.**
+> **No important state may exist only inside a ChatGPT conversation or a coding
+> session.**
 
-A session may reason, investigate, propose or execute a bounded task. The moment
-information matters to future work, it must be durable in GitHub/repository
-state.
+Anything that matters to later work must become durable in GitHub/repository
+state before the session ends.
 
-## 2. Durable state classes
+## 2. State classes
 
-Seven kinds, deliberately not collapsed. Confusing them is how evidence gets
-promoted to law by accident.
+Do not collapse these:
 
-- **STATE** — what is true right now: current phase, active task, controls,
-  authority pointers. Lives in `refoundation/ACTIVE-PHASE.yaml`. Replaced, never
-  appended.
-- **TASK** — what exactly one Worker is authorized to do. A `T` on Issue #1,
-  pinning base, objective, allow/deny scope, required validation, STOP
-  conditions, delivery form, and successor authorization (normally `NONE`).
-- **RESULT** — what happened. An `X` on Issue #1: status `P`/`S`/`F`, exact
-  mutations, evidence, refs, discrepancies, decision required.
-- **IMPLEMENTATION** — the technical state actually proposed: a commit, branch
-  or PR diff. Never a prose claim alone.
-- **DECISION** — what Captain (or another explicit authority) decided. Must be
-  durable and referenceable, never buried in chat.
-- **EVIDENCE** — why a law is believed. Evidence supports authority; it is not
-  automatically authority.
-- **HISTORY** — what happened before. May be true and useful without being
-  current state or current law.
+- **STATE** — accepted implementation head plus active-task selection. The latest
+  `K` on GitHub Issue #1 is the canonical live state.
+- **TASK** — one bounded Manager `T`, pinning base, objective, allow/deny scope,
+  validation, STOP conditions and successor authority.
+- **RESULT** — one Worker `X`: status, exact mutations, evidence, refs,
+  discrepancies and `next`.
+- **IMPLEMENTATION** — commit/branch/PR bytes. Never a prose claim alone.
+- **REVIEW** — Manager `V`; acceptance or repair is decided here.
+- **DECISION** — durable Captain/authorized-human direction.
+- **EVIDENCE** — measurements that support a conclusion but never self-authorize.
+- **HISTORY** — prior state/provenance that may remain useful without being current.
 
-## 3. The loop
+There is deliberately no tracked mirror of current phase/task state.
+
+## 3. Loop
 
 ```text
 M:T -> W:X -> M:V -> M:T|K
 ```
 
 - `T` — Manager issues one bounded task.
-- `X` — Worker posts one durable, detailed result.
-- `V` — Manager audits it. **The Worker never self-accepts.**
-- `M:T|K` — **the audit branches, and both arms are normal.** `V` may return a
-  repair `T` against the unaccepted work, or carry an accept. A repair `T` is
-  not a failure of the loop; it is the loop. Nothing may assume `V` accepts.
+- `X` — Worker posts one durable detailed result.
+- `V` — Manager independently audits the result.
+- `M:T|K` — review may issue a repair task and checkpoint it, or accept and
+  checkpoint the resulting state.
 
-**`K` is a CHECKPOINT, not the acceptance arm.** It is posted either way and
-carries two independent fields: `h`, the **accepted_head**, and `a`, the
-**active_task** pointer. A `K` whose `h` is unchanged while `a` selects a repair
-`T` is the normal repair path, not an anomaly. **The acceptance verdict lives in
-`V`; `K` records where the project stands and what runs next.** Task selection
-and implementation acceptance are separate dimensions; never collapse them.
+**`K` is a CHECKPOINT, not the acceptance arm.** It carries:
 
-**Canonical Worker selector: latest `K` -> active `T`.** A `T` becomes
-executable only once the latest `K` names it as `a`; being posted is not enough.
+- `h` / **accepted_head**
+- `a` / **active_task**
 
-Captain's decisions enter the loop directly as `D` and outrank all of it.
+Those are independent. A repair commonly keeps `h` unchanged while selecting a
+new `a`. The acceptance verdict lives in `V`.
+
+Canonical Worker selector:
+
+`latest K -> active T`
+
+A posted `T` is not executable until selected by the latest `K`.
+
+Captain decisions may enter directly and outrank Manager/Worker state.
 
 ## 4. Manager startup
 
-1. Read `refoundation/ACTIVE-PHASE.yaml` for current phase.
-2. Read Issue #1: the latest `K`, its active `T`, and the `X` under review.
-3. Verify recorded refs against live GitHub state.
-4. Inspect only the repository evidence that result needs.
-5. Mutate nothing until current state is understood.
-6. Issue at most one next task unless Captain says otherwise.
+1. Read Issue #1 latest `K`.
+2. Resolve `h` and `a`.
+3. If reviewing work, read the selected `T`, Worker `X`, prior `V`/`K` only as
+   necessary, and inspect the actual commit/PR/source independently.
+4. Verify refs and topology against live GitHub.
+5. Mutate nothing until current durable state is understood.
+6. Issue at most one next task unless Captain directs otherwise.
 
-Status, hashes and PR numbers are **read from the Worker's `X`** by the Manager
-directly. Captain is not a courier and must not be asked to relay them.
+No bootstrap branch, dated handoff, pickup file, or mirrored phase document is a
+startup step.
 
 ## 5. Worker startup
 
-Governed by root `CLAUDE.md`, which is auto-loaded. In short: inspect local
-state, read Issue #1's latest `K` -> active `T`, verify the exact base
-and scope, execute exactly that one task.
+Root `CLAUDE.md` is the canonical always-loaded Worker contract.
 
-There is no bootstrap-branch read step and no handoff-document read step. Those
-are removed, not relocated.
+The Worker:
 
-## 6. Worker session end
+1. inspects local Git state;
+2. reads Issue #1 latest `K`;
+3. follows `a` to the selected `T`;
+4. verifies base and scope;
+5. executes exactly that task.
 
-A Worker session must not end with completed work living only in scrollback.
+If `a: 0`, there is no Worker task.
+
+## 6. Session end
+
+A Worker session must not end with completed work only in scrollback.
 
 Before finishing:
 
-- post the detailed `X` to Issue #1;
-- push any authorized branch/PR and name the exact commit;
-- include validation, conservation and every discrepancy — including ones that
-  make the result look worse;
-- state `next: NONE` unless a successor was authorized externally.
+- push only authorized branch/PR mutations;
+- post one detailed `X` to Issue #1;
+- name exact commit/branch/PR refs;
+- include validation, conservation and every discrepancy;
+- state `next: NONE` unless successor authority already exists.
 
-The human-facing reply is then exactly `Claude done`, and nothing else,
-whatever the `X` status is. The detail is already durable; repeating it to the
-human is noise, and summarizing it invites a summary to be trusted over the
-record.
+Normal Claude human-facing completion is exactly:
 
-If the session dies mid-task, Issue #1 plus Git state must be enough for a new
-Worker to determine what was and was not completed.
+`Claude done`
 
-## 7. Task sizing
+The durable `X`, not a chat summary, carries the details.
 
-Split at **durable verification boundaries**, never merely because work is
-technical.
+If a session dies mid-task, Issue #1 plus Git state must reveal what was and was
+not completed.
+
+## 7. Manager review discipline
+
+Worker claims are evidence, not acceptance.
+
+Manager review must independently inspect what matters to the task: source,
+diff, topology, guards, history and conservation evidence. Broad validation
+cannot be replaced with a convenient narrow check when the task contracted the
+broad one.
+
+Unexplained drift, scope expansion or conservation failure => STOP/repair, not
+silent adaptation.
+
+## 8. Task sizing
+
+Split work at durable verification boundaries:
 
 ```text
 bounded change -> deterministic validation -> durable result -> review -> next
 ```
 
-Not: refactor the engine and hope one long session survives.
+Do not create a giant task merely to save ceremony.
 
-## 8. Drift detection
+## 9. Drift detection
 
-Tasks pin the base commit, and pin state/version or frozen-input identity where
-it matters.
+Tasks pin bases and important input identities.
 
-If expected state differs from measured state in an unexplained way, **STOP**
-and report the mismatch. Do not silently adapt. The point is to convert context
-drift from a reasoning hazard into an explicit, visible state mismatch.
+If expected and measured state differ unexplainedly, **STOP and report the
+conflict**. Measurement is evidence, not authority, and it never self-authorizes.
 
-A task that cannot be satisfied inside its own declared scope is the same event:
-report the exact conflict and return it. Routine is not the same as authorized.
+A task that requires a file outside its allowlist is the same kind of event:
+STOP rather than widen scope by judgement.
 
-## 9. Capability asymmetry
+## 10. Capability asymmetry
 
-Different sessions expose different tools. A Manager session doing repository
-work needs live GitHub access; one without it may reason about supplied evidence
-but must not claim to have inspected live state.
+Manager and Worker environments expose different tools. A party may only claim
+inspection it actually performed.
 
-## 10. No uncontrolled autonomy
+GitHub connectivity, filesystem access, shell access, browser access and
+deployment credentials are capabilities granted by the runtime, not by the
+language model itself.
 
-The GitHub bridge is a control plane, not authorization for an autonomous loop:
-one task, one execution, one durable result, one review, Captain decisions when
-needed, explicit next authorization. Automation of the loop itself waits until
-the state machine is trustworthy.
+## 11. No uncontrolled autonomy
+
+The durable bridge is a control plane, not authorization for an autonomous
+self-extending loop:
+
+one task -> one execution -> one durable result -> one review -> explicit next authority.
+
+Merges, deployment/publication and semantic ratification remain explicit human
+authority boundaries unless Captain changes them.

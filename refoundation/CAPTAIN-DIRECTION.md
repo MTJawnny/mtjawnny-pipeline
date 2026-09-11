@@ -1,14 +1,17 @@
-# CAPTAIN DIRECTION — REPOSITORY REFOUNDATION
+# Captain direction — repository refoundation
 
-Status: **ACTIVE REFOUNDATION GOVERNANCE**
+Status: **ACTIVE STATIC REFOUNDATION GOVERNANCE**
 
-This file records decisions already made by Captain in the refoundation discussion. It is not Foundry semantic law and does not answer AQ4 semantic questions.
+This file records standing Captain direction. It is not current task state,
+Foundry semantic law, or AQ4 adjudication.
 
 ## 1. Priority
 
-Repository / engine refoundation is now Priority 0.
+Repository/engine refoundation is Priority 0 until the system can stand itself
+up deterministically, identify authority and support disposable sessions.
 
-AQ4 and ordinary Foundry feature work may remain stopped until the repository can reliably stand itself up, identify current authority, and support deterministic cold-start operation.
+AQ4 and ordinary feature work remain subject to the current durable controls on
+GitHub Issue #1.
 
 ## 2. Preservation rule
 
@@ -16,83 +19,94 @@ AQ4 and ordinary Foundry feature work may remain stopped until the repository ca
 
 The project is not required to preserve accidental implementation shape.
 
-Future refoundation work may, when separately authorized in bounded tasks:
+When separately authorized, refoundation may:
 
-- rewrite entire Python modules;
-- replace import structures;
-- create a real Python package;
-- replace path APIs;
-- move configuration;
+- rewrite modules and import structures;
+- create or reorganize real packages;
+- replace path/config APIs;
 - rebuild validation and Gate 2;
-- rewrite routing and session-start behavior;
+- rewrite routing/session-start behavior;
 - consolidate or replace documentation;
 - replace prose-derived registries with structured representations;
-- remove compatibility code after migration;
+- remove compatibility code after conservation proof;
 - move generated artifacts;
-- delete obsolete active files after their unique systematic value is accounted for.
+- delete obsolete files after their unique systematic value is accounted for.
 
 ## 3. What must survive
 
-Infrastructure refactoring must not silently change semantic or governance truth.
+Infrastructure cleanup must not silently change semantic or governance truth.
 
 Unless separately authorized, preserve:
 
 - selected Foundry authority identity and succession law;
 - authoritative codebook content;
-- current AQ4 frozen inputs and commitments;
+- frozen AQ4 inputs and commitments;
 - Captain-ratified semantic decisions;
 - incident/governance records needed to understand accepted state;
 - benchmark evidence needed to reproduce accepted conclusions;
-- product/substrate boundaries already deliberately chosen.
+- deliberately chosen product/substrate boundaries;
+- failure boundaries and contracted observable behavior.
 
-Physical paths, imports, APIs, file names, document formats, and generated-output locations are not sacred.
+Physical paths, imports, APIs, filenames, document formats and generated-output
+locations are not sacred.
 
-## 4. Active repository standard
+## 4. Active-repository standard
 
-The active repository should contain material that still contributes systematic weight to the system being built.
+Active material should still contribute systematic weight.
 
-Legacy artifacts should eventually receive a deliberate disposition such as:
+Legacy artifacts should receive a deliberate disposition:
 
 - **KEEP** — current required source/authority;
 - **EVIDENCE** — needed provenance for current truth;
-- **REWRITE** — underlying truth/concept survives, current representation does not;
-- **EXTRACT** — belongs to another system, alternate end-state, or future research line;
-- **DERIVE** — should become generated from structured source rather than authored directly;
+- **REWRITE** — truth survives; representation does not;
+- **EXTRACT** — belongs to another system/end state/research line;
+- **DERIVE** — should become generated from structured source;
 - **DELETE** — no remaining systematic weight after unique content is accounted for.
 
-The exact final taxonomy remains reviewable; this list captures the intended distinction.
+“Old” does not mean deletable. A semantic/evidence file that is the sole durable
+home of a ruling must first have that ruling conserved elsewhere.
 
-## 5. Alternate end states / other systems
+## 5. Alternate end states
 
-If a file originally created during MTG Thesaurus work now describes a materially different tool, architecture, or end state, it should not remain in the active repository merely because it may contain useful ideas.
+Material describing a materially different tool or architecture should not stay
+in the active repository merely because it contains interesting ideas.
 
-Potentially useful alternate ideas should be extracted for later analysis, preferably outside the active repository (for example, a future research/archive repository), so they do not compete with current architecture during retrieval.
+Extract useful alternate ideas for later analysis rather than letting them
+compete with current architecture during retrieval.
 
 ## 6. Session architecture
 
-Captain should not be the routine courier between ChatGPT and Claude Code.
+Captain should not be the routine courier between Manager and Worker.
 
-GitHub is the preferred durable collaboration plane:
+GitHub is the durable collaboration plane:
 
-- Issues carry task contracts and decision requests;
-- branches/PRs carry proposed technical mutations;
-- comments carry structured results and review;
-- Git refs and repository files carry accepted durable state.
+- Issue comments carry tasks, results, reviews, checkpoints and decisions;
+- branches/PRs carry proposed implementation bytes;
+- Git refs and repository files carry accepted durable technical state.
 
-Neither one ChatGPT conversation nor one Claude Code session should be a source of truth.
+No ChatGPT conversation or coding-model session is authority merely because it
+is recent.
 
-## 7. Session-disposability requirement
+## 7. Session disposability
 
-A fresh authorized Manager or Worker should be able to recover state from durable project resources rather than previous conversation context.
+A fresh authorized Manager or Worker must be able to recover current state from
+durable resources rather than a previous transcript.
 
-If a fresh Claude session needs the previous Claude transcript to know what to do, the project architecture has failed.
+If a fresh session needs previous scrollback to know what is accepted, blocked
+or active, the control plane has failed.
 
-If a fresh ChatGPT Manager needs the previous ChatGPT transcript to know what is accepted, blocked, or active, the project architecture has failed.
+Current operational state is **GitHub Issue #1 latest `K`**, not a mirrored
+phase/handoff file.
 
-## 8. Current non-decision
+## 8. Architecture proposals and later implementation
 
-Claude's P0.1 clean-slate architecture proposal on GitHub Issue #1 is **not automatically ratified** by completion of that task.
+The original P0.1 clean-slate proposal remains **evidence/proposal**, not
+self-ratifying architecture. Later Captain decisions, Manager reviews and
+accepted migration slices may implement, reject or refine parts of it.
 
-A fresh Manager session should review that result, identify the actual Captain decision points, and only then authorize implementation phases.
+Do not restart old review steps merely because an old roadmap says they are
+“next.” Do not infer current authorization from this file. Read Issue #1 latest
+`K` and the selected task.
 
-No migration begins from this file alone.
+No migration, merge, deployment or semantic change is authorized by this static
+direction file alone.
