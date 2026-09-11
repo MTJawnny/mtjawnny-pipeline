@@ -27,6 +27,10 @@ A file being present here does **not** mean final deletion is authorized. Final 
 | `docs/CONSOLIDATION-RUN1-DIRECTIVE.md` | `docs/to-be-deleted/obsolete-directives/CONSOLIDATION-RUN1-DIRECTIVE.md` | `75ac9e765979e4b378d361ee5138a0092a77d887` | 1 ruling ref, 0 sole-home; deletable=yes | 2026-08-01 run-1 execution directive; superseded by later consolidation/refoundation state. |
 | `docs/DET-PATTERNS-RUN2-DIRECTIVE.md` | `docs/to-be-deleted/obsolete-directives/DET-PATTERNS-RUN2-DIRECTIVE.md` | `3c47b2025b25a9b8ec2af18c709417c6b5fe7aa2` | 3 ruling refs, 0 sole-home; deletable=yes | Session-4 pattern-run directive; governing DET laws and pattern artifacts live elsewhere. |
 
+### Tranche-1 setwise ruling check
+
+The four files are safe as a set, not just individually: every registered ruling they reference retains at least one root-`docs/` home outside this quarantine. The relevant IDs are A1, A15, AG-COUNT-01, D4, H-02, R5, G1, A2, A8, and NEW-02. Canonical/non-quarantined homes include `B-MIGRATION-DISCOVERY.md`, `B-CONSOLIDATION-REAUDIT-PACKET.md`, `RATIFIED-DIRECTIVES-BATCH-4-6.md`, `WALK-RATIFICATION-EXECUTION-HANDOFF.md`, and `CDR-PROPOSALS.md`. No registered ruling becomes homeless when Tranche 1 is excluded from the root-doc population.
+
 ## Tranche 2 — obsolete session handoffs with zero ruling references
 
 For this tranche the criterion is stronger than individual deletability: each moved file appears in the accepted registry's explicit **"Documents carrying no ruling reference"** list. Moving this set therefore cannot jointly orphan a registered ruling. The three original blobs total 37,118 bytes.
@@ -41,7 +45,15 @@ These are dated session-state snapshots from August. Their evidence remains byte
 
 ### Tranche-2 correction record
 
-Commit `3d0c3116f8dda182f9ae869282e8e8b346d553d2` initially moved twelve session handoffs after I incorrectly conflated the registry's **deletable=yes** column with its separate **no ruling reference** list. Before expanding cleanup further, I re-read the registry and corrected the mistake. Nine handoffs that contain corroborated ruling references were restored byte-for-byte to their original root `docs/` paths in the next commit. No accepted branch was touched, no content was lost, and the incorrect stronger claim is not carried forward here.
+Commit `3d0c3116f8dda182f9ae869282e8e8b346d553d2` initially moved twelve session handoffs after I incorrectly conflated the registry's **deletable=yes** column with its separate **no ruling reference** list. Before expanding cleanup further, I re-read the registry and corrected the mistake. Nine handoffs that contain corroborated ruling references were restored byte-for-byte to their original root `docs/` paths in commit `31c0187e4248e1b2f5026e375f08cb33e3481d74`. No accepted branch was touched, no content was lost, and the incorrect stronger claim is not carried forward here.
+
+## Tranche 3 — completed next-session specification
+
+| previous path | quarantine path | original blob SHA | registry status | permanent successor |
+|---|---|---|---|---|
+| `docs/NEXT-SESSION-CR-NORMALIZATION.md` | `docs/to-be-deleted/completed-session-specs/NEXT-SESSION-CR-NORMALIZATION.md` | `f11c5f79263d07623b15c0c5538785f3bc7d8294` | 0 ruling refs | `docs/CR-REFRESH-2026-08-09.md` |
+
+The document itself begins `DONE — 2026-08-09` and points readers to the completed CR-refresh record. Repository search at the accepted head found no other file referencing this filename. Its exact bytes are retained here as execution-history evidence; the completed refresh record remains in normal `docs/` retrieval.
 
 ## Explicitly withheld
 
@@ -52,4 +64,4 @@ Commit `3d0c3116f8dda182f9ae869282e8e8b346d553d2` initially moved twelve session
 
 ## In-file removals
 
-None in Tranches 1–2. If later cleanup removes passages from a surviving file, this ledger will record the exact prior path, heading/line context, removed text, reason, and replacement/canonical home before the edit is made.
+None in Tranches 1–3. If later cleanup removes passages from a surviving file, this ledger will record the exact prior path, heading/line context, removed text, reason, and replacement/canonical home before the edit is made.
