@@ -27,32 +27,27 @@ A file being present here does **not** mean final deletion is authorized. Final 
 | `docs/CONSOLIDATION-RUN1-DIRECTIVE.md` | `docs/to-be-deleted/obsolete-directives/CONSOLIDATION-RUN1-DIRECTIVE.md` | `75ac9e765979e4b378d361ee5138a0092a77d887` | 1 ruling ref, 0 sole-home; deletable=yes | 2026-08-01 run-1 execution directive; superseded by later consolidation/refoundation state. |
 | `docs/DET-PATTERNS-RUN2-DIRECTIVE.md` | `docs/to-be-deleted/obsolete-directives/DET-PATTERNS-RUN2-DIRECTIVE.md` | `3c47b2025b25a9b8ec2af18c709417c6b5fe7aa2` | 3 ruling refs, 0 sole-home; deletable=yes | Session-4 pattern-run directive; governing DET laws and pattern artifacts live elsewhere. |
 
-## Tranche 2 — obsolete zero-ruling session handoffs
+## Tranche 2 — obsolete session handoffs with zero ruling references
 
-This tranche deliberately uses a stronger rule than Tranche 1: every moved file has **zero ruling IDs at all** in the accepted ruling-registry view. Therefore moving the entire tranche cannot remove or jointly orphan a registered ruling. The twelve original blobs total 137,171 bytes.
+For this tranche the criterion is stronger than individual deletability: each moved file appears in the accepted registry's explicit **"Documents carrying no ruling reference"** list. Moving this set therefore cannot jointly orphan a registered ruling. The three original blobs total 37,118 bytes.
 
 | previous path | quarantine path | original blob SHA | registry status |
 |---|---|---|---|
-| `docs/SESSION-HANDOFF-2026-08-02.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-02.md` | `b4012d8929125bad7300612cd57cbf7c38d3c75c` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-02-EVE.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-02-EVE.md` | `33605ba21757813be5579c6d89eac7b29feb96f6` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-03.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-03.md` | `8c96ed389a1d94a1ff81b593a3874b6d77e016b1` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-03-PM.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-03-PM.md` | `8cef9a02a7f1a6dea3678bff84bee463e9c3b3b7` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-03-EVE.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-03-EVE.md` | `ba46cd0bdd3d43856bf48e37496b3754ec519686` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-04.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-04.md` | `d3d1e6f4f7aa263dfc3e21e8ad52468a33648cde` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-05.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-05.md` | `13b31ac082e68ded45b1aed2b64f56badf159f97` | 0 ruling refs |
 | `docs/SESSION-HANDOFF-2026-08-06.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-06.md` | `5fbb35d2c567108d17e73748a11d9908188e122f` | 0 ruling refs |
 | `docs/SESSION-HANDOFF-2026-08-07.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-07.md` | `ce5ce94ac6d63ab302018e0e0260bcabe5190cd2` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-07-EVE.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-07-EVE.md` | `cc49e27b0a0bd1bd3c9c787bad1943c683ac7c1c` | 0 ruling refs |
-| `docs/SESSION-HANDOFF-2026-08-08.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-08.md` | `1dcb50c10a33cddf48f1829ee41279b8c7fc46ef` | 0 ruling refs |
 | `docs/SESSION-HANDOFF-2026-08-09.md` | `docs/to-be-deleted/obsolete-session-handoffs/SESSION-HANDOFF-2026-08-09.md` | `2395024f8a881da60f6f200b1c5224bba2cd2098` | 0 ruling refs |
 
 These are dated session-state snapshots from August. Their evidence remains byte-preserved in quarantine, but they should not compete with the September Issue-#1 K/T control plane as present-tense startup context.
+
+### Tranche-2 correction record
+
+Commit `3d0c3116f8dda182f9ae869282e8e8b346d553d2` initially moved twelve session handoffs after I incorrectly conflated the registry's **deletable=yes** column with its separate **no ruling reference** list. Before expanding cleanup further, I re-read the registry and corrected the mistake. Nine handoffs that contain corroborated ruling references were restored byte-for-byte to their original root `docs/` paths in the next commit. No accepted branch was touched, no content was lost, and the incorrect stronger claim is not carried forward here.
 
 ## Explicitly withheld
 
 - `docs/B-MIGRATION-DIRECTIVE.md` — **NOT MOVED**. The current registry marks it sole home for `AG-CLI-01`; moving it out of root `docs/` would remove that ruling from the registry population.
 - `docs/B-CONSOLIDATION-REAUDIT-PACKET.md`, `docs/MASTER-HANDOFF*.md`, `docs/PARENT-TREE-CANDIDATES.md`, `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md`, `docs/TRIAGE-BATCH-2.md`, and `docs/SESSION-HANDOFF-2026-08-04-EVE.md` — not moved because the registry currently reports one or more sole-home rulings.
-- `docs/SESSION-HANDOFF-2026-08-01.md` and `docs/SESSION-HANDOFF-2026-08-02-PM.md` — not moved yet. They have no sole-home rulings individually, but they do contain ruling references; they require a setwise conservation check before joining a multi-file tranche.
+- Other dated session handoffs — not moved in Tranche 2 if they carry even corroborated ruling references. They require a setwise ruling-conservation check before any multi-file relocation.
 - AQ4 current contract, dated AQ4 evidence papers, incident records, architecture research, canonical grammar/locality documents, and current refoundation controls — outside these deletion tranches.
 
 ## In-file removals
