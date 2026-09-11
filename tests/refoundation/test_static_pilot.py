@@ -24,7 +24,9 @@ from tempfile import TemporaryDirectory
 
 from tests.refoundation.helpers import REPO_ROOT  # noqa: F401  (sys.path bootstrap)
 
-from mtj_foundry import evaluation, evidence_index, pilot, pilot_cli, retrieval
+from mtj_foundry import evaluation, pilot, pilot_cli
+from mtj_foundry.evidence import index as evidence_index
+from mtj_foundry.thesaurus import retrieval
 
 
 # ---------------------------------------------------------------------------

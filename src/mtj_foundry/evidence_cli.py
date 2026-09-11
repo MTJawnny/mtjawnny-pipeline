@@ -45,7 +45,9 @@ import argparse
 import sys
 
 from mtj_foundry import (__version__, codebook, codebook_store, corpus,
-                         evaluation, evidence_index, retrieval, runtime)
+                         evaluation, runtime)
+from mtj_foundry.evidence import index as evidence_index
+from mtj_foundry.thesaurus import retrieval
 
 __all__ = ["build_parser", "main"]
 

@@ -99,7 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help="after writing, re-read the bundle from disk and check "
                              "it against the source artifact: manifest digests, full "
                              "corpus population, and every anchor's candidate order "
-                             "and tie blocks against mtj_foundry.retrieval.query")
+                             "and tie blocks against mtj_foundry.thesaurus.retrieval.query")
     return parser
 
 
@@ -153,7 +153,7 @@ def main(argv=None) -> int:
                 f"{equivalence['anchors_checked']:,} anchors / "
                 f"{equivalence['candidates_checked']:,} candidates / "
                 f"{equivalence['tie_blocks_checked']:,} tie blocks equal to "
-                f"mtj_foundry.retrieval.query")
+                f"mtj_foundry.thesaurus.retrieval.query")
     except runtime.FoundryRuntimeError as error:
         # HOUSE STYLE, at the one place it belongs. `PilotError` and every
         # retrieval refusal are `FoundryRuntimeError` subclasses, so this one

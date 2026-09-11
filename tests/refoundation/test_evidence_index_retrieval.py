@@ -40,8 +40,9 @@ from tests.refoundation.test_readonly_runtime import (
     DFC_CARD, ID_A, ID_B, ID_C, ILLEGAL_CARD, LEGAL_CARD, RuntimeFixtureCase,
     assertion, axis, build_fixture_root, fixture_codebook, lock_for)
 
-from mtj_foundry import (evaluation, evidence_cli, evidence_index, retrieval,
-                         runtime)
+from mtj_foundry import evaluation, evidence_cli, runtime
+from mtj_foundry.evidence import index as evidence_index
+from mtj_foundry.thesaurus import retrieval
 from mtj_foundry.paths import ProjectPaths
 
 CLEAN_ENV = {"PATH": "/usr/bin:/bin"}   # deliberately no PYTHONPATH
@@ -650,8 +651,8 @@ class TestTheShippedEvidenceCommand(IndexFixtureCase):
         """
         import ast
 
-        for name in ("evidence_cli.py", "evidence_index.py", "retrieval.py",
-                     "evaluation.py"):
+        for name in ("evidence_cli.py", "evidence/index.py",
+                     "thesaurus/retrieval.py", "evaluation.py"):
             tree = ast.parse((SRC / "mtj_foundry" / name).read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if not isinstance(node, ast.ExceptHandler):
@@ -678,8 +679,8 @@ class TestTheShippedEvidenceCommand(IndexFixtureCase):
         self.assertEqual(cm.exception.code, 2)
 
     def test_the_new_modules_import_nothing_from_the_legacy_tree(self):
-        for name in ("evidence_index.py", "retrieval.py", "evaluation.py",
-                     "evidence_cli.py"):
+        for name in ("evidence/index.py", "thesaurus/retrieval.py",
+                     "evaluation.py", "evidence_cli.py"):
             text = (SRC / "mtj_foundry" / name).read_text(encoding="utf-8")
             with self.subTest(module=name):
                 for legacy in ("import tier_engine", "import foundry_",
@@ -691,8 +692,8 @@ class TestTheShippedEvidenceCommand(IndexFixtureCase):
         import ast
         allowed = {"mtj_foundry", "__future__", "argparse", "hashlib", "json",
                    "os", "pathlib", "sys"}
-        for name in ("evidence_index.py", "retrieval.py", "evaluation.py",
-                     "evidence_cli.py"):
+        for name in ("evidence/index.py", "thesaurus/retrieval.py",
+                     "evaluation.py", "evidence_cli.py"):
             tree = ast.parse((SRC / "mtj_foundry" / name).read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 roots = []
@@ -1003,6 +1004,247 @@ class TestAgainstTheRealSelectedInputs(unittest.TestCase):
             with self.subTest(control=control["name"]):
                 self.assertEqual(control["candidate_count"], 0)
                 self.assertFalse(control["fabricated_semantic_evidence"])
+
+
+# ---------------------------------------------------------------------------
+# S8 — the evidence/thesaurus OWNERSHIP boundary
+# ---------------------------------------------------------------------------
+# These assert where each responsibility lives and which way the imports point,
+# rather than what the code computes. They live in this module rather than a new
+# one on purpose: `test_layout_delegation` pins the tracked-Python census, and a
+# new file would move that count without moving any responsibility.
+#
+# Every guard below is RED-CAPABLE and each was observed failing against a
+# deliberately rigged copy before being accepted.
+
+PKG = SRC / "mtj_foundry"
+EVIDENCE = PKG / "evidence"
+THESAURUS = PKG / "thesaurus"
+
+
+def _s8_imports(path: Path) -> list:
+    """Every imported module in `path` as `(module, is_deferred)`.
+
+    Function-local imports COUNT. A cycle hidden inside a function body is still
+    a cycle, and reading only module-level imports is how it would be missed.
+    """
+    import ast
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    deferred = {
+        id(child)
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        for child in ast.walk(node)
+    }
+    out = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            out += [(a.name, id(node) in deferred) for a in node.names]
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            out.append((node.module, id(node) in deferred))
+            if node.module == "mtj_foundry":
+                out += [(f"mtj_foundry.{a.name}", id(node) in deferred)
+                        for a in node.names]
+    return out
+
+
+class TestTheOrderingDeclarationIsConserved(unittest.TestCase):
+    """S8 moved this policy between packages. It did not get to edit it.
+
+    Asserted in FULL rather than by spot-check, because the hazard is a
+    deterministic WRONG order: a reordered key list or a softened status reads as
+    healthy output and is only caught by comparing the whole declared contract.
+    """
+
+    EXPECTED = {
+        "declared_before": "the frozen milestone-2 evaluation panel was run",
+        "keys": [
+            "1. shared_axis_count DESCENDING",
+            "2. shared_axis_cardinalities ASCENDING, lexicographically (each "
+            "shared axis's active member count in the selected codebook, sorted "
+            "ascending)",
+            "3. oracle_id ASCENDING \u2014 arbitrary, deterministic, carries no "
+            "semantics",
+        ],
+        "constants": "NONE. every term is a raw count read from the index artifact",
+        "uses_no": ["learned or model-generated features", "legacy tier labels",
+                    "text similarity", "thresholds or magic numbers",
+                    "any penalty for a membership a candidate does not have"],
+        "is": ("an UNRATIFIED default presentation order for a measurement, not a "
+               "ruling about similarity and not authority"),
+        "tie_blocks": ("candidates equal under keys 1 and 2 form a tie block that "
+                       "key 3 orders arbitrarily. every row carries tie_block_size "
+                       "and tie_block_first_rank so a tie is never read as a "
+                       "ranking"),
+    }
+
+    def test_the_declaration_is_exactly_what_it_was(self):
+        self.assertEqual(retrieval.ORDERING_RULE, self.EXPECTED)
+
+    def test_the_key_order_is_itself_part_of_the_contract(self):
+        """`keys` is a LIST. Reordering it restates the policy as a different one
+        while every individual string still matches."""
+        self.assertEqual(retrieval.ORDERING_RULE["keys"], self.EXPECTED["keys"])
+
+    def test_the_policy_is_still_declared_unratified(self):
+        self.assertIn("UNRATIFIED", retrieval.ORDERING_RULE["is"])
+        self.assertIn("not authority", retrieval.ORDERING_RULE["is"])
+
+    def test_the_declaration_still_names_no_constant(self):
+        self.assertTrue(retrieval.ORDERING_RULE["constants"].startswith("NONE"))
+
+
+class TestTheImplementedOrderMatchesTheDeclaration(unittest.TestCase):
+    """The declaration is prose; `_sort_key` is what actually runs.
+
+    Asserted as BEHAVIOUR over constructed candidates rather than over the source
+    text, so a rewritten-but-equivalent implementation passes and a changed
+    CRITERION fails.
+    """
+
+    @staticmethod
+    def _c(oracle_id, count, cards):
+        """Shaped like a real candidate row: the keys `_sort_key` reads live
+        under `features`, which is itself part of the contract -- the key cannot
+        see anything outside the shared evidence and the id."""
+        return {"oracle_id": oracle_id,
+                "features": {"shared_axis_count": count,
+                             "shared_axis_cardinalities": cards}}
+
+    def test_more_shared_axes_sorts_first(self):
+        low, high = self._c("a", 1, [5]), self._c("b", 2, [5, 5])
+        self.assertLess(retrieval._sort_key(high), retrieval._sort_key(low))
+
+    def test_sharper_shared_axis_breaks_the_first_tie(self):
+        broad, sharp = self._c("a", 1, [100]), self._c("b", 1, [2])
+        self.assertLess(retrieval._sort_key(sharp), retrieval._sort_key(broad))
+
+    def test_oracle_id_breaks_the_remaining_tie_ascending(self):
+        first, second = self._c("aaa", 1, [7]), self._c("bbb", 1, [7])
+        self.assertLess(retrieval._sort_key(first), retrieval._sort_key(second))
+
+    def test_a_tie_block_is_the_rows_equal_under_keys_one_and_two(self):
+        """Key 3 must not participate in the block boundary, or every block would
+        be size 1 and the tie would be presented as a ranking."""
+        a, b = self._c("aaa", 1, [7]), self._c("bbb", 1, [7])
+        self.assertEqual(retrieval._sort_key(a)[:2], retrieval._sort_key(b)[:2])
+
+
+class TestThereIsExactlyOneOwnerOfEach(unittest.TestCase):
+    """The migration-source paths are gone, not shadowed.
+
+    A second semantic copy at the old root is the specific failure S8 exists to
+    prevent: both would import, both would look correct, and they would drift.
+    """
+
+    def test_the_permanent_owners_are_where_the_accepted_layout_says(self):
+        self.assertTrue((EVIDENCE / "index.py").is_file())
+        self.assertTrue((THESAURUS / "retrieval.py").is_file())
+
+    def test_no_implementation_remains_at_either_old_root_path(self):
+        self.assertFalse((PKG / "evidence_index.py").exists())
+        self.assertFalse((PKG / "retrieval.py").exists())
+
+    def test_neither_old_root_module_is_importable(self):
+        for name in ("mtj_foundry.evidence_index", "mtj_foundry.retrieval"):
+            with self.subTest(module=name):
+                with self.assertRaises(ImportError):
+                    __import__(name)
+
+    def test_the_two_layers_ship_as_implicit_namespace_packages(self):
+        """No `__init__.py` marker in either. The real wheel built from this
+        repository's own pyproject backend carries both modules without one, so a
+        marker would add a tracked file that buys nothing -- and an init that
+        re-exported anything would recreate two names for one owner."""
+        self.assertFalse((EVIDENCE / "__init__.py").exists())
+        self.assertFalse((THESAURUS / "__init__.py").exists())
+
+    def test_the_top_level_init_re_exports_no_package_module(self):
+        import ast
+
+        tree = ast.parse((PKG / "__init__.py").read_text(encoding="utf-8"))
+        assigned = [t.id for n in tree.body if isinstance(n, ast.Assign)
+                    for t in n.targets if isinstance(t, ast.Name)]
+        self.assertEqual(assigned, ["__all__", "__version__"])
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                module = getattr(node, "module", None) or ""
+                self.assertEqual(module, "__future__",
+                                 "top-level __init__ re-exports a package module")
+
+
+class TestThePackageDirectionIsDownward(unittest.TestCase):
+
+    def test_evidence_never_imports_thesaurus(self):
+        """Module-level AND deferred. A function-local import is still an edge."""
+        for path in sorted(EVIDENCE.rglob("*.py")):
+            for module, is_deferred in _s8_imports(path):
+                with self.subTest(file=path.name, imports=module,
+                                  deferred=is_deferred):
+                    self.assertFalse(
+                        module.startswith("mtj_foundry.thesaurus"),
+                        f"forbidden evidence -> thesaurus edge in {path.name}")
+
+    def test_thesaurus_may_depend_on_evidence(self):
+        """The ALLOWED direction control. A guard that forbids everything proves
+        nothing about direction, so the lawful edge must be asserted PRESENT."""
+        modules = [m for m, _ in _s8_imports(THESAURUS / "retrieval.py")]
+        self.assertTrue(any(m.startswith("mtj_foundry.evidence") for m in modules),
+                        "the lawful thesaurus -> evidence edge is absent")
+
+    def test_runtime_depends_on_neither_new_layer(self):
+        for module, _ in _s8_imports(PKG / "runtime.py"):
+            with self.subTest(imports=module):
+                self.assertFalse(module.startswith("mtj_foundry.evidence"))
+                self.assertFalse(module.startswith("mtj_foundry.thesaurus"))
+
+    def test_the_lower_substrate_never_reaches_up(self):
+        for sub in ("mtg", "infra"):
+            for path in sorted((PKG / sub).rglob("*.py")):
+                for module, _ in _s8_imports(path):
+                    with self.subTest(file=f"{sub}/{path.name}", imports=module):
+                        self.assertFalse(module.startswith("mtj_foundry.evidence"))
+                        self.assertFalse(module.startswith("mtj_foundry.thesaurus"))
+
+
+class TestThePermanentLibrariesInferNoRepository(unittest.TestCase):
+    """`ProjectPaths` is the sole layout owner. These two layers receive their
+    inputs explicitly or not at all, so an installed copy with no checkout beside
+    it behaves identically."""
+
+    FILES = ("evidence/index.py", "thesaurus/retrieval.py")
+
+    def test_no_module_infers_a_root_from_its_own_location(self):
+        import ast
+
+        for name in self.FILES:
+            tree = ast.parse((PKG / name).read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Name) and node.id == "__file__":
+                    self.fail(f"{name} reads __file__")
+                if isinstance(node, ast.Attribute) and node.attr in (
+                        "cwd", "getcwd", "rglob", "glob"):
+                    self.fail(f"{name} uses {node.attr}")
+
+    def test_no_module_declares_a_module_level_root_constant(self):
+        import ast
+
+        banned = {"ROOT", "REPO_ROOT", "PROJECT_ROOT", "BASE_DIR"}
+        for name in self.FILES:
+            tree = ast.parse((PKG / name).read_text(encoding="utf-8"))
+            for node in tree.body:
+                if isinstance(node, ast.Assign):
+                    for t in node.targets:
+                        if isinstance(t, ast.Name) and t.id in banned:
+                            self.fail(f"{name} declares {t.id}")
+
+    def test_no_module_reaches_the_legacy_tree(self):
+        for name in self.FILES:
+            for module, _ in _s8_imports(PKG / name):
+                with self.subTest(file=name, imports=module):
+                    self.assertNotIn(module.split(".")[0],
+                                     {"experiments", "pipeline", "tier_engine"})
 
 
 if __name__ == "__main__":

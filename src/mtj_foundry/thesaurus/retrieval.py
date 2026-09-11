@@ -81,8 +81,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mtj_foundry import __version__, evidence_index, runtime
+from mtj_foundry import __version__, runtime
 from mtj_foundry.corpus import normalize_name
+from mtj_foundry.evidence import index as evidence_index
 
 __all__ = [
     "AmbiguousNameError",
