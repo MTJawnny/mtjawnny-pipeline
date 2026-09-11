@@ -167,9 +167,22 @@ def ratified_delivery_tokens(grammar_path=None):
 
 
 def cr_action_terms(checks_path=None):
-    """The CR term registry, read from this boundary's generated artifact."""
-    return _halting(_delivery.cr_action_terms)(
-        CR_CHECKS if checks_path is None else checks_path)
+    """The CR term registry, read from this boundary's generated artifact.
+
+    THE MISSING-ARTIFACT MESSAGE IS THIS BOUNDARY'S, NOT THE LIBRARY'S, and the
+    two are deliberately different sentences. `STOP — … not found — run
+    experiments/foundry_cr_checks.py first` names a SCRIPT IN THIS REPOSITORY;
+    a library installed into an arbitrary `site-packages` must not tell its
+    caller to run a file it cannot know exists, so the permanent module says
+    the domain-neutral thing instead. Restoring the historic sentence is what
+    this precheck is for, and it is a MESSAGE ADAPTER: it derives nothing, it
+    decides nothing the library also decides, and the library keeps its own
+    guard for every caller that does not come through here.
+    """
+    path = CR_CHECKS if checks_path is None else checks_path
+    if not path.exists():
+        fc.halt(f"{path} not found — run experiments/foundry_cr_checks.py first")
+    return _halting(_delivery.cr_action_terms)(path)
 
 
 def build_cr_enumerations(cr_path=None):
@@ -206,7 +219,25 @@ def keyword_homes(keywords=None, ratified=None, cr_path=None):
 # gone, but the import-time build is still the CONTRACT every consumer relies on
 # -- the original hand-written regex was a module-level constant -- so it stays,
 # and it stays HERE, where the artifact's location is known.
-_delivery.build_trigger_verbs(_delivery.cr_action_terms(CR_CHECKS))
+#
+# S7.R1 — IT GOES THROUGH THE BOUNDARY, AND THE SPELLING IS THE ACCEPTED ONE.
+# The first S7 candidate wrote this as
+#
+#     _delivery.build_trigger_verbs(_delivery.cr_action_terms(CR_CHECKS))
+#
+# which reaches PAST the adapter defined above into two functions that RAISE.
+# A missing CR-check artifact or a lost trigger-vocabulary anchor then escaped
+# this module as an uncaught `ShapeError` traceback instead of the historic
+# `STOP — …` + exit 1 that every legacy caller and every operator procedure
+# depends on. The happy path was identical, which is exactly why no corpus
+# differential and no Gate-2 row could see it: a failure boundary is only
+# observable on the failure path.
+#
+# The two names below are THIS module's -- `cr_action_terms` above and the
+# `_halting`-wrapped `build_trigger_verbs` from the re-export -- so the line is
+# once again byte-for-byte the accepted-S6 spelling, and the process contract
+# is owned where the docstring of `_halting` says it is owned.
+build_trigger_verbs(cr_action_terms())
 
 
 def cmd_gaps(args, cards, ratified, actions):

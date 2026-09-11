@@ -1634,5 +1634,234 @@ class TestTextMatchIsRegexAndTextAndNothingElse(unittest.TestCase):
         self.assertIsNone(text_match.matched_clause(rx, texts["b"]))
 
 
+# ---------------------------------------------------------------------------
+# S7.R1 — the legacy import-time halt boundary
+# ---------------------------------------------------------------------------
+
+SHAPE_SHELL = EXPERIMENTS / "foundry_shape_extractor.py"
+
+# The accepted-S6 failure contract, measured from an isolated byte-faithful copy
+# of `27e32474099af8e333a037f2c9906e959adcea63` rather than remembered. `{root}`
+# is the only thing that varies, because the message names an absolute path.
+S6_MISSING_ARTIFACT = ("STOP — {root}/config/generated/cr-checks.json not found "
+                       "— run experiments/foundry_cr_checks.py first")
+S6_TRIGGER_ANCHOR_LOST = (
+    "STOP — Trigger-verb vocabulary lost a known CR keyword action — refusing "
+    "to run with a verb set that would silently extend trigger clauses into "
+    "the effect half (CR 113.3c).")
+
+# The rejected spelling, kept verbatim so the control below re-creates the real
+# defect and not an approximation of it.
+REJECTED_BOOTSTRAP = "_delivery.build_trigger_verbs(_delivery.cr_action_terms(CR_CHECKS))"
+# The only names the shell may reach on the permanent module at MODULE level.
+INSTALL_ONLY = {"use_card_text_rules", "CardTextRules"}
+ACCEPTED_BOOTSTRAP = "build_trigger_verbs(cr_action_terms())"
+
+
+class _ImportRoot:
+    """A scratch repository root that is just big enough to IMPORT the shell.
+
+    `src/`, `config/` and the three legacy modules the import chain touches --
+    2.6 MB, so driving the failure path is cheap enough to do behaviourally
+    rather than by reading source. The real tree is never mutated: every case
+    edits this copy.
+    """
+
+    NEEDED = ("foundry_shape_extractor.py", "foundry_common.py", "foundry_cr.py")
+
+    def __enter__(self) -> Path:
+        # RESOLVED, because the message under test names an absolute path and
+        # the boundary derives it through `Path(__file__).resolve()`. On macOS
+        # `mkdtemp` hands back `/var/...` while `resolve()` yields
+        # `/private/var/...`; comparing the unresolved form fails on a symlink,
+        # not on a contract.
+        self.tmp = Path(tempfile.mkdtemp(prefix="s7r1-import-")).resolve()
+        shutil.copytree(SRC, self.tmp / "src")
+        shutil.copytree(REPO_ROOT / "config", self.tmp / "config")
+        (self.tmp / "experiments").mkdir()
+        for name in self.NEEDED:
+            shutil.copy2(EXPERIMENTS / name, self.tmp / "experiments" / name)
+        return self.tmp
+
+    def __exit__(self, *exc):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        return False
+
+
+def import_the_shell(root: Path):
+    """Import the legacy boundary in a subprocess. Returns (exit, out, err)."""
+    import subprocess
+    import sys
+    res = subprocess.run(
+        [sys.executable, "-c",
+         "import sys; sys.path.insert(0, 'experiments');"
+         " import foundry_shape_extractor as fse;"
+         " print('IMPORT OK', len(fse.TRIGGER_VERB.pattern))"],
+        cwd=root, capture_output=True, text=True,
+        env={"PATH": "/usr/bin:/bin"})
+    return res.returncode, res.stdout, res.stderr
+
+
+def break_the_trigger_anchor(root: Path) -> None:
+    """A STRUCTURALLY VALID registry that loses one required anchor.
+
+    `build_trigger_verbs` requires `discard` among the derived keyword-action
+    stems. Re-kinding that one term keeps the JSON parseable and the schema
+    intact, so the failure that fires is the ratified vocabulary guard and not
+    a JSON error -- which is the distinction the repair contract turns on.
+    """
+    path = root / "config" / "generated" / "cr-checks.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    hit = 0
+    for term in doc["terms"]:
+        if term["term"] == "discard" and term.get("kind") == "keyword-action":
+            term["kind"] = "not-a-keyword-action"
+            hit += 1
+    if hit != 1:
+        raise AssertionError(
+            f"expected exactly one `discard` keyword-action term to re-kind, "
+            f"found {hit}. The fixture no longer drives the guard it names.")
+    path.write_text(json.dumps(doc, indent=1), encoding="utf-8")
+
+
+class TestTheLegacyImportTimeHaltBoundary(unittest.TestCase):
+    """S7.R1. The failure boundary is only observable on the failure path.
+
+    The first S7 candidate built the trigger vocabulary at import by calling the
+    PERMANENT functions directly:
+
+        _delivery.build_trigger_verbs(_delivery.cr_action_terms(CR_CHECKS))
+
+    Both of those RAISE. So a missing CR-check artifact, or a lost
+    trigger-vocabulary anchor, stopped crossing this module's process boundary
+    as `STOP — …` + exit 1 and escaped as an uncaught `ShapeError` traceback
+    instead. The happy path was byte-identical, which is exactly why no corpus
+    differential and no Gate-2 row could see it.
+
+    Every expectation below is the accepted-S6 behaviour, measured from an
+    isolated byte-faithful copy of that head -- not this file's opinion of it.
+    """
+
+    def test_a_normal_import_succeeds_and_builds_the_trigger_vocabulary(self):
+        with _ImportRoot() as root:
+            code, out, err = import_the_shell(root)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(err, "")
+        self.assertTrue(out.startswith("IMPORT OK "), out)
+        self.assertGreater(int(out.split()[-1]), 100)
+
+    def test_a_MISSING_cr_check_registry_halts_with_the_historic_message(self):
+        with _ImportRoot() as root:
+            (root / "config" / "generated" / "cr-checks.json").unlink()
+            code, out, err = import_the_shell(root)
+            expected = S6_MISSING_ARTIFACT.format(root=root)
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertEqual(err.strip(), expected)
+        self.assertNotIn("Traceback", err)
+        self.assertNotIn("ShapeError", err)
+
+    def test_a_LOST_trigger_vocabulary_anchor_halts_with_the_historic_message(self):
+        with _ImportRoot() as root:
+            break_the_trigger_anchor(root)
+            code, out, err = import_the_shell(root)
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertEqual(err.strip(), S6_TRIGGER_ANCHOR_LOST)
+        self.assertNotIn("Traceback", err)
+        self.assertNotIn("ShapeError", err)
+
+    def test_THE_CONTROL_reinstating_the_rejected_bootstrap_turns_both_RED(self):
+        """A guard never shown to fail is not known to be a guard.
+
+        The rejected spelling is put back, verbatim, into a COPY of the shell,
+        and both failure cases are re-observed. Each must stop being a
+        `STOP — …` and become an uncaught `ShapeError` traceback -- which is
+        what makes the two tests above regression tests rather than
+        descriptions of today's behaviour.
+        """
+        for label, prepare in (("missing artifact",
+                                lambda r: (r / "config" / "generated"
+                                           / "cr-checks.json").unlink()),
+                               ("lost anchor", break_the_trigger_anchor)):
+            with self.subTest(case=label):
+                with _ImportRoot() as root:
+                    shell = root / "experiments" / "foundry_shape_extractor.py"
+                    text = shell.read_text(encoding="utf-8")
+                    self.assertEqual(
+                        text.count("\n" + ACCEPTED_BOOTSTRAP + "\n"), 1,
+                        "the accepted bootstrap spelling moved; this control "
+                        "can no longer re-create the defect it grades")
+                    shell.write_text(
+                        text.replace("\n" + ACCEPTED_BOOTSTRAP + "\n",
+                                     "\n" + REJECTED_BOOTSTRAP + "\n"),
+                        encoding="utf-8")
+                    prepare(root)
+                    code, _out, err = import_the_shell(root)
+                self.assertIn("Traceback", err)
+                self.assertIn("ShapeError", err)
+                self.assertNotIn("STOP — ", err)
+                self.assertNotEqual(code, 0)
+
+    def test_the_bootstrap_reaches_the_permanent_module_only_through_THIS_module(self):
+        """Structural support for the behavioural proof above: no module-level
+        statement may call a `_delivery.*` function that can raise.
+
+        `use_card_text_rules` and the `CardTextRules` it is handed are the one
+        permitted module-level reach into the permanent module -- they install
+        the injected context, and their failure mode is a programming error in
+        this file rather than a repository-state failure the accepted base
+        converted to `STOP — …`. The accepted base had no equivalent call at
+        all, and a missing provider name raised there too (`fc._MODAL_HEADER_RE`
+        was read directly), so the parity question does not arise.
+        """
+        tree = ast.parse(SHAPE_SHELL.read_text(encoding="utf-8"))
+        offenders = []
+        for node in tree.body:
+            if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
+                continue
+            for call in ast.walk(node.value):
+                if not isinstance(call, ast.Call):
+                    continue
+                fn = call.func
+                if isinstance(fn, ast.Attribute) and isinstance(fn.value, ast.Name) \
+                        and fn.value.id == "_delivery" \
+                        and fn.attr not in INSTALL_ONLY:
+                    offenders.append(f"line {node.lineno}: _delivery.{fn.attr}")
+        self.assertEqual(offenders, [], f"import-time call past the halt "
+                                        f"adapter: {offenders}")
+
+    def test_the_message_adapter_is_the_boundarys_and_the_library_stays_neutral(self):
+        """The two sentences are deliberately different, and both are asserted.
+
+        `run experiments/foundry_cr_checks.py first` names a script in THIS
+        repository; a module installed into an arbitrary `site-packages` must
+        not tell its caller to run a file it cannot know exists.
+        """
+        shell = SHAPE_SHELL.read_text(encoding="utf-8")
+        self.assertIn('f"{path} not found — run experiments/foundry_cr_checks.py '
+                      'first"', shell)
+        owner = (SHAPES_PKG / "delivery.py").read_text(encoding="utf-8")
+        self.assertNotIn("foundry_cr_checks", owner)
+        self.assertIn("generate the CR check ", owner)
+
+    def test_the_permanent_owner_still_refuses_for_callers_that_skip_the_shell(self):
+        """The adapter adds a message; it does not remove the library's guard."""
+        from mtj_foundry.mtg.shapes import delivery
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(delivery.ShapeError):
+                delivery.cr_action_terms(Path(tmp) / "definitely-not-here.json")
+
+    def test_the_halt_boundary_prints_STOP_and_exits_one(self):
+        """The shape of `fc.halt` itself, so the expectations above rest on a
+        measured contract rather than on a remembered one."""
+        import foundry_common as fc
+        source = ast.unparse(ast.parse(
+            (EXPERIMENTS / "foundry_common.py").read_text(encoding="utf-8")))
+        self.assertIn("print(f'STOP — {message}', file=sys.stderr)", source)
+        self.assertIn("sys.exit(1)", source)
+        self.assertTrue(callable(fc.halt))
+
+
 if __name__ == "__main__":
     unittest.main()
