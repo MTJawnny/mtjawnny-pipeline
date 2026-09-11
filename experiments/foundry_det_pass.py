@@ -49,6 +49,13 @@ import foundry_det_patterns_probe as probe  # noqa: E402
 import foundry_locality as fl  # noqa: E402
 import re  # noqa: E402
 
+# S7: the two PURE text matchers moved to `mtj_foundry.mtg.text_match`. They
+# know a regex and a list of strings and nothing else, so they are the only part
+# of this file that is substrate. Everything else here -- DET record roles,
+# pattern resolution, the lattice, samples, apply/write -- is later-slice work
+# and is deliberately untouched. NO SECOND IMPLEMENTATION REMAINS HERE.
+from mtj_foundry.mtg import text_match as _text_match  # noqa: E402
+
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 SAMPLES_REPORT_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_samples_report.json"
@@ -315,9 +322,7 @@ def load_axis_patterns():
     return axis_patterns, prefilter_patterns, lattice_rows
 
 
-def compute_full_hits(pattern_src: str, texts: dict) -> list:
-    pat = re.compile(pattern_src, re.I)
-    return sorted(oid for oid, text_list in texts.items() if any(pat.search(t) for t in text_list))
+compute_full_hits = _text_match.compute_full_hits
 
 
 # rule:enters-tapped, rule:enters-tapped-conditional, and rule:imposes-
@@ -363,17 +368,7 @@ def quote_pattern_src(p: dict) -> str:
     return p["pattern"]
 
 
-def matched_clause(compiled, text_list: list):
-    """The oracle-text clause a ratified pattern matched on this card -- the
-    evidence quote for a rule-derived assertion (R2). Returns None when the
-    pattern matches none of the card's DET scan texts, which for a card on
-    that pattern's own hit list means the hit list and the pattern have
-    drifted apart; every caller treats that as a halt, never a skip."""
-    for text in text_list:
-        m = compiled.search(text)
-        if m and m.group(0).strip():
-            return m.group(0)
-    return None
+matched_clause = _text_match.matched_clause
 
 
 def compute_special_hits(resolved_slug: str, texts: dict, cards: dict) -> tuple:

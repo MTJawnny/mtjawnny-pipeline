@@ -96,6 +96,8 @@ WHAT THIS MODULE DOES NOT DO
     python3 experiments/foundry_locality.py --selftest
 """
 import argparse
+import functools
+import inspect
 import re
 import sys
 from pathlib import Path
@@ -114,157 +116,64 @@ from mtj_foundry.paths import ProjectPaths     # noqa: E402
 RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 
 
-# Resolution statuses. Deliberately four, not two: "we know where the evidence
-# is" and "we know what owns the fact" are different answers (§15 of the
-# pre-implementation check), and collapsing them is how a broad quote comes to
-# force a broad owner.
-OWNER = "OWNER"            # exactly one unit -- the semantic owner
-SPAN = "SPAN"              # evidence crosses units; owner not established here
-AMBIGUOUS = "AMBIGUOUS"    # several candidate units; no deterministic choice
-UNRESOLVED = "UNRESOLVED"  # the quote matches nothing in the current snapshot
+# ---------------------------------------------------------------------------
+# S7 — THE RATIFIED ADDRESS LAW NOW LIVES IN THE PERMANENT SUBSTRATE
+# ---------------------------------------------------------------------------
+# Migration slice 7 moved the six pure definitions into
+# `mtj_foundry.mtg.shapes.locality`: the four statuses, `_norm`, `units`,
+# `resolve`, `owning_header`, `mutually_exclusive` and `_by_name`. NO SECOND
+# IMPLEMENTATION REMAINS HERE.
+#
+# What stays is everything the permanent MTG layer may not own: the
+# codebook-facing census and binding, the assertion-schema fixtures, the
+# boundary-fixture writer, the ratchet directions and their baseline, the
+# unaddressed report, and the CLI. Those are later slices.
+#
+# The halt boundary is re-established here: the permanent module raises
+# `LocalityError`, and the wrappers below convert it to `fc.halt`, preserving
+# the historic `STOP — …` process contract for every legacy caller.
+from mtj_foundry.mtg.shapes import locality as _locality  # noqa: E402
+
+LocalityError = _locality.LocalityError
+
+# THE CARD-TEXT PRIMITIVES, INJECTED. The shared face reader and the ratified
+# CARDNAME collapse are `foundry_common`'s today and a later slice's tomorrow.
+# The substrate receives them from here; it never imports them and never infers
+# them.
+_locality.use_card_face_rules(_locality.CardFaceRules(fc, {
+    "raw_faces": "raw_faces",
+    "canonicalize_self_reference": "canonicalize_self_reference",
+}))
 
 
-def _norm(s: str) -> str:
-    """Whitespace-and-case normalisation ONLY.
+def _halting(fn):
+    """Re-establish the historic `STOP — …` process contract at this boundary.
 
-    Deliberately not punctuation-stripping: the evidence-quote discipline is
-    verbatim, and a normaliser that erased punctuation could match a quote
-    against a paragraph it did not come from.
+    A library may not exit a process it does not own, so the permanent module
+    raises and this converts.
     """
-    return re.sub(r"\s+", " ", (s or "")).strip().lower()
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except LocalityError as exc:
+            fc.halt(str(exc))
+    return wrapper
 
 
-def units(card: dict, strict: bool = True):
-    """[(coord, raw_paragraph, canonical_paragraph)] for one card.
-
-    `coord` is `(face_index, paragraph_index)` — derived from
-    `foundry_common.raw_faces`, the ONE shared face reader that
-    `foundry_common.full_oracle_text` also delegates to. **No parallel
-    indexing is invented here**; this is the coordinate `build_card_doc` and
-    `emit_viewer` already use for Searcher A, written down where a fact can
-    point at it.
-
-    HALTS if canonicalisation changes a face's line count. It must be a
-    per-line substitution, never a reflow — if that ever stops being true the
-    two representations stop being coordinate-comparable and every address
-    derived here would be silently wrong.
-
-    **`strict=False` returns None instead of halting**, and exists for exactly
-    one caller: the DET write path. The ratified rule is that an unaddressable
-    assertion stays writable, so a WRITE must not be able to die on a locality
-    concern — a reflow would otherwise block Captain-ratified membership over a
-    field that is optional by construction. The AUDIT path keeps `strict=True`,
-    so the structural defect is still fatal in Gate 2, where finding it is the
-    whole job. Measured 2026-08-13: **0 of 32,557 gated cards** reflow, so this
-    is a structural guarantee rather than an observed condition.
-    """
-    out = []
-    for fi, face in enumerate(fc.raw_faces(card)):
-        raw = face["oracle_text"] or ""
-        canon = fc.canonicalize_self_reference(raw, card)
-        raw_lines = [x for x in raw.split("\n") if x.strip()]
-        canon_lines = [x for x in canon.split("\n") if x.strip()]
-        if len(raw_lines) != len(canon_lines):
-            if not strict:
-                return None
-            fc.halt(
-                f"CARDNAME canonicalisation changed the paragraph count on "
-                f"face {fi} of {card.get('name')!r}: {len(raw_lines)} raw vs "
-                f"{len(canon_lines)} canonical. Locality compares the two "
-                f"representations coordinate by coordinate, so a reflow makes "
-                f"every address on this card meaningless. Fix the "
-                f"canonicaliser; never fall back to one representation.")
-        for pi, (r, c) in enumerate(zip(raw_lines, canon_lines)):
-            out.append(((fi, pi), r, c))
-    return out
-
-
-def resolve(card: dict, quote: str, strict: bool = True) -> dict:
-    """The ratified resolution law. Returns {status, owner, candidates, reason}.
-
-    Union over every supported representation; accept iff exactly one
-    coordinate. See the module docstring for why this needs no tiebreak.
-    """
-    if not quote or not quote.strip():
-        return {"status": UNRESOLVED, "owner": None, "candidates": [],
-                "reason": "assertion carries no evidence quote"}
-    us = units(card, strict=strict)
-    if us is None:
-        return {"status": UNRESOLVED, "owner": None, "candidates": [],
-                "reason": "CARDNAME canonicalisation reflows this card's "
-                          "paragraphs; coordinates are not comparable"}
-    nq = _norm(quote)
-    hits = set()
-    for coord, raw, canon in us:
-        if nq in _norm(raw) or nq in _norm(canon):
-            hits.add(coord)
-    if len(hits) == 1:
-        return {"status": OWNER, "owner": sorted(hits)[0],
-                "candidates": sorted(hits), "reason": ""}
-    if len(hits) > 1:
-        return {"status": AMBIGUOUS, "owner": None, "candidates": sorted(hits),
-                "reason": f"quote appears in {len(hits)} units; no "
-                          f"deterministic rule distinguishes them"}
-    # No single unit. Does the quote cover a contiguous run of them? Both
-    # representations are joined and tested, for the same reason the per-unit
-    # test uses both.
-    for joined in (_norm("\n".join(r for _, r, _ in us)),
-                   _norm("\n".join(c for _, _, c in us))):
-        if nq in joined:
-            return {"status": SPAN, "owner": None,
-                    "candidates": [c for c, _, _ in us],
-                    "reason": "evidence crosses unit boundaries"}
-    return {"status": UNRESOLVED, "owner": None, "candidates": [],
-            "reason": "quote matches no text in the current corpus snapshot"}
-
-
-_BULLET = "•"
-_CHOOSE = re.compile(r"\bchoose|\bchooses\b", re.I)
-
-
-def owning_header(card: dict, coord) -> dict:
-    """The modal header that groups a bullet, and its selection cardinality.
-
-    DERIVED, never stored (A4). The header is the nearest preceding non-bullet
-    paragraph on the SAME face. Measured: 1,783 of 1,791 bullets resolve; the
-    8 that do not are Celebr-8000's CR 706.3b die-roll table, which is one
-    ability and not modal at all -- so a bullet with no CHOOSE header is
-    correctly reported as non-modal rather than forced into a group.
-    """
-    us = units(card)
-    idx = {c: i for i, (c, _, _) in enumerate(us)}
-    if coord not in idx:
-        return {"modal": False, "header": None, "reason": "coord not on card"}
-    i = idx[coord]
-    if _BULLET not in us[i][1]:
-        return {"modal": False, "header": None, "reason": "not a bullet"}
-    for j in range(i - 1, -1, -1):
-        c, raw, _ = us[j]
-        if c[0] != coord[0]:
-            break
-        if _BULLET in raw:
-            continue
-        if _CHOOSE.search(raw):
-            return {"modal": True, "header": c, "text": raw.strip(),
-                    "reason": ""}
-        break
-    return {"modal": False, "header": None,
-            "reason": "no CR 700.2 choose-header governs this bullet"}
-
-
-def mutually_exclusive(card: dict, coord_a, coord_b) -> bool:
-    """Do two owners sit under one `Choose one` header?
-
-    The whole point of the architecture, in one predicate. Only cardinality
-    ONE makes two modes exclusive -- under `Choose two` a player may take both,
-    so those owners are NOT exclusive.
-    """
-    if coord_a == coord_b:
-        return False
-    ha, hb = owning_header(card, coord_a), owning_header(card, coord_b)
-    if not (ha["modal"] and hb["modal"] and ha["header"] == hb["header"]):
-        return False
-    return bool(re.search(r"\bchoose one\b", ha.get("text", ""), re.I))
+# Re-export by REFERENCE, mechanically, so a name cannot be silently dropped on
+# its way through the shell. Doing it BY HAND lost `_BULLET` -- the census and
+# the fixtures still read it as a module global, and only the full Gate-2 run
+# saw the `NameError`. The address law has no derived state, so every name is
+# safe to bind at import; the list is the permanent module's, not a guess.
+_NOT_REEXPORTED = {"annotations", "Any", "Callable"}
+for _name, _obj in sorted(vars(_locality).items()):
+    if _name.startswith("__") or _name in _NOT_REEXPORTED:
+        continue
+    if _name in globals() or inspect.ismodule(_obj):
+        continue
+    globals()[_name] = _halting(_obj) if inspect.isfunction(_obj) else _obj
+del _name, _obj
 
 
 # --------------------------------------------------------------------------
@@ -276,11 +185,7 @@ def mutually_exclusive(card: dict, coord_a, coord_b) -> bool:
 # FIXTURES, never a code path -- nothing in `resolve()` reads a card name.
 # --------------------------------------------------------------------------
 
-def _by_name(cards):
-    out = {}
-    for c in cards.values():
-        out.setdefault(c["name"], c)
-    return out
+_by_name = _locality._by_name
 
 
 def fixtures(cards) -> list:

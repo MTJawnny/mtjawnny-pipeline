@@ -477,8 +477,28 @@ class TestTheLegacyConsumersLeftTheEngine(unittest.TestCase):
         self.assertEqual(ast.unparse(body[0]), "return _corpus.card_faces(card)")
 
     def test_both_legacy_consumers_use_THE_SAME_facade(self):
-        self.assertIn("fc.raw_faces(card)", self.locality)
+        """ONE face reader, still. S7 moved WHERE locality calls it, not WHICH
+        one it calls.
+
+        The ratified address law is now `mtj_foundry.mtg.shapes.locality`, which
+        may not import `foundry_common` -- so the boundary INJECTS the same
+        facade instead of the law reaching for it. Two face readers is the drift
+        this capability exists to prevent, and injecting one is not forking one:
+        the assertions below name the supplier, the consumer, and the absence of
+        a second implementation on either side."""
+        import ast
+        self.assertIn('"raw_faces": "raw_faces"', self.locality)
+        self.assertIn("_locality.CardFaceRules(fc, {", self.locality)
         self.assertIn("fc.raw_faces(card)", self.visibility)
+
+        law = (REPO_ROOT / "src" / "mtj_foundry" / "mtg" / "shapes"
+               / "locality.py").read_text(encoding="utf-8")
+        self.assertIn("_rules().raw_faces(card)", law)
+        # The law defines no face reader of its own, and cannot import one.
+        tree = ast.parse(law)
+        self.assertNotIn("raw_faces", [n.name for n in ast.walk(tree)
+                                       if isinstance(n, ast.FunctionDef)])
+        self.assertNotIn("foundry_common", law)
 
     def test_the_visibility_audit_added_no_bootstrap_of_its_own(self):
         """WHAT THIS GUARD IS ACTUALLY FOR, restated by C8.5J.

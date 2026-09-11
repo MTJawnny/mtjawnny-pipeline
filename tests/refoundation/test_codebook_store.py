@@ -2171,7 +2171,19 @@ class TestTheKnownTransitiveTrapIsFoundMechanically(unittest.TestCase):
             self.assertEqual(handler["catchability"]["transition"], "SYMMETRIC_BOTH")
             self.assertTrue(handler["catchability"]["legacy_caught"])
             self.assertEqual(handler["catchability"]["permanent_caught"], "ALL")
-            self.assertEqual(handler["reaches_read_owner"], "UNKNOWN")
+            # S7 SHARPENED THIS ONE ANSWER, and it is worth writing down why
+            # rather than re-pinning it silently. The UNKNOWN was never about
+            # this handler: it came from two unresolved edges INSIDE
+            # `parse_delivery` (`mark` and `msub`, defined functions referenced
+            # without being called), which made a NEGATIVE reachability answer
+            # untrustworthy. `parse_delivery` moved to
+            # `mtj_foundry.mtg.shapes.delivery` with slice 7, the frontier is
+            # empty, and the analyzer can now answer the question it always
+            # could not. This is a RESOLUTION, not a promotion: the record's
+            # classification is unchanged, and the local blocker still decides
+            # it -- which is the precedence this test exists to assert.
+            self.assertIs(handler["reaches_read_owner"], False)
+            self.assertEqual(handler["unresolved_frontier"], [])
             self.assertIs(handler["observes_failure_class_change"], False)
 
 
