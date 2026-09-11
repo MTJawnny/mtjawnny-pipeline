@@ -1,15 +1,16 @@
 schema: mtj-refoundation-bootstrap-state/1
 status: SUPERSEDED
 
-# This file is NOT current authority. It is a forward pointer only.
-# It once carried the 2026-08-28 bootstrap state; that content was removed
-# rather than relocated.
+# Historical compatibility pointer only. This file is retained because older
+# durable provenance references its path. It is NOT startup authority and it
+# deliberately carries no mirrored phase/task state.
 
-current_phase_pointer: refoundation/ACTIVE-PHASE.yaml
-task_state_pointer: GitHub Issue #1 latest K -> active T
+current_state_pointer: GitHub Issue #1 latest K -> active T
+manager_entrypoint: refoundation/README.md
 worker_contract_pointer: CLAUDE.md
 
 note: >-
-  The old bootstrap truth remains in Git history, which is where superseded
-  state belongs. Do not read this file, its former contents, or any dated
-  handoff as current state. Do not restore content here to "preserve" it.
+  The former bootstrap state remains in Git history. Do not restore it, do not
+  derive current state from this tombstone, and do not use dated handoffs or
+  filename order as routing. Current accepted head and active task selection
+  are read from Issue #1 latest K -> active T.

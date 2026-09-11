@@ -1,81 +1,150 @@
-# REFOUNDATION BOOTSTRAP CONTROL PLANE
+# Refoundation control plane
 
-Status: **TEMPORARY BOOTSTRAP ARCHITECTURE**
+This directory stores **static governance and conservation contracts** for the
+MTJawnny Foundry refoundation.
 
-This directory exists so the MTG Thesaurus / Foundry repository refoundation can survive ChatGPT and Claude Code session resets without reconstructing state from chat transcripts.
+It deliberately does **not** mirror the current migration phase or task. A
+tracked “current phase” file became stale while Issue #1 continued moving, which
+created two competing answers to the question “what is happening now.” Current
+operational state therefore lives only in durable GitHub control-plane state.
 
-It is **not** the final repository architecture. It does not ratify the clean-slate architecture proposed in GitHub Issue #1. It is scaffolding for the refoundation itself.
+## Manager cold start
 
-## Governing principle
+For a fresh ChatGPT Manager:
 
-> **PRESERVE TRUTH, NOT PLUMBING.**
+1. Read GitHub Issue #1 and locate the **latest `K`**.
+2. Read `h` as the accepted implementation head and `a` as the active task
+   pointer.
+3. If `a != 0`, read that exact `T` and the relevant `X`/`V` chain.
+4. Verify refs, PR topology and repository evidence directly before accepting or
+   issuing work.
+5. Read static governance below only when the question requires it.
 
-The active repository is not a museum. Existing files, APIs, imports, paths, handoffs, and documents may later be rewritten, extracted to a separate research archive, derived from structured data, or deleted if they no longer contribute systematic weight.
+Canonical selector:
 
-Semantic truth and accepted governance state must not change silently as a side effect of infrastructure refactoring.
+`latest K -> active T`
 
-## Current read order
+There is no bootstrap-branch read, handoff-document read or phase-file read.
 
-A fresh Manager or Worker should read only what its role requires.
+## Worker cold start
 
-### ChatGPT Manager
+Claude Code auto-loads root `CLAUDE.md`.
 
-1. `refoundation/BOOTSTRAP-STATE.yaml`
-2. `refoundation/CAPTAIN-DIRECTION.md`
-3. `refoundation/MANAGER-START.md`
-4. GitHub Issue #1 and its Claude result comment
-5. Only then inspect deeper repository evidence as needed
+The Worker then reads Issue #1's latest `K`, follows `a` to the selected `T`,
+verifies the exact base and scope, executes exactly that one task and posts one
+durable `X`.
 
-### Claude Code Worker
+If `a: 0`, there is no Worker task.
 
-1. `refoundation/BOOTSTRAP-STATE.yaml`
-2. `refoundation/CAPTAIN-DIRECTION.md`
-3. `refoundation/WORKER-START.md`
-4. The single GitHub issue explicitly assigned for execution
-5. Only the subsystem files named by that task
+Old batch-triage command shortcuts are not part of the current control plane.
+Historical handoff and triage documents under `docs/` are never startup
+authority.
 
-## Durable control plane
+## Durable state classes
 
-The intended collaboration model is:
+Keep these classes separate:
 
-```text
-Captain
-   |
-   v
-GitHub durable state
-   |-- accepted refs / commits
-   |-- Issues = task contracts / decisions
-   |-- PRs = proposed mutations
-   |-- issue / PR comments = results and review
-   |
-   +--> disposable ChatGPT Manager session
-   |
-   +--> disposable Claude Code Worker session
-```
+- **STATE** — current accepted head and active task selection. Latest `K` on
+  Issue #1.
+- **TASK** — one bounded Manager `T`.
+- **RESULT** — one Worker `X`.
+- **REVIEW** — Manager `V`; implementation acceptance lives here.
+- **IMPLEMENTATION** — commit/branch/PR bytes.
+- **DECISION** — explicit Captain or other authorized durable decision.
+- **EVIDENCE** — measurements supporting a conclusion; never self-authority.
+- **HISTORY** — prior state useful for provenance but not current routing.
 
-No important project state should exist only inside one ChatGPT or Claude session.
+Protocol:
 
-## What this directory records
+`M:T -> W:X -> M:V -> M:T|K`
 
-- `BOOTSTRAP-STATE.yaml` — small current refoundation checkpoint; manually maintained only during bootstrap
-- `CAPTAIN-DIRECTION.md` — decisions already made by Captain about refoundation scope and philosophy
-- `SESSION-PROTOCOL.md` — session-drift controls and durable Manager/Worker protocol
-- `MANAGER-START.md` — cold-start procedure for a fresh GitHub-enabled ChatGPT Manager
-- `WORKER-START.md` — cold-start procedure for a fresh Claude Code Worker
-- `ROADMAP.md` — high-level refoundation sequence and current stop point
+`K` is a checkpoint, not an acceptance token. It independently records
+`accepted_head` (`h`) and `active_task` (`a`).
 
-## Authority warning
+## Static governance files
 
-This directory is **refoundation governance/scaffolding**, not Foundry semantic law.
+### `CAPTAIN-DIRECTION.md`
 
-It must not be used to answer AQ4 C1–C6, mutate the codebook, change authority succession, alter W6, alter locality, or reinterpret frozen benchmark state.
+Human-level refoundation direction, including:
 
-## Current hard stop
+- **PRESERVE TRUTH, NOT PLUMBING**;
+- session disposability;
+- aggressive but evidence-safe legacy disposition;
+- preservation of semantic/authority truth.
 
-AQ4 feature work remains paused after the Adjudicator-A STOP-breach incident record at commit:
+It does not select the current task.
 
-`11d63633919146a9be7a5dcdeb55efa0b8dc058d`
+### `SESSION-PROTOCOL.md`
 
-Repository refoundation is Priority 0.
+The Manager/Worker state machine and durable-result discipline.
 
-No implementation phase of the clean-slate proposal is authorized merely because Issue #1 produced a recommendation.
+It does not carry current state.
+
+### `decisions/P0-ARCHITECTURE.yaml`
+
+Structured decision/provenance record for the refoundation architecture. It
+persists ratified decisions and Manager-accepted direction but mints no authority
+by itself.
+
+### `PACKAGE-EXECUTION-CONTRACT.yaml`
+
+Current package/import execution contract and the measured compatibility
+bootstrap families. This is technical state, not startup routing.
+
+### `conservation/`
+
+Pinned preservation inputs and conservation contracts. Treat these as
+load-bearing evidence/configuration, not prose to simplify casually.
+
+### `path-e/`
+
+Machine-readable Path-E fixtures/input locks still consumed by permanent
+runtime/evaluation capabilities. Operator prose for the installed commands is
+consolidated in the root `README.md`.
+
+### `BOOTSTRAP-STATE.yaml`
+
+A tiny **SUPERSEDED tombstone retained only because older durable provenance
+points at it**. It is not part of Manager or Worker startup and must never carry
+current task state.
+
+## What not to read by default
+
+Do not reconstruct current state by scanning chronology.
+
+In particular, do not use old:
+
+- session handoffs;
+- master handoffs/addenda;
+- pickup documents;
+- triage batches/protocols;
+- architecture proposals merely because they are large or recent-looking;
+- modification times or filename sorting.
+
+Those may be evidence for a specific investigation, but they do not outrank the
+latest durable control-plane state.
+
+## Documentation cleanup rule
+
+A stale-looking file is not automatically deletable.
+
+Top-level `docs/*.md` participates in the ratified-rulings deletion gate. Some
+obsolete-looking handoffs still carry sole-home ruling IDs. Deleting or moving
+those documents requires a conservation pass that proves every unique ruling has
+another durable home and regenerates the derived registry/ratchet state.
+
+This rule is why context cleanup should remove **routing authority first** and
+semantic/evidence history only after measured disposition.
+
+## Standing controls
+
+Unless explicitly superseded by a newer Captain decision/latest `K`:
+
+- AQ4 is PAUSED.
+- Bridge v0 is PARKED_UNUSED.
+- Step6 is NOT_STARTED/NO.
+- Merge is NO.
+- deployment/publication is unauthorized.
+
+Current state must still be verified from Issue #1 rather than inferred from
+these defaults.
