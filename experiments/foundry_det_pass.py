@@ -158,7 +158,7 @@ def assert_lattice_invariant(p: dict) -> None:
                 f"{len(r['unexplained'])} residual clause(s) still carry a "
                 f"target arm resolving to a battlefield class, so the "
                 f"producer is dropping memberships nobody reviewed.\n{rows}\n"
-                f"  Run: python3 experiments/foundry_object_lattice.py --gate")
+                f"  Run: python3 tests/guards/gate2/test_object_lattice.py --gate")
 
 
 def expand_lattice_pattern(p: dict, cards: dict) -> dict:

@@ -56,8 +56,12 @@ USAGE
     txt = foundry_cr.text()             # normalized, cached
     foundry_cr.effective_date(txt)      # "August 7, 2026"
 
-    python3 experiments/foundry_cr.py             # report + self-test
-    python3 experiments/foundry_cr.py --selftest  # guards only
+    python3 experiments/foundry_cr.py             # the edition report
+
+The GUARD is no longer here. S9 moved the ten normalize cases and every
+negative control to their test owner, which the refoundation suite runs:
+
+    python3 tests/guards/cr/test_cr_edition.py
 """
 import re
 import sys
@@ -78,8 +82,17 @@ import foundry_common as fc  # noqa: E402
 # pure-deletion law, encoding detection and repair, the parseability assertions,
 # and the read/cache API. NO SECOND IMPLEMENTATION REMAINS HERE.
 #
-# What stays is the operator half the permanent layer must not own: `--report`,
-# the CLI, and the `_CASES` negative-control fixtures with `_selftest`.
+# What stayed was the operator half the permanent layer must not own:
+# `--report`, the CLI, and the `_CASES` negative-control fixtures with
+# `_selftest`.
+#
+# S9 took the guard out. R5's finding was that `_selftest` was ORPHANED -- no
+# Gate-2 row, no test and no workflow ever ran it, so ten cases and four
+# control families had never been shown to do anything. They now live at
+# `tests/guards/cr/test_cr_edition.py`, which the standing refoundation suite
+# executes, and NO COPY OF THEM REMAINS HERE. `_report`, the CLI and the
+# `PRIOR_CR_PATH` operator presentation are still this shell's and are still a
+# later slice's to move.
 #
 # THE HALT BOUNDARY IS RE-ESTABLISHED HERE, NOT IMPORTED UPWARD. A library may
 # not exit a process it does not own, so the permanent module raises `CRError`
@@ -104,7 +117,8 @@ CRError = _edition.CRError
 CR_PATH = _edition.select_cr_path(fc.CONFIG_CR)
 PRIOR_CR_PATH = _edition.PRIOR_CR_PATH
 
-# Markup/register constants consumed by `_report` and `_selftest` below.
+# Markup/register constants consumed by `_report` below, and by the S9
+# guard owner, which reaches them through this shell's halt boundary.
 _KNOWN_ENCODING_DAMAGE = _edition._KNOWN_ENCODING_DAMAGE
 _MOJIBAKE = _edition._MOJIBAKE
 _REQUIRED_ANCHORS = _edition._REQUIRED_ANCHORS
@@ -154,148 +168,6 @@ def effective_date(txt: str = None) -> str:
         fc.halt(str(exc))
 
 
-
-# ---------------------------------------------------------------------------
-# SELF-TEST — a guard that has never been shown to fail is not known to be a
-# guard (CLAUDE.md, 2026-08-09). Each case below is a NEGATIVE control aimed at
-# the code path, not at the module's name.
-# ---------------------------------------------------------------------------
-_CASES = [
-    # (label, raw, expected-or-None-if-must-halt)
-    ("bold subrule drops its period",
-     "**205.2a.** The card types are artifact, battle, and vanguard.",
-     "205.2a The card types are artifact, battle, and vanguard."),
-    ("bold numbered rule KEEPS its period",
-     "**702.6.** Equip", "702.6. Equip"),
-    ("two-letter subrule",
-     "**704.5aa.** If a player controls a permanent",
-     "704.5aa If a player controls a permanent"),
-    ("plain line is untouched (the prior edition still loads)",
-     "205.2a The card types are artifact.",
-     "205.2a The card types are artifact."),
-    ("blockquoted example becomes a plain Example: line",
-     "> **Example:** Lost Order of Jarkeld has power 1+*.",
-     "Example: Lost Order of Jarkeld has power 1+*."),
-    ("heading dedents one level",
-     "### 702. Keyword Abilities", "## 702. Keyword Abilities"),
-    ("top-level heading is left alone",
-     "# Magic: The Gathering Comprehensive Rules",
-     "# Magic: The Gathering Comprehensive Rules"),
-    ("navigation label loses only its wrapper",
-     "**These rules are effective as of August 7, 2026.**",
-     "These rules are effective as of August 7, 2026."),
-    # CR 208.2 prints a literal asterisk. A blanket `\*\*` strip would survive
-    # this line by luck; the test pins that it must not be attempted.
-    ("a LITERAL CR asterisk survives",
-     "**208.2.** Some creature cards have power and/or toughness of */*.",
-     "208.2. Some creature cards have power and/or toughness of */*."),
-    ("a rule number cited MID-SENTENCE is not a marker",
-     "See rule 605.1a for mana abilities.",
-     "See rule 605.1a for mana abilities."),
-]
-
-
-def _selftest() -> int:
-    bad = 0
-    for label, raw, want in _CASES:
-        got = normalize_line(raw)
-        ok = got == want and _pure_deletion(raw, got)
-        print(f"  [{'ok' if ok else 'FAIL'}] {label}")
-        if not ok:
-            bad += 1
-            print(f"        raw  {raw!r}\n        want {want!r}\n        got  {got!r}")
-
-    # Guard D — the conservation law must REJECT a deliberately broken
-    # normalizer. Without this the law is decoration.
-    broken = [("substitution", "205.2a x", "205.2a y"),
-              ("insertion", "205.2a x", "205.2a xy"),
-              ("greedy span eaten", "205.2a (see 300) x", "205.2a x"),
-              ("reordering", "205.2a ab", "205.2a ba")]
-    for label, raw, fake in broken:
-        if _pure_deletion(raw, fake):
-            print(f"  [FAIL] conservation accepted a {label}")
-            bad += 1
-        else:
-            print(f"  [ok] conservation rejects a {label}")
-
-    # And it must ACCEPT a legitimate markup deletion, or it is merely strict.
-    if not _pure_deletion("**205.2a.** x", "205.2a x"):
-        print("  [FAIL] conservation rejects a legitimate markup deletion")
-        bad += 1
-    else:
-        print("  [ok] conservation accepts a legitimate markup deletion")
-
-    # The encoding guard, aimed at the CODE PATH rather than at the tool's
-    # name: three of eight negative controls on 2026-08-09 were mis-aimed and
-    # each first read as "this gate is broken".
-    def halts(text):
-        try:
-            _assert_encoding(text, Path("<selftest>"))
-            return False
-        except SystemExit:
-            return True
-
-    declared = next(iter(_KNOWN_ENCODING_DAMAGE))
-    checks = [
-        ("encoding guard fires on an UNDECLARED corrupted rule",
-         "702.6a Equip is an activated ability of JuzÃ¡m cards.", True),
-        (f"encoding guard stays quiet on the declared rule ({declared})",
-         f"{declared} Those names are DandÃ¢n, JuzÃ¡m Djinn.", False),
-        ("encoding guard stays quiet on correct accented text",
-         "206.3a Those names are Dandân, Juzám Djinn, Ring of Ma’rûf.", False),
-        ("encoding guard stays quiet on the curly apostrophe alone",
-         "205.3i The land types are Urza’s, Desert.", False),
-    ]
-    for label, line, want_halt in checks:
-        got = halts(line)
-        if got == want_halt:
-            print(f"  [ok] {label}")
-        else:
-            print(f"  [FAIL] {label} (halted={got}, wanted {want_halt})")
-            bad += 1
-
-    # THE REPAIR (D-CR-1b). Every case is aimed at the code path, not at the
-    # feature's name — the three mis-aimed negative controls of 2026-08-09 each
-    # first read as "this gate is broken".
-    if _demojibake("JuzÃ¡m Djinn") == "Juzám Djinn":
-        print("  [ok] repair is DERIVED from the damage, not typed")
-    else:
-        print("  [FAIL] repair derivation is wrong")
-        bad += 1
-
-    def repairs(text_in):
-        try:
-            return _repair_encoding(text_in, PRIOR_CR_PATH)   # skips assert 2
-        except SystemExit:
-            return "<HALTED>"
-
-    rule = declared
-    repair_cases = [
-        ("declared damage is repaired",
-         f"{rule} Those names are DandÃ¢n, GhazbÃ¡n Ogre, JuzÃ¡m Djinn, "
-         f"KhabÃ¡l Ghoul, JunÃºn Efreet, Ring of Ma’rÃ»f, El-HajjÃ¢j.",
-         f"{rule} Those names are Dandân, Ghazbán Ogre, Juzám Djinn, "
-         f"Khabál Ghoul, Junún Efreet, Ring of Ma’rûf, El-Hajjâj."),
-        # A count that does not match the register means the damage MOVED.
-        # Widening the repair to fit is how a register stops being evidence.
-        ("a DIFFERENT amount of damage halts rather than being absorbed",
-         f"{rule} Those names are DandÃ¢n and JuzÃ¡m Djinn.", "<HALTED>"),
-        # Clean text must survive the pass untouched, or the repair is a
-        # rewrite wearing a repair's name.
-        ("already-correct text passes through unchanged",
-         f"{rule} Those names are Dandân, Juzám Djinn.",
-         f"{rule} Those names are Dandân, Juzám Djinn."),
-    ]
-    for label, src, want in repair_cases:
-        got = repairs(src)
-        if got == want:
-            print(f"  [ok] {label}")
-        else:
-            print(f"  [FAIL] {label}\n        got  {got!r}\n        want {want!r}")
-            bad += 1
-    return bad
-
-
 def _report() -> None:
     txt = text()
     ls = txt.splitlines()
@@ -333,22 +205,11 @@ def _report() -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--selftest", action="store_true",
-                    help="run the guards only")
-    args = ap.parse_args()
-    if not args.selftest:
-        _report()
-        print()
-    print("SELF-TEST — every guard shown to both pass and fail.")
-    print("Each negative control prints its guard's real STOP message to "
-          "stderr. Those\nare the controls WORKING; the verdict is the "
-          "[ok]/[FAIL] column below.")
-    bad = _selftest()
-    if bad:
-        print(f"\n{bad} self-test failure(s)")
-        return 1
-    print("\nall guards behaved")
+    ap = argparse.ArgumentParser(
+        description="Report on the selected CR edition and its declared "
+                    "encoding repairs.")
+    ap.parse_args()
+    _report()
     return 0
 
 

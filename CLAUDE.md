@@ -130,13 +130,16 @@ Standing controls: `{AQ4: PAUSED, BRIDGE0: UNUSED, STEP6: NOT_STARTED, MERGE: NO
 
 ## Verification
 
-`python3 experiments/foundry_gate2.py` — the whole of Gate 2, one exit code.
-Never run its checks individually to save time.
+`python3 tests/guards/gate2/foundry_gate2.py` — the whole of Gate 2, one exit
+code. Never run its checks individually to save time.
 
 Writing a probe or a one-off measurement? `import foundry_probe as p` and use
 `p.corpus()` / `p.rows()` / `p.domain()` / `p.assert_disjoint()` /
 `p.must_capture()`. Hand-rolling what it already does is the single most
-repeated defect class in this repository's history.
+repeated defect class in this repository's history. The probe is test-owned at
+`tests/guards/probe/foundry_probe.py`; the import stays a bare name, so a
+consumer puts that directory on `sys.path` the way its neighbours already put
+`experiments/` there.
 
 ## Result contract
 

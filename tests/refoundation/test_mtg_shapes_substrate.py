@@ -48,6 +48,9 @@ MTG_PKG = SRC / "mtj_foundry" / "mtg"
 SHAPES_PKG = MTG_PKG / "shapes"
 CR_PKG = MTG_PKG / "cr"
 EXPERIMENTS = REPO_ROOT / "experiments"
+# S9: the Gate-2 guard owner. Five responsibilities this file tracks moved
+# here from the two mixed legacy shells.
+GATE2_GUARDS = REPO_ROOT / "tests" / "guards" / "gate2"
 CODEBOOK_OWNER = SRC / "mtj_foundry" / "codebook.py"
 
 # The legacy boundaries are imported by this suite to prove the substrate keeps
@@ -1301,7 +1304,16 @@ class TestWhatSliceSevenPROMOTEDAndWhatItLEFT(unittest.TestCase):
 
     def test_the_later_owners_still_have_them(self):
         """The other half. A responsibility that was DELETED rather than left
-        is a truth change, so the retained half is asserted too."""
+        is a truth change, so the retained half is asserted too.
+
+        S9 MOVED FIVE OF THESE AGAIN, and the guard follows them rather than
+        dropping them. The lattice fixtures and the locality schema /
+        write-boundary / ratchet surface are now owned by
+        `tests/guards/gate2/`, so they are asserted THERE -- which keeps this
+        test saying exactly what it always said: none of these responsibilities
+        was deleted on the way past. What each shell still owns is unchanged
+        and still asserted in place.
+        """
         live = {
             EXPERIMENTS / "foundry_shape_extractor.py":
                 ("codebook_covered_actions", "cmd_gaps", "cmd_action",
@@ -1310,11 +1322,15 @@ class TestWhatSliceSevenPROMOTEDAndWhatItLEFT(unittest.TestCase):
                 ("slug_for", "_assert_vocabulary_agrees", "ratified_total",
                  "assert_ratified_total", "baseline_metrics", "audit",
                  "exclusivity_report", "_locality_of", "write_report",
-                 "fixtures", "main"),
+                 "main"),
+            GATE2_GUARDS / "test_object_lattice.py":              # S9
+                ("fixtures", "main"),
             EXPERIMENTS / "foundry_locality.py":
-                ("census", "schema_fixtures", "write_boundary_fixtures",
+                ("census", "unaddressed_rows", "render_unaddressed_md",
+                 "cmd_report", "main"),
+            GATE2_GUARDS / "test_locality.py":                    # S9
+                ("fixtures", "schema_fixtures", "write_boundary_fixtures",
                  "load_baseline_locality", "assert_ratchet_directions",
-                 "unaddressed_rows", "render_unaddressed_md", "cmd_report",
                  "main"),
             EXPERIMENTS / "foundry_det_pass.py":
                 ("compute_special_hits", "load_axis_patterns",

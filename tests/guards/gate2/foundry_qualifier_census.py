@@ -98,8 +98,14 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent
+# S9: this guard moved out of `experiments/`. `REPO` still denotes the legacy
+# module directory it always denoted; only its derivation moved.
+REPO = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO))
+# S9: `foundry_probe` is test-owned at `tests/guards/probe/`. It is still
+# imported by bare name -- the idiom CLAUDE.md records -- so what moved is
+# the directory this bootstrap names, not the import.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "probe"))
 import foundry_common as fc                  # noqa: E402
 import foundry_cr as cr                      # noqa: E402
 import foundry_cr702_classes as crc          # noqa: E402

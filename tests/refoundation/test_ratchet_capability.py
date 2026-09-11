@@ -71,18 +71,31 @@ CAPTURED_SIZE = 4324
 # owner. It is STILL one of the eight ratchet consumers and still pins
 # `ground_truth_wide`; only where its source file sits changed, so the set below
 # is unchanged and the location is resolved separately.
+#
+# S9: seven more of the eight followed. Five moved WHOLE and kept their names;
+# two -- `locality` and `object_lattice` -- were mixed sources whose guard half
+# was extracted, so the module that CALLS the ratchet for those sections is now
+# the extracted guard and the set below names it. Nothing was dropped: all eight
+# sections are still pinned by exactly one consumer each.
 CONSUMER_PATHS = {
     "foundry_ground_truth": "tests/guards/gate2/test_ground_truth.py",
+    "foundry_definition_drift": "tests/guards/gate2/foundry_definition_drift.py",
+    "foundry_punctuation_audit": "tests/guards/gate2/foundry_punctuation_audit.py",
+    "foundry_visibility_audit": "tests/guards/gate2/foundry_visibility_audit.py",
+    "foundry_ruling_registry": "tests/guards/gate2/foundry_ruling_registry.py",
+    "foundry_reachability": "tests/guards/gate2/foundry_reachability.py",
+    "test_locality": "tests/guards/gate2/test_locality.py",
+    "test_object_lattice": "tests/guards/gate2/test_object_lattice.py",
 }
 
 # The exact eight consumers C8.5J migrates, and the ratchet section each pins.
 CONSUMERS = {
     "foundry_definition_drift": "definition_drift",
     "foundry_ground_truth": "ground_truth_wide",
-    "foundry_locality": "locality",
+    "test_locality": "locality",
     "foundry_punctuation_audit": "conservation",
     "foundry_visibility_audit": "visibility",
-    "foundry_object_lattice": "object_lattice",
+    "test_object_lattice": "object_lattice",
     "foundry_ruling_registry": "ruling_registry",
     "foundry_reachability": "reachability",
 }
@@ -96,9 +109,13 @@ BASELINE_FILENAME = "foundry-audit-baseline.json"
 # add a second boundary load and move the delegation census. The set is pinned
 # so a consumer cannot drift into the bound form without a reason.
 #
-# C8.5R adds the second consumer to meet that same condition, on the same reason.
-# `foundry_object_lattice` now owns the ratchet baseline AND the codebook path it
-# hands to `mtj_foundry.codebook_store.read`, which takes an EXPLICIT path.
+# C8.5R added `foundry_object_lattice` on that same reason. S9 took it back out,
+# and NOT by waiving anything: the ratchet baseline left with the extracted guard,
+# so the shell owns ONE path again and its new consumer -- `test_object_lattice`
+# -- builds no view at all and is therefore held to the STRICTER inline form. The
+# shell's single view is still asserted, by
+# `TestTheLatticeShellStillBuildsExactlyOneView` below, so C8.5R's property
+# survives the move rather than lapsing with the set membership.
 #
 # WIDENING THIS SET IS NOT WEAKENING THE GUARD, and the distinction is worth
 # stating because the set looks like a waiver list. Membership does not exempt a
@@ -107,7 +124,7 @@ BASELINE_FILENAME = "foundry-audit-baseline.json"
 # built from the boundary root, and is additionally held to
 # `test_the_bound_view_consumers_each_build_exactly_one_view`, which non-members
 # never face. The six inline consumers keep their literal pin unchanged.
-ONE_VIEW_CONSUMERS = {"foundry_ruling_registry", "foundry_object_lattice"}
+ONE_VIEW_CONSUMERS = {"foundry_ruling_registry"}
 
 
 def load_oracle():
@@ -846,7 +863,12 @@ class TestAllEightConsumersRouteThroughThePermanentModule(unittest.TestCase):
         the frozen set is now complete rather than merely unchanged.
         """
         source = self.sources["foundry_ruling_registry"]
-        for line in ('REPO_ROOT = Path(__file__).resolve().parent.parent',
+        # S9 moved the file three directories deeper, so the ASCENT changed and
+        # nothing else did: the name still denotes the repository root and the
+        # two document facts below are byte-identical. Pinning the old ascent
+        # would be pinning the file's ADDRESS, which is the one thing the move
+        # is allowed to change.
+        for line in ('REPO_ROOT = Path(__file__).resolve().parents[3]',
                      'DOCS = REPO_ROOT / "docs"',
                      'OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"'):
             with self.subTest(line=line):
@@ -903,3 +925,32 @@ class TestTheLegacyOracleIsUntouched(RatchetTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTheLatticeShellStillBuildsExactlyOneView(unittest.TestCase):
+    """C8.5R's property, kept where the view actually is.
+
+    S9 moved `foundry_object_lattice`'s ratchet baseline to the extracted guard,
+    so the shell left `ONE_VIEW_CONSUMERS`. The reason it was ever in the set --
+    that it must not construct a second `ProjectPaths` view and add a second
+    `fc.REPO_ROOT` delegation row -- did not move, so neither does the assertion.
+    """
+
+    SHELL = EXPERIMENTS / "foundry_object_lattice.py"
+
+    def test_it_builds_exactly_one_view(self):
+        source = self.SHELL.read_text(encoding="utf-8")
+        self.assertEqual(source.count("ProjectPaths.for_root("), 1)
+
+    def test_the_view_still_serves_the_codebook_path_it_owns(self):
+        source = self.SHELL.read_text(encoding="utf-8")
+        self.assertIn("PATHS = ProjectPaths.for_root(fc.REPO_ROOT)", source)
+        self.assertIn("codebook_store.read(PATHS.legacy_codebook_json)", source)
+
+    def test_the_ratchet_baseline_no_longer_lives_here(self):
+        """The other half: a binding left behind with no reader is the
+        "ratified token with no emitter" shape, and it would also make the
+        shell look like a ratchet consumer it no longer is."""
+        source = self.SHELL.read_text(encoding="utf-8")
+        self.assertNotIn("RATCHET_BASELINE", source)
+        self.assertNotIn("from mtj_foundry.infra import ratchet", source)

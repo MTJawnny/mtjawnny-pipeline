@@ -1049,7 +1049,7 @@ def main() -> int:
     for r in plan["report_rows"]:
         print(f"    [{r['kind']}] {r['slug']}")
     print("\n  spend $0.00 / cumulative $90.51 / headroom $49.49")
-    print("\nNEXT: python3 experiments/foundry_gate2.py  — and EXPECT it to find "
+    print("\nNEXT: python3 tests/guards/gate2/foundry_gate2.py  — and EXPECT it to find "
           "something.\n      Then python3 experiments/foundry_wire_experiment.py --json")
     return 0
 

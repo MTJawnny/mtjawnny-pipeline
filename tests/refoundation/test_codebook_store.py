@@ -1236,13 +1236,20 @@ class TestTheFirstRepointedConsumer(unittest.TestCase):
         call = self.c.for_root_calls[0]
         self.assertEqual([ast.unparse(a) for a in call.args], ["fc.REPO_ROOT"])
 
-    def test_the_same_view_feeds_the_ratchet_and_the_codebook_path(self):
-        """The C8.5Q census finding, asserted rather than restated: reading both
-        properties off ONE view is what holds `delegations_by_provider` at
-        126/22/1. A second view moves three counts while changing nothing."""
+    def test_one_view_still_serves_every_property_this_file_reads(self):
+        """The C8.5Q census finding, asserted rather than restated: reading every
+        property off ONE view is what holds `delegations_by_provider` at
+        126/22/1. A second view moves three counts while changing nothing.
+
+        S9 narrowed WHAT is read, not how many views read it. The ratchet
+        baseline left with the extracted guard -- `tests/guards/gate2/
+        test_object_lattice.py` builds its own view for it, in the stricter
+        inline form -- so the codebook path is the one property left here. The
+        property under test is unchanged: ONE view, and every read comes off it.
+        """
         self.assertIsNotNone(self.c.view, "not exactly one ProjectPaths view")
         self.assertEqual(attribute_reads(self.c.tree, self.c.view),
-                         {"foundry_audit_baseline", "legacy_codebook_json"})
+                         {"legacy_codebook_json"})
 
     def test_the_read_takes_its_path_from_that_view(self):
         self.assertEqual(len(self.c.reads), 1)
@@ -1365,9 +1372,12 @@ class TestTheRepointGuardCanFail(unittest.TestCase):
         self.assertIn("foundry_codebook", c.imports)
 
     def test_a_second_ProjectPaths_view_is_caught(self):
-        c = self.rig("RATCHET_BASELINE = PATHS.foundry_audit_baseline",
-                     "_OTHER = ProjectPaths.for_root(fc.REPO_ROOT)\n"
-                     "RATCHET_BASELINE = _OTHER.foundry_audit_baseline")
+        # S9: rigged onto the view binding itself, because the ratchet-baseline
+        # line this used to hang off moved out with the guard. The control is
+        # aimed at the same thing it always was -- a SECOND view appearing.
+        c = self.rig("PATHS = ProjectPaths.for_root(fc.REPO_ROOT)",
+                     "PATHS = ProjectPaths.for_root(fc.REPO_ROOT)\n"
+                     "_OTHER = ProjectPaths.for_root(fc.REPO_ROOT)")
         self.assertEqual(len(c.for_root_calls), 2)
         self.assertEqual(len(c.views), 2)
         self.assertIsNone(c.view)
@@ -1718,17 +1728,32 @@ EXPECTED_READ_OWNING_FILES = 19
 REAUDIT_REL = "experiments/foundry_reaudit.py"
 SHAPE_EXTRACTOR_REL = "experiments/foundry_shape_extractor.py"
 SYSTEM_MAP_REL = "experiments/foundry_system_map.py"
-GATE_AUDIT_REL = "experiments/foundry_gate_audit.py"
+# S9: the gate audit moved to the Gate-2 guard owner.
+GATE_AUDIT_REL = "tests/guards/gate2/foundry_gate_audit.py"
 RUN1_APPLY_REL = "experiments/foundry_consolidate_run1_apply.py"
 
 # The fifteen C8.5V measured and nominated from. Written out, because the count
 # alone cannot tell this population from a different one of the same size.
-C8_5V_FIFTEEN = [f"experiments/foundry_{name}.py" for name in sorted([
+# S9 moved two of the fifteen out of `experiments/` without changing what they
+# are: `definition_drift` and `family_sweep` are Gate-2 guards and now live at
+# the guard owner. They are still in the population the analyzer walks (it is
+# `git ls-files "*.py"` over the whole repository, not one directory), so they
+# are still measured -- at their new addresses. Dropping them would shrink a
+# pinned nomination set to make a path change go quiet.
+_C8_5V_MOVED = {
+    "definition_drift": "tests/guards/gate2/foundry_definition_drift.py",
+    "family_sweep": "tests/guards/gate2/foundry_family_sweep.py",
+}
+# Sorted by PATH, not by module name: the two moved entries no longer share the
+# `experiments/` prefix, and the assertion below compares against a
+# path-sorted set.
+C8_5V_FIFTEEN = sorted(_C8_5V_MOVED.get(name, f"experiments/foundry_{name}.py")
+                       for name in sorted([
     "any_damage_split", "authority", "axis_merge_pointer_correction",
     "cdr09_derive", "cdr09_walk", "consolidate_run1_apply",
     "consolidate_run1_classify", "consolidate_run1_enumerate",
     "definition_drift", "det_pass", "family_sweep", "gate0_scrub",
-    "locality_backfill", "membership_move", "reaudit"])]
+    "locality_backfill", "membership_move", "reaudit"]))
 # The handler verdict expected of each, by IDENTITY. Fourteen are unhandled on
 # the read axis; `consolidate_run1_apply` carries a candidate-local SYMMETRIC
 # handler that C8.5X.R2 made visible, which is a different SAFE and not a

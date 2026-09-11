@@ -127,9 +127,14 @@ contexts:
 #
 # Enumerated from source at C8.5C head aa003340 by resolving the argument of
 # every real `sys.path` call in legacy production to repository-relative
-# components. All 89 calls resolve; there is no unresolved remainder. A
-# committed guard re-derives this table and fails if source and contract
-# disagree in either direction.
+# components. All calls resolve; there is no unresolved remainder. A committed
+# guard re-derives this table and fails if source and contract disagree in
+# either direction.
+#
+# The measured total was 89 at C8.5C and is 82 after S9 -- ten bootstraps left
+# legacy production with the guards that owned them, and four were added for the
+# test-owned probe. The COUNT is not the contract; the families are, and a
+# fourth one now exists.
 # ---------------------------------------------------------------------------
 bootstrap_families:
 
@@ -157,10 +162,19 @@ bootstrap_families:
     # import-only LEGACY_SIBLING_IMPORT and still D6/S15 cleanup debt; the
     # deletion prerequisite below is unchanged and now covers it at its new
     # location too.
-    sites: 86
+    #
+    # S9: 86 -> 76, the same shape ten more times. Eleven Gate-2 guard scripts
+    # and the probe library moved to `tests/guards/{gate2,probe}/`; ten of the
+    # twelve carried a bootstrap out of the measured scope with them. Two did
+    # not: the Gate-2 runner never had one, and `foundry_ruling_registry.py` had
+    # relied on being run FROM the legacy directory, so it GAINED an explicit
+    # member of this same family at its new address -- still import-only, still
+    # this family's debt, still outside the measured scope. NOTHING WAS DELETED.
+    sites: 76
     migrated_out_of_scope_was: experiments/foundry_ground_truth.py
     migrated_out_of_scope_now: tests/guards/gate2/test_ground_truth.py
     migrated_out_of_scope_still: IMPORT_ONLY_TRANSITIONAL_D6_S15_DEBT
+    s9_migrated_out_of_scope: tests/guards/gate2/, tests/guards/probe/
     site_list: DERIVED_FROM_SOURCE
     introduced_by: PRE_REFOUNDATION
     what_it_is_for: >-
@@ -174,6 +188,28 @@ bootstrap_families:
       on the path by hand — i.e. the legacy tree becomes a real package, or the
       scripts are invoked as modules. This is NOT unblocked by installing
       `mtj_foundry` and is a materially larger change.
+
+  - id: TEST_OWNED_PROBE_IMPORT
+    adds: tests/guards/probe
+    # S9. The FOURTH family, and it is declared rather than folded into
+    # LEGACY_SIBLING_IMPORT because it adds a DIFFERENT directory -- a contract
+    # that merged them would describe a family that does not exist and hide one
+    # that does.
+    sites: 4
+    site_list: DERIVED_FROM_SOURCE
+    introduced_by: S9
+    what_it_is_for: >-
+      `foundry_probe` became test-owned at `tests/guards/probe/foundry_probe.py`
+      in migration slice 9. The four ACTIVE legacy consumers that import it by
+      bare name — the idiom CLAUDE.md records — put its new directory on the
+      path so that import keeps resolving. Import-only, exactly like
+      LEGACY_SIBLING_IMPORT, and it carries no other module.
+    deletion_prerequisite: >-
+      The probe is consumed as a real importable module rather than by bare
+      name — i.e. the guard tree becomes a package, or its consumers are
+      invoked as modules. This is NOT unblocked by installing `mtj_foundry`:
+      the probe is a TEST-owned library and is deliberately not part of the
+      shipped package.
 
   - id: LEGACY_ROOT_DOTTED_IMPORT
     adds: ''
