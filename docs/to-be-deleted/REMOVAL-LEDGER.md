@@ -53,6 +53,7 @@ The original carried zero ruling references, explicitly began `DONE — 2026-08-
 | `refoundation/MANAGER-START.md` | `docs/to-be-deleted/replaced-content/refoundation-MANAGER-START.pre-cleanup.md` | `5c3aed7de8806f3928dc9d16b04ef11752deda86` | Old startup still directed P0.1 adjudication and August bootstrap refs. |
 | `refoundation/ACTIVE-PHASE.yaml` | `docs/to-be-deleted/replaced-content/refoundation-ACTIVE-PHASE.pre-cleanup.yaml` | `a8a309d4324fad23565b164b312110d44fbbb857` | Old replaceable state still claimed the M3 static-browser pilot. |
 | `refoundation/README.md` | `docs/to-be-deleted/replaced-content/refoundation-README.pre-cleanup.md` | `01408a1b746a28bbf3f85fd3fedde29b4b8e15f0` | Old README still presented August bootstrap/P0.1 state as current. |
+| `refoundation/ROADMAP.md` | `docs/to-be-deleted/replaced-content/refoundation-ROADMAP.pre-cleanup.md` | `47f5ad3b22ecb7cf552531c46eeaa5226e334c3f` | Old roadmap still labeled P0.2 as NEXT, P0.3/P0.4 blocked, and P0.5+ implementation unauthorized after the durable project had already progressed through accepted S9. |
 
 Replacement state comes from live Issue #1: Manager V accepted S9 at `9f92039eb9c7132a351576c31472eb30a2957a67`; checkpoint `K-20260911-EXPERIMENTS-MIGRATION-S9-ACCEPTED-RECOVERY` records `h` at that commit, `a: 0`, strategy `MIGRATION_FIRST`, and controls `{AQ4:P,BRIDGE0:U,STEP6:N,MERGE:N}`. Root `CLAUDE.md` independently says Issue #1 outranks refoundation phase context.
 
