@@ -1,0 +1,40 @@
+{
+  "schema": "s15-objective4-quarantine-reconciliation/1",
+  "status": "PREFLIGHT_EVIDENCE_ONLY_NO_CLEANUP_MUTATION",
+  "measured_accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "cleanup_branch": "cleanup/obsolete-doc-quarantine-2026-09-11",
+  "cleanup_head": "fcb11e19296209aecac4c8b3526be39bcce0196a",
+  "ledger": "docs/to-be-deleted/REMOVAL-LEDGER.md",
+  "active_quarantine_items": [
+    {"path":"docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md","ledger_refs":"7 raw / 6 ruling IDs","disposition":"move to final history/archive home","reason":"ruling IDs have non-quarantined canonical homes, but current registry observes document topology/reference multiplicity; tombstone is a live conservation concern"},
+    {"path":"docs/CONSOLIDATION-2B-CLASSIFY-DIRECTIVE.md","ledger_refs":"2 raw / 2 ruling IDs","disposition":"move to final history/archive home","reason":"same topology/tombstone constraint"},
+    {"path":"docs/CONSOLIDATION-RUN1-DIRECTIVE.md","ledger_refs":"1 raw / 1 ruling ID","disposition":"move to final history/archive home","reason":"same topology/tombstone constraint"},
+    {"path":"docs/DET-PATTERNS-RUN2-DIRECTIVE.md","ledger_refs":"3 raw / 3 ruling IDs","disposition":"move to final history/archive home","reason":"same topology/tombstone constraint"},
+    {"path":"docs/SESSION-HANDOFF-2026-08-06.md","ledger_refs":"0 ruling refs","disposition":"safe for eventual deletion after prerequisites","reason":"zero-ruling handoff in ledger; still requires pre-S15 topology/current-consumer revalidation"},
+    {"path":"docs/SESSION-HANDOFF-2026-08-07.md","ledger_refs":"0 ruling refs","disposition":"safe for eventual deletion after prerequisites","reason":"zero-ruling handoff in ledger; still requires pre-S15 topology/current-consumer revalidation"},
+    {"path":"docs/SESSION-HANDOFF-2026-08-09.md","ledger_refs":"0 ruling refs","disposition":"safe for eventual deletion after prerequisites","reason":"zero-ruling handoff in ledger; still requires pre-S15 topology/current-consumer revalidation"},
+    {"path":"docs/NEXT-SESSION-CR-NORMALIZATION.md","ledger_refs":"0 ruling refs","disposition":"safe for eventual deletion after prerequisites","reason":"marked DONE/stale with durable successor docs/CR-REFRESH-2026-08-09.md; revalidate topology and current filename consumers"},
+    {"path":"pre-cleanup refoundation MANAGER-START snapshot","ledger_refs":"historical snapshot","disposition":"move to final history/archive home","reason":"preserve exact pre-cleanup state as historical evidence"},
+    {"path":"pre-cleanup refoundation ACTIVE-PHASE snapshot","ledger_refs":"historical snapshot","disposition":"move to final history/archive home","reason":"preserve exact pre-cleanup state as historical evidence"},
+    {"path":"pre-cleanup refoundation README snapshot","ledger_refs":"historical snapshot","disposition":"move to final history/archive home","reason":"preserve exact pre-cleanup state as historical evidence"},
+    {"path":"pre-cleanup refoundation ROADMAP snapshot","ledger_refs":"historical snapshot","disposition":"move to final history/archive home","reason":"preserve exact pre-cleanup state as historical evidence"}
+  ],
+  "counts": {
+    "active_quarantine_items": 12,
+    "move_to_final_history_archive": 8,
+    "safe_for_eventual_deletion_after_prerequisites": 4,
+    "preserve_indefinitely_as_evidence": 0,
+    "restore_due_to_new_live_value": 0
+  },
+  "withheld_truth_homes": [
+    {"path":"docs/B-MIGRATION-DIRECTIVE.md","state":"BLOCKED_TRUTH_HOME","reason":"ledger records sole-home ruling AG-CLI-01"},
+    {"path":"docs/B-CONSOLIDATION-REAUDIT-PACKET.md","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"},
+    {"path":"docs/MASTER-HANDOFF*","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"},
+    {"path":"docs/PARENT-TREE-CANDIDATES.md","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"},
+    {"path":"docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"},
+    {"path":"docs/TRIAGE-BATCH-2.md","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"},
+    {"path":"docs/SESSION-HANDOFF-2026-08-04-EVE.md","state":"BLOCKED_TRUTH_HOME_OR_CORROBORATED","reason":"withheld by ledger/ruling review"}
+  ],
+  "adversarial_history": "The cleanup ledger records an initial move of twelve handoffs based on deletable=yes, followed by restoration of nine after ruling references were discovered. This is binding preflight evidence that 'deletable' and 'zero ruling references' are not equivalent and that a deletion guard must prove ruling/document topology independently.",
+  "law": "No cleanup-branch mutation is authorized here. Final S15 must rerun the ruling registry/topology proof on the actual pre-S15 accepted head before any tombstone or quarantined original is removed."
+}
