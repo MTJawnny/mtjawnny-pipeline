@@ -1,106 +1,124 @@
 # PREFLIGHT PICK UP HERE
 
-Status: CURRENT PLANNING POINTER
-Updated: 2026-09-11
-Repository: MTJawnny/mtjawnny-pipeline
+Status: **CURRENT PLANNING POINTER**  
+Updated: **2026-09-12**  
+Repository: `MTJawnny/mtjawnny-pipeline`
 
-This file exists so a fresh Claude Code / Manager session can recover the five-objective preflight state even if root `CLAUDE.md` is not read automatically. It is a routing record, not implementation authority. Durable GitHub/repository state still wins; GitHub Issue #1 remains the Manager/Worker control plane.
+This file is the redundant recovery route for a fresh ChatGPT/Manager session executing the Captain-authorized five-objective preflight program. It is routing evidence, not implementation authority. **Live durable GitHub/repository state wins**, especially GitHub Issue #1.
 
 ## Current durable implementation anchor
 
-At this planning update, the latest accepted implementation head remains:
+Expected accepted implementation head at this planning update:
 
 `9f92039eb9c7132a351576c31472eb30a2957a67`
 
-Standing controls remain:
+Expected standing controls:
 
 `{AQ4: PAUSED, BRIDGE0: UNUSED, STEP6: NOT_STARTED, MERGE: NO}`
 
-Re-resolve Issue #1 before acting. Do not assume these anchors are still current if later durable state exists.
+Always re-resolve the latest Issue #1 `K`, accepted head `h`, and active task `a` before acting. Do not promote these expected anchors over later durable state.
 
-## Five-objective preflight program
+## Captain execution direction for Objectives 1–5
+
+During the current Claude-unavailable window, **ChatGPT Manager-side research sessions may execute the non-implementing preflight/evidence work for Objectives 1–5**. The earlier planning wording requiring a fresh Claude Code session is superseded for this window by the Captain's durable direction.
+
+This does **not** authorize parser/runtime/package/codebook/authority/AQ4 mutation, migration advancement, S16 implementation, merge, deploy, publish, or accepted-head movement.
+
+## Current five-objective state
 
 Master index:
 
 `docs/architecture/PREFLIGHT-OBJECTIVES-1-5-2026-09-11.md`
 
-### Objective 1 — S10 foundry_common dependency/preflight map
+### Objective 1 — S10 `foundry_common` dependency/preflight map
 
-State: OWNERSHIP STOP EXPLAINED; ARCHITECTURE DIRECTION RECORDED; FULL CENSUS STILL TO RESUME
+State: **OWNERSHIP DIRECTION RECORDED; FULL CENSUS STILL PENDING**
 
-Initial STOP evidence:
+Relevant durable artifacts:
 
-- branch: `preflight/s10-foundry-common-map-2026-09-11`
-- commit: `b360bced4ccd2ce250d283d665b4df08b30256c2`
-- Issue #1 STOP comment: `5642641036`
-- result: `docs/architecture/preflight/S10-FOUNDRY-COMMON-PREFLIGHT-RESULT.md`
+- initial evidence branch: `preflight/s10-foundry-common-map-2026-09-11`
+- initial evidence commit: `b360bced4ccd2ce250d283d665b4df08b30256c2`
+- STOP result: `docs/architecture/preflight/S10-FOUNDRY-COMMON-PREFLIGHT-RESULT.md`
+- ownership decision: `docs/architecture/S10-CARD-TEXT-OWNERSHIP-DECISION-2026-09-11.md`
+- resume prompt: `docs/architecture/OBJECTIVE-1-RESUME-PROMPT-AFTER-CARD-TEXT-OWNERSHIP.md`
 
-Captain-approved ownership direction and S7 conservation record:
-
-- branch: `architecture/s10-card-text-ownership-2026-09-11`
-- decision: `docs/architecture/S10-CARD-TEXT-OWNERSHIP-DECISION-2026-09-11.md`
-- Objective-1 resume prompt: `docs/architecture/OBJECTIVE-1-RESUME-PROMPT-AFTER-CARD-TEXT-OWNERSHIP.md`
-- Issue #1 direction comment: `5644313159`
-
-Important S7 distinction:
-
-- the by-value CardTextRules injection was an INTERMEDIATE S7 defect, not accepted final S7 behavior;
-- accepted S7 repaired it by resolving provider attributes at call time;
-- future S10 may replace the injection plumbing, but MUST preserve the observable substitution property that WB4 protects;
-- do not "fix S7" by editing accepted S7 code before the S10 replacement path is designed and proved.
-
-Approved ownership direction:
-
-- whole-card / face projection belongs to `mtj_foundry.corpus`;
-- neutral printed Oracle-text structure and DET self-reference canonicalization belong to the Oracle-text capability, preserving non-equivalent policies until measured;
-- `mtj_foundry.mtg.shapes.delivery` owns delivery/ability-shape consequences, not the shared recognition primitives merely because it consumes them;
-- DET preprocessing owns DET-specific synthetic scan representations;
-- one shared semantic observation gets one lowest sensible owner; consumers must not rederive it independently.
-
-Objective 1 is NOT implementation-authorized. Its next Worker action is to resume the full accepted-head symbol/importer census and complete the remaining A-H preflight deliverables using this ownership law.
+The S7 call-time substitution behavior remains a conservation requirement. Objective 1 is not implementation-authorized.
 
 ### Objective 2 — S16A adversarial card-reading gold-suite preflight
 
-State: NEXT PRE-FLIGHT OBJECTIVE
+State: **COMPLETE EVIDENCE**
 
-Plan:
+Durable result:
 
-`docs/architecture/S16A-ADVERSARIAL-GOLD-SUITE-PREFLIGHT-PLAN.md`
+- evidence branch: `preflight/s16a-gold-suite-2026-09-12`
+- evidence head: `fc99f3bdf0503bd325f0b644771895c05940ad15`
+- Issue #1 result comment: `5647127271`
+- result guide: `docs/architecture/preflight/s16a/S16A-OBJECTIVE2-RESULT.md`
 
-Mission: create an implementation-independent, provenance-bearing adversarial card-reading benchmark before S16A parser implementation. It must measure structural families in the accepted corpus, select representative/adversarial witnesses independently of current parser success, define machine-readable semantic truth, include mutation-based negative controls, and reserve a holdout where practical.
+Key measured anchors, to be reverified before any later implementation use:
 
-Do not implement S16A parser code. Do not tune the gold suite to the current implementation.
+- pinned raw corpus: 38,233 unique oracle records;
+- Foundry Gate #0 product/benchmark universe: **32,557** cards;
+- excluded nowhere-legal population: **5,676**;
+- corpus decompressed SHA-256: `5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c`;
+- 66 measured structural families;
+- 748 certified CR-700.2 modal cards;
+- 33 development gold witnesses;
+- 18-card deterministic **unlabeled** holdout;
+- 18 named negative controls;
+- current parser output was not used for Objective-2 witness selection or labeling.
+
+The inert accidental branch `preflight/s16a-gold-suite-2026-09-12-check` points to the old planning base and is **not authority or evidence**.
 
 ### Objective 3 — S16A parser-seam audit
 
-Plan:
+State: **NEXT PRE-FLIGHT OBJECTIVE / READY FOR FRESH CHATGPT SESSION**
 
-`docs/architecture/S16A-PARSER-SEAM-AUDIT-PREFLIGHT-PLAN.md`
+Current routing branch:
 
-This is where the broader ownership-bloat/parser-duplication question is systematically audited. The known reminder-parser seam is a seed, not the whole scope.
+`preflight/objective3-parser-seam-2026-09-12`
+
+Read:
+
+- `docs/architecture/S16A-PARSER-SEAM-AUDIT-PREFLIGHT-PLAN.md`
+- `docs/architecture/OBJECTIVE-3-FRESH-CHATGPT-PREFLIGHT-PROMPT.md`
+- the complete Objective-2 evidence package under `docs/architecture/preflight/s16a/`
+
+Mission: mechanically inventory every live Oracle/structure interpreter, map semantic concept ownership, differentially measure overlapping implementations over the full applicable Gate #0 populations, classify seams S0–S5, reconcile historical incidents, and define falsifiable negative controls and a NOT AUTHORIZED future parser-ownership contract.
+
+Objective 3 is an **audit, not a parser refactor**.
 
 ### Objective 4 — S15 deletion-readiness preflight
 
-Plan:
+State: **PLANNED**
 
-`docs/architecture/S15-DELETION-READINESS-PREFLIGHT-PLAN.md`
+Plan: `docs/architecture/S15-DELETION-READINESS-PREFLIGHT-PLAN.md`
 
 ### Objective 5 — S16B gameplay-DNA thesaurus preflight
 
-Plan:
+State: **PLANNED**
 
-`docs/architecture/S16B-GAMEPLAY-DNA-PREFLIGHT-PLAN.md`
+Plan: `docs/architecture/S16B-GAMEPLAY-DNA-PREFLIGHT-PLAN.md`
 
-## Startup rule even if CLAUDE.md was skipped
+## Fresh-session startup rule
 
-Before executing any objective:
+Before executing Objective 3 or any later preflight:
 
-1. Read this file and the named objective plan.
-2. Read GitHub Issue #1 and resolve latest valid `K`, accepted head `h`, and active task `a`.
-3. Verify the objective is still applicable and not superseded.
-4. Inspect the exact accepted implementation state relevant to the objective.
-5. Treat hashes/counts in planning docs as discovery anchors only.
-6. STOP on unexplained drift or a requirement that would change semantic truth.
-7. Preflight/evidence work never self-authorizes implementation or merge.
+1. Use GitHub directly; read Issue #1 and resolve the latest valid `K`.
+2. Resolve accepted implementation head `h` and active task `a`; do not infer either from branch names.
+3. Read root `CLAUDE.md` at accepted `h`, then apply later durable Captain directions from Issue #1.
+4. Read this pickup file, the master 1–5 index, the selected objective plan, and its fresh-session prompt.
+5. Inspect the exact accepted implementation source relevant to the objective.
+6. For Objective 3 card-level differential claims, use the **32,557-card Gate #0 population**, not all 38,233 raw rows.
+7. Objective-2 development witnesses may be used as adversarial probes, but the 18-card holdout must remain unlabeled and must not become a development tuning set.
+8. Treat historical hashes/counts as discovery anchors; re-measure current state where the objective requires present-tense claims.
+9. STOP on unexplained drift, disputed authority, missing required corpus/input identity for differential claims, need for source mutation, or any unplanned durable mutation.
+10. Preflight/evidence work never self-authorizes implementation or merge.
 
-Root `CLAUDE.md` remains repository operating law and should be read. This file exists as redundant recovery routing, not as a replacement for it.
+## Current next action
+
+A fresh ChatGPT session should start from:
+
+`docs/architecture/OBJECTIVE-3-FRESH-CHATGPT-PREFLIGHT-PROMPT.md`
+
+and independently confirm that Issue #1 still selects Objective 3 before executing it.
