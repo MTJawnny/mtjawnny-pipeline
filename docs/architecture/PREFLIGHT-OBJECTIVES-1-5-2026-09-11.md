@@ -1,12 +1,22 @@
 # Foundry Preflight Objectives 1–5
 
-Status: **PLANNED / NON-EXECUTING**  
+Status: **ACTIVE PLANNING PROGRAM / NON-EXECUTING**  
 Created: 2026-09-11  
-Planning branch: `cleanup/obsolete-doc-quarantine-2026-09-11`  
+Current planning pickup: `docs/architecture/PREFLIGHT-PICK-UP-HERE.md`  
 Repository authority: live durable GitHub state, especially Issue #1  
 Accepted implementation state at plan creation: `9f92039eb9c7132a351576c31472eb30a2957a67`  
 Standing strategy at plan creation: `MIGRATION_FIRST`  
 Standing controls: `{AQ4:P, BRIDGE0:U, STEP6:N, MERGE:N}`
+
+## Current progress
+
+This file is now also a redundant recovery route for sessions that fail to auto-read root `CLAUDE.md`. `CLAUDE.md` remains repository operating law; the additional pickup file exists so the preflight program and its exact next step are discoverable from `docs/architecture/` alone.
+
+- **Objective 1 — S10 `foundry_common` dependency/preflight map:** ownership STOP explained and Captain-approved ownership direction recorded; full accepted-head symbol/importer census remains to resume when a fresh Worker is available. See `docs/architecture/S10-CARD-TEXT-OWNERSHIP-DECISION-2026-09-11.md` and `docs/architecture/OBJECTIVE-1-RESUME-PROMPT-AFTER-CARD-TEXT-OWNERSHIP.md`.
+- **Objective 2 — S16A adversarial card-reading gold suite:** **NEXT PRE-FLIGHT OBJECTIVE.** Its plan remains non-executing and implementation-independent.
+- Objectives 3–5 remain planned and unexecuted.
+
+Important S7 clarification carried forward from Objective 1: the by-value `CardTextRules` injection was an intermediate S7 defect caught by WB4. Accepted S7 already repaired that defect using call-time provider lookup. Future S10 work must preserve the observable runtime-substitution property while replacing the compatibility plumbing; it must not edit accepted S7 merely to recreate the already-fixed intermediate bug.
 
 ## Purpose
 
@@ -17,9 +27,11 @@ The five objectives are intentionally split so each receives a **fresh Claude Co
 ## Objective sequence
 
 1. **S10 `foundry_common` dependency/preflight map**  
-   Plan: `docs/architecture/S10-FOUNDRY-COMMON-PREFLIGHT-PLAN.md`
+   Plan: `docs/architecture/S10-FOUNDRY-COMMON-PREFLIGHT-PLAN.md`  
+   Current ownership decision: `docs/architecture/S10-CARD-TEXT-OWNERSHIP-DECISION-2026-09-11.md`  
+   Resume prompt: `docs/architecture/OBJECTIVE-1-RESUME-PROMPT-AFTER-CARD-TEXT-OWNERSHIP.md`
 
-2. **S16A adversarial card-reading gold suite preflight**  
+2. **S16A adversarial card-reading gold suite preflight** — **NEXT**  
    Plan: `docs/architecture/S16A-ADVERSARIAL-GOLD-SUITE-PREFLIGHT-PLAN.md`
 
 3. **S16A parser-seam audit preflight**  
@@ -37,20 +49,23 @@ Every objective is run in a fresh Claude Code session. A session must not inheri
 
 At the beginning of each session:
 
-1. Read root `CLAUDE.md`.
-2. Read GitHub Issue #1 and identify the latest valid Manager checkpoint `K`.
-3. Resolve the accepted implementation head `h` and active task `a` from durable state.
-4. Verify that the planned objective is still applicable and has not been superseded by later accepted work.
-5. Treat any expected hashes/counts in these plans as discovery anchors only; live measured state wins.
-6. STOP on unexplained state drift rather than silently rebasing the objective.
+1. Read `docs/architecture/PREFLIGHT-PICK-UP-HERE.md`.
+2. Read root `CLAUDE.md`.
+3. Read GitHub Issue #1 and identify the latest valid Manager checkpoint `K`.
+4. Resolve the accepted implementation head `h` and active task `a` from durable state.
+5. Verify that the planned objective is still applicable and has not been superseded by later accepted work.
+6. Treat any expected hashes/counts in these plans as discovery anchors only; live measured state wins.
+7. STOP on unexplained state drift rather than silently rebasing the objective.
+
+If `CLAUDE.md` was not automatically loaded, that is not permission to continue without it: the pickup file and this index explicitly route the Worker back to it.
 
 ## Branch and mutation boundary
 
-These plans are preserved on the cleanup/architecture branch because they are planning evidence and must not perturb the accepted migration chain.
+These plans are preserved on cleanup/architecture branches because they are planning evidence and must not perturb the accepted migration chain.
 
 For future objective sessions:
 
-- the **subject under study** is the then-current accepted implementation state unless the plan explicitly requires the cleanup branch;
+- the **subject under study** is the then-current accepted implementation state unless the plan explicitly requires the cleanup/architecture branch;
 - source/code analysis is read-only by default;
 - no accepted implementation ref may move;
 - no active migration PR may be amended by a preflight task;
@@ -79,6 +94,8 @@ Durable Captain direction separates the future semantic work into:
 - **S16B — functional thesaurus / gameplay DNA**.
 
 S16A must establish trustworthy semantic representation before S16B can treat semantic coordinates as reliable retrieval evidence. Objective 2 and Objective 3 prepare S16A. Objective 5 prepares S16B without bypassing the S16A prerequisite.
+
+The Objective-1 ownership direction is an engineering ownership decision, not benchmark truth. Objective 2 must remain implementation-independent: its labels come from Oracle/CR/official evidence, not from the ownership map or from what the current parser happens to produce.
 
 ## Cross-objective deliverable rules
 
