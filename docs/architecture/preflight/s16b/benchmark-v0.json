@@ -1,0 +1,273 @@
+{
+  "schema": "mtj-s16b-gameplay-dna-benchmark-preflight/0",
+  "status": "PRELIMINARY_RESEARCH_LABELS_NOT_PRODUCTION_AUTHORITY",
+  "frozen_on": "2026-09-12",
+  "ground_truth_rule": "Rows are research labels for preflight design. Before S16B implementation they must be independently Oracle/CR rechecked against a pinned corpus and adjudicated without looking at candidate S16B outputs. Current S9 output was not used to choose or change a relevance label.",
+  "relation_labels": {
+    "STRONG_FUNCTIONAL": "substantially the same context-free gameplay job with materially different mechanics or delivery",
+    "CONTEXTUAL_FUNCTIONAL": "same gameplay job only under an explicit deck/game/archetype context",
+    "PARTIAL_ROLE": "shares an important parent job but differs enough that replacement/equivalence is unsafe",
+    "HARD_NEGATIVE": "surface/mechanical/vocabulary overlap is insufficient for the proposed job",
+    "VOCABULARY_CONFLICT": "community label boundary itself is disputed; must not be forced into binary truth"
+  },
+  "positive_rows": [
+    {
+      "id": "P01",
+      "cards": ["Grand Abolisher", "Defense Grid"],
+      "label": "STRONG_FUNCTIONAL",
+      "job": "proactive-turn interaction suppression",
+      "context": "context-free functional parent; especially combo/proactive-turn protection",
+      "mechanical_difference": "hard prohibition on spells plus specified activated abilities versus a three-mana out-of-turn spell tax that also applies symmetrically by turn controller",
+      "required_coordinates": ["interaction_window", "actor_scope", "action_scope", "tax_vs_prohibit", "duration", "symmetry"],
+      "claims": ["C001", "C002", "C003"],
+      "confidence": "HIGH_PREIMPLEMENTATION"
+    },
+    {
+      "id": "P02",
+      "cards": ["Plunge into Darkness", "Dig Through Time"],
+      "label": "STRONG_FUNCTIONAL",
+      "job": "deep selective library access",
+      "context": "card-finding/selection role",
+      "mechanical_difference": "life-paid variable depth and keep-one/exile-rest versus delve-funded fixed seven and keep-two/bottom-rest",
+      "required_coordinates": ["selection_depth", "retained_quantity", "cost_resource", "rejected_destination", "timing", "modal_status"],
+      "claims": ["C004", "C005", "C006"],
+      "confidence": "MEDIUM_HIGH; direct-comparison sources likely share some primer lineage"
+    },
+    {
+      "id": "P03",
+      "cards": ["Rampant Growth", "Arcane Signet", "Llanowar Elves"],
+      "label": "PARTIAL_ROLE",
+      "job": "repeatable mana acceleration",
+      "context": "general Commander ramp package",
+      "mechanical_difference": "land-to-battlefield spell versus artifact mana source versus creature mana source",
+      "required_coordinates": ["resource_gain", "repeatability", "source_type", "summoning_delay", "land_count_change", "color_access", "removal_exposure"],
+      "claims": ["C007"],
+      "confidence": "MEDIUM_HIGH; individual Oracle recheck required before freeze"
+    },
+    {
+      "id": "P04",
+      "cards": ["Wrath of God", "Toxic Deluge"],
+      "label": "STRONG_FUNCTIONAL",
+      "job": "creature-board reset",
+      "context": "context-free board-control role",
+      "mechanical_difference": "destroy-all plus regeneration restriction versus scalable -X/-X paid with life",
+      "required_coordinates": ["scope", "magnitude", "destruction_vs_stat_reduction", "additional_cost", "indestructible_interaction", "symmetry"],
+      "claims": ["C009"],
+      "confidence": "MEDIUM; pinned Oracle recheck required before freeze"
+    },
+    {
+      "id": "P05",
+      "cards": ["Cyclonic Rift", "Wrath of God", "Toxic Deluge"],
+      "label": "PARTIAL_ROLE",
+      "job": "board reset / mass threat clearing",
+      "context": "Cyclonic Rift evaluated in overload mode",
+      "mechanical_difference": "asymmetric nonland bounce versus symmetric creature destruction/stat reduction",
+      "required_coordinates": ["delivery_mode", "scope", "symmetry", "destination", "permanence", "object_class"],
+      "claims": ["C009", "C013"],
+      "confidence": "MEDIUM_HIGH_FOR_PARENT_ROLE; not strict substitution"
+    },
+    {
+      "id": "P06",
+      "cards": ["Heroic Intervention", "Clever Concealment", "Teferi's Protection"],
+      "label": "PARTIAL_ROLE",
+      "job": "board preservation through hostile interaction",
+      "context": "protecting a developed board from removal/sweepers",
+      "mechanical_difference": "hexproof+indestructible versus selective phasing versus player-wide phasing plus life/protection effects",
+      "required_coordinates": ["protected_scope", "threat_classes_answered", "phasing_vs_indestructible", "targeting_protection", "player_protection", "duration"],
+      "claims": [],
+      "confidence": "MEDIUM; current Oracle sources collected, formal claim rows required before benchmark freeze"
+    },
+    {
+      "id": "P07",
+      "cards": ["Rest in Peace", "Soul-Guide Lantern"],
+      "label": "PARTIAL_ROLE",
+      "job": "graveyard denial",
+      "context": "general graveyard-hate slot",
+      "mechanical_difference": "persistent replacement-style denial plus entry purge versus targeted/one-shot graveyard exile with alternative utility",
+      "required_coordinates": ["persistence", "affected_players", "coverage", "timing", "one_shot_vs_continuous", "secondary_mode"],
+      "claims": ["C014", "C015"],
+      "confidence": "MEDIUM_HIGH"
+    },
+    {
+      "id": "P08",
+      "cards": ["Reanimate", "Animate Dead", "Necromancy"],
+      "label": "STRONG_FUNCTIONAL",
+      "job": "move a creature from graveyard to battlefield under your control",
+      "context": "reanimator payoff role",
+      "mechanical_difference": "sorcery one-shot versus Aura-based continuous attachment/control scaffolding and different costs/timing",
+      "required_coordinates": ["source_zone", "destination_zone", "object_scope", "delivery", "cost", "attachment_dependency", "timing"],
+      "claims": ["C021"],
+      "confidence": "HIGH_AS_EXISTING_HUMAN_FROZEN_PROJECT_PANEL; Oracle recheck still required before S16B freeze"
+    },
+    {
+      "id": "P09",
+      "cards": ["Beast Within", "Chaos Warp", "Reality Shift"],
+      "label": "PARTIAL_ROLE",
+      "job": "flexible permanent/threat removal",
+      "context": "general instant-speed answer slot",
+      "mechanical_difference": "destroy+token compensation versus shuffle/reveal replacement versus exile+manifest-style replacement",
+      "required_coordinates": ["object_scope", "destination", "compensation", "replacement_resource", "timing", "targeting"],
+      "claims": ["C021"],
+      "confidence": "HIGH_AS_EXISTING_HUMAN_FROZEN_PROJECT_PANEL"
+    },
+    {
+      "id": "P10",
+      "cards": ["Viscera Seer", "Ashnod's Altar", "Altar of Dementia"],
+      "label": "PARTIAL_ROLE",
+      "job": "sacrifice outlet",
+      "context": "Aristocrats/combo enabling infrastructure",
+      "mechanical_difference": "same enabling act with different output: scry, mana, mill",
+      "required_coordinates": ["sacrifice_scope", "activation_cost", "repeatability", "output_job", "timing"],
+      "claims": ["C011"],
+      "confidence": "MEDIUM; individual Oracle recheck required before freeze"
+    },
+    {
+      "id": "P11",
+      "cards": ["Demonic Tutor", "Entomb"],
+      "label": "CONTEXTUAL_FUNCTIONAL",
+      "job": "find a needed combo/reanimation piece",
+      "context": "reanimator deck where graveyard is an intended access zone",
+      "mechanical_difference": "search-to-hand versus search-to-graveyard",
+      "required_coordinates": ["search_scope", "destination", "deck_context", "follow_up_requirement", "card_access_latency"],
+      "claims": ["C008"],
+      "confidence": "MEDIUM; label must be false/negative in context-free substitution mode"
+    },
+    {
+      "id": "P12",
+      "cards": ["Swords to Plowshares", "Path to Exile", "Beast Within", "Generous Gift"],
+      "label": "PARTIAL_ROLE",
+      "job": "efficient spot removal",
+      "context": "interaction package",
+      "mechanical_difference": "different object scopes, exile/destroy destinations, and compensation types",
+      "required_coordinates": ["target_scope", "destination", "compensation", "mana_cost", "speed", "permanence"],
+      "claims": ["C008"],
+      "confidence": "MEDIUM; exact current Oracle must be pinned before freeze"
+    }
+  ],
+  "hard_negative_rows": [
+    {
+      "id": "N01",
+      "cards": ["Rhystic Study", "Smothering Tithe"],
+      "label": "HARD_NEGATIVE",
+      "trap": "similar opponent-action tax-or-reward template",
+      "why_not_same_job": "one primarily generates card access from spell casting; the other primarily generates mana resources from card draws",
+      "required_coordinates": ["trigger_event", "default_reward", "opponent_payment", "resource_created"],
+      "confidence": "MEDIUM; pinned Oracle recheck required"
+    },
+    {
+      "id": "N02",
+      "cards": ["Defense Grid", "Sphere of Resistance"],
+      "label": "HARD_NEGATIVE",
+      "trap": "same cost-tax mechanism",
+      "why_not_same_job": "Defense Grid is turn-structured out-of-turn interaction suppression; Sphere taxes all spells for all players and functions as global resource restriction",
+      "required_coordinates": ["affected_actor", "turn_condition", "tax_amount", "symmetry", "strategic_job"],
+      "claims": ["C002", "C018"],
+      "confidence": "HIGH_PREIMPLEMENTATION"
+    },
+    {
+      "id": "N03",
+      "cards": ["Wheel of Fortune", "Faithless Looting"],
+      "label": "HARD_NEGATIVE",
+      "trap": "discard/draw surface overlap",
+      "why_not_same_job": "table-wide hand reset/refill versus self-only filtering with no inherent net card gain",
+      "required_coordinates": ["affected_players", "hand_scope", "draw_quantity", "discard_timing", "repeatability"],
+      "claims": ["C019"],
+      "confidence": "MEDIUM; Wheel Oracle recheck required"
+    },
+    {
+      "id": "N04",
+      "cards": ["Rest in Peace", "Grafdigger's Cage"],
+      "label": "HARD_NEGATIVE",
+      "trap": "same graveyard-hate community label",
+      "why_not_same_job": "Rest in Peace removes/replaces graveyard occupancy broadly; Cage blocks specific casting/entry paths without emptying graveyards and also reaches libraries",
+      "required_coordinates": ["zone_occupancy", "action_denied", "source_zone", "destination", "persistence", "coverage"],
+      "claims": ["C015"],
+      "confidence": "MEDIUM; Cage Oracle recheck required"
+    },
+    {
+      "id": "N05",
+      "cards": ["Demonic Tutor", "Entomb"],
+      "label": "HARD_NEGATIVE",
+      "trap": "same library-search action",
+      "why_not_same_job": "in context-free card access, destination hand versus graveyard changes immediate usability; only an explicit reanimator context can promote this pair to contextual functional similarity",
+      "required_coordinates": ["destination", "context", "follow_up_requirement", "immediate_access"],
+      "confidence": "MEDIUM"
+    },
+    {
+      "id": "N06",
+      "cards": ["Rampant Growth", "Exploration"],
+      "label": "HARD_NEGATIVE",
+      "trap": "both associated with land-based ramp",
+      "why_not_same_job": "Rampant Growth finds and deploys a land from library; Exploration only grants an additional land-play permission and depends on a land already available to play",
+      "required_coordinates": ["source_zone", "search", "resource_dependency", "land_play_permission", "guaranteed_resource_gain"],
+      "claims": ["C007", "C020"],
+      "confidence": "HIGH_PREIMPLEMENTATION"
+    },
+    {
+      "id": "N07",
+      "cards": ["Dark Ritual", "Arcane Signet"],
+      "label": "VOCABULARY_CONFLICT",
+      "trap": "both accelerate mana and are sometimes placed under ramp",
+      "why_not_binary": "one-shot burst mana versus repeatable permanent mana source; community usage disputes whether the former belongs under ramp",
+      "required_coordinates": ["repeatability", "duration", "net_mana_this_turn", "permanent_dependency", "vocabulary_scope"],
+      "claims": ["C007", "C016", "C017"],
+      "confidence": "HIGH_THAT_THE_TERM_IS_CONTESTED"
+    },
+    {
+      "id": "N08",
+      "cards": ["Cyclonic Rift (normal mode)", "Cyclonic Rift (overload mode)"],
+      "label": "HARD_NEGATIVE",
+      "trap": "identical card text family and zone-change verb",
+      "why_not_same_job": "single-target tempo interaction versus asymmetric board reset; delivery/mode and affected cardinality change the job",
+      "required_coordinates": ["mode", "cardinality", "scope", "board_coverage", "cost"],
+      "claims": ["C013"],
+      "confidence": "HIGH_CONCEPTUAL; Oracle recheck required"
+    },
+    {
+      "id": "N09",
+      "cards": ["Counterspell", "Stifle"],
+      "label": "HARD_NEGATIVE",
+      "trap": "shared English verb counter",
+      "why_not_same_job": "countering a spell and countering a triggered/activated ability answer different stack object classes",
+      "required_coordinates": ["stack_object_class", "target_scope", "timing"],
+      "confidence": "MEDIUM; pinned Oracle recheck required"
+    },
+    {
+      "id": "N10",
+      "cards": ["Swords to Plowshares", "Rest in Peace"],
+      "label": "HARD_NEGATIVE",
+      "trap": "both cause cards/permanents to be exiled",
+      "why_not_same_job": "spot creature removal versus persistent graveyard denial; shared destination is not a functional role",
+      "required_coordinates": ["source_zone", "target_scope", "trigger/action", "persistence", "job"],
+      "claims": ["C015"],
+      "confidence": "MEDIUM; Swords Oracle recheck required"
+    },
+    {
+      "id": "N11",
+      "cards": ["Smothering Tithe", "Propaganda"],
+      "label": "HARD_NEGATIVE",
+      "trap": "both impose opponent-facing taxes",
+      "why_not_same_job": "mana generation from draw events versus attack deterrence/resource gating",
+      "required_coordinates": ["trigger/action_gated", "resource_paid", "default_consequence", "strategic_job"],
+      "confidence": "MEDIUM; pinned Oracle recheck required"
+    },
+    {
+      "id": "N12",
+      "cards": ["Heroic Intervention", "Fog"],
+      "label": "HARD_NEGATIVE",
+      "trap": "both are commonly defensive/protective plays",
+      "why_not_same_job": "board protection from targeting/destruction versus temporary combat-damage prevention; threat classes barely overlap",
+      "required_coordinates": ["protected_entity", "threat_class", "damage_prevention", "destruction_protection", "targeting_protection", "duration"],
+      "confidence": "MEDIUM; pinned Oracle recheck required"
+    }
+  ],
+  "precommitment": {
+    "do_not_use_current_s9_to_relabel": true,
+    "positive_set_must_include_zero_shared_axis_cases": true,
+    "hard_negatives_must_include_shared_mechanism_or_shared_label_traps": true,
+    "contextual_rows_must_be_scored_in_named_context_and_context_free_mode_separately": true,
+    "freeze_before_s16b_implementation": true,
+    "blind_holdout_required": true,
+    "holdout_seed_plaintext_must_not_be_available_to_candidate_implementation": true
+  }
+}
