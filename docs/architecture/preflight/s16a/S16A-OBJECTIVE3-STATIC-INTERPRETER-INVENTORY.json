@@ -1,0 +1,249 @@
+{
+  "schema": "mtj-s16a-objective3-static-interpreter-inventory/1",
+  "status": "PARTIAL_STATIC_ONLY_STOPPED_BEFORE_CORPUS_DIFFERENTIALS",
+  "objective": 3,
+  "accepted_implementation_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "planning_head": "b01848d63bb40a7025a3ab0cd287c479a13dfd22",
+  "objective2_evidence_head": "fc99f3bdf0503bd325f0b644771895c05940ad15",
+  "method": {
+    "repository_tree": "complete recursive accepted-head tree inspected through GitHub",
+    "source_inspection": "accepted-head file bodies and tracked historical audits",
+    "caller_liveness": "direct imports/providers/call sites and refoundation delegation tests",
+    "corpus_differentials": "NOT RUN: exact pinned corpus bytes unavailable in this execution environment"
+  },
+  "classification_values": [
+    "DOMAIN_INTERPRETER",
+    "COMPATIBILITY_WRAPPER",
+    "VALIDATOR_INTERPRETER",
+    "TEST_FIXTURE_OR_NEGATIVE_CONTROL",
+    "BENIGN_FORMATTING",
+    "UNRELATED"
+  ],
+  "interpreters": [
+    {
+      "id": "PERM.CORPUS",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/corpus.py",
+      "symbols": ["card_faces", "load_cards", "normalize_name", "build_name_index", "is_gate0_eligible"],
+      "concepts": ["full-card / face extraction", "face boundaries", "Gate #0 eligibility"],
+      "status": "PERMANENT",
+      "liveness": "direct permanent package capability; legacy foundry_common.raw_faces delegates to it",
+      "owner_evidence": "S10 ownership decision selects mtj_foundry.corpus for shared full-card/face projection",
+      "notes": "Clean refoundation reimplementation. Differential tests exist against legacy behavior but current corpus-wide rerun is blocked by missing pinned corpus bytes."
+    },
+    {
+      "id": "PERM.ORACLE_TEXT",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/oracle_text.py",
+      "symbols": ["paren_spans", "strip_reminders", "reminder_bodies", "normalize_clause", "self_name_candidates", "normalize_self_references", "keyword_instances", "is_keyword_only"],
+      "concepts": ["reminder-parenthesis recognition", "self-reference normalization", "keyword-form recognition", "neutral printed-text normalization"],
+      "status": "PERMANENT",
+      "liveness": "permanent package capability with refoundation differential/negative-control tests",
+      "owner_evidence": "S10 selects oracle_text as candidate owner for neutral printed-text recognition and DET-compatible self-reference only after semantic measurement",
+      "notes": "Parenthesis scanner is depth-aware. Self-reference normalization is not contractually equivalent to the legacy DET canonicalizer."
+    },
+    {
+      "id": "PERM.SHAPES.DELIVERY",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/mtg/shapes/delivery.py",
+      "symbols": ["REMINDER", "strip_reminder", "ability_lines", "deliveries_for_lines", "sentence_spans", "trigger_condition"],
+      "concepts": ["ability-line splitting", "sentence splitting", "quotation-aware punctuation", "modal delivery inheritance", "die/result-table structure", "Saga/Class/level/Room/Station grouping", "delivery classification", "activation/cost-effect boundaries", "linked/reflexive/delayed dependencies", "quoted/granted ability ownership"],
+      "status": "PERMANENT",
+      "liveness": "legacy foundry_shape_extractor delegates to this implementation; system-map and DET producer paths consume it",
+      "owner_evidence": "S10 preserves delivery consequence interpretation in shapes",
+      "notes": "Contains live flat reminder regex REMINDER = \\( [conceptually: parenthesis to first close] \\) while permanent oracle_text uses depth-aware scanning. Provider rules are late-bound."
+    },
+    {
+      "id": "PERM.SHAPES.LOCALITY",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/mtg/shapes/locality.py",
+      "symbols": ["CardFaceRules", "units", "resolve", "owning_header", "mutually_exclusive"],
+      "concepts": ["face/paragraph semantic owner", "evidence span", "modal parent header", "mutual exclusivity"],
+      "status": "PERMANENT",
+      "liveness": "legacy foundry_locality delegates to this implementation; codebook/locality validation consumes it",
+      "owner_evidence": "ratified locality architecture assigns face+paragraph semantic ownership here",
+      "notes": "Provider lookup is intentionally late-bound. Modal-parent recognition is independently derived from bullet/choose text and therefore overlaps neutral modal recognition."
+    },
+    {
+      "id": "PERM.SHAPES.TARGET_CLASSES",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/mtg/shapes/target_classes.py",
+      "symbols": ["target_instruction", "target_noun_phrase", "classes_for_clause", "classes_for_card"],
+      "concepts": ["target detection", "target noun-phrase boundary", "target class derivation", "zone-origin boundary"],
+      "status": "PERMANENT",
+      "liveness": "legacy foundry_object_lattice delegates to this implementation and supplies DET scan texts",
+      "owner_evidence": "permanent target-class substrate is the sole located target-class interpreter; input representation remains an injected policy dependency",
+      "notes": "Consumes DET synthetic scan texts through a late-bound provider. Target interpretation and DET preprocessing are separate ownership layers."
+    },
+    {
+      "id": "PERM.TEXT_MATCH",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/mtg/text_match.py",
+      "symbols": ["compute_full_hits", "matched_clause"],
+      "concepts": ["regex-over-text matching", "matched evidence clause selection"],
+      "status": "PERMANENT",
+      "liveness": "shared mechanical matcher imported by Foundry semantic producers/validators",
+      "owner_evidence": "module explicitly limits itself to mechanical matching; semantic pattern meaning remains governance-owned",
+      "notes": "A narrow owner, not a generic clause parser."
+    },
+    {
+      "id": "PERM.CR.SUBSTRATE",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "src/mtj_foundry/mtg/cr/",
+      "symbols": ["edition.py", "keywords.py", "keyword_buckets.py", "checks.py"],
+      "concepts": ["CR-derived keyword vocabulary", "CR edition parsing", "shared CR-derived constants"],
+      "status": "PERMANENT",
+      "liveness": "consumed by permanent MTG interpretation and refoundation guard tests",
+      "owner_evidence": "permanent CR substrate is the intended home for shared CR-derived vocabulary",
+      "notes": "This is adjacent to Oracle parsing. Local hand-lists/patterns elsewhere remain a duplication-risk class."
+    },
+    {
+      "id": "LEGACY.FOUNDRY_COMMON",
+      "classification": "COMPATIBILITY_WRAPPER",
+      "path": "experiments/foundry_common.py",
+      "symbols": ["raw_faces", "full_oracle_text", "canonicalize_self_reference", "det_scan_texts", "is_mode_line", "_MODAL_HEADER_RE", "_ROLL_INSTRUCTION_RE", "_DIE_ROW_RE", "_extract_faces"],
+      "concepts": ["face/full-card projection", "DET self-reference policy", "DET synthetic modal expansion", "modal header/bullet recognition", "die/result-row recognition", "review-card face metadata"],
+      "status": "LIVE_LEGACY_COMPOSITION_BOUNDARY_WITH_POLICY",
+      "liveness": "refoundation delegation tests identify foundry_common as a high-fan-in compatibility boundary; DET, locality, shape, object-lattice and validator families still route through it",
+      "owner_evidence": "raw_faces is a wrapper around permanent corpus; DET canonicalization and det_scan_texts remain intentional legacy policy; neutral recognizers are candidate future oracle_text responsibilities",
+      "notes": "Do not classify the whole file as benign wrapper: det_scan_texts and DET self-reference are independent semantic preprocessing policy. _extract_faces is an independent face-metadata derivation."
+    },
+    {
+      "id": "LEGACY.SHAPE_EXTRACTOR",
+      "classification": "COMPATIBILITY_WRAPPER",
+      "path": "experiments/foundry_shape_extractor.py",
+      "symbols": ["delegation/re-export surface"],
+      "concepts": ["delivery classification compatibility surface"],
+      "status": "LIVE_LEGACY_WRAPPER",
+      "liveness": "legacy consumer family still imports it",
+      "owner_evidence": "file explicitly states no second implementation remains and delegates to permanent shapes delivery",
+      "notes": "Not a duplicate parser by itself."
+    },
+    {
+      "id": "LEGACY.LOCALITY",
+      "classification": "COMPATIBILITY_WRAPPER",
+      "path": "experiments/foundry_locality.py",
+      "symbols": ["delegation/census/report surface"],
+      "concepts": ["locality compatibility surface"],
+      "status": "LIVE_LEGACY_WRAPPER_VALIDATOR",
+      "liveness": "locality census/backfill/guard family still consumes this surface",
+      "owner_evidence": "delegates semantic ownership resolution to permanent locality module",
+      "notes": "Reporting/census code is validator behavior, not an independent owner."
+    },
+    {
+      "id": "LEGACY.OBJECT_LATTICE",
+      "classification": "COMPATIBILITY_WRAPPER",
+      "path": "experiments/foundry_object_lattice.py",
+      "symbols": ["delegation to target_classes"],
+      "concepts": ["target-class compatibility surface"],
+      "status": "LIVE_LEGACY_WRAPPER",
+      "liveness": "object-lattice producer/guard family still consumes it",
+      "owner_evidence": "delegates target noun/class interpretation to permanent target_classes and injects DET scan texts",
+      "notes": "No second target-class implementation remains in this file."
+    },
+    {
+      "id": "LEGACY.DET_PASS",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "experiments/foundry_det_pass.py",
+      "symbols": ["DET producer pipeline"],
+      "concepts": ["DET preprocessing consumption", "pattern-to-fact production", "locality attachment"],
+      "status": "LIVE_LEGACY_PRODUCER",
+      "liveness": "authoritative historical Foundry producer path and current accepted compatibility stack",
+      "owner_evidence": "consumes det_scan_texts rather than owning neutral card structure",
+      "notes": "Its semantic correctness depends on DET preprocessing, pattern governance, delivery and locality owners."
+    },
+    {
+      "id": "LEGACY.TIER_ENGINE",
+      "classification": "DOMAIN_INTERPRETER",
+      "path": "experiments/tier_engine.py",
+      "symbols": ["get_raw_faces", "find_paren_spans", "normalize_self_references", "document/paragraph normalization"],
+      "concepts": ["face extraction", "reminder scanning", "self-reference normalization", "paragraph/document projection"],
+      "status": "LIVE_LEGACY_THESAURUS_ENGINE_AND_DIFFERENTIAL_PEER",
+      "liveness": "refoundation capability tests use it as the legacy differential peer; foundry_common remains import-coupled to tier_engine in accepted compatibility layout",
+      "owner_evidence": "not the selected permanent owner for shared card reading after S10",
+      "notes": "Depth-aware reminder scanning exists here. Historical equivalence results must be rerun before S1 classification."
+    },
+    {
+      "id": "LEGACY.SYSTEM_MAP",
+      "classification": "VALIDATOR_INTERPRETER",
+      "path": "experiments/foundry_system_map.py",
+      "symbols": ["pipeline/system-map reporting"],
+      "concepts": ["stage/caller topology", "heuristic/CR migration frontier"],
+      "status": "REPORTER",
+      "liveness": "tracked repository introspection tool",
+      "owner_evidence": "none; reports implementation topology",
+      "notes": "Useful evidence that CR migration is partial and hand-list/heuristic islands remain."
+    },
+    {
+      "id": "VALIDATOR.ORACLE_TEXT_CAPABILITY",
+      "classification": "VALIDATOR_INTERPRETER",
+      "path": "tests/refoundation/test_oracle_text_capability.py",
+      "symbols": ["legacy differential", "flat-regex negative control"],
+      "concepts": ["reminder scanning", "self-reference normalization"],
+      "status": "TEST",
+      "liveness": "accepted refoundation test suite",
+      "owner_evidence": "validator only",
+      "notes": "Corpus-wide differential is conditional on local corpus availability and skips without it. Synthetic nested-parenthesis control proves flat regex can fail."
+    },
+    {
+      "id": "VALIDATOR.CORPUS_CAPABILITY",
+      "classification": "VALIDATOR_INTERPRETER",
+      "path": "tests/refoundation/test_corpus_capability.py",
+      "symbols": ["card_faces legacy differential"],
+      "concepts": ["face extraction", "face boundaries"],
+      "status": "TEST",
+      "liveness": "accepted refoundation test suite",
+      "owner_evidence": "validator only",
+      "notes": "Corpus-wide differential skips when local corpus is absent; therefore prior pass evidence is historical rather than a current Objective-3 measurement."
+    },
+    {
+      "id": "VALIDATOR.SHAPES_SUBSTRATE",
+      "classification": "VALIDATOR_INTERPRETER",
+      "path": "tests/refoundation/test_mtg_shapes_substrate.py",
+      "symbols": ["delegation guards", "late-bound provider negative controls"],
+      "concepts": ["runtime substitution conservation", "single-owner delegation"],
+      "status": "TEST",
+      "liveness": "accepted refoundation test suite",
+      "owner_evidence": "validator only",
+      "notes": "Explicitly verifies provider replacement is observed after installation, guarding against capture-by-value."
+    },
+    {
+      "id": "VALIDATOR.GATE2.PARSER_FAMILY",
+      "classification": "VALIDATOR_INTERPRETER",
+      "path": "tests/guards/gate2/",
+      "symbols": ["foundry_punctuation_audit.py", "foundry_qualifier_census.py", "foundry_definition_drift.py", "foundry_routing_regression.py", "foundry_visibility_audit.py", "test_locality.py", "test_object_lattice.py"],
+      "concepts": ["punctuation conservation", "restriction census", "routing regression", "visibility/context", "locality", "target/object lattice"],
+      "status": "VALIDATOR_FAMILY",
+      "liveness": "tracked Gate 2/guard layer",
+      "owner_evidence": "validators must not become semantic owners",
+      "notes": "Some validators independently decompose lines/conditions for checking. They are therefore parser-seam inventory entries even when they intentionally do not drive production facts."
+    },
+    {
+      "id": "ROOT.RUNTIME",
+      "classification": "UNRELATED",
+      "path": "src/mtj_foundry/runtime.py",
+      "symbols": ["read-only runtime composition"],
+      "concepts": [],
+      "status": "PERMANENT",
+      "liveness": "runtime package",
+      "owner_evidence": "explicitly not a semantic Oracle interpreter",
+      "notes": "Excluded from parser ownership except as a downstream caller/composition layer."
+    },
+    {
+      "id": "ROOT.PILOT",
+      "classification": "BENIGN_FORMATTING",
+      "path": "src/mtj_foundry/pilot.py",
+      "symbols": ["display/front-end projection"],
+      "concepts": [],
+      "status": "PERMANENT",
+      "liveness": "pilot/static UI",
+      "owner_evidence": "explicitly not semantic input reader",
+      "notes": "Display/name normalization here is not counted as Oracle semantic parsing."
+    }
+  ],
+  "known_limitations": [
+    "This inventory is deliberately marked partial: the corpus STOP fired before current full-population liveness/differential certification could be completed.",
+    "Historical producer/bypasser counts are not copied forward as current counts.",
+    "No Objective-2 holdout label was inferred, manufactured, or used."
+  ]
+}
