@@ -63,42 +63,21 @@ jobs:
           set -euo pipefail
           OUT="$RUNNER_TEMP/gate2-evidence"
           mkdir -p "$OUT"
-
           prepare() {
             root="$1"; label="$2"
             mkdir -p "$root/data/raw" "$root/experiments/out/foundry"
-            rclone copyto \
-              r2:mtjawnny/data/snapshots/2026-07-03/oracle-cards.jsonl.gz \
-              "$root/data/raw/oracle-cards.jsonl.gz"
-            rclone copyto \
-              "r2:mtjawnny-foundry/foundry/codebook/sha256/${CODEBOOK_SHA}/codebook.json" \
-              "$root/experiments/out/foundry/codebook.json"
-
+            rclone copyto r2:mtjawnny/data/snapshots/2026-07-03/oracle-cards.jsonl.gz "$root/data/raw/oracle-cards.jsonl.gz"
+            rclone copyto "r2:mtjawnny-foundry/foundry/codebook/sha256/${CODEBOOK_SHA}/codebook.json" "$root/experiments/out/foundry/codebook.json"
             corpus_actual="$(sha256sum "$root/data/raw/oracle-cards.jsonl.gz" | awk '{print $1}')"
             codebook_actual="$(sha256sum "$root/experiments/out/foundry/codebook.json" | awk '{print $1}')"
             codebook_size="$(wc -c < "$root/experiments/out/foundry/codebook.json" | tr -d ' ')"
-            corpus_lines="$(python3 - "$root/data/raw/oracle-cards.jsonl.gz" <<'PY'
-import gzip,sys
-with gzip.open(sys.argv[1], 'rt', encoding='utf-8') as f:
-    print(sum(1 for _ in f))
-PY
-)"
-
+            corpus_lines="$(python3 -c 'import gzip,sys; print(sum(1 for _ in gzip.open(sys.argv[1], "rt", encoding="utf-8")))' "$root/data/raw/oracle-cards.jsonl.gz")"
             test "$corpus_actual" = "$CORPUS_SHA"
             test "$codebook_actual" = "$CODEBOOK_SHA"
             test "$codebook_size" = "$CODEBOOK_SIZE"
             test "$corpus_lines" = "38233"
-
-            {
-              echo "label=$label"
-              echo "head=$(git -C "$root" rev-parse HEAD)"
-              echo "corpus_sha256=$corpus_actual"
-              echo "corpus_lines=$corpus_lines"
-              echo "codebook_sha256=$codebook_actual"
-              echo "codebook_size=$codebook_size"
-            } > "$OUT/${label}-inputs.txt"
+            printf 'label=%s\nhead=%s\ncorpus_sha256=%s\ncorpus_lines=%s\ncodebook_sha256=%s\ncodebook_size=%s\n' "$label" "$(git -C "$root" rev-parse HEAD)" "$corpus_actual" "$corpus_lines" "$codebook_actual" "$codebook_size" > "$OUT/${label}-inputs.txt"
           }
-
           prepare "$RUNNER_TEMP/accepted" accepted
           prepare "$RUNNER_TEMP/cleanup" cleanup
 
@@ -106,34 +85,20 @@ PY
         shell: bash
         run: |
           set -euo pipefail
-          root="$RUNNER_TEMP/accepted"
-          OUT="$RUNNER_TEMP/gate2-evidence"
-          cd "$root"
+          root="$RUNNER_TEMP/accepted"; OUT="$RUNNER_TEMP/gate2-evidence"; cd "$root"
           python3 tests/guards/gate2/foundry_gate2.py | tee "$OUT/accepted-gate2.txt"
-          set +e
-          python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/accepted-selftest.txt" 2>&1
-          rc=$?
-          set -e
-          test "$rc" -ne 0
-          grep -q SELFTEST_rigged "$OUT/accepted-selftest.txt"
-          echo "$rc" > "$OUT/accepted-selftest-exit.txt"
+          set +e; python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/accepted-selftest.txt" 2>&1; rc=$?; set -e
+          test "$rc" -ne 0; grep -q SELFTEST_rigged "$OUT/accepted-selftest.txt"; echo "$rc" > "$OUT/accepted-selftest-exit.txt"
 
       - name: Run canonical Gate 2 on cleanup proposal
         shell: bash
         run: |
           set -euo pipefail
-          root="$RUNNER_TEMP/cleanup"
-          OUT="$RUNNER_TEMP/gate2-evidence"
-          cd "$root"
+          root="$RUNNER_TEMP/cleanup"; OUT="$RUNNER_TEMP/gate2-evidence"; cd "$root"
           python3 tests/guards/gate2/foundry_gate2.py | tee "$OUT/cleanup-gate2.txt"
           python3 -m unittest tests.refoundation.test_worker_operating_contract 2>&1 | tee "$OUT/cleanup-routing-guard.txt"
-          set +e
-          python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/cleanup-selftest.txt" 2>&1
-          rc=$?
-          set -e
-          test "$rc" -ne 0
-          grep -q SELFTEST_rigged "$OUT/cleanup-selftest.txt"
-          echo "$rc" > "$OUT/cleanup-selftest-exit.txt"
+          set +e; python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/cleanup-selftest.txt" 2>&1; rc=$?; set -e
+          test "$rc" -ne 0; grep -q SELFTEST_rigged "$OUT/cleanup-selftest.txt"; echo "$rc" > "$OUT/cleanup-selftest-exit.txt"
 
       - name: Upload verification evidence
         if: always()
