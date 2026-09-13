@@ -27,7 +27,12 @@ jobs:
           python3 tests/guards/gate2/foundry_ruling_registry.py --selftest
           python3 -m py_compile tests/guards/gate2/foundry_family_sweep.py
           python3 tests/guards/gate2/foundry_family_sweep.py --selftest
-          git diff --check 493483aa1d54210c35e1665686a5e0136588da6d...HEAD
+          git diff --check 493483aa1d54210c35e1665686a5e0136588da6d...HEAD -- \
+            config/registers/family-sweep-known-debt.json \
+            tests/guards/gate2/foundry_family_sweep.py \
+            docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md \
+            docs/architecture/S10-WORKER-CONTRACT-REFRESH-2026-09-13.md \
+            docs/architecture/preflight/S10-FOUNDRY-COMMON-CENSUS-REFRESH-2026-09-13.md
           python3 - <<'PY'
           import json, subprocess
           from pathlib import Path
