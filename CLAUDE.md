@@ -3,9 +3,9 @@
 Canonical, always-loaded operating contract for this repository.
 It is current operating law only. History lives in Git; chronology is not law.
 
-## Current phase
+## Task routing
 
-@refoundation/ACTIVE-PHASE.yaml
+Task state is not mirrored in a repository phase file. Resolve it from GitHub Issue #1: **latest `K` -> active `T`**.
 
 ## Roles
 
@@ -20,7 +20,7 @@ It is current operating law only. History lives in Git; chronology is not law.
 1. Durable repository + GitHub state.
 2. **GitHub Issue #1** — the Manager/Worker control plane: the **latest `K`**
    names the active `T`.
-3. `refoundation/` current-state files (phase context, not task authority).
+3. Task-specific subsystem authority/evidence explicitly named by the selected `T`.
 
 Chat, session memory, scrollback and prior-session claims are **not** authority.
 Neither is a filename, a date in a filename, or an mtime.

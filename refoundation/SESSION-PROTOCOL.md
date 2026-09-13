@@ -19,9 +19,9 @@ state.
 Seven kinds, deliberately not collapsed. Confusing them is how evidence gets
 promoted to law by accident.
 
-- **STATE** — what is true right now: current phase, active task, controls,
-  authority pointers. Lives in `refoundation/ACTIVE-PHASE.yaml`. Replaced, never
-  appended.
+- **STATE** — selected task and accepted implementation state. The selector lives
+  in GitHub Issue #1 checkpoints: **latest `K` -> active `T`**. Repository files
+  must not mirror a second present-tense task/phase selector.
 - **TASK** — what exactly one Worker is authorized to do. A `T` on Issue #1,
   pinning base, objective, allow/deny scope, required validation, STOP
   conditions, delivery form, and successor authorization (normally `NONE`).
@@ -63,12 +63,11 @@ Captain's decisions enter the loop directly as `D` and outrank all of it.
 
 ## 4. Manager startup
 
-1. Read `refoundation/ACTIVE-PHASE.yaml` for current phase.
-2. Read Issue #1: the latest `K`, its active `T`, and the `X` under review.
-3. Verify recorded refs against live GitHub state.
-4. Inspect only the repository evidence that result needs.
-5. Mutate nothing until current state is understood.
-6. Issue at most one next task unless Captain says otherwise.
+1. Read Issue #1: resolve the latest valid `K`, its active `T`, and any `X` under review.
+2. Verify recorded refs against live GitHub state.
+3. Inspect only the repository evidence that result needs.
+4. Mutate nothing until current state is understood.
+5. Issue at most one next task unless Captain says otherwise.
 
 Status, hashes and PR numbers are **read from the Worker's `X`** by the Manager
 directly. Captain is not a courier and must not be asked to relay them.
