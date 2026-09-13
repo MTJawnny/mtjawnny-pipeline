@@ -1,0 +1,45 @@
+name: Objective 1 checksum record correction
+
+on:
+  push:
+    branches:
+      - architecture/objective1-foundry-common-preflight-complete-2026-09-12
+
+permissions:
+  contents: write
+
+jobs:
+  correct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: architecture/objective1-foundry-common-preflight-complete-2026-09-12
+          fetch-depth: 0
+      - name: Correct recorded Git-byte CSV digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('docs/architecture/preflight/S10-FOUNDRY-COMMON-PREFLIGHT-COMPLETION.md')
+          old = '0ec96b701668730522e44d0402015df0cd943140e033b753c0544924008117e0'
+          new = 'b60be70cef45fc03324452242f144f2cfb82d4638c0208408532dfa26ab53282'
+          text = p.read_text(encoding='utf-8')
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one stale digest, found {text.count(old)}')
+          text = text.replace(
+              f'- `S10-FOUNDRY-COMMON-IMPORTER-SYMBOL-MATRIX.csv`: `{old}`;',
+              f'- `S10-FOUNDRY-COMMON-IMPORTER-SYMBOL-MATRIX.csv`: `{new}` (SHA-256 of the exact LF bytes stored in Git; the previously recorded `{old}` is the hash of a CRLF-converted copy and is retained here only as provenance of the corrected recording defect);'
+          )
+          if old not in text or new not in text:
+              raise SystemExit('replacement/provenance assertion failed')
+          p.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+          git diff -- docs/architecture/preflight/S10-FOUNDRY-COMMON-PREFLIGHT-COMPLETION.md
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add docs/architecture/preflight/S10-FOUNDRY-COMMON-PREFLIGHT-COMPLETION.md
+          git commit -m 'preflight: correct Objective 1 CSV byte checksum'
+          git push origin HEAD:architecture/objective1-foundry-common-preflight-complete-2026-09-12
