@@ -1,0 +1,55 @@
+name: Objective 1 foundry_common census
+
+on:
+  push:
+    branches:
+      - evidence/objective1-foundry-common-census-2026-09-12
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact evidence branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record identities
+        run: |
+          mkdir -p objective1-evidence
+          git rev-parse HEAD | tee objective1-evidence/workflow-head.txt
+          git status --porcelain=v1 | tee objective1-evidence/pre-status.txt
+
+      - name: Run tracked-file census
+        run: |
+          python3 tools/objective1_foundry_common_census.py \
+            --json objective1-evidence/foundry-common-census.json \
+            --csv objective1-evidence/importer-symbol-matrix.csv \
+            | tee objective1-evidence/census-stdout.txt
+
+      - name: Run canonical Gate 2 without hiding result
+        shell: bash
+        run: |
+          set +e
+          python3 tests/guards/gate2/foundry_gate2.py > objective1-evidence/gate2-output.txt 2>&1
+          rc=$?
+          printf '%s\n' "$rc" > objective1-evidence/gate2-exit-code.txt
+          cat objective1-evidence/gate2-output.txt
+          echo "Gate 2 exit: $rc"
+          exit 0
+
+      - name: Record post-run tracked status
+        run: |
+          git status --porcelain=v1 | tee objective1-evidence/post-status.txt
+          git diff -- . ':(exclude)objective1-evidence/**' > objective1-evidence/tracked-diff-after.txt
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: objective1-foundry-common-census
+          path: objective1-evidence/
+          retention-days: 7
