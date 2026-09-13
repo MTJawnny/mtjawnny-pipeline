@@ -5,7 +5,7 @@ WHY THIS EXISTS. Three Captain-ratified DET patterns
 (rule:cant-be-blocked-by-power / -except-by-count / -as-long-as-state) sat
 unapplied from ratification until 2026-08-01 because no check ever compared
 the ratified stores against each other. The gap was WRITTEN DOWN the whole
-time -- docs/grammars.json's cant-be-blocked family records
+time -- config/semantic/grammars.json's cant-be-blocked family records
 `instantiated_members: 2` beside `virtual_nodes_example: 3` -- and nobody
 cross-read it against the codebook and the pattern file at the same time.
 Session 2a then proposed re-creating one of those axes from discounted llm
@@ -28,15 +28,15 @@ family's template cannot be inferred, the sweep says so rather than
 guessing -- an uninferable family is a finding, not a silent skip.
 
 The four ratified stores it cross-reads:
-  docs/grammars.json               -- ratified families, closed vocabularies
-  docs/det-patterns-v2.json        -- ratified deterministic patterns
+  config/semantic/grammars.json               -- ratified families, closed vocabularies
+  config/semantic/det-patterns-v2.json        -- ratified deterministic patterns
   experiments/out/foundry/codebook.json -- the axes that actually exist
   experiments/validate_slug.py     -- the naming validator's vocabularies
 
-Run:  python3 experiments/foundry_family_sweep.py
-      python3 experiments/foundry_family_sweep.py --strict   # exit 1 on ANY blocking
-      python3 experiments/foundry_family_sweep.py --gate     # 0 clean / 3 known debt / 1 mismatch
-      python3 experiments/foundry_family_sweep.py --selftest # rig the waiver red
+Run:  python3 tests/guards/gate2/foundry_family_sweep.py
+      python3 tests/guards/gate2/foundry_family_sweep.py --strict   # exit 1 on ANY blocking
+      python3 tests/guards/gate2/foundry_family_sweep.py --gate     # 0 clean / 3 known debt / 1 mismatch
+      python3 tests/guards/gate2/foundry_family_sweep.py --selftest # rig the waiver red
 """
 import re
 import sys
@@ -673,7 +673,7 @@ def run(include_proposed: bool):
 
     report = {
         "schema": "foundry-family-sweep/1",
-        "generated_by": "experiments/foundry_family_sweep.py",
+        "generated_by": "tests/guards/gate2/foundry_family_sweep.py",
         "codebook_sha256": fcb.sha256_of(fcb.CODEBOOK_PATH),
         "included_proposed_nodes": bool(extra_labels),
         "totals": {"findings": len(findings), **dict(sorted(by_sev.items()))},
