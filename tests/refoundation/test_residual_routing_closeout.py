@@ -70,7 +70,7 @@ class TestResidualRoutingCloseout(unittest.TestCase):
 
     def test_r8_3_has_one_canonical_live_statement(self):
         law = (REPO_ROOT / "docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md").read_text(encoding="utf-8")
-        self.assertIn("R8.3 — ratified that this axis is being AUTHORED properly via the DET path", law)
+        self.assertIn("**R8.3** — ratified that this axis is being AUTHORED properly via the DET path", law)
         self.assertNotIn("R8.3", (REPO_ROOT / "docs/B-CONSOLIDATION-REAUDIT-PACKET.md").read_text(encoding="utf-8"))
 
     def test_retired_reaudit_generator_fails_loudly(self):
