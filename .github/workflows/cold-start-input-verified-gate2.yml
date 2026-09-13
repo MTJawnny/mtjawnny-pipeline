@@ -40,3 +40,4 @@ jobs:
           name: exact-gate2-source-trees
           path: ${{ runner.temp }}/source-export/
           retention-days: 7
+          include-hidden-files: true
