@@ -27,6 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
+from mtj_foundry import codebook_membership as _membership  # noqa: E402
 
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 REPORT_PATH = fc.FOUNDRY_OUT_DIR / "gate0_scrub_report.json"
@@ -37,45 +38,19 @@ def main():
     codebook = fcb.load_codebook(CODEBOOK_PATH)
     axes = codebook["axes"]
 
-    report_entries = []
-    total_checked = 0
-    total_gated = 0
-    missing = []
-
-    for slug in sorted(axes.keys()):
-        entry = axes[slug]
-        members = entry.get("members", [])
-        if not members:
-            continue
-        kept, gated = [], []
-        for member in members:
-            oid = member["oracle_id"]
-            total_checked += 1
-            c = cards_all.get(oid)
-            if c is None:
-                missing.append((slug, oid))
-                kept.append(member)  # can't gate what we can't look up -- surfaced, not silently dropped
-                continue
-            if fc.gate_passes(c):
-                kept.append(member)
-            else:
-                gated.append({"oracle_id": oid, "name": c.get("name"), "set": c.get("set"),
-                              "assertions_dropped": len(member["assertions"])})
-        if gated:
-            total_gated += len(gated)
-            entry["members"] = kept
-            entry.setdefault("history", []).append({
-                "batch": 6, "action": "gate0_scrub",
-                "note": f"removed {len(gated)} nowhere-legal member(s) per batch-6 D1 Gate #0: "
-                        + ", ".join(f"{g['name']!r} [{g['set']}]" for g in gated),
-            })
-            report_entries.append({"slug": slug, "status": entry.get("status"),
-                                    "n_before": len(members), "n_after": len(kept),
-                                    "gated_members": gated})
-
-    if missing:
-        fc.halt(f"gate0 scrub: {len(missing)} member oracle_id(s) not found in raw corpus at all "
-                 f"(data drift, not a legality question) -- resolve by hand: {missing[:5]}...")
+    # S11: the Gate #0 membership rule -- walk every axis in slug order, drop a
+    # gated-out member whole, keep and surface an unknown card, log the history
+    # entry -- is `codebook_membership.scrub_gate0_members`. The load, the halt
+    # on data drift, the backup, the atomic write, the report file and the
+    # printed lines stay here.
+    try:
+        scrub = _membership.scrub_gate0_members(
+            axes, cards_all, lambda card: fc.gate_passes(card))
+    except _membership.Gate0ScrubError as error:
+        fc.halt(str(error))
+    report_entries = scrub["report_entries"]
+    total_checked = scrub["total_checked"]
+    total_gated = scrub["total_gated"]
 
     fcb.backup_codebook("pre-gate0-scrub")
     digest = fcb.write_codebook_atomic(CODEBOOK_PATH, codebook, "codebook.json")

@@ -47,6 +47,7 @@ import foundry_cr as fcr  # noqa: E402
 # bootstrap is what makes `mtj_foundry` importable from a loose script; this
 # module adds no bootstrap and no sys.path mutation of its own.
 from mtj_foundry import corpus as _corpus  # noqa: E402
+from mtj_foundry import codebook_coverage as _coverage  # noqa: E402
 
 # C8.5U: the codebook read comes from the permanent package, at the path the
 # layout owner states. The imports sit AFTER `foundry_common`, which is what
@@ -145,31 +146,16 @@ def coverage(reg: dict) -> None:
     the codebook at all.
     """
     cb = codebook_store.read(PATHS.legacy_codebook_json)
-    tokens = set()
-    for slug, e in cb["axes"].items():
-        if e.get("status") == "active":
-            tokens.update(slug.split(":", 1)[-1].split("-"))
+    # S11: the coverage SEMANTICS -- which slug tokens count and which keyword
+    # actions they leave uncovered -- are `mtj_foundry.codebook_coverage`'s. The
+    # read above, the corpus load, the Gate-0 filter and every printed line stay
+    # here.
+    tokens = _coverage.slug_body_tokens(cb["axes"])
     cards, _ = fc.load_corpus()
     gated = [c for c in cards.values() if _corpus.is_gate0_eligible(c)]
 
-    def card_text(c):
-        t = c.get("oracle_text") or ""
-        if not t and c.get("card_faces"):
-            t = "\n".join(f.get("oracle_text", "") for f in c["card_faces"])
-        return t
-
-    missing = []
-    for r in reg["terms"]:
-        if r["kind"] != "keyword-action":
-            continue
-        head = r["term"].split()[0]
-        if head in tokens:
-            continue
-        n = sum(1 for c in gated
-                if re.search(rf"\b{re.escape(r['term'])}\b", card_text(c), re.I))
-        missing.append((n, r["term"], r["cr"]))
-    missing.sort(reverse=True)
-    n_actions = sum(1 for r in reg["terms"] if r["kind"] == "keyword-action")
+    missing = _coverage.uncovered_keyword_actions(reg, tokens, gated)
+    n_actions = _coverage.keyword_action_count(reg)
     print(f"CR keyword actions        : {n_actions}")
     print(f"  modelled by some axis   : {n_actions - len(missing)}")
     print(f"  NO axis token           : {len(missing)}")

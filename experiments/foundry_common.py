@@ -67,6 +67,10 @@ from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 # replacing an owner's function at run time must still reach every consumer that
 # comes through here (the S7 substitution law, WB4).
 from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
+# S11: the DET pattern ROLE predicates are codebook ontology and now have their
+# one definition in `mtj_foundry.codebook_det_patterns`. Same facade shape as
+# S10: call-time delegation, no copy.
+from mtj_foundry import codebook_det_patterns as _det_patterns  # noqa: E402
 
 FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
 REVIEW_DIR = _PATHS.legacy_foundry_review
@@ -96,61 +100,27 @@ def halt(message: str) -> None:
 
 
 # --- DET pattern roles -------------------------------------------------
-# A ratified DET pattern is one of exactly two things:
-#
-#   AXIS-BEARING  its slug names a codebook axis whose membership it
-#                 decides. It MUST have an active axis to apply to.
-#   PRE-FILTER    a Lane-1 net that narrows the corpus for a family and
-#                 is never a classifier, e.g.
-#                 "rule:energy-<family> pre-filter (spends {E})".
-#
-# The role is carried in the slug text itself. These two helpers are the
-# SINGLE definition of that fact. foundry_det_pass and
-# foundry_family_sweep both read them from here; each previously derived
-# the distinction independently, and that duplication is precisely how
-# three ratified patterns sat orphaned and unapplied for weeks — the
-# det pass silently demoted them to "prefilter" because they had no axis,
-# which is the same shape as having been declared a prefilter.
+# S11: the single definition of a ratified DET record's role (AXIS-BEARING /
+# PRE-FILTER / LATTICE) lives in `mtj_foundry.codebook_det_patterns`, with its
+# rationale. These names are COMPATIBILITY FACADES that delegate at call time.
+# S11 repointed the codebook-facing callers (`foundry_det_pass` through the
+# resolution owner, and `foundry_family_sweep`) at the owner, so no live caller
+# reaches these three any more; they stay only until retirement is reviewed.
 
 
 def is_prefilter_pattern(pattern: dict) -> bool:
-    """True iff this ratified pattern is a deliberate Lane-1 pre-filter."""
-    return "pre-filter" in pattern["slug"]
+    """S11 COMPATIBILITY FACADE for `codebook_det_patterns.is_prefilter_pattern`."""
+    return _det_patterns.is_prefilter_pattern(pattern)
 
 
 def is_lattice_pattern(pattern: dict) -> bool:
-    """True iff this ratified record is a LATTICE matcher -- one matcher that
-    yields N concrete axes at match time, rather than one pattern owning one
-    axis.
-
-    **ITS SLUG IS A GRAMMAR TEMPLATE, NOT AN AXIS NAME.**
-    `rule:targeted-<action>-<class>` carries facet placeholders and can never
-    be a concrete codebook axis; the axes it produces are
-    `rule:targeted-destroy-creature` and its siblings, instantiated under
-    `b6 sec.11.2` (*"virtual nodes instantiate on first quote-verified member,
-    no fresh ratification"*). A `pattern` of `null` is the other half of the
-    same shape: there is no single regex to run.
-
-    **THIS LIVES HERE SO THERE IS EXACTLY ONE DEFINITION.** It was
-    `foundry_det_pass.is_lattice_pattern` alone, and `foundry_family_sweep`
-    -- which does not import that module -- applied the ordinary
-    one-pattern/one-axis orphan law to the lattice record and reported a
-    BLOCKING `ratified-pattern-has-no-axis` for a slug that is virtual BY
-    DESIGN. That is this repository's most expensive recurring defect (*"a
-    hand-maintained MIRROR of a ratified record is trusted as the record"*)
-    aimed at the sweep that exists to catch it. `foundry_det_pass` now
-    delegates here; nothing re-derives the concept.
-
-    Deliberately keyed on the RECORD'S SHAPE, never on the literal slug: a
-    second lattice family ratified tomorrow is covered without an edit, which
-    is the sweep's own self-calibration rule.
-    """
-    return isinstance(pattern.get("lattice"), dict)
+    """S11 COMPATIBILITY FACADE for `codebook_det_patterns.is_lattice_pattern`."""
+    return _det_patterns.is_lattice_pattern(pattern)
 
 
 def pattern_slug(pattern: dict) -> str:
-    """The bare `rule:` slug, stripped of parenthetical/qualifier text."""
-    return pattern["slug"].split(" (")[0].split(" ")[0]
+    """S11 COMPATIBILITY FACADE for `codebook_det_patterns.pattern_slug`."""
+    return _det_patterns.pattern_slug(pattern)
 
 
 # A DET pattern is matched against det_scan_texts() output, in which a card's

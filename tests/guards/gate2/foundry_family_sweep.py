@@ -61,6 +61,11 @@ import validate_slug  # noqa: E402
 # module adds no bootstrap and no sys.path mutation of its own.
 from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
 from mtj_foundry.infra import artifact as _artifact  # noqa: E402
+# S11: a ratified DET record's ROLE (pre-filter / lattice) and its bare slug are
+# read from their one definition, `mtj_foundry.codebook_det_patterns`. This
+# guard used to reach them through `foundry_common` and, in `load_stores`, to
+# re-derive the slug inline -- a second copy of the exact expression.
+from mtj_foundry import codebook_det_patterns as _det_patterns  # noqa: E402
 
 GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
@@ -97,11 +102,11 @@ def load_stores():
     for p in det_raw:
         if p.get("status") != "ratified":
             continue
-        slug = p["slug"].split(" (")[0].split(" ")[0]
+        slug = _det_patterns.pattern_slug(p)
         # A pattern whose slug text is marked "(pre-filter)" is Lane-1
         # machinery with no axis of its own; anything else is an axis pattern.
-        det[slug] = dict(p, is_prefilter=fc.is_prefilter_pattern(p),
-                         is_lattice=fc.is_lattice_pattern(p))
+        det[slug] = dict(p, is_prefilter=_det_patterns.is_prefilter_pattern(p),
+                         is_lattice=_det_patterns.is_lattice_pattern(p))
     return grammars, det, codebook
 
 
@@ -927,10 +932,12 @@ def selftest() -> int:
                "lattice": {"module": "foundry_object_lattice"}}
     ordinary = {"slug": "rule:ordinary-orphan", "pattern": "x",
                 "pattern_index": 998, "corpus_hits": 1, "status": "ratified"}
-    check("foundry_common recognises the lattice record by SHAPE",
-          fc.is_lattice_pattern(lattice) and not fc.is_lattice_pattern(ordinary))
-    det = {fc.pattern_slug(p): dict(p, is_prefilter=fc.is_prefilter_pattern(p),
-                                   is_lattice=fc.is_lattice_pattern(p))
+    check("the pattern-role owner recognises the lattice record by SHAPE",
+          _det_patterns.is_lattice_pattern(lattice)
+          and not _det_patterns.is_lattice_pattern(ordinary))
+    det = {_det_patterns.pattern_slug(p): dict(
+               p, is_prefilter=_det_patterns.is_prefilter_pattern(p),
+               is_lattice=_det_patterns.is_lattice_pattern(p))
            for p in (lattice, ordinary)}
     got = {(f["kind"], f["subject"]) for f in check_a1_orphans(det, codebook={})}
     check("the ORDINARY orphan is still BLOCKING (the law is not weakened)",

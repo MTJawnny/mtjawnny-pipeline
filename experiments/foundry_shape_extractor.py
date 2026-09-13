@@ -393,17 +393,19 @@ def cmd_rank(args, cards, ratified, actions):
 
 
 def codebook_covered_actions() -> set:
-    """Which CR action words already appear in an active axis slug."""
+    """Which CR action words already appear in an active axis slug.
+
+    S11: the tokenization is `mtj_foundry.codebook_coverage.covered_action_tokens`.
+    The read and its `except Exception` fallback stay HERE, unchanged: the
+    accepted consumer analysis pins exactly that handler around exactly that
+    read."""
     try:
         import foundry_codebook as fcb
         cb = fcb.load_codebook()
     except Exception:
         return set()
-    toks = set()
-    for slug, e in cb["axes"].items():
-        if e.get("status") == "active":
-            toks.update(slug.replace("rule:", "").split("-"))
-    return toks
+    from mtj_foundry import codebook_coverage as _coverage
+    return _coverage.covered_action_tokens(cb["axes"])
 
 
 def main():

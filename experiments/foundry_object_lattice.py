@@ -122,6 +122,13 @@ PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
 # boundary supplies them -- at import, in the same place and the same order.
 from mtj_foundry.mtg.shapes import target_classes as _tc  # noqa: E402
 
+# S11: the CODEBOOK half of the lattice -- `rule:targeted-*` identity, the
+# ratified membership floor and its verdict, vocabulary agreement and the
+# baseline metrics -- is `mtj_foundry.codebook_lattice`'s. The names below keep
+# their legacy shapes (no-argument reads of this boundary's CR, corpus and
+# ratified pattern file) and delegate; the halt boundary stays here.
+from mtj_foundry import codebook_lattice as _lattice  # noqa: E402
+
 LatticeError = _tc.LatticeError
 
 # THE RATIFIED DET PREPROCESSING, INJECTED. `det_scan_texts` is
@@ -141,7 +148,7 @@ def _halting(fn):
     def wrapper(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except LatticeError as exc:
+        except (LatticeError, _lattice.LatticeGovernanceError) as exc:
             fc.halt(str(exc))
     return wrapper
 
@@ -199,24 +206,13 @@ def anchor_coverage(anchors, cards: dict = None) -> dict:
 
 
 def _assert_vocabulary_agrees() -> None:
-    """Three sources, asserted against each other. CR 110.4 must be a subset of
-    CR 205.2a (a permanent type is a card type), and every permanent type must
-    already be a ratified grammar §5 OBJECT token — otherwise this module would
-    be about to emit a slug out of vocabulary the grammar never ratified.
+    """Three sources, asserted against each other, BEFORE the subtype map is built.
 
-    It stays HERE, not in the substrate: `validate_slug.OBJECT_VOCAB` is
-    ratification governance, and a check that an emitted SLUG is in vocabulary
-    belongs with the emitter."""
+    S11: the agreement law is `codebook_lattice.assert_vocabulary_agrees`. This
+    boundary supplies its three inputs -- CR 110.4 and CR 205.2a from its CR
+    edition, and `validate_slug.OBJECT_VOCAB` -- exactly as it did."""
     perms, cards_ = permanent_types(), card_types()
-    if not perms <= cards_:
-        fc.halt(f"CR 110.4 names permanent type(s) absent from CR 205.2a: "
-                f"{sorted(perms - cards_)}")
-    missing = sorted(perms - set(vs.OBJECT_VOCAB))
-    if missing:
-        fc.halt(f"CR 110.4 permanent type(s) {missing} are not in the ratified "
-                f"grammar §5 OBJECT vocabulary (validate_slug.OBJECT_VOCAB). "
-                f"Emitting a class slug for them would mint vocabulary; that "
-                f"is a ratification, not a code change.")
+    _halting(_lattice.assert_vocabulary_agrees)(perms, cards_, vs.OBJECT_VOCAB)
 
 
 # THE GUARD FIRES IN ITS ORIGINAL ORDER, before the subtype map is built —
@@ -239,17 +235,9 @@ _CONJUNCTIVE_RE = _tc._CONJUNCTIVE_RE
 def slug_for(stem: str, cls: str = None) -> str:
     """`rule:targeted-destroy` / `rule:targeted-destroy-creature`.
 
-    NOTE THE SPELLING. Grammar §5 line 651 still writes the lattice
-    `targeted-destruction-<class>`, the PRE-RENAME form: `targeted-destruction`
-    became `targeted-destroy` on 2026-08-09 (A15 ruling §6c) and §7 item 2 of
-    that doc logs the grammar's stale spelling as open drift. The live axis is
-    the authority, so this emits `-destroy-`; the grammar line needs a G4
-    generator fix, not this module bending to it.
-
-    Axis IDENTITY is the codebook's, never the MTG substrate's, so this stays
-    above L2 whatever else moves."""
-    base = f"rule:targeted-{stem}"
-    return base if cls is None else f"{base}-{cls}"
+    S11 COMPATIBILITY FACADE for `mtj_foundry.codebook_lattice.slug_for`, which
+    owns axis identity (and the note on the `-destroy-` spelling)."""
+    return _lattice.slug_for(stem, cls)
 
 
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
@@ -258,122 +246,32 @@ DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 def ratified_total() -> int:
     """The membership total the RATIFIED, TRACKED pattern row asserts.
 
-    **THE LOCAL RATCHET CANNOT BE THE MEMBERSHIP FLOOR, BECAUSE IT IS NOT
-    TRACKED.** Measured 2026-08-13: `experiments/out/` is gitignored, so
-    `audit-baseline.json` is per-machine; `foundry_audit_baseline.report()`
-    returns 0 when a section is unpinned, and `--gate` on a fresh clone printed
-    `object lattice gate GREEN` having compared nothing. A guard that is absent
-    by default on every new checkout is a local diagnostic, not a standing
-    regression gate.
-
-    `docs/det-patterns-v2.json` is tracked, reviewed and ratified, and its
-    lattice row already carries the reviewed population as `corpus_hits`. So
-    the floor is read from there rather than duplicated: one source of truth,
-    already in git, already the thing Captain ratified.
-
-    **`foundry_recorded_numbers.py` is the precedent** — Gate 2 row 11 does
-    exactly this for the counts grammar §2 asserts, on the same reasoning:
-    *"a wrong count there is not a stale note in a handoff, it is a wrong
-    premise inside the document the extractor parses at run time."*
-    """
-    row = None
+    S11: the law (and why the local ratchet cannot be the floor) is
+    `codebook_lattice.ratified_total`. This boundary reads its tracked pattern
+    file and hands the document over."""
     doc = json.loads(DET_PATTERNS_PATH.read_text(encoding="utf-8"))
-    for p in doc.get("patterns", []):
-        if isinstance(p.get("lattice"), dict):
-            row = p
-            break
-    if row is None:
-        fc.halt(f"{DET_PATTERNS_PATH.name} carries no lattice row, so the "
-                f"ratified membership total cannot be read. The lattice's "
-                f"floor is the RATIFIED number, never a locally pinned one; "
-                f"a missing row halts rather than falling back.")
-    stems = set(row["lattice"]["stems"])
-    if stems != set(ACTION_VERBS):
-        fc.halt(f"the ratified lattice row covers {sorted(stems)} but this "
-                f"module implements {sorted(ACTION_VERBS)}. The asserted total "
-                f"counts a different population than the one measured here.")
-    total = row.get("corpus_hits")
-    if not isinstance(total, int):
-        fc.halt(f"the ratified lattice row's corpus_hits is {total!r}, not an "
-                f"integer. It is the membership floor and cannot be absent.")
-    return total
+    return _halting(_lattice.ratified_total)(doc, DET_PATTERNS_PATH.name)
 
 
 def assert_ratified_total() -> tuple:
     """Live memberships vs the ratified total. A FALL is fatal; a RISE reports.
 
-    Returns `(fatal, notes)`.
-
-    **`corpus_hits` IS A MEASUREMENT AT PROBE TIME, NOT AN EQUALITY
-    INVARIANT**, and an earlier version of this function got that wrong. Three
-    independent pieces of repository evidence, measured 2026-08-13:
-
-      * **three ratified patterns have already drifted from their recorded
-        `corpus_hits` and Gate 2 is green** — `grants-unblockable-target` 35→34,
-        `innate-unblockable` 183→184, `activated-grants-self-unblockable`
-        25→26. Nothing in the repo asserts equality on this field, and never
-        has. (`enters-tapped` and `imposes-enters-tapped` look far more drifted
-        and are NOT: they are decided by `compute_special_hits`'s G2 subject
-        split, so reading their `pattern` field measures the wrong thing.)
-      * the sibling field is named **`codebook_n_members_at_probe`** — the
-        `_at_probe` suffix is the schema saying point-in-time out loud.
-      * the file's own `preprocessing_standard` records these counts BEING
-        UPDATED on re-probe: *"Re-probing all patterns under this standard
-        changed 5 hit counts … innate-unblockable (161->183)"*.
-
-    So equality would freeze normal corpus growth: measured, a mere **+12 new
-    cards** joining `destroy-creature` turned the gate RED on a fresh
-    environment, which is a false alarm on the pipeline's ordinary weekly job.
-
-    The direction is what carries the meaning, and that is not invented here —
-    it is `foundry_audit_baseline`'s own ratchet semantics (`WORSE_IF_DOWN`
-    fatal, better-direction movement reported) applied to a number that lives
-    in git instead of in an ignored file. A FALL is the 2026-08-13 incident. A
-    RISE is the corpus growing, and it is reported so a session states it
-    rather than carrying it forward.
-
-    **THIS TOTAL IS STRUCTURALLY BLIND TO REDISTRIBUTION.** A compensating
-    −7/+7 across two classes nets zero and passes here; measured, on a fresh
-    environment with no pinned section, the whole gate goes GREEN. That is the
-    per-class ratchet's job and it is LOCAL. See §8b of
-    docs/OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md — the gap is recorded,
-    not silently closed, because per-class tracked counts would be exactly the
-    stronger invariant this docstring just disproved.
-    """
+    Returns `(fatal, notes)`. S11: the verdict is
+    `codebook_lattice.ratified_total_verdict`; the live count is measured here,
+    over this boundary's gated corpus, exactly as before."""
     want = ratified_total()
     live = sum(measure(stem, PERMANENT_TYPES)["memberships"]
                for stem in sorted(ACTION_VERBS))
-    if live == want:
-        return [], []
-    msg = (f"det-patterns-v2.json lattice row asserts {want:,} memberships; "
-           f"the producer now yields {live:,} ({live - want:+,}). ")
-    if live < want:
-        return [msg + "MEMBERSHIPS WERE LOST. Re-review the sample sheet and "
-                      "re-ratify corpus_hits on purpose — never edit the "
-                      "number to match the code."], []
-    return [], [msg + "Corpus growth or a recall improvement; the ratified row "
-                      "is now stale. Re-review and re-pin corpus_hits when the "
-                      "growth is accounted for."]
+    return _lattice.ratified_total_verdict(want, live)
 
 
 def baseline_metrics() -> dict:
     """Per-class membership counts, residual, and unexplained residual.
 
-    **THE MEMBERSHIP COUNTS ARE PINNED SO THAT A REMOVAL IS FATAL.** They carry
-    the `memberships` marker, which `foundry_audit_baseline.WORSE_IF_DOWN`
-    reads, so a count that FALLS is a regression and has to be re-pinned on
-    purpose. That is the half of the diff nothing watched: `e780842` removed
-    170 memberships, verified 83, and the other 87 shipped unread.
-    """
-    memberships, residual, unexplained = {}, {}, {}
-    for stem in sorted(ACTION_VERBS):
-        m = measure(stem, PERMANENT_TYPES)
-        memberships[stem] = {cls: n for cls, n in sorted(m["per_class"].items())}
-        residual[stem] = len(m["residual"])
-        unexplained[stem] = len(
-            residual_invariant(stem, PERMANENT_TYPES)["unexplained"])
-    return {"memberships": memberships, "residual": residual,
-            "residual_unexplained": unexplained}
+    S11: computed by `codebook_lattice.baseline_metrics` over this boundary's
+    gated corpus and CR-derived permanent types."""
+    cards, _, _ = fc.load_corpus_gated()
+    return _halting(_lattice.baseline_metrics)(cards, PERMANENT_TYPES)
 
 
 def audit(stem: str, domain: set) -> dict:

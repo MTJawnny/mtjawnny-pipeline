@@ -143,6 +143,12 @@ import foundry_common as fc                    # noqa: E402
 # the historic `STOP — …` process contract for every legacy caller.
 from mtj_foundry.mtg.shapes import locality as _locality  # noqa: E402
 
+# S11: the CODEBOOK-FACING binding of that law -- the census and the unaddressed
+# walk over live assertions -- is `mtj_foundry.codebook_locality`. It takes the
+# resolver as an argument, so the injection above is still the only route to the
+# card primitives.
+from mtj_foundry import codebook_locality as _binding  # noqa: E402
+
 LocalityError = _locality.LocalityError
 
 # THE CARD-TEXT PRIMITIVES, INJECTED. The shared face reader and the ratified
@@ -189,93 +195,15 @@ del _name, _obj
 def census(cards, codebook_path=None) -> dict:
     """Coverage over every live assertion, with EXACT denominators.
 
-    Reports owner coverage and evidence-location coverage SEPARATELY. They are
-    different questions and the pre-implementation check exists because
-    substituting one for the other is how a broad quote comes to look owned.
+    S11: the binding is `mtj_foundry.codebook_locality.census`. This shell reads
+    the codebook (raw JSON, unchanged) and injects ITS OWN `resolve` -- the S7
+    law behind this module's halt boundary, looked up when the census runs -- so
+    every route the Gate-2 locality controls rig is still the route measured.
     """
     import json
     path = codebook_path or (fc.FOUNDRY_OUT_DIR / "codebook.json")
     cb = json.loads(Path(path).read_text(encoding="utf-8"))
-    m = {"assertions": 0, "quoted": 0, "quoteless": 0,
-         "owned": 0, "span": 0, "ambiguous": 0, "unresolved": 0,
-         # STORED coverage, added with the step-4 backfill. Everything above
-         # measures what the resolver CAN address; these two measure what the
-         # codebook actually CARRIES, and the difference is not academic:
-         # measured 2026-08-13, deleting all 7,808 stored addresses left every
-         # one of Gate 2's 15 rows green, because a census computed from quotes
-         # reproduces itself perfectly on a file with the field stripped out.
-         # The migration's entire product was unguarded by the gate that
-         # exists to guard it.
-         #
-         # Marker choice is deliberate and collision-checked against every
-         # pinned section, per the trap the handoff records: `stored_owned`
-         # resolves WORSE_IF_DOWN through the pre-existing "owned" marker and
-         # `stored_mismatch` resolves WORSE_IF_UP through "mismatch", so
-         # neither needs a new marker and neither changes another consumer's
-         # semantics as a side effect.
-         "stored_owned": 0, "stored_mismatch": 0,
-         # THE THIRD QUESTION, AND THE ONE NEITHER OTHER METRIC CAN ANSWER.
-         # An assertion the resolver addresses to exactly one OWNER, whose
-         # stored `locality` is ABSENT. Correct value: 0.
-         #
-         # The regression it exists for: someone removes or fails to write
-         # locality on an assertion that is still perfectly deterministically
-         # addressable. `stored_owned` can stay FLAT through that, because
-         # corpus growth adds addressed rows at the same time it loses one --
-         # a ratchet on a total cannot see a compensated loss, which is the
-         # object lattice's own open -7/+7 gap in a different field.
-         # `stored_mismatch` stays 0 because no INCORRECT coordinate was
-         # stored; absence is not disagreement. Only a per-assertion join of
-         # "is addressable" against "is addressed" catches it.
-         #
-         # EXCLUSIONS, all four by ratification rather than convenience:
-         # AMBIGUOUS, SPAN, UNRESOLVED and quoteless assertions are NOT
-         # missing. The resolver declines to address them, so an absent
-         # address is the correct and required state -- counting them here
-         # would make the ratified unaddressed rule read as 122 permanent
-         # defects. Tombstone (non-active) axes stay outside the active-axis
-         # locality contract, unchanged.
-         "addressable_missing": 0}
-    for slug, axis in cb["axes"].items():
-        if axis.get("status") != "active":
-            continue
-        for member in axis.get("members") or []:
-            card = cards.get(member["oracle_id"])
-            for a in member["assertions"]:
-                m["assertions"] += 1
-                q = a.get("quote")
-                stored = a.get("locality")
-                if stored is not None:
-                    m["stored_owned"] += 1
-                if not q:
-                    m["quoteless"] += 1
-                    # A stored address with no quote is unfalsifiable; lint
-                    # already rejects it, so reaching here is a mismatch.
-                    if stored is not None:
-                        m["stored_mismatch"] += 1
-                    continue
-                m["quoted"] += 1
-                if card is None:
-                    m["unresolved"] += 1
-                    if stored is not None:
-                        m["stored_mismatch"] += 1
-                    continue
-                r = resolve(card, q)
-                m[{OWNER: "owned", SPAN: "span", AMBIGUOUS: "ambiguous",
-                   UNRESOLVED: "unresolved"}[r["status"]] ] += 1
-                # An address is SNAPSHOT-RELATIVE. When the corpus moves under
-                # stored evidence, the ratified rule is that the change is
-                # REPORTED, never silently reattached -- so this counts rather
-                # than repairs.
-                if stored is not None and (
-                        r["status"] != OWNER or list(r["owner"]) != list(stored)):
-                    m["stored_mismatch"] += 1
-                # Addressable but unaddressed. Deliberately keyed on OWNER
-                # only, so the four unaddressed-by-rule statuses can never
-                # reach it.
-                if r["status"] == OWNER and stored is None:
-                    m["addressable_missing"] += 1
-    return m
+    return _binding.census(cards, cb, resolve)
 
 
 # --------------------------------------------------------------------------
@@ -324,49 +252,13 @@ _REASON_NOTES = {
 def unaddressed_rows(cards, codebook_path=None) -> list:
     """Every live assertion the backfill will NOT address, with its reason.
 
-    Deterministically ordered: (reason, slug, oracle_id, class, source_ref).
-    Nothing here reads a card name as a code path -- names are carried for the
-    human reading the sheet.
+    S11: the binding is `mtj_foundry.codebook_locality.unaddressed_rows`, fed
+    this shell's codebook read and its own `resolve`, exactly as `census`.
     """
     import json
     path = codebook_path or (fc.FOUNDRY_OUT_DIR / "codebook.json")
     cb = json.loads(Path(path).read_text(encoding="utf-8"))
-    rows = []
-    for slug, axis in cb["axes"].items():
-        if axis.get("status") != "active":
-            continue
-        for member in axis.get("members") or []:
-            oid = member["oracle_id"]
-            card = cards.get(oid)
-            for a in member["assertions"]:
-                q = a.get("quote")
-                if not q:
-                    reason, detail, cands = "QUOTELESS", (
-                        "assertion carries no evidence quote"), []
-                elif card is None:
-                    reason, detail, cands = "UNRESOLVED", (
-                        "oracle_id is not in the gated corpus"), []
-                else:
-                    r = resolve(card, q)
-                    if r["status"] == OWNER:
-                        continue
-                    reason = r["status"]
-                    detail = r["reason"]
-                    cands = [list(c) for c in r["candidates"]]
-                rows.append({
-                    "reason": reason,
-                    "axis": slug,
-                    "oracle_id": oid,
-                    "card": (card or {}).get("name", "(not in corpus)"),
-                    "class": a.get("class"),
-                    "source_ref": a.get("source_ref"),
-                    "quote": q or "",
-                    "candidates": cands,
-                    "detail": detail,
-                })
-    rows.sort(key=lambda r: (r["reason"], r["axis"], r["oracle_id"],
-                             r["class"] or "", r["source_ref"] or ""))
-    return rows
+    return _binding.unaddressed_rows(cards, cb, resolve)
 
 
 def render_unaddressed_md(rows: list, totals: dict) -> str:

@@ -248,10 +248,7 @@
       "det_scan_texts",
       "full_oracle_text",
       "halt",
-      "is_lattice_pattern",
-      "is_prefilter_pattern",
       "load_corpus_gated",
-      "pattern_slug",
       "write_json"
     ],
     "experiments/foundry_det_patterns_probe.py": [
@@ -435,10 +432,7 @@
       "CONFIG_SEMANTIC",
       "FOUNDRY_OUT_DIR",
       "halt",
-      "is_lattice_pattern",
-      "is_prefilter_pattern",
-      "pattern_misses_cardname_token",
-      "pattern_slug"
+      "pattern_misses_cardname_token"
     ],
     "tests/guards/gate2/foundry_gate_audit.py": [
       "load_corpus",
@@ -529,8 +523,29 @@
       "halt",
       "is_mode_line",
       "raw_faces"
+    ],
+    "tests/refoundation/test_s11_codebook_kernel.py": [
+      "canonicalize_self_reference",
+      "is_lattice_pattern",
+      "is_prefilter_pattern",
+      "load_corpus",
+      "pattern_slug",
+      "raw_faces"
     ]
   },
   "schema": "mtj-s10-foundry-common-callers/1",
-  "what": "Reviewed live foundry_common caller topology after S10, recomputed by tests/refoundation/test_s10_card_text_owners.py::caller_census from git ls-files + AST (imports, qualified attributes, getattr/setattr/hasattr, string-bound provider names). Archive paths are measured separately and never counted as live."
+  "what": "Reviewed live foundry_common caller topology after S10, recomputed by tests/refoundation/test_s10_card_text_owners.py::caller_census from git ls-files + AST (imports, qualified attributes, getattr/setattr/hasattr, string-bound provider names). Archive paths are measured separately and never counted as live.",
+  "s11_amendment": {
+    "head_base": "8886a86f8a2da90bd9b0bd71fc4b33213abc9250",
+    "live_importers": {
+      "before": 87,
+      "after": 88
+    },
+    "rows_changed": {
+      "experiments/foundry_det_pass.py": "dropped is_lattice_pattern, is_prefilter_pattern, pattern_slug -- now read from mtj_foundry.codebook_det_patterns via codebook_det_resolution",
+      "tests/guards/gate2/foundry_family_sweep.py": "dropped is_lattice_pattern, is_prefilter_pattern, pattern_slug -- now read from mtj_foundry.codebook_det_patterns",
+      "tests/refoundation/test_s11_codebook_kernel.py": "NEW S11 guard; imports the facade to prove call-time delegation and the S7 law"
+    },
+    "rule": "every other row is byte-for-byte the S10 pin; a lower count is not the success metric"
+  }
 }

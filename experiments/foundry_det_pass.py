@@ -47,40 +47,42 @@ import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
 import foundry_det_patterns_probe as probe  # noqa: E402
 import foundry_locality as fl  # noqa: E402
-import re  # noqa: E402
 
 # S7: the two PURE text matchers moved to `mtj_foundry.mtg.text_match`. They
 # know a regex and a list of strings and nothing else, so they are the only part
 # of this file that is substrate. Everything else here -- DET record roles,
-# pattern resolution, the lattice, samples, apply/write -- is later-slice work
-# and is deliberately untouched. NO SECOND IMPLEMENTATION REMAINS HERE.
+# pattern resolution, the lattice, samples, apply/write -- was later-slice work
+# and S7 left it untouched. NO SECOND IMPLEMENTATION REMAINS HERE.
 from mtj_foundry.mtg import text_match as _text_match  # noqa: E402
+
+# S11: the codebook-facing semantics this shell used to DEFINE now have permanent
+# owners -- DET record roles and the enters-tapped quote base
+# (`codebook_det_patterns`), pattern -> ACTIVE-axis resolution
+# (`codebook_det_resolution`), lattice instantiation (`codebook_lattice`), and
+# the in-memory A8 application (`codebook_det_apply`). What stays here is the
+# operator shell: file reads, the hit cache, the sample sheets, the verdict
+# gate, the backup, the atomic write, every print, and the historic `STOP — …`
+# process boundary, which the wrappers below re-establish around each owner's
+# typed refusal. `det_locality_owner` and the samples stay too: they are review
+# orchestration (S13), not codebook semantics.
+from mtj_foundry import codebook as _codebook  # noqa: E402
+from mtj_foundry import codebook_det_apply as _det_apply  # noqa: E402
+from mtj_foundry import codebook_det_patterns as _det_patterns  # noqa: E402
+from mtj_foundry import codebook_det_resolution as _det_resolution  # noqa: E402
+from mtj_foundry import codebook_lattice as _lattice  # noqa: E402
+from mtj_foundry.mtg.shapes import target_classes as _target_classes  # noqa: E402
 
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
 CODEBOOK_PATH = fc.FOUNDRY_OUT_DIR / "codebook.json"
 SAMPLES_REPORT_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_samples_report.json"
 SAMPLES_REPORT_MD_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_samples_report.md"
 HITS_CACHE_PATH = fc.FOUNDRY_OUT_DIR / "det_pass_full_hits.json"
-BATCH_LABEL = "det-pass-1"
+BATCH_LABEL = _det_apply.BATCH_LABEL
 
 
-# Ratified AXIS-BEARING patterns that legitimately have no axis yet, each
-# with the Captain ruling that authorises the gap. Anything ratified,
-# axis-bearing and axis-less that is NOT listed here HALTS.
-#
-# EMPTY THIS LIST as session 4 creates each axis — a stale entry here
-# re-opens exactly the hole this guard closes.
-RULED_AXISLESS_PATTERNS = {
-    "rule:cant-be-blocked-by-power":
-        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
-        "(57 corpus hits)",
-    "rule:cant-be-blocked-except-by-count":
-        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
-        "(10 corpus hits)",
-    "rule:cant-be-blocked-as-long-as-state":
-        "ADD-01 Option A, Captain-ruled 2026-08-01 — DET path, session 4 "
-        "(18 corpus hits)",
-}
+# S11: the Captain-ruled axis-less register is the resolution owner's, and this
+# is the SAME dict object -- edit it there, not here.
+RULED_AXISLESS_PATTERNS = _det_resolution.RULED_AXISLESS_PATTERNS
 
 
 # --------------------------------------------------------------------------
@@ -100,15 +102,14 @@ RULED_AXISLESS_PATTERNS = {
 # --------------------------------------------------------------------------
 
 def is_lattice_pattern(p: dict) -> bool:
-    """Delegates to `foundry_common`, which owns the single definition.
+    """Delegates to `mtj_foundry.codebook_det_patterns`, the single definition.
 
-    It moved there 2026-08-14 because `foundry_family_sweep` needs the same
-    concept and does not import this module -- so the sweep applied the
-    ordinary one-pattern/one-axis orphan law to a lattice record and minted a
-    false BLOCKING finding. Kept as a name here because this module's own
-    call site and its docs refer to it.
+    One definition exists because `foundry_family_sweep` needs the same concept
+    and does not import this module -- a second copy once applied the ordinary
+    one-pattern/one-axis orphan law to a lattice record and minted a false
+    BLOCKING finding. Kept as a name here because this module's docs refer to it.
     """
-    return fc.is_lattice_pattern(p)
+    return _det_patterns.is_lattice_pattern(p)
 
 
 def assert_lattice_invariant(p: dict) -> None:
@@ -149,113 +150,53 @@ def assert_lattice_invariant(p: dict) -> None:
 
     for stem in p["lattice"]["stems"]:
         r = ol.residual_invariant(stem, ol.PERMANENT_TYPES)
-        if r["unexplained"]:
-            rows = "\n".join(
-                f"    {name}: arm {arm!r} -> {ol.slug_for(stem, cls)}"
-                for name, arm, cls, _q in r["unexplained"][:10])
-            fc.halt(
-                f"object lattice residual invariant FAILED for {stem!r}: "
-                f"{len(r['unexplained'])} residual clause(s) still carry a "
-                f"target arm resolving to a battlefield class, so the "
-                f"producer is dropping memberships nobody reviewed.\n{rows}\n"
-                f"  Run: python3 tests/guards/gate2/test_object_lattice.py --gate")
+        failure = _lattice.residual_invariant_failure_message(stem, r["unexplained"])
+        if failure:
+            fc.halt(failure)
+
+
+def _halting(fn, *args, **kwargs):
+    """Call a permanent owner and re-establish the historic `STOP — …` contract.
+
+    The owners raise typed refusals whose message bodies are the old halt text
+    verbatim; a library may not exit a process it does not own. The caught set
+    is exactly the owners' refusal types -- nothing broader.
+    """
+    try:
+        return fn(*args, **kwargs)
+    except (_det_resolution.DetResolutionError, _lattice.LatticeGovernanceError,
+            _target_classes.LatticeError, _det_apply.DetApplyError,
+            _codebook.CodebookError) as error:
+        fc.halt(str(error))
 
 
 def expand_lattice_pattern(p: dict, cards: dict) -> dict:
     """slug -> {oracle_id: proving clause}, for every class the lattice names.
 
-    The quote comes from the lattice's own `quotes` map, which is the clause
-    that proved THAT class -- not the card's first matching clause. Evidence
-    must prove ITS OWN axis (standing discipline); a card destroying an
-    artifact and exiling a creature must not cite one clause for both.
+    S11: delegates to `mtj_foundry.codebook_lattice.expand_lattice_pattern`,
+    handing it this boundary's CR-derived permanent-type domain.
     """
     import foundry_object_lattice as ol
-    stems = p["lattice"]["stems"]
-    unknown = [s for s in stems if s not in ol.ACTION_VERBS]
-    if unknown:
-        fc.halt(f"lattice row names stem(s) {unknown!r} that "
-                f"foundry_object_lattice does not implement. Its ACTION_VERBS "
-                f"are {sorted(ol.ACTION_VERBS)}. A stem that does not exist "
-                f"matches nothing and reads as a clean empty result.")
-    out = {}
-    for stem in stems:
-        for oid in sorted(cards):
-            r = ol.classes_for_card(cards[oid], stem, ol.PERMANENT_TYPES)
-            for cls in sorted(r["classes"]):
-                quote = r["quotes"].get(cls)
-                if not quote:
-                    fc.halt(f"lattice claimed {ol.slug_for(stem, cls)} for "
-                            f"{oid} with no proving clause. Evidence-quote-or-"
-                            f"discard is not optional.")
-                out.setdefault(ol.slug_for(stem, cls), {})[oid] = quote
-    if not out:
-        fc.halt("lattice row produced ZERO axes. An empty result from a "
-                "ratified pattern is a defect, not a clean run.")
-    return out
+    return _halting(_lattice.expand_lattice_pattern, p, cards, ol.PERMANENT_TYPES)
 
 
 def lattice_axis_record(slug: str, parent_scope: dict) -> dict:
     """A fresh axis record for a virtual node, per grammar sec.11.2.
 
-    Precedent is docs/CLUE-INSTANTIATION-2026-08-03.md, which self-instantiated
-    ten axes the same way. The definition is GENERATED from the stem and the
-    class rather than hand-written, so 24 axes cannot drift apart in wording;
-    the scope is INHERITED from the family's existing ratified parent rather
-    than chosen here, because the lattice decides an object class and makes no
-    scope claim of its own.
+    S11: delegates to `mtj_foundry.codebook_lattice.lattice_axis_record`. The
+    object-lattice shell is imported first, as before, so the substrate's
+    vocabulary exists before the owner reads it.
     """
-    import foundry_object_lattice as ol
-    body = slug[len("rule:targeted-"):]
-    stem = next((s for s in ol.ACTION_VERBS if body.startswith(s + "-")), None)
-    if stem is None:
-        fc.halt(f"cannot derive a stem from lattice slug {slug!r}")
-    cls = body[len(stem) + 1:].replace("-", " ")
-    verb = {"destroy": "destroys", "exile": "exiles",
-            "bounce": "returns to its owner's hand"}[stem]
-    anchor = {
-        "destroy": "CR 701.8a: to destroy a permanent is to move it from the "
-                   "battlefield to its owner's graveyard.",
-        "exile": "CR 406.1: an exiled object is in the exile zone, which is "
-                 "why exile bypasses indestructible.",
-        "bounce": "CR 110.1: a permanent is a card or token on the "
-                  "battlefield, so the target is the permanent and not a card "
-                  "in another zone.",
-    }[stem]
-    return {
-        "definition": (
-            f"A spell or ability {verb} a target {cls}. {anchor} The class "
-            f"slot is CR 110.4's permanent-type list; a clause naming two "
-            f"types yields one membership per type (M8, b6 D3), never a combo "
-            f"axis. Instantiated as a virtual node under grammar sec.11.2 on "
-            f"its first quote-verified member."),
-        "scope": parent_scope[stem],
-        "source": "DET",
-        "parameterized": False,
-        "members": [],
-        "status": "active",
-        "merged_into": None,
-        "history": [],
-    }
+    import foundry_object_lattice as ol  # noqa: F401 -- establishes the substrate state
+    return _halting(_lattice.lattice_axis_record, slug, parent_scope)
 
 
-# The family parents whose ratified scope each lattice child inherits. Read
-# from the live codebook at run time, never typed, so a re-scoped parent
-# carries its children with it.
-LATTICE_SCOPE_PARENT = {"destroy": "rule:targeted-destroy",
-                        "exile": "rule:targeted-exile",
-                        "bounce": "rule:targeted-bounce-creature"}
+# S11: the owner's register, the same dict object.
+LATTICE_SCOPE_PARENT = _lattice.LATTICE_SCOPE_PARENT
 
 
 def lattice_parent_scopes(axes: dict) -> dict:
-    out = {}
-    for stem, parent in LATTICE_SCOPE_PARENT.items():
-        rec = axes.get(parent)
-        if rec is None or not rec.get("scope"):
-            fc.halt(f"lattice scope parent {parent!r} is absent or carries no "
-                    f"scope. A child cannot inherit what the parent does not "
-                    f"have, and guessing a scope is minting vocabulary.")
-        out[stem] = rec["scope"]
-    return out
+    return _halting(_lattice.lattice_parent_scopes, axes)
 
 
 def load_axis_patterns():
@@ -263,55 +204,13 @@ def load_axis_patterns():
     # this reads axis STATUS only, never membership, so it is correct against
     # /1 and /2 alike -- and the migration writer calls it while the live file
     # is still /1.
+    #
+    # S11: the partition itself is `codebook_det_resolution`'s. The READ and the
+    # NOTE lines stay here.
     det = json.loads(DET_PATTERNS_PATH.read_text())
     cb = json.loads(CODEBOOK_PATH.read_text())
-    active = {s for s, e in cb["axes"].items() if e.get("status") == "active"}
-    axis_patterns, prefilter_patterns = [], []
-    lattice_rows = []
-    ruled_gaps, deferred_gaps = [], []
-    for p in det["patterns"]:
-        if p["status"] != "ratified":
-            continue
-        if is_lattice_pattern(p):
-            # Deliberately NOT slug-resolved here: its slugs do not exist yet
-            # and the axis-less halt below is correct for every OTHER row.
-            lattice_rows.append(p)
-            continue
-        slug = fc.pattern_slug(p)
-
-        if fc.is_prefilter_pattern(p):
-            prefilter_patterns.append(p)          # declared a pre-filter
-            continue
-        if slug in active:
-            axis_patterns.append(dict(p, resolved_slug=slug))
-            continue
-
-        # Axis-bearing, ratified, and no ACTIVE axis to apply to. This used
-        # to fall through to prefilter_patterns silently, so the pattern
-        # never ran, never wrote membership, and never reported.
-        record = cb["axes"].get(slug)
-        if record is not None and record.get("status") != "active":
-            deferred_gaps.append((slug, record.get("status")))
-            prefilter_patterns.append(p)
-            continue
-        if slug in RULED_AXISLESS_PATTERNS:
-            ruled_gaps.append(slug)
-            prefilter_patterns.append(p)
-            continue
-        fc.halt(
-            f"ratified axis-bearing DET pattern {slug!r} has no axis in "
-            f"codebook.json at all.\n"
-            f"  It is not marked '(pre-filter)' in det-patterns-v2.json, so it "
-            f"is expected to decide an axis's membership.\n"
-            f"  Silently demoting it to the prefilter list is what hid three "
-            f"ratified patterns for weeks.\n"
-            f"  Resolve one of these ways, then re-run:\n"
-            f"    - create the axis (the pattern is genuinely axis-bearing), or\n"
-            f"    - mark the slug '(pre-filter)' in docs/det-patterns-v2.json "
-            f"(it is a Lane-1 net, not a classifier), or\n"
-            f"    - add it to RULED_AXISLESS_PATTERNS here WITH the Captain "
-            f"ruling that authorises the gap."
-        )
+    axis_patterns, prefilter_patterns, lattice_rows, ruled_gaps, deferred_gaps = \
+        _halting(_det_resolution.resolve_axis_patterns, det, cb)
 
     for slug in sorted(ruled_gaps):
         print(f"NOTE: ratified pattern {slug!r} has no axis yet — "
@@ -335,9 +234,12 @@ compute_full_hits = _text_match.compute_full_hits
 # silently written an EMPTY membership list for that axis without this
 # special-casing. Caught during generate-samples' first run (hits_now=0
 # vs corpus_hits_at_ratification=24), fixed before any apply.
-_ENTERS_TAPPED_BASE_SLUG = "rule:enters-tapped (unconditional)"
-_ENTERS_TAPPED_COND_SLUG = "rule:enters-tapped-conditional"
-_IMPOSES_SLUG = "rule:imposes-enters-tapped"
+#
+# S11: the slug constants and the quote-base mapping are the DET-record owner's
+# (`codebook_det_patterns`); these names are the same objects.
+_ENTERS_TAPPED_BASE_SLUG = _det_patterns.ENTERS_TAPPED_BASE_SLUG
+_ENTERS_TAPPED_COND_SLUG = _det_patterns.ENTERS_TAPPED_COND_SLUG
+_IMPOSES_SLUG = _det_patterns.IMPOSES_SLUG
 
 
 def _base_pattern_src(slug_key: str) -> str:
@@ -347,25 +249,15 @@ def _base_pattern_src(slug_key: str) -> str:
     fc.halt(f"could not find base pattern source for {slug_key!r} in foundry_det_patterns_probe.PATTERNS")
 
 
-# The pattern whose match IS the evidence clause for an axis. For the three
-# enters-tapped-family axes that is NOT the det-patterns-v2 "pattern" field:
-# membership there is decided by compute_special_hits() running the probe's
-# real G2 subject split on a BASE pattern, so the clause has to come from that
-# base pattern. This mapping is the single place that fact is written down --
-# the migration writer and any future DET pass both read it from here rather
-# than re-deriving it.
-_QUOTE_BASE_SLUG = {
-    "rule:enters-tapped": _ENTERS_TAPPED_BASE_SLUG,
-    "rule:enters-tapped-conditional": _ENTERS_TAPPED_COND_SLUG,
-    "rule:imposes-enters-tapped": _ENTERS_TAPPED_BASE_SLUG,
-}
+# The pattern whose match IS the evidence clause for an axis is decided by
+# `codebook_det_patterns.quote_pattern_src`; the BASE sources it may need are
+# the probe's, so this shell injects its own `_base_pattern_src` (looked up at
+# call time) and keeps the legacy one-argument name.
+_QUOTE_BASE_SLUG = _det_patterns.QUOTE_BASE_SLUG
 
 
 def quote_pattern_src(p: dict) -> str:
-    slug = p["resolved_slug"]
-    if slug in _QUOTE_BASE_SLUG:
-        return _base_pattern_src(_QUOTE_BASE_SLUG[slug])
-    return p["pattern"]
+    return _det_patterns.quote_pattern_src(p, lambda key: _base_pattern_src(key))
 
 
 matched_clause = _text_match.matched_clause
@@ -512,15 +404,9 @@ def cmd_apply(verdicts_path: str):
             lattice_quotes[slug] = hits
             axis_patterns.append(dict(p, resolved_slug=slug, is_lattice=True,
                                       pattern=f"(lattice) {slug}"))
-    for slug, hits in sorted(lattice_quotes.items()):
-        cached = set(full_hits.get(slug, []))
-        if cached != set(hits):
-            fc.halt(
-                f"lattice axis {slug!r} re-derives {len(hits)} hits but the "
-                f"cache from generate-samples holds {len(cached)}. The sample "
-                f"sheet Captain ratified was drawn from the cached set, so "
-                f"applying the new one would write membership nobody reviewed. "
-                f"Re-run generate-samples and re-review.")
+    disagreement = _det_apply.lattice_cache_disagreement(lattice_quotes, full_hits)
+    if disagreement:
+        fc.halt(disagreement)
 
     missing_verdicts = [p["resolved_slug"] for p in axis_patterns if p["resolved_slug"] not in verdicts]
     if missing_verdicts:
@@ -553,25 +439,11 @@ def cmd_apply(verdicts_path: str):
 
     fcb.backup_codebook("pre-det-pass")
 
-    # Virtual-node instantiation, grammar sec.11.2: "virtual nodes instantiate
-    # on first quote-verified member, no fresh ratification". Captain ratifies
-    # the GRAMMAR (stem + closed facet slots); the nodes are automatic. This is
-    # the same route docs/CLUE-INSTANTIATION-2026-08-03.md took for ten axes.
+    # Virtual-node instantiation, grammar sec.11.2 -- the semantics are
+    # `codebook_det_apply.instantiate_lattice_axes`.
     parent_scopes = lattice_parent_scopes(axes)
-    instantiated = []
-    for slug in sorted(lattice_quotes):
-        if slug in axes:
-            continue
-        axes[slug] = lattice_axis_record(slug, parent_scopes)
-        axes[slug]["history"] = [{
-            "batch": BATCH_LABEL, "action": "created",
-            "note": ("virtual node self-instantiated under grammar sec.11.2 on "
-                     "its first quote-verified member; object lattice, "
-                     "docs/OBJECT-LATTICE-2026-08-09.md, DET pattern_index=45 "
-                     "ratified 2026-08-12. Definition generated from stem+class; "
-                     "scope inherited from the family parent."),
-        }]
-        instantiated.append(slug)
+    instantiated = _halting(_det_apply.instantiate_lattice_axes, axes,
+                            lattice_quotes, parent_scopes)
     if instantiated:
         print(f"instantiated {len(instantiated)} virtual node(s) under "
               f"grammar sec.11.2")
@@ -597,47 +469,13 @@ def cmd_apply(verdicts_path: str):
     def resolve_owner(oid, clause):
         return det_locality_owner(cards.get(oid), clause, locality_stats)
 
-    applied = []
-    for p in axis_patterns:
-        slug = p["resolved_slug"]
-        e = axes[slug]
-        before_n = len(fcb.member_ids(e))
-        removal = fcb.remove_det_assertions(e)
-        source_ref = f"{fcb.DET_SOURCE_REF_PREFIX}{p['pattern_index']}"
-        compiled = None if p.get("is_lattice") else re.compile(
-            quote_pattern_src(p), re.I)
-        for oid in full_hits[slug]:
-            if oid not in texts:
-                fc.halt(f"DET hit {slug}/{oid} is not in the Gate #0 corpus — hit list and corpus "
-                        f"disagree; nothing written")
-            if p.get("is_lattice"):
-                # The lattice's own proving clause for THIS class, not a
-                # re-scan: a re-scan would hand every class on a multi-class
-                # card the same first-matching clause.
-                clause = lattice_quotes[slug].get(oid)
-            else:
-                clause = matched_clause(compiled, texts[oid])
-            if clause is None:
-                fc.halt(f"DET hit {slug}/{oid} produced no matched clause on re-scan — the recorded hit "
-                        f"list and the ratified pattern disagree; nothing written")
-            fcb.merge_assertion(e, oid, fcb.build_assertion(
-                "rule-derived", source_ref, clause, corpus_ref, "quoted",
-                locality=resolve_owner(oid, clause)))
-        e["source"] = "DET"
-        after_n = len(fcb.member_ids(e))
-        e["history"] = list(e["history"]) + [{
-            "batch": BATCH_LABEL, "action": "det_membership_applied",
-            # Counts only. The old note embedded the entire previous member
-            # list verbatim; under /2 that would inline a wall of member
-            # objects into a history note for no audit value the manifest and
-            # backups do not already provide.
-            "note": (f"Full-corpus DET pass (docs/det-patterns-v2.json pattern_index={p['pattern_index']}, "
-                     f"seed={p['seed']}, sample-sheet verified). rule-derived assertions replaced under "
-                     f"{source_ref}: {removal['assertions_removed']} removed, {len(full_hits[slug])} "
-                     f"merged; {len(removal['members_dropped'])} member(s) dropped for having no "
-                     f"remaining assertion; membership {before_n} -> {after_n}."),
-        }]
-        applied.append((slug, before_n, after_n, len(removal["members_dropped"])))
+    # S11: the A8 assertion operation is `codebook_det_apply.apply_axis_patterns`.
+    # The quote source and the owner resolver are this shell's, injected and
+    # looked up at the moment they are called.
+    applied = _halting(_det_apply.apply_axis_patterns, axes, axis_patterns,
+                       full_hits, lattice_quotes, texts, corpus_ref,
+                       quote_pattern_src=lambda p: quote_pattern_src(p),
+                       resolve_owner=resolve_owner)
 
     digest = fcb.write_codebook_atomic(CODEBOOK_PATH, cb, "codebook.json")
     print(f"wrote {CODEBOOK_PATH}")

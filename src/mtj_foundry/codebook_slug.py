@@ -1,0 +1,635 @@
+"""Codebook slug semantics — the naming grammar's validator, without its loaders.
+
+## What this is
+
+S11's permanent owner of what makes a `rule:` slug LEGAL under
+docs/CODEBOOK-NAMING-GRAMMAR.md sec.10 ("Lane-1 lint, wire into emit + SUP"):
+
+  1. charset            2. banned tokens         3. closed vocabulary
+  4. slot order          5. synonym collision      6. restriction/counter/cost laws
+
+plus the ratified vocabularies those checks read, the Q8.5 closed-restriction
+PARSE, and the D-2/D-3 collision normalization. `validate_slug` is a pure
+function returning a result dict. It never mutates the codebook and never
+auto-fixes a failure -- "Validator failures are never auto-fixed; they surface
+for ruling" (sec.10).
+
+The vocabulary constants are carried BYTE-FOR-BYTE from
+`experiments/validate_slug.py`, provenance comments included. Moving them here
+does not re-ratify, widen or narrow any of them.
+
+## Two parts of the closed vocabulary are LOADED, so they are INJECTED
+
+* `Q85_RESTRICTION_VOCAB` is PARSED from the tracked grammar document
+  (`parse_q85_restriction_vocab` owns the parse and every one of its content
+  guards); and
+* `KEYWORD_VOCAB` is derived from the generated `keyword-buckets.json`, which
+  may legitimately be absent (`keyword_vocab_from_buckets`).
+
+Where those files live, whether they exist, and the live-codebook cross-check's
+read are the legacy shell's: it reads them, hands the TEXT/DATA here, and
+composes `compose_closed_vocab`. `validate_slug` therefore REQUIRES
+`closed_vocab`; it never falls back to a partial set.
+
+## What this is NOT
+
+* No file reads, no repository root, no codebook load, no report writing, no
+  CLI, no process exit. Refusals raise `SlugVocabularyError` carrying the
+  historic halt text verbatim; the shell translates it into `STOP — …`.
+
+## Layer law
+
+Stdlib only.
+"""
+
+from __future__ import annotations
+
+import re
+
+__all__ = [
+    "ACTIVATION_RESTRICTION_FAMILY",
+    "BANNED_LITERAL_TOKENS",
+    "CANT_BE_BLOCKED_STEM_VOCAB",
+    "CHARSET_RE",
+    "COUNTER_TOKEN_VOCAB",
+    "DELIVERY_VOCAB",
+    "EFFECT_VOCAB",
+    "EXEMPT_LEAF_SLUGS",
+    "GLOSSARY_VOCAB",
+    "OBJECT_VOCAB",
+    "QUALIFIER_VOCAB",
+    "RESTRICTION_VOCAB",
+    "SCALES_PREFIX_RE",
+    "SCALES_WITH_RE",
+    "SCALING_STAT_VOCAB",
+    "SCOPE_VOCAB",
+    "SOFT_WARNING_TOKENS",
+    "SlugVocabularyError",
+    "WALK_RATIFICATION_VOCAB_20260731",
+    "compose_closed_vocab",
+    "find_collisions",
+    "keyword_vocab_from_buckets",
+    "normalize_for_collision",
+    "parse_q85_restriction_vocab",
+    "q85_live_axis_violation",
+    "validate_slug",
+]
+
+
+class SlugVocabularyError(RuntimeError):
+    """A vocabulary source that cannot be trusted. Raised, never printed or exited."""
+
+# ---------------------------------------------------------------------------
+# 1. Charset (sec.10.1)
+# ---------------------------------------------------------------------------
+CHARSET_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+# ---------------------------------------------------------------------------
+# 2. Banned tokens (sec.10.2)
+# ---------------------------------------------------------------------------
+# Literal single-token bans. "free" and "counter"/"token" adjacency and
+# "creates"/"scaled" are handled by dedicated functions below since they
+# need slug-position or definition context, not a flat membership test.
+BANNED_LITERAL_TOKENS = {"defender", "countered"}
+
+# ---------------------------------------------------------------------------
+# 3. Closed vocabularies -- assembled from CODEBOOK-NAMING-GRAMMAR.md
+# sections 2 (DELIVERY), 4 (EFFECT), 5 (OBJECT), 6 (SCOPE), 7 (scaling stats),
+# 8 (counter/token types), plus the ratified glossary entries (sec.4/12:
+# "scroll", "regrowth") and structural connectives the grammar itself uses
+# in every example slug (to/with/of/or/as/from/at/for/each/only/during/
+# your/an/a/the excluded -- the grammar bans articles outright, sec.1
+# formatting law). Numeric/variable tokens (x, digits, plus1/minus1) are
+# always allowed per sec.1.
+# ---------------------------------------------------------------------------
+
+DELIVERY_VOCAB = {
+    "activated", "static", "etb", "death", "trigger", "leaves", "battlefield",
+    "attack", "cast", "combat", "damage", "to", "player", "creature", "upkeep",
+    "landfall", "loyalty", "replacement", "kicker", "dies",
+    # Q2 (walk-ratification 2026-07-31): becomes-targeted-trigger,
+    # blocks-or-becomes-blocked-trigger added to the closed DELIVERY vocab.
+    "becomes", "targeted", "blocks", "blocked",
+
+    # -- BACKFILL, 2026-08-04 -----------------------------------------------
+    # Eight sec.2 rows ratified between 2026-07-31 and 2026-08-03 never had
+    # their word-tokens encoded here, so slugs composed from ALREADY-RATIFIED
+    # delivery vocabulary failed `unknown_vocabulary`:
+    #
+    #   end-step-trigger           (Q7, 2026-08-03)  -> end, step
+    #   becomes-untapped-trigger   (2026-08-03)      -> untapped
+    #   cycled-trigger             (2026-08-03)      -> cycled
+    #   cycle-or-discard-trigger   (2026-08-03)      -> cycle
+    #   is-attacked-trigger        (2026-08-03)      -> is, attacked
+    #   begin-combat-trigger       (2026-08-03)      -> begin
+    #   end-combat-trigger         (2026-08-03)      -> end
+    #   chapter-trigger            (2026-08-03)      -> chapter
+    #
+    # This is the A15 failure shape the family sweep's check A5 was written
+    # for -- vocabulary ratified in the grammar and never encoded in the
+    # validator -- and it is the same class as "a ratified standard with no
+    # caller": nothing gated it, so nothing reported it.
+    "end", "step", "untapped", "cycled", "cycle", "is", "attacked", "begin",
+    "chapter",
+    # `for` is the connective in the ratified row `tapped-for-mana-trigger`
+    # (CR 106.12a, 2026-08-03). This module's own header comment already
+    # claims "for" is ratified structural vocabulary; it never was, and the
+    # slug validated only via the KEYWORD_VOCAB accident described below.
+    "for",
+
+    # -- THE 14 sec.2 ROWS RATIFIED 2026-08-04 ------------------------------
+    # CODEBOOK-NAMING-GRAMMAR.md sec.2. Grouped by the ruling that carries
+    # each row's CR anchors and measurements.
+    #
+    #   MAIN-PHASE-RULING       CR 505.1 / 505.1a / 505.1b
+    #     precombat- / second- / postcombat-main-phase-trigger
+    "precombat", "postcombat", "main", "phase", "second",
+    #   IS-DEALT-DAMAGE-RULING  CR 120.1 / 120.1a / 120.2a / 120.10
+    #     is-dealt-damage-trigger + -combat- / -excess- / -noncombat-
+    "dealt", "excess", "noncombat",
+    #   TURNED-FACE-UP-RULING   CR 708.7 / 708.8 / 702.37e
+    "turned", "face", "up",
+    #   TO-GRAVEYARD-RULING     CR 700.4
+    #     to-graveyard-from-{anywhere,library,hand,other-zone}-trigger
+    "anywhere", "zone",
+    #   DRAW-STEP-RULING        CR 504.1   (`step` supplied by the backfill)
+    #
+    # `gain-life-trigger` (GAIN-LIFE-TRIGGER-RULING, CR 119.3 / 119.9) needs
+    # no new token: `gain` and `life` are the ratified sec.4 EFFECT verb, which
+    # is precisely why sec.14 Q5 excluded `lifegain` as a synonym collision.
+    #
+    # sec.8b `<type>-counter-placed-trigger` (CR 122.6) -- the type slot is
+    # OPEN, so only the event word belongs in the DELIVERY set; the type words
+    # live in COUNTER_TOKEN_VOCAB below.
+    "placed",
+
+    # -- NO LONGER LEANING ON KEYWORD_VOCAB ---------------------------------
+    # `second` and `up` validated before this change ONLY because
+    # _load_keyword_vocab() splits the 193 CR-702 keyword names into tokens
+    # and happened to emit both. That is an accidental pass through a set
+    # built for the grants-<keyword> facet, and it evaporates whenever
+    # keyword-buckets.json has not been generated (the loader falls back to an
+    # empty set to stay standalone). Both are now ratified DELIVERY tokens in
+    # their own right, above.
+}
+
+EFFECT_VOCAB = {
+    "destroy", "exile", "bounce", "tuck", "sacrifice", "discard", "mill",
+    "draw", "loot", "scry", "surveil", "proliferate", "tutor", "reanimate",
+    "regrowth", "create", "token", "pump", "debuff", "damage", "gain", "life",
+    "lose", "drain", "tap", "untap", "or", "transform", "copy", "counters",
+    "grants", "taxes", "cost", "reduction",
+    # Q4 (walk-ratification 2026-07-31): cant-be-countered -> spell-uncounterable
+    # ("spell" is already in OBJECT_VOCAB).
+    "uncounterable",
+    # Captain-authored rule:imposes-enters-tapped (2026-07-31 follow-on, B3/B4):
+    # named directly by Captain, ratifying the token as part of naming the slug.
+    "imposes",
+}
+
+OBJECT_VOCAB = {
+    "creature", "artifact", "enchantment", "planeswalker", "battle", "land",
+    "permanent", "nonland", "spell", "noncreature", "player", "opponent",
+    "any", "target", "card", "in", "graveyard",
+}
+
+SCOPE_VOCAB = {
+    "self", "own", "opponent", "any", "each", "mass", "target", "defending",
+    "player", "two", "conditional",
+}
+
+SCALING_STAT_VOCAB = {
+    "creature", "count", "hand", "size", "own", "counters", "graveyard",
+    "land", "type", "permanent", "attacker", "legendary", "mana", "value",
+    "life", "gained", "x", "opponent", "target", "token", "color", "charge",
+    "scales", "with", "counter",
+}
+
+COUNTER_TOKEN_VOCAB = {
+    "plus1", "minus1", "charge", "stun", "loyalty", "counter", "counters",
+    "treasure", "clue", "food", "blood", "gold", "powerstone", "mutagen",
+    "lander", "producing",
+    # sec.8 rule 1's `<name>-counter` arm is OPEN -- a card may print any
+    # counter name -- so this list grows one name at a time as sec.11
+    # instantiates a node on a quote-verified member, never by opening the
+    # charset. Ratified 2026-08-04 with sec.8b's counter-placed family, each
+    # verified from FULL oracle text rather than from the trigger line:
+    #   plan  -- Political Triumph, Glorious Purpose (create plan counters
+    #            on themselves)
+    #   hour  -- Midnight Clock (accrues hour counters)
+    "plan", "hour",
+}
+
+# `delayed` moved here from DELIVERY_VOCAB by grammar §2d (Captain-ratified
+# 2026-08-03): a delayed trigger is a CREATED ability, and CR 603.7d/e give
+# its source to the creator -- so the card's delivery is whatever created it,
+# and `delayed` describes WHEN the effect happens.
+QUALIFIER_VOCAB = {"mass", "scales", "with", "cost", "activation", "additional",
+                   "delayed"}
+
+# sec.3 activation-restriction closed family -- vocabulary its slugs use.
+RESTRICTION_VOCAB = {
+    "activation", "restricted", "to", "sorcery", "speed", "instant", "only",
+    "during", "your", "turn", "own", "upkeep", "combat", "opponents", "once",
+    "each", "condition", "gated",
+}
+
+# sec.12 idiomatic-leaf exemption list -- job-names EXEMPT from closed-vocab
+# checking (grammar governs mechanism slugs; these are Captain-ratified
+# per-slug exceptions). Extend this set only via explicit Captain ruling.
+EXEMPT_LEAF_SLUGS = {
+    "rule:compensates-controller-with-token",
+    "rule:cheat-creature-into-play",
+    "rule:rhystic-tax",
+    "rule:the-ring-tempts-you",
+    # Q6 (walk-ratification 2026-07-31), CODEBOOK-NAMING-GRAMMAR.md sec.12/13.
+    "rule:burst-draw",
+    "rule:cantrip",
+    "rule:modal",
+    "rule:drain-life",
+    "rule:combat-trick-pump-own-creature",
+    "rule:tribal-anthem-buff",
+    "rule:alternate-win-condition",
+}
+
+# Ratified glossary (sec.4/sec.12): standing shorthand vocabulary.
+GLOSSARY_VOCAB = {"scroll", "regrowth"}
+
+# Q5 extended structural/descriptive vocabulary (walk-ratification 2026-07-31,
+# CODEBOOK-NAMING-GRAMMAR.md sec.14) -- the EXACT list Captain ratified from
+# CORPUS-PASS-WALK-RATIFICATION.md sec.2.2.2's proposal, not the full 179-token
+# frequency list. Deliberately excludes 'scaled' (banned, D-3), 'a'/'the'
+# (banned articles), 'targeted' (targeted-<action>-<class> grammar family
+# needs a membership check first), 'lifegain' (synonym-collision candidate
+# against the ratified gain-life EFFECT verb) -- those stay in the final
+# naming-audit backlog, not silently passed here.
+WALK_RATIFICATION_VOCAB_20260731 = {
+    "creatures", "other", "on", "from", "library", "triggers", "ability",
+    "and", "by", "prevents", "unblockable", "buff", "tapped", "restriction",
+    "top", "targets", "doubles", "energy", "forces", "controller", "prevent",
+    "into", "growth", "tribal", "effect", "choose", "enters", "cards",
+    "threshold", "recursion",
+}
+
+# Q8.5 (walk-ratification 2026-07-31): cant-be-blocked compound stem token,
+# ratified into vocabulary for the new cant-be-blocked-<restriction> grammar
+# family. Does not affect the 'countered' ban (sec.10.2) -- separate token.
+CANT_BE_BLOCKED_STEM_VOCAB = {"cant", "be", "blocked"}
+
+
+# ---------------------------------------------------------------------------
+# Q8.5's CLOSED RESTRICTION VOCAB -- PARSED from the grammar, not transcribed
+# ---------------------------------------------------------------------------
+#
+# THE BUG THIS FIXES, and why it is a bug rather than a ratification:
+# grammar §13 Q8.5 ratifies the stem tokens `cant`/`be`/`blocked` AND, in the
+# same bullet, the closed restriction vocab `by-color`, `by-power`,
+# `except-by-count`, `as-long-as-<state>`, `by-controller`. The transcription
+# above captured the stems and DROPPED the restriction list, so `except` --
+# ratified 2026-07-31 -- has read as unratified vocabulary ever since. That is
+# what blocked 21 of A15-VOCAB-01's 209 rows, and the blocker recorded it as a
+# question for Captain when the grammar had already answered it.
+#
+# So this list is PARSED. "A hand-list is not a shortcut, it is a defect with a
+# delay", and the delay here was one Captain decision left open since
+# 2026-08-02 on a token that was already ratified.
+#
+# THE SPAN IS NARROW ON PURPOSE. The same bullet writes the BANNED participle
+# `countered` in backticks, and two `rule:` slugs sit in the parenthetical
+# immediately after `by-controller`. Harvesting the whole section would ingest
+# a banned token as vocabulary -- the "a rejected term in backticks is ingested
+# as ratified vocabulary" trap, which CLAUDE.md records three times. The parse
+# therefore stops at the first "(" after the anchor phrase, and every guard
+# below asserts CONTENT rather than cardinality.
+_RESTRICTION_ANCHOR = "Closed restriction vocab:"
+
+
+def parse_q85_restriction_vocab(grammar_text: str) -> set:
+    """Tokens of grammar §13 Q8.5's closed restriction vocabulary, from its TEXT.
+
+    REFUSES rather than returning a short set: a silently-empty vocabulary here
+    would make every `cant-be-blocked-<restriction>` slug fail as unknown, which
+    reads as a catastrophic finding rather than a broken parse. Whether the
+    grammar file exists is the caller's question; this owns the parse.
+    """
+    text = grammar_text
+    i = text.find(_RESTRICTION_ANCHOR)
+    if i < 0:
+        raise SlugVocabularyError(
+            f"grammar §13's {_RESTRICTION_ANCHOR!r} line is gone. Refusing "
+            f"to fall back to a hand-list: that is exactly the drift that "
+            f"left `except` unratified in this validator for 9 days.")
+    span = text[i + len(_RESTRICTION_ANCHOR):]
+    span = span.split("(", 1)[0]          # stop before the B1 parenthetical
+    families = re.findall(r"`([a-z][a-z0-9<>\-]*)`", span)
+
+    bad = [f for f in families if f.startswith("rule:") or "<" in f and ">" not in f]
+    if bad:
+        raise SlugVocabularyError(
+            f"Q8.5 restriction parse picked up {bad!r}. A `rule:` slug or a "
+            f"malformed placeholder in this span means the span moved.")
+    tokens = set()
+    for fam in families:
+        for tok in fam.split("-"):
+            if tok.startswith("<"):        # `<state>` is a parameter, not a token
+                continue
+            tokens.add(tok)
+
+    # CONTENT guards. A count cannot see a substitution, and the whole reason
+    # this parse exists is that a transcription lost ONE member silently.
+    if "except" not in tokens:
+        raise SlugVocabularyError(
+            f"Q8.5 restriction parse yielded {sorted(tokens)} — without "
+            f"`except`. That is the exact omission this parse replaces; a "
+            f"guard that cannot see it is not a guard.")
+    banned = tokens & {"countered", "scaled", "mass", "defender"}
+    if banned:
+        raise SlugVocabularyError(
+            f"Q8.5 restriction parse ingested BANNED token(s) {sorted(banned)}. "
+            f"The span has widened past the ratified list into prose that "
+            f"names rejected vocabulary.")
+    return tokens
+
+
+# Cross-check against LIVE data, not against a second copy of the list: every
+# active `cant-be-blocked-<restriction>` axis must be spelled entirely out of
+# what the grammar publishes. A live ratified axis the parse cannot spell means
+# the parse is short, and that is the failure this whole block exists to catch.
+def q85_live_axis_violation(tokens: set, codebook_document: dict):
+    """The refusal text for the FIRST active `cant-be-blocked-*` axis (in the
+    document's own axis order) spelled with a token Q8.5 does not publish, or
+    None. Reading the codebook -- and tolerating its absence -- is the caller's."""
+    known = tokens | CANT_BE_BLOCKED_STEM_VOCAB
+    for slug, axis in codebook_document.get("axes", {}).items():
+        if axis.get("status") != "active":
+            continue
+        bare = slug.split(":", 1)[-1]
+        if not bare.startswith("cant-be-blocked-"):
+            continue
+        missing = [t for t in bare.split("-") if t not in known]
+        if missing:
+            return (f"active axis {slug!r} uses restriction token(s) {missing!r} "
+                    f"that grammar §13 Q8.5 does not publish. Either the axis is "
+                    f"unratified or the parse is short — both need a human.")
+    return None
+
+# F4 (walk-ratification 2026-07-31): tokens that are ratified vocabulary (so
+# they do NOT fail unknown_vocabulary) but still deserve a non-blocking
+# reviewer warning ("grab-bag smell") rather than a silent clean pass.
+SOFT_WARNING_TOKENS = {"and"}
+
+
+# "grants-<keyword>" (sec.4 EFFECT) and the keyword-grant facet scheme
+# (addendum-3 sec.7) parameterize on CR keyword names -- any of the 193
+# CR-702 keyword names (tokenized) is legitimate vocabulary in that
+# position. Derived from keyword-buckets.json so the two artifacts stay in
+# sync; the caller supplies an EMPTY set when that file has not been generated
+# (keeps the validator standalone).
+def keyword_vocab_from_buckets(buckets: dict) -> set:
+    """The keyword-grant token vocabulary from a loaded keyword-buckets document."""
+    vocab = {"keyword", "grant", "grants", "temporary", "removal", "instead"}
+    for slug in buckets.get("keywords", {}):
+        vocab.update(slug.split("-"))
+    return vocab
+
+
+def compose_closed_vocab(q85_restriction_vocab: set, keyword_vocab: set) -> set:
+    """The closed vocabulary `validate_slug` checks tokens against."""
+    return (DELIVERY_VOCAB | EFFECT_VOCAB | OBJECT_VOCAB | SCOPE_VOCAB
+            | SCALING_STAT_VOCAB | COUNTER_TOKEN_VOCAB | QUALIFIER_VOCAB
+            | RESTRICTION_VOCAB | GLOSSARY_VOCAB | keyword_vocab
+            | WALK_RATIFICATION_VOCAB_20260731 | CANT_BE_BLOCKED_STEM_VOCAB
+            | q85_restriction_vocab)
+
+# ---------------------------------------------------------------------------
+# sec.3 closed activation-restriction family -- exact enumeration
+# ---------------------------------------------------------------------------
+ACTIVATION_RESTRICTION_FAMILY = {
+    "activation-restricted-to-sorcery-speed",
+    "activation-restricted-to-instant-speed",
+    "activation-restricted-only-during-your-turn",
+    "activation-restricted-to-own-upkeep",
+    "activation-restricted-during-combat",
+    "activation-restricted-during-opponents-turn",
+    "activation-restricted-once-each-turn",
+    "activation-condition-gated",
+}
+
+# ---------------------------------------------------------------------------
+# 5. Synonym-collision normalization (sec.10.5 / D-2 / D-3)
+# ---------------------------------------------------------------------------
+SCALES_WITH_RE = re.compile(r"^(.+)-scaled-by-(.+)$")          # D-3: retire -scaled-by-
+SCALES_PREFIX_RE = re.compile(r"^scales-(.+)-with-(.+)$")       # scales-X-with-Y -> X-scales-with-Y
+
+
+def normalize_for_collision(bare_slug: str) -> str:
+    """bare_slug has the 'rule:' prefix already stripped. Canonicalizes
+    known synonym/connective variants so two slugs describing the same
+    mechanic collapse to the same string (sec.10.5). Conservative by
+    design -- this is NOT a token-sort/bag-of-words normalizer (that would
+    produce false collisions between unrelated mechanics); it only applies
+    the specific ratified equivalences (D-2 bare-verb-stem, D-3
+    -scales-with- connective)."""
+    s = bare_slug
+    m = SCALES_PREFIX_RE.match(s)
+    if m:
+        s = f"{m.group(1)}-scales-with-{m.group(2)}"
+    m = SCALES_WITH_RE.match(s)
+    if m:
+        s = f"{m.group(1)}-scales-with-{m.group(2)}"
+    if s.startswith("creates-"):
+        s = "create-" + s[len("creates-"):]
+    s = s.replace("-creates-", "-create-")
+    return s
+
+
+def find_collisions(slugs: list) -> list:
+    """Returns [(slug_a, slug_b, normalized_form), ...] for every pair of
+    distinct slugs (rule:-prefixed) that normalize identically."""
+    buckets = {}
+    for s in slugs:
+        bare = s[len("rule:"):] if s.startswith("rule:") else s
+        norm = normalize_for_collision(bare)
+        buckets.setdefault(norm, []).append(s)
+    collisions = []
+    for norm, group in buckets.items():
+        if len(group) > 1:
+            group_sorted = sorted(group)
+            for i in range(len(group_sorted)):
+                for j in range(i + 1, len(group_sorted)):
+                    collisions.append((group_sorted[i], group_sorted[j], norm))
+    return collisions
+
+
+# ---------------------------------------------------------------------------
+# Main per-slug validator
+# ---------------------------------------------------------------------------
+
+def _check_charset(bare: str, failures: list):
+    if not CHARSET_RE.match(bare):
+        failures.append({"check": "charset", "detail": "must match ^[a-z0-9]+(-[a-z0-9]+)*$"})
+
+
+def _check_banned_tokens(bare: str, tokens: list, definition: str, failures: list):
+    for tok in tokens:
+        if tok in BANNED_LITERAL_TOKENS:
+            failures.append({"check": "banned_token", "detail": f"'{tok}' is banned (sec.10.2)"})
+
+    # bare "counter" as final noun without a preceding type word (sec.8.1)
+    typed_counter_words = {"plus1", "minus1", "charge", "stun", "loyalty"}
+    # words that definitely are NOT a counter type name (vs. the generic
+    # "<name>-counter" shape sec.8.1 explicitly allows, e.g. oil-counter,
+    # energy-counter -- unenumerable in full, so this is a blocklist, not
+    # an allowlist)
+    non_type_words = {"self", "own", "any", "some", "the", "for", "a", "an", "negative"}
+    if tokens and tokens[-1] in ("counter", "counters"):
+        preceding = tokens[-2] if len(tokens) >= 2 else None
+        # "...-with-[X-]counters" binding-word exception (sec.8.1 example:
+        # etb-with-counters; sec.7 example: create-token-with-x-counters --
+        # "with" can be 1-3 tokens before "counters", not just adjacent).
+        has_with_binding = "with" in tokens[max(0, len(tokens) - 4):-1]
+        # Fail only when we can be SURE it's untyped: no binding/removal
+        # exception, not an explicit typed-counter word, AND the preceding
+        # token is either absent or a known non-type filler -- anything
+        # else (oil, energy, ...) is treated as a plausible "<name>-counter"
+        # per sec.8.1 and passed through (verify at the per-axis walk, not
+        # here: this validator does not have a full MTG counter-type list).
+        if (not has_with_binding and "removal" not in tokens
+                and preceding not in typed_counter_words
+                and (preceding is None or preceding in non_type_words)):
+            failures.append({
+                "check": "bare_counter_noun",
+                "detail": "'counter(s)' as final token must be typed (plus1/minus1/charge/stun/loyalty/<name>) "
+                           "or bound by a recognized shape (-with-counters, counter-removal-...) -- sec.8.1",
+            })
+
+    # "free" unless the axis definition quotes a zero-cost (sec.10.2) -- needs definition
+    if "free" in tokens:
+        if not definition or not re.search(
+                r"\bfree\b|\bzero.cost\b|\{0\}|without paying|at no (?:mana )?cost|no mana cost", definition, re.I):
+            failures.append({
+                "check": "free_must_be_free",
+                "detail": "'free' token requires the definition to quote a zero-cost (ratified b2) -- no definition "
+                           "evidence found" if not definition else "'free' token present but definition text does "
+                           "not quote a zero-cost",
+            })
+
+    if "creates" in tokens:
+        failures.append({"check": "post_d2_creates", "detail": "'creates' retired post-D-2 -- use bare stem 'create'"})
+    if "scaled" in tokens:
+        failures.append({"check": "post_d3_scaled", "detail": "'scaled' retired post-D-3 -- use '-scales-with-'"})
+
+    # token immediately adjacent to counter without section-8 shapes
+    for i in range(len(tokens) - 1):
+        pair = (tokens[i], tokens[i + 1])
+        if {"token", "counter"} <= {pair[0], pair[1]} or {"token", "counters"} <= {pair[0], pair[1]}:
+            failures.append({
+                "check": "token_counter_adjacency",
+                "detail": f"'{pair[0]}-{pair[1]}' adjacency not a recognized section-8 shape "
+                           "(a counter is not a token and a token is not a counter, CR 122.1)",
+            })
+
+
+def _check_closed_vocabulary(bare: str, tokens: list, exempt: bool, failures: list,
+                             closed_vocab) -> list:
+    if exempt:
+        return []
+    unknown = [t for t in tokens if t not in closed_vocab and not t.isdigit() and t not in ("x", "plus1", "minus1")]
+    if unknown:
+        failures.append({
+            "check": "unknown_vocabulary",
+            "detail": f"token(s) {unknown} not in the closed vocabulary (sections 2,4-8) or ratified glossary -- "
+                      "new vocabulary requires Captain ratification, not silent pass (sec.10.3)",
+        })
+    return unknown
+
+
+def _check_restriction_family(bare: str, failures: list):
+    if bare.startswith("activation-restricted") or bare.startswith("activation-condition"):
+        if bare not in ACTIVATION_RESTRICTION_FAMILY:
+            failures.append({
+                "check": "restriction_family_closed",
+                "detail": f"'{bare}' looks like the sec.3 activation-restriction family but is not one of the "
+                          f"8 enumerated members -- that family is CLOSED and DET-owned (D-4); SYNTH may not "
+                          f"mint new members",
+            })
+
+
+def _check_cost_law(bare: str, definition: str, failures: list):
+    """sec.9: cost-vs-effect law. codebook.json definitions are Captain/SUP
+    PARAPHRASES, not CR-style '[Cost]: [Effect]' notation or oracle-text
+    quotes (those live only in the per-batch review JSON, not on the
+    codebook entry) -- so this can only do a weak semantic check (does the
+    definition talk about paying/cost at all), not the strict colon-position
+    check the law describes. The strict check belongs at DET-pattern design
+    time against real oracle text (per-axis walk), not here."""
+    if not re.search(r"(^|-)cost(-|$)|as-activation-cost|^additional-cost-", bare):
+        return
+    if definition is None:
+        failures.append({
+            "check": "cost_law_unverified",
+            "detail": "slug names a cost-side mechanic (sec.9) but no definition text was supplied to weak-check "
+                      "against",
+        })
+        return
+    if not re.search(r"\bcost\b|\bpay(ing|s)?\b|\bactivat(e|ed|ion)\b", definition, re.I):
+        failures.append({
+            "check": "cost_law_weak_check_failed",
+            "detail": "slug names a cost-side mechanic but its definition text never mentions cost/pay/activate -- "
+                      "worth a second look, but NOT the strict sec.9 colon-position check (that needs oracle text, "
+                      "done at DET-pattern design time)",
+        })
+
+
+def _check_soft_warnings(tokens: list, warnings: list):
+    """F4 (walk-ratification 2026-07-31): ratified-but-flagged tokens. NOT a
+    pass and NOT a failure -- surfaces for review without blocking ('and'-
+    slugs are a grab-bag smell worth a second look)."""
+    hit = sorted(set(tokens) & SOFT_WARNING_TOKENS)
+    for tok in hit:
+        warnings.append({
+            "check": "soft_vocab_warning",
+            "detail": f"'{tok}' is ratified vocabulary but flagged for review (sec.14 F4) -- "
+                       "'and'-slugs are a grab-bag smell; consider whether this should split into two axes",
+        })
+
+
+def validate_slug(slug: str, definition: str = None, all_slugs: list = None, *,
+                  closed_vocab) -> dict:
+    """slug must include the 'rule:' prefix. Returns
+    {"slug", "ok", "failures": [...], "warnings": [...], "unknown_tokens": [...]}.
+    'warnings' (F4) never affects 'ok' -- non-blocking, surfaced for review.
+
+    `closed_vocab` is the COMPOSED closed vocabulary (`compose_closed_vocab`).
+    It is required, never defaulted: two of its parts are loaded from files the
+    caller owns, and a validator that silently fell back to a partial set would
+    turn unknown vocabulary into a pass."""
+    if not slug.startswith("rule:"):
+        return {"slug": slug, "ok": False,
+                "failures": [{"check": "prefix", "detail": "slug must start with 'rule:'"}],
+                "warnings": [], "unknown_tokens": []}
+    bare = slug[len("rule:"):]
+    tokens = bare.split("-") if bare else []
+    exempt = slug in EXEMPT_LEAF_SLUGS
+    failures = []
+    warnings = []
+
+    _check_charset(bare, failures)
+    if CHARSET_RE.match(bare):  # only run token-level checks on a charset-valid slug
+        _check_banned_tokens(bare, tokens, definition, failures)
+        unknown = _check_closed_vocabulary(bare, tokens, exempt, failures, closed_vocab)
+        _check_soft_warnings(tokens, warnings)
+    else:
+        unknown = []
+    _check_restriction_family(bare, failures)
+    _check_cost_law(bare, definition, failures)
+
+    if all_slugs:
+        norm = normalize_for_collision(bare)
+        others = [s for s in all_slugs if s != slug and normalize_for_collision(
+            s[len("rule:"):] if s.startswith("rule:") else s) == norm]
+        if others:
+            failures.append({"check": "synonym_collision", "detail": f"normalizes identically to {others}"})
+
+    return {"slug": slug, "ok": len(failures) == 0, "exempt": exempt,
+            "failures": failures, "warnings": warnings, "unknown_tokens": unknown}
