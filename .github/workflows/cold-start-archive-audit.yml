@@ -27,8 +27,6 @@ jobs:
           set -euo pipefail
           OUT="$RUNNER_TEMP/cold-start-audit"
           mkdir -p "$OUT"
-          ROOT="$PWD"
-          REG="tests/guards/gate2/foundry_ruling_registry.py"
 
           docs_candidates=(
             docs/SESSION-HANDOFF-2026-08-06.md
@@ -53,72 +51,56 @@ jobs:
           )
 
           printf 'accepted_head=%s\n' "$(git rev-parse HEAD)" > "$OUT/identity.txt"
-          printf 'default_ref_main=%s\n' "$(git rev-parse main 2>/dev/null || true)" >> "$OUT/identity.txt"
+          printf 'main=%s\n' "$(git rev-parse origin/main)" >> "$OUT/identity.txt"
 
-          # Current-path consumer census outside archive. Filename/path references are
-          # evidence of dependency; content mentions are not automatically executable.
           : > "$OUT/path-consumers.txt"
           for p in "${docs_candidates[@]}" "${ref_candidates[@]}"; do
             echo "===== $p =====" >> "$OUT/path-consumers.txt"
-            git grep -n -F "$p" -- ':!archive/**' ':!docs/archive/**' ':!refoundation/preservation/**' 2>/dev/null >> "$OUT/path-consumers.txt" || true
+            git grep -n -F "$p" -- ':!archive/**' ':!docs/archive/**' 2>/dev/null >> "$OUT/path-consumers.txt" || true
           done
 
-          # Per-doc ruling deletion check. Keep both rc and output.
-          : > "$OUT/ruling-checks.txt"
-          for p in "${docs_candidates[@]}"; do
-            echo "===== $p =====" >> "$OUT/ruling-checks.txt"
-            set +e
-            python3 "$REG" --check "$p" >> "$OUT/ruling-checks.txt" 2>&1
-            rc=$?
-            set -e
-            echo "RC=$rc" >> "$OUT/ruling-checks.txt"
-          done
-
-          # Helper snapshots registry metrics without trusting prose counts.
-          snapshot_registry () {
-            label="$1"
-            python3 "$REG" >/dev/null
-            cp experiments/out/foundry/ruling_registry.json "$OUT/${label}-registry.json"
-            python3 - "$OUT/${label}-registry.json" "$OUT/${label}-metrics.json" <<'PY'
-          import json,sys
-          src,dst=sys.argv[1:]
-          d=json.load(open(src))
-          # tolerate schema evolution: record canonical arrays/maps and scalar summary
-          def find_key(obj, names):
-              for n in names:
-                  if isinstance(obj,dict) and n in obj: return obj[n]
-              return None
-          refs=find_key(d,['references','refs','ruling_references'])
-          rulings=find_key(d,['rulings','by_ruling','registry'])
-          sole=find_key(d,['sole_home','sole_homes'])
-          corroborated=find_key(d,['corroborated','corroborated_set'])
-          out={
-            'top_keys':sorted(d) if isinstance(d,dict) else [],
-            'reference_count':len(refs) if isinstance(refs,(list,dict)) else None,
-            'ruling_count':len(rulings) if isinstance(rulings,(list,dict)) else None,
-            'sole_home':sole,
-            'corroborated':corroborated,
-          }
-          # Also retain any scalar counts the generator supplied.
-          if isinstance(d,dict):
-              out['scalar_counts']={k:v for k,v in d.items() if isinstance(v,(int,float,bool,str)) and ('count' in k.lower() or k.lower() in {'documents','rulings','references'})}
-          json.dump(out,open(dst,'w'),indent=2,sort_keys=True)
-          open(dst,'a').write('\n')
+          # Build the registry topology using the registry's own tracked_docs() and
+          # harvest_file()/build() functions, but do not invoke main/ratchet/output.
+          cat > "$RUNNER_TEMP/registry_snapshot.py" <<'PY'
+          import importlib.util, json, sys
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('rr','tests/guards/gate2/foundry_ruling_registry.py')
+          rr=importlib.util.module_from_spec(spec); spec.loader.exec_module(rr)
+          reg=rr.build()
+          out=Path(sys.argv[1])
+          out.write_text(json.dumps(reg,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
           PY
-          }
 
-          snapshot_registry baseline
+          snapshot () {
+            python3 "$RUNNER_TEMP/registry_snapshot.py" "$OUT/$1-registry.json"
+          }
+          snapshot baseline
+
+          python3 - "$OUT/baseline-registry.json" "$OUT/candidate-ruling-status.json" "${docs_candidates[@]}" <<'PY'
+          import json,sys,pathlib
+          reg=json.load(open(sys.argv[1])); dst=sys.argv[2]; paths=sys.argv[3:]
+          out={}
+          for p in paths:
+              name=pathlib.Path(p).name
+              d=reg['per_doc'][name]
+              out[p]={
+                'ruling_ids':d['ruling_ids'],
+                'sole_home_for':d['sole_home_for'],
+                'deletion_blocked':d['deletion_blocked'],
+                'deletable_on_registry_test_alone':not d['deletion_blocked'],
+              }
+          json.dump(out,open(dst,'w'),indent=2,sort_keys=True); open(dst,'a').write('\n')
+          PY
 
           simulate_set () {
             label="$1"; shift
             git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
-            git clean -fd experiments/out >/dev/null 2>&1 || true
             mkdir -p archive/routing/docs
             for p in "$@"; do
               git mv "$p" "archive/routing/docs/${p#docs/}"
             done
-            snapshot_registry "$label"
-            git diff --cached --name-status > "$OUT/${label}-moves.txt"
+            snapshot "$label"
+            git diff --cached --name-status > "$OUT/$label-moves.txt"
           }
 
           simulate_set zero_ruling_set \
@@ -137,35 +119,39 @@ jobs:
             docs/CONSOLIDATION-RUN1-DIRECTIVE.md \
             docs/DET-PATTERNS-RUN2-DIRECTIVE.md
 
-          simulate_set all_docs_candidates \
-            "${docs_candidates[@]}"
+          simulate_set all_docs_candidates "${docs_candidates[@]}"
 
-          # Compare exact ruling-ID homes independent of generator summary key names.
           python3 - "$OUT" <<'PY'
-          import json, pathlib
-          out=pathlib.Path(__import__('sys').argv[1])
-          base=json.loads((out/'baseline-registry.json').read_text())
-          def norm(obj):
-              # Generic recursive extraction of strings that look like ruling IDs plus
-              # any document-name arrays/maps, so topology changes are visible even if
-              # the JSON's reporting schema is richer than expected.
-              return obj
-          report={'baseline_top_keys':sorted(base) if isinstance(base,dict) else []}
-          for label in ['zero_ruling_set','startup_routers','old_directives','all_docs_candidates']:
-              cur=json.loads((out/f'{label}-registry.json').read_text())
+          import json,pathlib,sys
+          out=pathlib.Path(sys.argv[1])
+          labels=['baseline','zero_ruling_set','startup_routers','old_directives','all_docs_candidates']
+          regs={k:json.loads((out/f'{k}-registry.json').read_text()) for k in labels}
+          base=regs['baseline']
+          def homes(reg):
+              return {rid:sorted({x['doc'] for x in occ}) for rid,occ in reg['rulings'].items()}
+          bh=homes(base)
+          report={
+            'baseline':{k:base[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']}
+          }
+          for label in labels[1:]:
+              r=regs[label]; h=homes(r)
+              all_ids=sorted(set(bh)|set(h))
+              changed={rid:{'before':bh.get(rid,[]),'after':h.get(rid,[])} for rid in all_ids if bh.get(rid,[])!=h.get(rid,[])}
               report[label]={
-                'byte_equal_registry_json': cur==base,
-                'top_keys_equal': sorted(cur)==sorted(base) if isinstance(cur,dict) and isinstance(base,dict) else False,
+                'metrics':{k:r[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']},
+                'lost_ruling_ids':sorted(set(bh)-set(h)),
+                'new_ruling_ids':sorted(set(h)-set(bh)),
+                'changed_home_count':len(changed),
+                'changed_homes':changed,
+                'sole_home_documents':{n:d['sole_home_for'] for n,d in r['per_doc'].items() if d['sole_home_for']},
               }
-              # Per-top-level key equality is the useful schema-agnostic topology signal.
-              if isinstance(cur,dict) and isinstance(base,dict):
-                  report[label]['changed_top_keys']=[k for k in sorted(set(base)|set(cur)) if base.get(k)!=cur.get(k)]
           (out/'registry-comparison.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
           PY
 
           git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
 
       - name: Upload audit evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cold-start-archive-candidate-audit
