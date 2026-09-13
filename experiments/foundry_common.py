@@ -58,6 +58,15 @@ sys.path.insert(0, str(_PATHS.legacy_experiments))
 # compared while that remains true.
 from mtj_foundry import corpus as _corpus  # noqa: E402
 from mtj_foundry.infra import artifact as _artifact  # noqa: E402
+# S10: the card-text observations this module used to DEFINE now have permanent
+# owners -- `mtj_foundry.corpus` (full oracle text) and `mtj_foundry.oracle_text`
+# (the DET-compatible self-reference contract and neutral printed-text structure
+# recognition). The names below that remain are COMPATIBILITY FACADES for callers
+# whose migration belongs to a later slice or is frozen (AQ4). Functions delegate
+# BY CALL-TIME LOOKUP on the owner module, never by a value captured at import:
+# replacing an owner's function at run time must still reach every consumer that
+# comes through here (the S7 substitution law, WB4).
+from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
 
 FOUNDRY_OUT_DIR = _PATHS.legacy_foundry_out
 REVIEW_DIR = _PATHS.legacy_foundry_review
@@ -222,13 +231,15 @@ def gate_passes(card: dict) -> bool:
     """Gate #0 (ratified batch-6 D1, 2026-07-30): a card is a valid target for
     the T3 Axis Foundry pipeline -- the DET pass, batch assembly, SYNTH, and
     reconcile -- iff it is legal or restricted in at least one Scryfall
-    'legalities' format. Nowhere-legal cards (playtest/CMB1/CMB2/MB2, Unknown
-    Event promos, prototype/event cards, bare token printings) fail outright.
-    This is dataset-level and independent of the corroboration gate; it does
-    not touch tier_engine.py's own load_cards()/CARDS_PATH consumers, which
-    are out of this ruling's scope (production tier scoring, not foundry)."""
-    legalities = card.get("legalities") or {}
-    return any(v in ("legal", "restricted") for v in legalities.values())
+    'legalities' format.
+
+    S10 COMPATIBILITY FACADE. The permanent owner is
+    `mtj_foundry.corpus.is_gate0_eligible`; this name delegates at call time and
+    carries no copy of the predicate. The delegation was taken only after the
+    legacy body and the owner were re-proven VALUE_EXACT over the full selected
+    corpus. `load_corpus_gated` below still reaches the predicate through THIS
+    name, so a caller replacing it keeps the effect it always had."""
+    return _corpus.is_gate0_eligible(card)
 
 
 def load_corpus_gated():
@@ -286,13 +297,13 @@ def _extract_faces(card: dict) -> list:
 
 
 def full_oracle_text(card: dict) -> str:
-    """All-faces oracle text, newline-joined -- the root-level 'oracle_text'
-    field is empty for multi-face layouts (transform/modal_dfc/adventure/
-    prepare/etc.), so this always goes through raw_faces() -- the permanent
-    corpus capability, which falls back to the root field itself for single-face
-    cards -- rather than reading card['oracle_text'] directly. Mirrors foundry_enrich.py's own
-    full_oracle_text() -- same source, same join convention."""
-    return "\n".join(f["oracle_text"] for f in raw_faces(card) if f["oracle_text"])
+    """All-faces oracle text, newline-joined.
+
+    S10 COMPATIBILITY FACADE. The permanent owner is
+    `mtj_foundry.corpus.full_oracle_text` (all faces in order, one `\\n` join,
+    empty faces skipped); this name delegates at call time and carries no copy.
+    """
+    return _corpus.full_oracle_text(card)
 
 
 def raw_faces(card: dict) -> list:
@@ -310,276 +321,74 @@ def raw_faces(card: dict) -> list:
     return _corpus.card_faces(card)
 
 
-CARDNAME_TOKEN = "~"
-# CR 700.2 defines modality by the LIST and the INSTRUCTION, never by
-# punctuation: *"A spell or ability is modal if it has two or more options in a
-# BULLETED LIST preceded by INSTRUCTIONS FOR A PLAYER TO CHOOSE A NUMBER of
-# those options, such as 'Choose one —.'"* The em-dash is the CR's EXAMPLE of
-# how such a header is printed, not its definition.
+# --- S10: card-text observations, now owned by `mtj_foundry.oracle_text` ------
 #
-# The old form anchored on `—\s*$` and therefore missed every header whose
-# sentence CONTINUES past the mode count -- 102 lists, 259 bullets, 102 cards:
+# The definitions (and the CR rationale that justified each of them) moved
+# verbatim to the permanent owner. What stays here is the legacy NAME for each
+# one a live caller still reaches, and why that caller has not moved:
 #
-#   Choose three. You may choose the same mode more than once.   (CR 700.2d)
-#   Choose one. If you control a commander as you cast this spell, you may …
-#   An opponent chooses one —                                    (CR 700.2e)
-#   Trick Arrows — Whenever Hawkeye becomes tapped, … choose up to that many.
+#   CARDNAME_TOKEN          AQ4 packet probes (AQ4 paused; S14) and this module's
+#                           own `pattern_misses_cardname_token`
+#   _MODAL_HEADER_RE        frozen AQ4 benchmark; the shapes substrate's injection
+#   _DIE_ROW_RE             the shapes substrate's injection
+#   _ROLL_INSTRUCTION_RE    the shapes substrate's injection
+#   _LEVEL_BAND_RE, _CLASS_LEVEL_RE, _is_band_marker
+#                           the Gate-2 visibility audit, which an accepted C8.5G
+#                           guard holds to reaching card text through this facade
+#   is_mode_line            frozen AQ4 benchmark; the injection; operator tools
+#   _cardname_candidates    the definition-drift re-audit worklist, whose
+#                           bootstrap route is pinned by S11 codebook evidence
+#   canonicalize_self_reference  the shapes/locality injections; later-slice tools
 #
-# `chooses` is required by CR 700.2e (*"some spells and abilities specify that
-# a player OTHER THAN THEIR CONTROLLER chooses a mode"*).
+# Retired, with no caller anywhere once the lift made them internal to the owner:
+# `_is_die_row` (now `oracle_text.is_die_result_row`) and `_is_legendary`.
 #
-# A NUMBER is required, and that is what keeps the SIEGE cycle out. "As this
-# enchantment enters, choose Khans or Dragons" NAMES its options instead of
-# counting them, so it is not CR 700.2 modal -- and that is the right answer:
-# a Siege's bullets are the permanent's OWN triggered/static abilities, gated
-# on a choice made as it enters, not modes of a spell. Measured 2026-08-06,
-# all 16 lists this test declines are correctly non-modal (14 Sieges,
-# Celebr-8000's CR 706.3b die table, and a granted ability in quotes).
-#
-# Modality is confirmed STRUCTURALLY by the caller -- every consumer requires a
-# bulleted list to follow -- so this line only has to recognise the
-# instruction. Ratified DET preprocessing standard v1; widened 2026-08-06 on
-# Captain's word ("yes let's fix this modal stoppage").
-_MODAL_HEADER_RE = re.compile(
-    r"\bchooses?\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|"
-    r"X|\d+|any number|up to \w+)\b", re.I)
-
-
-# CR 706.3b: a die-roll RESULTS TABLE row -- "1—9 | …", "20 | …", "5 | …".
-# THE RANGE HAS FIVE PRINTED FORMS, NOT THREE. Measured 2026-08-06 across 106
-# rows: em-dash 75, plain HYPHEN 5 (Mathise, Surge Channeler prints `1-9 |`),
-# single number 26. An em-dash-only test silently dropped the hyphen rows --
-# the same "an inflection is not a shape" family that has now bitten this
-# project four times, wearing punctuation instead of a verb ending.
-#
-# THE CR ENUMERATES THESE, so they are not measured -- CR 706.3a, verbatim:
-# *"The possible results indicated could be A SINGLE NUMBER, a range of numbers
-# with two endpoints in the form 'N1–N2,' or a range with a single endpoint in
-# the form 'N+.'"*  A closed list of three, and the earlier census missed two of
-# them because it counted only rows this regex ALREADY matched -- a recall
-# measurement taken through the very filter under test. `N+` is why: an
-# UNBOUNDED roll can exceed the die's face value ("roll a d20 AND ADD the number
-# of cards in your hand"), so a table's last row is open.
-#
-# NOTE the CR prints `N1–N2` with an EN-DASH (U+2013) and the corpus prints an
-# EM-DASH or a hyphen -- the recorded CR-vs-Scryfall character split, here in a
-# rule rather than a card name. Measured: en-dash is 0 corpus-wide.
-#
-# Measured against CR 706.3a's three forms: N1-N2 80, N+ 49, single 26 -- 155 of
-# 156 rows. `or more` is attested ZERO times and is deliberately NOT here; a
-# member with no evidence is a hand-list defect regardless of how plausible.
-#
-# CR-LAG REGISTER ENTRY (see `_CR_LAG` in foundry_shape_extractor.py for the
-# same mechanism on CR 205.3 subtypes):
-#
-#   `N or less`  -- ONE row, Druid of the Emerald Grove ("9 or less | Put those
-#                   cards into your hand, then shuffle."). CR 706.3a's closed
-#                   list does NOT include it, and it is that table's FIRST row,
-#                   so excluding it costs all THREE rows -- a first-row form gap
-#                   loses the whole table. Recorded as a discrepancy between two
-#                   upstream sources with its evidence named, exactly as
-#                   `chorus` is.
-#
-#                   **RE-CONFIRMED AGAINST THE 2026-08-07 EDITION, 2026-08-09.**
-#                   This entry used to say "the real fix is to refresh the CR
-#                   snapshot". The refresh happened and 706.3a is byte-identical
-#                   — still *"a single number, a range … 'N1–N2,' or a range
-#                   with a single endpoint in the form 'N+.'"* The CR is behind
-#                   the printed card, not the snapshot behind the CR, so this
-#                   entry is permanent until WotC catches up.
-#
-# Widening cannot reach a CR 721 station row (`9+ | Flying, first strike`),
-# which is the same shape and a different rule: both consumers test this only
-# AFTER `_ROLL_INSTRUCTION_RE` has opened a block, and a station card prints no
-# roll instruction. Verified live -- 0 station rows joined.
-_DIE_ROW_RE = re.compile(r"^\s*\d+\s*(?:[-–—]\s*\d+|\+|or less)?\s*\|")
-# The instruction that opens such a table. The CR names the shape ("an
-# instruction to roll one or more dice") and the corpus prints "roll a d20",
-# "roll two six-sided dice", "roll a d20 and add the number of cards in your
-# hand". Confirmed structurally: it only opens a block if rows follow.
-_ROLL_INSTRUCTION_RE = re.compile(
-    r"\broll\w*\b(?:[^.\n]{0,40}?)\b(?:d\d+|dice|die)\b", re.I)
-
-
-# CR 711.2 (leveler) and CR 716.2 (class level bar) print the SAME sentence as
-# CR 721.2: *"any abilities printed within the same text box striation are part
-# of its static ability."*  But unlike the station striation, whose marker and
-# abilities share ONE line, these two put the marker on its own line and the
-# abilities it governs on the lines BELOW:
-#
-#     Level up {W}            {1}{R}: Level 2
-#     LEVEL 2-6               Whenever you roll one or more dice, …
-#     3/3                     {2}{R}: Level 3
-#     First strike            Creatures you control have haste.
-#     LEVEL 7+
-#
-# So `3/3` and `First strike` are governed by `LEVEL 2-6` and a proximity
-# pattern cannot span the newline to learn it -- exactly the CR 706.3b die-row
-# case one rule over. Measured 2026-08-07: 96 leveler content lines and 78
-# class content lines, NONE of them joined to the band that governs them.
-_LEVEL_BAND_RE = re.compile(r"^LEVEL\s+\d+\s*(?:-\s*\d+|\+)\s*$", re.I)
-_CLASS_LEVEL_RE = re.compile(r"^(?:\{[^}]*\})+\s*:\s*Level\s+\d+\s*$", re.I)
+# The compiled patterns are the owner's OBJECTS, aliased rather than rebuilt, so
+# there is one definition of each. The functions are call-time delegates.
+CARDNAME_TOKEN = _oracle_text.DET_CARDNAME_TOKEN
+_MODAL_HEADER_RE = _oracle_text.MODAL_HEADER_RE
+_DIE_ROW_RE = _oracle_text.DIE_ROW_RE
+_ROLL_INSTRUCTION_RE = _oracle_text.ROLL_INSTRUCTION_RE
+_LEVEL_BAND_RE = _oracle_text.LEVEL_BAND_RE
+_CLASS_LEVEL_RE = _oracle_text.CLASS_LEVEL_RE
 
 
 def _is_band_marker(line: str) -> bool:
-    """Does this line OPEN a new striation, closing the previous one?
+    """Does this line open a CR 711.2 / 716.2 striation?
 
-    ONLY the two band markers. It is tempting to also stop at a modal header or
-    a roll instruction so an inner block is not swallowed -- and that was the
-    first version, and it was wrong: Barbarian Class's level-2 ability is
-    *"Whenever you ROLL one or more DICE, target creature you control gets
-    +2/+0…"*, which matches `_ROLL_INSTRUCTION_RE` and silently ended the band
-    one line early. The inner-block problem is real but belongs to the LOOP,
-    which solves it by not consuming a striation (see `expand_modal_bullets`),
-    not to the boundary test, which CR 711.2/716.2 define in terms of the
-    striation markers alone.
+    S10 COMPATIBILITY FACADE for `mtj_foundry.oracle_text.is_striation_marker`.
     """
-    s = line.strip()
-    return bool(_LEVEL_BAND_RE.match(s) or _CLASS_LEVEL_RE.match(s))
-
-
-def _is_die_row(line: str) -> bool:
-    """A CR 706.3b results-table row, however it is printed.
-
-    Celebr-8000 prints its table with BULLETS (`• 2 — menace`) rather than the
-    `N |` bar. CR 706.3b says "the associated results table" without
-    prescribing typography, so a roll header claims either form -- otherwise
-    the five rows of a bulleted table are the only part of that one ability
-    that cannot reach its own trigger."""
-    return bool(_DIE_ROW_RE.match(line)) or is_mode_line(line)
+    return _oracle_text.is_striation_marker(line)
 
 
 def is_mode_line(line: str) -> bool:
     """Is this line one of CR 700.2's options (a MODE)?
 
-    CR 700.2 describes modes as a BULLETED list, and CR 700.2i names the other
-    printed form outright: *"Some modal spells have one or more PAWPRINT
-    SYMBOLS ({P}) RATHER THAN BULLET POINTS, as well as an instruction to
-    choose up to a specified number of {P} 'worth of modes.'"*
-
-    Season of Loss prints `Choose up to five {P} worth of modes.` then
-    `{P} — …`, `{P}{P} — …`, `{P}{P}{P} — …`. Testing only for `•` made all 15
-    such lines invisible as modes, so each parsed alone and routed nowhere.
-
-    Shared by BOTH consumers -- `expand_modal_bullets` (the DET preprocessing
-    standard) and the extractor's `deliveries_for_lines` -- so the two cannot
-    drift apart. Fixing one and not the other is the D8 semicolon lesson.
-
-    CR 700.2h is the third printed form: *"Some modal spells have one or more
-    modes with a COST LISTED BEFORE THE EFFECT of that mode."* Spree prints
-    `+ {2}{B} — Destroy target creature.` Its header carries the choose
-    instruction inside REMINDER text (`Spree (Choose one or more additional
-    costs.)`), which §6a strips for the classifier but which
-    `expand_modal_bullets` still sees, because that runs on the full oracle
-    text. So the DET side can join these and the routing side cannot -- and
-    that asymmetry is correct, not a bug: a spree spell's own delivery is
-    `spell-or-static` by CR 113.3a, so there is no timing for a mode to inherit.
+    S10 COMPATIBILITY FACADE for `mtj_foundry.oracle_text.is_mode_line`.
     """
-    s = line.lstrip()
-    return (s.startswith("•")
-            or bool(re.match(r"^(?:\{P\})+\s*—", s))       # CR 700.2i
-            or bool(re.match(r"^\+\s*\{[^}]*\}[^—]*—", s)))  # CR 700.2h
+    return _oracle_text.is_mode_line(line)
 
 
 def _cardname_candidates(card: dict) -> list:
-    """All the proper-noun strings a card's own oracle text might use to
-    self-reference instead of 'this creature'/'this permanent' -- the FULL
-    printed name, and (for legendary-subtitle and multi-face names) the
-    short pre-comma/pre-'//' form actually used in ability text (Oracle
-    convention: 'Willie Lumpkin, Postman' is written on its own card as just
-    'Willie Lumpkin'). Sorted longest-first so a longer name's substring
-    (e.g. a short form that is itself a substring of another candidate)
-    never gets replaced first and corrupts a longer match."""
-    names = set()
-    for raw in [card.get("name")] + [f.get("name") for f in (card.get("card_faces") or [])]:
-        if not raw:
-            continue
-        for part in raw.split(" // "):
-            part = part.strip()
-            if not part:
-                continue
-            # Alchemy rebalanced cards are named "A-Elderleaf Mentor" but their
-            # oracle text self-references the BASE name. Measured 2026-08-03:
-            # without this, every A- card's self-trigger reads as a trigger on
-            # another permanent. (CLAUDE.md prefers paper rows over A- variants,
-            # but the A- rows are still in the corpus and still scanned.)
-            if re.match(r"^A-\S", part):
-                names.add(part[2:].strip())
-                part = part[2:].strip()
-            names.add(part)
-            if "," in part:
-                names.add(part.split(",")[0].strip())
-            # Legendary subtitle without a comma: "Sharuum the Hegemon" prints
-            # "When Sharuum enters"; "Rosie Cotton of South Lane" prints "Rosie
-            # Cotton".
-            #
-            # CR 201.5c is the rule this whole function implements, and it is
-            # explicit: "Text printed on some cards refers to that card by a
-            # SHORTENED VERSION OF ITS NAME. Instances of a card's shortened
-            # name used in this manner are treated as though they used the
-            # card's FULL NAME." The comma case was already handled; the
-            # subtitle case is the same rule and was simply missing.
-            # (Captain-ratified 2026-08-03, batch Q6.)
-            #
-            # Guarded to >2 chars so a leading article ("The Ring") can never
-            # produce a degenerate token.
-            #
-            # LEGENDARY ONLY (2026-08-07). CR 201.5c licenses a shortened name
-            # only where the text "refers to that card BY a shortened version
-            # of its name" -- "used IN THIS MANNER" is the rule's own qualifier,
-            # and a name is not a name+subtitle construction just because it
-            # contains " of ". Ungated, this branch was erasing CR 205 TYPE
-            # words from oracle text on 26 non-legendary cards, silently and
-            # upstream of every DET pattern:
-            #
-            #   Destroy the Evidence   "Destroy target land"      -> "~ target land"
-            #   Knight of the New …    "create a … Knight token"  -> "… ~ token"
-            #   Case of the Uneaten …  "When this Case enters"    -> "When this ~ enters"
-            #   Storm of Memories      "Storm (When you cast …"   -> "~ (When you cast …"
-            #
-            # `Case` is a CR 205.3 enchantment subtype, `Knight`/`Wall`/`Angel`
-            # /`Cleric` creature types, `Storm` a CR 702.40 keyword. Every one
-            # of the 26 was a corruption; every one of the 118 LEGENDARY hits
-            # (Sharuum, Phage, Zo-Zu, Vraska, …) was a correct self-reference,
-            # which is what makes the supertype the honest cut. Both batch-Q6
-            # worked cases -- "Sharuum the Hegemon", "Rosie Cotton of South
-            # Lane" -- are legendary, so the ratified intent is preserved.
-            #
-            # The comma branch above is NOT gated: a comma subtitle is an
-            # explicit two-part name whatever the supertype.
-            if _is_legendary(card):
-                for sep in (" the ", " of "):
-                    if sep in part.lower():
-                        idx = part.lower().index(sep)
-                        head = part[:idx].strip()
-                        if len(head) > 2:
-                            names.add(head)
-    return sorted((n for n in names if n), key=len, reverse=True)
+    """The card's own printed-name strings, longest first (CR 201.5c short forms).
 
-
-def _is_legendary(card: dict) -> bool:
-    """CR 205.4a supertype, read from the type line of the card OR any face --
-    a modal DFC carries its type line per face and the root may be empty."""
-    lines = [card.get("type_line") or ""]
-    lines += [f.get("type_line") or "" for f in (card.get("card_faces") or [])]
-    return any("Legendary" in t for t in lines)
+    S10 COMPATIBILITY FACADE for `mtj_foundry.oracle_text.det_self_name_candidates`.
+    """
+    return _oracle_text.det_self_name_candidates(card)
 
 
 def canonicalize_self_reference(text: str, card: dict) -> str:
-    """DET preprocessing standard v1, part 1 (CARDNAME canonicalization,
-    ratified 2026-07-31 as a follow-on to the walk-ratification's B3/B4
-    blockers): a card's own printed NAME used as a self-reference (Sygg,
-    Willie Lumpkin, Ukkima, ...) doesn't match a DET pattern anchored on
-    'this creature'/'this permanent' -- replace every whole-word occurrence
-    of the card's own name (full printed name, and the short pre-comma/
-    pre-'//' form actually used in ability text) with the canonical token
-    CARDNAME_TOKEN ('~', the standard MTG-templating self-reference marker)
-    BEFORE pattern matching. Does not attempt pronoun resolution ('It' / 'He'
-    / 'She' self-reference is a different, harder problem -- out of scope
-    for this rule, a separate known gap)."""
-    for name in _cardname_candidates(card):
-        text = re.sub(r"\b" + re.escape(name) + r"\b", CARDNAME_TOKEN, text)
-    return text
+    """DET preprocessing standard v1, part 1: the card's own printed name (and
+    its CR 201.5c short forms) becomes CARDNAME_TOKEN before DET matching.
+
+    S10 COMPATIBILITY FACADE for
+    `mtj_foundry.oracle_text.det_canonicalize_self_reference` -- the
+    DET-compatible contract, deliberately NOT neutral N2
+    `normalize_self_references`; the two differ on real cards. Delegates at call
+    time, so replacing either this name or the owner's function at run time
+    reaches `det_scan_texts` and every substrate this module is injected into.
+    """
+    return _oracle_text.det_canonicalize_self_reference(text, card)
 
 
 def expand_modal_bullets(text: str) -> list:
@@ -630,21 +439,21 @@ def expand_modal_bullets(text: str) -> list:
         # A BAR ROW OUTRANKS THE MODAL TEST; A BULLET DOES NOT. `N |` is
         # typography only a CR 706.3b results table uses, so it decides the
         # block on its own; a BULLET is shared with CR 700.2, so there the
-        # modal header keeps precedence. Without this, `_MODAL_HEADER_RE` wins
+        # modal header keeps precedence. Without this, the modal-header test wins
         # the if/elif on Song of Inspiration -- "CHOOSE UP TO TWO target
         # permanent cards in your graveyard. Roll a d20 and add …" matches its
         # `up to \w+` arm, which is a TARGETING instruction and not a mode list
         # -- and the table is then tested with `is_mode_line`, which no bar row
         # satisfies, so the whole table goes unjoined.
         _nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
-        if _ROLL_INSTRUCTION_RE.search(lines[i]) and _DIE_ROW_RE.match(_nxt):
-            header, opt_test = lines[i], _is_die_row     # CR 706.3b
-        elif _MODAL_HEADER_RE.search(lines[i].strip()):      # CR 700.2/.2h/.2i
-            header, opt_test = lines[i], is_mode_line
-        elif _ROLL_INSTRUCTION_RE.search(lines[i]):          # CR 706.3b
-            header, opt_test = lines[i], _is_die_row
-        elif (_LEVEL_BAND_RE.match(lines[i].strip())         # CR 711.2
-              or _CLASS_LEVEL_RE.match(lines[i].strip())):   # CR 716.2
+        if _oracle_text.is_roll_instruction(lines[i]) and _oracle_text.is_die_row(_nxt):
+            header, opt_test = lines[i], _oracle_text.is_die_result_row  # CR 706.3b
+        elif _oracle_text.is_modal_header(lines[i].strip()):  # CR 700.2/.2h/.2i
+            header, opt_test = lines[i], _oracle_text.is_mode_line
+        elif _oracle_text.is_roll_instruction(lines[i]):      # CR 706.3b
+            header, opt_test = lines[i], _oracle_text.is_die_result_row
+        elif (_oracle_text.is_level_band(lines[i].strip())        # CR 711.2
+              or _oracle_text.is_class_level_bar(lines[i].strip())):  # CR 716.2
             # A striation claims every line until the NEXT marker -- the other
             # two forms test each option positively, this one tests the
             # boundary, because CR 711.2/716.2 say the striation owns whatever
@@ -655,7 +464,7 @@ def expand_modal_bullets(text: str) -> list:
             # its own expansion. These joins are purely additive -- the caller
             # scans the original text too -- so the loop advances one line and
             # every inner header still gets its turn.
-            header, opt_test, consume = lines[i], lambda l: not _is_band_marker(l), False
+            header, opt_test, consume = lines[i], lambda l: not _oracle_text.is_striation_marker(l), False
         if header is not None:
             j = i + 1
             bullets = []

@@ -46,6 +46,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 import foundry_stage1b as s1b  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 OUT_DIR = fc.FOUNDRY_OUT_DIR
 REQUESTS_PATH = OUT_DIR / "batch8_ab_requests.json"
@@ -210,7 +214,7 @@ def cmd_prepare():
     print(f"\nWithin ceiling (${intro_total:.2f} < ${BUDGET_CEILING_USD:.2f}). Writing requests...")
 
     combined = arms["A"] + arms["B"] + arms["C"] + arms["D"]
-    fc.write_json(REQUESTS_PATH, combined)
+    _artifact.write_json(REQUESTS_PATH, combined)
     print(f"wrote {REQUESTS_PATH} ({len(combined)} requests)")
 
     estimate = {
@@ -226,7 +230,7 @@ def cmd_prepare():
         "budget_ceiling_usd": BUDGET_CEILING_USD,
         "pricing_fetched": "2026-07-31 via WebFetch against platform.claude.com/docs/en/about-claude/pricing",
     }
-    fc.write_json(COST_ESTIMATE_PATH, estimate)
+    _artifact.write_json(COST_ESTIMATE_PATH, estimate)
     print(f"wrote {COST_ESTIMATE_PATH}")
     print(f"\nHALT: awaiting Captain's go-ahead before submitting. Run "
           f"`python3 experiments/foundry_batch8_ab.py submit` after approval.")
@@ -262,7 +266,7 @@ def cmd_submit():
         "processing_status": result.get("processing_status"),
         "cost_estimate": estimate,
     }
-    fc.write_json(BATCH_RECORD_PATH, record)
+    _artifact.write_json(BATCH_RECORD_PATH, record)
     print(f"wrote {BATCH_RECORD_PATH}")
     print(f"\nBatch {batch_id} is processing asynchronously. Run "
           f"`python3 experiments/foundry_batch8_ab.py fetch-results` once it has ended.")

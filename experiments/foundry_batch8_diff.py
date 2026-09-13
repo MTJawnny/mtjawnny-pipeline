@@ -19,6 +19,10 @@ sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
 import foundry_stage1b as s1b  # noqa: E402
 import foundry_batch8_ab as b8  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 ARMS = ["A", "B", "C", "D"]
 PACK_SIZES = {"B": 20, "C": 40}
@@ -226,7 +230,7 @@ def main():
     for letter, d in decay.items():
         print(f"arm {letter}: {d}")
 
-    fc.write_json(b8.DIFF_REPORT_PATH, {
+    _artifact.write_json(b8.DIFF_REPORT_PATH, {
         "coverage": {a: {"n_parsed": len(axes[a]), "n_missing": len(missing.get(a, []))} for a in ARMS},
         "missing": {a: missing.get(a, []) for a in ARMS},
         "agreement_matrix": matrix,

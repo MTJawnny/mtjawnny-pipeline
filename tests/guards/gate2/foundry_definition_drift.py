@@ -42,6 +42,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_codebook as fcb  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import corpus as _corpus  # noqa: E402
 
 # C8.5J: the standing ratchet now comes from the permanent package. The import
 # sits AFTER `foundry_common`, which is what establishes the C8.5A package
@@ -232,7 +236,7 @@ def member_texts(member: dict, cards: dict) -> tuple:
     paragraphs, per the house all-faces scanning rule."""
     quotes = " ".join(a.get("quote", "") or "" for a in member.get("assertions", []))
     card = (cards or {}).get(member["oracle_id"])
-    full = fc.full_oracle_text(card) if card else ""
+    full = _corpus.full_oracle_text(card) if card else ""
     return quotes, full
 
 

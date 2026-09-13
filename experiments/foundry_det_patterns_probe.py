@@ -19,6 +19,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 OUT_PATH = fc.FOUNDRY_OUT_DIR / "det_patterns_probe.json"
 
@@ -81,10 +86,10 @@ PATTERNS = [
     ("rule:grants-unblockable-target", rf"target creature can'?t be blocked{RESTRICTION_GUARD}",
      "Q8.8 rebuild: added the restriction-continuation guard (see KNOWN RESIDUAL GAP note above re: The Black Gate)"),
     ("rule:grants-ward-to-other-creatures", r"other creatures you control have ward", "fixed phrase"),
-    ("rule:innate-unblockable", rf"(?:this creature|{re.escape(fc.CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
+    ("rule:innate-unblockable", rf"(?:this creature|{re.escape(_oracle_text.DET_CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
      "Q8.8 rebuild: replaced the old partial '(?!except)' guard with the full 4-phrase restriction-continuation guard. PREVIOUSLY a known gap (pronoun/proper-noun subject anchor missed 5/11 current members: 'It', 'Sygg', 'Willie Lumpkin', 'Ukkima') -- FIXED by the DET preprocessing standard v1 (CARDNAME canonicalization, 2026-07-31 follow-on): proper-noun self-references now canonicalize to the ~ token before matching. 'It' pronoun self-reference (Creeping Tar Pit) remains a separate, unaddressed gap -- pronoun coreference, not CARDNAME canonicalization."),
     ("rule:activated-grants-self-unblockable",
-     rf"(?:\{{[^}}]*\}}|\b(?:Sacrifice|Discard|Remove|Tap|Exile|Pay)\b[^.:\n]*)[^.]*:[^.]*(?:this (?:creature|permanent)|{re.escape(fc.CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
+     rf"(?:\{{[^}}]*\}}|\b(?:Sacrifice|Discard|Remove|Tap|Exile|Pay)\b[^.:\n]*)[^.]*:[^.]*(?:this (?:creature|permanent)|{re.escape(_oracle_text.DET_CARDNAME_TOKEN)}) can'?t be blocked{RESTRICTION_GUARD}",
      "activated-cost self-unblockable (F2 sweep: cost isn't always a mana/tap symbol -- 'Sacrifice X:', 'Discard a card:', 'Remove a counter:' etc. are equally valid activation costs; excludes loyalty-ability '−N:' costs by requiring one of these literal cost words, verified against the corpus not to pick up Vronos, Masked Inquisitor's quoted grant text. Q8.8 rebuild: added the restriction-continuation guard. DET preprocessing standard v1: CARDNAME token added as a subject alternative)"),
     # Q8.5 NEW ratified grammar cant-be-blocked-<restriction> (walk-ratification
     # 2026-07-31): closed vocab by-color/by-power/except-by-count/
@@ -257,7 +262,7 @@ def main():
     print(f"{imposes_slug}: hits={len(imposed_on_others_report)}  n_members={n_members}  "
           f"pattern={imposes_pattern_doc!r}")
 
-    fc.write_json(OUT_PATH, {
+    _artifact.write_json(OUT_PATH, {
         "corpus_size_gated": len(cards), "gated_out": gated_out,
         "ruling_basis": "CORPUS-PASS-PLAN.md sec.1 (Lane 1 DET pass) -- these are PROPOSALS, not ratified patterns",
         "results": results,

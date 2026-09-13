@@ -146,7 +146,8 @@ from mtj_foundry.mtg.shapes import locality as _locality  # noqa: E402
 LocalityError = _locality.LocalityError
 
 # THE CARD-TEXT PRIMITIVES, INJECTED. The shared face reader and the ratified
-# CARDNAME collapse are `foundry_common`'s today and a later slice's tomorrow.
+# CARDNAME collapse are owned by `mtj_foundry.corpus` / (since S10)
+# `mtj_foundry.oracle_text`; the `fc` names are call-time facades onto them.
 # The substrate receives them from here; it never imports them and never infers
 # them.
 _locality.use_card_face_rules(_locality.CardFaceRules(fc, {

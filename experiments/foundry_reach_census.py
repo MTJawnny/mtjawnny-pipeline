@@ -55,6 +55,10 @@ import foundry_probe as p          # noqa: E402
 import foundry_common as fc        # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
 import foundry_object_lattice as ol    # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import corpus as _corpus  # noqa: E402
 
 SEED = 20260812
 
@@ -199,7 +203,7 @@ def census(ctx=None, domain_override=None) -> dict:
     effect = t1 | t2 | t2b | t2c | t3
     allf = effect | t4
     vanilla = {oid for oid, c in cards.items()
-               if not (fc.full_oracle_text(c) or "").strip()}
+               if not (_corpus.full_oracle_text(c) or "").strip()}
 
     return {
         "corpus": n,
@@ -351,7 +355,7 @@ def report(r, ctx, show_residual=0) -> None:
         print(f"\n  RESIDUAL SAMPLE (seed {SEED}), {show_residual}:")
         for oid in resid[:show_residual]:
             c = ctx.cards[oid]
-            txt = " / ".join((fc.full_oracle_text(c) or "").split("\n"))[:96]
+            txt = " / ".join((_corpus.full_oracle_text(c) or "").split("\n"))[:96]
             print(f"    {c['name'][:30]:30s} | {c.get('type_line','')[:22]:22s}"
                   f" | {txt}")
         print("\n  The residual is NOT a judgment tail. Sampling shows "

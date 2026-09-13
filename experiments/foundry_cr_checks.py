@@ -43,6 +43,10 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
 import foundry_cr as fcr  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import corpus as _corpus  # noqa: E402
 
 # C8.5U: the codebook read comes from the permanent package, at the path the
 # layout owner states. The imports sit AFTER `foundry_common`, which is what
@@ -146,7 +150,7 @@ def coverage(reg: dict) -> None:
         if e.get("status") == "active":
             tokens.update(slug.split(":", 1)[-1].split("-"))
     cards, _ = fc.load_corpus()
-    gated = [c for c in cards.values() if fc.gate_passes(c)]
+    gated = [c for c in cards.values() if _corpus.is_gate0_eligible(c)]
 
     def card_text(c):
         t = c.get("oracle_text") or ""

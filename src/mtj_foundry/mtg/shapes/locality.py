@@ -58,8 +58,12 @@ contradicting its axis, it is routed there, never forced into an address.
 Imports `re` and `dataclasses` only. No repository path, no root derivation, no
 import-time file read, no `experiments`, no process exit — this module RAISES
 `LocalityError` and the legacy shell re-establishes the historic `STOP — …`
-contract. The two card-text primitives it needs are INJECTED by that boundary,
-because their permanent home is a later slice's decision, not this one's.
+contract. The two card-text primitives it needs are INJECTED by that boundary.
+Their permanent owners exist -- `mtj_foundry.corpus.card_faces` and, since S10,
+`mtj_foundry.oracle_text.det_canonicalize_self_reference` -- and the legacy
+provider delegates to them at call time; the injection stays because it is the
+call-time route a run-time replacement travels (the WB4 write-boundary control
+depends on exactly that), and the boundary supplying it is a later slice's.
 """
 
 from __future__ import annotations

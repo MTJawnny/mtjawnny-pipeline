@@ -88,9 +88,11 @@ CR_PATH = cr.CR_PATH
 ShapeError = _delivery.ShapeError
 
 # THE CARD-TEXT PRIMITIVES, INJECTED. `full_oracle_text`, the CARDNAME
-# canonicaliser and the ratified DET preprocessing patterns are shared helpers
-# whose permanent home a LATER slice decides. Until then the substrate receives
-# them from here -- it never imports them, and it never infers them.
+# canonicaliser and the ratified DET preprocessing patterns are owned since S10
+# by `mtj_foundry.corpus` / `mtj_foundry.oracle_text`; the `fc` names below are
+# call-time facades onto those owners. The substrate still receives them from
+# here -- it never imports them, and it never infers them -- so a run-time
+# replacement of either the facade or the owner reaches it.
 _delivery.use_card_text_rules(_delivery.CardTextRules(fc, {
     "full_oracle_text": "full_oracle_text",
     "canonicalize_self_reference": "canonicalize_self_reference",

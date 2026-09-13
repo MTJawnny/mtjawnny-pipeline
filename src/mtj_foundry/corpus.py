@@ -3,9 +3,10 @@ lived, until now, inside an 8,340-line scoring engine.
 
 ## What this is
 
-Four things and one error type: load the card corpus, split a card into its real
-faces, normalize a card name, and index cards by normalized name. That is the
-whole capability. It is the lowest layer anything in the Foundry reads the
+Five things and one error type: load the card corpus, split a card into its real
+faces, join those faces into the card's full oracle text (lifted here by S10),
+normalize a card name, and index cards by normalized name. That is the whole
+capability. It is the lowest layer anything in the Foundry reads the
 corpus through.
 
 ## What this is NOT
@@ -46,8 +47,9 @@ import gzip
 import json
 from pathlib import Path
 
-__all__ = ["CorpusLoadError", "load_cards", "card_faces", "normalize_name",
-           "build_name_index", "GATE0_LEGAL_VALUES", "is_gate0_eligible"]
+__all__ = ["CorpusLoadError", "load_cards", "card_faces", "full_oracle_text",
+           "normalize_name", "build_name_index", "GATE0_LEGAL_VALUES",
+           "is_gate0_eligible"]
 
 
 class CorpusLoadError(RuntimeError):
@@ -127,6 +129,25 @@ def card_faces(card: dict) -> list[dict]:
         "power": card.get("power"),
         "toughness": card.get("toughness"),
     }]
+
+
+def full_oracle_text(card: dict) -> str:
+    """All-faces oracle text, newline-joined, empty faces skipped.
+
+    S10 lifted this here from `experiments/foundry_common.py`, which now
+    delegates. It is a consequence of face handling, so it belongs to the
+    capability that owns faces: it reads `card_faces` -- looked up on this module
+    at call time -- rather than the root `oracle_text` field, which is empty for
+    multi-face layouts (transform, modal_dfc, adventure, prepare, ...);
+    `card_faces` is what falls back to that root field for a single-face card.
+
+    The contract is exact and every part of it is load-bearing for DET scan text
+    and shape decomposition downstream: faces in `card_faces` order, joined by a
+    single `"\\n"`, a face with empty text contributes nothing (not a blank
+    line), and a card with no text at all yields `""`.
+    """
+    return "\n".join(face["oracle_text"] for face in card_faces(card)
+                     if face["oracle_text"])
 
 
 def normalize_name(name: str) -> str:

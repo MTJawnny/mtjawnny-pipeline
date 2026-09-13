@@ -23,6 +23,10 @@ import foundry_common as fc  # noqa: E402
 import foundry_batch8_diff as diff  # noqa: E402
 import foundry_batch8_ab as b8  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 ARMS = "ABCD"
 OUT_PATH = fc.FOUNDRY_OUT_DIR / "batch8_canon_analysis.json"
@@ -163,7 +167,7 @@ def main():
           f"{design2_corroborated_est:.1%}")
     print(f"  [ESTIMATED] projected still-provisional/halt-loudly: {1 - design2_corroborated_est:.1%}")
 
-    fc.write_json(OUT_PATH, {
+    _artifact.write_json(OUT_PATH, {
         "raw": raw, "codebook_lane": codebook_lane, "free_lane_raw": free_raw,
         "free_lane_canonicalized": free_canonicalized, "blended_canonicalized": blended_canonicalized,
         "variance_decomposition_free_lane": decomposition,

@@ -392,19 +392,42 @@ class TestThePermanentModuleIsALibrary(unittest.TestCase):
     def test_the_module_level_names_are_the_declared_surface_only(self):
         assigned = [t.id for n in self.tree.body if isinstance(n, ast.Assign)
                     for t in n.targets if isinstance(t, ast.Name)]
+        # S10 added exactly the lifted DET token and the five lifted recognition
+        # patterns -- each a named part of an owned contract, none a helper.
         self.assertEqual(sorted(assigned),
-                         ["_CURLY_QUOTES", "_SELF_TOKEN", "_WHITESPACE", "__all__"])
+                         ["CLASS_LEVEL_RE", "DET_CARDNAME_TOKEN", "DIE_ROW_RE",
+                          "LEVEL_BAND_RE", "MODAL_HEADER_RE", "ROLL_INSTRUCTION_RE",
+                          "_CURLY_QUOTES", "_SELF_TOKEN", "_WHITESPACE", "__all__"])
+
+    # The C8.5I contract, unchanged.
+    C85I_FUNCTIONS = [
+        "collapse_whitespace", "is_keyword_only",
+        "keyword_instances", "normalize_clause", "normalize_reminder",
+        "normalize_self_references", "paren_spans", "reminder_bodies",
+        "self_name_candidates", "strip_reminders"]
+    # S10: the Captain-approved card-text ownership decision lifted these here,
+    # and nothing else. Two are data (the DET token and the recognition patterns
+    # two accepted contracts consume as objects); the rest are functions.
+    S10_FUNCTIONS = [
+        "det_canonicalize_self_reference", "det_self_name_candidates",
+        "is_class_level_bar", "is_die_result_row", "is_die_row", "is_level_band",
+        "is_modal_header", "is_mode_line", "is_roll_instruction",
+        "is_striation_marker"]
+    S10_DATA = ["CLASS_LEVEL_RE", "DET_CARDNAME_TOKEN", "DIE_ROW_RE", "LEVEL_BAND_RE",
+                "MODAL_HEADER_RE", "ROLL_INSTRUCTION_RE"]
 
     def test_the_public_surface_is_exactly_the_contracted_ten_functions(self):
-        self.assertEqual(sorted(ot.__all__), [
-            "collapse_whitespace", "is_keyword_only",
-            "keyword_instances", "normalize_clause", "normalize_reminder",
-            "normalize_self_references", "paren_spans", "reminder_bodies",
-            "self_name_candidates", "strip_reminders"])
-        self.assertEqual(len(ot.__all__), 10)
-        for name in ot.__all__:
+        """Still exactly the C8.5I ten -- plus, since S10, exactly the lifted
+        card-text contracts. A name outside both lists is unreviewed API growth."""
+        self.assertEqual(sorted(ot.__all__),
+                         sorted(self.C85I_FUNCTIONS + self.S10_FUNCTIONS + self.S10_DATA))
+        self.assertEqual(len(ot.__all__), 26)
+        for name in self.C85I_FUNCTIONS + self.S10_FUNCTIONS:
             with self.subTest(name=name):
                 self.assertTrue(callable(getattr(ot, name)), name)
+        for name in self.S10_DATA:
+            with self.subTest(name=name):
+                self.assertFalse(callable(getattr(ot, name)), name)
 
     def test_the_self_reference_token_is_INTERNAL_and_not_exported(self):
         """The token is an implementation constant, not a supported surface.

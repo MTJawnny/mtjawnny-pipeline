@@ -52,10 +52,14 @@ opinion about where a repository is.
 
 `CardTextRules` is the one remaining piece of that contract worth naming. The
 card-text primitives it carries (all-faces oracle text, CARDNAME
-canonicalisation, the ratified DET preprocessing patterns) are shared helpers
-whose permanent home is decided by a LATER migration slice. Until then they are
-INJECTED by the boundary that already owns them — received, never imported,
-never inferred.
+canonicalisation, modal/roll/results-row recognition) are shared observations
+this module CONSUMES and does not own. S10 gave them permanent owners --
+`mtj_foundry.corpus.full_oracle_text` and `mtj_foundry.oracle_text` -- and the
+legacy provider now delegates to those owners at call time. They still arrive
+INJECTED, never imported and never inferred: the injection is the accepted
+call-time dependency route that carries a run-time replacement of any of them
+to this module, and the composition boundaries that supply it belong to later
+slices.
 """
 
 from __future__ import annotations
@@ -598,8 +602,9 @@ def deliveries_for_lines(card: dict, ratified: dict):
     a header condition glued to a mode's effect text, which is the CR 113.3c
     whole-line-vs-clause bug this file has now been bitten by six times.
 
-    The modal test is `foundry_common._MODAL_HEADER_RE`, the ratified DET
-    preprocessing standard v1 (2026-07-31) -- not a fresh one. Bullets under a
+    The modal test is the injected `modal_header_re` -- owned since S10 by
+    `mtj_foundry.oracle_text.MODAL_HEADER_RE`, the ratified DET preprocessing
+    standard v1 (2026-07-31) -- not a fresh one. Bullets under a
     non-modal header are deliberately NOT inherited: Celebr-8000's
     `• 2 — menace` is a die-roll RESULT table, not a set of modes.
     """

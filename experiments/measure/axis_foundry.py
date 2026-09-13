@@ -32,6 +32,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import tier_engine as te  # noqa: E402
 import foundry_common as fc  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 # family_tree_evidence.py's v1-derivation regexes (Step 4 artifact) -- reused
 # verbatim for Stage 0's "not yet landed" context table so this script never
@@ -119,7 +123,7 @@ def stage0_coverage_baseline(cards: dict, card_docs: dict) -> dict:
         "residue_pct": round(100 - union_pct, 3),
     }
     out_path = OUT_DIR / "stage0_coverage_baseline.json"
-    fc.write_json(out_path, result)
+    _artifact.write_json(out_path, result)
     print(f"\nwrote {out_path}")
     return result
 
@@ -189,7 +193,7 @@ def stage1a_source_a_mining(cards: dict, card_docs: dict, clause_index: dict, cl
         "candidates": out_candidates,
     }
     out_path = OUT_DIR / "source_a_candidates.json"
-    fc.write_json(out_path, result)
+    _artifact.write_json(out_path, result)
     print(f"\nwrote {out_path} ({len(out_candidates)} candidates)")
     return result
 
@@ -369,7 +373,7 @@ def assemble_batch(seed_path: Path, target_size: int, batch_num: int):
         "all_oracle_ids": all_ids,
     }
     out_path = OUT_DIR / f"batch{batch_num}_assembled.json"
-    fc.write_json(out_path, result)
+    _artifact.write_json(out_path, result)
     print(f"\nwrote {out_path} ({len(all_ids)} total cards: {len(hand_picked_ids)} hand-picked + {len(fill_a)} DET-filled)")
     return result
 

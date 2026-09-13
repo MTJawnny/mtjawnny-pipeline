@@ -56,6 +56,11 @@ import foundry_codebook as fcb  # noqa: E402
 import foundry_consolidate as fcon  # noqa: E402
 import foundry_cr as fcr  # noqa: E402
 import validate_slug  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
+from mtj_foundry.infra import artifact as _artifact  # noqa: E402
 
 GRAMMARS_PATH = fc.CONFIG_SEMANTIC / "grammars.json"
 DET_PATTERNS_PATH = fc.CONFIG_SEMANTIC / "det-patterns-v2.json"
@@ -141,11 +146,11 @@ def sweep_mirror_drift(grammars, det, codebook):
             continue
         out.append(finding(
             BLOCKING, "pattern-misses-cardname-token", slug,
-            f"pattern anchors {missed!r} but never accepts {fc.CARDNAME_TOKEN!r}. "
+            f"pattern anchors {missed!r} but never accepts {_oracle_text.DET_CARDNAME_TOKEN!r}. "
             f"det_scan_texts() rewrites a card's own printed name to "
-            f"{fc.CARDNAME_TOKEN!r} before matching, so every card that "
+            f"{_oracle_text.DET_CARDNAME_TOKEN!r} before matching, so every card that "
             f"self-references by name is silently missed. Fix by widening the "
-            f"anchor to (?:this creature|{fc.CARDNAME_TOKEN}) — through the "
+            f"anchor to (?:this creature|{_oracle_text.DET_CARDNAME_TOKEN}) — through the "
             f"sample-sheet gate, since the pattern is ratified (NEW-02).",
             pattern_index=p["pattern_index"], corpus_hits=p["corpus_hits"],
             anchored_forms=missed))
@@ -684,7 +689,7 @@ def run(include_proposed: bool):
         "cr_vocabulary_coverage": cr_coverage,
         "findings": findings,
     }
-    fc.write_json(REPORT_PATH, report)
+    _artifact.write_json(REPORT_PATH, report)
 
     print(f"family sweep — codebook {report['codebook_sha256'][:16]}…"
           + (" (+ proposed 2a nodes)" if extra_labels else ""))

@@ -1,0 +1,536 @@
+{
+  "archive_importers": [
+    "archive/routing/experiments/foundry_build_reaudit_packet.py"
+  ],
+  "base_measured": {
+    "archive_importers": 1,
+    "head": "a77e679f561f96959824b5fcea4be03dfcdaaa35",
+    "live_importers": 86,
+    "referenced_names": 35
+  },
+  "live_importers": {
+    "experiments/aq4_benchmark/aq4_binding.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/aq4_benchmark/aq4_compare.py": [
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/aq4_benchmark/aq4_pairing.py": [
+      "halt"
+    ],
+    "experiments/aq4_benchmark/aq4_population.py": [
+      "_MODAL_HEADER_RE",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "load_corpus_gated",
+      "resolve_name"
+    ],
+    "experiments/aq4_benchmark/aq4_projection.py": [
+      "_MODAL_HEADER_RE",
+      "halt",
+      "is_mode_line",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_adapt_batch1_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch2_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch3_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch4_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch5_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch6_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "gate_passes",
+      "halt",
+      "load_corpus",
+      "load_corpus_gated",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_adapt_batch7_decisions.py": [
+      "FOUNDRY_OUT_DIR",
+      "gate_passes",
+      "halt",
+      "load_corpus",
+      "load_corpus_gated",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_any_damage_split.py": [
+      "halt"
+    ],
+    "experiments/foundry_aq4_probes.py": [
+      "CARDNAME_TOKEN",
+      "canonicalize_self_reference",
+      "full_oracle_text",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_assemble_batch2.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_assemble_batch3.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name"
+    ],
+    "experiments/foundry_assemble_batch4.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_assemble_batch5.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_assemble_batch6.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name"
+    ],
+    "experiments/foundry_assemble_batch7.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_authority.py": [
+      "CONFIG_SELECTORS",
+      "FOUNDRY_OUT_DIR",
+      "halt"
+    ],
+    "experiments/foundry_axis_merge_pointer_correction.py": [
+      "halt"
+    ],
+    "experiments/foundry_axis_walk.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "write_json"
+    ],
+    "experiments/foundry_batch7_pay_life_scrub.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_batch8_ab.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_batch8_canon_analysis.py": [
+      "FOUNDRY_OUT_DIR"
+    ],
+    "experiments/foundry_batch8_diff.py": [
+      "halt"
+    ],
+    "experiments/foundry_blanket_risk.py": [
+      "canonicalize_self_reference",
+      "is_mode_line",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_cdr09_derive.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt"
+    ],
+    "experiments/foundry_cdr09_walk.py": [
+      "halt"
+    ],
+    "experiments/foundry_codebook.py": [
+      "DATA_ARTIFACTS_DIR",
+      "FOUNDRY_OUT_DIR",
+      "halt"
+    ],
+    "experiments/foundry_consolidate.py": [
+      "FOUNDRY_OUT_DIR",
+      "batch_paths",
+      "halt",
+      "load_corpus",
+      "write_json"
+    ],
+    "experiments/foundry_consolidate_run1.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_consolidate_run1_apply.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "halt",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_consolidate_run1_classify.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "write_json"
+    ],
+    "experiments/foundry_consolidate_run1_enumerate.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_corpus_pass_run1.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_corroboration_pass.py": [
+      "halt"
+    ],
+    "experiments/foundry_cr.py": [
+      "CONFIG_CR",
+      "halt"
+    ],
+    "experiments/foundry_cr702_classes.py": [
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_cr_checks.py": [
+      "CONFIG_GENERATED",
+      "REPO_ROOT",
+      "halt",
+      "load_corpus"
+    ],
+    "experiments/foundry_cr_edition_diff.py": [
+      "halt"
+    ],
+    "experiments/foundry_det_pass.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "is_lattice_pattern",
+      "is_prefilter_pattern",
+      "load_corpus_gated",
+      "pattern_slug",
+      "write_json"
+    ],
+    "experiments/foundry_det_patterns_probe.py": [
+      "FOUNDRY_OUT_DIR",
+      "det_scan_texts",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_digest.py": [
+      "batch_paths"
+    ],
+    "experiments/foundry_emit.py": [
+      "build_review_card_record",
+      "halt",
+      "load_corpus",
+      "write_json"
+    ],
+    "experiments/foundry_enrich.py": [
+      "batch_paths",
+      "halt",
+      "load_corpus",
+      "raw_faces",
+      "write_json"
+    ],
+    "experiments/foundry_gate0_scrub.py": [
+      "FOUNDRY_OUT_DIR",
+      "gate_passes",
+      "halt",
+      "load_corpus",
+      "write_json"
+    ],
+    "experiments/foundry_keyword_buckets.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "write_json"
+    ],
+    "experiments/foundry_locality.py": [
+      "FOUNDRY_OUT_DIR",
+      "canonicalize_self_reference",
+      "halt",
+      "load_corpus_gated",
+      "raw_faces",
+      "write_json"
+    ],
+    "experiments/foundry_locality_backfill.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_membership_move.py": [
+      "halt"
+    ],
+    "experiments/foundry_migrate_codebook_v2.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "load_corpus",
+      "load_corpus_gated",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_object_lattice.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "load_corpus_gated",
+      "write_json"
+    ],
+    "experiments/foundry_prior_art.py": [
+      "REPO_ROOT",
+      "det_scan_texts",
+      "halt"
+    ],
+    "experiments/foundry_r5_attribution.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt"
+    ],
+    "experiments/foundry_reach_census.py": [
+      "det_scan_texts",
+      "halt"
+    ],
+    "experiments/foundry_reaudit.py": [
+      "FOUNDRY_OUT_DIR",
+      "_cardname_candidates",
+      "full_oracle_text",
+      "load_corpus"
+    ],
+    "experiments/foundry_reconcile.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "write_json"
+    ],
+    "experiments/foundry_reminder_conformance.py": [
+      "CONFIG_SEMANTIC",
+      "det_scan_texts",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_selfother_scope.py": [
+      "canonicalize_self_reference",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_shape_extractor.py": [
+      "CONFIG_GENERATED",
+      "REPO_ROOT",
+      "_DIE_ROW_RE",
+      "_MODAL_HEADER_RE",
+      "_ROLL_INSTRUCTION_RE",
+      "canonicalize_self_reference",
+      "full_oracle_text",
+      "halt",
+      "is_mode_line",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_slug_reparse.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_stage1b.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "batch_paths",
+      "build_review_card_record",
+      "condense_definition_for_prompt",
+      "halt",
+      "load_corpus",
+      "write_json"
+    ],
+    "experiments/foundry_system_map.py": [
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_verify_migration.py": [
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "load_corpus",
+      "resolve_name",
+      "write_json"
+    ],
+    "experiments/foundry_w3_census.py": [
+      "halt",
+      "load_corpus_gated"
+    ],
+    "experiments/foundry_wire_capability.py": [
+      "CONFIG_THESAURUS",
+      "REPO_ROOT",
+      "halt"
+    ],
+    "experiments/foundry_wire_experiment.py": [
+      "FOUNDRY_OUT_DIR",
+      "halt"
+    ],
+    "experiments/measure/axis_foundry.py": [
+      "halt",
+      "load_corpus",
+      "resolve_name"
+    ],
+    "experiments/validate_slug.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "halt",
+      "write_json"
+    ],
+    "tests/guards/gate2/foundry_definition_drift.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "load_corpus"
+    ],
+    "tests/guards/gate2/foundry_family_sweep.py": [
+      "CONFIG_REGISTERS",
+      "CONFIG_SEMANTIC",
+      "FOUNDRY_OUT_DIR",
+      "halt",
+      "is_lattice_pattern",
+      "is_prefilter_pattern",
+      "pattern_misses_cardname_token",
+      "pattern_slug"
+    ],
+    "tests/guards/gate2/foundry_gate_audit.py": [
+      "load_corpus",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/foundry_punctuation_audit.py": [
+      "REPO_ROOT",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/foundry_qualifier_census.py": [
+      "det_scan_texts",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/foundry_reachability.py": [
+      "REPO_ROOT",
+      "halt"
+    ],
+    "tests/guards/gate2/foundry_routing_regression.py": [
+      "halt",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/foundry_ruling_registry.py": [
+      "REPO_ROOT"
+    ],
+    "tests/guards/gate2/foundry_visibility_audit.py": [
+      "CONFIG_SEMANTIC",
+      "REPO_ROOT",
+      "_CLASS_LEVEL_RE",
+      "_LEVEL_BAND_RE",
+      "_is_band_marker",
+      "canonicalize_self_reference",
+      "det_scan_texts",
+      "full_oracle_text",
+      "halt",
+      "load_corpus_gated",
+      "raw_faces"
+    ],
+    "tests/guards/gate2/test_ground_truth.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/test_locality.py": [
+      "REPO_ROOT",
+      "canonicalize_self_reference",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "tests/guards/gate2/test_object_lattice.py": [
+      "REPO_ROOT",
+      "load_corpus_gated"
+    ],
+    "tests/guards/probe/foundry_probe.py": [
+      "FOUNDRY_OUT_DIR",
+      "REPO_ROOT",
+      "halt",
+      "load_corpus_gated"
+    ],
+    "tests/refoundation/test_mtg_shapes_substrate.py": [
+      "REPO_ROOT",
+      "canonicalize_self_reference",
+      "det_scan_texts",
+      "halt",
+      "load_corpus_gated",
+      "raw_faces",
+      "write_json"
+    ],
+    "tests/refoundation/test_readonly_runtime.py": [
+      "gate_passes"
+    ],
+    "tests/refoundation/test_s10_card_text_owners.py": [
+      "CARDNAME_TOKEN",
+      "_CLASS_LEVEL_RE",
+      "_CONDENSE_EFFECT_RE",
+      "_DIE_ROW_RE",
+      "_LEVEL_BAND_RE",
+      "_MODAL_HEADER_RE",
+      "_PATHS",
+      "_ROLL_INSTRUCTION_RE",
+      "_cardname_candidates",
+      "_is_band_marker",
+      "canonicalize_self_reference",
+      "det_scan_texts",
+      "full_oracle_text",
+      "gate_passes",
+      "halt",
+      "is_mode_line",
+      "raw_faces"
+    ]
+  },
+  "schema": "mtj-s10-foundry-common-callers/1",
+  "what": "Reviewed live foundry_common caller topology after S10, recomputed by tests/refoundation/test_s10_card_text_owners.py::caller_census from git ls-files + AST (imports, qualified attributes, getattr/setattr/hasattr, string-bound provider names). Archive paths are measured separately and never counted as live."
+}

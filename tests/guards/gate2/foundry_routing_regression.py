@@ -57,6 +57,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc          # noqa: E402
 import foundry_shape_extractor as fse  # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import oracle_text as _oracle_text  # noqa: E402
 
 # No hyphen (ABILITY_WORD), no comma (the pre-comma short form), and not a
 # substring of any CR 702 keyword name.
@@ -210,7 +214,7 @@ def cmd_invariance(args) -> None:
         # The canonicaliser's OWN candidate set. Guessing the forms here is what
         # made the first run of this test report 195 defects of which 132 were
         # the test's fault (Gate 4, applied to the harness).
-        forms = sorted(fc._cardname_candidates(card), key=len, reverse=True)
+        forms = sorted(_oracle_text.det_self_name_candidates(card), key=len, reverse=True)
 
         def sub(t):
             for f in forms:

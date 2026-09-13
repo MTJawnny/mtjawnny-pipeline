@@ -41,6 +41,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3] / "experiments"
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc            # noqa: E402
 import foundry_shape_extractor as fx   # noqa: E402
+# S10: the owners below are imported AFTER `foundry_common`, whose C8.5A
+# bootstrap is what makes `mtj_foundry` importable from a loose script; this
+# module adds no bootstrap and no sys.path mutation of its own.
+from mtj_foundry import corpus as _corpus  # noqa: E402
 # C8.5J: the standing ratchet now comes from the permanent package. The import
 # sits AFTER `foundry_common`, which is what establishes the C8.5A package
 # bootstrap -- this module adds no bootstrap and no sys.path mutation of its own.
@@ -123,7 +127,7 @@ def main():
     chars_in = chars_out = 0
     mid_line = emptied = 0
     for oid, card in cards.items():
-        for line in fc.full_oracle_text(card).split("\n"):
+        for line in _corpus.full_oracle_text(card).split("\n"):
             if not line.strip():
                 continue
             chars_in += len(line)
