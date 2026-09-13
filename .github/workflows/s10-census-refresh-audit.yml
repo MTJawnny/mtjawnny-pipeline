@@ -24,6 +24,17 @@ jobs:
           root=Path.cwd()
           tracked=[p for p in subprocess.check_output(["git","ls-files","-z"]).decode().split("\0") if p]
           py=[p for p in tracked if p.endswith(".py")]
+
+          provider_tree=ast.parse((root/"experiments/foundry_common.py").read_text(encoding="utf-8"))
+          provider_names=set()
+          for node in provider_tree.body:
+              if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)):
+                  provider_names.add(node.name)
+              elif isinstance(node,(ast.Assign,ast.AnnAssign)):
+                  targets=node.targets if isinstance(node,ast.Assign) else [node.target]
+                  for t in targets:
+                      if isinstance(t,ast.Name): provider_names.add(t.id)
+
           def refs(path):
               text=(root/path).read_text(encoding="utf-8")
               tree=ast.parse(text, filename=path)
@@ -40,8 +51,12 @@ jobs:
                       if isinstance(node,ast.Attribute) and isinstance(node.value,ast.Name) and node.value.id in aliases:
                           names.add(node.attr)
                       elif isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id=="getattr" and len(node.args)>=2 and isinstance(node.args[0],ast.Name) and node.args[0].id in aliases and isinstance(node.args[1],ast.Constant) and isinstance(node.args[1].value,str):
-                          names.add(node.args[1].value)
+                          if node.args[1].value in provider_names: names.add(node.args[1].value)
+                      elif isinstance(node,ast.Constant) and isinstance(node.value,str) and node.value in provider_names:
+                          # Captures string-bound provider contracts such as CardTextRules fields.
+                          names.add(node.value)
               return hit,sorted(names)
+
           errors=[]; live={}; archived={}
           for p in py:
               try: hit,names=refs(p)
