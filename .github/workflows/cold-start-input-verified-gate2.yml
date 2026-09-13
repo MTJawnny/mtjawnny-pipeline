@@ -1,0 +1,146 @@
+name: Input-verified Gate 2 audit
+
+on:
+  push:
+    branches:
+      - cleanup/cold-start-archive-2026-09-12
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      CORPUS_SHA: b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217
+      CODEBOOK_SHA: 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c
+      CODEBOOK_SIZE: "5066147"
+      ACCEPTED_H: 9f92039eb9c7132a351576c31472eb30a2957a67
+      CLEANUP_H: 18a4260d7d5b72e6b13a36fec335d82287f24792
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal audit dependencies and rclone
+        run: |
+          python3 -m pip install --disable-pip-version-check requests pyyaml
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: Configure existing R2 credentials
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$R2_ACCOUNT_ID"
+          test -n "$R2_ACCESS_KEY_ID"
+          test -n "$R2_SECRET_ACCESS_KEY"
+          rclone config create r2 s3 \
+            provider=Cloudflare \
+            access_key_id="$R2_ACCESS_KEY_ID" \
+            secret_access_key="$R2_SECRET_ACCESS_KEY" \
+            endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            region=auto \
+            no_check_bucket=true >/dev/null
+          rclone lsd r2:mtjawnny >/dev/null
+          rclone lsd r2:mtjawnny-foundry >/dev/null
+
+      - name: Create exact-ref worktrees
+        run: |
+          set -euo pipefail
+          git worktree add --detach "$RUNNER_TEMP/accepted" "$ACCEPTED_H"
+          git worktree add --detach "$RUNNER_TEMP/cleanup" "$CLEANUP_H"
+          test "$(git -C "$RUNNER_TEMP/accepted" rev-parse HEAD)" = "$ACCEPTED_H"
+          test "$(git -C "$RUNNER_TEMP/cleanup" rev-parse HEAD)" = "$CLEANUP_H"
+
+      - name: Restore and verify pinned external inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/gate2-evidence"
+          mkdir -p "$OUT"
+
+          prepare() {
+            root="$1"; label="$2"
+            mkdir -p "$root/data/raw" "$root/experiments/out/foundry"
+            rclone copyto \
+              r2:mtjawnny/data/snapshots/2026-07-03/oracle-cards.jsonl.gz \
+              "$root/data/raw/oracle-cards.jsonl.gz"
+            rclone copyto \
+              "r2:mtjawnny-foundry/foundry/codebook/sha256/${CODEBOOK_SHA}/codebook.json" \
+              "$root/experiments/out/foundry/codebook.json"
+
+            corpus_actual="$(sha256sum "$root/data/raw/oracle-cards.jsonl.gz" | awk '{print $1}')"
+            codebook_actual="$(sha256sum "$root/experiments/out/foundry/codebook.json" | awk '{print $1}')"
+            codebook_size="$(wc -c < "$root/experiments/out/foundry/codebook.json" | tr -d ' ')"
+            corpus_lines="$(python3 - "$root/data/raw/oracle-cards.jsonl.gz" <<'PY'
+          import gzip,sys
+          with gzip.open(sys.argv[1], 'rt', encoding='utf-8') as f:
+              print(sum(1 for _ in f))
+          PY
+          )"
+
+            test "$corpus_actual" = "$CORPUS_SHA"
+            test "$codebook_actual" = "$CODEBOOK_SHA"
+            test "$codebook_size" = "$CODEBOOK_SIZE"
+            test "$corpus_lines" = "38233"
+
+            {
+              echo "label=$label"
+              echo "head=$(git -C "$root" rev-parse HEAD)"
+              echo "corpus_sha256=$corpus_actual"
+              echo "corpus_lines=$corpus_lines"
+              echo "codebook_sha256=$codebook_actual"
+              echo "codebook_size=$codebook_size"
+            } > "$OUT/${label}-inputs.txt"
+          }
+
+          prepare "$RUNNER_TEMP/accepted" accepted
+          prepare "$RUNNER_TEMP/cleanup" cleanup
+
+      - name: Run canonical Gate 2 on accepted implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/accepted"
+          OUT="$RUNNER_TEMP/gate2-evidence"
+          cd "$root"
+          python3 tests/guards/gate2/foundry_gate2.py | tee "$OUT/accepted-gate2.txt"
+          set +e
+          python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/accepted-selftest.txt" 2>&1
+          rc=$?
+          set -e
+          test "$rc" -ne 0
+          grep -q SELFTEST_rigged "$OUT/accepted-selftest.txt"
+          echo "$rc" > "$OUT/accepted-selftest-exit.txt"
+
+      - name: Run canonical Gate 2 on cleanup proposal
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/cleanup"
+          OUT="$RUNNER_TEMP/gate2-evidence"
+          cd "$root"
+          python3 tests/guards/gate2/foundry_gate2.py | tee "$OUT/cleanup-gate2.txt"
+          python3 -m unittest tests.refoundation.test_worker_operating_contract 2>&1 | tee "$OUT/cleanup-routing-guard.txt"
+          set +e
+          python3 tests/guards/gate2/foundry_gate2.py --selftest > "$OUT/cleanup-selftest.txt" 2>&1
+          rc=$?
+          set -e
+          test "$rc" -ne 0
+          grep -q SELFTEST_rigged "$OUT/cleanup-selftest.txt"
+          echo "$rc" > "$OUT/cleanup-selftest-exit.txt"
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: input-verified-gate2-evidence
+          path: ${{ runner.temp }}/gate2-evidence/
+          retention-days: 14
