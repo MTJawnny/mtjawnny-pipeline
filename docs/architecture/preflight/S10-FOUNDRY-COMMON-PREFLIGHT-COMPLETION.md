@@ -97,13 +97,15 @@ A future task that insists on permanently relocating the DET-specific compositio
 9. **Failure semantics:** legacy CLI callers rely on stderr+exit; permanent libraries must not inherit process exits.
 10. **Artifact bytes:** forty callers still rely on the exact JSON byte contract.
 11. **Review projection:** `_extract_faces` is not a drop-in alias for `corpus.card_faces`.
-12. **Input availability:** the clean GitHub runner lacks both selected corpus and runtime codebook inputs, so Gate 2 cannot be honestly reported green from this run.
+12. **Input availability:** the clean GitHub runner lacks repository-external runtime inputs, but this execution session does have the project-source Oracle corpus. Its compressed SHA-256 is `b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217`; independent decompression produced SHA-256 `5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c`, 38,233 raw records, 32,557 Gate #0 cards, 5,676 exclusions, and 33,393 Gate #0 face records. This exactly matches the repository-selected Objective-3 corpus identity. The runtime codebook remains unavailable to the clean runner, so canonical Gate 2 still cannot be honestly reported green from that run.
 
 ## Gate 2 / input identity limitation
 
-The canonical Gate-2 command was executed from the exact accepted head on a clean GitHub runner. It exited 1 because repository-external runtime inputs are absent: the transcript records missing `data/raw/oracle-cards.jsonl.gz` and `experiments/out/foundry/codebook.js` failures. This is **not** accepted as a semantic regression and is **not** reported as green. No baseline or guard was relaxed. Where a full-pop proof is required, the future S10 contract requires the repository-selected corpus/runtime identities to be supplied and verified first.
+The canonical Gate-2 command was executed from the exact accepted head on a clean GitHub runner. It exited 1 because that runner lacked repository-external runtime inputs: the transcript records missing `data/raw/oracle-cards.jsonl.gz` and `experiments/out/foundry/codebook.js` failures. This is **not** accepted as a semantic regression and is **not** reported as green. No baseline or guard was relaxed.
 
-The latest completed Objective-3 evidence provides a previously verified corpus identity for supporting comparisons, but this Objective-1 run did not silently substitute that external data into Gate 2.
+The Oracle-corpus half of that limitation is resolved for this execution session. The project sources contain `data_snapshots_2026-07-03_oracle-cards.jsonl.gz`; its compressed SHA-256 is `b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217`. Independent streaming decompression measured SHA-256 `5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c`, 38,233 raw records, 32,557 Gate #0 cards, 5,676 exclusions and 33,393 Gate #0 face records. Those values exactly match the selected corpus identity and population used by completed Objective-3 evidence, so Objective-3 full-pop differentials may be used as supporting evidence for the same input rather than treated as an unknown corpus.
+
+The remaining clean-runner blocker for canonical Gate 2 is the runtime codebook/other generated runtime state, not the Oracle corpus. A future S10 implementation must still verify every supplied runtime identity before claiming Gate-2 green.
 
 ## S10 conservation and negative-control design
 
@@ -124,7 +126,7 @@ The **S7 negative control is mandatory**: private test code must replace `fc.can
 
 No new card-text ownership decision is required; the prior blocker is resolved. The following remain implementation-time constraints rather than evidence gaps:
 
-- A selected corpus and selected runtime codebook must be available and identity-verified before claiming full Gate-2/full-pop conservation.
+- The selected Oracle corpus is available in the project sources and identity-verified as above. The selected runtime codebook/generated runtime state must still be supplied and identity-verified before claiming canonical Gate-2 green; future full-pop corpus proofs must use this pinned corpus identity or a separately authorized successor.
 - AQ4 frozen benchmark consumers may not be edited merely to reach zero `foundry_common` imports; retain compatibility or obtain separate authorization.
 - Legacy sibling-import bootstrap cannot be removed until its loose-script/importability prerequisite is mechanically satisfied.
 - DET-specific synthetic preprocessing has no permanent module today. It may remain a declared legacy composition boundary. If complete `foundry_common` deletion requires relocating that policy, STOP for an explicit owner decision rather than assigning it to `oracle_text` or `delivery` by convenience.
