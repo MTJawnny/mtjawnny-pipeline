@@ -1,0 +1,173 @@
+name: Cold-start archive candidate audit
+
+on:
+  push:
+    branches:
+      - cleanup/cold-start-archive-2026-09-12
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detach exact accepted implementation head
+        run: |
+          git checkout --detach 9f92039eb9c7132a351576c31472eb30a2957a67
+          test "$(git rev-parse HEAD)" = "9f92039eb9c7132a351576c31472eb30a2957a67"
+
+      - name: Audit candidates and simulate archive sets
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/cold-start-audit"
+          mkdir -p "$OUT"
+          ROOT="$PWD"
+          REG="tests/guards/gate2/foundry_ruling_registry.py"
+
+          docs_candidates=(
+            docs/SESSION-HANDOFF-2026-08-06.md
+            docs/SESSION-HANDOFF-2026-08-07.md
+            docs/SESSION-HANDOFF-2026-08-09.md
+            docs/NEXT-SESSION-CR-NORMALIZATION.md
+            docs/SESSION-START-PROCEDURE.md
+            docs/PICK-UP-HERE.md
+            docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md
+            docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md
+            docs/CONSOLIDATION-RUN1-DIRECTIVE.md
+            docs/DET-PATTERNS-RUN2-DIRECTIVE.md
+          )
+          ref_candidates=(
+            refoundation/ACTIVE-PHASE.yaml
+            refoundation/BOOTSTRAP-STATE.yaml
+            refoundation/MANAGER-START.md
+            refoundation/README.md
+            refoundation/ROADMAP.md
+            refoundation/SESSION-PROTOCOL.md
+            refoundation/WORKER-START.md
+          )
+
+          printf 'accepted_head=%s\n' "$(git rev-parse HEAD)" > "$OUT/identity.txt"
+          printf 'default_ref_main=%s\n' "$(git rev-parse main 2>/dev/null || true)" >> "$OUT/identity.txt"
+
+          # Current-path consumer census outside archive. Filename/path references are
+          # evidence of dependency; content mentions are not automatically executable.
+          : > "$OUT/path-consumers.txt"
+          for p in "${docs_candidates[@]}" "${ref_candidates[@]}"; do
+            echo "===== $p =====" >> "$OUT/path-consumers.txt"
+            git grep -n -F "$p" -- ':!archive/**' ':!docs/archive/**' ':!refoundation/preservation/**' 2>/dev/null >> "$OUT/path-consumers.txt" || true
+          done
+
+          # Per-doc ruling deletion check. Keep both rc and output.
+          : > "$OUT/ruling-checks.txt"
+          for p in "${docs_candidates[@]}"; do
+            echo "===== $p =====" >> "$OUT/ruling-checks.txt"
+            set +e
+            python3 "$REG" --check "$p" >> "$OUT/ruling-checks.txt" 2>&1
+            rc=$?
+            set -e
+            echo "RC=$rc" >> "$OUT/ruling-checks.txt"
+          done
+
+          # Helper snapshots registry metrics without trusting prose counts.
+          snapshot_registry () {
+            label="$1"
+            python3 "$REG" >/dev/null
+            cp experiments/out/foundry/ruling_registry.json "$OUT/${label}-registry.json"
+            python3 - "$OUT/${label}-registry.json" "$OUT/${label}-metrics.json" <<'PY'
+          import json,sys
+          src,dst=sys.argv[1:]
+          d=json.load(open(src))
+          # tolerate schema evolution: record canonical arrays/maps and scalar summary
+          def find_key(obj, names):
+              for n in names:
+                  if isinstance(obj,dict) and n in obj: return obj[n]
+              return None
+          refs=find_key(d,['references','refs','ruling_references'])
+          rulings=find_key(d,['rulings','by_ruling','registry'])
+          sole=find_key(d,['sole_home','sole_homes'])
+          corroborated=find_key(d,['corroborated','corroborated_set'])
+          out={
+            'top_keys':sorted(d) if isinstance(d,dict) else [],
+            'reference_count':len(refs) if isinstance(refs,(list,dict)) else None,
+            'ruling_count':len(rulings) if isinstance(rulings,(list,dict)) else None,
+            'sole_home':sole,
+            'corroborated':corroborated,
+          }
+          # Also retain any scalar counts the generator supplied.
+          if isinstance(d,dict):
+              out['scalar_counts']={k:v for k,v in d.items() if isinstance(v,(int,float,bool,str)) and ('count' in k.lower() or k.lower() in {'documents','rulings','references'})}
+          json.dump(out,open(dst,'w'),indent=2,sort_keys=True)
+          open(dst,'a').write('\n')
+          PY
+          }
+
+          snapshot_registry baseline
+
+          simulate_set () {
+            label="$1"; shift
+            git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
+            git clean -fd experiments/out >/dev/null 2>&1 || true
+            mkdir -p archive/routing/docs
+            for p in "$@"; do
+              git mv "$p" "archive/routing/docs/${p#docs/}"
+            done
+            snapshot_registry "$label"
+            git diff --cached --name-status > "$OUT/${label}-moves.txt"
+          }
+
+          simulate_set zero_ruling_set \
+            docs/SESSION-HANDOFF-2026-08-06.md \
+            docs/SESSION-HANDOFF-2026-08-07.md \
+            docs/SESSION-HANDOFF-2026-08-09.md \
+            docs/NEXT-SESSION-CR-NORMALIZATION.md
+
+          simulate_set startup_routers \
+            docs/SESSION-START-PROCEDURE.md \
+            docs/PICK-UP-HERE.md
+
+          simulate_set old_directives \
+            docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md \
+            docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md \
+            docs/CONSOLIDATION-RUN1-DIRECTIVE.md \
+            docs/DET-PATTERNS-RUN2-DIRECTIVE.md
+
+          simulate_set all_docs_candidates \
+            "${docs_candidates[@]}"
+
+          # Compare exact ruling-ID homes independent of generator summary key names.
+          python3 - "$OUT" <<'PY'
+          import json, pathlib
+          out=pathlib.Path(__import__('sys').argv[1])
+          base=json.loads((out/'baseline-registry.json').read_text())
+          def norm(obj):
+              # Generic recursive extraction of strings that look like ruling IDs plus
+              # any document-name arrays/maps, so topology changes are visible even if
+              # the JSON's reporting schema is richer than expected.
+              return obj
+          report={'baseline_top_keys':sorted(base) if isinstance(base,dict) else []}
+          for label in ['zero_ruling_set','startup_routers','old_directives','all_docs_candidates']:
+              cur=json.loads((out/f'{label}-registry.json').read_text())
+              report[label]={
+                'byte_equal_registry_json': cur==base,
+                'top_keys_equal': sorted(cur)==sorted(base) if isinstance(cur,dict) and isinstance(base,dict) else False,
+              }
+              # Per-top-level key equality is the useful schema-agnostic topology signal.
+              if isinstance(cur,dict) and isinstance(base,dict):
+                  report[label]['changed_top_keys']=[k for k in sorted(set(base)|set(cur)) if base.get(k)!=cur.get(k)]
+          (out/'registry-comparison.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          PY
+
+          git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
+
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cold-start-archive-candidate-audit
+          path: ${{ runner.temp }}/cold-start-audit/
+          retention-days: 7
