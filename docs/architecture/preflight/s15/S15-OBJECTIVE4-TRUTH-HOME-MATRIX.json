@@ -1,0 +1,25 @@
+{
+  "schema": "s15-objective4-truth-home-matrix/1",
+  "status": "PREFLIGHT_EVIDENCE_ONLY",
+  "measured_accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "principle": "PRESERVE TRUTH, NOT PLUMBING",
+  "homes": [
+    {"truth_class":"behavioral ground truth fixtures","current_home":"tests/fixtures/ground_truth/**","disposition":"KEEP_PERMANENT","why":"tracked fixtures encode accepted behavior and prior experiments/moves content was relocated here; deletion as history would destroy test truth"},
+    {"truth_class":"permanent semantic/code substrate","current_home":"src/mtj_foundry/**","disposition":"KEEP_PERMANENT","why":"accepted permanent namespace and successor substrate"},
+    {"truth_class":"selected codebook authority decision","current_home":"config/selectors/codebook-authority.json","disposition":"KEEP_PERMANENT","why":"tracked selector is the authority decision; remote newest/timestamp fallback is forbidden"},
+    {"truth_class":"audit baseline/ratchet control","current_home":"config/baselines/foundry-audit-baseline.json","disposition":"KEEP_PERMANENT","why":"tracked control input; must not be hidden or silently replaced by ignored local state"},
+    {"truth_class":"semantic and CR configuration","current_home":"config/semantic/** + config/cr/** + config/registers/**","disposition":"KEEP_PERMANENT","why":"permanent policy/config ownership"},
+    {"truth_class":"thesaurus anchor/config input","current_home":"config/thesaurus/anchors.txt","disposition":"KEEP_PERMANENT","why":"tracked permanent configuration"},
+    {"truth_class":"ratified ruling topology","current_home":"docs/RATIFIED-RULINGS-REGISTRY.md + source documents + tests/guards/gate2/foundry_ruling_registry.py","disposition":"KEEP_PERMANENT_UNLESS_STRONGER_REPLACEMENT","why":"ruling IDs, raw reference multiplicity, corroborated/sole-home state, false positives, and topology participate in guards"},
+    {"truth_class":"retired DET configuration historical control","current_home":"archive/config/det-patterns-v1.json","disposition":"ARCHIVE_EVIDENCE","why":"tests assert inert archived config is not read by active code; history remains evidence"},
+    {"truth_class":"AQ4 frozen benchmark/precommit/holdout evidence","current_home":"experiments/aq4_benchmark/** + experiments/foundry_aq4_probes.py","disposition":"BLOCKED_TRUTH_HOME","why":"unique benchmark law/provenance currently lives under legacy tree; S14 must conserve bytes/sets/commitments before S15"},
+    {"truth_class":"measurement research provenance","current_home":"experiments/measure/**","disposition":"ARCHIVE_EVIDENCE","why":"measurement memos and generating scripts justify historical decisions and are not equivalent to a summary"},
+    {"truth_class":"one-off semantic/codebook mutation provenance","current_home":"adapt/assemble/migration/backfill/membership/verification scripts under experiments/**","disposition":"ARCHIVE_EVIDENCE","why":"executor plus verifier may be the only reproducible proof of how accepted state was produced"},
+    {"truth_class":"consolidation/batch research history","current_home":"experiments/foundry_consolidate_run1*.py + foundry_batch8_*.py + POKE-PUNCH-LIST.md","disposition":"ARCHIVE_EVIDENCE","why":"historical rationale/provenance; final archive homes already named in permanent path policy"},
+    {"truth_class":"operational codebook local mirror","current_home":"experiments/out/foundry/codebook.json","disposition":"BLOCKED_UNKNOWN_UNTIL_S11","why":"authority is remote+selector, but local mirror is still referenced operationally; future var/codebook owner not yet physically established"},
+    {"truth_class":"AQ4 ignored workqueue/adjudication/governance evidence","current_home":"selected experiments/out/aq4/** paths identified by OUTPUT-EXCEPTION-CENSUS","disposition":"BLOCKED_TRUTH_HOME_OR_ARCHIVE_EVIDENCE_BY_PATH","why":"census labels unit-binding workqueue and adjudication/census artifacts as frozen/governance evidence; ignored does not remove provenance value"},
+    {"truth_class":"unreferenced ignored runtime bytes","current_home":"experiments/out/** beyond the 110 referenced paths","disposition":"BLOCKED_UNKNOWN","why":"3,321 ignored files are known to exist in the measured local census but GitHub-side evidence cannot enumerate/inspect all unreferenced bytes"},
+    {"truth_class":"cleanup/quarantine correction history","current_home":"docs/to-be-deleted/REMOVAL-LEDGER.md on cleanup/evidence lineage","disposition":"ARCHIVE_EVIDENCE","why":"records the false inference from deletable=yes to zero ruling references and the restoration of nine handoffs"}
+  ],
+  "deletion_rule": "If information is only summarized elsewhere without equivalent authority and provenance, it is not DELETE_SAFE. Evidence never self-authorizes deletion."
+}

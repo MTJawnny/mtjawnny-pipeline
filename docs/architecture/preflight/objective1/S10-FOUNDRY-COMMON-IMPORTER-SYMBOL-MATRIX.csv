@@ -1,0 +1,342 @@
+importer,archive,scope,caller_class,symbol,reference_kinds,lines
+experiments/aq4_benchmark/aq4_binding.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,FOUNDRY_OUT_DIR,qualified_attribute,74
+experiments/aq4_benchmark/aq4_binding.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,halt,qualified_attribute,83;87;265;320;347;373;424;477;635
+experiments/aq4_benchmark/aq4_binding.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,load_corpus_gated,qualified_attribute,525;629;939
+experiments/aq4_benchmark/aq4_compare.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,halt,qualified_attribute,112;116;146;158;234;1022;1036;1039;1047;1055;1057;1061;1064;1067;1070;1081;1227;1359;1400
+experiments/aq4_benchmark/aq4_compare.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,load_corpus_gated,qualified_attribute,2038
+experiments/aq4_benchmark/aq4_pairing.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,halt,qualified_attribute,147;268;295;348;355;362;372
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,_MODAL_HEADER_RE,qualified_attribute,519
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,det_scan_texts,qualified_attribute,464;492
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,full_oracle_text,qualified_attribute,568
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,halt,qualified_attribute,290;323;357;364;426;655;938;1117;1167;1319;1404;1442
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,load_corpus_gated,qualified_attribute,1391
+experiments/aq4_benchmark/aq4_population.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,resolve_name,qualified_attribute,683
+experiments/aq4_benchmark/aq4_projection.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,_MODAL_HEADER_RE,qualified_attribute,508;547;593;1694
+experiments/aq4_benchmark/aq4_projection.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,halt,qualified_attribute,187;225;279;293;681;1029;1225;1922
+experiments/aq4_benchmark/aq4_projection.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,is_mode_line,qualified_attribute,547;554
+experiments/aq4_benchmark/aq4_projection.py,False,aq4_frozen_benchmark,AQ4/frozen benchmark,load_corpus_gated,qualified_attribute,295;315;341;430;608;1765;1868
+experiments/foundry_adapt_batch1_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,38;39;40;218
+experiments/foundry_adapt_batch1_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,94;99;105;107;115;130;132;134;144;200
+experiments/foundry_adapt_batch1_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,185
+experiments/foundry_adapt_batch1_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,203
+experiments/foundry_adapt_batch1_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,234
+experiments/foundry_adapt_batch2_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,26;27;28;96
+experiments/foundry_adapt_batch2_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,69;74;80;82;90;108;117;143
+experiments/foundry_adapt_batch2_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,137
+experiments/foundry_adapt_batch2_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,146
+experiments/foundry_adapt_batch2_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,175
+experiments/foundry_adapt_batch3_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,28;29;30;84
+experiments/foundry_adapt_batch3_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,57;62;68;70;78;95;104;127
+experiments/foundry_adapt_batch3_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,121
+experiments/foundry_adapt_batch3_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,130
+experiments/foundry_adapt_batch3_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,158
+experiments/foundry_adapt_batch4_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,27;28;29;90
+experiments/foundry_adapt_batch4_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,48;53;59;61;75;77;84;98;106
+experiments/foundry_adapt_batch4_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,152
+experiments/foundry_adapt_batch5_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,24;25;26;84
+experiments/foundry_adapt_batch5_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,45;50;56;58;69;71;78;92;100;133
+experiments/foundry_adapt_batch5_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,127
+experiments/foundry_adapt_batch5_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,136;146
+experiments/foundry_adapt_batch5_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,184
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,26;27;28;88
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,gate_passes,qualified_attribute,73;136
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,47;52;58;60;68;70;74;81;96;104;138;147
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,86
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,141
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,150;160
+experiments/foundry_adapt_batch6_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,198
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,28;29;30;90
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,gate_passes,qualified_attribute,75;135
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,49;54;60;62;70;72;76;83;98;106;137;146
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,88
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,140
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,149;159
+experiments/foundry_adapt_batch7_decisions.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,197
+experiments/foundry_any_damage_split.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,77;79;84;87;91;129
+experiments/foundry_aq4_probes.py,False,legacy_executable,reporter/census,CARDNAME_TOKEN,qualified_attribute,1059
+experiments/foundry_aq4_probes.py,False,legacy_executable,reporter/census,canonicalize_self_reference,qualified_attribute,1148
+experiments/foundry_aq4_probes.py,False,legacy_executable,reporter/census,full_oracle_text,qualified_attribute,1149
+experiments/foundry_aq4_probes.py,False,legacy_executable,reporter/census,halt,qualified_attribute,108;180;193;407;545;662;1065;1068
+experiments/foundry_aq4_probes.py,False,legacy_executable,reporter/census,load_corpus_gated,qualified_attribute,980;1254;1473
+experiments/foundry_assemble_batch2.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,35;37
+experiments/foundry_assemble_batch2.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,130;173
+experiments/foundry_assemble_batch2.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,120
+experiments/foundry_assemble_batch2.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,141;146
+experiments/foundry_assemble_batch2.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,251
+experiments/foundry_assemble_batch3.py,False,legacy_executable,pipeline/batch,FOUNDRY_OUT_DIR,qualified_attribute,26;109;110
+experiments/foundry_assemble_batch3.py,False,legacy_executable,pipeline/batch,halt,qualified_attribute,118;147
+experiments/foundry_assemble_batch3.py,False,legacy_executable,pipeline/batch,load_corpus,qualified_attribute,108
+experiments/foundry_assemble_batch3.py,False,legacy_executable,pipeline/batch,resolve_name,qualified_attribute,125
+experiments/foundry_assemble_batch3.py,False,legacy_executable,pipeline/batch,write_json,qualified_attribute,224
+experiments/foundry_assemble_batch4.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,35;121;122;123
+experiments/foundry_assemble_batch4.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,131;160
+experiments/foundry_assemble_batch4.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,120
+experiments/foundry_assemble_batch4.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,138
+experiments/foundry_assemble_batch4.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,237
+experiments/foundry_assemble_batch5.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,45;121;122;123;124
+experiments/foundry_assemble_batch5.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,132;161
+experiments/foundry_assemble_batch5.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,120
+experiments/foundry_assemble_batch5.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,139
+experiments/foundry_assemble_batch5.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,238
+experiments/foundry_assemble_batch6.py,False,legacy_executable,pipeline/batch,FOUNDRY_OUT_DIR,qualified_attribute,33;116;117;118;119;120
+experiments/foundry_assemble_batch6.py,False,legacy_executable,pipeline/batch,halt,qualified_attribute,129;158
+experiments/foundry_assemble_batch6.py,False,legacy_executable,pipeline/batch,load_corpus,qualified_attribute,115
+experiments/foundry_assemble_batch6.py,False,legacy_executable,pipeline/batch,resolve_name,qualified_attribute,136
+experiments/foundry_assemble_batch6.py,False,legacy_executable,pipeline/batch,write_json,qualified_attribute,236
+experiments/foundry_assemble_batch7.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,45;123;124;125;126;127;128
+experiments/foundry_assemble_batch7.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,138;167
+experiments/foundry_assemble_batch7.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,122
+experiments/foundry_assemble_batch7.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,145
+experiments/foundry_assemble_batch7.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,247
+experiments/foundry_authority.py,False,legacy_executable,authority/transport,CONFIG_SELECTORS,qualified_attribute,128
+experiments/foundry_authority.py,False,legacy_executable,authority/transport,FOUNDRY_OUT_DIR,qualified_attribute,2320
+experiments/foundry_authority.py,False,legacy_executable,authority/transport,halt,qualified_attribute,240;263;267;418;551;847;907;946;2307;2322;2351;2375
+experiments/foundry_axis_merge_pointer_correction.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,51;60;63;69
+experiments/foundry_axis_walk.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,28
+experiments/foundry_axis_walk.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,27;29;173
+experiments/foundry_axis_walk.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,192
+experiments/foundry_batch7_pay_life_scrub.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,43;44
+experiments/foundry_batch7_pay_life_scrub.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,82;96
+experiments/foundry_batch7_pay_life_scrub.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,71
+experiments/foundry_batch7_pay_life_scrub.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,75
+experiments/foundry_batch7_pay_life_scrub.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,108;109
+experiments/foundry_batch8_ab.py,False,legacy_executable,pipeline/batch,FOUNDRY_OUT_DIR,qualified_attribute,50
+experiments/foundry_batch8_ab.py,False,legacy_executable,pipeline/batch,halt,qualified_attribute,81;135;146;208;237;240;242;245;273;275;286
+experiments/foundry_batch8_ab.py,False,legacy_executable,pipeline/batch,load_corpus_gated,qualified_attribute,142
+experiments/foundry_batch8_ab.py,False,legacy_executable,pipeline/batch,write_json,qualified_attribute,213;229;265
+experiments/foundry_batch8_canon_analysis.py,False,legacy_executable,pipeline/batch,FOUNDRY_OUT_DIR,qualified_attribute,28
+experiments/foundry_batch8_canon_analysis.py,False,legacy_executable,pipeline/batch,write_json,qualified_attribute,166
+experiments/foundry_batch8_diff.py,False,legacy_executable,pipeline/batch,halt,qualified_attribute,50
+experiments/foundry_batch8_diff.py,False,legacy_executable,pipeline/batch,write_json,qualified_attribute,229
+experiments/foundry_blanket_risk.py,False,legacy_executable,operator/CLI,canonicalize_self_reference,qualified_attribute,106
+experiments/foundry_blanket_risk.py,False,legacy_executable,operator/CLI,is_mode_line,qualified_attribute,96;140;142
+experiments/foundry_blanket_risk.py,False,legacy_executable,operator/CLI,load_corpus_gated,qualified_attribute,69
+experiments/foundry_build_reaudit_packet.py,False,legacy_executable,gate/check,FOUNDRY_OUT_DIR,qualified_attribute,22
+experiments/foundry_cdr09_derive.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,249
+experiments/foundry_cdr09_derive.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,255
+experiments/foundry_cdr09_walk.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,74;86;88;99;101;103;145;152;164;171
+experiments/foundry_codebook.py,False,legacy_executable,codebook or membership mutation,DATA_ARTIFACTS_DIR,qualified_attribute,58
+experiments/foundry_codebook.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,56;57
+experiments/foundry_codebook.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,134;148;156;168;173;203;206;209;216;256;265;273;288;292;295;297;299;305;308
+experiments/foundry_consolidate.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,37
+experiments/foundry_consolidate.py,False,legacy_executable,codebook or membership mutation,batch_paths,qualified_attribute,554;576
+experiments/foundry_consolidate.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,257;298;382
+experiments/foundry_consolidate.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,577
+experiments/foundry_consolidate.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,555;608
+experiments/foundry_consolidate_run1.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,34
+experiments/foundry_consolidate_run1.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,33;35;36;37;38
+experiments/foundry_consolidate_run1.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,64
+experiments/foundry_consolidate_run1.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,315;343
+experiments/foundry_consolidate_run1_apply.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,75;76;77;78;689;764;765
+experiments/foundry_consolidate_run1_apply.py,False,legacy_executable,codebook or membership mutation,REPO_ROOT,qualified_attribute,697;843
+experiments/foundry_consolidate_run1_apply.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,104;108;115;121;130;134;141;290;326;367;387;409;414;487;521;575;598;621;625;669;739;743;748;779;887;960;964
+experiments/foundry_consolidate_run1_apply.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,304;652;865
+experiments/foundry_consolidate_run1_apply.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,639;690;855;1036
+experiments/foundry_consolidate_run1_classify.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,42
+experiments/foundry_consolidate_run1_classify.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,40;41;766
+experiments/foundry_consolidate_run1_classify.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,175;360;413;444;472;595;598;607;609;787
+experiments/foundry_consolidate_run1_classify.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,783
+experiments/foundry_consolidate_run1_enumerate.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,56;57
+experiments/foundry_consolidate_run1_enumerate.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,71;78;88;174;180;204;240;274;362;376;382;421;472
+experiments/foundry_consolidate_run1_enumerate.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,113
+experiments/foundry_consolidate_run1_enumerate.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,497
+experiments/foundry_corpus_pass_run1.py,False,legacy_executable,operator/CLI,FOUNDRY_OUT_DIR,qualified_attribute,46;47;48;49
+experiments/foundry_corpus_pass_run1.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,75;78;110;112;123
+experiments/foundry_corpus_pass_run1.py,False,legacy_executable,operator/CLI,load_corpus_gated,qualified_attribute,53
+experiments/foundry_corpus_pass_run1.py,False,legacy_executable,operator/CLI,write_json,qualified_attribute,67;103
+experiments/foundry_corroboration_pass.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,127
+experiments/foundry_cr.py,False,legacy_executable,operator/CLI,CONFIG_CR,qualified_attribute,117
+experiments/foundry_cr.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,148;168
+experiments/foundry_cr702_classes.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,125;140
+experiments/foundry_cr702_classes.py,False,legacy_executable,operator/CLI,load_corpus_gated,qualified_attribute,205
+experiments/foundry_cr_checks.py,False,legacy_executable,gate/check,CONFIG_GENERATED,qualified_attribute,72
+experiments/foundry_cr_checks.py,False,legacy_executable,gate/check,REPO_ROOT,qualified_attribute,70
+experiments/foundry_cr_checks.py,False,legacy_executable,gate/check,gate_passes,qualified_attribute,149
+experiments/foundry_cr_checks.py,False,legacy_executable,gate/check,halt,qualified_attribute,191
+experiments/foundry_cr_checks.py,False,legacy_executable,gate/check,load_corpus,qualified_attribute,148
+experiments/foundry_cr_edition_diff.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,96;102;139
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,59
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,60;61;62;63
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,det_scan_texts,qualified_attribute,395;552
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,full_oracle_text,qualified_attribute,438
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,148;156;176;187;192;211;254;301;347;497;518;527;535;611;621
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,is_lattice_pattern,qualified_attribute,111
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,is_prefilter_pattern,qualified_attribute,282
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,393;507;551
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,pattern_slug,qualified_attribute,280
+experiments/foundry_det_pass.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,460;461
+experiments/foundry_det_patterns_probe.py,False,legacy_executable,reporter/census,CARDNAME_TOKEN,qualified_attribute,84;87
+experiments/foundry_det_patterns_probe.py,False,legacy_executable,reporter/census,FOUNDRY_OUT_DIR,qualified_attribute,23;191
+experiments/foundry_det_patterns_probe.py,False,legacy_executable,reporter/census,det_scan_texts,qualified_attribute,201
+experiments/foundry_det_patterns_probe.py,False,legacy_executable,reporter/census,load_corpus_gated,qualified_attribute,193
+experiments/foundry_det_patterns_probe.py,False,legacy_executable,reporter/census,write_json,qualified_attribute,260
+experiments/foundry_digest.py,False,legacy_executable,codebook or membership mutation,batch_paths,qualified_attribute,108
+experiments/foundry_emit.py,False,legacy_executable,codebook or membership mutation,build_review_card_record,qualified_attribute,84
+experiments/foundry_emit.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,42;46;48;52;56;81
+experiments/foundry_emit.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,78
+experiments/foundry_emit.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,95
+experiments/foundry_enrich.py,False,legacy_executable,codebook or membership mutation,batch_paths,qualified_attribute,362
+experiments/foundry_enrich.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,105
+experiments/foundry_enrich.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,300
+experiments/foundry_enrich.py,False,legacy_executable,codebook or membership mutation,raw_faces,qualified_attribute,71;175;277
+experiments/foundry_enrich.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,394;398
+experiments/foundry_gate0_scrub.py,False,legacy_executable,gate/check,FOUNDRY_OUT_DIR,qualified_attribute,31;32
+experiments/foundry_gate0_scrub.py,False,legacy_executable,gate/check,gate_passes,qualified_attribute,59
+experiments/foundry_gate0_scrub.py,False,legacy_executable,gate/check,halt,qualified_attribute,77
+experiments/foundry_gate0_scrub.py,False,legacy_executable,gate/check,load_corpus,qualified_attribute,36
+experiments/foundry_gate0_scrub.py,False,legacy_executable,gate/check,write_json,qualified_attribute,82
+experiments/foundry_keyword_buckets.py,False,legacy_executable,operator/CLI,FOUNDRY_OUT_DIR,qualified_attribute,35;36
+experiments/foundry_keyword_buckets.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,87
+experiments/foundry_keyword_buckets.py,False,legacy_executable,operator/CLI,write_json,qualified_attribute,127
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,196;298;299;331
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,canonicalize_self_reference,string_symbol_reference,154
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,169;426;433;448;451
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,476
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,raw_faces,string_symbol_reference,153
+experiments/foundry_locality.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,454
+experiments/foundry_locality_backfill.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,72
+experiments/foundry_locality_backfill.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,162;168;170;174;179;183;237;246;266;269;272;292;341;353;363;398;406;434;555;556;583
+experiments/foundry_locality_backfill.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,577
+experiments/foundry_locality_backfill.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,365
+experiments/foundry_membership_move.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,54;73;76;103;123;125;127;131;134;147;168;170;173;175;183;214;216;219;242;246;256;264;266;280;292;294;297;326;349
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,68
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,63
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,det_scan_texts,qualified_attribute,333
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,full_oracle_text,qualified_attribute,296
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,119;189;258;271;275;289;317;320;343;397;424;440
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,331
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,332
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,295
+experiments/foundry_migrate_codebook_v2.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,469
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,255
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,476;477
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,REPO_ROOT,qualified_attribute,95
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,det_scan_texts,string_symbol_reference,131
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,full_oracle_text,qualified_attribute,411
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,145;212;216;286;292;297
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,180;187;197;397;494;731
+experiments/foundry_object_lattice.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,589
+experiments/foundry_prior_art.py,False,legacy_executable,operator/CLI,REPO_ROOT,qualified_attribute,64;65
+experiments/foundry_prior_art.py,False,legacy_executable,operator/CLI,det_scan_texts,string_symbol_reference,165
+experiments/foundry_prior_art.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,95;107;158;210;253
+experiments/foundry_r5_attribution.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,50
+experiments/foundry_r5_attribution.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,86;155;190
+experiments/foundry_reach_census.py,False,legacy_executable,reporter/census,det_scan_texts,qualified_attribute,156
+experiments/foundry_reach_census.py,False,legacy_executable,reporter/census,full_oracle_text,qualified_attribute,202;354
+experiments/foundry_reach_census.py,False,legacy_executable,reporter/census,halt,qualified_attribute,78;83;256
+experiments/foundry_reaudit.py,False,legacy_executable,gate/check,FOUNDRY_OUT_DIR,qualified_attribute,32
+experiments/foundry_reaudit.py,False,legacy_executable,gate/check,_cardname_candidates,qualified_attribute,53
+experiments/foundry_reaudit.py,False,legacy_executable,gate/check,full_oracle_text,qualified_attribute,156
+experiments/foundry_reaudit.py,False,legacy_executable,gate/check,load_corpus,qualified_attribute,104
+experiments/foundry_reconcile.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,59;61;62
+experiments/foundry_reconcile.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,74;86;95;106;108;110;115;176;178;224;226;245;261;307;310
+experiments/foundry_reconcile.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,293;335
+experiments/foundry_reminder_conformance.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,74
+experiments/foundry_reminder_conformance.py,False,legacy_executable,codebook or membership mutation,det_scan_texts,qualified_attribute,103
+experiments/foundry_reminder_conformance.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,76;82
+experiments/foundry_reminder_conformance.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,95
+experiments/foundry_selfother_scope.py,False,legacy_executable,operator/CLI,canonicalize_self_reference,qualified_attribute,124
+experiments/foundry_selfother_scope.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,146;151
+experiments/foundry_selfother_scope.py,False,legacy_executable,operator/CLI,load_corpus_gated,qualified_attribute,141
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,CONFIG_GENERATED,qualified_attribute,85
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,REPO_ROOT,qualified_attribute,84
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,_DIE_ROW_RE,string_symbol_reference,100
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,_MODAL_HEADER_RE,string_symbol_reference,98
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,_ROLL_INSTRUCTION_RE,string_symbol_reference,99
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,canonicalize_self_reference,string_symbol_reference,96
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,full_oracle_text,string_symbol_reference,95
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,halt,qualified_attribute,117;125;184;324
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,is_mode_line,string_symbol_reference,97
+experiments/foundry_shape_extractor.py,False,legacy_executable,operator/CLI,load_corpus_gated,qualified_attribute,419
+experiments/foundry_slug_reparse.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,51
+experiments/foundry_slug_reparse.py,False,legacy_executable,codebook or membership mutation,REPO_ROOT,qualified_attribute,50
+experiments/foundry_slug_reparse.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,69;120
+experiments/foundry_slug_reparse.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,85
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,72;113
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,66
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,batch_paths,qualified_attribute,69
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,build_review_card_record,qualified_attribute,247
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,condense_definition_for_prompt,qualified_attribute,109
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,412;433;444;459;470;472;483;508;517;631;634
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,514
+experiments/foundry_stage1b.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,528;617;653
+experiments/foundry_system_map.py,False,legacy_executable,codebook or membership mutation,load_corpus_gated,qualified_attribute,55
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,CONFIG_SEMANTIC,qualified_attribute,69
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,64
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,det_scan_texts,qualified_attribute,266
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,full_oracle_text,qualified_attribute,266
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,225;510;703;710
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,load_corpus,qualified_attribute,233
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,resolve_name,qualified_attribute,208
+experiments/foundry_verify_migration.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,484;707
+experiments/foundry_w3_census.py,False,legacy_executable,reporter/census,halt,qualified_attribute,401
+experiments/foundry_w3_census.py,False,legacy_executable,reporter/census,load_corpus_gated,qualified_attribute,384
+experiments/foundry_wire_capability.py,False,legacy_executable,codebook or membership mutation,CONFIG_THESAURUS,qualified_attribute,42
+experiments/foundry_wire_capability.py,False,legacy_executable,codebook or membership mutation,REPO_ROOT,qualified_attribute,41
+experiments/foundry_wire_capability.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,52
+experiments/foundry_wire_experiment.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,50;51
+experiments/foundry_wire_experiment.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,114;146
+experiments/measure/axis_foundry.py,False,reporter_census,reporter/census,halt,qualified_attribute,297;308;316;319;325;333;355
+experiments/measure/axis_foundry.py,False,reporter_census,reporter/census,load_corpus,qualified_attribute,299
+experiments/measure/axis_foundry.py,False,reporter_census,reporter/census,resolve_name,qualified_attribute,310
+experiments/measure/axis_foundry.py,False,reporter_census,reporter/census,write_json,qualified_attribute,122;192;372
+experiments/validate_slug.py,False,legacy_executable,codebook or membership mutation,FOUNDRY_OUT_DIR,qualified_attribute,27;338;603
+experiments/validate_slug.py,False,legacy_executable,codebook or membership mutation,REPO_ROOT,qualified_attribute,261
+experiments/validate_slug.py,False,legacy_executable,codebook or membership mutation,halt,qualified_attribute,263;268;277;289;294;318
+experiments/validate_slug.py,False,legacy_executable,codebook or membership mutation,write_json,qualified_attribute,604
+tests/guards/gate2/foundry_definition_drift.py,False,test_negative_control,test/negative control,FOUNDRY_OUT_DIR,qualified_attribute,56
+tests/guards/gate2/foundry_definition_drift.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,54
+tests/guards/gate2/foundry_definition_drift.py,False,test_negative_control,test/negative control,full_oracle_text,qualified_attribute,235
+tests/guards/gate2/foundry_definition_drift.py,False,test_negative_control,test/negative control,load_corpus,qualified_attribute,622
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,CARDNAME_TOKEN,qualified_attribute,144;146;148
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,CONFIG_REGISTERS,qualified_attribute,732
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,CONFIG_SEMANTIC,qualified_attribute,60;61
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,FOUNDRY_OUT_DIR,qualified_attribute,62;653
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,halt,qualified_attribute,759;765;964
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,is_lattice_pattern,qualified_attribute,99;926;928
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,is_prefilter_pattern,qualified_attribute,98;927
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,pattern_misses_cardname_token,qualified_attribute,139
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,pattern_slug,qualified_attribute,927
+tests/guards/gate2/foundry_family_sweep.py,False,test_negative_control,test/negative control,write_json,qualified_attribute,687
+tests/guards/gate2/foundry_gate_audit.py,False,test_negative_control,test/negative control,load_corpus,qualified_attribute,102
+tests/guards/gate2/foundry_gate_audit.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,103
+tests/guards/gate2/foundry_punctuation_audit.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,50
+tests/guards/gate2/foundry_punctuation_audit.py,False,test_negative_control,test/negative control,full_oracle_text,qualified_attribute,126
+tests/guards/gate2/foundry_punctuation_audit.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,91
+tests/guards/gate2/foundry_qualifier_census.py,False,test_negative_control,test/negative control,det_scan_texts,qualified_attribute,458;587;626
+tests/guards/gate2/foundry_qualifier_census.py,False,test_negative_control,test/negative control,halt,qualified_attribute,138;143;145;155;158;176
+tests/guards/gate2/foundry_qualifier_census.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,455;582;623
+tests/guards/gate2/foundry_reachability.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,59;60;196
+tests/guards/gate2/foundry_reachability.py,False,test_negative_control,test/negative control,halt,qualified_attribute,94;104;126
+tests/guards/gate2/foundry_routing_regression.py,False,test_negative_control,test/negative control,_cardname_candidates,qualified_attribute,213
+tests/guards/gate2/foundry_routing_regression.py,False,test_negative_control,test/negative control,halt,qualified_attribute,199;257
+tests/guards/gate2/foundry_routing_regression.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,67
+tests/guards/gate2/foundry_ruling_registry.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,85
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,CONFIG_SEMANTIC,qualified_attribute,143
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,61
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,_CLASS_LEVEL_RE,qualified_attribute,96
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,_LEVEL_BAND_RE,qualified_attribute,95
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,_is_band_marker,qualified_attribute,292
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,canonicalize_self_reference,qualified_attribute,200;372;375
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,det_scan_texts,qualified_attribute,231;284
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,full_oracle_text,qualified_attribute,232;285;372
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,halt,qualified_attribute,145;150
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,212
+tests/guards/gate2/foundry_visibility_audit.py,False,test_negative_control,test/negative control,raw_faces,qualified_attribute,368
+tests/guards/gate2/test_ground_truth.py,False,test_negative_control,test/negative control,FOUNDRY_OUT_DIR,qualified_attribute,325;348
+tests/guards/gate2/test_ground_truth.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,73;79
+tests/guards/gate2/test_ground_truth.py,False,test_negative_control,test/negative control,halt,qualified_attribute,366
+tests/guards/gate2/test_ground_truth.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,319
+tests/guards/gate2/test_locality.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,57
+tests/guards/gate2/test_locality.py,False,test_negative_control,test/negative control,canonicalize_self_reference,qualified_attribute,389;390;402
+tests/guards/gate2/test_locality.py,False,test_negative_control,test/negative control,halt,qualified_attribute,448;537
+tests/guards/gate2/test_locality.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,471
+tests/guards/gate2/test_object_lattice.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,58
+tests/guards/gate2/test_object_lattice.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,218
+tests/guards/probe/foundry_probe.py,False,test_negative_control,test/negative control,FOUNDRY_OUT_DIR,qualified_attribute,61
+tests/guards/probe/foundry_probe.py,False,test_negative_control,test/negative control,REPO_ROOT,qualified_attribute,62
+tests/guards/probe/foundry_probe.py,False,test_negative_control,test/negative control,halt,qualified_attribute,136;140;178;199;231;237
+tests/guards/probe/foundry_probe.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,89
+tests/refoundation/test_mtg_shapes_substrate.py,False,test_negative_control,test/negative control,halt,qualified_attribute,1879
+tests/refoundation/test_mtg_shapes_substrate.py,False,test_negative_control,test/negative control,load_corpus_gated,qualified_attribute,1439
+tests/refoundation/test_readonly_runtime.py,False,test_negative_control,test/negative control,gate_passes,qualified_attribute,1329;1332

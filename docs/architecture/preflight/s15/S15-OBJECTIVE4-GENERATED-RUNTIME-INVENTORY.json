@@ -1,0 +1,55 @@
+{
+  "schema": "s15-objective4-generated-runtime-inventory/1",
+  "status": "PREFLIGHT_EVIDENCE_ONLY",
+  "measured_accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "gitignore_at_measured_head": ["data/","*.jsonl","*.jsonl.gz","*.parquet","*.sqlite","experiments/out/","__pycache__/",".venv/",".DS_Store","*.pyc",".pytest_cache/","*.egg-info/","build/","dist/"],
+  "census_source": "refoundation/conservation/OUTPUT-EXCEPTION-CENSUS.yaml",
+  "census_scope": "tracked references plus separately measured ignored-file total; not a complete content inventory of ignored bytes",
+  "measurements": {
+    "tracked_files_scanned": 356,
+    "tracked_files_referencing_output_tree": 108,
+    "reference_sites": 280,
+    "distinct_output_paths_discovered": 110,
+    "exact_paths": 106,
+    "pattern_or_directory_paths": 4,
+    "unresolvable_dynamic_shapes": 9,
+    "known_ignored_files_under_experiments_out": 3321,
+    "role_counts_for_exact_candidates": {
+      "ACCEPTANCE_CONTROL": 1,
+      "AUTHORITY_LOCAL_MIRROR": 1,
+      "DERIVABLE_OUTPUT_CANDIDATE": 70,
+      "FROZEN_BENCHMARK_INPUT": 1,
+      "GOVERNANCE_OR_INCIDENT_EVIDENCE": 3,
+      "UNKNOWN_REVIEW": 31
+    }
+  },
+  "critical_paths": [
+    {"path":"experiments/out/foundry/codebook.json","role":"AUTHORITY_LOCAL_MIRROR","known_identity":{"sha256":"6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c","bytes":5066147},"references":"census reports 40 reference sites","future_owner":"var/codebook/codebook.json after S11","readiness":"BLOCKED until local-mirror callers and clean-checkout restore are moved"},
+    {"path":"experiments/out/foundry/audit-baseline.json","role":"legacy acceptance control","future_owner":"tracked config/baselines/foundry-audit-baseline.json already exists, but old-path caller closure must be revalidated","readiness":"not deletion-safe from name similarity alone"},
+    {"path":"experiments/out/aq4/** unit-binding workqueue","role":"FROZEN_BENCHMARK_INPUT / GOVERNANCE_OR_INCIDENT_EVIDENCE","known_identity":{"sha256":"7443de2ec353236db54411c2c2d7782c6e5b384b4c88e7477210fc3fde3eac67","bytes":789975},"future_owner":"benchmarks/aq4 or var/benchmarks/aq4 according to S14 role","readiness":"BLOCKED_TRUTH_HOME until S14 conservation"},
+    {"path":"experiments/out/aq4/** adjudication/census artifacts","role":"GOVERNANCE_OR_INCIDENT_EVIDENCE","future_owner":"S14 tracked/runtime split","readiness":"BLOCKED_TRUTH_HOME or ARCHIVE_EVIDENCE by exact path"},
+    {"path":"experiments/out/foundry/review/**","role":"live review/report output","future_owner":"var/ops/axis_review/** for live state; archive/reports/** for inert history","readiness":"BLOCKED_LIVE_CONSUMER because .claude commands name legacy review paths"},
+    {"path":"experiments/out/** backups/regression/migration reports","role":"mixed UNKNOWN_REVIEW and derivable candidates","future_owner":"role-specific var/archive or deletion after proven regeneration","readiness":"BLOCKED_UNKNOWN until exact inventory and consumer/provenance proof"}
+  ],
+  "permanent_ownership_targets_named_but_not_yet_physical_at_measured_head": [
+    "var/codebook/**",
+    "var/mtg/cr/**",
+    "var/evidence/**",
+    "var/thesaurus/**",
+    "var/ops/axis_review/**",
+    "var/guards/**",
+    "var/benchmarks/aq4/**",
+    "var/archive/engine/**",
+    "benchmarks/aq4/**",
+    "benchmarks/path_e/**"
+  ],
+  "clean_checkout_risks": [
+    "experiments/out/** is ignored and may contain state required by legacy tools; clean checkout cannot be assumed to have it.",
+    "The census explicitly does not classify unreferenced ignored files; 3,321 known ignored files greatly exceed 110 referenced path shapes.",
+    "Nine dynamic output shapes were unresolved by tracked static analysis.",
+    "var/ is not ignored at accepted h, although permanent path policy contemplates ignored runtime ownership there; the future ignore change is itself a conservation-sensitive migration step.",
+    "A generated/derivable label is not deletion authorization until regeneration from a clean checkout and downstream consumer equivalence are proved."
+  ],
+  "gitignore_law": "Objective 4 does not modify .gitignore. Future S15 must prove both directions: runtime output remains untracked as intended, and tracked controls/baselines/fixtures cannot become hidden by an ignore change.",
+  "limitation": "The GitHub connector cannot enumerate arbitrary local ignored content. Unseen runtime state is therefore a blocker/unproven surface, never guessed disposable."
+}

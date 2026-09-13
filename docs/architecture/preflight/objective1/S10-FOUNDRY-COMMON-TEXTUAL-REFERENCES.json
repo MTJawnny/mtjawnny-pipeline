@@ -1,0 +1,1611 @@
+{
+  "schema": "mtj-foundry-common-textual-reference-map/1",
+  "accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "entries": [
+    {
+      "path": ".claude/commands/triage-emit.md",
+      "lines": [
+        36,
+        54
+      ],
+      "archive": false,
+      "scope": "operator_command",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "archive/config/det-patterns-v1.json",
+      "lines": [
+        9
+      ],
+      "archive": true,
+      "scope": "archive_history",
+      "caller_class": "historical/one-off"
+    },
+    {
+      "path": "config/semantic/det-patterns-v2.json",
+      "lines": [
+        9
+      ],
+      "archive": false,
+      "scope": "other",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md",
+      "lines": [
+        279
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/ARCHITECTURE-AUDIT.md",
+      "lines": [
+        285,
+        294
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "docs/B-MIGRATION-DIRECTIVE.md",
+      "lines": [
+        80
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/B-MIGRATION-DISCOVERY.md",
+      "lines": [
+        272
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+      "lines": [
+        50
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/CORPUS-PASS-PLAN.md",
+      "lines": [
+        162
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/D3-MODAL-MODES-2026-08-04.md",
+      "lines": [
+        7,
+        59
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/DELIVERY-VOCABULARY-BATCH-2026-08-03.md",
+      "lines": [
+        156,
+        539
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+      "lines": [
+        88
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/EXTRACTOR-REPAIR-LOG-2026-08-04.md",
+      "lines": [
+        26
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/IN-CARD-SEPARATION-CENSUS-2026-08-06.md",
+      "lines": [
+        92
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "docs/MASTER-HANDOFF-ADDENDUM-2.md",
+      "lines": [
+        193
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/MASTER-HANDOFF-ADDENDUM-3.md",
+      "lines": [
+        184
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/MASTER-HANDOFF-ADDENDUM-4.md",
+      "lines": [
+        103
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md",
+      "lines": [
+        229
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/PRE-STEP-2-AUDIT-2026-08-04.md",
+      "lines": [
+        152
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "docs/PRODUCT-REALITY-AUDIT-2026-08-09.md",
+      "lines": [
+        125
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "docs/RATIFIED-DIRECTIVES-BATCH-4-6.md",
+      "lines": [
+        137,
+        383,
+        384,
+        385,
+        429
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md",
+      "lines": [
+        23
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md",
+      "lines": [
+        314
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "docs/SESSION-HANDOFF-2026-08-02.md",
+      "lines": [
+        146
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/SESSION-HANDOFF-2026-08-04-EVE.md",
+      "lines": [
+        90,
+        184
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/SUP-TRIAGE-PROTOCOL.md",
+      "lines": [
+        97
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/TRIAGE-BATCH-5.md",
+      "lines": [
+        552
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/TRIAGE-BATCH-7.md",
+      "lines": [
+        306
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "docs/archive/B-MIGRATION-AUDIT-PACKET.md",
+      "lines": [
+        413,
+        897
+      ],
+      "archive": true,
+      "scope": "archive_history",
+      "caller_class": "historical/one-off"
+    },
+    {
+      "path": "docs/archive/TRIAGE-BATCH-4.md",
+      "lines": [
+        73,
+        451,
+        654
+      ],
+      "archive": true,
+      "scope": "archive_history",
+      "caller_class": "historical/one-off"
+    },
+    {
+      "path": "docs/archive/TRIAGE-BATCH-6.md",
+      "lines": [
+        296,
+        646,
+        647,
+        648,
+        692
+      ],
+      "archive": true,
+      "scope": "archive_history",
+      "caller_class": "historical/one-off"
+    },
+    {
+      "path": "experiments/aq4_benchmark/README.md",
+      "lines": [
+        50,
+        419,
+        586
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/aq4_binding.py",
+      "lines": [
+        59
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/aq4_compare.py",
+      "lines": [
+        91
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/aq4_pairing.py",
+      "lines": [
+        79
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/aq4_population.py",
+      "lines": [
+        91,
+        723,
+        814
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/aq4_projection.py",
+      "lines": [
+        87,
+        88,
+        127,
+        154,
+        532,
+        533
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/cohorts/cohort-1.json",
+      "lines": [
+        75
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/cohorts/cohort-2.json",
+      "lines": [
+        185
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/open-surface-manifest.json",
+      "lines": [
+        44
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/population-manifest.json",
+      "lines": [
+        4926,
+        5129,
+        5770
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/aq4_benchmark/sampling.json",
+      "lines": [
+        46
+      ],
+      "archive": false,
+      "scope": "aq4_frozen_benchmark",
+      "caller_class": "AQ4/frozen benchmark"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch1_decisions.py",
+      "lines": [
+        36
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch2_decisions.py",
+      "lines": [
+        24
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch3_decisions.py",
+      "lines": [
+        26
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch4_decisions.py",
+      "lines": [
+        25,
+        70
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch5_decisions.py",
+      "lines": [
+        22
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch6_decisions.py",
+      "lines": [
+        13,
+        24
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_adapt_batch7_decisions.py",
+      "lines": [
+        26
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_any_damage_split.py",
+      "lines": [
+        28
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_aq4_probes.py",
+      "lines": [
+        76
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch2.py",
+      "lines": [
+        31
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch3.py",
+      "lines": [
+        22
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "pipeline/batch"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch4.py",
+      "lines": [
+        31
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch5.py",
+      "lines": [
+        41
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch6.py",
+      "lines": [
+        29
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "pipeline/batch"
+    },
+    {
+      "path": "experiments/foundry_assemble_batch7.py",
+      "lines": [
+        28,
+        41
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_authority.py",
+      "lines": [
+        119
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "authority/transport"
+    },
+    {
+      "path": "experiments/foundry_axis_merge_pointer_correction.py",
+      "lines": [
+        39
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_axis_walk.py",
+      "lines": [
+        24
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_batch7_pay_life_scrub.py",
+      "lines": [
+        41
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_batch8_ab.py",
+      "lines": [
+        47
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "pipeline/batch"
+    },
+    {
+      "path": "experiments/foundry_batch8_canon_analysis.py",
+      "lines": [
+        22
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "pipeline/batch"
+    },
+    {
+      "path": "experiments/foundry_batch8_diff.py",
+      "lines": [
+        19
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "pipeline/batch"
+    },
+    {
+      "path": "experiments/foundry_blanket_risk.py",
+      "lines": [
+        57
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_build_reaudit_packet.py",
+      "lines": [
+        19
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "experiments/foundry_cdr09_derive.py",
+      "lines": [
+        29
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_cdr09_walk.py",
+      "lines": [
+        29
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_codebook.py",
+      "lines": [
+        44,
+        54,
+        68
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_consolidate.py",
+      "lines": [
+        34
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1.py",
+      "lines": [
+        28
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1_apply.py",
+      "lines": [
+        71
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1_classify.py",
+      "lines": [
+        34
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1_enumerate.py",
+      "lines": [
+        50
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_corpus_pass_run1.py",
+      "lines": [
+        41
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_corroboration_pass.py",
+      "lines": [
+        43
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_cr.py",
+      "lines": [
+        74
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_cr702_classes.py",
+      "lines": [
+        53,
+        204
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_cr_checks.py",
+      "lines": [
+        44,
+        48
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "experiments/foundry_cr_edition_diff.py",
+      "lines": [
+        54
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_det_pass.py",
+      "lines": [
+        9,
+        46,
+        103
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_det_patterns_probe.py",
+      "lines": [
+        9,
+        10,
+        21
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "experiments/foundry_digest.py",
+      "lines": [
+        31
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_emit.py",
+      "lines": [
+        32
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_enrich.py",
+      "lines": [
+        11,
+        50,
+        54
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_gate0_scrub.py",
+      "lines": [
+        4,
+        28
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "experiments/foundry_keyword_buckets.py",
+      "lines": [
+        25
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_locality.py",
+      "lines": [
+        110,
+        149
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_locality_backfill.py",
+      "lines": [
+        68
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_membership_move.py",
+      "lines": [
+        41
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_migrate_codebook_v2.py",
+      "lines": [
+        58
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_object_lattice.py",
+      "lines": [
+        66,
+        72,
+        128
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_prior_art.py",
+      "lines": [
+        62,
+        185,
+        194
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_r5_attribution.py",
+      "lines": [
+        47
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_reach_census.py",
+      "lines": [
+        55
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "experiments/foundry_reaudit.py",
+      "lines": [
+        29
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "experiments/foundry_reconcile.py",
+      "lines": [
+        54
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_reminder_conformance.py",
+      "lines": [
+        17,
+        46
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_selfother_scope.py",
+      "lines": [
+        44
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_shape_extractor.py",
+      "lines": [
+        52
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "operator/CLI"
+    },
+    {
+      "path": "experiments/foundry_slug_reparse.py",
+      "lines": [
+        47
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_stage1b.py",
+      "lines": [
+        55,
+        69
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_system_map.py",
+      "lines": [
+        33
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_verify_migration.py",
+      "lines": [
+        13,
+        62
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_w3_census.py",
+      "lines": [
+        53
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "experiments/foundry_wire_capability.py",
+      "lines": [
+        39
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/foundry_wire_experiment.py",
+      "lines": [
+        48
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "experiments/measure/axis_foundry.py",
+      "lines": [
+        34
+      ],
+      "archive": false,
+      "scope": "reporter_census",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "experiments/validate_slug.py",
+      "lines": [
+        25
+      ],
+      "archive": false,
+      "scope": "legacy_executable",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "refoundation/PACKAGE-EXECUTION-CONTRACT.yaml",
+      "lines": [
+        145,
+        182
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "other"
+    },
+    {
+      "path": "refoundation/conservation/OUTPUT-EXCEPTION-CENSUS.yaml",
+      "lines": [
+        39,
+        2251,
+        2265,
+        2271,
+        2277,
+        2283,
+        2289,
+        2295,
+        2301,
+        2307
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "reporter/census"
+    },
+    {
+      "path": "refoundation/preservation/captures/2026-08-30-local-research/docs/CANONICAL-SEMANTIC-UNIT-DECISION-PACKET-2026-08-13.md",
+      "lines": [
+        102,
+        424,
+        428
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "refoundation/preservation/captures/2026-08-30-local-research/docs/FULL-CARD-INFORMATION-CONSERVATION-2026-08-13.md",
+      "lines": [
+        44
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "refoundation/preservation/captures/2026-08-30-local-research/docs/REPOSITORY-ARCHITECTURE-AUDIT-2026-08-28.md",
+      "lines": [
+        400,
+        477,
+        561
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "gate/check"
+    },
+    {
+      "path": "refoundation/preservation/captures/2026-08-30-local-research/docs/SEMANTIC-ADDRESS-ARCHITECTURE-REVIEW-2026-08-13.md",
+      "lines": [
+        292
+      ],
+      "archive": false,
+      "scope": "document_contract_or_reference",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "src/mtj_foundry/corpus.py",
+      "lines": [
+        26,
+        29
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "other"
+    },
+    {
+      "path": "src/mtj_foundry/infra/artifact.py",
+      "lines": [
+        5,
+        40
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "other"
+    },
+    {
+      "path": "src/mtj_foundry/mtg/cr/edition.py",
+      "lines": [
+        27
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "other"
+    },
+    {
+      "path": "src/mtj_foundry/mtg/shapes/delivery.py",
+      "lines": [
+        601
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "codebook or membership mutation"
+    },
+    {
+      "path": "src/mtj_foundry/oracle_text.py",
+      "lines": [
+        17
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "other"
+    },
+    {
+      "path": "src/mtj_foundry/paths.py",
+      "lines": [
+        470
+      ],
+      "archive": false,
+      "scope": "other_python",
+      "caller_class": "other"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_definition_drift.py",
+      "lines": [
+        43,
+        47
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_family_sweep.py",
+      "lines": [
+        54,
+        170,
+        925
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_gate_audit.py",
+      "lines": [
+        51
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_punctuation_audit.py",
+      "lines": [
+        42,
+        45
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_qualifier_census.py",
+      "lines": [
+        109
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_reachability.py",
+      "lines": [
+        51,
+        54
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_routing_regression.py",
+      "lines": [
+        58
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_ruling_registry.py",
+      "lines": [
+        59,
+        71
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/foundry_visibility_audit.py",
+      "lines": [
+        53,
+        56,
+        83
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/test_ground_truth.py",
+      "lines": [
+        50,
+        58,
+        64,
+        68
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/test_locality.py",
+      "lines": [
+        46
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/gate2/test_object_lattice.py",
+      "lines": [
+        48
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/guards/probe/foundry_probe.py",
+      "lines": [
+        58
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/codebook_consumer_analysis.py",
+      "lines": [
+        50,
+        100,
+        622,
+        944
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/layout_census.py",
+      "lines": [
+        11,
+        44,
+        67,
+        245
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_codebook_store.py",
+      "lines": [
+        1016,
+        1315,
+        1317,
+        1322,
+        1335,
+        1577,
+        1579,
+        1584,
+        1591,
+        1772,
+        1823,
+        1837,
+        2014,
+        2018,
+        2224,
+        2328,
+        2345,
+        2439,
+        2498,
+        2534,
+        2585,
+        2721,
+        2765,
+        2785,
+        2805,
+        2829,
+        3186,
+        3208,
+        3234,
+        3256,
+        3277
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_corpus_capability.py",
+      "lines": [
+        16,
+        268,
+        270,
+        274,
+        286,
+        297,
+        346,
+        445,
+        486,
+        503,
+        518,
+        533,
+        540,
+        545,
+        576,
+        589,
+        605,
+        618,
+        620,
+        631,
+        634
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_infra_artifact.py",
+      "lines": [
+        3,
+        124
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_layout_delegation.py",
+      "lines": [
+        12,
+        23,
+        25,
+        64,
+        184,
+        185,
+        241,
+        333,
+        335,
+        337,
+        398,
+        399,
+        466,
+        543,
+        548,
+        549,
+        720,
+        721,
+        785,
+        855,
+        860,
+        861,
+        993,
+        994,
+        1004,
+        1096,
+        1192,
+        1197,
+        1198,
+        1322,
+        1323,
+        1325,
+        1328,
+        1331,
+        1422,
+        1428,
+        1567,
+        1572,
+        1573,
+        1705,
+        1706,
+        1768,
+        1884,
+        1889,
+        1890,
+        2067,
+        2068,
+        2076,
+        2145,
+        2193,
+        2324,
+        2329,
+        2330,
+        2417,
+        2418,
+        2423,
+        2495,
+        2631,
+        2636,
+        2637,
+        2730,
+        2731,
+        2736,
+        2795,
+        2861,
+        2947,
+        2952,
+        2953,
+        3072,
+        3073,
+        3078,
+        3152,
+        3327,
+        3332,
+        3333,
+        3373,
+        3385,
+        3388,
+        3395,
+        3421,
+        3427,
+        3478,
+        3706,
+        3883,
+        3888,
+        3892,
+        3896,
+        3898,
+        3948,
+        3953,
+        3978,
+        4143,
+        4229,
+        4249,
+        4275,
+        4276,
+        4277,
+        4279,
+        4280,
+        4281,
+        4287,
+        4288,
+        4467,
+        4576,
+        4597,
+        4607,
+        4609,
+        4631,
+        4647,
+        4657,
+        4706,
+        4710,
+        4728,
+        4731,
+        4826,
+        4829,
+        4833,
+        4836,
+        4844,
+        4845,
+        5111,
+        5115,
+        5120,
+        5137,
+        5141,
+        5198,
+        5222,
+        5296,
+        5315,
+        5319,
+        5359,
+        5365,
+        5385,
+        5459,
+        5497,
+        5498,
+        5675,
+        5815,
+        5816
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_mtg_shapes_substrate.py",
+      "lines": [
+        1436,
+        1686,
+        1874,
+        1876
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_oracle_text_capability.py",
+      "lines": [
+        370,
+        438,
+        439,
+        441
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_output_census.py",
+      "lines": [
+        353
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_package_skeleton.py",
+      "lines": [
+        397,
+        419
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_ratchet_capability.py",
+      "lines": [
+        798,
+        812,
+        814,
+        824,
+        827
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_readonly_runtime.py",
+      "lines": [
+        1325
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    },
+    {
+      "path": "tests/refoundation/test_static_pilot.py",
+      "lines": [
+        928
+      ],
+      "archive": false,
+      "scope": "test_negative_control",
+      "caller_class": "test/negative control"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "schema": "mtj-s16b-community-vocabulary-preflight/0",
+  "status": "RESEARCH_EVIDENCE_NOT_SEMANTIC_AUTHORITY",
+  "accessed": "2026-09-12",
+  "principle": "Community vocabulary may name useful derived functional parents, but no community label overrides Oracle/CR-grounded mechanical truth.",
+  "statuses": ["WIDELY_USED", "NARROW_ARCHETYPE", "OVERLOADED_CONFLICTING", "MECHANICALLY_PRECISE", "USEFUL_NO_STABLE_LABEL", "PROJECT_AUTHORED"],
+  "entries": [
+    {
+      "term": "ramp",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "mana acceleration above ordinary on-curve production",
+      "supported_children": ["land ramp", "mana dork", "mana rock", "mana-producing enchantment", "cost reduction", "burst/ritual mana"],
+      "boundary": "Do not encode one-shot rituals as universally inside or outside the term. Preserve temporary-versus-repeatable acceleration as a separate coordinate and expose the naming dispute.",
+      "claims": ["C007", "C017"]
+    },
+    {
+      "term": "mana dork",
+      "status": ["WIDELY_USED"],
+      "working_scope": "creature that provides mana, usually through a mana ability",
+      "boundary": "Creature body, summoning-sickness exposure, quantity, colors, and conditionality remain mechanical coordinates.",
+      "claims": ["C007"]
+    },
+    {
+      "term": "mana rock",
+      "status": ["WIDELY_USED"],
+      "working_scope": "artifact used as repeatable mana acceleration or fixing",
+      "boundary": "Do not infer identical speed, net acceleration, color access, or durability from the label.",
+      "claims": ["C007"]
+    },
+    {
+      "term": "fast mana",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "mana acceleration whose immediate output is unusually efficient relative to its setup cost",
+      "boundary": "Exact efficiency boundary is community-dependent; keep as strategic/functional vocabulary, not a direct fact.",
+      "claims": ["C007", "C017"]
+    },
+    {
+      "term": "ritual",
+      "status": ["WIDELY_USED", "MECHANICALLY_PRECISE"],
+      "working_scope": "one-shot spell/effect that produces a burst of mana",
+      "boundary": "Whether ritual is a child of ramp is vocabulary-dependent; the temporary resource pattern itself is objective.",
+      "claims": ["C016", "C017"]
+    },
+    {
+      "term": "board wipe",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "effect used to clear a broad section of the battlefield or reset an opposing board",
+      "boundary": "May be symmetric/asymmetric and may destroy, exile, bounce, shrink, sacrifice, or otherwise clear. Scope and persistence must remain explicit.",
+      "claims": ["C009", "C013"]
+    },
+    {
+      "term": "wrath",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "colloquial subfamily of creature-board wipes, historically anchored to Wrath of God",
+      "boundary": "Do not assume destroy specifically; current usage may include non-destroy sweepers.",
+      "claims": ["C009"]
+    },
+    {
+      "term": "removal",
+      "status": ["WIDELY_USED"],
+      "working_scope": "interaction whose job is to neutralize an opposing object or threat",
+      "boundary": "Object class, target requirement, destination, permanence, compensation, timing, and scope are necessary child coordinates.",
+      "claims": ["C008"]
+    },
+    {
+      "term": "interaction",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "cards/effects used to disrupt, answer, constrain, or respond to opponents' game actions or threats",
+      "boundary": "Too broad for a canonical mechanical predicate. Useful as an upper functional parent only.",
+      "claims": ["C008"]
+    },
+    {
+      "term": "protection",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "effects used to preserve a player, board, permanent, spell, or game plan through opposing interaction",
+      "boundary": "Do not confuse the strategic role with the rules keyword protection. Hexproof, indestructible, phasing, counter-protection, recursion, and interaction suppression have different failure modes.",
+      "claims": ["C008"]
+    },
+    {
+      "term": "graveyard hate",
+      "status": ["WIDELY_USED"],
+      "working_scope": "effects whose job is to deny or reduce opponents' graveyard resources or graveyard-based lines",
+      "boundary": "Persistent prevention/replacement, one-shot exile, targeted exile, and access locks are different child mechanisms with different coverage.",
+      "claims": ["C008", "C014", "C015"]
+    },
+    {
+      "term": "stax",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING", "NARROW_ARCHETYPE"],
+      "working_scope": "strategic family of effects that materially constrain opponents' ability to execute game actions or resources",
+      "boundary": "Boundary with tax, prison, hatebear, and control is unstable. Never materialize as direct mechanical truth.",
+      "claims": ["C010"]
+    },
+    {
+      "term": "hatebear",
+      "status": ["WIDELY_USED", "NARROW_ARCHETYPE"],
+      "working_scope": "small/efficient creature whose static or triggered effect constrains a class of opposing game actions",
+      "boundary": "Creature size/cost threshold and exact strategic boundary vary; mechanical restriction remains separately represented.",
+      "claims": ["C010"]
+    },
+    {
+      "term": "cantrip",
+      "status": ["WIDELY_USED"],
+      "working_scope": "cheap effect that replaces itself by drawing a card while performing another small job or selection action",
+      "boundary": "Exact mana-value ceiling is not stable. A single self-replacement is not by itself net card advantage.",
+      "claims": ["C012"]
+    },
+    {
+      "term": "sac outlet",
+      "status": ["WIDELY_USED"],
+      "working_scope": "repeatable or readily available way to sacrifice one's own permanent(s), commonly creatures, as enabling infrastructure",
+      "boundary": "Free versus paid, once-per-turn versus repeatable, object scope, activation timing, and payoff/output are separate coordinates.",
+      "claims": ["C011"]
+    },
+    {
+      "term": "tutor",
+      "status": ["WIDELY_USED"],
+      "working_scope": "search/select from library for one or more cards under specified restrictions",
+      "boundary": "Destination is job-defining: hand, battlefield, graveyard, top of library, exile, and reveal-only searches must not collapse.",
+      "claims": ["C008"]
+    },
+    {
+      "term": "reanimator",
+      "status": ["WIDELY_USED", "NARROW_ARCHETYPE"],
+      "working_scope": "strategy/role family built around moving valuable creatures or permanents from graveyard to battlefield",
+      "boundary": "Entomb-style setup and Reanimate-style payoff may be functionally adjacent in a reanimator deck while remaining different context-free jobs.",
+      "claims": ["C008"]
+    },
+    {
+      "term": "card advantage",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "net increase in usable cards/resources relative to expenditure",
+      "boundary": "Keep separate from card selection, filtering, and velocity. Exact resource-accounting conventions vary by context.",
+      "claims": ["C008", "C012"]
+    },
+    {
+      "term": "card velocity",
+      "status": ["WIDELY_USED", "OVERLOADED_CONFLICTING"],
+      "working_scope": "ability to see or cycle through more cards without necessarily creating net card advantage",
+      "boundary": "Do not use as a synonym for draw count; selection depth, retain count, discard/exile/bottom disposition, and repeatability matter.",
+      "claims": ["C008", "C012"]
+    },
+    {
+      "term": "proactive-turn interaction suppression",
+      "status": ["PROJECT_AUTHORED", "USEFUL_NO_STABLE_LABEL"],
+      "working_scope": "functional parent for effects whose job is to protect a proactive turn/line by denying or making opposing interaction impractical during that turn",
+      "boundary": "Children include hard action prohibition and out-of-turn spell taxation. This is a proposed functional coordinate, not community terminology or canonical truth.",
+      "claims": ["C001", "C002", "C003"]
+    },
+    {
+      "term": "deep selective library access",
+      "status": ["PROJECT_AUTHORED", "USEFUL_NO_STABLE_LABEL"],
+      "working_scope": "functional parent for effects that inspect a meaningful top-of-library window and retain a chosen subset as accessible cards",
+      "boundary": "Selection depth, retained quantity, payment, timing, and disposition of rejected cards remain required coordinates.",
+      "claims": ["C004", "C005", "C006"]
+    }
+  ]
+}

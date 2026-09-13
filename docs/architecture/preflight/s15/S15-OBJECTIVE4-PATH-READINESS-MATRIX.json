@@ -1,0 +1,164 @@
+{
+  "schema": "s15-objective4-path-readiness-matrix/1",
+  "status": "PREFLIGHT_EVIDENCE_ONLY_NOT_DELETION_AUTHORIZATION",
+  "measured_accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "evidence_branch_base": "6b7e1fa2224be610b09cc00e9838d27658f59583",
+  "cleanup_evidence_head": "fcb11e19296209aecac4c8b3526be39bcce0196a",
+  "inheritance_law": "Every member of a candidate_set inherits that set's classification, dependency_evidence, truth_provenance_evidence, successor, prerequisites, revalidation_mandatory, and could_change_before_s15 fields. This records the required fields for every listed candidate without repeating identical evidence text.",
+  "classification_values": ["KEEP_PERMANENT","MIGRATED_REPLACED","ARCHIVE_EVIDENCE","DELETE_SAFE","BLOCKED_LIVE_CONSUMER","BLOCKED_TRUTH_HOME","BLOCKED_UNKNOWN"],
+  "counts_by_classification": {"KEEP_PERMANENT":16,"MIGRATED_REPLACED":1,"ARCHIVE_EVIDENCE":45,"DELETE_SAFE":0,"BLOCKED_LIVE_CONSUMER":29,"BLOCKED_TRUTH_HOME":21,"BLOCKED_UNKNOWN":15},
+  "candidate_count": 127,
+  "tracked_experiments_file_count": 107,
+  "tracked_experiments_delete_safe_count": 0,
+  "common": {
+    "revalidation_mandatory": true,
+    "could_change_before_s15": "S10-S14 can move callers, truth homes, runtime ownership, archive disposition, and tracked document topology. Destructive S15 must remeasure the actual accepted pre-S15 head."
+  },
+  "candidate_sets": [
+    {
+      "id":"AQ4_FROZEN_TRUTH",
+      "classification":"BLOCKED_TRUTH_HOME",
+      "dependency_evidence":["Objective-3/current benchmark topology","src/mtj_foundry/paths.py"],
+      "truth_provenance_evidence":["frozen benchmark/precommit/pairing/projection/binding/holdout artifacts are unique benchmark law/provenance"],
+      "successor":"benchmarks/aq4/** for tracked frozen evidence and var/benchmarks/aq4/** for runtime state, as proven by S14",
+      "prerequisites":["S14","byte/setwise/provenance conservation"],
+      "members":["experiments/aq4_benchmark/README.md","experiments/aq4_benchmark/aq4_binding.py","experiments/aq4_benchmark/aq4_compare.py","experiments/aq4_benchmark/aq4_pairing.py","experiments/aq4_benchmark/aq4_population.py","experiments/aq4_benchmark/aq4_projection.py","experiments/aq4_benchmark/binding-schema.json","experiments/aq4_benchmark/cohorts/cohort-1.json","experiments/aq4_benchmark/cohorts/cohort-2.json","experiments/aq4_benchmark/cohorts/cohort-3.json","experiments/aq4_benchmark/cohorts/cohort-6.json","experiments/aq4_benchmark/cohorts/cohort-7.json","experiments/aq4_benchmark/cohorts/cohort-8.json","experiments/aq4_benchmark/comparison-algebra.json","experiments/aq4_benchmark/evaluation-projection-schema.json","experiments/aq4_benchmark/holdout-seed-commitment.json","experiments/aq4_benchmark/open-surface-manifest.json","experiments/aq4_benchmark/pairs-open.json","experiments/aq4_benchmark/population-manifest.json","experiments/aq4_benchmark/sampling.json","experiments/foundry_aq4_probes.py"]
+    },
+    {
+      "id":"LIVE_LEGACY_GENERIC",
+      "classification":"BLOCKED_LIVE_CONSUMER",
+      "dependency_evidence":["Objective-3 parser/interpreter inventory","tests/refoundation/codebook_consumer_analysis.py","tests/refoundation/test_det_batch_retirement.py",".claude/commands/** where applicable"],
+      "truth_provenance_evidence":["accepted tracked source tree; live caller classes not closed"],
+      "successor":"permanent owner/API must be proven by S10-S13; no similarly named module is accepted as proof",
+      "prerequisites":["S10-S13","caller-class closure","S15 revalidation"],
+      "members":["experiments/emit_viewer.py","experiments/foundry_audit_baseline.py","experiments/foundry_cr702_classes.py","experiments/foundry_det_pass.py","experiments/foundry_digest.py","experiments/foundry_emit.py","experiments/foundry_enrich.py","experiments/foundry_r5_attribution.py","experiments/foundry_reconcile.py","experiments/foundry_reminder_conformance.py","experiments/foundry_slug_reparse.py","experiments/foundry_system_map.py","experiments/foundry_wire_capability.py","experiments/foundry_wire_experiment.py","experiments/invert_tags.py","experiments/serve_viewer.py","experiments/validate_slug.py","experiments/viewer.html"]
+    },
+    {
+      "id":"LIVE_COMMON",
+      "classification":"BLOCKED_LIVE_CONSUMER",
+      "dependency_evidence":["Objective-3: LIVE_LEGACY_POLICY_BOUNDARY","layout delegation evidence records high fan-in"],
+      "truth_provenance_evidence":["legacy policy behavior remains live"],
+      "successor":"src/mtj_foundry/corpus.py + oracle_text.py + mtg/text_match.py + mtg/shapes/*",
+      "prerequisites":["S10","all facade/static/dynamic callers","differential conservation"],
+      "members":["experiments/foundry_common.py"]
+    },
+    {
+      "id":"LIVE_WRAPPERS",
+      "classification":"BLOCKED_LIVE_CONSUMER",
+      "dependency_evidence":["Objective-3: LIVE_WRAPPER / LIVE_WRAPPER_VALIDATOR"],
+      "truth_provenance_evidence":["compatibility behavior still observed by callers/validators"],
+      "successor":"per member: foundry_shape_extractor.py -> src/mtj_foundry/mtg/shapes/delivery.py; foundry_locality.py -> src/mtj_foundry/mtg/shapes/locality.py; foundry_object_lattice.py -> src/mtj_foundry/mtg/shapes/target_classes.py",
+      "prerequisites":["S10/S13","caller closure","differential/guard conservation"],
+      "members":["experiments/foundry_shape_extractor.py","experiments/foundry_locality.py","experiments/foundry_object_lattice.py"]
+    },
+    {
+      "id":"LIVE_CODEBOOK_AUTHORITY_CR_PRODUCT",
+      "classification":"BLOCKED_LIVE_CONSUMER",
+      "dependency_evidence":["permanent package exists but legacy caller closure is incomplete","Objective-3 tier_engine remains LIVE_LEGACY_PRODUCT_AND_DIFFERENTIAL_PEER"],
+      "truth_provenance_evidence":["operational behavior remains live"],
+      "successor":"per member: foundry_codebook.py -> src/mtj_foundry/codebook.py + codebook_store.py (S11); foundry_authority.py -> S12 authority/transport split; foundry_cr.py/checks/edition_diff/keyword_buckets -> src/mtj_foundry/mtg/cr/*; tier_engine.py -> partial src/mtj_foundry/thesaurus/retrieval.py plus other owners still to prove",
+      "prerequisites":["S11/S12/S13 as applicable","caller closure","S15 revalidation"],
+      "members":["experiments/foundry_codebook.py","experiments/foundry_authority.py","experiments/foundry_cr.py","experiments/foundry_cr_checks.py","experiments/foundry_cr_edition_diff.py","experiments/foundry_keyword_buckets.py","experiments/tier_engine.py"]
+    },
+    {
+      "id":"ARCHIVE_MUTATION_PROVENANCE",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["src/mtj_foundry/paths.py archive/research/mutations ownership","no deletion inference from low runtime use"],
+      "truth_provenance_evidence":["one-off executors/backfills/migrations and verifying companions explain accepted state"],
+      "successor":"archive/research/mutations/**",
+      "prerequisites":["S15 archive phase","prove no live consumer","preserve executor/verifier provenance set"],
+      "members":["experiments/foundry_adapt_batch1_decisions.py","experiments/foundry_adapt_batch2_decisions.py","experiments/foundry_adapt_batch3_decisions.py","experiments/foundry_adapt_batch4_decisions.py","experiments/foundry_adapt_batch5_decisions.py","experiments/foundry_adapt_batch6_decisions.py","experiments/foundry_adapt_batch7_decisions.py","experiments/foundry_assemble_batch2.py","experiments/foundry_assemble_batch3.py","experiments/foundry_assemble_batch4.py","experiments/foundry_assemble_batch5.py","experiments/foundry_assemble_batch6.py","experiments/foundry_assemble_batch7.py","experiments/foundry_axis_merge_pointer_correction.py","experiments/foundry_batch7_pay_life_scrub.py","experiments/foundry_locality_backfill.py","experiments/foundry_membership_move.py","experiments/foundry_migrate_codebook_v2.py","experiments/foundry_verify_migration.py"]
+    },
+    {
+      "id":"ARCHIVE_CONSOLIDATION",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["src/mtj_foundry/paths.py archive/research/consolidation ownership"],
+      "truth_provenance_evidence":["historical consolidation decision provenance"],
+      "successor":"archive/research/consolidation/**",
+      "prerequisites":["S15 archive phase","no live consumer proof"],
+      "members":["experiments/foundry_consolidate_run1.py","experiments/foundry_consolidate_run1_apply.py","experiments/foundry_consolidate_run1_classify.py","experiments/foundry_consolidate_run1_enumerate.py"]
+    },
+    {
+      "id":"ARCHIVE_BATCH8",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["src/mtj_foundry/paths.py archive/research/batch8 ownership"],
+      "truth_provenance_evidence":["historical batch8 analysis/diff provenance"],
+      "successor":"archive/research/batch8/**",
+      "prerequisites":["S15 archive phase","no live consumer proof"],
+      "members":["experiments/foundry_batch8_ab.py","experiments/foundry_batch8_canon_analysis.py","experiments/foundry_batch8_diff.py"]
+    },
+    {
+      "id":"ARCHIVE_MEASUREMENT",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["src/mtj_foundry/paths.py archive/research/thesaurus-measurement ownership"],
+      "truth_provenance_evidence":["measurement memos/scripts are provenance, not equivalent to later summaries"],
+      "successor":"archive/research/thesaurus-measurement/**",
+      "prerequisites":["S15 archive phase","no live consumer proof"],
+      "members":["experiments/measure/FINDINGS-MEMO.md","experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md","experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md","experiments/measure/axis_foundry.py","experiments/measure/clean_recut.py","experiments/measure/df_distributions.py","experiments/measure/family_tree_evidence.py","experiments/measure/phase3_rebalance_shapes.py","experiments/measure/pip_normalization.py"]
+    },
+    {
+      "id":"ARCHIVE_TRIAGE",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["src/mtj_foundry/paths.py archive/research/triage ownership"],
+      "truth_provenance_evidence":["research/triage history"],
+      "successor":"archive/research/triage/**",
+      "prerequisites":["S15 archive phase"],
+      "members":["experiments/POKE-PUNCH-LIST.md"]
+    },
+    {
+      "id":"ARCHIVE_OTHER_RESEARCH",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["permanent archive/research policy"],
+      "truth_provenance_evidence":["historical extraction/corpus/corroboration/prior-art evidence"],
+      "successor":"archive/research/** final subhome chosen without losing provenance",
+      "prerequisites":["S15 archive phase","no live consumer proof"],
+      "members":["experiments/foundry_any_damage_split.py","experiments/foundry_cdr09_derive.py","experiments/foundry_cdr09_walk.py","experiments/foundry_corpus_pass_run1.py","experiments/foundry_corroboration_pass.py","experiments/foundry_gate0_scrub.py","experiments/foundry_prior_art.py"]
+    },
+    {
+      "id":"TRACKED_UNKNOWN",
+      "classification":"BLOCKED_UNKNOWN",
+      "dependency_evidence":["tracked tree + consumer analyzer; no sufficient proof for safe deletion or archive-only status"],
+      "truth_provenance_evidence":["unknown is retained rather than promoted to safe"],
+      "successor":null,
+      "prerequisites":["exact caller/truth/provenance census","S15 revalidation"],
+      "members":["experiments/foundry_axis_walk.py","experiments/foundry_blanket_risk.py","experiments/foundry_build_reaudit_packet.py","experiments/foundry_consolidate.py","experiments/foundry_det_patterns_probe.py","experiments/foundry_reach_census.py","experiments/foundry_reaudit.py","experiments/foundry_review.html","experiments/foundry_selfother_scope.py","experiments/foundry_slug_dossier.py","experiments/foundry_stage1b.py","experiments/foundry_synonym_collision.py","experiments/foundry_w3_census.py","experiments/snapshot.py"]
+    },
+    {
+      "id":"IGNORED_RUNTIME_UNKNOWN",
+      "classification":"BLOCKED_UNKNOWN",
+      "dependency_evidence":["OUTPUT-EXCEPTION-CENSUS: 3,321 ignored files, 110 referenced path shapes, nine unresolvable dynamic shapes",".gitignore ignores experiments/out/"],
+      "truth_provenance_evidence":["selected ignored paths are authority mirrors, controls, frozen benchmark inputs, or governance evidence; unreferenced bytes are not inspected"],
+      "successor":"role-specific var/**, archive/**, or proven derivable deletion after S11-S14",
+      "prerequisites":["S11-S14","complete local ignored-state inventory","clean-checkout proof"],
+      "members":["experiments/out/**"]
+    },
+    {
+      "id":"MIGRATED_MOVES",
+      "classification":"MIGRATED_REPLACED",
+      "dependency_evidence":["tests/refoundation/test_layout_delegation.py pins prior S4 relocation; old tracked namespace absent"],
+      "truth_provenance_evidence":["tracked behavioral fixtures live at successor"],
+      "successor":"tests/fixtures/ground_truth/**",
+      "prerequisites":["actual pre-S15 stale-string/dynamic-consumer revalidation"],
+      "members":["experiments/moves/**"]
+    },
+    {
+      "id":"KEEP_PERMANENT",
+      "classification":"KEEP_PERMANENT",
+      "dependency_evidence":["accepted permanent ownership, guards, commands, workflow, or conservation evidence"],
+      "truth_provenance_evidence":["these paths are not S15 deletion targets; some commands require content repair under S13 but the path surface remains permanent"],
+      "successor":null,
+      "prerequisites":["none for keeping; any future retirement requires separate stronger proof"],
+      "members":["tests/fixtures/ground_truth/**","src/mtj_foundry/**","config/selectors/codebook-authority.json","config/baselines/foundry-audit-baseline.json","config/semantic/**","config/cr/**","config/registers/**","config/thesaurus/anchors.txt","docs/RATIFIED-RULINGS-REGISTRY.md","tests/guards/gate2/foundry_ruling_registry.py",".gitignore",".claude/commands/triage-alpha.md",".claude/commands/triage-beta.md",".claude/commands/triage-emit.md",".github/workflows/build.yml","refoundation/conservation/OUTPUT-EXCEPTION-CENSUS.yaml"]
+    },
+    {
+      "id":"ARCHIVE_IMPLICATED",
+      "classification":"ARCHIVE_EVIDENCE",
+      "dependency_evidence":["retirement/cleanup conservation evidence"],
+      "truth_provenance_evidence":["historical control and quarantine correction record"],
+      "successor":"retain in archive/evidence lineage; final location may change only with provenance conservation",
+      "prerequisites":["S15/cleanup reconciliation"],
+      "members":["archive/config/det-patterns-v1.json","docs/to-be-deleted/REMOVAL-LEDGER.md"]
+    }
+  ],
+  "law": "No current tracked experiments/** file is DELETE_SAFE. Current classifications are provisional planning evidence; they cannot authorize destructive S15."
+}

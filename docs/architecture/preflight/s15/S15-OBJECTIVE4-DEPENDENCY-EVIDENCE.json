@@ -1,0 +1,27 @@
+{
+  "schema": "s15-objective4-dependency-evidence/1",
+  "status": "PREFLIGHT_EVIDENCE_ONLY",
+  "measured_accepted_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+  "evidence_branch_base": "6b7e1fa2224be610b09cc00e9838d27658f59583",
+  "methods": [
+    {"id":"TRACKED_TREE","method":"Enumerate the recursive Git tree at accepted h. Result: 107 tracked files under experiments/**; no tracked experiments/moves/** namespace remains."},
+    {"id":"STATIC_IMPORTS","method":"Inspect tracked Python imports and import-from edges. Static-import negatives are not accepted as proof of no consumer."},
+    {"id":"DYNAMIC_LOADERS","method":"Use tests/refoundation/codebook_consumer_analysis.py and tests/refoundation/test_det_batch_retirement.py as tracked evidence for module-by-string, importlib.import_module, __import__, importlib.util.spec_from_file_location, legacy facade, bootstrap, and output-path consumer classes."},
+    {"id":"COMMAND_PATHS","method":"Inspect .claude/commands/triage-alpha.md, triage-beta.md, and triage-emit.md. They name experiments/foundry_enrich.py, tier_engine-derived loaders, experiments/out/foundry/review, decision outputs, and legacy reconcile paths operationally."},
+    {"id":"WORKFLOW_PATHS","method":"Inspect .github/workflows/build.yml. Negative result at accepted h: no direct experiments/** invocation in this workflow. This is not generalized to other command/script consumers."},
+    {"id":"OBJECTIVE3","method":"Read Objective-3 result and parser/interpreter inventory at evidence head 6b7e1fa. Live legacy policy/product surfaces include foundry_common.py, foundry_det_pass.py, tier_engine.py, and compatibility wrappers foundry_shape_extractor.py, foundry_locality.py, and foundry_object_lattice.py."},
+    {"id":"LAYOUT_GUARDS","method":"Inspect tests/refoundation/test_layout_delegation.py. It records foundry_common.py as a high-fan-in compatibility boundary (83 importers in the measured layout evidence), pins dynamic/legacy layout shapes, and proves prior experiments/moves fixture relocation to tests/fixtures/ground_truth."},
+    {"id":"OUTPUT_CENSUS","method":"Read refoundation/conservation/OUTPUT-EXCEPTION-CENSUS.yaml. It reports 3,321 known ignored experiments/out/** files, 110 distinct referenced paths, 9 unresolvable dynamic shapes, and explicitly makes no claim about unreferenced ignored bytes."},
+    {"id":"PATH_OWNERSHIP","method":"Inspect src/mtj_foundry/paths.py. It defines permanent config/src/archive/var/benchmark ownership and legacy paths, while explicitly stating that accepted destination naming does not authorize physical moves."},
+    {"id":"GITIGNORE","method":"Inspect .gitignore at accepted h. experiments/out/ is ignored; var/ is not ignored. Ignored status is treated as an ownership fact, never as disposal evidence."},
+    {"id":"RULING_TOPOLOGY","method":"Inspect docs/RATIFIED-RULINGS-REGISTRY.md, tests/guards/gate2/foundry_ruling_registry.py, and cleanup REMOVAL-LEDGER evidence. Document population, ruling IDs, raw reference multiplicity, sole-home/corroborated state, and intentional false positives participate in conservation."},
+    {"id":"FIXTURES","method":"Enumerate tests/fixtures/ground_truth/**. These tracked fixtures encode behavior/ground truth and are live truth, not historical clutter."}
+  ],
+  "negative_results": [
+    "No tracked experiments/moves/** files exist at accepted h; their successor fixture namespace is tracked under tests/fixtures/ground_truth/**.",
+    "The accepted workflow .github/workflows/build.yml does not directly invoke experiments/**.",
+    "No current tracked experiments/** file met the DELETE_SAFE evidence bar during this preflight."
+  ],
+  "dependency_law": "Absence from static imports is not sufficient. A candidate remains blocked unless static, dynamic, subprocess/shell, command, test/fixture, workflow, package/config, direct-open/path-constant, operational-doc, authority/selector, baseline/ratchet, generated-output, and meaningful transitive consumer classes are accounted for.",
+  "limitation": "This GitHub-side Manager session cannot inspect arbitrary untracked/ignored local bytes. Any readiness claim depending on such bytes is BLOCKED_UNKNOWN until a clean local pre-S15 revalidation proves ownership and regeneration."
+}
