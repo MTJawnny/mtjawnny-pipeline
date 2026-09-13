@@ -28,7 +28,7 @@ A read-only scanner was executed in GitHub Actions after a detached checkout of 
 Raw evidence hashes:
 
 - `S10-FOUNDRY-COMMON-CENSUS.json`: `11463eac388849ea8fa527bb239e13ea017179817c0dd314bc3c637563d73cc9`;
-- `S10-FOUNDRY-COMMON-IMPORTER-SYMBOL-MATRIX.csv`: `0ec96b701668730522e44d0402015df0cd943140e033b753c0544924008117e0`;
+- `S10-FOUNDRY-COMMON-IMPORTER-SYMBOL-MATRIX.csv`: `b60be70cef45fc03324452242f144f2cfb82d4638c0208408532dfa26ab53282` (SHA-256 of the exact LF bytes stored in Git; the previously recorded `0ec96b701668730522e44d0402015df0cd943140e033b753c0544924008117e0` is the hash of a CRLF-converted copy and is retained here only as provenance of the corrected recording defect);
 - clean-runner Gate-2 transcript: `4f6b9c9fbff216f92f2908baee1503476db1cfa429a78102c74c03a312f32339`.
 
 The importer responsibility distribution is: **AQ4/frozen benchmark=5**, **authority/transport=1**, **codebook or membership mutation=43**, **gate/check=4**, **operator/CLI=9**, **pipeline/batch=5**, **reporter/census=5**, **test/negative control=15**. Scope distribution is: **aq4_frozen_benchmark=5**, **legacy_executable=66**, **reporter_census=1**, **test_negative_control=15**.
