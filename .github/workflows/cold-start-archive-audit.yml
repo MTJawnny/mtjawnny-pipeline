@@ -59,21 +59,15 @@ jobs:
             git grep -n -F "$p" -- ':!archive/**' ':!docs/archive/**' 2>/dev/null >> "$OUT/path-consumers.txt" || true
           done
 
-          # Build the registry topology using the registry's own tracked_docs() and
-          # harvest_file()/build() functions, but do not invoke main/ratchet/output.
           cat > "$RUNNER_TEMP/registry_snapshot.py" <<'PY'
           import importlib.util, json, sys
           from pathlib import Path
           spec=importlib.util.spec_from_file_location('rr','tests/guards/gate2/foundry_ruling_registry.py')
           rr=importlib.util.module_from_spec(spec); spec.loader.exec_module(rr)
           reg=rr.build()
-          out=Path(sys.argv[1])
-          out.write_text(json.dumps(reg,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          Path(sys.argv[1]).write_text(json.dumps(reg,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
           PY
-
-          snapshot () {
-            python3 "$RUNNER_TEMP/registry_snapshot.py" "$OUT/$1-registry.json"
-          }
+          snapshot () { python3 "$RUNNER_TEMP/registry_snapshot.py" "$OUT/$1-registry.json"; }
           snapshot baseline
 
           python3 - "$OUT/baseline-registry.json" "$OUT/candidate-ruling-status.json" "${docs_candidates[@]}" <<'PY'
@@ -81,14 +75,11 @@ jobs:
           reg=json.load(open(sys.argv[1])); dst=sys.argv[2]; paths=sys.argv[3:]
           out={}
           for p in paths:
-              name=pathlib.Path(p).name
-              d=reg['per_doc'][name]
-              out[p]={
-                'ruling_ids':d['ruling_ids'],
-                'sole_home_for':d['sole_home_for'],
-                'deletion_blocked':d['deletion_blocked'],
-                'deletable_on_registry_test_alone':not d['deletion_blocked'],
-              }
+              name=pathlib.Path(p).name; d=reg['per_doc'][name]
+              occ=[x for xs in reg['rulings'].values() for x in xs if x['doc']==name]
+              out[p]={'ruling_ids':d['ruling_ids'],'sole_home_for':d['sole_home_for'],
+                      'deletion_blocked':d['deletion_blocked'],'reference_occurrences':len(occ),
+                      'reference_source_lines':sorted({x['line'] for x in occ})}
           json.dump(out,open(dst,'w'),indent=2,sort_keys=True); open(dst,'a').write('\n')
           PY
 
@@ -96,55 +87,67 @@ jobs:
             label="$1"; shift
             git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
             mkdir -p archive/routing/docs
-            for p in "$@"; do
-              git mv "$p" "archive/routing/docs/${p#docs/}"
-            done
+            for p in "$@"; do git mv "$p" "archive/routing/docs/${p#docs/}"; done
             snapshot "$label"
-            git diff --cached --name-status > "$OUT/$label-moves.txt"
           }
-
           simulate_set zero_ruling_set \
-            docs/SESSION-HANDOFF-2026-08-06.md \
-            docs/SESSION-HANDOFF-2026-08-07.md \
-            docs/SESSION-HANDOFF-2026-08-09.md \
-            docs/NEXT-SESSION-CR-NORMALIZATION.md
-
-          simulate_set startup_routers \
-            docs/SESSION-START-PROCEDURE.md \
-            docs/PICK-UP-HERE.md
-
+            docs/SESSION-HANDOFF-2026-08-06.md docs/SESSION-HANDOFF-2026-08-07.md \
+            docs/SESSION-HANDOFF-2026-08-09.md docs/NEXT-SESSION-CR-NORMALIZATION.md
+          simulate_set startup_routers docs/SESSION-START-PROCEDURE.md docs/PICK-UP-HERE.md
           simulate_set old_directives \
-            docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md \
-            docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md \
-            docs/CONSOLIDATION-RUN1-DIRECTIVE.md \
-            docs/DET-PATTERNS-RUN2-DIRECTIVE.md
-
+            docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md \
+            docs/CONSOLIDATION-RUN1-DIRECTIVE.md docs/DET-PATTERNS-RUN2-DIRECTIVE.md
           simulate_set all_docs_candidates "${docs_candidates[@]}"
+
+          # Strong B4 simulation: full historical body moves byte-for-byte, while the
+          # old direct docs/ path becomes an unmistakable inert stub. For files that
+          # carry registry references, copy ONLY the exact original source lines the
+          # registry harvested. No task body or NEXT instructions survive in the stub.
+          git reset --hard 9f92039eb9c7132a351576c31472eb30a2957a67 >/dev/null
+          mkdir -p archive/routing/docs
+          for p in "${docs_candidates[@]}"; do git mv "$p" "archive/routing/docs/${p#docs/}"; done
+          python3 - "$OUT/baseline-registry.json" "${docs_candidates[@]}" <<'PY'
+          import json, pathlib, sys
+          reg=json.load(open(sys.argv[1]))
+          for ptxt in sys.argv[2:]:
+              p=pathlib.Path(ptxt); name=p.name; archived=pathlib.Path('archive/routing/docs')/name
+              lines=archived.read_text(encoding='utf-8').splitlines()
+              hit_lines=sorted({x['line'] for occ in reg['rulings'].values() for x in occ if x['doc']==name})
+              body=[
+                '# ARCHIVED — DO NOT FOLLOW', '',
+                '**Current task authority is GitHub Issue #1: latest `K` -> active `T`.**', '',
+                f'Historical body: `archive/routing/docs/{name}` (preserved unchanged).',
+                '',
+                'This old path remains only because current repository guards and historical links',
+                'treat direct `docs/` paths as load-bearing. It assigns no task and contains no',
+                'successor instructions.',
+              ]
+              if hit_lines:
+                  body += ['', '## Registry-preserved historical ruling-reference lines', '',
+                           'The exact original source lines below are retained mechanically so the',
+                           'ruling-registry topology does not fabricate a loss during archival.', '']
+                  body += [lines[n-1] for n in hit_lines]
+              p.write_text('\n'.join(body)+'\n',encoding='utf-8')
+          PY
+          git add docs archive/routing/docs
+          snapshot stubbed_all_docs_candidates
+          git diff --cached --name-status > "$OUT/stubbed-all-docs-moves.txt"
 
           python3 - "$OUT" <<'PY'
           import json,pathlib,sys
           out=pathlib.Path(sys.argv[1])
-          labels=['baseline','zero_ruling_set','startup_routers','old_directives','all_docs_candidates']
+          labels=['baseline','zero_ruling_set','startup_routers','old_directives','all_docs_candidates','stubbed_all_docs_candidates']
           regs={k:json.loads((out/f'{k}-registry.json').read_text()) for k in labels}
           base=regs['baseline']
-          def homes(reg):
-              return {rid:sorted({x['doc'] for x in occ}) for rid,occ in reg['rulings'].items()}
-          bh=homes(base)
-          report={
-            'baseline':{k:base[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']}
-          }
+          def homes(reg): return {rid:sorted({x['doc'] for x in occ}) for rid,occ in reg['rulings'].items()}
+          bh=homes(base); report={'baseline':{k:base[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']}}
           for label in labels[1:]:
-              r=regs[label]; h=homes(r)
-              all_ids=sorted(set(bh)|set(h))
-              changed={rid:{'before':bh.get(rid,[]),'after':h.get(rid,[])} for rid in all_ids if bh.get(rid,[])!=h.get(rid,[])}
-              report[label]={
-                'metrics':{k:r[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']},
-                'lost_ruling_ids':sorted(set(bh)-set(h)),
-                'new_ruling_ids':sorted(set(h)-set(bh)),
-                'changed_home_count':len(changed),
-                'changed_homes':changed,
-                'sole_home_documents':{n:d['sole_home_for'] for n,d in r['per_doc'].items() if d['sole_home_for']},
-              }
+              r=regs[label]; h=homes(r); ids=sorted(set(bh)|set(h))
+              changed={rid:{'before':bh.get(rid,[]),'after':h.get(rid,[])} for rid in ids if bh.get(rid,[])!=h.get(rid,[])}
+              report[label]={'metrics':{k:r[k] for k in ['generated_from','total_references','distinct_rulings','corroborated','sole_home']},
+                             'lost_ruling_ids':sorted(set(bh)-set(h)),'new_ruling_ids':sorted(set(h)-set(bh)),
+                             'changed_home_count':len(changed),'changed_homes':changed,
+                             'registry_topology_equal': r['total_references']==base['total_references'] and r['distinct_rulings']==base['distinct_rulings'] and r['corroborated']==base['corroborated'] and r['sole_home']==base['sole_home'] and h==bh and len(r['per_doc'])==len(base['per_doc'])}
           (out/'registry-comparison.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
           PY
 
