@@ -1,0 +1,85 @@
+name: Temporary S10 census refresh audit
+
+on:
+  push:
+    branches:
+      - planning/s10-s16-refresh-2026-09-13
+
+permissions:
+  contents: read
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Re-census foundry_common live importers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import ast, json, subprocess
+          from pathlib import Path
+
+          root = Path.cwd()
+          tracked = [p for p in subprocess.check_output(["git","ls-files","-z"]).decode().split("\0") if p]
+          py = [p for p in tracked if p.endswith(".py")]
+          live_py = [p for p in py if not p.startswith("archive/")]
+          archived_py = [p for p in py if p.startswith("archive/")]
+
+          def refs(path):
+              text = (root / path).read_text(encoding="utf-8")
+              tree = ast.parse(text, filename=path)
+              aliases = set()
+              names = set()
+              hit = False
+              for node in ast.walk(tree):
+                  if isinstance(node, ast.Import):
+                      for a in node.names:
+                          if a.name in {"foundry_common", "experiments.foundry_common"}:
+                              hit = True
+                              aliases.add(a.asname or a.name.rsplit(".",1)[-1])
+                  elif isinstance(node, ast.ImportFrom) and node.module in {"foundry_common", "experiments.foundry_common"}:
+                      hit = True
+                      names.update(a.name for a in node.names)
+              if aliases:
+                  for node in ast.walk(tree):
+                      if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id in aliases:
+                          names.add(node.attr)
+                      elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "getattr" and len(node.args) >= 2:
+                          if isinstance(node.args[0], ast.Name) and node.args[0].id in aliases and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str):
+                              names.add(node.args[1].value)
+              return hit, sorted(names)
+
+          errors=[]
+          live={}
+          archived={}
+          for p in py:
+              try:
+                  hit,names=refs(p)
+              except Exception as e:
+                  errors.append([p,repr(e)])
+                  continue
+              if hit:
+                  (archived if p.startswith("archive/") else live)[p]=names
+
+          report={
+              "head": subprocess.check_output(["git","rev-parse","HEAD"]).decode().strip(),
+              "tracked_files": len(tracked),
+              "tracked_python": len(py),
+              "live_python": len(live_py),
+              "archived_python": len(archived_py),
+              "parse_errors": errors,
+              "live_foundry_common_importers": len(live),
+              "archived_foundry_common_importers": len(archived),
+              "all_foundry_common_importers": len(live)+len(archived),
+              "live_importers": live,
+              "archived_importers": archived,
+              "live_referenced_names": sorted({n for ns in live.values() for n in ns}),
+          }
+          print("S10_CENSUS_REFRESH_JSON=" + json.dumps(report, sort_keys=True, separators=(",",":")))
+          assert not errors, errors
+          assert "experiments/foundry_build_reaudit_packet.py" not in live
+          assert "archive/routing/experiments/foundry_build_reaudit_packet.py" in archived
+          PY
