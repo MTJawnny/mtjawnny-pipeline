@@ -13,20 +13,22 @@ jobs:
   census:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout exact evidence branch
+      - name: Checkout evidence branch and preserve census tool
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Record identities
+      - name: Detach onto exact accepted implementation head
         run: |
+          cp tools/objective1_foundry_common_census.py /tmp/objective1_foundry_common_census.py
+          git checkout --detach 9f92039eb9c7132a351576c31472eb30a2957a67
           mkdir -p objective1-evidence
-          git rev-parse HEAD | tee objective1-evidence/workflow-head.txt
+          git rev-parse HEAD | tee objective1-evidence/measured-head.txt
           git status --porcelain=v1 | tee objective1-evidence/pre-status.txt
 
-      - name: Run tracked-file census
+      - name: Run tracked-file census at accepted head
         run: |
-          python3 tools/objective1_foundry_common_census.py \
+          python3 /tmp/objective1_foundry_common_census.py \
             --json objective1-evidence/foundry-common-census.json \
             --csv objective1-evidence/importer-symbol-matrix.csv \
             | tee objective1-evidence/census-stdout.txt
@@ -50,6 +52,6 @@ jobs:
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
-          name: objective1-foundry-common-census
+          name: objective1-foundry-common-census-accepted-head
           path: objective1-evidence/
           retention-days: 7
