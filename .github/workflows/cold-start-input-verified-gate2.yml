@@ -31,7 +31,7 @@ jobs:
           python3 -m pip install --disable-pip-version-check requests pyyaml
           curl -fsSL https://rclone.org/install.sh | sudo bash
 
-      - name: Configure existing R2 credentials
+      - name: Configure existing R2 credentials without enumeration
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -48,8 +48,6 @@ jobs:
             endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
             region=auto \
             no_check_bucket=true >/dev/null
-          rclone lsd r2:mtjawnny >/dev/null
-          rclone lsd r2:mtjawnny-foundry >/dev/null
 
       - name: Create exact-ref worktrees
         run: |
@@ -59,7 +57,7 @@ jobs:
           test "$(git -C "$RUNNER_TEMP/accepted" rev-parse HEAD)" = "$ACCEPTED_H"
           test "$(git -C "$RUNNER_TEMP/cleanup" rev-parse HEAD)" = "$CLEANUP_H"
 
-      - name: Restore and verify pinned external inputs
+      - name: Restore and verify pinned external inputs by exact object path
         shell: bash
         run: |
           set -euo pipefail
@@ -80,11 +78,11 @@ jobs:
             codebook_actual="$(sha256sum "$root/experiments/out/foundry/codebook.json" | awk '{print $1}')"
             codebook_size="$(wc -c < "$root/experiments/out/foundry/codebook.json" | tr -d ' ')"
             corpus_lines="$(python3 - "$root/data/raw/oracle-cards.jsonl.gz" <<'PY'
-          import gzip,sys
-          with gzip.open(sys.argv[1], 'rt', encoding='utf-8') as f:
-              print(sum(1 for _ in f))
-          PY
-          )"
+import gzip,sys
+with gzip.open(sys.argv[1], 'rt', encoding='utf-8') as f:
+    print(sum(1 for _ in f))
+PY
+)"
 
             test "$corpus_actual" = "$CORPUS_SHA"
             test "$codebook_actual" = "$CODEBOOK_SHA"
