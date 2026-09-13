@@ -41,13 +41,22 @@ jobs:
           from pathlib import Path
 
           base=Path('docs/architecture/preflight/objective1')
+
+          # Durable text files use LF and no trailing horizontal whitespace.
+          # The source Action artifact remains the byte-preserved provenance.
+          for name in ('S10-FOUNDRY-COMMON-IMPORTER-SYMBOL-MATRIX.csv',
+                       'S10-FOUNDRY-COMMON-GATE2-CLEAN-RUNNER.txt'):
+              p=base/name
+              text=p.read_text()
+              lines=[line.rstrip(' \t\r') for line in text.splitlines()]
+              p.write_text('\n'.join(lines)+'\n')
+
           d=json.loads((base/'S10-FOUNDRY-COMMON-CENSUS.json').read_text())
           assert d['accepted_head_measured']=='9f92039eb9c7132a351576c31472eb30a2957a67'
           assert d['counts']['foundry_common_importers_all']==87
           assert d['counts']['externally_referenced_surface_names_all']==35
           assert d['counts']['module_level_names_defined']==45
 
-          # Exact tracked textual-reference register, separately tagged by archive/scope.
           tr={
             'schema':'mtj-foundry-common-textual-reference-map/1',
             'accepted_head':d['accepted_head_measured'],
