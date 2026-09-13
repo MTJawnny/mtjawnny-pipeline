@@ -1,0 +1,44 @@
+name: Residual routing closeout audit export
+
+on:
+  push:
+    branches:
+      - cleanup/residual-routing-closeout-2026-09-12
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run routing and registry verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/residual-closeout"
+          mkdir -p "$OUT"
+          git rev-parse HEAD | tee "$OUT/head.txt"
+          python3 -m unittest \
+            tests.refoundation.test_worker_operating_contract \
+            tests.refoundation.test_residual_routing_closeout \
+            2>&1 | tee "$OUT/routing-tests.txt"
+          python3 tests/guards/gate2/foundry_ruling_registry.py --check-only \
+            2>&1 | tee "$OUT/registry-check.txt"
+          python3 tests/guards/gate2/foundry_ruling_registry.py --selftest \
+            2>&1 | tee "$OUT/registry-selftest.txt"
+          git diff --check 7aa321d656c211a7dd54103ed9b4e45950bd2b08...HEAD \
+            2>&1 | tee "$OUT/diff-check.txt"
+          git archive HEAD -o "$OUT/residual-source.tar"
+          sha256sum "$OUT/residual-source.tar" | tee "$OUT/source-tar-sha256.txt"
+
+      - name: Upload residual closeout audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: residual-routing-closeout-audit
+          path: ${{ runner.temp }}/residual-closeout/
+          retention-days: 7
