@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   repair:
-    if: github.event.head_commit.message != 'cleanup: repair family-sweep moved-path metadata'
+    if: github.event.head_commit.message != 'cleanup repair family-sweep moved-path metadata'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,5 +44,5 @@ jobs:
           git config user.name MTJawnny
           git config user.email mtjawnny@gmail.com
           git add tests/guards/gate2/foundry_family_sweep.py
-          git commit -m 'cleanup: repair family-sweep moved-path metadata'
+          git commit -m 'cleanup repair family-sweep moved-path metadata'
           git push origin HEAD:planning/s10-s16-refresh-2026-09-13
