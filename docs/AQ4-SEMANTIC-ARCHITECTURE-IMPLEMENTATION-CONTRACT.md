@@ -4,7 +4,7 @@
 
 Frozen contract body: `archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` (original blob `92e254b222c76f4570d0870b371bfd371093a4c0`, preserved byte-for-byte).
 
-The archived payload remains the durable pre-registered AQ4 benchmark/design contract and provenance record; this classification does **not** withdraw, ratify, amend, or resume its benchmark commitments. It removes only the stale claim that this live path is a CURRENT AQ4 ENTRY POINT. If the Captain later reauthorizes AQ4, the frozen contract is evidence/input to that separately authorized task; it is not self-executing authority.
+The archived payload remains the durable pre-registered AQ4 benchmark/design contract and provenance record; this classification does **not** withdraw, ratify, amend, or resume its benchmark commitments. It removes only the stale current-entry-point routing claim from the live surface. If the Captain later reauthorizes AQ4, the frozen contract is evidence/input to that separately authorized task; it is not self-executing authority.
 
 AQ4 production architecture remains unratified. No schema change, semantic retrofit, candidate component, benchmark run, Bridge v0 work, or Step6 work is authorized here.
 
