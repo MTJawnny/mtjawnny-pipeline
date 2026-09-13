@@ -1,0 +1,88 @@
+==============================================================================
+GATE 2 — every check, one exit code
+==============================================================================
+  [ FAIL ] lint                 exit=1    0.1s
+           -> the codebook is structurally invalid
+  [ FAIL ] family_sweep         exit=1    0.1s
+           -> a ratified family and its members contradict
+  [ FAIL ] definition_drift     exit=1    0.1s
+           -> an axis definition drifted from its name (ratcheted 2026-08-09)
+  [  ok  ] ruling_registry      exit=0    0.6s
+  [ FAIL ] conservation         exit=1    0.1s
+           -> text, a sentence or an ability was LOST
+  [ FAIL ] visibility           exit=1    0.1s
+           -> an option became unreachable
+  [ FAIL ] ground_truth         exit=1    0.1s
+           -> a ratified assignment and the extractor disagree
+  [ FAIL ] ground_truth_wide    exit=1    0.1s
+           -> the 1,181-assertion fixture regressed (ratcheted, not zero-based)
+  [ FAIL ] gate_audit           exit=1    0.1s
+           -> the extractor crashes on what the corpus gate excludes
+  [  ok  ] probe_guards         exit=0    0.1s
+  [ FAIL ] recorded_numbers     exit=1    0.1s
+           -> a count grammar §2 asserts no longer reproduces
+  [ FAIL ] invariance           exit=1    0.1s
+           -> a delivery depends on the CARD NAME
+  [  ok  ] reachability         exit=0    0.6s
+  [ FAIL ] object_lattice       exit=1    0.2s
+           -> the object lattice lost memberships, or a residual went unexplained
+  [ FAIL ] locality             exit=1    0.1s
+           -> semantic-locality coverage fell, or the resolution law regressed
+  [ FAIL ] qualifier_census     exit=1    0.2s
+           -> the qualifier census can no longer be re-derived as published
+
+==============================================================================
+VERDICT
+==============================================================================
+  gates run                       16
+  passed                           3
+  known-failing (excused)          0
+  UNEXPECTED failures             13
+
+  ✗ Gate 2 is RED. The failing tool's own output is the
+    report -- run it directly and read it. Do not proceed on
+    a red gate; that is the drift this procedure exists to stop.
+
+  --- lint (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/experiments/out/foundry/codebook.js
+
+  --- family_sweep (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/experiments/out/foundry/codebook.js
+
+  --- definition_drift (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/experiments/out/foundry/codebook.js
+
+  --- conservation (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- visibility (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- ground_truth (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- ground_truth_wide (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- gate_audit (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- recorded_numbers (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- invariance (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- object_lattice (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- locality (exit 1) ---
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
+
+  --- qualifier_census (exit 1) ---
+      [ok] target Island                                qualified=True cats=['type']
+      [ok] destroy another target creature              qualified=True cats=['identity']
+      [ok] destroy up to one target creature            qualified=False cats=[]
+      [ok] probe guard D: detector matches its known-positive fixture
+    NC1 -- modal/preprocessing duplicate counting
+    STOP — /home/runner/work/mtjawnny-pipeline/mtjawnny-pipeline/data/raw/oracle-cards.jsonl.gz not
