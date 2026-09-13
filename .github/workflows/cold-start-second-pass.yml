@@ -1,0 +1,196 @@
+name: Apply second cold-start archive pass
+
+on:
+  push:
+    branches:
+      - cleanup/cold-start-archive-2026-09-12
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Archive non-sole-home handoffs and repair stale phase pointers
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=9f92039eb9c7132a351576c31472eb30a2957a67
+          TMP="$RUNNER_TEMP/cold-start-second"
+          mkdir -p "$TMP" archive/routing/docs
+
+          cat > "$TMP/registry_snapshot.py" <<'PY'
+          import importlib.util,json,sys
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('rr','tests/guards/gate2/foundry_ruling_registry.py')
+          rr=importlib.util.module_from_spec(spec); spec.loader.exec_module(rr)
+          Path(sys.argv[1]).write_text(json.dumps(rr.build(),indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          PY
+          python3 "$TMP/registry_snapshot.py" "$TMP/before.json"
+
+          candidates=(
+            docs/MASTER-HANDOFF-ADDENDUM-2.md
+            docs/SESSION-HANDOFF-2026-08-01.md
+            docs/SESSION-HANDOFF-2026-08-02-EVE.md
+            docs/SESSION-HANDOFF-2026-08-02-PM.md
+            docs/SESSION-HANDOFF-2026-08-02.md
+            docs/SESSION-HANDOFF-2026-08-03-EVE.md
+            docs/SESSION-HANDOFF-2026-08-03-PM.md
+            docs/SESSION-HANDOFF-2026-08-03.md
+            docs/SESSION-HANDOFF-2026-08-04.md
+            docs/SESSION-HANDOFF-2026-08-05.md
+            docs/SESSION-HANDOFF-2026-08-07-EVE.md
+            docs/SESSION-HANDOFF-2026-08-08.md
+            docs/T3-BUILDOUT-STEP4-HANDOFF.md
+            docs/T3-BUILDOUT-STEP5-HANDOFF.md
+          )
+
+          # Refuse to archive any candidate the live registry says is a sole home.
+          python3 - "$TMP/before.json" "${candidates[@]}" <<'PY'
+          import json,pathlib,sys
+          r=json.load(open(sys.argv[1]))
+          bad=[]
+          for p in sys.argv[2:]:
+              d=r['per_doc'][pathlib.Path(p).name]
+              if d['sole_home_for'] or d['deletion_blocked']:
+                  bad.append((p,d['sole_home_for']))
+          assert not bad,bad
+          PY
+
+          # Preserve full bodies byte-exact under archive; old docs/ paths become
+          # inert compatibility stubs carrying only the exact lines harvested by
+          # the ruling registry, so ruling topology and current guards do not drift.
+          for p in "${candidates[@]}"; do
+            git mv "$p" "archive/routing/docs/${p#docs/}"
+          done
+          python3 - "$TMP/before.json" "${candidates[@]}" <<'PY'
+          import json,pathlib,sys
+          reg=json.load(open(sys.argv[1]))
+          for ptxt in sys.argv[2:]:
+              p=pathlib.Path(ptxt); name=p.name; archived=pathlib.Path('archive/routing/docs')/name
+              lines=archived.read_text(encoding='utf-8').splitlines()
+              hit_lines=sorted({x['line'] for occ in reg['rulings'].values() for x in occ if x['doc']==name})
+              body=[
+                '# ARCHIVED — DO NOT FOLLOW','',
+                '**Current task authority is GitHub Issue #1: latest `K` -> active `T`.**','',
+                f'Historical body: `archive/routing/docs/{name}` (preserved unchanged).','',
+                'This old path remains only because current repository guards and historical links',
+                'treat direct `docs/` paths as load-bearing. It assigns no task and contains no',
+                'successor instructions.',
+              ]
+              if hit_lines:
+                  body += ['', '## Registry-preserved historical ruling-reference lines','',
+                           'The exact original source lines below are retained mechanically so the',
+                           'ruling-registry topology does not fabricate a loss during archival.','']
+                  body += [lines[n-1] for n in hit_lines]
+              p.write_text('\n'.join(body)+'\n',encoding='utf-8')
+          PY
+
+          # Five stale handoffs are sole homes for ratified ruling IDs. We do not
+          # guess which surrounding prose is the binding law. Keep them intact and
+          # prepend an unmistakable retention warning; no body byte is rewritten.
+          blocked=(
+            docs/MASTER-HANDOFF.md
+            docs/MASTER-HANDOFF-ADDENDUM-3.md
+            docs/MASTER-HANDOFF-ADDENDUM-4.md
+            docs/SESSION-HANDOFF-2026-08-04-EVE.md
+            docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md
+          )
+          python3 - "$TMP/before.json" "${blocked[@]}" <<'PY'
+          import json,pathlib,sys
+          reg=json.load(open(sys.argv[1]))
+          banner=(
+            '# HISTORICAL EVIDENCE — DO NOT FOLLOW AS CURRENT ROUTING\n\n'
+            '**Current task authority is GitHub Issue #1: latest `K` -> active `T`.**\n\n'
+            'This historical handoff remains outside `archive/` only because the current ruling\n'
+            'registry identifies it as the sole document home for one or more ratified ruling IDs.\n'
+            'Its old startup, NEXT, sequencing, and “newest governs” instructions are inert.\n'
+            'Do not select work from this file. A future cleanup may archive it only after its\n'
+            'unique ruling law is mechanically conserved in an authorized canonical home.\n\n---\n\n'
+          )
+          for ptxt in sys.argv[2:]:
+              p=pathlib.Path(ptxt); d=reg['per_doc'][p.name]
+              assert d['sole_home_for'] and d['deletion_blocked'],(ptxt,d)
+              s=p.read_text(encoding='utf-8')
+              assert not s.startswith('# HISTORICAL EVIDENCE — DO NOT FOLLOW AS CURRENT ROUTING')
+              p.write_text(banner+s,encoding='utf-8')
+          PY
+
+          # Path-E operator pages are live reference docs, not task routers. Remove
+          # their one stale phase-state assertion while keeping operational content.
+          python3 - <<'PY'
+          from pathlib import Path
+          for fn,tail in [
+            ('refoundation/PATH-E-M2.md','This page says how to run these things and what their numbers mean, and nothing else.'),
+            ('refoundation/PATH-E-M3.md','This page says how to run the thing and what its output means.'),
+            ('refoundation/PATH-E-RUNTIME.md','This page describes how to run the thing and what its numbers mean, and nothing else.'),
+          ]:
+              p=Path(fn); s=p.read_text(encoding='utf-8')
+              old='Current phase state is `refoundation/ACTIVE-PHASE.yaml`. '+tail
+              new='No repository phase file assigns work. '+tail
+              assert s.count(old)==1,(fn,s.count(old))
+              p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+
+          # Extend the archive ledger with the newly archived payloads and the
+          # mechanically blocked retention set.
+          python3 - "$BASE" "${candidates[@]}" <<'PY'
+          from pathlib import Path
+          import subprocess,sys
+          base=sys.argv[1]; candidates=sys.argv[2:]
+          p=Path('archive/routing/README.md'); s=p.read_text(encoding='utf-8')
+          marker='\n## Second pass — non-sole-home stale handoffs\n'
+          assert marker not in s
+          lines=[marker,'',
+                 'These stale routing bodies were additionally archived byte-for-byte after the live ruling registry proved none was a sole home. Their old direct paths are inert compatibility stubs that preserve only mechanically harvested ruling-reference lines.','',
+                 '| former path | archive path | accepted-h blob |','|---|---|---|']
+          for old in candidates:
+              sha=subprocess.check_output(['git','rev-parse',f'{base}:{old}'],text=True).strip()
+              lines.append(f'| `{old}` | `archive/routing/docs/{Path(old).name}` | `{sha}` |')
+          lines += ['', '## Intentionally live historical evidence — sole-home blocked','',
+                    'The following stale handoffs are **not current routing** but remain at their original paths because the live ruling registry marks them as sole homes for ratified ruling IDs. Each now carries a prominent do-not-follow banner; no semantic extraction was guessed:','',
+                    '- `docs/MASTER-HANDOFF.md` — sole home: `T0`',
+                    '- `docs/MASTER-HANDOFF-ADDENDUM-3.md` — sole home: `D18`',
+                    '- `docs/MASTER-HANDOFF-ADDENDUM-4.md` — sole homes: `D34`, `D67`, `D77`',
+                    '- `docs/SESSION-HANDOFF-2026-08-04-EVE.md` — sole home: `D8`',
+                    '- `docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md` — sole homes: `G2`, `G3`, `G4`, `G5`, `G6`, `G7`, `Q10`','',
+                    'Archiving those five requires a separately authorized, mechanically proven canonical-law relocation. The cleanup deliberately stops short of interpreting which surrounding prose constitutes that law.','']
+          p.write_text(s+'\n'.join(lines),encoding='utf-8')
+          PY
+
+          # Byte-exact archive identity against accepted h.
+          for p in "${candidates[@]}"; do
+            test "$(git rev-parse "$BASE:$p")" = "$(git hash-object "archive/routing/docs/${p#docs/}")"
+          done
+
+          # Registry topology must remain exact despite moves/banners.
+          python3 "$TMP/registry_snapshot.py" "$TMP/after.json"
+          python3 - "$TMP/before.json" "$TMP/after.json" <<'PY'
+          import json,sys
+          a,b=(json.load(open(x)) for x in sys.argv[1:])
+          for k in ('total_references','distinct_rulings','corroborated','sole_home'):
+              assert a[k]==b[k],(k,a[k],b[k])
+          assert len(a['per_doc'])==len(b['per_doc'])
+          def homes(r): return {rid:sorted({x['doc'] for x in occ}) for rid,occ in r['rulings'].items()}
+          assert homes(a)==homes(b)
+          print('registry topology conserved', {k:b[k] for k in ('total_references','distinct_rulings','corroborated','sole_home')})
+          PY
+
+          python3 tests/guards/gate2/foundry_ruling_registry.py --check-only
+          python3 -m unittest tests.refoundation.test_worker_operating_contract
+          git diff --check
+
+          git add docs archive/routing/README.md refoundation/PATH-E-M2.md refoundation/PATH-E-M3.md refoundation/PATH-E-RUNTIME.md
+
+      - name: Commit and push second pass
+        run: |
+          git config user.name "Cold-start cleanup"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "docs: archive remaining non-binding handoff routing"
+          git push origin HEAD:cleanup/cold-start-archive-2026-09-12
