@@ -4,7 +4,7 @@
 
 Historical body: `archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md` (original blob `d4cffd89edddc15deb9a13c875365c4e019c492b`, preserved byte-for-byte).
 
-The T3 buildout session guide is completed historical routing. This direct path remains only as an inert compatibility pointer and to preserve the ruling-registry references harvested from the original. Nothing here assigns a T3 step, authorizes engine work, or resumes the old buildout sequence.
+The T3 buildout session guide is completed historical routing. This direct path remains only as an inert compatibility pointer and to preserve the mechanically harvested references from the original. Nothing here assigns a T3 step, authorizes engine work, or resumes the old buildout sequence.
 
 ## Registry-preserved historical reference lines
 
