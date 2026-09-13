@@ -1,3 +1,15 @@
+# HISTORICAL EVIDENCE — DO NOT FOLLOW AS CURRENT ROUTING
+
+**Current task authority is GitHub Issue #1: latest `K` -> active `T`.**
+
+This historical handoff remains outside `archive/` only because the current ruling
+registry identifies it as the sole document home for one or more ratified ruling IDs.
+Its old startup, NEXT, sequencing, and “newest governs” instructions are inert.
+Do not select work from this file. A future cleanup may archive it only after its
+unique ruling law is mechanically conserved in an authorized canonical home.
+
+---
+
 # MTJAWNNY T3 ARC — MASTER HANDOFF ADDENDUM 4 (2026-07-30 → 08-01 sessions, rev 2)
 
 Purpose: paste this + MASTER-HANDOFF.md + ADDENDUM-2 + ADDENDUM-3 into a fresh

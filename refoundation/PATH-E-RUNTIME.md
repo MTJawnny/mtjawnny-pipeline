@@ -6,7 +6,7 @@ and prints one deterministic JSON report. It infers nothing, ranks nothing,
 assigns nothing and writes nothing.
 
 **Task authority is not here.** It is GitHub Issue #1: latest `K` -> active `T`.
-Current phase state is `refoundation/ACTIVE-PHASE.yaml`. This page describes how
+No repository phase file assigns work. This page describes how
 to run the thing and what its numbers mean, and nothing else.
 
 ## Install

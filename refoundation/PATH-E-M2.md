@@ -6,7 +6,7 @@ emits a deterministic full-population artifact, `query` asks it a question, and
 `mtj-foundry-report` is unchanged.
 
 **Task authority is not here.** It is GitHub Issue #1: latest `K` -> active `T`.
-Current phase state is `refoundation/ACTIVE-PHASE.yaml`. This page says how to
+No repository phase file assigns work. This page says how to
 run these things and what their numbers mean, and nothing else.
 
 ## Run

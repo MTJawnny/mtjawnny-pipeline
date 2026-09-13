@@ -6,7 +6,7 @@ file server can host. `mtj-foundry-report` and `mtj-foundry-evidence` are
 unchanged.
 
 **Task authority is not here.** It is GitHub Issue #1: latest `K` -> active `T`.
-Current phase state is `refoundation/ACTIVE-PHASE.yaml`. This page says how to
+No repository phase file assigns work. This page says how to
 run the thing and what its output means.
 
 ## What this milestone is, in one paragraph
