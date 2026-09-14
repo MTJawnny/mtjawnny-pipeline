@@ -53,6 +53,9 @@ from datetime import datetime, timezone
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
 import foundry_common as fc  # noqa: E402
+# S11.R1: the DET record slug is read through its one definition. The import sits
+# AFTER `foundry_common`, whose bootstrap makes `mtj_foundry` importable.
+from mtj_foundry import codebook_det_patterns as _det_patterns  # noqa: E402
 
 API_BASE = "https://api.anthropic.com"
 ANTHROPIC_VERSION = "2023-06-01"
@@ -84,7 +87,7 @@ def load_det_owned_slugs() -> set:
         return set()
     det = json.loads(DET_PATTERNS_PATH.read_text())
     return {
-        p["slug"].split(" (")[0].split(" ")[0]
+        _det_patterns.pattern_slug(p)
         for p in det["patterns"] if p["status"] == "ratified"
     }
 

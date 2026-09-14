@@ -454,14 +454,17 @@ class TestSlug(unittest.TestCase):
 
 ROLE_NAMES = ("is_prefilter_pattern", "is_lattice_pattern", "pattern_slug")
 CANONICAL = "src/mtj_foundry/codebook_det_patterns.py"
-# The executable inline copies of a role's EXPRESSION that predate S11 and that
-# S11 is not authorized to edit: a frozen executor ("never edited or executed")
-# and a one-off migration verifier awaiting archive. S11 REMOVED the two it owned
-# (`foundry_family_sweep.load_stores`, `foundry_object_lattice.ratified_total`).
+# The ONE executable inline copy of a role's EXPRESSION that S11 may not edit:
+# `foundry_verify_migration.py`, the /1 -> /2 migration's independent verifier.
+# S15 preflight classifies it ARCHIVE_MUTATION_PROVENANCE / ARCHIVE_EVIDENCE: the
+# executor/verifier provenance set is preserved as-is for archival, so its
+# independent re-derivation is historical verification evidence, not a live
+# consumer. S11 removed the copies in `foundry_family_sweep.load_stores` and
+# `foundry_object_lattice.ratified_total`; S11.R1 removed the one in the live
+# executable `foundry_stage1b.load_det_owned_slugs`.
 # Source inside a string literal (an NC fixture) is not code and is not counted.
 # This set may shrink; it may not grow.
 DECLARED_INLINE = {
-    ("experiments/foundry_stage1b.py", "pattern_slug"),
     ("experiments/foundry_verify_migration.py", "pattern_slug"),
 }
 INLINE_SHAPES = {
@@ -553,6 +556,27 @@ class TestPatternRoleSingleDefinition(unittest.TestCase):
         path = "tests/guards/gate2/foundry_family_sweep.py"
         sources[path] += '\nX = {"slug": "a"}["slug"].split(" (")[0].split(" ")[0]\n'
         self.assertNotEqual(role_census(sources)["inline"], DECLARED_INLINE)
+
+    def test_CONTROL_reverting_the_stage1b_repair_is_caught(self):
+        """S11.R1: the live executable's inline copy may not come back."""
+        sources = dict(self.sources)
+        path = "experiments/foundry_stage1b.py"
+        old = "        _det_patterns.pattern_slug(p)\n"
+        self.assertEqual(sources[path].count(old), 1)
+        sources[path] = sources[path].replace(
+            old, '        p["slug"].split(" (")[0].split(" ")[0]\n')
+        self.assertIn((path, "pattern_slug"), role_census(sources)["inline"])
+
+    def test_stage1b_reads_the_canonical_owner_at_call_time(self):
+        _ensure_experiments_on_path()
+        import foundry_stage1b
+        real = codebook_det_patterns.pattern_slug
+        codebook_det_patterns.pattern_slug = lambda p: "SENTINEL"
+        try:
+            got = foundry_stage1b.load_det_owned_slugs()
+        finally:
+            codebook_det_patterns.pattern_slug = real
+        self.assertEqual(got, {"SENTINEL"})
 
     def test_legacy_facades_resolve_the_owner_at_CALL_time(self):
         _ensure_experiments_on_path()
