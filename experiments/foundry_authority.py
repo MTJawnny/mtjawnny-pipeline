@@ -19,8 +19,7 @@ permanent package:
     mtj_foundry.authority_restore    staging -> verify -> validate -> atomic
                                      install, in that order, asserted
 
-WHAT STAYS HERE, AND WHY. This file is the composition and process boundary
-until S13 migrates the operator surface:
+WHAT STAYS HERE, AND WHY. This file is the composition and process boundary:
 
   * LAYOUT. Where the tracked selector and the operational codebook live is a
     layout fact the permanent library may not know. `MANIFEST_PATH`,
@@ -34,8 +33,10 @@ until S13 migrates the operator surface:
     themselves and propagate exactly as before.
   * BACKUP POLICY for a replacing restore, which writes under the legacy
     backups directory.
-  * The CLI, the remote-nickname configuration, and the offline selftest with
-    its `FakeRunner`.
+  * The remote-nickname configuration, the offline selftest with its
+    `FakeRunner`, and the context the CLI operator runs in. S13 moved the CLI
+    itself -- parser, commands, printed reports -- to
+    `mtj_foundry.authority_cli`; this file builds its context and delegates.
 
 Every name below delegates AT CALL TIME: a wrapper looks the permanent owner up
 when it is called, so the permanent object is what runs. No rule is restated.
@@ -48,12 +49,10 @@ when it is called, so the permanent object is what runs. No rule is restated.
 import os
 import sys
 import json
-import argparse
 import functools
 import ast
 import tempfile
 from pathlib import Path
-from datetime import datetime, timezone
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments"))
@@ -66,6 +65,7 @@ from mtj_foundry import authority as _authority  # noqa: E402
 from mtj_foundry import authority_restore as _restore  # noqa: E402
 from mtj_foundry import authority_status as _status  # noqa: E402
 from mtj_foundry import authority_transport as _transport  # noqa: E402
+from mtj_foundry import authority_cli as _cli  # noqa: E402
 
 SCHEMA = _authority.SCHEMA
 
@@ -1332,226 +1332,58 @@ def selftest() -> int:
 
 
 # ---------------------------------------------------------------------------
-# CLI
+# CLI -- the operator is `mtj_foundry.authority_cli` (S13)
 # ---------------------------------------------------------------------------
+#
+# The parser, the six commands and every printed line are the permanent
+# operator's. What stays here is what only this boundary knows: the tracked
+# selector path, the operational codebook path, the disposable candidate
+# directory, the remote nicknames, the transport that declares both forbidden
+# staging arms, the backup policy, the corpus reference, the historic STOP and
+# the offline selftest. They are handed over as call-time callables, and every
+# command crosses `_stop_on_refusal`, exactly like every other owner call.
+
+def _context():
+    return _cli.AuthorityOperatorContext(
+        manifest_path=MANIFEST_PATH,
+        codebook_path=lambda: fcb.CODEBOOK_PATH,
+        candidate_dir=fc.FOUNDRY_OUT_DIR,
+        read_remote=lambda explicit: read_remote(explicit),
+        write_remote=lambda explicit: write_remote(explicit),
+        transport=lambda remote, bucket: RcloneTransport(remote, bucket=bucket),
+        backup_policy=lambda: _backup_policy(),
+        corpus_ref_current=lambda: fcb.corpus_ref_current(),
+        stop=lambda message: fc.halt(message),
+        selftest=lambda: selftest(),
+    )
+
 
 def cmd_status(args) -> int:
-    transport = None
-    if args.check_remote:
-        transport = RcloneTransport(read_remote(args.remote), bucket=args.bucket)
-    candidate = None
-    if getattr(args, "candidate", None):
-        candidate, _ = load_manifest(Path(args.candidate))
-    st = status(transport=transport, candidate=candidate)
-    if args.json:
-        printable = {k: v for k, v in st.items()}
-        print(json.dumps(printable, indent=2, ensure_ascii=False))
-        return 0
-    print("=" * 78)
-    print(f"C6 AUTHORITY STATUS — {st['state']}")
-    print("=" * 78)
-    print(f"  {st.get('detail', '')}")
-    local = st.get("local") or {}
-    if local.get("present"):
-        print(f"\n  local codebook  {local['path']}")
-        print(f"    sha256        {local['sha256']}")
-        print(f"    byte_size     {local['byte_size']}")
-        print(f"    axes/assert   {local['active_axis_count']} active, "
-              f"{local['assertion_count']} assertions "
-              f"({local['human_assertion_count']} human, "
-              f"{local['rule_derived_assertion_count']} rule-derived)")
-    else:
-        print(f"\n  local codebook  ABSENT ({local.get('path')})")
-    sel = st.get("selected")
-    if sel:
-        print(f"\n  selected authority")
-        print(f"    bucket        {sel['bucket']}")
-        print(f"    object_path   {sel['object_path']}")
-        print(f"    sha256        {sel['sha256']}")
-    else:
-        print(f"\n  selected authority  NONE — manifest {MANIFEST_PATH} absent")
-    cand = st.get("candidate")
-    if cand:
-        print(f"\n  candidate (REPORTED, never selected)")
-        print(f"    classification  {cand['classification']}")
-        print(f"    authoritative   {cand['authoritative']}")
-        print(f"    object_path     {cand['object_path']}")
-        print(f"    sha256          {cand['sha256']}")
-        if "remote" in cand:
-            print(f"    remote          {cand['remote']}")
-        print(f"    why not         {cand['why_not_authority']}")
-    for line in st.get("violations") or []:
-        print(f"    ! {line}")
-    return 0
+    return _stop_on_refusal(_cli.cmd_status, args, _context())
 
 
 def cmd_publish(args) -> int:
-    """Build a candidate manifest FROM the codebook bytes and publish them
-    immutably. Writes the candidate to disposable output space only — creating
-    the tracked selector is a separate, Captain-authorised act (P3 §18)."""
-    cb_path = Path(args.codebook) if args.codebook else fcb.CODEBOOK_PATH
-    prior = None
-    if args.prior_manifest:
-        prior, pv = load_manifest(Path(args.prior_manifest))
-        if prior is None or pv:
-            fc.halt(f"--prior-manifest {args.prior_manifest} is missing or invalid: {pv}")
-
-    created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    manifest = build_manifest(
-        snapshot_id=args.snapshot_id,
-        created_utc=created,
-        mutation_review_id=args.mutation_review_id,
-        corpus_ref=args.corpus_ref or fcb.corpus_ref_current(),
-        previous_snapshot_hash=args.previous_snapshot_hash,
-        codebook_path=cb_path,
-        prior=prior,
-    )
-    out_path = Path(args.candidate_out) if args.candidate_out else (
-        fc.FOUNDRY_OUT_DIR / f"candidate-manifest.{manifest['snapshot_id']}.json")
-    if MANIFEST_PATH.resolve() == out_path.resolve():
-        fc.halt("--candidate-out names the TRACKED selector path. A candidate is not an "
-                "authority; creating that file is a separate authorised act.")
-
-    print(f"candidate manifest for {cb_path}")
-    print(serialize_manifest(manifest))
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(serialize_manifest(manifest), encoding="utf-8")
-    print(f"wrote candidate (disposable, gitignored): {out_path}")
-
-    if args.dry_run:
-        print("\nDRY RUN — nothing uploaded.")
-        return 0
-
-    t = RcloneTransport(write_remote(args.remote), bucket=manifest["bucket"])
-    print(f"\npublishing to {t.remote}:{t.bucket}/{manifest['object_path']}")
-    outcome = t.put_immutable(manifest["object_path"], cb_path,
-                              manifest["sha256"], manifest["byte_size"])
-    print(f"result: {outcome}")
-    print("\nNOTE: this object is a CANDIDATE. No tracked manifest selects it, so it is "
-          "ORPHAN / NON-AUTHORITATIVE until Captain authorises the selector.")
-    return 0
+    return _stop_on_refusal(_cli.cmd_publish, args, _context())
 
 
 def cmd_verify_remote(args) -> int:
-    """Consumer-side proof, through the READ-ONLY remote: fetch the exact object
-    to staging, verify bytes, and validate that they are the codebook the
-    manifest describes. Installs nothing."""
-    manifest, v = load_manifest(Path(args.manifest))
-    if manifest is None or v:
-        fc.halt(f"{args.manifest} is missing or invalid: {v}")
-    t = RcloneTransport(read_remote(args.remote), bucket=manifest["bucket"])
-    with tempfile.TemporaryDirectory() as td:
-        staged = Path(td) / "codebook.staged.json"
-        t.get_verified(manifest["object_path"], staged, manifest["sha256"],
-                       manifest["byte_size"])
-        print(f"reader remote      : {t.remote}:{t.bucket}")
-        print(f"object             : {manifest['object_path']}")
-        print(f"sha256 (recomputed): {sha256_of_file(staged)}")
-        print(f"byte_size          : {staged.stat().st_size}")
-        payload = validate_codebook_payload(staged, manifest)
-        print(f"codebook validation: OK — {payload['lint']}")
-        local = describe_local(staged)
-        for f in ("active_axis_count", "assertion_count", "human_assertion_count",
-                  "rule_derived_assertion_count"):
-            print(f"  {f:32} {local[f]}")
-    return 0
+    return _stop_on_refusal(_cli.cmd_verify_remote, args, _context())
 
 
 def cmd_restore(args) -> int:
-    """remote -> staging -> verify -> validate -> atomic install. In that order,
-    and the order is asserted rather than described."""
-    manifest, v = load_manifest(Path(args.manifest))
-    if manifest is None or v:
-        fc.halt(f"{args.manifest} is missing or invalid: {v}")
-    t = RcloneTransport(read_remote(args.remote), bucket=manifest["bucket"])
-    install_to = Path(args.install_to)
-    staging = Path(args.staging) if args.staging else install_to.parent / ".restore-staging"
-    try:
-        result = restore_snapshot(manifest, t, staging, install_to,
-                                  replace_existing=args.replace_existing)
-    except RestoreError as e:
-        print(f"RESTORE HALTED — {e}")
-        return 1
-    print(f"restore steps      : {' -> '.join(result['trace'])}")
-    print(f"staged at          : {result['staged']}")
-    print(f"installed          : {result['installed']}")
-    print(f"sha256             : {result['sha256']}")
-    print(f"byte_size          : {result['byte_size']}")
-    return 0
+    return _stop_on_refusal(_cli.cmd_restore, args, _context())
 
 
 def cmd_verify(args) -> int:
-    ok, reason = verify_exact(args.sha, args.size, Path(args.path))
-    print(("VERIFIED — " if ok else "FAILED — ") + reason)
-    return 0 if ok else 1
+    return _stop_on_refusal(_cli.cmd_verify, args, _context())
 
 
 def cmd_describe_local(args) -> int:
-    print(json.dumps(describe_local(), indent=2, ensure_ascii=False))
-    return 0
+    return _stop_on_refusal(_cli.cmd_describe_local, args, _context())
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="C6 authority machinery — manifest, verifier, transport, status.")
-    sub = ap.add_subparsers(dest="cmd", required=True)
-
-    p = sub.add_parser("status", help="read-only authority/candidate state")
-    p.add_argument("--check-remote", action="store_true",
-                   help="also confirm the SELECTED object exists (never lists)")
-    p.add_argument("--remote", default=None, help="rclone remote NAME (local config)")
-    p.add_argument("--bucket", default=AUTHORITY_BUCKET)
-    p.add_argument("--json", action="store_true")
-    p.add_argument("--candidate", default=None,
-                   help="report an UNSELECTED candidate manifest; cannot make it authority")
-    p.set_defaults(func=cmd_status)
-
-    p = sub.add_parser("publish", help="build a candidate manifest and publish immutably")
-    p.add_argument("--snapshot-id", required=True)
-    p.add_argument("--mutation-review-id", required=True,
-                   help="the ratified mutation these bytes came from")
-    p.add_argument("--previous-snapshot-hash", default=None,
-                   help="omit for genesis (null); otherwise the prior snapshot's sha256")
-    p.add_argument("--prior-manifest", default=None,
-                   help="the previously SELECTED manifest, for succession validation")
-    p.add_argument("--corpus-ref", default=None)
-    p.add_argument("--codebook", default=None)
-    p.add_argument("--candidate-out", default=None)
-    p.add_argument("--remote", default=None, help="rclone WRITE remote NAME")
-    p.add_argument("--dry-run", action="store_true")
-    p.set_defaults(func=cmd_publish)
-
-    p = sub.add_parser("verify-remote",
-                       help="read-only proof that the published object is exact and valid")
-    p.add_argument("--manifest", required=True)
-    p.add_argument("--remote", default=None, help="rclone READ remote NAME")
-    p.set_defaults(func=cmd_verify_remote)
-
-    p = sub.add_parser("restore",
-                       help="remote -> staging -> verify -> validate -> atomic install")
-    p.add_argument("--manifest", required=True)
-    p.add_argument("--install-to", required=True,
-                   help="explicit destination; there is no default that resolves to the "
-                        "operational codebook")
-    p.add_argument("--staging", default=None)
-    p.add_argument("--remote", default=None, help="rclone READ remote NAME")
-    p.add_argument("--replace-existing", action="store_true")
-    p.set_defaults(func=cmd_restore)
-
-    p = sub.add_parser("verify", help="exact-byte verification of a local file")
-    p.add_argument("path")
-    p.add_argument("--sha", required=True)
-    p.add_argument("--size", required=True, type=int)
-    p.set_defaults(func=cmd_verify)
-
-    p = sub.add_parser("describe-local", help="facts about the local codebook")
-    p.set_defaults(func=cmd_describe_local)
-
-    p = sub.add_parser("selftest", help="every negative control, offline")
-    p.set_defaults(func=lambda a: selftest())
-
-    args = ap.parse_args()
-    return args.func(args)
+    return _stop_on_refusal(_cli.run, None, _context())
 
 
 if __name__ == "__main__":

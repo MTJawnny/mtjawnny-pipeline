@@ -63,10 +63,7 @@ negative control to their test owner, which the refoundation suite runs:
 
     python3 tests/guards/cr/test_cr_edition.py
 """
-import re
 import sys
-import argparse
-import collections
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -90,9 +87,9 @@ import foundry_common as fc  # noqa: E402
 # Gate-2 row, no test and no workflow ever ran it, so ten cases and four
 # control families had never been shown to do anything. They now live at
 # `tests/guards/cr/test_cr_edition.py`, which the standing refoundation suite
-# executes, and NO COPY OF THEM REMAINS HERE. `_report`, the CLI and the
-# `PRIOR_CR_PATH` operator presentation are still this shell's and are still a
-# later slice's to move.
+# executes, and NO COPY OF THEM REMAINS HERE. S13 then moved `_report`, the CLI
+# and the `PRIOR_CR_PATH` presentation to `mtj_foundry.cr_edition_report`; the
+# names below are this shell's thin delegates.
 #
 # THE HALT BOUNDARY IS RE-ESTABLISHED HERE, NOT IMPORTED UPWARD. A library may
 # not exit a process it does not own, so the permanent module raises `CRError`
@@ -168,49 +165,30 @@ def effective_date(txt: str = None) -> str:
         fc.halt(str(exc))
 
 
+# S13: the edition REPORT and its CLI are `mtj_foundry.cr_edition_report`'s. This
+# boundary supplies what only it knows -- the selected and prior edition paths,
+# its halting CR readers, and the raw file -- as call-time callables.
+from mtj_foundry import cr_edition_report as _cr_report  # noqa: E402
+
+
+def _report_context():
+    return _cr_report.CrReportContext(
+        cr_path=CR_PATH,
+        prior_cr_path=PRIOR_CR_PATH,
+        text=lambda path=None: text(path) if path is not None else text(),
+        effective_date=lambda txt: effective_date(txt),
+        raw_lines=lambda: CR_PATH.read_text(encoding="utf-8", errors="strict").splitlines(),
+        prior_exists=lambda: PRIOR_CR_PATH.exists(),
+    )
+
+
 def _report() -> None:
-    txt = text()
-    ls = txt.splitlines()
-    raw = CR_PATH.read_text(encoding="utf-8", errors="strict").splitlines()
-    rule_rx = re.compile(r"^\d{3}\.\d+[a-z]{0,2}[\s.]")
-    print(f"CR file            {CR_PATH}")
-    print(f"effective          {effective_date(txt)}")
-    print(f"lines              {len(ls)}")
-    print(f"rule-numbered      {sum(1 for l in ls if rule_rx.match(l))}")
-    print(f"lines normalized   {sum(1 for a, b in zip(raw, ls) if a != b)}")
-    print(f"curly apostrophes  {txt.count(chr(0x2019))}")
-    print(f"mojibake remaining {len(_MOJIBAKE.findall(txt))}")
-    print("\nDECLARED ENCODING DAMAGE, repaired at read time (D-CR-1b, Captain "
-          "2026-08-09).\nAnything outside this register HALTS.")
-    for rule, decl in sorted(_KNOWN_ENCODING_DAMAGE.items()):
-        fixes = "  ".join(f"{c!r}->{f!r}×{n}"
-                          for c, (f, n) in sorted(decl["repairs"].items()))
-        print(f"  CR {rule}   {fixes}\n    {decl['why']}")
-    if PRIOR_CR_PATH.exists():
-        print("    verified byte-identical to the 2026-06-19 edition after "
-              "repair.")
-    else:
-        print("    ⚠ the 2026-06-19 edition is not on this machine, so the "
-              "repair was checked\n      against its pinned fixture ONLY — the "
-              "positive-correctness half did\n      not run. Stated, not "
-              "silently skipped.")
-    print("\nanchors required by the parsers, all present:")
-    for a, why in _REQUIRED_ANCHORS:
-        print(f"  {a!r:44s} {why}")
-    if PRIOR_CR_PATH.exists():
-        prior = text(PRIOR_CR_PATH)
-        print(f"\nprior edition      {effective_date(prior)}  ({PRIOR_CR_PATH})")
-        print(f"  rule-numbered    "
-              f"{sum(1 for l in prior.splitlines() if rule_rx.match(l))}")
+    for line in _cr_report.report_lines(_report_context()):
+        print(line)
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Report on the selected CR edition and its declared "
-                    "encoding repairs.")
-    ap.parse_args()
-    _report()
-    return 0
+    return _cr_report.run(None, _report_context())
 
 
 if __name__ == "__main__":

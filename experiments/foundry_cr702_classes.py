@@ -41,11 +41,7 @@ USAGE
   python3 experiments/foundry_cr702_classes.py --unstated
   python3 experiments/foundry_cr702_classes.py --json out.json
 """
-import re
 import sys
-import json
-import argparse
-import collections
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
@@ -69,14 +65,15 @@ import foundry_cr as cr  # noqa: E402
 # S7 then moved `find_home` OUT, into `mtj_foundry.mtg.shapes.delivery`, which
 # is where R6 places it: it consumes `parse_delivery`, so the CR half cannot own
 # it without being the cycle. What remains below is a thin delegation keeping
-# this module's public surface intact, plus `cmd_homes` -- its operator report --
-# and `main`. Both are later-slice work and neither is duplicated anywhere.
+# this module's public surface intact, plus `cmd_homes` and `main`, which S13
+# reduced to delegates over `mtj_foundry.cr702_report`.
 #
 # THE OLD REVERSE EDGE IS GONE. `mtg/cr/**` names no shapes symbol at all, so the
 # `_twin` cross-module-instance state sync that the edge forced has been deleted
 # rather than carried: the derived shape state now has exactly one owner.
 #
-# The `--unstated` KeyError is recorded debt and is deliberately NOT fixed here.
+# The `--unstated` KeyError is recorded debt and is deliberately NOT fixed -- it
+# travelled with the operator into `cr702_report`, unrepaired.
 #
 # The halt boundary is re-established at this shell: the permanent module raises
 # `CRKeywordError`, and the wrappers below convert it to `fc.halt`, preserving
@@ -185,21 +182,21 @@ def find_home(kw: dict, ratified: dict) -> tuple:
     return fse.find_home(kw, ratified)
 
 
+# S13: the row composition, the class report, `--unstated` (with its declared
+# `KeyError` debt, unrepaired), the routing report, `--json` and the CLI are
+# `mtj_foundry.cr702_report`'s. This shell keeps the CR location, the halting
+# loader and the corpus-bound homes computation, and hands them over.
+from mtj_foundry import cr702_report as _report  # noqa: E402
+
+
 def cmd_homes(rows: list, keywords: dict) -> None:
     """Captain, 2026-08-03: 'keywords that are attack triggers should go into
     When this creature attacks rulings. then look at other keywords and find
     them appropriate homes.'
 
-    Right, and it makes the 44-triggered-keyword 'gap' mostly illusory: a
-    triggered keyword does not need NEW delivery vocabulary, it needs to be
-    routed to the token its own CR templated text already resolves to.
-
-    S7/R6: THE FALLBACK RULE IS NO LONGER DECIDED HERE. It used to exist twice
-    -- once in this loop and once inside `build_keyword_homes` -- one rule with
-    two implementations, in the two modules on opposite ends of the old cycle.
-    `keyword_homes()` is now its single owner and this report CONSUMES it. What
-    remains below is composition and printing, which is what an operator command
-    is."""
+    S13: the corpus load and the keyword-home computation stay at this boundary;
+    attaching the homes to the rows and the printed report are
+    `cr702_report.homes_lines`'."""
     import foundry_shape_extractor as fse
     import foundry_common as fc
     cards, _, _ = fc.load_corpus_gated()
@@ -207,129 +204,21 @@ def cmd_homes(rows: list, keywords: dict) -> None:
     ratified = fse.ratified_delivery_tokens()
 
     recs = fse.keyword_homes(keywords, ratified)
+    for line in _report.homes_lines(rows, recs):
+        print(line)
 
-    homed = collections.defaultdict(list)
-    unresolved = []
-    for r in rows:
-        rec = recs[int(r["cr"].split(".")[1])]
-        r["home"] = rec["home"]
-        r["home_descriptor"] = rec["home_descriptor"]
-        r["cr_text"] = rec["cr_text"]
-        if rec["home_via"]:
-            r["home_via"] = rec["home_via"]
-        if rec["home"] is not None:
-            homed[rec["home"]].append(r)
-        else:
-            unresolved.append((r, rec["unresolved_reason"]))
 
-    total = sum(len(v) for v in homed.values())
-    print(f"\n{'='*78}\nKEYWORD -> DELIVERY HOME, derived from the CR's own "
-          f"templated text\n{'='*78}")
-    print(f"routed to an EXISTING ratified token: {total} of {len(rows)} keywords\n")
-    for tok in sorted(homed, key=lambda t: -len(homed[t])):
-        names = ", ".join(sorted(r["keyword"] for r in homed[tok]))
-        print(f"[{tok}]  ({len(homed[tok])})\n  {names}\n")
-
-    print(f"{'='*78}\nNOT ROUTED — {len(unresolved)} keywords. Reported, never "
-          f"approximated.\n{'='*78}")
-    by_reason = collections.defaultdict(list)
-    for r, why in unresolved:
-        by_reason[why].append(r["keyword"])
-    for why in sorted(by_reason, key=lambda w: -len(by_reason[w])):
-        print(f"\n({len(by_reason[why])}) {why}\n  "
-              + ", ".join(sorted(by_reason[why])))
+def _context():
+    return _report.Cr702Context(
+        cr_path=CR_PATH,
+        load_702=lambda path: load_702(path),
+        keyword_rows=lambda path: keyword_rows(path),
+        homes=lambda rows, keywords: cmd_homes(rows, keywords),
+    )
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--unstated", action="store_true",
-                    help="list keywords whose CR text states no ability class")
-    ap.add_argument("--homes", action="store_true",
-                    help="route each keyword to its §2 DELIVERY token, derived "
-                         "from the CR's own templated text")
-    ap.add_argument("--json", metavar="PATH")
-    args = ap.parse_args()
-
-    keywords = load_702(CR_PATH)
-    named = {n: k for n, k in keywords.items()
-             if k["name"] and n != PREAMBLE_RULE}
-
-    rows = []
-    for num in sorted(named):
-        kw = named[num]
-        classes, ev = classify(kw)
-        effective = effective_classes(kw)
-        blob = " ".join(kw["subrules"].values())
-        rows.append({"cr": f"702.{num}", "keyword": kw["name"],
-                     "cr_classes": classes, "effective_classes": effective,
-                     "evidence": ev,
-                     "multi": len(effective) > 1,
-                     "multi_hint_unresolved": bool(MULTI_HINT.search(blob))
-                     and len(effective) <= 1,
-                     "delivery": [CLASS_TO_DELIVERY.get(e) for e in effective]})
-
-    def label(r, key):
-        v = r[key]
-        return "+".join(v) if v else "UNSTATED"
-
-    by_class = collections.Counter(label(r, "cr_classes") for r in rows)
-    by_effective = collections.Counter(label(r, "effective_classes")
-                                       for r in rows)
-
-    print(f"CR file: {CR_PATH}")
-    print(f"CR 702 keywords parsed: {len(rows)}\n")
-    print("AS THE CR WORDS IT")
-    print(f"{'CR ability class':26s} {'keywords':>9}")
-    print("-" * 78)
-    for cls, n in by_class.most_common():
-        note = ""
-        if cls in SUBSUMES:
-            note = f"   -> rolls up to {SUBSUMES[cls][0]} ({SUBSUMES[cls][1]})"
-        print(f"{cls:26s} {n:9d}{note}")
-
-    print("\nAFTER CR-STATED ROLLUP -- what the §2 DELIVERY slot must be")
-    print(f"{'ability class':26s} {'keywords':>9}   {'§2 DELIVERY slot':s}")
-    print("-" * 78)
-    for cls, n in by_effective.most_common():
-        slot = CLASS_TO_DELIVERY.get(cls, "— no §2 slot —")
-        print(f"{cls:26s} {n:9d}   {slot}")
-
-    print("\nkeywords by class")
-    print("-" * 78)
-    grouped = collections.defaultdict(list)
-    for r in rows:
-        grouped[label(r, "effective_classes")].append(r["keyword"])
-    for cls, n in by_effective.most_common():
-        names = ", ".join(sorted(grouped[cls]))
-        print(f"\n[{cls}]  ({n})\n  {names}")
-
-    unresolved = [r for r in rows if r["multi_hint_unresolved"]]
-    if unresolved:
-        print("\n" + "=" * 78)
-        print("⚠ MULTIPLICITY HINTED BUT NOT RESOLVED -- read these by hand.")
-        print("The CR prose says the keyword represents several abilities, but")
-        print("only one class sentence parsed. Reported, never assumed.")
-        print("=" * 78)
-        for r in unresolved:
-            print(f"  {r['cr']:9s} {r['keyword']}")
-
-    if args.unstated:
-        print("\n" + "=" * 78)
-        print("UNSTATED -- the CR does not call these '<X> ability' in 702.Na.")
-        print("Reported, NOT assigned to a nearest class.")
-        print("=" * 78)
-        for r in rows:
-            if r["cr_class"] is None:
-                first = (r["evidence"] or
-                         keywords[int(r['cr'].split('.')[1])]["subrules"].get("a", ""))
-                print(f"  {r['cr']:9s} {r['keyword']:28s} {first[:90]}")
-
-    if args.homes:
-        cmd_homes(rows, keywords)
-
-    if args.json:
-        Path(args.json).write_text(json.dumps(rows, indent=1), encoding="utf-8")
-        print(f"\nwrote {args.json}")
+    _report.run(None, _context())
 
 
 if __name__ == "__main__":

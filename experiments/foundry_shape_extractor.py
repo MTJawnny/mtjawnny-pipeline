@@ -39,7 +39,7 @@ USAGE
   python3 experiments/foundry_shape_extractor.py --action goad --json out.json
 """
 import sys
-import re                   # noqa: F401  (used by the operator census below)
+import re                   # noqa: F401  (kept: the census moved to mtj_foundry.shape_report)
 import json
 import argparse
 import collections
@@ -66,7 +66,8 @@ import foundry_cr as cr  # noqa: E402
 # repository-owned INPUT LOCATIONS (`GRAMMAR`, `CR_CHECKS`, the CR edition),
 # the `fc.halt` process boundary, the operator censuses (`cmd_gaps`,
 # `cmd_action`, `cmd_rank`), the live-codebook read `codebook_covered_actions`,
-# and `main`. Those belong to later slices, not to L2.
+# and `main`. S13 moved the censuses' aggregation and printed text to
+# `mtj_foundry.shape_report`; what those names still hold is the boundary.
 #
 # R6's `find_home` ARRIVED in delivery with this slice, from
 # `foundry_cr702_classes`. With it, the cycle that forced the old `_twin`
@@ -242,6 +243,13 @@ def keyword_homes(keywords=None, ratified=None, cr_path=None):
 build_trigger_verbs(cr_action_terms())
 
 
+# S13: the three censuses' aggregation and every printed line are
+# `mtj_foundry.shape_report`'s. This boundary keeps the parse calls behind its
+# STOP, the codebook-coverage read and its handler, argument parsing, printing
+# and both `--json` writes -- committed guards pin all of those here.
+from mtj_foundry import shape_report as _report  # noqa: E402
+
+
 def cmd_gaps(args, cards, ratified, actions):
     """Corpus-wide census of delivery shapes that have NO ratified token.
 
@@ -251,145 +259,36 @@ def cmd_gaps(args, cards, ratified, actions):
     being rediscovered one mechanic at a time, which is what happened to Clues.
     """
     rows = scan(cards, ratified, None)
-    gap = collections.Counter()
-    cardset = collections.defaultdict(set)
-    inside = collections.defaultdict(collections.Counter)
-    inside_cards = collections.defaultdict(lambda: collections.defaultdict(set))
-    for r in rows:
-        if r["delivery"] is not None:
-            continue
-        if r["descriptor"] not in ("spell-or-static",):
-            gap[r["descriptor"]] += 1
-            cardset[r["descriptor"]].add(r["name"])
-        else:
-            # THE CENSUS WAS BLIND HERE BY CONSTRUCTION, and this is where
-            # almost all of the unrouted mass lives: 14,898 of 15,902 lines,
-            # 93.7%. The exclusion is right -- these are not missing
-            # VOCABULARY, which is what the table above ranks -- but "excluded
-            # from this table" turned into "unreportable", and 236 CR 614.1c
-            # replacement effects hid in here indefinitely.
-            #
-            # CR 113.3a decides the split and needs no new vocabulary to do it:
-            # *"a spell ability ... is an ability that functions only while the
-            # spell is on the stack"*, and a spell is an instant or a sorcery.
-            # So a card with NO instant/sorcery face leaves CR 113.3's
-            # four-category enumeration closed on `static` -- the line is
-            # decidably a static ability that simply has no branch yet. A card
-            # WITH such a face is genuinely undecidable from its faces alone,
-            # and grammar §1 makes the unmarked default correct for it anyway.
-            key = ("CR 113.3a closes: decidably STATIC"
-                   if not _has_spell_face(cards[r["oracle_id"]])
-                   else "undecidable — has an instant/sorcery face (§1 default)")
-            shape = " ".join(re.sub(r"[^\w\s'’—•|+{}/-]", "", r["line"].strip())
-                             .split()[:3]).lower()
-            inside[key][shape] += 1
-            inside_cards[key][shape].add(r["name"])
-    print(f"ratified DELIVERY tokens parsed from grammar §2: {len(ratified)}")
-    print(f"  {', '.join(sorted(ratified))}\n")
-    print(f"ability lines scanned: {len(rows)}   gate-passing cards: {len(cards)}\n")
-    print(f"{'unratified delivery shape':38s} {'lines':>7} {'cards':>7}")
-    print("-" * 56)
-    for desc, n in gap.most_common():
-        print(f"{desc:38s} {n:7d} {len(cardset[desc]):7d}")
-
-    total_inside = sum(sum(c.values()) for c in inside.values())
-    print(f"\n{'=' * 68}")
-    print(f"INSIDE `spell-or-static` — {total_inside} lines the table above CANNOT see")
-    print(f"{'=' * 68}")
-    print("This bucket is excluded from the census because it is not missing")
-    print("VOCABULARY. But excluded became unreportable, and 236 CR 614.1c")
-    print("replacement effects once hid here indefinitely. CR 113.3a splits it")
-    print("with no new vocabulary at all:\n")
-    for key in sorted(inside, key=lambda k: -sum(inside[k].values())):
-        n = sum(inside[key].values())
-        print(f"  {key:52}{n:>7}  ({n / total_inside:.1%})")
-    print("\nSo the headline 'unrouted' number is not a gap count. Most of it is")
-    print("grammar §1's UNMARKED DEFAULT for a spell ability, which is correct")
-    print("and needs nothing. The decidably-static half is the real queue.\n")
-    for key in sorted(inside, key=lambda k: -sum(inside[k].values())):
-        print(f"--- {key} — top opening shapes ---")
-        print(f"  {'shape':34}{'lines':>7}{'cards':>7}")
-        for shape, n in inside[key].most_common(args.limit):
-            print(f"  {shape:34}{n:>7}{len(inside_cards[key][shape]):>7}")
-        print()
+    lines, document = _report.gaps(rows, cards, ratified, args.limit,
+                                   lambda card: _has_spell_face(card))
+    for line in lines:
+        print(line)
     if args.json:
-        Path(args.json).write_text(json.dumps(
-            {d: {"lines": n, "cards": sorted(cardset[d])} for d, n in gap.most_common()},
-            indent=1), encoding="utf-8")
+        Path(args.json).write_text(json.dumps(document, indent=1), encoding="utf-8")
         print(f"\nwrote {args.json}")
 
 
 def cmd_action(args, cards, ratified, actions):
     """Every card printing one CR keyword action, grouped by delivery shape."""
-    if args.action not in actions:
-        near = [t for t in actions if args.action in t]
-        fc.halt(f"{args.action!r} is not a CR term in cr-checks.json. "
-                f"Did you mean: {', '.join(near[:8]) or '(no near matches)'}")
+    refusal = _report.unknown_action_message(args.action, actions)
+    if refusal:
+        fc.halt(refusal)
     meta = actions[args.action]
     rows = scan(cards, ratified, meta["forms"])
-    groups = collections.defaultdict(list)
-    for r in rows:
-        key = r["delivery"] or f"UNRATIFIED:{r['descriptor']}"
-        if r["created_ability"] and r["delivery"] is None:
-            key = "UNRATIFIED:created-ability(§2)"
-        groups[key].append(r)
-    cards_hit = {r["oracle_id"] for r in rows}
-    print(f"CR {meta['cr']}  {args.action}  ({meta['kind']})")
-    print(f"forms: {', '.join(meta['forms'])}")
-    print(f"cards: {len(cards_hit)}   ability lines: {len(rows)}\n")
-    ready = sum(len(v) for k, v in groups.items() if not k.startswith("UNRATIFIED"))
-    print(f"  buildable now (ratified delivery): {ready} lines")
-    print(f"  need a ruling:                     {len(rows) - ready} lines\n")
-    for key in sorted(groups, key=lambda k: (-len(groups[k]), k)):
-        rs = groups[key]
-        print(f"## {key}   n={len(rs)}")
-        for r in sorted(rs, key=lambda r: r["name"])[:args.limit]:
-            print(f"   {r['name'][:36]:38s} {r['line'][:88]}")
-        if len(rs) > args.limit:
-            print(f"   … and {len(rs) - args.limit} more")
-        print()
+    for line in _report.action_lines(args.action, meta, rows, args.limit):
+        print(line)
     if args.json:
         Path(args.json).write_text(json.dumps(rows, indent=1), encoding="utf-8")
         print(f"wrote {args.json}")
 
 
 def cmd_rank(args, cards, ratified, actions):
-    """Rank every CR keyword action by how much of it is buildable today.
-
-    Single corpus pass -- one delivery parse per ability line, matched against
-    every action at once. Scanning per-action instead would be 262 full passes.
-    """
+    """Rank every CR keyword action by how much of it is buildable today."""
     covered = codebook_covered_actions()
-    # CR 701 is the keyword-ACTION section. 702 keywords (flying, trample) are
-    # static/evasion abilities, not actions, and they are the keyword-bucket
-    # job -- including them buries the population this ranking is about.
-    actions = {t: m for t, m in actions.items() if str(m["cr"]).startswith("701.")}
-    stat = collections.defaultdict(lambda: {"cards": set(), "ready": 0, "blocked": 0})
-    for oid, card in cards.items():
-        for line, line_parsed in deliveries_for_lines(card, ratified):
-            parsed = None
-            for term, meta in actions.items():
-                form, _ = find_action(line, meta["forms"])
-                if form is None:
-                    continue
-                if parsed is None:
-                    parsed = line_parsed
-                s = stat[term]
-                s["cards"].add(oid)
-                for tok, _d in parsed:
-                    if tok:
-                        s["ready"] += 1
-                    else:
-                        s["blocked"] += 1
-    print(f"{'CR action':24s} {'CR':>8} {'cards':>6} {'ready':>6} {'blocked':>7} {'%':>6}  axis?")
-    print("-" * 72)
-    rows = sorted(stat.items(), key=lambda kv: -len(kv[1]["cards"]))
-    for term, s in rows[:args.limit]:
-        n = s["ready"] + s["blocked"]
-        pct = 100.0 * s["ready"] / n if n else 0.0
-        print(f"{term:24s} {actions[term]['cr']:>8} {len(s['cards']):6d} "
-              f"{s['ready']:6d} {s['blocked']:7d} {pct:5.1f}%  "
-              f"{'yes' if term in covered else 'NO AXIS'}")
+    for line in _report.rank_lines(cards, ratified, actions, covered, args.limit,
+                                   lambda card, rat: deliveries_for_lines(card, rat),
+                                   lambda line, forms: find_action(line, forms)):
+        print(line)
 
 
 def codebook_covered_actions() -> set:

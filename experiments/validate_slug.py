@@ -128,34 +128,26 @@ def validate_slug(slug: str, definition: str = None, all_slugs: list = None) -> 
     return _slug.validate_slug(slug, definition, all_slugs, closed_vocab=CLOSED_VOCAB)
 
 
-def main():
-    args = sys.argv[1:]
-    if not args:
-        print(__doc__)
-        sys.exit(1)
+# S13: the CLI -- per-slug JSON, `--batch` summary and report, usage -- is
+# `mtj_foundry.slug_report`'s. This boundary supplies the codebook read, the
+# report location and writer, the usage text, and the process exit.
+from mtj_foundry import slug_report as _report  # noqa: E402
 
-    if args[0] == "--batch":
-        codebook = json.loads(CODEBOOK_PATH.read_text())
-        axes = codebook["axes"]
-        active_slugs = sorted(s for s, e in axes.items() if e.get("status") == "active")
-        results = []
-        for slug in active_slugs:
-            defn = axes[slug].get("definition")
-            r = validate_slug(slug, definition=defn, all_slugs=active_slugs)
-            results.append(r)
-        n_fail = sum(1 for r in results if not r["ok"])
-        n_warn_only = sum(1 for r in results if r["ok"] and r["warnings"])
-        n_clean = len(results) - n_fail - n_warn_only
-        print(f"validated {len(results)} active slugs: {n_clean} clean, {n_warn_only} warned (non-blocking), "
-              f"{n_fail} flagged")
-        out_path = fc.FOUNDRY_OUT_DIR / "validate_slug_report.json"
-        fc.write_json(out_path, {"total": len(results), "clean": n_clean, "warned": n_warn_only,
-                                  "flagged": n_fail, "results": results})
-        print(f"wrote {out_path}")
-    else:
-        for slug in args:
-            r = validate_slug(slug)
-            print(json.dumps(r, indent=2))
+
+def _context():
+    return _report.SlugReportContext(
+        usage=__doc__,
+        read_codebook=lambda: json.loads(CODEBOOK_PATH.read_text()),
+        validate_slug=lambda *a, **k: validate_slug(*a, **k),
+        report_path=fc.FOUNDRY_OUT_DIR / "validate_slug_report.json",
+        write_json=lambda path, data: fc.write_json(path, data),
+    )
+
+
+def main():
+    code = _report.run(sys.argv[1:], _context())
+    if code:
+        sys.exit(code)
 
 
 if __name__ == "__main__":

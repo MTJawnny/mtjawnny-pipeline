@@ -52,13 +52,10 @@ WHAT IT DELIBERATELY DOES NOT DO
   reported, not decided.
 * It mints nothing and writes nothing. It is the measurement half.
 """
-import argparse
 import functools
 import inspect
 import json
-import re
 import sys
-from collections import Counter, defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent
@@ -113,8 +110,9 @@ PATHS = ProjectPaths.for_root(fc.REPO_ROOT)
 # S9 took the GUARD half of that list out. The grammar fixtures, the seven
 # recorded regressions, the per-class anchors, `--gate` and `--fixtures` are now
 # owned by `tests/guards/gate2/test_object_lattice.py`, and NO COPY OF THEM
-# REMAINS HERE. Everything else on the list is still this shell's and is still a
-# later slice's to move.
+# REMAINS HERE. S13 moved the audit, exclusivity and locality reports, the
+# packet composition and the CLI to `mtj_foundry.object_lattice_report`; the
+# rest of the list is still this shell's, and those names delegate.
 #
 # The vocabulary used to be derived AT IMPORT TIME by reading this repository's
 # CR. That is exactly what an installed library may not do, so the derivation
@@ -274,101 +272,38 @@ def baseline_metrics() -> dict:
     return _halting(_lattice.baseline_metrics)(cards, PERMANENT_TYPES)
 
 
-def audit(stem: str, domain: set) -> dict:
-    """The negative controls. A guard that has never been shown to fail is not
-    known to be a guard, so each of these was run against the live corpus and
-    its output READ, card by card, before being written down here.
+# S13: the NC audit, the exclusivity report, the per-quote locality view, the
+# ratification-packet composition and the CLI are
+# `mtj_foundry.object_lattice_report`'s. This boundary keeps the corpus load,
+# the protected codebook read, both writes, the halting semantic wrappers above,
+# the lazily-imported locality boundary, and the paths.
+from mtj_foundry import object_lattice_report as _report  # noqa: E402
 
-    NC1  every claimed card prints the word `destroy` — CR 701.8b's first of
-         exactly two routes to destruction, and the only one this reads.
-    NC2  a card with no targeted clause yields nothing (the extractor cannot
-         invent a membership).
-    NC3  quoted grants are reported, not silently included. All 16 were read
-         2026-08-09: self-grants (Harmonic Sliver IS a Sliver) and Equipment
-         grants (Heartseeker). Both genuinely hand the player that removal, so
-         they are TAGGED — grammar §2's quoted-grant exclusion governs
-         DELIVERY, and the class slot is an EFFECT question. Captain's ratified
-         criterion is deck-building relevance.
-    NC4  no emitted slug may fall outside the ratified grammar — every one is
-         re-validated through `validate_slug`.
-    """
+
+def _loc():
+    import foundry_locality as loc
+    return loc
+
+
+def _gated_cards():
     cards, _, _ = fc.load_corpus_gated()
-    qspan = re.compile(r"[\"“]([^\"”]*)[\"”]")
-    dest = _CLAUSE_RES[stem]
-    no_verb, quoted_only, silent, bad_slug = [], [], 0, []
-    # NC1 must test the PRINTED verb, not the slug stem. `bounce` is a ratified
-    # stem that no card prints -- they print `return` -- so keying this on the
-    # stem flagged every bounce card. A probe defect in the negative control
-    # itself, which is the default outcome and why this note stays.
-    verb_word = ACTION_VERBS[stem]["word"]
-    for oid, card in cards.items():
-        clauses = list(clauses_for(card, stem))
-        if not clauses:
-            silent += 1
-            continue
-        full = fc.full_oracle_text(card)
-        if verb_word not in full.lower():
-            no_verb.append(card["name"])
-        spans = [m.span(1) for m in qspan.finditer(full)]
-        hits = [m.start() for m in dest.finditer(full)]
-        if hits and all(any(a <= h < b for a, b in spans) for h in hits):
-            quoted_only.append(card["name"])
+    return cards
 
-    for cls in sorted(domain | {f for f, _ in PERMANENT_FORMS}):
-        slug = slug_for(stem, cls)
-        v = vs.validate_slug(slug, definition=None, all_slugs=[])
-        if not v["ok"]:
-            bad_slug.append((slug, v.get("failures") or v.get("reason")))
-    return {"nc1_no_verb": no_verb, "nc2_silent": silent,
-            "nc3_quoted_only": quoted_only, "nc4_bad_slug": bad_slug}
+
+def audit(stem: str, domain: set) -> dict:
+    """The NC1-NC4 negative controls -- `object_lattice_report.audit`."""
+    return _report.audit(stem, domain, _context())
 
 
 def _locality_of(card: dict, quote: str) -> dict:
-    """The semantic owner of one proving quote, for the review sheet.
-
-    Consumes `foundry_locality` rather than re-deriving coordinates -- a second
-    implementation of the resolution law is exactly the re-implementation
-    defect class this repository keeps paying for.
-    """
-    import foundry_locality as loc
-    r = loc.resolve(card, quote)
-    out = {"status": r["status"], "owner": list(r["owner"]) if r["owner"] else None}
-    if r["owner"]:
-        h = loc.owning_header(card, r["owner"])
-        if h["modal"]:
-            out["modal_header"] = list(h["header"])
-    return out
+    """The semantic owner of one proving quote, through `foundry_locality`."""
+    loc = _loc()
+    return _report.locality_of(card, quote, loc.resolve, loc.owning_header)
 
 
 def exclusivity_report(cards: dict) -> list:
-    """Cards whose lattice facts come from MUTUALLY EXCLUSIVE modes.
-
-    This is the 41-card flattening population the locality ratification exists
-    to fix, now reported with the owners that prove it. Reported, never
-    written: what a consumer does with exclusivity is a consumer decision.
-    """
-    import foundry_locality as loc
-    rows = []
-    for oid, card in sorted(cards.items(), key=lambda kv: kv[1]["name"]):
-        owned = {}
-        for stem in sorted(ACTION_VERBS):
-            r = classes_for_card(card, stem, PERMANENT_TYPES)
-            for cls in sorted(r["classes"]):
-                res = loc.resolve(card, r["quotes"][cls])
-                if res["status"] == loc.OWNER:
-                    owned[slug_for(stem, cls)] = res["owner"]
-        pairs = []
-        keys = sorted(owned)
-        for i, a in enumerate(keys):
-            for b in keys[i + 1:]:
-                if loc.mutually_exclusive(card, owned[a], owned[b]):
-                    pairs.append({"a": a, "b": b,
-                                  "owner_a": list(owned[a]),
-                                  "owner_b": list(owned[b])})
-        if pairs:
-            rows.append({"card": card["name"], "oracle_id": oid,
-                         "exclusive_pairs": pairs})
-    return rows
+    """Cards whose lattice facts come from MUTUALLY EXCLUSIVE modes."""
+    return _report.exclusivity_report(cards, _context())
 
 
 SAMPLE_REPORT_JSON = fc.FOUNDRY_OUT_DIR / "object_lattice_samples.json"
@@ -383,12 +318,8 @@ def write_report(seed: int, n: int) -> dict:
 
     **Quotes go in the FILE, never to console (A14).** The console gets counts.
 
-    It also emits the `det-patterns-v2.json` entries the lattice would need —
-    as a PROPOSAL inside the report, not written into the ratified file. A
-    `rule-derived` assertion may only cite `det-patterns-v2:<n>`
-    (`SOURCE_REF_FAMILIES`), so those entries are what makes the membership
-    legal, and minting them is Captain's."""
-    import random
+    S13: the packet's composition is `object_lattice_report.sample_packet`. The
+    corpus load, the protected codebook read below and both writes stay here."""
     cards, _, _ = fc.load_corpus_gated()
     cb_axes = None
     try:
@@ -415,225 +346,51 @@ def write_report(seed: int, n: int) -> dict:
     except BaseException:
         pass
 
-    actions = {}
-    proposed_patterns = []
-    for idx, stem in enumerate(sorted(ACTION_VERBS)):
-        m = measure(stem, PERMANENT_TYPES)
-        rng = random.Random(seed)
-        by_class = defaultdict(list)
-        for oid, r in m["hits"].items():
-            for c in r["classes"]:
-                by_class[c].append((oid, r["quotes"][c]))
-        classes = {}
-        for cls in sorted(by_class):
-            pool = sorted(by_class[cls])
-            slug = slug_for(stem, cls)
-            exists = cb_axes.get(slug, {}).get("status") if cb_axes else None
-            classes[cls] = {
-                "slug": slug,
-                "members": len(pool),
-                "axis_status_today": exists or "ABSENT — self-instantiates per b6 §11.2",
-                # SEMANTIC LOCALITY on NEW rule-derived output (roadmap step 3,
-                # ratified 2026-08-13). The lattice is the first producer to
-                # emit an address, and it emits into the REPORT only -- this
-                # sheet is a review artifact, not provenance. Wiring an address
-                # into the assertion payload `foundry_det_pass.cmd_apply`
-                # WRITES is the backfill migration, which is a codebook
-                # mutation under the backup law and is deliberately not done
-                # here.
-                "sample": [{"card": cards[o]["name"], "oracle_id": o,
-                            "quote": q,
-                            "locality": _locality_of(cards[o], q)}
-                           for o, q in rng.sample(pool, min(n, len(pool)))],
-            }
-        actions[stem] = {
-            "printed_verb": ACTION_VERBS[stem]["word"],
-            "cards": m["cards"], "memberships": m["memberships"],
-            "multi_class_cards": sum(v for k, v in m["n_classes"].items() if k > 1),
-            "residual": [{"card": c, "clause": q} for c, q in m["residual"]],
-            "conjunctive_cr300_2": m["conjunctive"],
-            "classes": classes,
-        }
-        proposed_patterns.append({
-            "slug": slug_for(stem),
-            "lattice": True,
-            "class_domain": "CR 110.4 permanent types + permanent/nonland/noncreature forms",
-            "pattern": _CLAUSE_RES[stem].pattern,
-            "status": "PROPOSED — not ratified, not written to det-patterns-v2.json",
-            "cr_anchor": {"destroy": "701.8a/701.8b", "exile": "406.1",
-                          "bounce": "zone change to hand"}.get(stem),
-            "note": "One matcher -> N axes. det-patterns-v2.json's schema is "
-                    "slug + one regex -> one axis; this needs the lattice "
-                    "extension before it can be an entry.",
-        })
-
-    report = {
-        "schema": "foundry-object-lattice-samples/1",
-        "generated_by": "experiments/foundry_object_lattice.py",
-        "law": "M8 generalized (b6 D3), MASTER-HANDOFF-ADDENDUM-4.md §4; "
-               "lattice grammars b6 §11.2 (virtual nodes self-instantiate on "
-               "first quote-verified member, no fresh ratification)",
-        "record": "docs/OBJECT-LATTICE-2026-08-09.md",
-        "seed": seed, "sample_size": n,
-        "cr_sources": {
-            "permanent_types_110_4": sorted(PERMANENT_TYPES),
-            "card_types_205_2a": len(CARD_TYPES),
-            "subtype_lists_205_3": "consumed from foundry_cr702_classes.type_vocabulary()",
-        },
-        "actions": actions,
-        "mutually_exclusive_facts": exclusivity_report(cards),
-        "proposed_det_patterns": proposed_patterns,
-    }
+    report, md = _report.sample_packet(
+        seed, n, cards,
+        lambda slug: cb_axes.get(slug, {}).get("status") if cb_axes else None,
+        _context())
     fc.write_json(SAMPLE_REPORT_JSON, report)
-
-    lines = ["# OBJECT LATTICE — sample sheet for ratification", "",
-             f"Seed `{seed}`, {n} rows per class. Record: "
-             f"`docs/OBJECT-LATTICE-2026-08-09.md`.", "",
-             "Standing condition (`det-patterns-v2.json`): **any sample row "
-             "failing its axis definition halts the pass before provenance "
-             "writes.**", ""]
-    for stem, a in actions.items():
-        lines += [f"## `targeted-{stem}` — printed *{a['printed_verb']}*", "",
-                  f"{a['cards']:,} cards · **{a['memberships']:,} memberships** · "
-                  f"{a['multi_class_cards']} multi-class · "
-                  f"{len(a['residual'])} residual", ""]
-        for cls, c in a["classes"].items():
-            lines += [f"### `{c['slug']}` — {c['members']:,} members "
-                      f"({c['axis_status_today']})", ""]
-            for row in c["sample"]:
-                lines.append(f"- **{row['card']}** — {row['quote']}")
-            lines.append("")
-        if a["residual"]:
-            lines += ["**Residual (no class named):**", ""]
-            lines += [f"- {r['card']} — {r['clause']}" for r in a["residual"][:20]]
-            lines.append("")
-    SAMPLE_REPORT_MD.write_text("\n".join(lines), encoding="utf-8")
+    SAMPLE_REPORT_MD.write_text(md, encoding="utf-8")
     return {"json": str(SAMPLE_REPORT_JSON), "md": str(SAMPLE_REPORT_MD),
-            "actions": {k: v["memberships"] for k, v in actions.items()}}
+            "actions": {k: v["memberships"] for k, v in report["actions"].items()}}
+
+
+def _context():
+    return _report.ObjectLatticeContext(
+        description=__doc__,
+        report_help=("write the ratification packet (N rows per class) to "
+                     "experiments/out/foundry/object_lattice_samples.{json,md}. "
+                     "Quotes go in the FILE, never to console (A14)."),
+        generated_by="experiments/foundry_object_lattice.py",
+        subtype_source="consumed from foundry_cr702_classes.type_vocabulary()",
+        action_verbs=ACTION_VERBS,
+        clause_res=_CLAUSE_RES,
+        permanent_types=PERMANENT_TYPES,
+        card_types=CARD_TYPES,
+        permanent_forms=PERMANENT_FORMS,
+        load_cards=lambda: _gated_cards(),
+        measure=lambda stem, domain: measure(stem, domain),
+        residual_invariant=lambda stem, domain, selftest=False:
+            residual_invariant(stem, domain, selftest=selftest),
+        slug_for=lambda stem, cls=None: slug_for(stem, cls),
+        clauses_for=lambda card, stem: clauses_for(card, stem),
+        classes_for_card=lambda card, stem, domain: classes_for_card(card, stem, domain),
+        full_oracle_text=lambda card: fc.full_oracle_text(card),
+        validate_slug=lambda *a, **k: vs.validate_slug(*a, **k),
+        resolve=lambda card, quote: _loc().resolve(card, quote),
+        owning_header=lambda card, owner: _loc().owning_header(card, owner),
+        mutually_exclusive=lambda card, a, b: _loc().mutually_exclusive(card, a, b),
+        owner_status=lambda: _loc().OWNER,
+        locality_of=lambda card, quote: _locality_of(card, quote),
+        exclusivity=lambda cards: exclusivity_report(cards),
+        audit=lambda stem, domain: audit(stem, domain),
+        write_report=lambda seed, n: write_report(seed, n),
+    )
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--action", default="destroy", choices=sorted(ACTION_VERBS))
-    ap.add_argument("--domain", default="permanent",
-                    choices=["permanent", "card"],
-                    help="permanent = CR 110.4 (destroy); card = CR 205.2a")
-    ap.add_argument("--residual", action="store_true",
-                    help="print the clauses that matched the action but named "
-                         "NO class — where the defects are")
-    ap.add_argument("--audit", action="store_true",
-                    help="run the negative controls (NC1-NC4) and exit 1 on "
-                         "any hard failure")
-    ap.add_argument("--update-baseline", action="store_true",
-                    help="accept the current membership/residual counts ON "
-                         "PURPOSE. A membership count that FELL is a "
-                         "regression until it is re-pinned here.")
-    ap.add_argument("--invariant", action="store_true",
-                    help="the residual invariant: HALT if any residual clause "
-                         "still carries a target arm resolving to a battlefield "
-                         "class. Runs over ALL actions, not just --action.")
-    ap.add_argument("--selftest", action="store_true",
-                    help="negative control for --invariant: drop the zone "
-                         "explanation, so it must report a failure")
-    ap.add_argument("--samples", type=int, default=0, metavar="N",
-                    help="fixed-seed sample of N cards per class, for the DET "
-                         "standing condition's per-pattern verification")
-    ap.add_argument("--seed", type=int, default=20260809)
-    ap.add_argument("--report", type=int, default=0, metavar="N",
-                    help="write the ratification packet (N rows per class) to "
-                         "experiments/out/foundry/object_lattice_samples.{json,md}. "
-                         "Quotes go in the FILE, never to console (A14).")
-    args = ap.parse_args()
-
-
-    if args.invariant:
-        bad = 0
-        for stem in sorted(ACTION_VERBS):
-            r = residual_invariant(stem, PERMANENT_TYPES, selftest=args.selftest)
-            print(f"targeted-{stem}: {len(r['explained'])} explained by a "
-                  f"printed CR zone origin, {len(r['unexplained'])} UNEXPLAINED")
-            for name, arm, cls, quote in r["unexplained"]:
-                print(f"    {name}: arm {arm!r} -> {slug_for(stem, cls)}")
-                print(f"        {quote}")
-            bad += len(r["unexplained"])
-        if bad:
-            print(f"\n  RESIDUAL INVARIANT FAILED: {bad} live arm(s) in "
-                  f"residual. The pass HALTS before provenance writes.")
-            return 1
-        print("\n  residual invariant holds")
-        return 0
-
-    if args.report:
-        r = write_report(args.seed, args.report)
-        print("wrote the ratification packet (quotes are in the files, not here)")
-        print(f"  {r['json']}")
-        print(f"  {r['md']}")
-        for stem, n in r["actions"].items():
-            print(f"  targeted-{stem}: {n:,} memberships")
-        return 0
-
-    domain = PERMANENT_TYPES if args.domain == "permanent" else CARD_TYPES
-    print(f"CR 110.4 permanent types : {sorted(PERMANENT_TYPES)}")
-    print(f"CR 205.2a card types     : {len(CARD_TYPES)}")
-    print(f"domain for `{args.action}` : {args.domain} ({len(domain)})\n")
-
-    m = measure(args.action, domain)
-    print(f"cards with a targeted `{args.action}` clause and >=1 class: "
-          f"{m['cards']:,}")
-    print(f"memberships the ratified lattice implies : {m['memberships']:,}")
-    print(f"  per class      : {dict(m['per_class'].most_common())}")
-    print(f"  by class count : {dict(sorted(m['n_classes'].items()))}")
-    print(f"  multi-class    : {sum(v for k, v in m['n_classes'].items() if k > 1):,}"
-          f"  <- the population M8 is about")
-    for combo, n in m["combos"].most_common(10):
-        print(f"      {n:>4}  {' + '.join(combo)}")
-    print(f"\n  CR 300.2 conjunctive ('artifact creature', ONE object): "
-          f"{len(m['conjunctive'])}  <- UNRULED, reported not decided")
-    print(f"  qualified clauses (restriction the class slot cannot hold): "
-          f"{len(m['qualified']):,}")
-    print(f"  residual (action matched, no class named): {len(m['residual'])}")
-    if args.residual:
-        for name, clause in m["residual"][:60]:
-            print(f"      {name}: {clause}")
-
-    if args.audit:
-        a = audit(args.action, domain)
-        print("\n--- negative controls " + "-" * 50)
-        print(f"  NC1 claimed without the printed verb "
-              f"`{ACTION_VERBS[args.action]['word']}` (CR 701.8b): "
-              f"{len(a['nc1_no_verb'])}   must be 0")
-        print(f"  NC2 cards yielding nothing                   : "
-              f"{a['nc2_silent']:,}")
-        print(f"  NC3 clause only inside a quoted grant        : "
-              f"{len(a['nc3_quoted_only'])}   reported, tagged on purpose")
-        for n in a["nc3_quoted_only"]:
-            print(f"        {n}")
-        print(f"  NC4 emitted slugs failing validate_slug      : "
-              f"{len(a['nc4_bad_slug'])}   must be 0")
-        for slug, why in a["nc4_bad_slug"]:
-            print(f"        {slug}: {why}")
-        if a["nc1_no_verb"] or a["nc4_bad_slug"]:
-            print("\n  AUDIT FAILED")
-            return 1
-        print("\n  audit clean")
-
-    if args.samples:
-        import random
-        rng = random.Random(args.seed)
-        by_class = defaultdict(list)
-        for oid, r in m["hits"].items():
-            for c in r["classes"]:
-                by_class[c].append((oid, r["quotes"][c]))
-        print(f"\n--- fixed-seed samples (seed {args.seed}) " + "-" * 30)
-        cards, _, _ = fc.load_corpus_gated()
-        for cls in sorted(by_class):
-            pool = sorted(by_class[cls])
-            pick = rng.sample(pool, min(args.samples, len(pool)))
-            print(f"\n  {slug_for(args.action, cls)}  (n={len(pool)})")
-            for oid, q in pick:
-                print(f"      {cards[oid]['name']:<34} | {q[:78]}")
-    return 0
+    return _report.run(None, _context())
 
 
 if __name__ == "__main__":
