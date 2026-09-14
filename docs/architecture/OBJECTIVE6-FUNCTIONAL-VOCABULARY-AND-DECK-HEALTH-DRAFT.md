@@ -4,48 +4,93 @@
 **Date:** 2026-09-13  
 **Objective:** 6 — `FOUNDRY_FUNCTIONAL_VOCABULARY_SPECIFICATION`  
 **Base evidence branch:** `preflight/objective5-s16b-gameplay-dna-2026-09-12`  
-**Base evidence head when this draft was created:** `034ee0459c5048e0fb3be3d717abd39bb4cbc05e`  
-**S16 relationship:** S16A semantic card-reading is the lower prerequisite; S16B gameplay-DNA is the downstream consumer.  
-**Implementation authorization:** NONE. This document does not authorize S16A, S16B, S10–S15, AQ4, Bridge v0, merge, deployment, parser changes, codebook changes, or production-tag assignment.
+**Base evidence head when drafted:** `034ee0459c5048e0fb3be3d717abd39bb4cbc05e`  
+**S16 relationship:** S16A is the lower semantic prerequisite; S16B is the downstream gameplay-DNA consumer.  
+**Implementation authorization:** **NONE**. This document does not authorize S16A, S16B, S10–S15, AQ4, Bridge v0, merge, deployment, parser changes, codebook changes, or production tag assignment.
 
 ---
 
-## 1. Purpose
+## 1. Executive thesis
 
-This document captures the architecture that emerged from the Captain's Objective 6 vocabulary review after Objective 5 closed its S16B preflight research.
+Objective 5 established that a useful MTG thesaurus needs a **derived functional layer above literal mechanics**, while community vocabulary must remain discovery evidence rather than semantic authority.
 
-Objective 5 established that a useful MTG thesaurus needs a functional layer above literal mechanics, but deliberately left community vocabulary non-authoritative. Objective 6 exists to define Foundry-owned functional language precisely enough that later systems can assign, search, compare, count, and explain those functions deterministically.
+Objective 6 now has a clearer product purpose:
 
-The central product insight is now broader than Searcher B alone:
+> **Define the general, cross-strategy functions that make decks operate, separately from the much larger future vocabulary describing what a particular deck strategy is trying to do.**
 
-> **Foundry should distinguish the general functions that make decks operate from the much larger future vocabulary describing what a specific strategy is trying to do.**
+A Reanimator deck, Artifact deck, Tokens deck, Voltron deck, typal deck, or unrelated Commander deck can all need broadly useful functions such as:
 
-A Reanimator deck, Artifact deck, Tokens deck, Voltron deck, typal deck, or unrelated Commander deck may pursue very different strategies, but all can still need broadly useful functions such as mana acceleration, card access, card advantage, interaction, removal, protection, recursion, and graveyard/artifact/enchantment coverage.
+- mana acceleration;
+- mana fixing;
+- card access;
+- card filtering;
+- card advantage;
+- interaction;
+- spot removal;
+- multi-removal;
+- board wipes;
+- graveyard/artifact/enchantment interaction;
+- protection;
+- recursion;
+- tutors.
 
-These cross-strategy functions can become:
+Those concepts can serve several products at once:
 
-- user-facing search/filter buttons;
-- Searcher B retrieval parents;
-- inputs to deck-composition summaries;
-- inputs to deck functional-health diagnostics;
-- inputs to replacement recommendations;
-- a neutral substrate that later strategy-specific tags can re-rank without redefining the underlying function.
+1. **Searcher/filter surface** — user-facing buttons for the job a player needs.
+2. **S16B gameplay-DNA** — functional parents linking different mechanisms that accomplish related jobs.
+3. **Deck Functional Health** — count and diagnose what useful functions a deck contains or lacks.
+4. **Recommendations** — suggest additions or, preferably when possible, replacements that preserve an existing job while filling another gap.
+5. **Later strategic alignment** — re-rank general-function cards according to a deck's specific strategy without redefining the function itself.
 
-This document records both **Captain directions already stated** and **Manager re-audit proposals**. The latter are explicitly marked as proposals and are not Captain-ratified merely because they appear here.
+The desired end state is **not one enormous flat tag list**. It is a layered, explainable capability system.
 
 ---
 
-## 2. Core product model
+## 2. Authority boundary for this draft
 
-Foundry should ultimately expose at least three conceptually separate layers.
+This document deliberately distinguishes three classes of content.
 
-### 2.1 Layer A — General functional capability
+### 2.1 Captain draft directions
+
+These are decisions or working definitions explicitly stated by the Captain during the current Objective 6 pass. They are preserved here so they are not lost, but Objective 6 as a whole is still `CAPTAIN_DRAFTING_NOT_RATIFIED`.
+
+### 2.2 Existing S16 / Objective 5 architecture
+
+Repository S16 architecture already establishes:
+
+- S16A must preserve a lossless, provenance-bearing semantic representation of Oracle instructions;
+- S16B is a downstream functional/gameplay-DNA consumer;
+- S16B retrieval, ordering, and explanation are separate concerns;
+- community vocabulary cannot overwrite Oracle/CR truth;
+- the functional layer should support a DAG/lattice with multiple parents rather than one primary role;
+- `UNKNOWN / INSUFFICIENT_EVIDENCE` is preferable to false certainty.
+
+Relevant repository prior art includes:
+
+- `docs/architecture/CARD-READING-PRECISION-ACCEPTANCE.md`;
+- `docs/architecture/S16B-GAMEPLAY-DNA-PREFLIGHT-PLAN.md`;
+- `docs/architecture/preflight/s16b/S16B-GAMEPLAY-DNA-PREFLIGHT-REPORT.md`;
+- `docs/architecture/preflight/s16b/vocabulary-v0.json`;
+- `docs/DERIVED-TAG-LAYER-SPEC.md`;
+- preserved fact-layer/locality architecture under `refoundation/preservation/`.
+
+The older derived-tag/fact-layer documents are prior art, not authority over newer Objective 6 decisions. They are useful because they already exposed two durable design lessons: derived semantics need provenance, and flattening effects/modal structure produces false equivalence.
+
+### 2.3 Manager re-audit proposals
+
+Some architecture below is a Manager proposal derived from the Captain's product direction and the S16 contracts. These proposals are explicitly labeled and must not silently become Captain rulings merely because this file records them.
+
+---
+
+## 3. Product layers
+
+### 3.1 Layer A — General functional capability
 
 Question:
 
-> **What useful jobs can this card or effect perform independent of a particular deck strategy?**
+> **What useful job can this card/effect perform independent of a particular deck strategy?**
 
-Examples include:
+Examples:
 
 - Ramp
 - Mana Acceleration
@@ -68,50 +113,63 @@ Examples include:
 - Reanimation
 - Blink
 
-This is the primary subject of Objective 6.
+This is the primary Objective 6 surface.
 
-### 2.2 Layer B — Deck functional health
-
-Question:
-
-> **Does this deck have enough breadth, density, redundancy, and usable timing among the general functions that decks commonly rely on?**
-
-This is a downstream consumer of the Objective 6/S16B capability layer. It is not itself semantic authority.
-
-Possible outputs include:
-
-- function presence or absence;
-- raw count of cards able to perform a function;
-- percentage/density of deck slots providing a function;
-- target/resource coverage breadth;
-- unique-source redundancy;
-- timing/cost/availability shape;
-- conditional versus self-contained access to a function;
-- blind spots such as no graveyard, artifact, or enchantment interaction;
-- imbalances such as many filtering/parity effects but little or no actual card advantage.
-
-### 2.3 Layer C — Strategy-specific alignment
+### 3.2 Layer B — Deck Functional Health
 
 Question:
 
-> **Of the cards that perform useful general functions, which ones also advance this particular deck's strategy?**
+> **What general functions does this deck contain, where are its blind spots, and what is the shape/reliability of its coverage?**
 
-This is intentionally later and can become very large. A Reanimator deck may prefer removal on creatures it can recur; an Artifact deck may prefer artifact-based removal; a Tokens deck may prefer interaction that also creates or exploits tokens.
+This is a downstream consumer of Objective 6 and S16B. It should measure and explain; it should not redefine semantic membership.
 
-The strategy layer should re-rank or refine candidates. It should not redefine what `SPOT_REMOVAL`, `RAMP`, or `CARD_ADVANTAGE` mean.
+### 3.3 Layer C — Strategy-specific alignment
 
-This separation prevents an explosion of combined labels such as `REANIMATOR_SPOT_REMOVAL`, `TOKEN_RAMP`, `ARTIFACT_CARD_ADVANTAGE`, etc. The general function and strategy alignment should remain independently queryable dimensions.
+Question:
+
+> **Of the cards that perform the needed general function, which ones also advance this particular deck's strategy?**
+
+This later layer may eventually contain a very large number of strategy-specific tags and relations.
+
+Examples:
+
+- Reanimator
+- Aristocrats
+- Voltron
+- Tokens
+- Spellslinger
+- Artifacts-matter
+- Graveyard-matters
+- Lands-matter
+- Superfriends
+- Typal/Tribal
+- Group Hug
+- Group Slug
+- Prison
+
+The strategy layer should re-rank or refine general-function candidates. It should not redefine `SPOT_REMOVAL`, `RAMP`, `CARD_ADVANTAGE`, etc.
+
+### 3.4 Avoid combined-tag explosion
+
+Do **not** create a new canonical tag for every strategy/function combination such as:
+
+- `REANIMATOR_SPOT_REMOVAL`;
+- `TOKEN_RAMP`;
+- `ARTIFACT_CARD_ADVANTAGE`.
+
+Instead retain independent dimensions:
+
+```text
+GENERAL FUNCTION + STRATEGIC ALIGNMENT
+```
+
+This lets one definition of Spot Removal support every deck while allowing later strategy-aware ranking.
 
 ---
 
-## 3. Relationship to S16
+## 4. S16 integration
 
-The existing S16 architecture states:
-
-- **S16A = understand the card precisely.**
-- **S16B = compare what those understood instructions accomplish in gameplay.**
-
-Objective 6 provides the missing semantic contract between them.
+The existing S16 architecture can now be stated as a complete pipeline:
 
 ```text
 Oracle / Comprehensive Rules
@@ -120,39 +178,39 @@ S16A — lossless structured semantic parse
         ↓
 Objective 6 — deterministic functional vocabulary contracts
         ↓
-S16B — derived gameplay-DNA capability graph, retrieval, ordering, explanation
+S16B — gameplay-DNA capability graph / retrieval / ordering / explanation
         ↓
 Deck Functional Health — composition / coverage / recommendation consumer
         ↓
-Later Strategy Layer — strategy-specific alignment and re-ranking
+Later Strategy Layer — strategy-specific alignment / re-ranking
 ```
 
-### 3.1 S16A responsibilities
+### 4.1 S16A responsibility
 
-S16A should preserve objective facts such as:
+S16A determines **what the card says and how its instructions relate**. It should preserve, when present:
 
-- semantic owner and exact Oracle span;
-- face / paragraph / ability / mode / instruction structure;
-- cost versus effect;
+- card / face / paragraph / ability / mode / instruction ownership;
+- costs separately from effects;
 - actor/controller/owner/opponent scope;
-- target versus choose versus affect-all;
-- exact or symbolic cardinality;
+- targeting versus choosing versus affect-all;
+- exact or symbolic quantities/cardinality;
 - source and destination zones;
-- immediate versus delayed timing;
+- immediate/delayed timing;
 - duration;
-- trigger / activation / spell / static / replacement delivery;
-- modal exclusivity and co-availability;
+- delivery type;
 - conditions and restrictions;
-- linked instructions and object identity;
-- repeatability;
-- payments and resources consumed;
-- provenance.
+- linked/dependent instructions;
+- modal exclusivity and co-availability;
+- object identity across linked instructions;
+- repeatability and rate limits;
+- payments/resources consumed;
+- exact Oracle provenance.
 
-S16A should not need to decide whether those facts constitute community/product concepts such as `RAMP` or `MULTI_REMOVAL`.
+S16A should not need to decide that a set of those facts is called `RAMP`, `BLINK`, `MULTI_REMOVAL`, or `CARD_ADVANTAGE`.
 
-### 3.2 Objective 6 responsibilities
+### 4.2 Objective 6 responsibility
 
-Objective 6 should define exact Foundry membership law for functional concepts.
+Objective 6 determines **what general functional concept those facts satisfy**.
 
 Example:
 
@@ -160,63 +218,64 @@ Example:
 S16A facts:
   exile permanent X
   linked return of same X to battlefield
-  timing = same resolving sequence
+  return timing = same resolving sequence
 
-Objective 6 derivation:
+Objective 6 result:
   BLINK = true
   BLINK_NOW = true
 ```
 
-or:
+Example:
 
 ```text
 S16A facts:
-  effect individually selects X creature objects
-  X >= 2 is legal
-  action neutralizes/removes selected objects
+  controller individually selects X creature objects
+  X >= 2 is a legal value/path
+  selected objects are removed/neutralized
 
-Objective 6 derivation:
+Objective 6 result:
   MULTI_REMOVAL = true
 ```
 
-### 3.3 S16B responsibilities
+### 4.3 S16B responsibility
 
-S16B should consume those derived capabilities and do the work it was designed for:
+S16B consumes the derived functional/capability layer and performs its intended jobs:
 
-1. **Retrieval** — surface cards sharing materially useful gameplay functions.
-2. **Ordering** — rank closer functional substitutes above loose category neighbors.
-3. **Explanation** — explain the shared job and mechanically relevant differences using traceable facts.
+1. **Retrieval** — surface functional neighbors.
+2. **Ordering** — rank closer substitutes above loose broad-category overlaps.
+3. **Explanation** — state both the shared job and mechanically relevant differences.
 
-S16B should not silently invent or redefine Objective 6 terminology during ranking.
+S16B should not silently invent the definition of a functional term during ranking.
 
 ---
 
-## 4. Vocabulary representation laws
+## 5. Vocabulary/ontology laws
 
-### 4.1 Parent/child means logical implication
+### 5.1 Parent/child means logical implication
 
-Use `IS_A` parenthood only where the implication is always true:
+**Manager proposal strongly supported by the current Captain model.**
 
-> If X is a child of Y, every X is also Y.
+Use `IS_A` parenthood only when the implication always holds:
 
-Examples that can fit this law under current Captain directions:
+> **If X is a child of Y, every X must also be Y.**
+
+Current examples that fit:
 
 ```text
-BLINK_NOW    → BLINK
+BLINK_NOW     → BLINK
 BLINK_DELAYED → BLINK
-MANA_ROCK    → RAMP → MANA_ACCELERATION
-MANA_DORK    → RAMP → MANA_ACCELERATION
-LAND_RAMP    → RAMP → MANA_ACCELERATION
-RITUAL       → FAST_MANA → MANA_ACCELERATION
-HARD_COUNTER → COUNTERSPELL
-SOFT_COUNTER → COUNTERSPELL
+MANA_ROCK     → RAMP → MANA_ACCELERATION
+MANA_DORK     → RAMP → MANA_ACCELERATION
+LAND_RAMP     → RAMP → MANA_ACCELERATION
+HARD_COUNTER  → COUNTERSPELL
+SOFT_COUNTER  → COUNTERSPELL
 ```
 
 Parenthood should not be used merely because two concepts are related.
 
-### 4.2 Use a DAG/lattice, not a rigid tree
+### 5.2 Use a DAG/lattice, not a rigid tree
 
-A card/effect can legitimately have several parents or several functional memberships simultaneously.
+A card/effect can legitimately have several memberships/parents.
 
 Example:
 
@@ -228,64 +287,70 @@ Sol Ring
   FAST_MANA
 ```
 
-No forced single “primary role” is required.
+No forced single primary role is necessary.
 
-### 4.3 Siblings do not need to exhaust a parent
+### 5.3 Siblings do not need to exhaust a parent
 
-A parent category can contain members that do not yet have a narrower child.
+Do not invent a narrow child merely to force every parent member into a partition.
 
-Do not invent a child solely to force a complete partition.
+A future card may be `MANA_ACCELERATION` without belonging to any currently named child.
 
-### 4.4 Classify effect/choice paths before card-level capability
+### 5.4 Multi-label membership is expected
 
-Complex or modal cards should not be flattened into one card-level bag of effects.
+One card can legitimately satisfy many functions. Deck percentages based on these labels are therefore coverage percentages and need not sum to 100%.
 
-Preferred conceptual order:
+### 5.5 Domain-specific accounting stays domain-specific
+
+`MANA_PARITY` means parity in the mana-development dimension, not overall card value.
+
+Likewise card-resource parity/advantage should not silently absorb creature, life, board, or tempo value.
+
+### 5.6 Unknown is a valid result
+
+If the ratified contract cannot be proven from S16A facts, return `UNKNOWN / INSUFFICIENT_EVIDENCE` rather than guessing.
+
+---
+
+## 6. Effect/path-first semantics
+
+**Manager re-audit proposal; strongly aligned with S16A modal conservation.**
+
+Functional membership should first attach to the smallest meaningful executable semantic path/effect, then roll up to card capability.
 
 ```text
 semantic effect / mode / legal choice path
         ↓
-functional capability of that path
+functional membership of that path
         ↓
 card CAN_PERFORM(function)
 ```
 
-This matters for cards such as Cryptic Command, where several functions can be available through modes without all four modes occurring together.
+This prevents a modal card from being treated as though mutually exclusive effects all occur simultaneously.
 
-### 4.5 Multi-label membership is expected
+Example: Cryptic Command can expose several capabilities, but the representation must retain which selected modes can coexist in one cast.
 
-A card can support many functions at once. Percentages based on those labels are coverage percentages, not exclusive partitions, and therefore need not sum to 100%.
-
-### 4.6 Domain-specific accounting must stay domain-specific
-
-`MANA_PARITY` does not mean the card is “overall parity.” A card may be mana-parity while gaining a creature, card, life, or another resource.
-
-Likewise card-resource accounting should not silently include unrelated battlefield value.
-
-### 4.7 Unknown is preferable to invented certainty
-
-If Foundry cannot prove a functional label from the available semantic representation and ratified contract, the result should remain `UNKNOWN` / `INSUFFICIENT_EVIDENCE`, not a guessed boolean.
-
-This preserves the Objective 5 anti-folklore and S16A no-silent-approximation principles.
+This law becomes especially important for deck-health counting: a modal card can cover several categories without becoming several independent physical sources.
 
 ---
 
-## 5. Curated function labels versus orthogonal capability facets
+## 7. Curated function labels versus orthogonal facets
 
-**Manager re-audit proposal — not yet Captain-ratified as architecture law.**
+**Manager re-audit proposal — recommended for Captain consideration.**
 
-A major risk is combinatorial tag explosion. Foundry should not need separate canonical labels for every combination such as:
+A major risk is combinatorial tag explosion.
 
-- instant-speed artifact spot removal that exiles;
-- sorcery-speed creature multi-removal that destroys;
-- repeatable enchantment interaction on a creature;
-- two-mana conditional graveyard interaction.
+Foundry should not require a unique canonical tag for every combination such as:
 
-Instead, separate two things.
+- instant-speed artifact Spot Removal that exiles;
+- repeatable creature-based enchantment interaction;
+- sorcery-speed selected-many creature destruction;
+- delayed two-mana conditional card access.
 
-### 5.1 Curated functional labels
+Instead distinguish:
 
-These are meaningful concepts users recognize and may click directly:
+### 7.1 Curated function labels
+
+These are concepts worth naming and exposing directly to users:
 
 - Spot Removal
 - Multi-removal
@@ -298,54 +363,100 @@ These are meaningful concepts users recognize and may click directly:
 - Blink
 - Recursion
 
-### 5.2 Orthogonal facets
+### 7.2 Orthogonal capability facets
 
-These describe how the function is delivered and what it covers:
+These preserve the important mechanical differences:
 
-- target/object class: creature, artifact, enchantment, planeswalker, land, card, spell, ability, graveyard card, player, etc.;
+- object/target class: creature, artifact, enchantment, planeswalker, land, card, spell, ability, graveyard card, player, etc.;
 - scope: one, selected-many, all matching objects, all opponents, symmetric, asymmetric;
-- method/action: destroy, exile, bounce, sacrifice, counter, damage, prevention, prohibition, tax, etc.;
-- destination zone;
+- action/method: destroy, exile, bounce, sacrifice, counter, damage, prevent, prohibit, tax, etc.;
+- source/destination zone;
+- mana/resource cost;
 - timing/delivery;
-- mana value / activation cost / resource cost;
 - immediate versus delayed;
+- duration;
 - one-shot versus repeatable;
 - conditional versus unconditional;
-- self-contained versus dependent on another action/card/state;
-- opponent-dependent versus controller-driven;
+- self-contained versus external dependency;
+- controller-driven versus opponent-dependent;
 - modal/optional status;
-- co-availability with other functions on the same card;
-- compensation or downside.
+- co-availability with other functions on the card;
+- compensation/downside;
+- numeric magnitude.
 
-The UI can combine a curated label with facets without needing a new semantic term for every cross-product.
+The UI can combine a function with facets without creating another semantic tag.
 
-Example search:
+Example:
 
 ```text
 Function: Spot Removal
-Target class: Artifact OR Enchantment
+Target: Artifact OR Enchantment
 Timing: Instant-speed
-Destination/method: Exile OR Destroy
+Method: Exile OR Destroy
 Mana value: <= 3
 ```
 
-This preserves precision while keeping the public vocabulary understandable.
+---
+
+## 8. Functional membership provenance
+
+**Manager re-audit addition supported by historical Foundry prior art.**
+
+A derived function should never become an opaque boolean detached from the facts that justified it.
+
+For every derived functional membership, Foundry should be able to recover at least:
+
+- canonical functional term/version;
+- derivation contract/rule version;
+- semantic owner/effect/choice path that qualified;
+- exact S16A fact identifiers/coordinates used;
+- relevant Oracle evidence span(s);
+- result state: true / false if explicitly evaluated / unknown;
+- any facets used to establish the result;
+- any dependency/conditionality classification;
+- derivation/build version.
+
+Conceptually:
+
+```text
+membership:
+  card: <oracle_id>
+  function: MULTI_REMOVAL
+  function_version: objective6/<version>
+  semantic_path: <S16A owner/path>
+  evidence:
+    - quantity = X, with legal X >= 2
+    - selection = individually chosen creatures
+    - action = exile
+  oracle_provenance: <span refs>
+  result: true
+```
+
+This enables:
+
+- auditability;
+- deterministic rebuilds;
+- explanation to the user;
+- safe contract revisions;
+- diffing when Oracle text or definitions change;
+- debugging false positives/negatives;
+- keeping strategy/community judgments separate from mechanical evidence.
+
+The historical `DERIVED-TAG-LAYER-SPEC.md` and fact-layer work already treated provenance class/evidence as important. Objective 6 should preserve that lesson while using the newer S16A semantic substrate rather than reviving old plumbing.
 
 ---
 
-## 6. Captain directions captured so far
+## 9. Captain draft directions captured so far
 
-This section records directions stated by the Captain during the Objective 6 discussion. They remain draft Objective 6 material until formally ratified.
+### 9.1 Enabler / Payoff — DEFERRED
 
-### 6.1 Enabler / Payoff — DEFERRED
+Forget/defer `ENABLER` and `PAYOFF` for the initial Objective 6 surface.
 
-`ENABLER` and `PAYOFF` are intentionally deferred for now.
+Reason: they are relational (`enabler for what?`, `payoff for what?`) and would force strategy/context modeling before the core cross-strategy vocabulary is settled.
 
-Reason: they are relational concepts (`enabler for what?`, `payoff for what?`) and would force strategy/context modeling before the core general-purpose functional vocabulary is settled.
+Reserve the terms for later; do not make initial S16B depend on them.
 
-Reserve the terminology; do not include it in the initial Objective 6 execution surface.
-
-### 6.2 Blink family
+### 9.2 Blink family
 
 `BLINK` is the parent.
 
@@ -357,13 +468,13 @@ BLINK
 
 Working meanings:
 
-- **Blink** — a permanent is exiled and subsequently returned to the battlefield through a linked effect/instruction.
+- **Blink** — a permanent is exiled and subsequently returned to the battlefield through linked instructions/effects.
 - **Blink-Now** — the return occurs as part of the same resolving effect/sequence rather than at a later game time.
 - **Blink-Delayed** — the exile establishes a later return, such as at the beginning of the next end step.
 
-Underlying facets such as controller, object class, tapped status, or return under a different controller should remain separately represented.
+Object class, controller, tapped status, return-control changes, etc. should remain lower facets rather than creating unnecessary child terms immediately.
 
-### 6.3 Removal scope family
+### 9.3 Removal scope family
 
 #### Spot Removal
 
@@ -373,93 +484,91 @@ One card/effect removes, neutralizes, or otherwise interacts with **one individu
 
 One card/effect can remove/neutralize **two or more distinct game objects individually chosen by the caster/controller**.
 
-There is no upper numerical ceiling. The distinction is not “exactly two.”
+There is no upper numerical ceiling.
 
-Gold-positive examples stated by the Captain include:
+Captain examples:
 
-- **Curse of the Swine** — selected X creatures;
-- **Hex** — six selected creatures;
-- **Cryptic Command** when a legal choice path independently interacts with more than one chosen object, such as countering a chosen spell and returning a chosen permanent.
+- Curse of the Swine — selected X creatures;
+- Hex — six selected creatures;
+- Cryptic Command can qualify through a legal path that interacts with multiple distinct chosen objects, e.g. a chosen spell plus chosen permanent.
 
-A card that merely offers a choice among possible single objects is not Multi-removal. Naturalize can choose which artifact or enchantment it removes, but removes only one object.
+Naturalize is not Multi-removal merely because the caster can choose what single object it removes.
 
 #### Board Wipe
 
-A wipe removes/neutralizes the entire matching battlefield scope rather than allowing the caster to individually select the affected objects.
+A wipe affects the **entire matching battlefield scope** rather than individually selecting affected permanents.
 
-Current Captain distinction:
+Current dividing law:
 
 ```text
-individually chosen set of >=2 objects → MULTI_REMOVAL
-universal matching set               → BOARD_WIPE / ONESIDED_BOARD_WIPE
+individual selection of >=2 objects → MULTI_REMOVAL
+universal matching battlefield set  → BOARD_WIPE / ONESIDED_BOARD_WIPE
 ```
 
 #### One-sided Board Wipe
 
-A universal wipe over the opponent side(s) that excludes the caster/controller's matching board.
+Universal matching removal/neutralization over opponent side(s) while excluding the caster/controller's matching side.
 
-**Ruinous Ultimatum** is the Captain's gold-standard example.
+Ruinous Ultimatum is the Captain's gold-standard example.
 
-### 6.4 Mana family
+### 9.4 Mana family
 
 #### Mana Acceleration
 
-Broad parent for effects/cards that advance mana availability beyond baseline development through the relevant mechanism.
+Broad parent for qualifying effects/cards that advance usable mana availability beyond the relevant baseline.
 
 #### Ramp
 
-`RAMP` is reserved for durable/permanent forms of mana acceleration that can continue to provide mana across turns.
+`RAMP` is reserved for durable/permanent forms of mana acceleration capable of continuing to provide mana across turns.
 
-Current inclusions include:
+Current inclusion families:
 
 - Mana Dorks;
 - Mana Rocks;
 - Land Ramp;
-- other qualifying permanents that repeatedly produce more useful mana capacity.
+- other qualifying durable mana-producing permanents.
 
-Current exclusions include:
+Current exclusions:
 
-- ordinary lands that produce only one mana;
+- normal one-mana-producing lands;
 - bounce lands such as Boros Garrison;
-- cards that merely permit additional land plays;
+- additional-land-play permission;
 - one-shot rituals.
 
-A land that durably produces more than one mana without sacrificing/leaving the battlefield to do so can qualify as Ramp under the current direction. **Phyrexian Tower** was given as an example.
+A land that durably produces more than one mana and does not sacrifice/leave the battlefield to do so can qualify; Phyrexian Tower was given as an example.
 
 #### Land Ramp
 
-Cards that obtain a land from the library and put that land onto the battlefield.
-
-Additional-land permission is not Land Ramp.
+Cards that obtain a land from the library and put it onto the battlefield.
 
 #### Land Add
 
-Cards that allow additional lands to be played. `LAND_ADD` is Mana Acceleration but explicitly **not Ramp**, because it still depends on having lands available to play.
+Cards that allow additional land plays. This is Mana Acceleration but explicitly **not Ramp**, because the player still needs lands available to play.
 
 #### Mana Dork
 
-Creature mana source in the familiar Mana Dork functional family.
+Keep familiar creature mana-source family.
 
 #### Mana Rock
 
-Artifact mana source in the familiar Mana Rock functional family.
+Keep familiar artifact mana-source family.
 
 #### Fast Mana
 
 Current Captain rule:
 
 - qualifying card/effect costs two mana or less;
-- can produce its qualifying mana immediately;
+- can produce the qualifying mana immediately;
 - produces more mana than its casting cost.
 
 Examples:
 
-- Sol Ring: cost 1, can immediately produce 2 → Fast Mana.
-- A two-mana qualifying source would need to immediately produce at least 3 mana.
+- Sol Ring: costs 1, immediately can make 2 → Fast Mana.
+- A two-mana card would need to immediately make at least 3 mana.
 
 #### Ritual
 
-Keep Ritual as the one-shot temporary-burst family and a child/member under Fast Mana where the Fast Mana contract is satisfied.
+Keep Ritual as one-shot temporary/burst mana. It participates under Fast Mana where the Fast Mana contract is satisfied.
 
 #### Mana-Parity
 
@@ -467,54 +576,54 @@ Keep Ritual as the one-shot temporary-burst family and a child/member under Fast
 
 Captain examples:
 
-- **Boros Garrison** — uses the land play, enters tapped, returns an existing land, and only later taps for two. Under normal development it reconfigures mana production but does not independently put the player ahead of ordinary mana development.
-- **Priest of Gix** — costs mana and refunds an equivalent amount through its own effect; the mana transaction can be parity even though the player also obtains a creature body.
+- **Boros Garrison** — consumes the land play, enters tapped, returns a land, and later taps for two. It reconfigures mana production but normally does not put the player ahead of ordinary development simply by being played.
+- **Priest of Gix** — spends mana and refunds an equivalent amount through its own effect; the mana transaction may be parity even though the player also receives a creature body.
 
 Working principle:
 
 > A Mana-Parity card/effect replaces, refunds, or reconfigures mana-producing development without itself creating net acceleration over the baseline development/resources it displaced or consumed.
 
-This requires further gold/negative testing before ratification because the baseline accounting window must be made exact.
+The exact baseline/accounting window still needs hard edge-case tests before ratification.
 
-### 6.5 Card-resource family
+### 9.5 Card-resource family
 
 #### Draw
 
-`DRAW` remains literal rules-action draw and is the parent of draw-specific child labels because some cards specifically care about drawing.
+`DRAW` remains literal rules-action draw and is a parent for draw-specific children because some cards specifically care about drawing.
 
 #### Draw-Now
 
-A card/effect produces the qualifying draw immediately rather than establishing a future draw condition/window.
+Qualifying draw is produced immediately rather than establishing a future draw event.
 
 #### Draw-Delay
 
-The card/effect establishes draw that occurs later. **Mishra's Bauble** and **Arcane Denial** were given as examples.
+The source establishes a later draw event. Mishra's Bauble and Arcane Denial were given as examples.
 
-Implementation language should ultimately key off semantic timing/dependency rather than merely the English phrase “upon resolution.”
+Final implementation should depend on semantic timing/dependency rather than a literal “upon resolution” wording test.
 
 #### Card Advantage
 
 Current Captain direction:
 
-- casting/using the source itself counts as an expenditure;
-- the card's own functionality must eventually produce net-positive usable card resources;
-- literal draw is not the only mechanism;
+- spending/casting the source counts as an expenditure;
+- the source's own text/functionality must eventually produce net-positive usable card resources;
+- literal draw is not required;
 - temporary playable exile/impulse access may count;
-- access to opponents' cards that the controller can use may count;
-- the qualifying advantage need not be immediate;
-- the source must not require a separate external outlet/action to begin producing the advantage under the intended distinction.
+- usable access to opponents' cards may count;
+- the advantage need not be immediate;
+- the intended distinction excludes cards that require a separate external outlet/action before their engine can begin producing the advantage.
 
-Examples stated by the Captain:
+Examples:
 
 - Brainstealer Dragon → Card Advantage;
 - Phyrexian Arena → Card Advantage;
-- Sram, Senior Edificer → **not** Card Advantage under this specific label because Sram requires qualifying external casts before drawing.
+- Sram, Senior Edificer → not this direct Card Advantage label under the current dependency distinction.
 
 #### Potential Card Advantage
 
-A card whose own text contains machinery that can produce true card advantage if qualifying conditions/events/actions occur.
+A card whose own text contains machinery capable of producing true card advantage if qualifying conditions/events/actions occur.
 
-Captain examples include:
+Captain examples:
 
 - Sram, Senior Edificer;
 - Rhystic Study;
@@ -522,306 +631,315 @@ Captain examples include:
 - Aurelia, the Law Above;
 - Trouble in Pairs.
 
-The exact line between self-contained `CARD_ADVANTAGE` and `POTENTIAL_CARD_ADVANTAGE` requires a deterministic dependency contract.
+The exact direct-vs-potential dependency predicate needs edge-case testing.
 
 #### Card-Parity
 
-Provides enough usable card resource to replace the expended card/resource but does not create net positive card quantity under the defined accounting window.
+Provides enough usable card resource to replace the expended card/resource but does not create net-positive card quantity under the defined accounting window.
 
 #### Card Filtering
 
 Parent for effects that improve card quality/selection without requiring net card gain, including Looting, Rummaging, Scry, Surveil, and related selection/reorganization families.
 
-The Captain also wants an `INDEX`-like child/family for cards that reorganize top-library order without card parity or card advantage.
+The Captain also wants an `INDEX`-like family for top-library reorganization without card parity/advantage.
 
 #### Cantrip
 
 Current Captain contract direction:
 
 - qualifying action costs two mana or less;
-- a card's own printed cost-reduction/payment mechanics count toward determining that cost;
-- external unrelated reducers do not make a nonqualifying action a cantrip;
-- the action grants immediate access to at least one usable card resource;
-- literal `DRAW` is not required;
-- a card selected/put into hand can qualify;
-- Wrenn's Resolve-style temporary playable access can qualify;
-- the action must at least replace the card/resource spent on the action;
+- the card's own printed cost-reduction/payment mechanics count;
+- unrelated external reducers do not create Cantrip membership;
+- action gives immediate access to at least one usable card resource;
+- literal Draw is not required;
+- selecting/putting a card into hand may qualify;
+- Wrenn's Resolve-style temporary playable access may qualify;
+- action must at least replace the spent card/resource;
 - card type does not matter;
-- Cycling qualifies only if the Cycling activation cost is two or less;
+- Cycling qualifies only when the Cycling activation cost is two or less;
 - multi-label membership is expected.
 
-Ponder and Brainstorm are Captain gold-standard examples.
+Ponder and Brainstorm are gold-standard Captain examples.
 
 ---
 
-## 7. General function layer versus strategy vocabulary
+## 10. Functional versus strategy vocabulary
 
 Objective 6 should primarily settle **general deck-function vocabulary**.
 
-Strategy/archetype labels such as the following should generally remain a separate future layer unless a specific card-level functional action is being defined:
+Strategy/archetype vocabulary belongs to the later strategic layer except where a separately named card-level function exists.
 
-- Reanimator
-- Aristocrats
-- Voltron
-- Tokens as an archetype
-- Spellslinger
-- Superfriends
-- Group Hug
-- Group Slug
-- Prison as an archetype
-- Typal/Tribal deck identity
-- Lands Matter
-- Graveyard Matters
-- Goodstuff
-- Battlecruiser
-
-A useful naming distinction is:
+Useful naming discipline:
 
 ```text
-REANIMATE       = card/effect function
-REANIMATOR      = deck strategy
+REANIMATE        = card/effect function
+REANIMATOR       = strategy
 
-TOKEN_GENERATOR = card/effect function
-TOKENS          = deck strategy
+TOKEN_GENERATOR  = card/effect function
+TOKENS           = strategy
 
 DIRECT_DAMAGE / BURN_EFFECT = function
 BURN_ARCHETYPE              = strategy
 ```
 
-This allows the later strategy layer to become extremely rich without polluting the general utility vocabulary.
+This allows the future strategy tag surface to become extremely large without corrupting the cross-strategy utility layer.
 
 ---
 
-## 8. Deck Functional Health — downstream consumer concept
+## 11. Deck Functional Health model
 
-**Working product concept, not Objective 6 semantic authority.**
+**Working downstream product concept — not semantic authority.**
 
-A deck-health analyzer should consume deterministic function memberships and objective facets. It should not define them.
+A deck-health analyzer should consume deterministic functional memberships plus objective facets.
 
-### 8.1 Report dimensions
+### 11.1 Core metrics
 
 For each function, useful measurements include:
 
-1. **Presence** — does the deck have at least one source?
-2. **Count** — how many unique cards/slots can perform the function?
-3. **Density** — what fraction of relevant deck slots provide the function?
-4. **Breadth** — how many different object/resource/problem classes can the deck address?
-5. **Redundancy** — how many independent sources cover the same important need?
-6. **Timing profile** — instant/sorcery/static/activated, immediate/delayed, early/late availability.
-7. **Cost profile** — mana/resource costs and distribution.
-8. **Reliability / dependency** — self-contained, conditional, opponent-dependent, setup-dependent, mode-limited, trigger-dependent.
-9. **Co-availability** — can multiple claimed functions on one card be used together, or are they mutually exclusive modes/paths?
-10. **Strategic alignment** — later layer: how many general-purpose function sources also reinforce the deck's strategy?
+1. **Presence** — at least one source or none.
+2. **Count** — number of unique cards/slots that can perform the function.
+3. **Density** — fraction of relevant deck slots that can perform it.
+4. **Breadth** — number of different problem/object/resource classes covered.
+5. **Redundancy** — number of independent sources for the same need.
+6. **Timing profile** — instant/sorcery/activated/static; immediate/delayed; early/late availability.
+7. **Cost profile** — mana/resource cost distribution.
+8. **Reliability/dependency** — self-contained, conditional, opponent-dependent, setup-dependent, trigger-dependent, mode-limited.
+9. **Co-availability** — whether several capabilities on one card can be used together or are mutually exclusive.
+10. **Strategic alignment** — later: how many general-function sources also advance the deck's strategy.
 
-### 8.2 Percentages are coverage, not partitions
+### 11.2 Percentages are coverage, not exclusive partitions
 
-A card can count in several categories, so function-density percentages do not need to sum to 100%.
+A card can count in several categories, so function percentages need not sum to 100%.
 
 Example:
 
 ```text
-Ramp:               9 cards
-Mana Fixing:         7 cards
-Card Filtering:     11 cards
-Card Parity:         7 cards
-Card Advantage:      2 cards
-Potential Advantage: 1 card
+Ramp:                  9 cards
+Mana Fixing:            7 cards
+Card Filtering:        11 cards
+Card Parity:             7 cards
+Card Advantage:          2 cards
+Potential Card Advantage:1 card
 ```
 
-The same card may contribute to multiple rows.
+### 11.3 Do not create an overall deck-quality score yet
 
-### 8.3 Do not create an arbitrary overall “deck quality” score yet
+A single percentage for “how good the deck is” would silently encode subjective weights among functions and strategies.
 
-A single score would require subjective weighting among functions and strategies.
+Initial reports should expose observable composition and scoped diagnostics.
 
-Initial deck health should report observable composition and clearly scoped diagnostics instead of laundering weights into semantic truth.
+### 11.4 Avoid universal threshold dogma
 
-### 8.4 Avoid universal threshold dogma
-
-Foundry can factually report:
+Foundry can factually say:
 
 > “This deck contains zero enchantment interaction.”
 
-It can also report:
+or:
 
-> “This deck contains eleven filtering/parity sources and zero direct card-advantage sources.”
+> “This deck contains many filtering/parity sources but no direct Card Advantage.”
 
-But a rule such as “every Commander deck must contain exactly ten removal spells” is a strategic heuristic, not Oracle/Objective 6 truth.
+A rule such as “every Commander deck must contain exactly N removal spells” is a downstream strategic heuristic, not Objective 6 truth.
 
-Any later recommended target ranges should be:
-
-- explicitly downstream;
-- configurable by format/strategy/power target;
-- evidence-backed where practical;
-- kept distinct from semantic membership.
+Any future target ranges should be configurable, format/strategy-aware, evidence-backed where possible, and clearly separate from semantic membership.
 
 ---
 
-## 9. Interaction coverage matrix
+## 12. Interaction coverage should be a matrix, not one count
 
-A raw number of “interaction cards” is not enough.
+A deck can contain many removal cards while still being unable to answer artifacts, enchantments, graveyards, or the stack.
 
-A deck can have eight removal cards and still be unable to answer artifacts, enchantments, graveyards, or spells on the stack.
+Candidate coverage domains:
 
-The functional-health consumer should therefore be able to summarize interaction coverage by problem domain.
-
-Candidate coverage dimensions include:
-
-| Problem/resource domain | Example capability source |
+| Problem/resource domain | Example capability |
 |---|---|
-| Creatures | creature spot/multi/mass removal |
+| Creatures | creature Spot/Multi/Mass removal |
 | Artifacts | artifact removal/neutralization |
 | Enchantments | enchantment removal/neutralization |
 | Planeswalkers | planeswalker-capable interaction |
-| Lands | land interaction/destruction where applicable |
-| Graveyards | graveyard exile, denial, purge, access lock |
-| Stack — spells | Counterspell / spell interaction |
-| Stack — abilities | ability counters or other applicable interaction |
-| Hands | discard / hand disruption |
-| Combat | Fog, combat manipulation, deterrence where relevant |
-| Player actions | Silence, tax, prohibition/restriction families |
+| Lands | land interaction/destruction |
+| Graveyards | purge, targeted exile, occupancy denial, access lock |
+| Stack — spells | Counterspell/spell interaction |
+| Stack — abilities | ability counter/interaction |
+| Hands | discard/hand disruption |
+| Combat | Fog/combat manipulation where relevant |
+| Player actions | Silence/tax/prohibition/restriction families |
 
-Many of these should be generated by **function + facets**, not by inventing a unique canonical label for every row.
+Many of these should be represented by **function + facets**, not a separately invented canonical tag for every row.
 
-Example diagnostic:
+A downstream report could say:
 
 ```text
 Interaction coverage
-  Creature:     strong coverage
-  Artifact:     1 source
-  Enchantment:  0 sources
-  Graveyard:    0 sources
-  Stack:        3 sources
+  Creature:      8 sources
+  Artifact:      1 source
+  Enchantment:   0 sources
+  Graveyard:     0 sources
+  Stack:         3 sources
 
-Observed blind spots:
+Observed blind spots
   - no enchantment interaction
   - no graveyard interaction
 ```
 
-Terms such as “strong” or “low” require a downstream threshold policy; the zero/nonzero and counts themselves are factual.
+Words such as “strong” or “low” require a downstream threshold policy; counts and zero/nonzero status do not.
 
 ---
 
-## 10. Counting law: one card is not several independent sources
+## 13. Counting law: capability is not independent-source count
 
-**Manager re-audit proposal — recommended as a downstream counting invariant.**
+**Manager re-audit proposal — important for future deck-health correctness.**
 
-Multi-role cards create an important accounting risk.
+A modal or multi-role card may cover several functions, but it is still one physical source/slot.
 
-Suppose one modal card can be:
+Deck analysis should distinguish:
 
-- artifact removal;
-- enchantment removal;
-- creature removal;
-- card draw.
+- **capability coverage** — every function a card can perform;
+- **unique source count** — number of physical cards providing a function;
+- **simultaneous/co-available capability** — functions usable together;
+- **modal alternatives** — functions that compete within one cast/activation;
+- **capability concentration** — how much apparent deck coverage depends on a small number of multi-role cards.
 
-It should contribute capability to every applicable category, but it remains **one physical card slot and one source**.
+Example: a charm that can destroy an artifact **or** enchantment contributes to both coverage categories, but does not create two independent removal sources for redundancy calculations.
 
-Therefore deck-health logic should distinguish:
-
-- **capability coverage** — all jobs a card can perform;
-- **unique source count** — number of physical cards providing that job;
-- **simultaneous/co-available capability** — whether multiple jobs can be used together;
-- **modal alternatives** — jobs that are mutually exclusive in a specific cast/activation.
-
-This is especially important for S16A because its modal-exclusivity conservation is intended to prevent false composition.
-
-A deck with one modal charm that can answer artifacts *or* enchantments should not be reported as though it possesses two independent pieces of removal when assessing redundancy.
+This directly relies on S16A preserving modal exclusivity rather than flattening cards into fact bags.
 
 ---
 
-## 11. Reliability and conditionality should be visible
+## 14. Reliability and conditionality should remain visible
 
-The Captain's `CARD_ADVANTAGE` versus `POTENTIAL_CARD_ADVANTAGE` distinction exposes a broader product need: not all functional coverage has the same dependency structure.
+The Captain's Card Advantage versus Potential Card Advantage distinction reveals a broader useful dimension: functional coverage can differ in dependency/reliability.
 
-Rather than inventing a separate named tag for every case, Foundry should preserve objective dependency facets where possible:
+Where possible, preserve facets for:
 
-- self-contained versus requiring another card/action;
+- self-contained versus requiring another action/card;
 - guaranteed versus conditional;
 - controller-driven versus opponent-dependent;
 - immediate versus delayed;
-- repeatable versus one-shot;
+- one-shot versus repeatable;
 - activation required versus passive/static;
 - board-state dependency;
-- hand/graveyard/library dependency;
-- once-per-turn or other rate limits;
+- hand/deck/graveyard dependency;
+- rate limits such as once-per-turn;
 - optional/mode-limited access.
 
-These facets can improve search ordering and deck-health explanations without changing the meaning of the parent function.
+This can produce better explanations without creating a new named tag for every combination.
 
 Example:
 
-> “Your deck has six potential sources of extra cards, but four depend on opponents taking a particular action and only one is self-contained repeatable card advantage.”
-
-That is much more informative than a flat `DRAW = 6` count.
+> “Your deck has six possible extra-card sources, but four depend on opponents taking a qualifying action and only one is self-contained repeatable Card Advantage.”
 
 ---
 
-## 12. Replacement recommendations should be function-preserving when possible
+## 15. Recommendations should prefer function-preserving upgrades
 
-A powerful downstream use of Searcher B is to recommend **replacements**, not merely more cards.
+A powerful downstream use of Searcher B is to recommend **replacements**, not merely additions.
 
-Example deck observation:
+Example observation:
 
 ```text
-Card Filtering:          high
-Card Parity:             high
-Card Advantage:          none
+Card Filtering:           high density
+Card Parity:              high density
+Card Advantage:           none
 Potential Card Advantage: low
 ```
 
-A useful recommendation is not necessarily:
+Rather than simply telling the player to add more cards, Foundry can seek candidates that:
 
-> Add more cards.
+1. preserve an existing needed function;
+2. fill a missing function or coverage domain;
+3. maintain acceptable mechanical constraints;
+4. later, improve strategic alignment.
 
-It can instead be:
+Example recommendation logic:
 
-> Replace one or more filtering/parity slots with cards that preserve the same selection/filtering job while also generating Card Advantage or Potential Card Advantage.
+> Replace a filtering/parity slot with a card that still filters but also generates Card Advantage.
 
-Likewise, if a deck already has creature removal but lacks artifact/enchantment coverage, Searcher B can prefer replacements that preserve interaction density while widening target coverage.
+Or:
 
-A future recommendation should be able to explain:
+> Replace narrow creature-only interaction with a card that preserves Spot Removal while also covering artifacts/enchantments.
 
-1. what deck-health gap was observed;
-2. what function the current card provides;
-3. what function the proposed replacement preserves;
-4. what additional missing capability the replacement adds;
-5. important mechanical differences/costs/restrictions;
-6. later, whether the replacement also aligns with the deck's strategy.
+A future recommendation explanation should state:
+
+- what gap was observed;
+- what the current card contributes;
+- what the replacement preserves;
+- what new capability it adds;
+- important timing/cost/restriction differences;
+- later, why it aligns with the deck strategy.
 
 ---
 
-## 13. Strategy alignment is an additive re-ranking layer
-
-Later strategy tags should make the general-function system more useful, not replace it.
+## 16. Strategy alignment should be additive re-ranking
 
 Example:
 
 ```text
 Need: SPOT_REMOVAL
-Deck strategy: REANIMATOR
+Strategy: REANIMATOR
 ```
 
-General retrieval can first find all qualifying Spot Removal.
+General functional retrieval first finds qualifying Spot Removal.
 
-The future strategy layer can then prefer candidates that also have traits useful to Reanimator, such as:
+The future strategy layer can then prefer cards that also fit Reanimator, such as recursion-friendly creatures or graveyard-synergistic effects.
 
-- creature-based interaction that can be reanimated;
-- self-sacrificing or graveyard-friendly interaction;
-- effects that stock or exploit graveyards;
-- recursion-compatible permanent types.
+The same Spot Removal definition remains valid when the deck is Artifacts, Tokens, Voltron, or something else.
 
-The same Spot Removal parent can be re-ranked differently for Artifacts, Tokens, Voltron, or another strategy.
+This separation lets Foundry answer two different questions:
 
-This preserves one semantic definition while allowing strategy-aware recommendations.
+1. **Does this solve the general deckbuilding need?**
+2. **Does it solve that need in a way that reinforces this deck?**
 
 ---
 
-## 14. Required S16A input contract for every Objective 6 term
+## 17. Additional downstream analyses worth preserving
 
-Before a term is ratified for executable derivation, its specification should state exactly which lower semantic facts it requires.
+These arose from the re-audit and use the same functional/facet substrate.
 
-Recommended term template:
+### 17.1 Functional breadth
+
+How many materially different general needs can the deck answer?
+
+### 17.2 Redundancy / single points of failure
+
+How many independent sources provide each important capability?
+
+A tutor improves access to another card, but should not automatically be counted as an independent copy of every function it can search for unless a separate downstream **effective access** model is explicitly designed.
+
+### 17.3 Availability profile
+
+At what mana costs/timings can the deck actually access a function?
+
+A deck may technically contain removal but only at expensive mana values or sorcery speed.
+
+### 17.4 Coverage overlap
+
+Which cards efficiently cover several blind spots at once?
+
+### 17.5 Capability concentration
+
+Multi-role cards are efficient but can make apparent coverage fragile when many categories depend on one or two cards.
+
+### 17.6 Format-aware density denominator
+
+Percentages must state their denominator. In Commander, a product might report the 99 noncommander slots separately from capabilities available from the commander.
+
+This is a UX/analysis policy, not semantic law.
+
+### 17.7 Always-accessible versus library-bound capability
+
+Commanders and other always-accessible resources can alter practical availability. Preserve this for downstream deck-health logic rather than redefining the function itself.
+
+### 17.8 Replacement opportunity score — later, not semantic truth
+
+A downstream recommender could identify cards occupying a heavily saturated function while failing to cover important missing functions, then prioritize them as possible swap candidates.
+
+Any numeric scoring formula would be product policy and must not become semantic authority.
+
+---
+
+## 18. Objective 6 term contract template
+
+Before a functional term becomes executable, define it with a contract like:
 
 ```text
 TERM:
@@ -830,7 +948,12 @@ User-facing aliases:
 Status: DRAFT / RATIFIED / DEFERRED
 
 Kind:
-- GENERAL_FUNCTION / MECHANICAL_FAMILY / ACCOUNTING_FUNCTION / STRATEGY / RELATIONAL / OTHER
+- GENERAL_FUNCTION
+- MECHANICAL_FAMILY
+- ACCOUNTING_FUNCTION
+- STRATEGY
+- RELATIONAL
+- OTHER
 
 Parent term(s):
 Child term(s):
@@ -839,19 +962,19 @@ Exact Foundry definition:
 
 Required S16A semantic inputs:
 - action/effect
-- actor / affected actor
+- actor/affected actor
 - object/target class
-- targeting/selection/universal scope
+- target/select/universal scope
 - quantity/cardinality
 - source zone
 - destination zone
 - timing/duration
 - cost/payment
 - condition/dependency
-- repeatability
+- repeatability/rate limit
 - modal/co-availability structure
 - linked-object identity
-- other as required
+- other
 
 Required predicates:
 - ...
@@ -871,7 +994,7 @@ Context required:
 Orthogonal facets preserved:
 - ...
 
-Gold-positive examples:
+Gold positives:
 - ...
 
 Hard negatives / near misses:
@@ -880,213 +1003,195 @@ Hard negatives / near misses:
 Known edge cases:
 - ...
 
+Derivation provenance required:
+- term/version
+- semantic path/owner
+- S16A fact refs
+- Oracle evidence refs
+
 Explanation contract:
-- why the card qualifies
-- which exact semantic facts prove membership
+- why membership is true/unknown
+- which facts prove it
 
 Captain ruling date/version:
 ```
 
-A term should STOP before ratification if S16A cannot represent a fact required to determine membership without approximation.
-
-That stop is useful: it reveals either an incomplete term contract or a missing S16A semantic coordinate.
+If a term needs a fact that S16A cannot represent without approximation, the correct result is **STOP** for that term until either the term contract is changed or S16A is intentionally expanded.
 
 ---
 
-## 15. Acceptance and testing concept
+## 19. Validation / acceptance concept
 
-Objective 6 should not ratify terms merely because their prose definition sounds reasonable.
+A term should not be ratified merely because its prose sounds reasonable.
 
-Each important term should include:
+Each important term should have:
 
-- clear positives;
+- clear gold positives;
 - hard negatives;
-- near-misses;
-- modal cases;
-- multi-face/complex cases when relevant;
-- boundary values around numeric thresholds;
-- cases using different Oracle wording but same function;
-- cases using similar wording but failing the function;
-- proof that parent implications hold;
-- proof that child membership does not erase lower mechanical distinctions.
+- near misses;
+- boundary values around thresholds;
+- modal cases where relevant;
+- different Oracle wordings implementing the same functional result;
+- similar Oracle wording that should fail the functional label;
+- tests that every declared child implies every declared parent;
+- tests that lower mechanical distinctions remain available after functional roll-up;
+- provenance checks showing exactly why a result was derived.
 
-Example for the removal family:
+Example removal set:
 
 ```text
 Naturalize
-  expected: SPOT_REMOVAL
-  not: MULTI_REMOVAL
+  SPOT_REMOVAL = yes
+  MULTI_REMOVAL = no
 
-Curse of the Swine with X capable of >=2
-  expected: MULTI_REMOVAL
-  not: BOARD_WIPE
+Curse of the Swine, legal X >= 2
+  MULTI_REMOVAL = yes
+  BOARD_WIPE = no
 
 Hex
-  expected: MULTI_REMOVAL
-  not: BOARD_WIPE
+  MULTI_REMOVAL = yes
+  BOARD_WIPE = no
 
-Destroy all creatures
-  expected: BOARD_WIPE
-  not: MULTI_REMOVAL
+“Destroy all creatures.”
+  BOARD_WIPE = yes
+  MULTI_REMOVAL = no
 
-Destroy all creatures you don't control
-  expected: ONESIDED_BOARD_WIPE
+“Destroy all creatures you don't control.”
+  ONESIDED_BOARD_WIPE = yes
 ```
 
-The final executable tests should bind to S16A semantic facts, not to card-name exceptions.
+Executable rules must ultimately bind to semantic facts, not card-name special cases.
 
 ---
 
-## 16. Open / unresolved Objective 6 items
+## 20. Open / unresolved items
 
-The following should remain visibly unresolved rather than silently decided by this architecture draft.
+Keep these visible rather than silently deciding them.
 
-### 16.1 Impulse naming
+### 20.1 Impulse naming
 
-The Captain currently distinguishes temporary playable-exile access by duration:
+Current Captain semantic distinction:
 
-- `Impulse-Select` — playable until end of turn;
-- `Impulse-Draw` — playable until end of next turn;
-- `Impulse` as parent.
+- parent `Impulse`;
+- one child for exile/top access playable until end of turn;
+- another child for access playable until end of next turn.
 
-The Objective 5 research also noted that Wizards R&D has used “impulsing” for a different top-N-selection concept. Canonical naming should be re-audited before ratification so Foundry does not create an avoidable terminology collision.
+Current draft names are `Impulse-Select` and `Impulse-Draw`.
 
-The semantic distinction by duration is still valuable even if the final child names change.
+Objective 5 research found a possible terminology collision because Wizards/R&D has used “impulsing” for a different top-N selection concept. Preserve the timing distinction, but re-audit final canonical/user-facing names before ratification.
 
-### 16.2 Token Generator
+### 20.2 Token Generator
 
-`TOKEN_GENERATOR` appeared in the edited lexicon but had no explicit Captain verdict in the reviewed text. It should remain unratified until addressed.
+`TOKEN_GENERATOR` appeared in the edited lexicon without an explicit Captain verdict. Leave unratified until addressed.
 
-### 16.3 Alt-Tutor / Light-Tutor
+### 20.3 Alt-Tutor / Light-Tutor
 
-The Captain proposed a friendly tutor-alternative label for deep selective library access because of casual Commander attitudes toward tutors.
+The Captain proposed a user-friendly tutor-alternative concept for deep selective library access.
 
-The product concept is useful. The canonical/internal name versus user-facing alias remains open.
+The product idea is useful; internal canonical name versus user-facing alias remains open. A mechanically explicit internal label such as `DEEP_SELECTIVE_LIBRARY_ACCESS` with a friendlier UI alias is one possible design, not a ruling.
 
-A possible architecture is to preserve a mechanically explicit internal concept such as `DEEP_SELECTIVE_LIBRARY_ACCESS` while exposing a friendlier user-facing label later, but that is not ratified here.
+### 20.4 Mana-Parity accounting window
 
-### 16.4 Mana-Parity accounting window
+The intended concept is clearer after Boros Garrison/Priest of Gix, but the exact baseline/time window needs adversarial examples.
 
-Boros Garrison and Priest of Gix clarify the intended concept, but the exact baseline and time window need hard boundary tests before the term becomes executable.
+### 20.5 Card Advantage versus Potential Card Advantage
 
-### 16.5 Card Advantage versus Potential Card Advantage dependency line
+The intended distinction is clear; the precise dependency predicate needs edge-case testing.
 
-The Captain's distinction is clear at a product level, but the exact predicate for “requires another outlet/action” needs edge-case testing.
-
-### 16.6 Enabler / Payoff
+### 20.6 Enabler / Payoff
 
 Explicitly deferred.
 
-### 16.7 Strategy/archetype vocabulary
+### 20.7 Strategy/archetype vocabulary
 
-Reserved for later strategy-layer work except where a strategy term has a separately defined card-function counterpart.
-
----
-
-## 17. Additional useful downstream analyses identified by re-audit
-
-These are promising consumers of the same functional/facet substrate. They should not be promoted to semantic truth automatically.
-
-### 17.1 Functional breadth
-
-How many distinct broad needs can a deck answer?
-
-### 17.2 Functional redundancy / single points of failure
-
-Does the deck have several independent sources of an important capability, or only one?
-
-Tutors may improve access to a capability but should not automatically be counted as additional independent copies of that capability unless a separate downstream “effective access” model is explicitly designed.
-
-### 17.3 Availability profile
-
-At what mana costs and timings can the deck access a function?
-
-A deck may technically have removal but only at high mana values or sorcery speed.
-
-### 17.4 Coverage overlap
-
-Which cards cover multiple blind spots at once?
-
-This is particularly useful for replacement recommendations and constrained deck slots.
-
-### 17.5 Capability concentration
-
-Are several critical functions concentrated onto one or two cards? Multi-role cards are efficient, but they can create fragility if the deck's apparent coverage depends heavily on a few sources.
-
-### 17.6 Format-aware denominator
-
-Deck-density percentages should use a clearly defined denominator appropriate to the format and product view. In Commander, for example, a UI may choose to report percentages over the 99 noncommander cards separately from always-available commander capabilities.
-
-This is a downstream calculation choice, not an Objective 6 semantic rule.
-
-### 17.7 Always-accessible versus library-bound capability
-
-Commanders, companions where legal/applicable, and other always-accessible resources can change the practical availability of a function. Preserve this for later deck-health modeling rather than baking it into the definition of the function itself.
+Reserved for the later strategic layer unless a separate card-level function is being defined.
 
 ---
 
-## 18. Non-goals and guardrails
+## 21. Non-goals and guardrails
 
-This draft does **not** authorize or assert that Foundry should now:
+This draft does **not** authorize or imply that Foundry should now:
 
 - implement Objective 6 tags in production;
-- modify the codebook or ACTIVE axes;
-- change S16A parser behavior;
+- modify the codebook/ACTIVE axes;
+- change parser behavior;
 - begin S16B implementation;
-- import community labels as mechanical truth;
-- infer archetypes from one card in isolation;
-- assign Enabler/Payoff relationships;
-- create a universal deck-quality score;
-- hard-code universal “correct” quantities of ramp/removal/draw;
+- import community labels as Oracle/CR truth;
+- infer whole-deck archetypes from one card in isolation;
+- assign Enabler/Payoff relations;
+- produce a universal deck-quality percentage;
+- hard-code universal quantities of ramp/removal/draw as truth;
 - treat one modal card as several independent sources;
 - flatten mutually exclusive modes;
-- create a canonical tag for every possible combination of function, target class, timing, cost, and strategy;
-- let strategy-specific judgments override literal Oracle/CR mechanics;
-- silently classify uncertain cards.
+- create a tag for every cross-product of function, target, timing, cost, and strategy;
+- count a tutor as an independent copy of everything it can fetch without an explicit effective-access model;
+- let strategy-specific judgments override mechanical facts;
+- silently classify uncertain cards;
+- resurrect old derived-tag plumbing merely because older architecture explored similar semantic needs.
+
+The governing principle remains:
+
+> **PRESERVE TRUTH, NOT PLUMBING.**
 
 ---
 
-## 19. Recommended Objective 6 work sequence
+## 22. Recommended Objective 6 sequence
 
-1. **Finish the Captain vocabulary pass** over the general-function candidates.
-2. **Explicitly separate** each candidate into general function, mechanical family, strategy, relational, accounting, or deferred.
-3. For each general function, write the deterministic term contract using the template in this document.
-4. Identify the **required S16A semantic inputs** for each contract.
-5. STOP on any term whose required semantic facts are not representable by the planned S16A substrate without approximation.
-6. Build gold positives, hard negatives, boundary cases, and parent-implication tests.
-7. Freeze aliases and parent/child relationships only after those tests survive edge cases.
-8. Ratify Objective 6 as a versioned functional-vocabulary contract.
-9. Only after **both** S16A acceptance and Objective 6 ratification should S16B semantic implementation derive these functions as trusted gameplay-DNA inputs.
-10. Build Deck Functional Health as a downstream consumer, keeping its recommendation thresholds/policies separate from semantic truth.
-11. Add the much larger strategy-specific vocabulary later, using it to re-rank and align general-function recommendations rather than redefining them.
+1. Finish the Captain vocabulary pass over general-function candidates.
+2. Classify every candidate as general function, mechanical family, accounting function, strategy, relational, or deferred.
+3. Ratify the curated-label-versus-facet architecture or replace it with an equally explicit alternative.
+4. Write a deterministic contract for each retained general function.
+5. Name the exact S16A semantic inputs required by every contract.
+6. STOP any term whose required fact cannot be represented without approximation.
+7. Build gold positives, hard negatives, boundary cases, modal cases, and parent-implication tests.
+8. Define derivation provenance/versioning so memberships remain auditable.
+9. Freeze aliases and parent/child relationships only after the boundary tests survive.
+10. Ratify Objective 6 as a versioned functional vocabulary specification.
+11. Only after **both** S16A acceptance and Objective 6 ratification should S16B derive these functions as trusted gameplay-DNA inputs.
+12. Build Deck Functional Health as a downstream consumer, with recommendation thresholds kept separate from semantic truth.
+13. Add the much larger strategy-specific vocabulary later and use it to re-rank general-function recommendations rather than redefining them.
 
 ---
 
-## 20. Executive conclusion
-
-The emerging architecture is coherent and supports several products at once without making the semantic substrate subjective.
-
-The central separation is:
+## 23. Final architecture summary
 
 ```text
 WHAT THE CARD LITERALLY DOES
-  S16A mechanical/semantic facts
+  S16A semantic facts + exact provenance
 
-WHAT GENERAL JOB THAT CAN PERFORM
+WHAT GENERAL JOB THOSE FACTS CAN PERFORM
   Objective 6 deterministic functional vocabulary
 
+WHY FOUNDRY ASSIGNED THAT JOB
+  versioned derivation provenance back to S16A facts / Oracle spans
+
 WHAT OTHER CARDS CAN PERFORM A SIMILAR JOB
-  S16B gameplay-DNA retrieval / ordering / explanation
+  S16B retrieval / ordering / explanation
 
 WHETHER A DECK HAS THE FUNCTIONS IT NEEDS
-  Deck Functional Health consumer
+  Deck Functional Health
+  presence / count / density / breadth / redundancy / timing / dependency
 
-WHICH OF THOSE FUNCTIONAL CARDS BEST FIT THIS STRATEGY
-  later strategy-specific tag / alignment layer
+WHICH FUNCTIONAL CARDS BEST FIT THIS DECK'S PLAN
+  later strategy-specific vocabulary and alignment/re-ranking
 ```
 
-This lets Foundry tell a player not merely that a deck has “draw” or “removal,” but that it has, for example, abundant filtering and parity with little true card advantage, or plenty of creature removal with no artifact/enchantment/graveyard coverage.
+This architecture lets Foundry say more useful things than “you have X draw spells” or “you have Y removal spells.”
 
-It also lets recommendations preserve what already works: replace a filtering/parity slot with a card that still filters but also generates advantage; replace narrow creature interaction with interaction that retains the same general function while covering a missing permanent class; later, prefer the candidate that also advances the deck's specific strategy.
+It can eventually say, for example:
 
-The intended outcome is not one giant flat tag list. It is a layered, explainable capability system in which mechanical truth remains below functional meaning, functional meaning remains below strategy, and every higher-level recommendation can be traced back to the facts that justified it.
+> You have substantial Card Filtering and Card-Parity coverage but almost no true Card Advantage or Potential Card Advantage.
+
+or:
+
+> You have eight interaction sources, but nearly all of them only answer creatures. You currently have no enchantment or graveyard interaction.
+
+And instead of always recommending that the player add more cards, Searcher B can look for **function-preserving replacements**:
+
+> Replace a saturated filtering/parity slot with a card that still performs the needed filtering job while also increasing Card Advantage.
+
+Later, the strategy layer can refine that same recommendation:
+
+> Of the cards that solve the general functional gap, prefer the ones that also reinforce this deck's Reanimator / Artifact / Tokens / other strategy.
+
+The result is a layered deckbuilding intelligence system in which mechanical truth remains below functional meaning, functional meaning remains below strategy, and every recommendation can remain explainable back to the facts that justified it.
