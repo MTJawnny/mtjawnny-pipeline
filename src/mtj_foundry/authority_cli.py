@@ -22,7 +22,7 @@ widened by this module.
 * **Not a layout, backup or process owner.** Everything repository-specific
   arrives in an `AuthorityOperatorContext` built by the composition boundary:
   the tracked selector path, the operational codebook path, the disposable
-  candidate directory, the remote nicknames, a transport factory that already
+  candidate location, the remote nicknames, a transport factory that already
   declares the forbidden staging destinations, the backup policy, the corpus
   reference, the historic STOP, and the offline selftest. Nothing here derives a
   root, constructs a transport directly, or exits the process itself.
@@ -64,7 +64,7 @@ class AuthorityOperatorContext:
 
     manifest_path: Path
     codebook_path: Callable[[], Path]
-    candidate_dir: Path
+    candidate_out: Callable[[str], Path]
     read_remote: Callable[[Any], str]
     write_remote: Callable[[Any], str]
     transport: Callable[..., Any]
@@ -148,7 +148,7 @@ def cmd_publish(args, ctx: AuthorityOperatorContext) -> int:
         prior=prior,
     )
     out_path = Path(args.candidate_out) if args.candidate_out else (
-        ctx.candidate_dir / f"candidate-manifest.{manifest['snapshot_id']}.json")
+        ctx.candidate_out(manifest["snapshot_id"]))
     if ctx.manifest_path.resolve() == out_path.resolve():
         ctx.stop("--candidate-out names the TRACKED selector path. A candidate is not an "
                  "authority; creating that file is a separate authorised act.")

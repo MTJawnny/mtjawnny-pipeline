@@ -1338,7 +1338,7 @@ def selftest() -> int:
 # The parser, the six commands and every printed line are the permanent
 # operator's. What stays here is what only this boundary knows: the tracked
 # selector path, the operational codebook path, the disposable candidate
-# directory, the remote nicknames, the transport that declares both forbidden
+# location, the remote nicknames, the transport that declares both forbidden
 # staging arms, the backup policy, the corpus reference, the historic STOP and
 # the offline selftest. They are handed over as call-time callables, and every
 # command crosses `_stop_on_refusal`, exactly like every other owner call.
@@ -1347,7 +1347,8 @@ def _context():
     return _cli.AuthorityOperatorContext(
         manifest_path=MANIFEST_PATH,
         codebook_path=lambda: fcb.CODEBOOK_PATH,
-        candidate_dir=fc.FOUNDRY_OUT_DIR,
+        candidate_out=lambda snapshot_id: (
+            fc.FOUNDRY_OUT_DIR / f"candidate-manifest.{snapshot_id}.json"),
         read_remote=lambda explicit: read_remote(explicit),
         write_remote=lambda explicit: write_remote(explicit),
         transport=lambda remote, bucket: RcloneTransport(remote, bucket=bucket),
