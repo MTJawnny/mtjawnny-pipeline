@@ -93,6 +93,9 @@ LATEST_ARTIFACT_PATH = fc.DATA_ARTIFACTS_DIR / "latest.json"
 # injected argument.
 from mtj_foundry import codebook as _codebook  # noqa: E402
 from mtj_foundry import codebook_store as _codebook_store  # noqa: E402
+# S13: the clean-lint REPORT TEXT is `mtj_foundry.lint_report`'s. The read, the
+# `/1` guidance, the STOP boundary and the printing stay in `cmd_lint` below.
+from mtj_foundry import lint_report as _lint_report  # noqa: E402
 
 SCHEMA_V2 = _codebook.SCHEMA_V2
 SCHEMA_V1 = _codebook.SCHEMA_V1
@@ -332,11 +335,8 @@ def cmd_lint(args):
     path = Path(args.path) if args.path else CODEBOOK_PATH
     cb = load_codebook(path)
     stats = lint_or_halt(cb, str(path))
-    print(f"lint clean: {stats['axes']} axes, {stats['members']} members, "
-          f"{stats['assertions']} assertions — {path}")
-    for key in stats["exemptions_applied"]:
-        print(f"  DECLARED EXEMPTION APPLIED — {key[0]}: {key[1]}")
-        print(f"    {AXIS_INVARIANT_EXEMPTIONS[key]}")
+    for line in _lint_report.lines(path, stats):
+        print(line)
 
 
 def main():

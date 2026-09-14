@@ -35,7 +35,6 @@ Usage:
 """
 import re
 import sys
-import json
 import argparse
 from pathlib import Path
 
@@ -97,6 +96,7 @@ OUT = fc.CONFIG_GENERATED / "cr-checks.json"
 # 264 derived rows in the same order -- only the provenance representation is
 # corrected, so the tracked file stops being machine-specific.
 from mtj_foundry.mtg.cr import checks as _checks  # noqa: E402
+from mtj_foundry import cr_checks_job as _job  # noqa: E402
 
 ERA_VARIANTS = _checks.ERA_VARIANTS
 SCOPE_TERMS = _checks.SCOPE_TERMS
@@ -156,17 +156,9 @@ def coverage(reg: dict) -> None:
 
     missing = _coverage.uncovered_keyword_actions(reg, tokens, gated)
     n_actions = _coverage.keyword_action_count(reg)
-    print(f"CR keyword actions        : {n_actions}")
-    print(f"  modelled by some axis   : {n_actions - len(missing)}")
-    print(f"  NO axis token           : {len(missing)}")
-    print("\n  uncovered, by corpus pressure (gate-passing cards printing the term):")
-    for n, term, rule in missing:
-        if n >= 20:
-            print(f"     {n:5d}  {term:28s} CR {rule}")
-    print("\n  NOTE: this matches the action's FIRST WORD against slug tokens, so a")
-    print("  morphological near-miss counts as uncovered (prevents-regeneration")
-    print("  carries 'regeneration', not 'regenerate'). Treat the list as a")
-    print("  worklist to verify, not a count to quote.")
+    # S13: the report TEXT is `mtj_foundry.cr_checks_job`'s; printing stays here.
+    for line in _job.coverage_lines(n_actions, missing):
+        print(line)
 
 
 def main():
@@ -175,18 +167,17 @@ def main():
     args = ap.parse_args()
     reg = build(load_cr())
 
-    once = json.dumps(reg, indent=1, sort_keys=True)
-    twice = json.dumps(build(load_cr()), indent=1, sort_keys=True)
-    if once != twice:
-        fc.halt("determinism gate FAILED — two builds of the registry differ")
+    # S13: the x2 determinism gate and the summary are `cr_checks_job`'s. Only
+    # its declared `DeterminismError` becomes the historic STOP; a failed
+    # rebuild propagates as itself.
+    try:
+        once = _job.gated_serialization(reg, lambda: build(load_cr()))
+    except _job.DeterminismError as error:
+        fc.halt(str(error))
 
     OUT.write_text(once + "\n")
-    print(f"wrote {OUT}  ({reg['n_terms']} terms, determinism x2 OK)")
-    by = {}
-    for r in reg["terms"]:
-        by[r["kind"]] = by.get(r["kind"], 0) + 1
-    for k, v in sorted(by.items()):
-        print(f"  {k:16s} {v}")
+    for line in _job.summary(OUT, reg):
+        print(line)
     if args.coverage:
         print()
         coverage(reg)

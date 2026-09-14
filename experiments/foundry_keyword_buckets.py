@@ -53,6 +53,11 @@ REPORT_PATH = fc.FOUNDRY_OUT_DIR / "keyword-buckets_report.md"
 # is NOT PROMOTED, so it is gone rather than carried into L2.
 from mtj_foundry.mtg.cr import keyword_buckets as _buckets  # noqa: E402
 
+# S13: the ENVELOPE, the REPORT TEXT and the SUMMARY LINES are
+# `mtj_foundry.keyword_buckets_job`'s. The output paths, both writes, the run
+# date, the printing and the STOP boundary stay in `main()` below.
+from mtj_foundry import keyword_buckets_job as _job  # noqa: E402
+
 CLOSED_BUCKETS = _buckets.CLOSED_BUCKETS
 TRIGGER_FAMILY_PATTERNS = _buckets.TRIGGER_FAMILY_PATTERNS
 CASTING_MODIFIER_PATTERNS = _buckets.CASTING_MODIFIER_PATTERNS
@@ -92,73 +97,13 @@ def main():
     cr_date = find_cr_date(text)
     reg = build_registry(text)
 
-    keywords = reg["keywords"]
-    verify_or_drop = reg["verify_or_drop"]
-    trigger_gaps = reg["trigger_gaps"]
-    casting_modifier_hits = reg["casting_modifier_hits"]
-    bucket_counts = reg["bucket_counts"]
-    entries = range(reg["n_entries"])
+    fc.write_json(OUT_PATH, _job.envelope(reg, cr_date, str(CR_PATH),
+                                          date.today().isoformat()))
+    REPORT_PATH.write_text(_job.report(reg, cr_date, str(CR_PATH), date.today().isoformat()),
+                           encoding="utf-8")
 
-    out = {
-        "schema": "foundry-keyword-buckets/1",
-        "cr_version_date": cr_date,
-        "cr_source_path": str(CR_PATH),
-        "generated": date.today().isoformat(),
-        "ruling_basis": "CORPUS-PASS-PLAN.md step 2 / MASTER-HANDOFF-ADDENDUM-3.md sec.2,4",
-        "closed_buckets": reg["closed_buckets"],
-        "note": (
-            "Base 'class' is mechanically extracted from the CR's own first-class "
-            "statement per keyword (verify-or-drop: 'unclassified'/'ambiguous-card-dependent' "
-            "means the CR text does not commit to one fixed class -- never guessed). "
-            "'casting_modifier_heuristic' is a SEPARATE, non-CR-anchored regex heuristic "
-            "flag (not a class) -- addendum-3's assumption that casting-modifier is a "
-            "peer of static/triggered/activated does not hold: CR classifies Flash, "
-            "Convoke, Kicker, etc. as ordinary ability classes (mostly static) whose "
-            "TEXT happens to modify casting; this field surfaces that distinction for "
-            "Captain rather than silently folding it into the addendum's original 5-bucket "
-            "assumption. 'death-trigger' is used for the CR-700.4 graveyard-from-battlefield "
-            "family per sec.13 D-1 of CODEBOOK-NAMING-GRAMMAR.md, NOT the literal 'dies' "
-            "value printed in that same document's sec.2 table -- see report for the flagged "
-            "internal inconsistency."
-        ),
-        "keywords": keywords,
-    }
-
-    fc.write_json(OUT_PATH, out)
-
-    report_lines = [
-        "# Keyword-bucket extraction report", "",
-        f"Run: {date.today().isoformat()} against CR effective {cr_date} ({CR_PATH})", "",
-        f"Total keyword entries parsed: {len(keywords)} (from {len(entries)} CR 702 headers, "
-        "702.145 Daybound-and-Nightbound split into 2)", "",
-        "## Bucket counts", "",
-    ]
-    for b in CLOSED_BUCKETS:
-        report_lines.append(f"- `{b}`: {bucket_counts[b]}")
-    report_lines += ["", "## Verify-or-drop (no fixed CR class stated -- do NOT force-fit)", ""]
-    for slug in verify_or_drop:
-        k = keywords[slug]
-        report_lines.append(f"- `{slug}` ({k['cr_number']}, class={k['class']}): \"{k['class_evidence']}\"")
-    report_lines += ["", "## Triggered keywords with no closed-vocabulary trigger-family match", "",
-                      "(DELIVERY slot per CODEBOOK-NAMING-GRAMMAR.md sec.2; these need either a new closed-vocab entry or per-keyword ruling)", ""]
-    for slug in trigger_gaps:
-        k = keywords[slug]
-        report_lines.append(f"- `{slug}` ({k['class_cr_citation']}): \"{k['class_evidence']}\"")
-    report_lines += ["", "## casting_modifier_heuristic hits (non-CR-anchored, flagged for Captain review)", ""]
-    for slug in casting_modifier_hits:
-        k = keywords[slug]
-        report_lines.append(f"- `{slug}` (base class={k['class']}, {k['class_cr_citation']}): \"{k['casting_modifier_evidence']}\"")
-    report_lines += ["", "## Hybrid keywords with unparsed components", ""]
-    for slug, k in sorted(keywords.items()):
-        if k["class"] == "hybrid" and not k["hybrid_components"]:
-            report_lines.append(f"- `{slug}` ({k['class_cr_citation']}): \"{k['class_evidence']}\"")
-
-    REPORT_PATH.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
-
-    print(f"wrote {OUT_PATH} ({len(keywords)} keywords)")
-    print(f"wrote {REPORT_PATH}")
-    print(f"bucket counts: {bucket_counts}")
-    print(f"verify_or_drop: {len(verify_or_drop)}  trigger_gaps: {len(trigger_gaps)}  casting_modifier_hits: {len(casting_modifier_hits)}")
+    for line in _job.summary(OUT_PATH, REPORT_PATH, reg):
+        print(line)
 
 
 if __name__ == "__main__":
