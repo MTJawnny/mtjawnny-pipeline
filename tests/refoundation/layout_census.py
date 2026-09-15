@@ -91,7 +91,7 @@ def tracked_python(root: Path) -> list[Path]:
 def walked_python(root: Path) -> list[Path]:
     """The same universe derived from the filesystem, for cross-checking."""
     found = []
-    for base in ("experiments", "pipeline", "src", "tests"):
+    for base in ("benchmarks", "experiments", "pipeline", "src", "tests"):
         for path in (root / base).rglob("*.py"):
             if "__pycache__" in path.parts:
                 continue
@@ -103,12 +103,12 @@ def scope_of(rel: Path) -> str:
     """Which measurement bucket a file belongs to.
 
     AQ4 is PAUSED and is therefore excluded from every legacy-production count.
-    It lives in two places — the `experiments/aq4_benchmark/` package and
-    `experiments/foundry_aq4_probes.py` — so a directory test alone would leave
-    one AQ4 file inside the production scope.
+    S14 froze it under `benchmarks/aq4/` (the `aq4_benchmark/` package and
+    `foundry_aq4_probes.py` both live there now); the filename clause is kept so a
+    loose AQ4 module anywhere else still cannot enter the production scope.
     """
     posix = rel.as_posix()
-    if posix.startswith("experiments/aq4_benchmark/") or "aq4" in rel.name:
+    if posix.startswith("benchmarks/aq4/") or "aq4" in rel.name:
         return "aq4_PAUSED"
     if posix.startswith("experiments/measure/"):
         return "experiments_measure"

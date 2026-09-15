@@ -968,12 +968,13 @@ LAW_MARKERS = ("If-None-Match", "--ignore-times", "--s3-no-check-bucket", "--ret
                "foundry/codebook/sha256", "restore-tmp")
 SHELL = "experiments/foundry_authority.py"
 # Same NAME, different subject, and declared rather than pattern-excused so a new
-# homonym still fails: AQ4's frozen surface-projection manifest (S14's to move)
-# and the site publisher's artifact manifest. Neither reads or writes a
-# `foundry-authority/1` document. May shrink; may not grow.
+# homonym still fails: AQ4's frozen surface-projection manifest (frozen by S14
+# under benchmarks/aq4, outside the production scan) and the site publisher's
+# artifact manifest. Neither reads or writes a `foundry-authority/1` document.
+# May shrink; may not grow.
 UNRELATED_HOMONYMS = {
-    ("experiments/aq4_benchmark/aq4_projection.py", "build_manifest"),
-    ("experiments/aq4_benchmark/aq4_projection.py", "validate_manifest"),
+    ("benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py", "build_manifest"),
+    ("benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py", "validate_manifest"),
     ("pipeline/upload.py", "build_manifest"),
 }
 # The shell's test rigs, which reconstruct the laws ON PURPOSE to prove them.
@@ -1088,7 +1089,11 @@ class TestOneImplementation(unittest.TestCase):
     def test_the_declared_homonyms_are_real_and_unrelated(self):
         for path, name in sorted(UNRELATED_HOMONYMS):
             with self.subTest(path=path, name=name):
-                text = self.sources[path]
+                # Frozen evidence is outside the production scan, so it is read
+                # from its tracked file; a production homonym still comes from
+                # the scanned set and must be present there.
+                text = (self.sources[path] if not path.startswith("benchmarks/")
+                        else (REPO_ROOT / path).read_text(encoding="utf-8"))
                 self.assertIn(f"def {name}(", text)
                 self.assertNotIn("foundry-authority/1", text)
 

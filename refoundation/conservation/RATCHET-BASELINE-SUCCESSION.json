@@ -12,6 +12,17 @@
       "reason": "P0.3A exact-byte capture of the ignored ratchet baseline, carried unchanged through the tracked cutover; no baseline value changed",
       "sha256": "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601",
       "size_bytes": 4324
+    },
+    {
+      "authorization": "issue:1#issuecomment-5675245200",
+      "changed_sections": [
+        "ruling_registry"
+      ],
+      "ordinal": 1,
+      "predecessor_sha256": "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601",
+      "reason": "S14 AQ4 freeze relocation: six AQ4 source/review/incident docs left the top-level docs/ ruling-registry population for benchmarks/aq4/docs; ruling_registry re-pinned to the measured post-move counts; no ruling id lost and no semantic ratification",
+      "sha256": "b0f3d6d7580f507f65dd6d4c5ab8f21d4f230efe498c780d7711d4f9f166aaa1",
+      "size_bytes": 4324
     }
   ],
   "genesis": {

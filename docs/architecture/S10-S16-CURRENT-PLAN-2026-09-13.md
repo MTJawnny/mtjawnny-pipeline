@@ -81,7 +81,7 @@ The retired re-audit packet generator is **not** a migration target. AG-CLI-01 i
 AQ4 remains PAUSED. Cleanup changed its document topology intentionally:
 
 - live `docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` is an inert paused compatibility pointer;
-- the full frozen historical contract is byte-preserved at `archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md`.
+- the full frozen historical contract is byte-preserved as frozen AQ4 evidence at `benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md`.
 
 Frozen AQ4 scripts still contain references to the former direct contract path. Do **not** repair those references piecemeal before S14. S14 must move/freeze code, contract, section references, precommitment, holdout, projection/binding truth, and provenance as one conservation transaction while AQ4 stays paused.
 

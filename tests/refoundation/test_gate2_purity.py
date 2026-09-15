@@ -583,9 +583,9 @@ class TestTheProbeHasExactlyOneOwner(unittest.TestCase):
         self.assertEqual(offenders, [], "active consumers still reach the "
                                         "removed old owner")
         self.assertEqual(sorted(frozen), [
-            "experiments/aq4_benchmark/aq4_compare.py",
-            "experiments/aq4_benchmark/aq4_population.py",
-            "experiments/foundry_aq4_probes.py",
+            "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+            "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+            "benchmarks/aq4/experiments/foundry_aq4_probes.py",
         ])
 
     def test_the_probe_guards_row_runs_the_new_owner(self):

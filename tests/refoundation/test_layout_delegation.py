@@ -5072,7 +5072,7 @@ class TestTheFreshCountsAndTheirReconciliation(unittest.TestCase):
             excluded += layout_census.delegation_references(
                 source, rel, self.providers)
         self.assertEqual([(r.path, r.lineno, r.form) for r in excluded],
-                         [("experiments/aq4_benchmark/aq4_binding.py", 74,
+                         [("benchmarks/aq4/experiments/aq4_benchmark/aq4_binding.py", 74,
                            "ATTRIBUTE_NAV")])
 
     def test_the_local_layout_sites(self):

@@ -13,7 +13,7 @@ ARCHIVED = {
     "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md": "d4cffd89edddc15deb9a13c875365c4e019c492b",
     "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md": "2b89ea43fa371945ee9f8b487758d4dddb2d60cc",
     "archive/routing/docs/WORK-PACKETS-2026-08-07.md": "e1bab565d6da493016d65fdef298eb4412f96e4a",
-    "archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md": "92e254b222c76f4570d0870b371bfd371093a4c0",
+    "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md": "92e254b222c76f4570d0870b371bfd371093a4c0",
     "archive/routing/docs/B-MIGRATION-DIRECTIVE.md": "213206b6560d9f097ae86af1673b4630a1c1a64a",
     "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md": "3f57d5cd9909aed5e8d9de6a8fbfa9c096f0ab44",
     "archive/routing/experiments/foundry_build_reaudit_packet.py": "3a1fd7019c8c4d9f37054f5f1fc91e2b13bc41d0",
@@ -60,7 +60,9 @@ class TestResidualRoutingCloseout(unittest.TestCase):
         self.assertTrue(text.startswith("# AQ4 PAUSED — NOT CURRENT ROUTING"))
         self.assertIn(SELECTOR, text)
         self.assertIn("AQ4 is PAUSED", text)
-        self.assertIn("archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md", text)
+        self.assertIn("benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md", text)
+        self.assertNotIn("archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md", text)
+        self.assertTrue((REPO_ROOT / "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md").is_file())
         self.assertNotIn("CURRENT AQ4 ENTRY POINT", text)
 
     def test_ag_cli_01_has_one_canonical_live_statement(self):

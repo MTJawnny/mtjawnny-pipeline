@@ -145,10 +145,10 @@
   },
   "ruling_registry": {
     "corroborated": 86,
-    "documents": 141,
+    "documents": 138,
     "ruling_ids": 127,
     "sole_home": 41,
-    "total_references": 684
+    "total_references": 660
   },
   "visibility": {
     "band_content": 174,

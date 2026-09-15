@@ -9,19 +9,19 @@
     "referenced_names": 35
   },
   "live_importers": {
-    "experiments/aq4_benchmark/aq4_binding.py": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_binding.py": [
       "FOUNDRY_OUT_DIR",
       "halt",
       "load_corpus_gated"
     ],
-    "experiments/aq4_benchmark/aq4_compare.py": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py": [
       "halt",
       "load_corpus_gated"
     ],
-    "experiments/aq4_benchmark/aq4_pairing.py": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py": [
       "halt"
     ],
-    "experiments/aq4_benchmark/aq4_population.py": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py": [
       "_MODAL_HEADER_RE",
       "det_scan_texts",
       "full_oracle_text",
@@ -29,7 +29,7 @@
       "load_corpus_gated",
       "resolve_name"
     ],
-    "experiments/aq4_benchmark/aq4_projection.py": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py": [
       "_MODAL_HEADER_RE",
       "halt",
       "is_mode_line",
@@ -89,7 +89,7 @@
     "experiments/foundry_any_damage_split.py": [
       "halt"
     ],
-    "experiments/foundry_aq4_probes.py": [
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py": [
       "CARDNAME_TOKEN",
       "canonicalize_self_reference",
       "full_oracle_text",

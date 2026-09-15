@@ -1,0 +1,228 @@
+{
+  "claims": "EXACT_BYTES_AND_TOPOLOGY_ONLY",
+  "classification": "FROZEN_EVIDENCE",
+  "freeze_authorization": "issue:1#issuecomment-5675245200",
+  "frozen_absences": [
+    "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-4.json",
+    "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-5.json"
+  ],
+  "layout_owner": "mtj_foundry.paths.ProjectPaths.benchmarks_aq4",
+  "non_payload_files": [
+    "benchmarks/aq4/FREEZE-MANIFEST.json",
+    "benchmarks/aq4/README.md"
+  ],
+  "payload": [
+    {
+      "classification": "ARCHITECTURE_SOURCE_REVIEW",
+      "destination_path": "benchmarks/aq4/docs/AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md",
+      "sha256": "947696ce765e8aee538f303a8743af643b0c611d03f0d8e85252a6ae358027cf",
+      "size_bytes": 36445,
+      "source_path": "docs/AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md"
+    },
+    {
+      "classification": "ARCHITECTURE_SOURCE_REVIEW",
+      "destination_path": "benchmarks/aq4/docs/AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md",
+      "sha256": "24afd4cff07627250c21dbde0ebb86c58d3ddcf9c7acb7f6b76d59978d0e23a6",
+      "size_bytes": 45968,
+      "source_path": "docs/AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md"
+    },
+    {
+      "classification": "ARCHITECTURE_SOURCE_REVIEW",
+      "destination_path": "benchmarks/aq4/docs/AQ4-PREIMPLEMENTATION-ADVERSARIAL-CORRECTIONS-2026-08-14.md",
+      "sha256": "f60d87083736f5ebb358b1cdc495f84523e0be7e952d583d599e1027e0412a1a",
+      "size_bytes": 29287,
+      "source_path": "docs/AQ4-PREIMPLEMENTATION-ADVERSARIAL-CORRECTIONS-2026-08-14.md"
+    },
+    {
+      "classification": "HISTORICAL_CONTRACT",
+      "destination_path": "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md",
+      "sha256": "e1aa1b91199c28ac83db8b0c6302eb872ea2f63df912fc629cf642da4eee41d3",
+      "size_bytes": 155214,
+      "source_path": "archive/routing/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
+    },
+    {
+      "classification": "INCIDENT_GOVERNANCE_PROVENANCE",
+      "destination_path": "benchmarks/aq4/docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md",
+      "sha256": "c739be0b1b17b5f7150bad45b12621aa2c24c2afd321b996eaa9b032973e2a8e",
+      "size_bytes": 10350,
+      "source_path": "docs/INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md"
+    },
+    {
+      "classification": "INCIDENT_GOVERNANCE_PROVENANCE",
+      "destination_path": "benchmarks/aq4/docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md",
+      "sha256": "a5dcd9d669e193ea0fcc8f3ab4a6cc594552211a5a30d8689424373d32d35fb5",
+      "size_bytes": 19900,
+      "source_path": "docs/INCIDENT-AQ4-PHASE-A-ADJUDICATOR-A-STOP-BREACH-2026-08-17.md"
+    },
+    {
+      "classification": "ARCHITECTURE_SOURCE_REVIEW",
+      "destination_path": "benchmarks/aq4/docs/SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md",
+      "sha256": "3d3aab4e13b73e84f3858841b37142fd52cc6add48892d10025572c880e15915",
+      "size_bytes": 26586,
+      "source_path": "docs/SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md"
+    },
+    {
+      "classification": "BENCHMARK_PROVENANCE",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/README.md",
+      "sha256": "a1ca0b2c0f7d99cd7336171f94e571d645b1720b8641bfa67dc9d6c2a7380786",
+      "size_bytes": 52548,
+      "source_path": "experiments/aq4_benchmark/README.md"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/aq4_binding.py",
+      "sha256": "e47e907302c78bbcebdfeb88b951d5cde787b5c579a30d5f1c2beb52f2bf7e43",
+      "size_bytes": 54294,
+      "source_path": "experiments/aq4_benchmark/aq4_binding.py"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+      "sha256": "392529170f2e77ec4189afb1e7f3f5fd9f5c90f245ade9622760b37d9585cf2b",
+      "size_bytes": 97710,
+      "source_path": "experiments/aq4_benchmark/aq4_compare.py"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py",
+      "sha256": "96fbde679ebbb4e2fe8fec80c6e448f3c9a8b22e3e85b5cb52dd4030c40ecbd2",
+      "size_bytes": 25875,
+      "source_path": "experiments/aq4_benchmark/aq4_pairing.py"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+      "sha256": "aa1b87a05a3344141915bae9f92697ecb83affa81499f65375b8011478ca5620",
+      "size_bytes": 106647,
+      "source_path": "experiments/aq4_benchmark/aq4_population.py"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+      "sha256": "fa09dc1ab75791c16435bf97b86eed99060ac37e22f5adf9efc7c5025acacc2f",
+      "size_bytes": 90749,
+      "source_path": "experiments/aq4_benchmark/aq4_projection.py"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/binding-schema.json",
+      "sha256": "d1511bf1d5cdb893b83c65ed712dad6e41920e87f385b7fa4e741b815dc00ef6",
+      "size_bytes": 8428,
+      "source_path": "experiments/aq4_benchmark/binding-schema.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-1.json",
+      "sha256": "2c63d30ee31b0473fd6a438978b64b8035ec8f949a8b36ca724080327ba1717b",
+      "size_bytes": 4474,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-1.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-2.json",
+      "sha256": "38c29533315e3b07c0c593095ead91fe55bfe5adb5243d8edebb780549b7aa63",
+      "size_bytes": 10495,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-2.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-3.json",
+      "sha256": "d380fb82057b00704344914deb64155328c5186fbc55c3f1c8c52b85065d9e14",
+      "size_bytes": 1304,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-3.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-6.json",
+      "sha256": "16811f9561c65536104e50c7feded30837f8204154971e7fe56f02e1547e5210",
+      "size_bytes": 7074,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-6.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-7.json",
+      "sha256": "2e75d5a14b1b62824113f8190ee76f1a3657babfe7d7de46fcaa1e97ccc6a40d",
+      "size_bytes": 3157,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-7.json"
+    },
+    {
+      "classification": "BENCHMARK_COHORT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/cohorts/cohort-8.json",
+      "sha256": "271800bfc89e9322704117006739c6d1ee047ff2d7e8ed602d1dea39b581c9c9",
+      "size_bytes": 10119,
+      "source_path": "experiments/aq4_benchmark/cohorts/cohort-8.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/comparison-algebra.json",
+      "sha256": "c14d90c66e1d98d9b8daa277d7caa23daf7cf1342bbe62c5f67c443b8234da3b",
+      "size_bytes": 24448,
+      "source_path": "experiments/aq4_benchmark/comparison-algebra.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/evaluation-projection-schema.json",
+      "sha256": "0ad20f4910e9c8a5b96a98f3b3833eb4a8ebe3532d01337b22aaeee16289de3d",
+      "size_bytes": 20791,
+      "source_path": "experiments/aq4_benchmark/evaluation-projection-schema.json"
+    },
+    {
+      "classification": "HOLDOUT_PRECOMMITMENT",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/holdout-seed-commitment.json",
+      "sha256": "872e403756b6ce4c433e4275723b47cae9b23c0d6ac05852a03528c4a02fa7ac",
+      "size_bytes": 6989,
+      "source_path": "experiments/aq4_benchmark/holdout-seed-commitment.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/open-surface-manifest.json",
+      "sha256": "c0baf61fb2a8da7a3dc7f9077f89bce12014660de0c76cc10094ba474b3a6c6d",
+      "size_bytes": 5956,
+      "source_path": "experiments/aq4_benchmark/open-surface-manifest.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/pairs-open.json",
+      "sha256": "1b768f3e6aaf7632dfc88da346f8e945e8f5df4f4e6b0ea6495117f6499d2d7a",
+      "size_bytes": 40851,
+      "source_path": "experiments/aq4_benchmark/pairs-open.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/population-manifest.json",
+      "sha256": "d3c41d8144733ecdac7e55d67b6045eb115476ae25d154c7aadc321468af515a",
+      "size_bytes": 176936,
+      "source_path": "experiments/aq4_benchmark/population-manifest.json"
+    },
+    {
+      "classification": "SCHEMA_CONFIG_DATA",
+      "destination_path": "benchmarks/aq4/experiments/aq4_benchmark/sampling.json",
+      "sha256": "474889942bd09707807e9ee320f4715c0cf73c747b360ac49b2e2bc5a6fcb03b",
+      "size_bytes": 8410,
+      "source_path": "experiments/aq4_benchmark/sampling.json"
+    },
+    {
+      "classification": "EXECUTABLE_CODE_FROZEN",
+      "destination_path": "benchmarks/aq4/experiments/foundry_aq4_probes.py",
+      "sha256": "eec9a4e2aea4c27d74dfffc6d4b82fdcd6f7292bd777aadc2c8625215c7c48f6",
+      "size_bytes": 91063,
+      "source_path": "experiments/foundry_aq4_probes.py"
+    }
+  ],
+  "payload_count": 28,
+  "payload_count_by_classification": {
+    "ARCHITECTURE_SOURCE_REVIEW": 4,
+    "BENCHMARK_COHORT": 6,
+    "BENCHMARK_PROVENANCE": 1,
+    "EXECUTABLE_CODE_FROZEN": 6,
+    "HISTORICAL_CONTRACT": 1,
+    "HOLDOUT_PRECOMMITMENT": 1,
+    "INCIDENT_GOVERNANCE_PROVENANCE": 2,
+    "SCHEMA_CONFIG_DATA": 7
+  },
+  "payload_total_bytes": 1172068,
+  "schema": "mtj-aq4-freeze-manifest/1",
+  "source_accepted_head": "6c9e1b24ee8d56cfae5bc5617ed0e70925bd47a7",
+  "status": "PAUSED",
+  "this_manifest_ratifies": "NOTHING"
+}

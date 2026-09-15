@@ -802,7 +802,7 @@ class TestCallerTopology(unittest.TestCase):
     def test_frozen_AQ4_callers_keep_their_compatibility_surface(self):
         defined = provider_names(self.provider)
         for path, names in self.census.items():
-            if path.startswith("experiments/aq4_benchmark/"):
+            if path.startswith("benchmarks/aq4/experiments/aq4_benchmark/"):
                 with self.subTest(path=path):
                     self.assertTrue(set(names) <= defined, set(names) - defined)
 
