@@ -1,6 +1,7 @@
 {
  "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -78,6 +79,656 @@
     "passed": 15,
     "rc": 0,
     "unexpected": 0
+   },
+   "r2_outcome_accounting": {
+    "analyzer_counterfactual": {
+     "bootstrap_families": {
+      "base": {
+       "": 1,
+       "experiments": 75,
+       "src": 1,
+       "tests/guards/probe": 4
+      },
+      "d1": {
+       "": 1,
+       "experiments": 34,
+       "src": 1,
+       "tests/guards/probe": 2
+      }
+     },
+     "cca_classification_totals": {
+      "base": {
+       "BLOCK_EXCEPTION_CATCH": 2,
+       "BLOCK_SYSTEMEXIT_DEPENDENCY": 1,
+       "SAFE_NO_FAILURE_CLASS_DELTA": 1,
+       "SAFE_NO_TRANSITIVE_HANDLER": 15
+      },
+      "d1": {
+       "BLOCK_EXCEPTION_CATCH": 2,
+       "BLOCK_SYSTEMEXIT_DEPENDENCY": 1,
+       "SAFE_NO_FAILURE_CLASS_DELTA": 1,
+       "SAFE_NO_TRANSITIVE_HANDLER": 6
+      }
+     },
+     "cca_consumer_rows_removed": {
+      "experiments/foundry_any_damage_split.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_axis_merge_pointer_correction.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_cdr09_derive.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_cdr09_walk.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_consolidate_run1_enumerate.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_gate0_scrub.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_locality_backfill.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_membership_move.py": "SAFE_NO_TRANSITIVE_HANDLER",
+      "experiments/foundry_slug_dossier.py": "SAFE_NO_TRANSITIVE_HANDLER"
+     },
+     "cca_population_counts": {
+      "facade_fan_in_files": [
+       28,
+       19
+      ],
+      "facade_read_call_sites": [
+       25,
+       14
+      ],
+      "facade_read_owning_files": [
+       19,
+       10
+      ],
+      "python_files": [
+       206,
+       164
+      ]
+     },
+     "layout_totals": {
+      "delegations": [
+       145,
+       72
+      ],
+      "local_sites": [
+       63,
+       37
+      ],
+      "sys_path_calls": [
+       81,
+       38
+      ]
+     },
+     "s10_live_importers": {
+      "base": 88,
+      "d1": 54,
+      "removed": [
+       "experiments/foundry_adapt_batch1_decisions.py",
+       "experiments/foundry_adapt_batch2_decisions.py",
+       "experiments/foundry_adapt_batch3_decisions.py",
+       "experiments/foundry_adapt_batch4_decisions.py",
+       "experiments/foundry_adapt_batch5_decisions.py",
+       "experiments/foundry_adapt_batch6_decisions.py",
+       "experiments/foundry_adapt_batch7_decisions.py",
+       "experiments/foundry_any_damage_split.py",
+       "experiments/foundry_assemble_batch2.py",
+       "experiments/foundry_assemble_batch3.py",
+       "experiments/foundry_assemble_batch4.py",
+       "experiments/foundry_assemble_batch5.py",
+       "experiments/foundry_assemble_batch6.py",
+       "experiments/foundry_assemble_batch7.py",
+       "experiments/foundry_axis_merge_pointer_correction.py",
+       "experiments/foundry_axis_walk.py",
+       "experiments/foundry_batch7_pay_life_scrub.py",
+       "experiments/foundry_batch8_ab.py",
+       "experiments/foundry_batch8_canon_analysis.py",
+       "experiments/foundry_batch8_diff.py",
+       "experiments/foundry_blanket_risk.py",
+       "experiments/foundry_cdr09_derive.py",
+       "experiments/foundry_cdr09_walk.py",
+       "experiments/foundry_consolidate_run1_enumerate.py",
+       "experiments/foundry_corpus_pass_run1.py",
+       "experiments/foundry_corroboration_pass.py",
+       "experiments/foundry_digest.py",
+       "experiments/foundry_emit.py",
+       "experiments/foundry_gate0_scrub.py",
+       "experiments/foundry_locality_backfill.py",
+       "experiments/foundry_membership_move.py",
+       "experiments/foundry_reach_census.py",
+       "experiments/foundry_selfother_scope.py",
+       "experiments/foundry_w3_census.py"
+      ]
+     },
+     "shape_extractor_unknown_reach_callers": {
+      "base": [
+       "experiments/foundry_reach_census.py"
+      ],
+      "d1": []
+     }
+    },
+    "authority": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
+    "inherited_red_masked_by_method_id_equality": {
+     "consequence": "all 12 inherited-red test_layout_delegation methods change their measured values under D1 (e.g. sys.path call total 81 -> 38) while their method IDs stay red; a method-ID-set comparison cannot see this. Destructive slices need value-level identity, not ID-set equality",
+     "examples": [
+      [
+       "test_every_sys_path_call_resolves_to_a_known_directory",
+       "AssertionError: 81 != 82",
+       "AssertionError: 38 != 82"
+      ],
+      [
+       "test_the_families_are_exactly_the_pinned_three",
+       "AssertionError: {'experiments': 75, 'src': 1, 'tests/guards/probe': 4, '': 1} != {'src': 1, 'experiments': 76, '': 1, 'tests/guards/probe': 4}",
+       "AssertionError: {'experiments': 34, 'src': 1, 'tests/guards/probe': 2, '': 1} != {'src': 1, 'experiments': 76, '': 1, 'tests/guards/probe': 4}"
+      ],
+      [
+       "test_every_file_lands_in_exactly_one_named_scope",
+       "AssertionError: {'other': 1, 'aq4_PAUSED': 7, 'experiments'[66 chars]: 52} != {'experiments': 74, 'experiments_measure': [54 chars]: 43}",
+       "AssertionError: {'other': 1, 'aq4_PAUSED': 7, 'experiments'[66 chars]: 52} != {'experiments': 74, 'experiments_measure': [54 chars]: 43}"
+      ],
+      [
+       "test_tracked_and_walked_python_agree",
+       "AssertionError: Lists differ: [PosixPath('archive/routing/experiments/foundry_build[10749 chars]py')] != [PosixPath('benchmarks/aq4/experiments/aq4_benchmark/[10675 chars]py')]",
+       "AssertionError: Lists differ: [PosixPath('archive/routing/experiments/foundry_build[8507 chars]py')] != [PosixPath('benchmarks/aq4/experiments/aq4_benchmark/[8433 chars]py')]"
+      ],
+      [
+       "test_the_declared_counts_match_the_measured_counts",
+       "AssertionError: 76 != 75",
+       "AssertionError: 76 != 34"
+      ],
+      [
+       "test_the_unmutated_contract_passes_every_one_of_those_checks",
+       "AssertionError: 76 != 75",
+       "AssertionError: 76 != 34"
+      ],
+      [
+       "test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to",
+       "AssertionError: {'fou[26 chars]R': 119, 'foundry_common.REPO_ROOT': 10, 'foun[212 chars]': 1} != {'fou[26 chars]R': 120, 'foundry_common.REPO_ROOT': 10, 'foun[212 chars]': 1}",
+       "AssertionError: {'fou[25 chars]IR': 47, 'foundry_common.REPO_ROOT': 10, 'foun[211 chars]': 1} != {'fou[25 chars]IR': 120, 'foundry_common.REPO_ROOT': 10, 'fou[213 chars]': 1}"
+      ],
+      [
+       "test_the_forms_partition_the_total_with_no_remainder",
+       "AssertionError: {'PATH_JOIN': 137, 'ATTRIBUTE_NAV': 1, 'DIRECT_BIND': 3, 'CALL_ARG': 4} != {'PATH_JOIN': 138, 'DIRECT_BIND': 3, 'ATTRIBUTE_NAV': 1, 'CALL_ARG': 4}",
+       "AssertionError: {'PATH_JOIN': 66, 'CALL_ARG': 4, 'DIRECT_BIND': 2} != {'PATH_JOIN': 138, 'DIRECT_BIND': 3, 'ATTRIBUTE_NAV': 1, 'CALL_ARG': 4}"
+      ],
+      [
+       "test_the_local_layout_sites",
+       "AssertionError: 63 != 67",
+       "AssertionError: 37 != 67"
+      ],
+      [
+       "test_the_real_sys_path_call_sites",
+       "AssertionError: {'experiments': 75, 'experiments_measure': 6} != {'experiments': 76, 'experiments_measure': 6}",
+       "AssertionError: {'experiments': 36, 'experiments_measure': 2} != {'experiments': 76, 'experiments_measure': 6}"
+      ],
+      [
+       "test_the_scoped_delegation_total",
+       "AssertionError: 145 != 146",
+       "AssertionError: 72 != 146"
+      ],
+      [
+       "test_the_pre_repair_rule_collapses_the_delegation_census",
+       "AssertionError: 137 != 138",
+       "AssertionError: 66 != 138"
+      ]
+     ],
+     "methods": 12,
+     "new_subtest_identity_under_inherited_method": [
+      [
+       "tests.refoundation.test_layout_delegation.TestTheContractMatchesSource.test_the_declared_counts_match_the_measured_counts",
+       "family='TEST_OWNED_PROBE_IMPORT'"
+      ]
+     ],
+     "value_changed": 12
+    },
+    "member_attribution": {
+     "experiments/POKE-PUNCH-LIST.md": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/foundry_adapt_batch1_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch2_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch3_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch4_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch5_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch6_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_adapt_batch7_decisions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_any_damage_split.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch2.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=2 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch3.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=3 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch4.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch5.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=5 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch6.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=6 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_assemble_batch7.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=7 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_axis_merge_pointer_correction.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_axis_walk.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_batch7_pay_life_scrub.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=2 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_batch8_ab.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=1 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_batch8_canon_analysis.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=1 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_batch8_diff.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_blanket_risk.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_cdr09_derive.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=1 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_cdr09_walk.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_consolidate_run1_enumerate.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=2 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_corpus_pass_run1.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=4 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_corroboration_pass.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_digest.py": {
+      "disposition": "BLOCKED_UNKNOWN",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_emit.py": {
+      "disposition": "BLOCKED_UNKNOWN",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_gate0_scrub.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=2 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_locality_backfill.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=1 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_membership_move.py": {
+      "disposition": "BLOCKED_UNKNOWN",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "C8.5V fifteen subtest ERROR (KeyError on its own path)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_reach_census.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "the only live external UNKNOWN reach row (test_the_live_external_UNKNOWN_rows_now_say_why)",
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=2",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_review.html": {
+      "disposition": "BLOCKED_UNKNOWN",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/foundry_selfother_scope.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_slug_dossier.py": {
+      "disposition": "BLOCKED_UNKNOWN",
+      "participation": [
+       "codebook_store classification totals + C8.5V population (consumer row)",
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_synonym_collision.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=1 sys_path_calls=2",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/foundry_w3_census.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "s10 exact live caller set",
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/invert_tags.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/measure/FINDINGS-MEMO.md": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "NONE_ATTRIBUTABLE by these analyzers"
+      ]
+     },
+     "experiments/measure/clean_recut.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=4 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/measure/df_distributions.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=4 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/measure/phase3_rebalance_shapes.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=3 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/measure/pip_normalization.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=4 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     },
+     "experiments/serve_viewer.py": {
+      "disposition": "ARCHIVE_PRESERVE",
+      "participation": [
+       "layout census (inherited-red tests) delegations=0 local_sites=0 sys_path_calls=1",
+       "bootstrap family site"
+      ]
+     }
+    },
+    "propositions_protected": {
+     "tests.refoundation.test_codebook_store.TestLocalUnknownReachability.test_the_live_external_UNKNOWN_rows_now_say_why": "a live external UNKNOWN reach row exists and names its unresolved frontier (exercises the analyzer on live code)",
+     "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_fifteen_C8_5V_candidates_are_named_and_all_still_splits": "C8.5V nomination record: each of fifteen named consumers remains SPLIT with its accepted SAFE verdict",
+     "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity": "analyzer classification totals 2/1/1/15 pinned by identity",
+     "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic": "C8.5V arithmetic 28 fan-in files / 25 read call sites / 19 read-owning files",
+     "tests.refoundation.test_layout_delegation (12 inherited-red methods)": "legacy-production layout census counts (CENSUS_HEAD), contract parity, and the three bootstrap families",
+     "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one": "exact reviewed post-S10 live foundry_common caller set (sidecar)"
+    },
+    "raw_log_recovery": {
+     "base_log_sha256": "251ec225860b503f3744321a14aad98dd5cdc1ff35430021e2dff5ff974addd8",
+     "d1_log_sha256": "5ebbd79a8d4d49bb95e0fe394a528e9f33697d30e0c60fdf7323ab3f5df37158",
+     "rerun_performed": false,
+     "tie_to_committed_R0_evidence": "R0 worker scratch emitA/* byte-identical to all 12 committed R0 files at 7aeb247; impact_D1_ids.json derived from this log equals committed impact_rigs.D1 new_failure/new_error ids and summary; d1_list.txt equals committed impact_rigs.D1_removed (47); R2 analyzer counterfactual on a tracked-only base-minus-47 tree reproduces every changed value in this log (see analyzer_counterfactual)",
+     "why_no_rerun": "complete raw FAIL/ERROR blocks with subtest parameters were recovered and tied; T permits rerun only if attribution could not be recovered"
+    },
+    "raw_unittest_summary": {
+     "BASE": "FAILED (failures=12)",
+     "D1": "FAILED (failures=17, errors=8)",
+     "ran": 1850,
+     "raw_error_blocks": [
+      0,
+      8
+     ],
+     "raw_fail_blocks": [
+      12,
+      17
+     ]
+    },
+    "reconciliation": "17 raw failures = 12 inherited test_layout_delegation methods (13 blocks: test_the_declared_counts_match_the_measured_counts fails for two subtests) + 3 new test_codebook_store methods + 1 new test_s10 method; 8 raw errors = 1 new method with 8 module= subtests. 'D1: +4 failures / +1 error' is METHOD-level only and must not be read as raw counts",
+    "rerun": "not performed: raw logs recovered and tied; ignored-state digest nevertheless re-verified unchanged (primary ab3d1c10…)",
+    "subtest_identities": [
+     {
+      "method_id": "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_fifteen_C8_5V_candidates_are_named_and_all_still_splits",
+      "outcome": "ERROR",
+      "raw_blocks": 8,
+      "subtest_params": [
+       "module='experiments/foundry_any_damage_split.py'",
+       "module='experiments/foundry_axis_merge_pointer_correction.py'",
+       "module='experiments/foundry_cdr09_derive.py'",
+       "module='experiments/foundry_cdr09_walk.py'",
+       "module='experiments/foundry_consolidate_run1_enumerate.py'",
+       "module='experiments/foundry_gate0_scrub.py'",
+       "module='experiments/foundry_locality_backfill.py'",
+       "module='experiments/foundry_membership_move.py'"
+      ]
+     },
+     {
+      "method_id": "tests.refoundation.test_layout_delegation.TestTheContractMatchesSource.test_the_declared_counts_match_the_measured_counts",
+      "outcome": "FAIL",
+      "raw_blocks": 2,
+      "subtest_params": [
+       "family='LEGACY_SIBLING_IMPORT'",
+       "family='TEST_OWNED_PROBE_IMPORT'"
+      ]
+     }
+    ],
+    "unique_method_ids": {
+     "BASE_failing": 12,
+     "D1_erroring": 1,
+     "D1_failing": 16,
+     "base_failing_absent_in_D1": [],
+     "new_erroring": [
+      "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_fifteen_C8_5V_candidates_are_named_and_all_still_splits"
+     ],
+     "new_failing": [
+      "tests.refoundation.test_codebook_store.TestLocalUnknownReachability.test_the_live_external_UNKNOWN_rows_now_say_why",
+      "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+      "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+      "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one"
+     ]
+    },
+    "what_d1_cannot_prove": [
+     "D1 removed a mixed 47-file batch (42 ARCHIVE_PRESERVE + 5 BLOCKED_UNKNOWN); it is not member-level safety or impact proof for any single member",
+     "it proves nothing about the ARCHIVE_PRESERVE experiments it did not remove (foundry_consolidate_run1_apply, foundry_migrate_codebook_v2, foundry_reaudit, measure/axis_foundry, measure/family_tree_evidence, viewer.html) nor about the 40 archive/** candidates",
+     "an unchanged Gate 2 and a small set of changed method IDs do not show semantic/output conservation: routes and source-inspection guards can stay GREEN while the truth they guard dangles (foundry_migrate_codebook_v2 C3 guidance)",
+     "guards that did not change may still depend on a member through a proposition D1 happened not to exercise; name-free dependencies exist (foundry_reach_census -> UNKNOWN reach test)",
+     "method-ID equality with BASE is not value-level identity (12 inherited-red methods changed values)"
+    ]
    }
   },
   "D1_removed": [
@@ -195,7 +846,9 @@
   "line-based LOAD detection is blind to a load and a name on different lines (NC2a proves strict mode blind and conservative mode red); conservative mode is therefore mandatory before any promotion",
   "token matching over-approximates (e.g. 'snapshot', ProjectPaths.foundry_audit_baseline property); over-approximation only blocks",
   "dynamic path construction whose final segment is a variable is not resolvable statically (census 9 shapes; locally resolved to 59 files, see IGNORED-STATE-INVENTORY)",
-  "docs/ text references are recorded as provenance/topology, not as execution consumers"
+  "docs/ text references are recorded as provenance/topology, not as execution consumers",
+  "S15.R0.R2: the R0 strict/conservative census missed current operator/law routes, source-inspection guards and composed-name references; see r2_route_census (R0 records kept above as history of the method)",
+  "S15.R0.R2: D1 raw/subtest/value-level accounting and member attribution are in impact_rigs.D1.r2_outcome_accounting"
  ],
  "methods": [
   {
@@ -310,6 +963,18 @@
   {
    "id": "IMPACT_RIGS",
    "result": "disposable deletion-impact rigs D1 (47 tracked experiments files with no conservative live reach at the first census pass), D2 (4 zero-ruling docs stubs), D3 (1 ignored superseded acceptance-control copy); Gate 2 + broad suite per rig"
+  },
+  {
+   "id": "R2_ROUTE_CENSUS",
+   "result": "1589 mention lines / 754 edges over 88 ARCHIVE_PRESERVE candidates; 55 manual adjudications; 5 UNKNOWN_BLOCK mention lines on 4 candidates retained"
+  },
+  {
+   "id": "R2_ANALYZER_PARTICIPATION",
+   "result": "repository test analyzers run read-only on tracked-only worktrees of BASE and BASE-minus-D1; reproduces every D1 changed value"
+  },
+  {
+   "id": "R2_NEGATIVE_CONTROLS",
+   "result": "NC-R2-1..6 PASS after one classifier fix; byte-exact restore proven by tracked manifest"
   }
  ],
  "per_candidate_reference_evidence": {
@@ -20534,6 +21199,3992 @@
     ],
     "location": "HISTORICAL_EVIDENCE"
    }
+  }
+ },
+ "r2_route_census": {
+  "adjudications": {
+   "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md|docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md|23": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "canonical R8.3 law cites the byte-preserved archive body (blob 3f57d5cd) as its provenance",
+    "justification": "DOC_CANONICAL_LAW zone; current ratified law names the exact archive path as its historical source"
+   },
+   "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md|tests/refoundation/test_residual_routing_closeout.py|18": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md|tests/refoundation/test_residual_routing_closeout.py|27": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live docs stub is inert and carries the exact archive pointer",
+    "justification": "INERT map is iterated by test_live_historical_paths_are_inert (reads stub text, requires the archive path string)"
+   },
+   "archive/routing/docs/B-MIGRATION-DIRECTIVE.md|docs/MEMBER-ADD-MUTATION-LAW.md|15": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "canonical AG-CLI-01 law cites the byte-preserved archive body (blob 213206b6) as its provenance",
+    "justification": "DOC_CANONICAL_LAW zone; current ratified law names the exact archive path as its historical source"
+   },
+   "archive/routing/docs/B-MIGRATION-DIRECTIVE.md|tests/refoundation/test_residual_routing_closeout.py|17": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/docs/B-MIGRATION-DIRECTIVE.md|tests/refoundation/test_residual_routing_closeout.py|26": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live docs stub is inert and carries the exact archive pointer",
+    "justification": "INERT map is iterated by test_live_historical_paths_are_inert (reads stub text, requires the archive path string)"
+   },
+   "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md|tests/refoundation/test_residual_routing_closeout.py|14": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md|tests/refoundation/test_residual_routing_closeout.py|24": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live docs stub is inert and carries the exact archive pointer",
+    "justification": "INERT map is iterated by test_live_historical_paths_are_inert (reads stub text, requires the archive path string)"
+   },
+   "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md|tests/refoundation/test_residual_routing_closeout.py|13": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md|tests/refoundation/test_residual_routing_closeout.py|23": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live docs stub is inert and carries the exact archive pointer",
+    "justification": "INERT map is iterated by test_live_historical_paths_are_inert (reads stub text, requires the archive path string)"
+   },
+   "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md|tests/refoundation/test_residual_routing_closeout.py|89": {
+    "class": "SYNTHETIC_NEGATIVE_CONTROL",
+    "guarded_proposition_or_route": "rigged reactivated stub must be red",
+    "justification": "synthetic in-memory rig; archive path is the expected pointer literal only"
+   },
+   "archive/routing/docs/WORK-PACKETS-2026-08-07.md|config/registers/family-sweep-known-debt.json|5": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "Gate-2 family_sweep KNOWN-debt register names the archived body section W6 as its authority",
+    "justification": "tracked config register consumed by Gate 2 W6 cites the archive path as authority"
+   },
+   "archive/routing/docs/WORK-PACKETS-2026-08-07.md|tests/refoundation/test_residual_routing_closeout.py|15": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/docs/WORK-PACKETS-2026-08-07.md|tests/refoundation/test_residual_routing_closeout.py|25": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live docs stub is inert and carries the exact archive pointer",
+    "justification": "INERT map is iterated by test_live_historical_paths_are_inert (reads stub text, requires the archive path string)"
+   },
+   "archive/routing/experiments/foundry_build_reaudit_packet.py|docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md|49": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "descriptive count of the archived historical importer in the current planning router",
+    "justification": "states a fact about topology; directs no operation; the executable edge is the s10 archive_importers pin"
+   },
+   "archive/routing/experiments/foundry_build_reaudit_packet.py|tests/refoundation/test_residual_routing_closeout.py|19": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived routing payload is the exact original git blob (read_bytes + blob sha)",
+    "justification": "ARCHIVED map is iterated by test_archived_payloads_are_exact_original_git_blobs, which reads the body bytes"
+   },
+   "archive/routing/refoundation/ACTIVE-PHASE.yaml|refoundation/ACTIVE-PHASE.yaml|3": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "live tombstone pointer to the archived phase file",
+    "justification": "tracked tombstone `archive:` pointer"
+   },
+   "archive/routing/refoundation/ACTIVE-PHASE.yaml|tests/refoundation/test_worker_operating_contract.py|127": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live tombstone text points at the archived phase file",
+    "justification": "reads the tombstone and requires the archive path"
+   },
+   "archive/routing/refoundation/ACTIVE-PHASE.yaml|tests/refoundation/test_worker_operating_contract.py|164": {
+    "class": "SYNTHETIC_NEGATIVE_CONTROL",
+    "guarded_proposition_or_route": "NC10 reactivated tombstone is red",
+    "justification": "in-memory rig over tombstone text"
+   },
+   "archive/routing/refoundation/ACTIVE-PHASE.yaml|tests/refoundation/test_worker_operating_contract.py|26": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived router bodies exist (ARCHIVED_ROUTING is_file)",
+    "justification": "ARCHIVED_ROUTING tuple asserted is_file at test line 104"
+   },
+   "archive/routing/refoundation/BOOTSTRAP-STATE.yaml|refoundation/BOOTSTRAP-STATE.yaml|3": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "live tombstone pointer to the archived bootstrap state",
+    "justification": "tracked tombstone `archive:` pointer"
+   },
+   "archive/routing/refoundation/BOOTSTRAP-STATE.yaml|tests/refoundation/test_worker_operating_contract.py|128": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "live tombstone text points at the archived bootstrap state",
+    "justification": "reads the tombstone and requires the archive path"
+   },
+   "archive/routing/refoundation/BOOTSTRAP-STATE.yaml|tests/refoundation/test_worker_operating_contract.py|27": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived router bodies exist (ARCHIVED_ROUTING is_file)",
+    "justification": "ARCHIVED_ROUTING tuple asserted is_file at test line 104"
+   },
+   "archive/routing/refoundation/MANAGER-START.md|tests/refoundation/test_worker_operating_contract.py|28": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived router bodies exist (ARCHIVED_ROUTING is_file)",
+    "justification": "ARCHIVED_ROUTING tuple asserted is_file at test line 104"
+   },
+   "archive/routing/refoundation/README.md|tests/refoundation/test_worker_operating_contract.py|29": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived router bodies exist (ARCHIVED_ROUTING is_file)",
+    "justification": "ARCHIVED_ROUTING tuple asserted is_file at test line 104"
+   },
+   "archive/routing/refoundation/ROADMAP.md|tests/refoundation/test_worker_operating_contract.py|30": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "archived router bodies exist (ARCHIVED_ROUTING is_file)",
+    "justification": "ARCHIVED_ROUTING tuple asserted is_file at test line 104"
+   },
+   "experiments/POKE-PUNCH-LIST.md|experiments/tier_engine.py|6692": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "tier_engine emitted report text directs the reader to POKE-PUNCH-LIST.md Entry #5 for the full audit",
+    "justification": "executable output string (report body) routing a reader to the candidate; referrer is B10-blocked differential oracle"
+   },
+   "experiments/foundry_consolidate_run1_apply.py|docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md|237": {
+    "class": "UNKNOWN_BLOCK",
+    "guarded_proposition_or_route": "§4 THE PATH BACK TO AN APPLY: run1_apply --dry-run then --go-sha256",
+    "justification": "pending-decision resume procedure; no tracked record of D-APPLY-1/2 resolution or supersession found"
+   },
+   "experiments/foundry_consolidate_run1_apply.py|tests/refoundation/test_codebook_store.py|1762": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "C8.5V nomination record: run1_apply analyzes to SAFE_NO_FAILURE_CLASS_DELTA and stays SPLIT",
+    "justification": "expected verdict of analyzer over candidate source"
+   },
+   "experiments/foundry_consolidate_run1_enumerate.py|docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md|232": {
+    "class": "UNKNOWN_BLOCK",
+    "guarded_proposition_or_route": "§4 THE PATH BACK TO AN APPLY: regenerate with run1_enumerate after Captain rules D-APPLY-1/2",
+    "justification": "pending-decision resume procedure; no tracked record of D-APPLY-1/2 resolution or supersession found"
+   },
+   "experiments/foundry_corroboration_pass.py|docs/B-MIGRATION-DISCOVERY.md|80": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "B-migration discovery table row",
+    "justification": "descriptive table row of a completed /1->/2 migration discovery"
+   },
+   "experiments/foundry_gate0_scrub.py|docs/RATIFIED-DIRECTIVES-BATCH-4-6.md|391": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "records a retroactive scrub that was run against codebook v0.5",
+    "justification": "past-tense record of an executed one-off"
+   },
+   "experiments/foundry_migrate_codebook_v2.py|tests/refoundation/test_codebook_store.py|350": {
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "guarded_proposition_or_route": "permanent codebook_store message/literals carry no legacy guidance (C8.5P.V C3 negative half)",
+    "justification": "negative leak assertion over src/mtj_foundry/codebook_store; candidate existence does not affect it"
+   },
+   "experiments/foundry_migrate_codebook_v2.py|tests/refoundation/test_codebook_store.py|370": {
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "guarded_proposition_or_route": "permanent codebook_store message/literals carry no legacy guidance (C8.5P.V C3 negative half)",
+    "justification": "negative leak assertion over src/mtj_foundry/codebook_store; candidate existence does not affect it"
+   },
+   "experiments/foundry_migrate_codebook_v2.py|tests/refoundation/test_codebook_store.py|674": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "legacy facade load_codebook carries the exact /1 guidance naming experiments/foundry_migrate_codebook_v2.py (C8.5P.V C3)",
+    "justification": "AST of foundry_codebook.load_codebook must contain the candidate path; archiving the candidate leaves this guard GREEN while the route dangles"
+   },
+   "experiments/foundry_migrate_codebook_v2.py|tests/refoundation/test_codebook_store.py|847": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "guarded_proposition_or_route": "verifier independence: foundry_verify_migration imports no writer module (candidate named as a writer)",
+    "justification": "AST of foundry_verify_migration checked against WRITER_MODULES"
+   },
+   "experiments/foundry_reaudit.py|tests/refoundation/test_codebook_store.py|3137": {
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "guarded_proposition_or_route": "the analyzer module hardcodes no live module name",
+    "justification": "negative assertion over codebook_consumer_analysis source"
+   },
+   "experiments/foundry_w3_census.py|docs/W3-TRIGGER-VOCABULARY-2026-08-07.md|109": {
+    "class": "UNKNOWN_BLOCK",
+    "guarded_proposition_or_route": "W3 partition numbers must be re-measured with the census script before the pending vocabulary ratification",
+    "justification": "doc status: vocabulary half is a DECISION SHEET blocked on Captain; no tracked resolution found"
+   },
+   "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md|experiments/tier_engine.py|6551": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "tier_engine emitted report text cites the memo as the ratification evidence",
+    "justification": "executable output string citing candidate path"
+   },
+   "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md|experiments/tier_engine.py|6599": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "tier_engine emitted report text says `see` the memo",
+    "justification": "executable output string routing reader to candidate path"
+   },
+   "experiments/measure/axis_foundry.py|tests/refoundation/test_layout_delegation.py|4468": {
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "guarded_proposition_or_route": "Path(__file__) ascent arithmetic at depth two",
+    "justification": "path used as a depth fixture for _resolve_spelling; the file is never read"
+   },
+   "experiments/measure/axis_foundry.py|tests/refoundation/test_layout_delegation.py|4588": {
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "guarded_proposition_or_route": "Path(__file__) ascent arithmetic at depth two",
+    "justification": "path used as a depth fixture for _resolve_spelling; the file is never read"
+   },
+   "experiments/measure/clean_recut.py|experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md|11": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/measure/df_distributions.py|experiments/measure/FINDINGS-MEMO.md|13": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/measure/df_distributions.py|experiments/measure/FINDINGS-MEMO.md|224": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/measure/family_tree_evidence.py|docs/FAMILY-TREE-EVIDENCE.md|32": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction pointer for the recorded family-tree evidence numbers",
+    "justification": "evidence document's reproduction instruction; not a pending gate"
+   },
+   "experiments/measure/family_tree_evidence.py|docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md|144": {
+    "class": "UNKNOWN_BLOCK",
+    "guarded_proposition_or_route": "S7 gate for the five populated parent candidates is to run family_tree_evidence.py",
+    "justification": "pending parent-layer ratification route; S7-GATE-NOT-RUNNABLE records a FINDING, no tracked resolution found"
+   },
+   "experiments/measure/family_tree_evidence.py|docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md|89": {
+    "class": "UNKNOWN_BLOCK",
+    "guarded_proposition_or_route": "S7 gate for the five populated parent candidates is to run family_tree_evidence.py",
+    "justification": "pending parent-layer ratification route; S7-GATE-NOT-RUNNABLE records a FINDING, no tracked resolution found"
+   },
+   "experiments/measure/pip_normalization.py|experiments/measure/FINDINGS-MEMO.md|14": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/measure/pip_normalization.py|experiments/measure/FINDINGS-MEMO.md|225": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/measure/pip_normalization.py|experiments/measure/FINDINGS-MEMO.md|8": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "reproduction command in a co-moving measurement memo",
+    "justification": "memo and script share destination archive/research/thesaurus-measurement"
+   },
+   "experiments/serve_viewer.py|docs/REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md|364": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "restated tier-engine-era house rule (restart serve_viewer after engine change)",
+    "justification": "section is explicitly a repetition of house rules; CLAUDE.md is the canonical current contract and carries no such rule"
+   },
+   "experiments/serve_viewer.py|experiments/tier_engine.py|7529": {
+    "class": "HISTORICAL_PROVENANCE",
+    "guarded_proposition_or_route": "INFO line records that a fact was verified via serve_viewer.py",
+    "justification": "descriptive past-tense provenance; directs no operation"
+   },
+   "experiments/serve_viewer.py|experiments/viewer.html|422": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "guarded_proposition_or_route": "viewer.html executable UI error text: `run via serve_viewer.py`",
+    "justification": "executable diagnostic; referrer and target share destination archive/engine (co-move)"
+   },
+   "experiments/viewer.html|experiments/serve_viewer.py|64": {
+    "class": "BEHAVIORAL_CONSUMER",
+    "guarded_proposition_or_route": "serve_viewer serves experiments/viewer.html at GET /",
+    "justification": "path bound and served; co-move within archive/engine"
+   }
+  },
+  "archive_candidate_reach": {
+   "archive_preserve_candidates": 88,
+   "archive_tree": 40,
+   "archive_tree_with_material_edge_outside_co_move_set": 36,
+   "experiments": 48,
+   "experiments_with_current_route_outside_co_move_set": 5,
+   "experiments_with_material_edge_outside_co_move_set_or_analyzer_participation": 46,
+   "material_edge_class_counts": {
+    "BEHAVIORAL_CONSUMER (co-move)": 6,
+    "CURRENT_OPERATOR_OR_LAW_ROUTE": 41,
+    "CURRENT_OPERATOR_OR_LAW_ROUTE (co-move)": 1,
+    "POPULATION_PIN": 36,
+    "SOURCE_INSPECTION_GUARD": 23,
+    "UNKNOWN_BLOCK": 4
+   },
+   "r0_comparison": "R0 recorded routing NO_OPERATOR_SURFACE_FOUND on all 48 experiments ARCHIVE_PRESERVE candidates and no routing field on the 40 archive/** candidates",
+   "with_analyzer_participation": 43,
+   "with_any_material_edge": 78,
+   "with_current_route_outside_co_move_set": 37,
+   "with_material_edge_outside_co_move_set": 76,
+   "with_material_edge_outside_co_move_set_or_analyzer_participation": 82,
+   "with_no_material_edge_and_no_analyzer_participation": [
+    "archive/routing/FINAL-VERIFICATION-2026-09-13.md",
+    "archive/routing/README.md",
+    "archive/routing/RESIDUAL-CLOSEOUT-2026-09-13.md",
+    "archive/routing/RESIDUAL-FINAL-VERIFICATION-2026-09-13.md",
+    "experiments/measure/FINDINGS-MEMO.md",
+    "experiments/viewer.html"
+   ],
+   "with_population_pin": 36,
+   "with_source_inspection_guard": 22,
+   "with_unknown_block_edge": 4
+  },
+  "authority": {
+   "measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "parent_review": "issue:1#issuecomment-5683255432 (V-20260915-S15-R0-R1-STOP-VALIDATED-ADVERSARIAL-AUDIT)",
+   "repair_commit_parent": "7aeb24721d7511f18644afbf46d7dc4ed2fc3088",
+   "selecting_checkpoint": "issue:1#issuecomment-5683296790 (K-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR-ISSUED)",
+   "status": "R0.R2 EVIDENCE REPAIR — acceptance is a separate Manager decision; nothing here authorizes deletion, archive, retirement, .gitignore, runtime, AQ4, merge or successor work",
+   "task": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)"
+  },
+  "candidate_scope": {
+   "archive_preserve_full_adjudication": 88,
+   "coupled_peer_route_scan": "the 38 non-ARCHIVE_PRESERVE experiments/** candidates, current surfaces and executable diagnostics only"
+  },
+  "classifier_defect_found_by_negative_control": "NC-R2-2 first ran RED against the classifier itself: `raise RuntimeError(f\"... run experiments/X.py\")` was not recognized as a diagnostic (regex required `raise(`). Fixed worker-locally; re-running the full base census after the fix changed 0 classifications",
+  "coupled_peer_routes": [
+   {
+    "adjudication": "config comment describing the reverse relation (emit_viewer resolves anchors)",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 2,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "config/thesaurus/anchors.txt",
+    "target": "experiments/emit_viewer.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "# Resolved against data/artifacts/cards.sqlite by emit_viewer.py; blank",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "adjudication": "descriptive count in the planning router",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 49,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md",
+    "target": "experiments/foundry_build_reaudit_packet.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "- **1 archived historical importer** (`archive/routing/experiments/foundry_build_reaudit_packet.py`);",
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "adjudication": "states the superseded old classification",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 92,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md",
+    "target": "experiments/foundry_build_reaudit_packet.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "- the old `BLOCKED_UNKNOWN` classification for `experiments/foundry_build_reaudit_packet.py` is superseded: the live path is a halt-loud tombstone and its original is byte-preserved in archive;",
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "adjudication": "KNOWN EXAMPLE 1: canonical AG-CLI-01 law names `experiments/foundry_codebook.py add-member` as the current legacy command embodiment",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 17,
+    "mechanical_rule": "M-CURRENT-LAW-OR-CONTROL-ROUTE",
+    "referrer": "docs/MEMBER-ADD-MUTATION-LAW.md",
+    "target": "experiments/foundry_codebook.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "The current legacy command embodiment remains `experiments/foundry_codebook.py add-member`. Its semantic merge primitive has a permanent home in `mtj_foundry.codebook`, and its atomic local persistenc",
+    "zone": "DOC_CANONICAL_LAW"
+   },
+   {
+    "adjudication": "frozen /1 producer's refusal halt routes /2 writes to foundry_codebook.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 77,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_reconcile.py",
+    "target": "experiments/foundry_codebook.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "f\"trail, or use experiments/foundry_codebook.py for /2 writes\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "Gate-2 lint row argv executes experiments/foundry_codebook.py lint (mechanical rule mislabelled it synthetic; adjudicated)",
+    "class": "BEHAVIORAL_CONSUMER",
+    "line": 52,
+    "mechanical_rule": "M-SYNTHETIC-FIXTURE",
+    "referrer": "tests/guards/gate2/foundry_gate2.py",
+    "target": "experiments/foundry_codebook.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "(\"lint\",             [f\"{EXP}/foundry_codebook.py\", \"lint\"],",
+    "zone": "CODE_TEST"
+   },
+   {
+    "adjudication": "planning heading",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 42,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md",
+    "target": "experiments/foundry_common.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "### S10 — dissolve `foundry_common` under conservation",
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "adjudication": "planning count",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 48,
+    "mechanical_rule": "M-CURRENT-LAW-OR-CONTROL-ROUTE",
+    "referrer": "docs/architecture/S10-S16-CURRENT-PLAN-2026-09-13.md",
+    "target": "experiments/foundry_common.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "- **86 live Python importers** of `foundry_common`;",
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "adjudication": "standing repository law: reach the CR only through experiments/foundry_cr.py (N03)",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 125,
+    "mechanical_rule": "M-CURRENT-LAW-OR-CONTROL-ROUTE",
+    "referrer": "CLAUDE.md",
+    "target": "experiments/foundry_cr.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "through `experiments/foundry_cr.py`.",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "adjudication": "archive candidate's halt routes regeneration to foundry_cr_checks.py (names stale docs/cr-checks.json)",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 84,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_reach_census.py",
+    "target": "experiments/foundry_cr_checks.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "f\"with experiments/foundry_cr_checks.py.\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "shell-to-shell halt: run experiments/foundry_cr_checks.py first",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 187,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_shape_extractor.py",
+    "target": "experiments/foundry_cr_checks.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "fc.halt(f\"{path} not found — run experiments/foundry_cr_checks.py first\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "ratified batch's arithmetic provenance note",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 6,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "config/semantic/det-patterns-v2.json",
+    "target": "experiments/foundry_det_patterns_probe.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "\"arithmetic\": \"The walk's own prose claimed '41/306 DET-able' but its own sec.2.4 table (and the committed foundry_det_patterns_probe.py PATTERNS list, verified against a pre-session backup) only ever",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "adjudication": "ratified pattern constant names its implementing module identity; consumers dispatch on lattice.stems only (codebook_lattice, foundry_det_pass); shell retirement would leave a stale identity inside a ratified constant",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 557,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "config/semantic/det-patterns-v2.json",
+    "target": "experiments/foundry_object_lattice.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "\"module\": \"foundry_object_lattice\",",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "adjudication": "report 'why' text naming where a number was attributed",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 830,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_consolidate_run1_apply.py",
+    "target": "experiments/foundry_r5_attribution.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "\"was itself a moving number — foundry_r5_attribution.py \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "KNOWN EXAMPLE 2 (second half): /1 halt says use the frozen /1 producer foundry_reconcile.py if the legacy shape was meant",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 211,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_codebook.py",
+    "target": "experiments/foundry_reconcile.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "f\"(foundry_reconcile.py) if you genuinely meant the legacy shape\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "grammar note naming the measuring tool",
+    "class": "HISTORICAL_PROVENANCE",
+    "line": 348,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "config/semantic/grammars.json",
+    "target": "experiments/foundry_shape_extractor.py",
+    "target_disposition": "COMPATIBILITY_SHELL_KEEP",
+    "text": "\"note\": \"These are DELIVERY vocabulary nodes measured corpus-wide by foundry_shape_extractor.py, NOT codebook axes -- which is why instantiated_members is empty. TRIAGE-BATCH-1.md sec.1c is binding: \\",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "adjudication": "archive candidate's NEXT instruction: python3 experiments/foundry_wire_experiment.py --json",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "line": 1053,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_consolidate_run1_apply.py",
+    "target": "experiments/foundry_wire_experiment.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "\"something.\\n      Then python3 experiments/foundry_wire_experiment.py --json\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "token 'snapshot' names the R2 snapshot, not snapshot.py; the line is an rclone restore route for card-tags input",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "line": 30,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/invert_tags.py",
+    "target": "experiments/snapshot.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "halt(f\"{path} not found — rclone copy it from the snapshot first\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "adjudication": "token 'snapshot' names the R2 snapshot; the line routes to pipeline/fetch.py or rclone",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "line": 1230,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/tier_engine.py",
+    "target": "experiments/snapshot.py",
+    "target_disposition": "BLOCKED_LIVE_CONSUMER",
+    "text": "halt(f\"{path} not found — run pipeline/fetch.py or rclone copy the snapshot first\")",
+    "zone": "CODE_LEGACY"
+   }
+  ],
+  "known_examples": {
+   "1_member_add_law_to_foundry_codebook_add_member": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "confirmed": true,
+    "consequence": "a current ratified law routes to the legacy shell; COMPATIBILITY_SHELL_KEEP stands and N03 now carries it",
+    "edge": "docs/MEMBER-ADD-MUTATION-LAW.md:17 -> experiments/foundry_codebook.py"
+   },
+   "2_foundry_codebook_v1_diagnostic": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "confirmed": true,
+    "consequence": "archiving migrate_codebook_v2 without retargeting would leave the guard GREEN while the live halt points at a moved path: a silent truth change. N03 added to the candidate",
+    "edge": "experiments/foundry_codebook.py:209-211 -> experiments/foundry_migrate_codebook_v2.py (ARCHIVE_PRESERVE) and experiments/foundry_reconcile.py (BLOCKED_LIVE_CONSUMER, frozen /1)",
+    "guard": "tests/refoundation/test_codebook_store.py:674 test_the_v1_guidance_text_lives_HERE_and_only_here pins the candidate path inside the facade (SOURCE_INSPECTION_GUARD)"
+   },
+   "3_tier_engine_missing_tags_guidance": {
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "confirmed": true,
+    "consequence": "invert_tags produces tier_engine's card-tags input; the route comes from the B10 differential-oracle peer; N03 added (B10 already present)",
+    "edge": "experiments/tier_engine.py:1249 (and docstring :78) -> experiments/invert_tags.py"
+   },
+   "4_layout_delegation_reads_run1_apply_source": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "confirmed": true,
+    "edge": "tests/refoundation/test_layout_delegation.py:4839,5146,5484 -> experiments/foundry_consolidate_run1_apply.py",
+    "propositions": "provider aliases are derived from the candidate's imports (fcb); C8.5C: the candidate consumes foundry_common's owned value, not a peer root; NC4 restoring a peer consumer in the candidate's source is caught"
+   },
+   "5_codebook_store_legacy_subject_analysis": {
+    "class": "SOURCE_INSPECTION_GUARD",
+    "confirmed": true,
+    "edge": "tests/refoundation/test_codebook_store.py:1728 (REAUDIT_REL), 1733/1762 (RUN1_APPLY_REL), 1750-1756 composed C8_5V_FIFTEEN -> foundry_reaudit.py, foundry_consolidate_run1_apply.py and six more ARCHIVE_PRESERVE candidates",
+    "note": "six of the fifteen names are composed at run time (f'experiments/foundry_{name}.py'); a path/token scan misses them — R2 adds a composed-name fragment detector",
+    "propositions": "TestTheNominatedCandidateRecord: foundry_reaudit has exactly one read site owned by main, alias fcb, no in-repository caller, no catching handler; run1_apply is SAFE_NO_FAILURE_CLASS_DELTA and SPLIT; each C8.5V member stays SPLIT with its accepted SAFE verdict"
+   }
+  },
+  "limitations": [
+   "name/fragment-based: a dependency that never names the candidate is invisible to it; R2 therefore adds analyzer participation, which covers only the analyzers of the D1-affected guards (codebook_consumer_analysis, layout_census, s10 caller census, bootstrap families) — other walkers (test_det_batch_retirement, foundry_reachability, test_s11/s12/s14 ls-files census, test_ratchet_baseline_succession) were not attributed per member",
+   "unmarked dated records were adjudicated by content; four pending-decision routes (D-APPLY resume, W3 vocabulary re-measure, parent-layer S7 gate) could not be resolved from tracked state and remain UNKNOWN_BLOCK",
+   "coupled peers (non-ARCHIVE_PRESERVE experiments) were scanned for current-surface and executable routes only; their dispositions already block retirement"
+  ],
+  "material_mentions": [
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "BASENAME"
+    ],
+    "line": 42,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_det_batch_retirement.py",
+    "text": "V1_NAME = \"det-patterns-v1.json\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 23,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md",
+    "text": "The historical source packet is preserved byte-for-byte at `archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md`, original Git blob `3f57d5cd9909aed5e8d9de6a8fbfa9c096f0ab44`.",
+    "zone": "DOC_CANONICAL_LAW"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "text": "Historical body: `archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md` (original blob `3f57d5cd9909aed5e8d9de6a8fbfa9c096f0ab44`, preserved byte-for-byte).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 23,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_build_reaudit_packet.py",
+    "text": "\"historical packet at archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md. \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 18,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md\": \"3f57d5cd9909aed5e8d9de6a8fbfa9c096f0ab44\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 27,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"docs/B-CONSOLIDATION-REAUDIT-PACKET.md\": \"archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/B-MIGRATION-DIRECTIVE.md",
+    "text": "Historical body: `archive/routing/docs/B-MIGRATION-DIRECTIVE.md` (original blob `213206b6560d9f097ae86af1673b4630a1c1a64a`, preserved byte-for-byte).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 15,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "docs/MEMBER-ADD-MUTATION-LAW.md",
+    "text": "The historical source body is preserved byte-for-byte at `archive/routing/docs/B-MIGRATION-DIRECTIVE.md`, original Git blob `213206b6560d9f097ae86af1673b4630a1c1a64a`.",
+    "zone": "DOC_CANONICAL_LAW"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 17,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/docs/B-MIGRATION-DIRECTIVE.md\": \"213206b6560d9f097ae86af1673b4630a1c1a64a\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 26,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"docs/B-MIGRATION-DIRECTIVE.md\": \"archive/routing/docs/B-MIGRATION-DIRECTIVE.md\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "text": "Historical body: `archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "text": "Historical body: `archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "text": "Historical body: `archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "text": "Historical body: `archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "text": "Historical body: `archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "text": "Historical body: `archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/PICK-UP-HERE.md",
+    "text": "Historical body: `archive/routing/docs/PICK-UP-HERE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-01.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-01.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-EVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-02-EVE.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-02-EVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-02.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-02.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-EVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-03-EVE.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-03-EVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-PM.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-03-PM.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-03-PM.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-03.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-03.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-04.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-04.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-05.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-05.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-06.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-06.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-07.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-07.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-08.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-08.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-08.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-HANDOFF-2026-08-09.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-HANDOFF-2026-08-09.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/SESSION-START-PROCEDURE.md",
+    "text": "Historical body: `archive/routing/docs/SESSION-START-PROCEDURE.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/T3-AXIS-FOUNDRY-v3.md",
+    "text": "Historical body: `archive/routing/docs/T3-AXIS-FOUNDRY-v3.md` (original blob `2b89ea43fa371945ee9f8b487758d4dddb2d60cc`, preserved byte-for-byte).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 14,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/docs/T3-AXIS-FOUNDRY-v3.md\": \"2b89ea43fa371945ee9f8b487758d4dddb2d60cc\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 24,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"docs/T3-AXIS-FOUNDRY-v3.md\": \"archive/routing/docs/T3-AXIS-FOUNDRY-v3.md\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/T3-BUILDOUT-PLAYBOOK.md",
+    "text": "Historical body: `archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md` (original blob `d4cffd89edddc15deb9a13c875365c4e019c492b`, preserved byte-for-byte).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 13,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md\": \"d4cffd89edddc15deb9a13c875365c4e019c492b\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 23,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"docs/T3-BUILDOUT-PLAYBOOK.md\": \"archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "text": "Historical body: `archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP5-HANDOFF.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/T3-BUILDOUT-STEP5-HANDOFF.md",
+    "text": "Historical body: `archive/routing/docs/T3-BUILDOUT-STEP5-HANDOFF.md` (preserved unchanged).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "config/registers/family-sweep-known-debt.json",
+    "text": "\"authority\": \"archive/routing/docs/WORK-PACKETS-2026-08-07.md section W6 (the byte-exact historical body; live docs/WORK-PACKETS-2026-08-07.md is now an inert compatibility pointer), which lists these",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 5,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-STUB-POINTER-TO-ARCHIVE-BODY",
+    "referrer": "docs/WORK-PACKETS-2026-08-07.md",
+    "text": "Historical body: `archive/routing/docs/WORK-PACKETS-2026-08-07.md` (original blob `e1bab565d6da493016d65fdef298eb4412f96e4a`, preserved byte-for-byte).",
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 15,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/docs/WORK-PACKETS-2026-08-07.md\": \"e1bab565d6da493016d65fdef298eb4412f96e4a\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "ORIGINAL_PATH"
+    ],
+    "line": 25,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"docs/WORK-PACKETS-2026-08-07.md\": \"archive/routing/docs/WORK-PACKETS-2026-08-07.md\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 22,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_build_reaudit_packet.py",
+    "text": "\"archive/routing/experiments/foundry_build_reaudit_packet.py and the \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 3,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"archive/routing/experiments/foundry_build_reaudit_packet.py\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 19,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_residual_routing_closeout.py",
+    "text": "\"archive/routing/experiments/foundry_build_reaudit_packet.py\": \"3a1fd7019c8c4d9f37054f5f1fc91e2b13bc41d0\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 3,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "refoundation/ACTIVE-PHASE.yaml",
+    "text": "archive: archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 26,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "REPO_ROOT / 'archive/routing/refoundation/ACTIVE-PHASE.yaml',",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 127,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "self.assertEqual(tombstone_problems(ACTIVE_TOMBSTONE.read_text(), 'archive/routing/refoundation/ACTIVE-PHASE.yaml'),[])",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 3,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CURRENT-SURFACE-MENTION-WITHOUT-ROUTE-VERB",
+    "referrer": "refoundation/BOOTSTRAP-STATE.yaml",
+    "text": "archive: archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 27,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "REPO_ROOT / 'archive/routing/refoundation/BOOTSTRAP-STATE.yaml',",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 128,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "self.assertEqual(tombstone_problems(BOOTSTRAP_TOMBSTONE.read_text(), 'archive/routing/refoundation/BOOTSTRAP-STATE.yaml'),[])",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/MANAGER-START.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 28,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "REPO_ROOT / 'archive/routing/refoundation/MANAGER-START.md',",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/README.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 29,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "REPO_ROOT / 'archive/routing/refoundation/README.md',",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ROADMAP.md",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 30,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_worker_operating_contract.py",
+    "text": "REPO_ROOT / 'archive/routing/refoundation/ROADMAP.md',",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/POKE-PUNCH-LIST.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "BASENAME"
+    ],
+    "line": 6692,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "experiments/tier_engine.py",
+    "text": "f\"POKE-PUNCH-LIST.md Entry #5 for the full audit, including a corrected re-measurement that \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch1_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 38,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch1_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch2_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 45,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch2_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch3_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 52,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch3_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch4_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 59,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch4_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch5_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 64,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch5_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch6_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 71,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch6_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch7_decisions.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 80,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_adapt_batch7_decisions.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_any_damage_split.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 89,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_any_damage_split.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_any_damage_split.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1752,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"any_damage_split\", \"authority\", \"axis_merge_pointer_correction\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch2.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 99,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch2.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch3.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 106,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch3.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch4.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 112,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch4.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch5.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 119,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch5.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch6.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 126,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch6.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch7.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 132,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_assemble_batch7.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_axis_merge_pointer_correction.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 144,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_axis_merge_pointer_correction.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_axis_merge_pointer_correction.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1752,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"any_damage_split\", \"authority\", \"axis_merge_pointer_correction\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_axis_walk.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 147,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_axis_walk.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_batch7_pay_life_scrub.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 152,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_batch7_pay_life_scrub.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 24,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-IMPORT-OR-DYNAMIC-LOAD",
+    "referrer": "experiments/foundry_batch8_canon_analysis.py",
+    "text": "import foundry_batch8_ab as b8  # noqa: E402",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 21,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-IMPORT-OR-DYNAMIC-LOAD",
+    "referrer": "experiments/foundry_batch8_diff.py",
+    "text": "import foundry_batch8_ab as b8  # noqa: E402",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 54,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_batch8_diff.py",
+    "text": "fc.halt(f\"{path} not found -- run `foundry_batch8_ab.py fetch-results` first\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 159,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_batch8_ab.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_canon_analysis.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 164,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_batch8_canon_analysis.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 23,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-IMPORT-OR-DYNAMIC-LOAD",
+    "referrer": "experiments/foundry_batch8_canon_analysis.py",
+    "text": "import foundry_batch8_diff as diff  # noqa: E402",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 167,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_batch8_diff.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_blanket_risk.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 170,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_blanket_risk.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 31,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-IMPORT-OR-DYNAMIC-LOAD",
+    "referrer": "experiments/foundry_cdr09_walk.py",
+    "text": "import foundry_cdr09_derive as derive  # noqa: E402",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 145,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_cdr09_walk.py",
+    "text": "fc.halt(f\"{slug}: sense undecidable — walk cannot proceed (see foundry_cdr09_derive.py)\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 175,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_cdr09_derive.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1753,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"cdr09_derive\", \"cdr09_walk\", \"consolidate_run1_apply\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_walk.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 179,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_cdr09_walk.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_walk.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1753,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"cdr09_derive\", \"cdr09_walk\", \"consolidate_run1_apply\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "UNKNOWN_BLOCK",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 237,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-UNMARKED-RECORD-DESCRIPTIVE",
+    "referrer": "docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md",
+    "text": "5. `foundry_consolidate_run1_apply.py --dry-run` — full verifier, zero",
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 200,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_consolidate_run1_apply.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 1733,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "RUN1_APPLY_REL = \"experiments/foundry_consolidate_run1_apply.py\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1753,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"cdr09_derive\", \"cdr09_walk\", \"consolidate_run1_apply\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 1762,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "C8_5V_EXPECTED[\"experiments/foundry_consolidate_run1_apply.py\"] = \\",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 4839,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_layout_delegation.py",
+    "text": "consolidate = (EXPERIMENTS / \"foundry_consolidate_run1_apply.py\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 5146,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_layout_delegation.py",
+    "text": "CONSOLIDATE_APPLY = EXPERIMENTS / \"foundry_consolidate_run1_apply.py\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 5484,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_layout_delegation.py",
+    "text": "rel = Path(\"experiments/foundry_consolidate_run1_apply.py\")",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "UNKNOWN_BLOCK",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 232,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-IMPERATIVE-IN-UNMARKED-RECORD",
+    "referrer": "docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md",
+    "text": "3. Regenerate: `python3 experiments/foundry_consolidate_run1_enumerate.py`.",
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 213,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_consolidate_run1_enumerate.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1754,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"consolidate_run1_classify\", \"consolidate_run1_enumerate\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_corpus_pass_run1.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 219,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_corpus_pass_run1.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_corroboration_pass.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 225,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_corroboration_pass.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 275,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_gate0_scrub.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1755,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"definition_drift\", \"det_pass\", \"family_sweep\", \"gate0_scrub\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_locality_backfill.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 295,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_locality_backfill.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_locality_backfill.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1756,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"locality_backfill\", \"membership_move\", \"reaudit\"]))",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 210,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/foundry_codebook.py",
+    "text": "f\"— run experiments/foundry_migrate_codebook_v2.py, or use the frozen /1 producer \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 304,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_migrate_codebook_v2.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 674,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "for required in (\"experiments/foundry_migrate_codebook_v2.py\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 847,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "WRITER_MODULES = (\"foundry_codebook\", \"foundry_migrate_codebook_v2\",",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reach_census.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 334,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_reach_census.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 338,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_reaudit.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 1728,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-TEST-READS-OR-ANALYZES-CANDIDATE",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "REAUDIT_REL = \"experiments/foundry_reaudit.py\"",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "SOURCE_INSPECTION_GUARD",
+    "kinds": [
+     "COMPOSED_NAME_FRAGMENT"
+    ],
+    "line": 1756,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-COMPOSED-NAME-FRAGMENT",
+    "referrer": "tests/refoundation/test_codebook_store.py",
+    "text": "\"locality_backfill\", \"membership_move\", \"reaudit\"]))",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_selfother_scope.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 355,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_selfother_scope.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_w3_census.py",
+    "class": "UNKNOWN_BLOCK",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 109,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-IMPERATIVE-IN-UNMARKED-RECORD",
+    "referrer": "docs/W3-TRIGGER-VOCABULARY-2026-08-07.md",
+    "text": "`python3 experiments/foundry_w3_census.py` · **re-measure, do not read these",
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_w3_census.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 401,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/foundry_w3_census.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/invert_tags.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 1249,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-EXECUTABLE-DIAGNOSTIC-ROUTE",
+    "referrer": "experiments/tier_engine.py",
+    "text": "halt(f\"{path} not found — run experiments/invert_tags.py first\")",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 6551,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "experiments/tier_engine.py",
+    "text": "f\"(experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md):** closes F1 (Tier 1 had NO DF gate at \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 6599,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "experiments/tier_engine.py",
+    "text": "f\"experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md). Basandra, Battle Seraph vs Myrel, \"",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/axis_foundry.py",
+    "class": "POPULATION_PIN",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 414,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-SIDECAR-JSON-PIN",
+    "referrer": "tests/refoundation/s10_foundry_common_callers.json",
+    "text": "\"experiments/measure/axis_foundry.py\": [",
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "UNKNOWN_BLOCK",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 89,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-IMPERATIVE-IN-UNMARKED-RECORD",
+    "referrer": "docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md",
+    "text": "is `experiments/measure/family_tree_evidence.py` (present, last run 2026-07-17).",
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "UNKNOWN_BLOCK",
+    "kinds": [
+     "PATH",
+     "MODULE_TOKEN"
+    ],
+    "line": 144,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-IMPERATIVE-IN-UNMARKED-RECORD",
+    "referrer": "docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md",
+    "text": "Run `experiments/measure/family_tree_evidence.py` against the five populated",
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "MODULE_TOKEN"
+    ],
+    "line": 45,
+    "manually_adjudicated": false,
+    "mechanical_rule": "M-IMPORT-OR-DYNAMIC-LOAD",
+    "referrer": "experiments/measure/axis_foundry.py",
+    "text": "import family_tree_evidence as fte  # noqa: E402",
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/serve_viewer.py",
+    "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+    "kinds": [
+     "BASENAME",
+     "MODULE_TOKEN"
+    ],
+    "line": 422,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-LEGACY-DOC-ROUTE-SHAPE",
+    "referrer": "experiments/viewer.html",
+    "text": "box.innerHTML = '<div class=\"no-results\">search unavailable (' + err.message + ') — run via serve_viewer.py</div>';",
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/viewer.html",
+    "class": "BEHAVIORAL_CONSUMER",
+    "kinds": [
+     "PATH"
+    ],
+    "line": 64,
+    "manually_adjudicated": true,
+    "mechanical_rule": "M-CODE-LITERAL-UNDECIDED",
+    "referrer": "experiments/serve_viewer.py",
+    "text": "VIEWER_HTML = Path(\"experiments/viewer.html\")",
+    "zone": "CODE_LEGACY"
+   }
+  ],
+  "measured_tree": "tracked blobs of 49fcb292e0668b70901118c52dedc0ffd00f389f read via git ls-tree/cat-file (556 files; 86 experiments/**, 40 archive/**); the 12 R0 evidence files are absent at this base and were never scanned",
+  "mechanical_rules": {
+   "M-CODE-COMMENT-OR-DOCSTRING": "comment/docstring -> HISTORICAL_PROVENANCE",
+   "M-COMPOSED-NAME-FRAGMENT": "string equal to a candidate stem minus 'foundry_' inside a file that composes 'foundry_{...}' -> SOURCE_INSPECTION_GUARD in tests",
+   "M-CURRENT-LAW-OR-CONTROL-ROUTE": "canonical law / current router / control surface naming the candidate with a route verb -> CURRENT_OPERATOR_OR_LAW_ROUTE",
+   "M-EXECUTABLE-DIAGNOSTIC-ROUTE": "diagnostic call (halt/raise X(/print/SystemExit/...) or emitted message constant with a route verb -> CURRENT_OPERATOR_OR_LAW_ROUTE",
+   "M-HISTORICAL-ZONE": "HISTORICAL zone -> HISTORICAL_PROVENANCE, even when imperative (NC-R2-5)",
+   "M-IMPERATIVE-IN-UNMARKED-RECORD": "imperative mention in an unmarked record -> no mechanical decision (manual adjudication or UNKNOWN_BLOCK)",
+   "M-IMPORT-OR-DYNAMIC-LOAD": "python import or load shape -> BEHAVIORAL_CONSUMER",
+   "M-ORIGINAL-PATH-NAMES-LIVE-STUB-OR-TOMBSTONE": "archive/routing body mentioned without the archive/ prefix while the original path is still a tracked stub/tombstone -> FALSE_POSITIVE_OR_IRRELEVANT for the body",
+   "M-SIDECAR-JSON-PIN": "JSON sidecar under tests/ naming the candidate -> POPULATION_PIN",
+   "M-STUB-POINTER-TO-ARCHIVE-BODY": "live stub header pointer -> CURRENT_OPERATOR_OR_LAW_ROUTE",
+   "M-TEST-READS-OR-ANALYZES-CANDIDATE": "test statement or bound name reaching read_text/open/getsource/analyze_consumer/is_file/blob -> SOURCE_INSPECTION_GUARD",
+   "M-UNMARKED-RECORD-DESCRIPTIVE": "descriptive mention in an unmarked record -> HISTORICAL_PROVENANCE",
+   "UNDECIDED": "any other material-zone mention without an adjudication -> UNKNOWN_BLOCK"
+  },
+  "nonmaterial_mention_counts": [
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/config/det-patterns-v1.json",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/FINAL-VERIFICATION-2026-09-13.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/README.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 4,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/README.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 11,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 38,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 11,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 9,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 14,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 8,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 8,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 7,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 11,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 4,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 10,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 9,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 17,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/PICK-UP-HERE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 21,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 36,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-EVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 12,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-EVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 8,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 22,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-02.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-EVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-EVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-PM.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-PM.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 6,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-03.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 5,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-08.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 4,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-08.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 8,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 5,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 5,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 33,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 12,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 9,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 8,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "DOC_STUB"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 9,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "class": "SYNTHETIC_NEGATIVE_CONTROL",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP5-HANDOFF.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/T3-BUILDOUT-STEP5-HANDOFF.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 5,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 5,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 4,
+    "zone": "GENERATED_REGISTRY"
+   },
+   {
+    "candidate": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 7,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "DOC_NONEXECUTING"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_CURRENT_ROUTER"
+   },
+   {
+    "candidate": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 13,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "class": "SYNTHETIC_NEGATIVE_CONTROL",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 3,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CURRENT_CONTROL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/MANAGER-START.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/README.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "archive/routing/refoundation/ROADMAP.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/POKE-PUNCH-LIST.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/POKE-PUNCH-LIST.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/POKE-PUNCH-LIST.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/POKE-PUNCH-LIST.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch1_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch1_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch2_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch2_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch3_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch3_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch4_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch4_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 13,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch5_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch5_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch6_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch6_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch6_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 26,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch7_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch7_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_adapt_batch7_decisions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 26,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_any_damage_split.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_any_damage_split.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 7,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch3.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch3.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch4.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch4.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch4.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 20,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch5.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch5.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch6.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch6.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch7.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_assemble_batch7.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_axis_merge_pointer_correction.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_PERMANENT"
+   },
+   {
+    "candidate": "experiments/foundry_axis_merge_pointer_correction.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 9,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_axis_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_axis_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "experiments/foundry_axis_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_axis_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 21,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_batch7_pay_life_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_batch7_pay_life_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_batch7_pay_life_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 20,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_ab.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 16,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_canon_analysis.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_canon_analysis.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 11,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_PERMANENT"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_batch8_diff.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 10,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_blanket_risk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 18,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_derive.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 11,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_cdr09_walk.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 8,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_apply.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 20,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_consolidate_run1_enumerate.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 17,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_corpus_pass_run1.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_corpus_pass_run1.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 19,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_corroboration_pass.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "experiments/foundry_corroboration_pass.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_corroboration_pass.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 8,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_PERMANENT"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_gate0_scrub.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 26,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_locality_backfill.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_locality_backfill.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 21,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_PERMANENT"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_migrate_codebook_v2.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 37,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_reach_census.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_reach_census.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 14,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 1,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 9,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_reaudit.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 20,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_selfother_scope.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_selfother_scope.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 13,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_synonym_collision.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_synonym_collision.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/foundry_w3_census.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/foundry_w3_census.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 15,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/invert_tags.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/invert_tags.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/invert_tags.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/invert_tags.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/measure/FINDINGS-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/FINDINGS-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/FINDINGS-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CONSERVATION_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/axis_foundry.py",
+    "class": "FALSE_POSITIVE_OR_IRRELEVANT",
+    "lines": 2,
+    "zone": "CODE_TEST"
+   },
+   {
+    "candidate": "experiments/measure/axis_foundry.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/axis_foundry.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 18,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/clean_recut.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/clean_recut.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/measure/df_distributions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/df_distributions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/df_distributions.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 5,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_INERT_HANDOFF"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 7,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/measure/family_tree_evidence.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/phase3_rebalance_shapes.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/phase3_rebalance_shapes.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/measure/pip_normalization.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/measure/pip_normalization.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/serve_viewer.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/serve_viewer.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/serve_viewer.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 1,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/serve_viewer.py",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 4,
+    "zone": "LEGACY_DOC"
+   },
+   {
+    "candidate": "experiments/viewer.html",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 3,
+    "zone": "CODE_LEGACY"
+   },
+   {
+    "candidate": "experiments/viewer.html",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "DOC_RECORD"
+   },
+   {
+    "candidate": "experiments/viewer.html",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 2,
+    "zone": "HISTORICAL"
+   },
+   {
+    "candidate": "experiments/viewer.html",
+    "class": "HISTORICAL_PROVENANCE",
+    "lines": 6,
+    "zone": "LEGACY_DOC"
+   }
+  ],
+  "roots": [
+   "Python import / from-import (AST)",
+   "dynamic/module-string loads and subprocess argv (statement-level LOAD shapes incl. load_legacy)",
+   "executable halt/raise/print/SystemExit diagnostics, including module-level message constants emitted by a diagnostic call",
+   ".claude/commands/**, .github/workflows/**, CLAUDE.md, README.md, pyproject.toml, refoundation/decisions/**, config/**, live tombstones",
+   "canonical extracted law (header 'canonical law extraction') and the current planning router",
+   "docs stubs' 'Historical body:' pointers",
+   "tests/guards that read or analyze candidate source or bytes",
+   "composed-name fragments (f'experiments/foundry_{name}.py')",
+   "population walkers/sidecars and the repository's own analyzers (analyzer participation, name-free)"
+  ],
+  "totals": {
+   "edge_class_counts": {
+    "BEHAVIORAL_CONSUMER": 6,
+    "CURRENT_OPERATOR_OR_LAW_ROUTE": 42,
+    "FALSE_POSITIVE_OR_IRRELEVANT": 112,
+    "HISTORICAL_PROVENANCE": 531,
+    "POPULATION_PIN": 36,
+    "SOURCE_INSPECTION_GUARD": 23,
+    "UNKNOWN_BLOCK": 4
+   },
+   "edges": 754,
+   "manual_adjudications": 55,
+   "mention_class_counts": {
+    "BEHAVIORAL_CONSUMER": 6,
+    "CURRENT_OPERATOR_OR_LAW_ROUTE": 44,
+    "FALSE_POSITIVE_OR_IRRELEVANT": 355,
+    "HISTORICAL_PROVENANCE": 1105,
+    "POPULATION_PIN": 36,
+    "SOURCE_INSPECTION_GUARD": 36,
+    "SYNTHETIC_NEGATIVE_CONTROL": 2,
+    "UNKNOWN_BLOCK": 5
+   },
+   "mention_lines": 1589,
+   "unadjudicated_unknown_after_review": 0,
+   "unknown_block_edges_retained": [
+    "experiments/foundry_consolidate_run1_apply.py <- docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md",
+    "experiments/foundry_consolidate_run1_enumerate.py <- docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md",
+    "experiments/foundry_w3_census.py <- docs/W3-TRIGGER-VOCABULARY-2026-08-07.md",
+    "experiments/measure/family_tree_evidence.py <- docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md"
+   ]
+  },
+  "zones": {
+   "CONSERVATION_RECORD": "refoundation/conservation/** (frozen records; test_output_census checks internal shape only)",
+   "DOC_CANONICAL_LAW": "docs with 'canonical law extraction' header",
+   "DOC_CURRENT_ROUTER": "docs with 'CURRENT PLANNING ROUTER' header",
+   "DOC_INERT_HANDOFF": "docs declaring their old instructions inert",
+   "DOC_NONEXECUTING": "PARKED/NON-EXECUTING or NOT AUTHORIZED drafts",
+   "DOC_RECORD": "every other docs/*.md (dated rulings, audits, packets)",
+   "DOC_STUB": "docs with 'Historical body: `archive/routing/...`' header",
+   "GENERATED_REGISTRY": "docs/RATIFIED-RULINGS-REGISTRY.md",
+   "HISTORICAL": "archive/**, benchmarks/**, refoundation/preservation/**, docs/architecture/preflight/**, docs/archive/**"
   }
  },
  "reachability": {

@@ -6,6 +6,7 @@
   "registry population -6 docs / -25 refs"
  ],
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -730,6 +731,1788 @@
  "no_history_rewrite": "Objective-4 files are preserved byte-identical; this delta explains, it does not relabel them.",
  "old_evidence_commit_lineage": "origin/preflight/objective4-s15-deletion-readiness-2026-09-12 (transplanted to the accepted lineage by 603153d)",
  "old_measured_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+ "r2_repair_delta": {
+  "authority": {
+   "measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "parent_review": "issue:1#issuecomment-5683255432 (V-20260915-S15-R0-R1-STOP-VALIDATED-ADVERSARIAL-AUDIT)",
+   "repair_commit_parent": "7aeb24721d7511f18644afbf46d7dc4ed2fc3088",
+   "selecting_checkpoint": "issue:1#issuecomment-5683296790 (K-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR-ISSUED)",
+   "status": "R0.R2 EVIDENCE REPAIR — acceptance is a separate Manager decision; nothing here authorizes deletion, archive, retirement, .gitignore, runtime, AQ4, merge or successor work",
+   "task": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)"
+  },
+  "blocker_changes": [
+   {
+    "change": "status unchanged CLEARED; stops being the sole link of 158 unknown/historical-only ignored rows",
+    "id": "B06"
+   },
+   {
+    "change": "status unchanged; now linked from 158 more ignored rows and 2 runtime sets",
+    "id": "B07"
+   },
+   {
+    "change": "evidence re-derived (clean counts, restore boundaries); clears_when made identity-precise; status unchanged STILL_BLOCKED",
+    "id": "B11"
+   },
+   {
+    "change": "evidence re-derived with verbose + isolated execution; status unchanged NEW_BLOCKED",
+    "id": "N01"
+   },
+   {
+    "change": "clears_when rewritten to guarded-proposition conservation (was 'authorized, mechanical guard retargeting'); evidence re-derived; status unchanged NEW_BLOCKED",
+    "id": "N02"
+   },
+   {
+    "change": "scope widened from two routes to every current law/operator route found by the R2 census; status unchanged DECISION_REQUIRED",
+    "id": "N03"
+   },
+   {
+    "change": "evidence partition made exact; now actually linked from the 169 recovery rows; status unchanged DECISION_REQUIRED",
+    "id": "N08"
+   },
+   {
+    "change": "status unchanged CLEARED (timing-only); explicit non-acceptance note added",
+    "id": "B13"
+   },
+   {
+    "change": "NEW (DECISION_REQUIRED): 5 UNKNOWN_BLOCK route edges on 4 ARCHIVE_PRESERVE candidates",
+    "id": "N09"
+   }
+  ],
+  "candidate_prerequisite_blocker_routing_changes": [
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/config/det-patterns-v1.json",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_det_batch_retirement.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/FINAL-VERIFICATION-2026-09-13.md",
+    "prerequisites_new_count": 2,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/README.md",
+    "prerequisites_new_count": 2,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/RESIDUAL-CLOSEOUT-2026-09-13.md",
+    "prerequisites_new_count": 2,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/RESIDUAL-FINAL-VERIFICATION-2026-09-13.md",
+    "prerequisites_new_count": 2,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+    "prerequisites_new_count": 6,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md:23, docs/B-CONSOLIDATION-REAUDIT-PACKET.md:5, experiments/foundry_build_reaudit_packet.py:23",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/B-MIGRATION-DIRECTIVE.md:5, docs/MEMBER-ADD-MUTATION-LAW.md:15",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/CONSOLIDATION-RUN1-DIRECTIVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/DET-PATTERNS-RUN2-DIRECTIVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/MASTER-HANDOFF-ADDENDUM-2.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/MASTER-HANDOFF-ADDENDUM-2.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/NEXT-SESSION-CR-NORMALIZATION.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/PICK-UP-HERE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/PICK-UP-HERE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-01.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-01.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-EVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-02-EVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-02-PM.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-02-PM.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-02.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-02.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-EVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-03-EVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-03-PM.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-03-PM.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-03.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-03.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-04.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-04.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-05.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-05.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-06.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-07-EVE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-07-EVE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-07.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-08.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-08.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-HANDOFF-2026-08-09.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/SESSION-START-PROCEDURE.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/SESSION-START-PROCEDURE.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/T3-AXIS-FOUNDRY-v3.md",
+    "prerequisites_new_count": 4,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/T3-AXIS-FOUNDRY-v3.md:5",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/T3-BUILDOUT-PLAYBOOK.md",
+    "prerequisites_new_count": 4,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/T3-BUILDOUT-PLAYBOOK.md:5",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/T3-BUILDOUT-STEP4-HANDOFF.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/T3-BUILDOUT-STEP4-HANDOFF.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/T3-BUILDOUT-STEP5-HANDOFF.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from docs/T3-BUILDOUT-STEP5-HANDOFF.md:5",
+    "routing_old": null,
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/docs/WORK-PACKETS-2026-08-07.md",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from config/registers/family-sweep-known-debt.json:5, docs/WORK-PACKETS-2026-08-07.md:5",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/experiments/foundry_build_reaudit_packet.py",
+    "prerequisites_new_count": 6,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/foundry_build_reaudit_packet.py:22",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_residual_routing_closeout.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+    "prerequisites_new_count": 4,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from refoundation/ACTIVE-PHASE.yaml:3",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_worker_operating_contract.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/refoundation/BOOTSTRAP-STATE.yaml",
+    "prerequisites_new_count": 4,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "YES (R2): current route(s) from refoundation/BOOTSTRAP-STATE.yaml:3",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_worker_operating_contract.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/refoundation/MANAGER-START.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_worker_operating_contract.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/refoundation/README.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_worker_operating_contract.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [],
+    "blockers_old": [],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "archive/routing/refoundation/ROADMAP.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "none for preservation; any removal requires provenance conservation proof"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": null,
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_worker_operating_contract.py",
+    "tests_old": null
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02",
+     "N03"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/POKE-PUNCH-LIST.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/tier_engine.py:539,6692",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch1_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch2_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch3_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch4_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch5_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch6_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_adapt_batch7_decisions.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_any_damage_split.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch2.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch3.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch4.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch5.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch6.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_assemble_batch7.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_axis_merge_pointer_correction.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_axis_walk.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_batch7_pay_life_scrub.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_batch8_ab.py",
+    "prerequisites_new_count": 7,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_batch8_canon_analysis.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_batch8_diff.py",
+    "prerequisites_new_count": 6,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_blanket_risk.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_cdr09_derive.py",
+    "prerequisites_new_count": 9,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_cdr09_walk.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02",
+     "N09"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_consolidate_run1_apply.py",
+    "prerequisites_new_count": 10,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "UNKNOWN_BLOCK (R2): unresolved pending-decision route(s) docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md:88,237",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py, tests/refoundation/test_layout_delegation.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   },
+   {
+    "blockers_new": [
+     "N02",
+     "N09"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_consolidate_run1_enumerate.py",
+    "prerequisites_new_count": 9,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "UNKNOWN_BLOCK (R2): unresolved pending-decision route(s) docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md:22,73,232",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_corpus_pass_run1.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_corroboration_pass.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B02",
+     "N02"
+    ],
+    "blockers_old": [
+     "B02",
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_gate0_scrub.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_locality_backfill.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02",
+     "N03"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_migrate_codebook_v2.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/foundry_codebook.py:193,210",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_reach_census.py",
+    "prerequisites_new_count": 7,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestLocalUnknownReachability.test_the_live_external_UNKNOWN_rows_now_say_why, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_reaudit.py",
+    "prerequisites_new_count": 8,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): source-inspection guard(s) tests/refoundation/test_codebook_store.py; population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity, tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic, tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_selfother_scope.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_synonym_collision.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02",
+     "N09"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/foundry_w3_census.py",
+    "prerequisites_new_count": 6,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "UNKNOWN_BLOCK (R2): unresolved pending-decision route(s) docs/W3-TRIGGER-VOCABULARY-2026-08-07.md:29,109",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02",
+     "N03"
+    ],
+    "blockers_old": [
+     "B10",
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/invert_tags.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/tier_engine.py:78,1249",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/FINDINGS-MEMO.md",
+    "prerequisites_new_count": 2,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02",
+     "N03"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/tier_engine.py:212,6551",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02",
+     "N03"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "YES (R2): current route(s) from experiments/tier_engine.py:5227,6599",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/axis_foundry.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): population pin(s) tests/refoundation/s10_foundry_common_callers.json; analyzer-derived participation tests.refoundation.test_layout_delegation, tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/clean_recut.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/df_distributions.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02",
+     "N09"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/family_tree_evidence.py",
+    "prerequisites_new_count": 5,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "UNKNOWN_BLOCK (R2): unresolved pending-decision route(s) docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md:89,138,144",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/phase3_rebalance_shapes.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "N02"
+    ],
+    "blockers_old": [
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/measure/pip_normalization.py",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02"
+    ],
+    "blockers_old": [
+     "B10",
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/serve_viewer.py",
+    "prerequisites_new_count": 4,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "CO_MOVE (R2): route(s) from same-destination experiments/viewer.html",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "YES (R2): analyzer-derived participation tests.refoundation.test_layout_delegation",
+    "tests_old": "YES (D1 rig: population pins)"
+   },
+   {
+    "blockers_new": [
+     "B10",
+     "N02"
+    ],
+    "blockers_old": [
+     "B10",
+     "N02"
+    ],
+    "disposition": "ARCHIVE_PRESERVE",
+    "disposition_changed": false,
+    "path": "experiments/viewer.html",
+    "prerequisites_new_count": 3,
+    "prerequisites_old": [
+     "authorized guard retargeting for population/topology pins (D1 rig)",
+     "byte/set provenance conservation into the named archive home",
+     "re-run strict+conservative consumer census at the move base"
+    ],
+    "routing_new": "NO_CURRENT_ROUTE_FOUND_BY_R2_CENSUS (name + fragment scan; not proof of absence of name-free dependencies)",
+    "routing_old": "NO_OPERATOR_SURFACE_FOUND",
+    "tests_new": "NO_ATTRIBUTED_GUARD_PARTICIPATION_FOUND_BY_R2 (D1 is a batch experiment and does not prove member-level absence)",
+    "tests_old": "UNMEASURED_INDIVIDUALLY"
+   }
+  ],
+  "clean_checkout_corrections": {
+   "modules": [
+    32,
+    32
+   ],
+   "new": [
+    "verbose discover census of reached/never-reached modules",
+    "shapes substrate isolation (5 pre-abort error identities, 55 censored, 0 semantic regressions)",
+    "s13r2 failures diagnosed MISSING_INPUT",
+    "authority status presentation defect recorded"
+   ],
+   "nonzero": 3,
+   "rc0_r0_claim_vs_measured": [
+    "30 modules OK (false)",
+    29
+   ],
+   "skips": 22
+  },
+  "d1_accounting_correction": {
+   "new": "raw FAILED (failures=17, errors=8) vs BASE FAILED (failures=12); 4 new failing + 1 new erroring method IDs; 8 subtest errors under one method; 12 inherited-red methods value-changed; member attribution recorded",
+   "old": "+4 failures, +1 error"
+  },
+  "disposition_change_statement": "NONE. Every R0 disposition survives the R2 evidence; readiness prerequisites, blockers and routing/test claims changed",
+  "disposition_changes": [],
+  "draft_contract": "prerequisite model rewritten per slice; still NOT AUTHORIZED",
+  "ignored_row_blocker_changes": [
+   {
+    "new": "B07",
+    "old": "B06",
+    "role": "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
+    "rows": 9
+   },
+   {
+    "new": "B02,N03,N08",
+    "old": "B02,N03",
+    "role": "RECOVERY_MATERIAL",
+    "rows": 30
+   },
+   {
+    "new": "B10,N08",
+    "old": "B02,N03",
+    "role": "RECOVERY_MATERIAL",
+    "rows": 139
+   },
+   {
+    "new": "B07",
+    "old": "B06",
+    "role": "UNREFERENCED_UNKNOWN",
+    "rows": 149
+   }
+  ],
+  "nc8b_correction": {
+   "surfaces": [
+    "S15-POST-S14-CONSERVATION-TEST-DESIGN.md §4 result line and sequence sentence",
+    "S15-POST-S14-RESULT.md §8",
+    "S15-POST-S14-IGNORED-STATE-INVENTORY.json d3_delete_safe_proof C8",
+    "S15-POST-S14-PATH-READINESS-MATRIX.json DELETE_SAFE runtime set C8"
+   ],
+   "truth": "11 paired sub-controls + NC8b standing-red BASE observation; zero residue is a Worker-execution claim"
+  },
+  "new_evidence": [
+   "DEPENDENCY-EVIDENCE r2_route_census",
+   "impact_rigs.D1.r2_outcome_accounting",
+   "GENERATED-RUNTIME-INVENTORY clean_checkout_probe (re-derived)",
+   "N09"
+  ],
+  "no_history_rewrite": "R0 values that R2 corrects are kept beside the correction (r0_values / *_old fields); Objective-4 files and Issue #1 comments untouched",
+  "restore_correction": {
+   "new": "live default + snapshot mode with rulings live fallback; lock is Path-E-only; containers 2be88ba8/b46e0670 share content 5e47e132 (gzip MTIME); backup-policy injection boundary; restore remains an unproven later prerequisite",
+   "old": "pipeline/fetch.py fetches current bulk (not byte-pinned) / rclone snapshot copy (not exercised)"
+  },
+  "runtime_set_blocker_changes": [
+   {
+    "new": [
+     "B07"
+    ],
+    "old": [
+     "B06"
+    ],
+    "set": "ignored runtime role PROSE_OR_HISTORICAL_REFERENCE_ONLY"
+   },
+   {
+    "new": [
+     "B02",
+     "B10",
+     "N03",
+     "N08"
+    ],
+    "old": [
+     "B02",
+     "N03"
+    ],
+    "set": "ignored runtime role RECOVERY_MATERIAL"
+   },
+   {
+    "new": [
+     "B07"
+    ],
+    "old": [
+     "B06"
+    ],
+    "set": "ignored runtime role UNREFERENCED_UNKNOWN"
+   }
+  ]
+ },
  "runtime_visibility_changes": [
   "old: GitHub-side, ignored bytes invisible -> new: full local inventory 3,620 files / 3,355,335,202 B",
   "old: clean checkout not executable -> new: executed (Gate 2 3/16; discover aborts)",

@@ -1,6 +1,7 @@
 {
  "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -21,6 +22,18 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "ruling-registry sweep first (R1 9 K13)"
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": false,
+     "lines": [
+      539,
+      6692
+     ],
+     "referrer": "experiments/tier_engine.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -55,6 +68,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      38
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -69,6 +96,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      45
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -83,6 +124,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      52
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -97,6 +152,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      59
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -111,6 +180,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      64
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -125,6 +208,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      71
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -139,6 +236,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      80
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -153,6 +264,30 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      89
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1752
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -167,6 +302,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      99
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -181,6 +330,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      106
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -195,6 +358,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      112
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -209,6 +386,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      119
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -223,6 +414,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      126
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -237,6 +442,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "each batch's ratified record confirmed present in docs/"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      132
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -296,6 +515,30 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      144
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1752
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -310,6 +553,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      147
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -324,6 +581,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      152
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -338,6 +609,38 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      24
+     ],
+     "referrer": "experiments/foundry_batch8_canon_analysis.py"
+    },
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      5,
+      21,
+      54
+     ],
+     "referrer": "experiments/foundry_batch8_diff.py"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      159
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [
     "experiments/foundry_batch8_canon_analysis.py",
@@ -355,6 +658,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      164
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -369,6 +686,28 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      23
+     ],
+     "referrer": "experiments/foundry_batch8_canon_analysis.py"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      167
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [
     "experiments/foundry_batch8_canon_analysis.py"
@@ -385,6 +724,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      170
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -418,6 +771,39 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      31,
+      145
+     ],
+     "referrer": "experiments/foundry_cdr09_walk.py"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      175
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1753
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [
     "experiments/foundry_cdr09_walk.py"
@@ -434,6 +820,30 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      179
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1753
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -454,6 +864,23 @@
     "r1_disposition": "PROMOTE_SHARED_CODEBOOK_SUBSTRATE",
     "r1_note": ""
    },
+   "r2_current_routes_into_this_path": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 17,
+     "referrer": "docs/MEMBER-ADD-MUTATION-LAW.md"
+    },
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 77,
+     "referrer": "experiments/foundry_reconcile.py"
+    },
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "line": 52,
+     "referrer": "tests/guards/gate2/foundry_gate2.py"
+    }
+   ],
    "remaining_callers_strict": [
     "tests/guards/gate2/foundry_definition_drift.py",
     "tests/guards/gate2/foundry_family_sweep.py",
@@ -666,6 +1093,53 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "UNKNOWN_BLOCK",
+     "co_move": false,
+     "lines": [
+      88,
+      237
+     ],
+     "referrer": "docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      200
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1733,
+      1753,
+      1762,
+      2122
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      4839,
+      5130,
+      5146,
+      5484
+     ],
+     "referrer": "tests/refoundation/test_layout_delegation.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -700,6 +1174,40 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "UNKNOWN_BLOCK",
+     "co_move": false,
+     "lines": [
+      22,
+      73,
+      232
+     ],
+     "referrer": "docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      213
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1754
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -714,6 +1222,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      219
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -728,6 +1250,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      225
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -748,6 +1284,13 @@
     "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
     "r1_note": ""
    },
+   "r2_current_routes_into_this_path": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 125,
+     "referrer": "CLAUDE.md"
+    }
+   ],
    "remaining_callers_strict": [
     "CLAUDE.md",
     "tests/guards/cr/test_cr_edition.py",
@@ -818,6 +1361,18 @@
     "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
     "r1_note": ""
    },
+   "r2_current_routes_into_this_path": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 84,
+     "referrer": "experiments/foundry_reach_census.py"
+    },
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 187,
+     "referrer": "experiments/foundry_shape_extractor.py"
+    }
+   ],
    "remaining_callers_strict": [
     "tests/refoundation/test_s13_operator_command_migration.py"
    ],
@@ -969,6 +1524,30 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      275
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1755
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1045,6 +1624,30 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      295
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1756
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1073,6 +1676,41 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": false,
+     "lines": [
+      193,
+      210
+     ],
+     "referrer": "experiments/foundry_codebook.py"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      304
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      350,
+      370,
+      674,
+      847
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1161,6 +1799,22 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestLocalUnknownReachability.test_the_live_external_UNKNOWN_rows_now_say_why",
+    "tests.refoundation.test_codebook_store.TestLocalUnknownReachability.test_the_live_external_UNKNOWN_rows_now_say_why",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      334
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1175,6 +1829,33 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_codebook_store.TestTheLivePopulation.test_the_population_reproduces_the_accepted_C8_5V_arithmetic",
+    "tests.refoundation.test_codebook_store.TestTheKnownTransitiveTrapIsFoundMechanically.test_the_live_classification_totals_are_pinned_by_identity",
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      338
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    },
+    {
+     "class": "SOURCE_INSPECTION_GUARD",
+     "co_move": false,
+     "lines": [
+      1728,
+      1756,
+      1976,
+      3137
+     ],
+     "referrer": "tests/refoundation/test_codebook_store.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1189,6 +1870,13 @@
     "r1_disposition": "PROMOTE_OPERATOR_TOOL",
     "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
    },
+   "r2_current_routes_into_this_path": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 211,
+     "referrer": "experiments/foundry_codebook.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [
     "experiments/foundry_migrate_codebook_v2.py"
@@ -1238,6 +1926,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      355
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1360,6 +2062,10 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1407,6 +2113,29 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "UNKNOWN_BLOCK",
+     "co_move": false,
+     "lines": [
+      29,
+      109
+     ],
+     "referrer": "docs/W3-TRIGGER-VOCABULARY-2026-08-07.md"
+    },
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      401
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1440,6 +2169,13 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_current_routes_into_this_path": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "line": 1053,
+     "referrer": "experiments/foundry_consolidate_run1_apply.py"
+    }
+   ],
    "remaining_callers_strict": [
     "tests/refoundation/test_layout_delegation.py"
    ],
@@ -1459,6 +2195,18 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": ""
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": false,
+     "lines": [
+      78,
+      1249
+     ],
+     "referrer": "experiments/tier_engine.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1473,6 +2221,8 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1487,6 +2237,18 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": false,
+     "lines": [
+      212,
+      6551
+     ],
+     "referrer": "experiments/tier_engine.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1501,6 +2263,18 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": false,
+     "lines": [
+      5227,
+      6599
+     ],
+     "referrer": "experiments/tier_engine.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1515,6 +2289,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_s10_card_text_owners.TestCallerTopology.test_the_live_caller_set_is_exactly_the_reviewed_one",
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "POPULATION_PIN",
+     "co_move": false,
+     "lines": [
+      414
+     ],
+     "referrer": "tests/refoundation/s10_foundry_common_callers.json"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1529,6 +2317,10 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1543,6 +2335,10 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1557,6 +2353,32 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "UNKNOWN_BLOCK",
+     "co_move": false,
+     "lines": [
+      89,
+      138,
+      144
+     ],
+     "referrer": "docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md"
+    },
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      3,
+      40,
+      42,
+      45
+     ],
+     "referrer": "experiments/measure/axis_foundry.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [
     "experiments/measure/axis_foundry.py"
@@ -1573,6 +2395,10 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1587,6 +2413,10 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "3 memos move with the code"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1601,6 +2431,20 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
    },
+   "r2_analyzer_participation": [
+    "tests.refoundation.test_layout_delegation (census/bootstrap-family tests; inherited-red at BASE)"
+   ],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "CURRENT_OPERATOR_OR_LAW_ROUTE",
+     "co_move": true,
+     "lines": [
+      373,
+      422
+     ],
+     "referrer": "experiments/viewer.html"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1702,6 +2546,18 @@
     "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
     "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
    },
+   "r2_analyzer_participation": [],
+   "r2_current_routes_and_guards": [
+    {
+     "class": "BEHAVIORAL_CONSUMER",
+     "co_move": true,
+     "lines": [
+      11,
+      64
+     ],
+     "referrer": "experiments/serve_viewer.py"
+    }
+   ],
    "remaining_callers_strict": [],
    "remaining_legacy_importers_strict": [],
    "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
@@ -1747,6 +2603,17 @@
    "successor": "none (S13.R1: no /2 batch-triage successor)"
   }
  ],
+ "r2_repair": {
+  "authority": {
+   "measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "parent_review": "issue:1#issuecomment-5683255432 (V-20260915-S15-R0-R1-STOP-VALIDATED-ADVERSARIAL-AUDIT)",
+   "repair_commit_parent": "7aeb24721d7511f18644afbf46d7dc4ed2fc3088",
+   "selecting_checkpoint": "issue:1#issuecomment-5683296790 (K-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR-ISSUED)",
+   "status": "R0.R2 EVIDENCE REPAIR — acceptance is a separate Manager decision; nothing here authorizes deletion, archive, retirement, .gitignore, runtime, AQ4, merge or successor work",
+   "task": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)"
+  },
+  "law_added": "A successor, archive home or shell marker never discharges a current operator/law route or a source-inspection guard; each needs its own retarget/retire/keep decision"
+ },
  "schema": "s15-post-s14-successor-map/1",
  "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION"
 }
