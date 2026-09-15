@@ -1,5 +1,8 @@
 {
   "archive_importers": [
+    "archive/research/batch8/foundry_batch8_ab.py",
+    "archive/research/batch8/foundry_batch8_canon_analysis.py",
+    "archive/research/batch8/foundry_batch8_diff.py",
     "archive/routing/experiments/foundry_build_reaudit_packet.py"
   ],
   "base_measured": {
@@ -155,17 +158,6 @@
       "load_corpus",
       "resolve_name",
       "write_json"
-    ],
-    "experiments/foundry_batch8_ab.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus_gated"
-    ],
-    "experiments/foundry_batch8_canon_analysis.py": [
-      "FOUNDRY_OUT_DIR"
-    ],
-    "experiments/foundry_batch8_diff.py": [
-      "halt"
     ],
     "experiments/foundry_blanket_risk.py": [
       "canonicalize_self_reference",
@@ -547,5 +539,39 @@
       "tests/refoundation/test_s11_codebook_kernel.py": "NEW S11 guard; imports the facade to prove call-time delegation and the S7 law"
     },
     "rule": "every other row is byte-for-byte the S10 pin; a lower count is not the success metric"
+  },
+  "s15_d3_amendment": {
+    "head_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+    "live_importers": {
+      "before": 88,
+      "after": 85
+    },
+    "archive_importers": {
+      "before": 1,
+      "after": 4
+    },
+    "rows_moved_to_archive": {
+      "experiments/foundry_batch8_ab.py": {
+        "archived_path": "archive/research/batch8/foundry_batch8_ab.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus_gated"
+        ]
+      },
+      "experiments/foundry_batch8_canon_analysis.py": {
+        "archived_path": "archive/research/batch8/foundry_batch8_canon_analysis.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR"
+        ]
+      },
+      "experiments/foundry_batch8_diff.py": {
+        "archived_path": "archive/research/batch8/foundry_batch8_diff.py",
+        "foundry_common_names": [
+          "halt"
+        ]
+      }
+    },
+    "rule": "S15.D3 byte-identical R100 archive of the three Batch-8 research scripts to archive/research/batch8/. archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row is byte-for-byte unchanged and archive importers are never counted as live."
   }
 }
