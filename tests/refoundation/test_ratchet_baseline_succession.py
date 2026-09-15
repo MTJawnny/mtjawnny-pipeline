@@ -27,6 +27,12 @@ The record authorizes nothing. Every non-genesis entry must name the sections it
 changed, a reason and an external durable authorization — a record that could
 write its own successor would be the self-created authority C5 refuses.
 
+S14.R2.R2: "durable" is enforced, not merely "non-empty". A non-genesis
+`authorization` must be exactly `issue:1#issuecomment-<positive id>`: a pointer out
+to the Manager/Worker control plane. This guard proves the SHAPE only, with no
+network I/O; whether that comment exists and authorizes the transition is for
+Manager review. Genesis keeps its historical P0.3A provenance text.
+
 Both history files the capture lives in are pinned byte-exact below: they are
 records of what was measured, and a guard that let them be re-edited to agree with
 new bytes would conserve nothing.
@@ -85,6 +91,13 @@ ENTRY_FIELDS = ("authorization", "changed_sections", "ordinal", "predecessor_sha
                 "reason", "sha256", "size_bytes")
 TOP_FIELDS = ("authority", "entries", "genesis", "live_baseline_path", "schema")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+# Matched with `fullmatch`, never `match`/`search`: `$` would admit a trailing
+# newline and `search` would admit surrounding prose. `[1-9][0-9]*` is ASCII-only
+# and rules out zero, leading zeros and signs.
+_DURABLE_AUTHORIZATION = re.compile(r"issue:1#issuecomment-[1-9][0-9]*")
+# A syntactically canonical reference for synthetic controls ONLY. It names no
+# real authorization and the validator never special-cases it.
+SYNTHETIC_AUTHORIZATION = "issue:1#issuecomment-123"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -196,6 +209,11 @@ def chain_problems(doc: dict) -> list[str]:
                 out.append(f"{where} predecessor does not link to entry[{index - 1}]")
             if sections is not None and not sections:
                 out.append(f"{where} names no changed_section")
+            authorization = entry["authorization"]
+            if not (isinstance(authorization, str)
+                    and _DURABLE_AUTHORIZATION.fullmatch(authorization)):
+                out.append(f"{where} authorization is not a durable "
+                           f"issue:1#issuecomment-<id> reference: {authorization!r}")
     return out
 
 
@@ -241,7 +259,7 @@ def successor_entry(doc: dict, data: bytes, **overrides) -> dict:
     entry = {"ordinal": len(doc["entries"]), "sha256": sha256_bytes(data),
              "size_bytes": len(data), "predecessor_sha256": latest_entry(doc)["sha256"],
              "changed_sections": ["ruling_registry"], "reason": "control",
-             "authorization": "control-only"}
+             "authorization": SYNTHETIC_AUTHORIZATION}
     entry.update(overrides)
     return entry
 
@@ -397,6 +415,42 @@ class TestTheChainRulesCanFail(unittest.TestCase):
         self.assertRed(self.variant(lambda d: d["entries"].append(
             successor_entry(d, b"{}\n", authorization=""))), "authorization must be non-empty")
 
+    def test_CONTROL_non_durable_successor_authorizations(self):
+        """Every spelling below is a non-empty string, which is all R2.R1 checked."""
+        for token in ("", "control-only",
+                      "refoundation/conservation/RATCHET-BASELINE-SUCCESSION.json",
+                      "issue:2#issuecomment-123", "issue:1#comment-123",
+                      "issue:1#issuecomment-0", "issue:1#issuecomment-0123",
+                      "issue:1#issuecomment--5", "issue:1#issuecomment-abc",
+                      "issue:1#issuecomment-",
+                      "authorized by issue:1#issuecomment-123",
+                      "issue:1#issuecomment-123 (S14)",
+                      " issue:1#issuecomment-123", "issue:1#issuecomment-123\n",
+                      "issue:1#issuecomment-\u0661\u0662\u0663",
+                      "https://github.com/MTJawnny/mtjawnny-pipeline/issues/1#issuecomment-123",
+                      None, 123):
+            with self.subTest(authorization=token):
+                self.assertRed(self.variant(lambda d: d["entries"].append(
+                    successor_entry(d, b"{}\n", authorization=token))),
+                    "not a durable issue:1#issuecomment-<id> reference")
+
+    def test_the_canonical_durable_authorization_is_structurally_green(self):
+        """The positive arm, so the grammar cannot pass by rejecting everything."""
+        for token in (SYNTHETIC_AUTHORIZATION, "issue:1#issuecomment-987654321",
+                      "issue:1#issuecomment-1"):
+            with self.subTest(authorization=token):
+                doc = self.variant(lambda d: d["entries"].append(
+                    successor_entry(d, b"{}\n", authorization=token)))
+                self.assertEqual(chain_problems(doc), [])
+
+    def test_genesis_keeps_its_historical_authorization_text(self):
+        """The durable grammar governs successors only; genesis provenance predates
+        the control plane token and is not rewritten to satisfy it."""
+        genesis = self.real["entries"][0]["authorization"]
+        self.assertIsNone(_DURABLE_AUTHORIZATION.fullmatch(genesis))
+        self.assertIn("P0.3A", genesis)
+        self.assertEqual(chain_problems(self.real), [])
+
     def test_CONTROL_missing_field(self):
         self.assertRed(self.variant(lambda d: d["entries"][0].pop("reason")), "fields")
 
@@ -440,8 +494,9 @@ class TestTheLiveMatchCanFail(unittest.TestCase):
         """The live match alone must not launder an unjustified successor."""
         data = self.live.read_bytes() + b" "
         self.live.write_bytes(data)
-        for field, empty in (("changed_sections", []), ("reason", ""), ("authorization", "")):
-            with self.subTest(field=field):
+        for field, empty in (("changed_sections", []), ("reason", ""), ("authorization", ""),
+                             ("authorization", "control-only")):
+            with self.subTest(field=field, value=empty):
                 doc = copy.deepcopy(self.doc)
                 doc["entries"].append(successor_entry(doc, data, **{field: empty}))
                 self.assertEqual(live_problems(doc, self.live), [])
