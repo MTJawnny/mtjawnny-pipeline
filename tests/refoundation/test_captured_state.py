@@ -10,6 +10,8 @@ from __future__ import annotations
 import unittest
 
 from tests.refoundation.helpers import REPO_ROOT, block, scalars, top_level_keys
+from tests.refoundation.test_ratchet_baseline_succession import (
+    GENESIS_SNAPSHOT, live_problems, load_succession)
 
 from mtj_foundry.infra.conservation import digest_file
 from mtj_foundry.paths import ProjectPaths
@@ -24,8 +26,11 @@ class TestCapturedRatchetBaseline(unittest.TestCase):
     """Acceptance criterion: "copied baseline sha256 == source baseline sha256".
 
     The source is gitignored and lives outside this worktree, so the durable form
-    of that criterion is: the copy still hashes to the value recorded at capture
-    time. A later drift in either the bytes or the record fails here.
+    of that criterion is: the captured bytes still hash to the value recorded at
+    capture time. S14.R2.R1: those bytes are held by the immutable genesis
+    snapshot, because the live tracked copy is an acceptance control that may
+    advance through the ratchet succession record. A later drift in the snapshot,
+    the record, or an unrecorded move of the live copy fails here.
     """
 
     def test_the_tracked_copy_exists_and_is_not_empty(self):
@@ -34,11 +39,15 @@ class TestCapturedRatchetBaseline(unittest.TestCase):
 
     def test_the_copy_still_hashes_to_the_recorded_source_digest(self):
         recorded = scalars(INPUTS.read_text())
-        actual = digest_file(BASELINE_COPY, relative_to=REPO_ROOT)
+        actual = digest_file(GENESIS_SNAPSHOT, relative_to=REPO_ROOT)
         self.assertEqual(actual.sha256, recorded["source_sha256"])
         self.assertEqual(actual.sha256, recorded["tracked_copy_sha256"])
         self.assertEqual(actual.size_bytes, int(recorded["source_size_bytes"]))
         self.assertEqual(recorded["byte_identical"], "true")
+
+    def test_the_live_copy_is_the_latest_succession_entry(self):
+        """The live copy may move, but only to bytes the succession record names."""
+        self.assertEqual(live_problems(load_succession(), BASELINE_COPY), [])
 
     def test_the_copy_is_valid_json_and_carries_the_ratchet_sections(self):
         import json

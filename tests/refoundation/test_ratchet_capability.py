@@ -54,6 +54,8 @@ import unittest
 from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT
+from tests.refoundation.test_ratchet_baseline_succession import (
+    GENESIS_SNAPSHOT, latest_entry, load_succession)
 
 from mtj_foundry.infra import ratchet
 from mtj_foundry.paths import ProjectPaths
@@ -63,7 +65,9 @@ EXPERIMENTS = PATHS.legacy_experiments
 LEGACY_PATH = EXPERIMENTS / "foundry_audit_baseline.py"
 TRACKED = PATHS.foundry_audit_baseline
 
-# The bytes P0.3A captured and P0.3D cut over to. C8.5J must not move them.
+# The bytes P0.3A captured and P0.3D cut over to. C8.5J did not move them; they
+# are preserved as the immutable genesis snapshot. S14.R2.R1: the live TRACKED
+# control is held to the latest ratchet succession entry instead.
 CAPTURED_SHA256 = "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601"
 CAPTURED_SIZE = 4324
 
@@ -338,9 +342,17 @@ class TestTheLayoutOwnerOwnsTheBaselinePath(RatchetTestCase):
         """The cutover must not move the control input by one character."""
         self.assertEqual(PATHS.foundry_audit_baseline, self.oracle.BASELINE)
 
-    def test_the_tracked_control_input_is_the_captured_bytes(self):
-        self.assertEqual(sha256_of(TRACKED), CAPTURED_SHA256)
-        self.assertEqual(TRACKED.stat().st_size, CAPTURED_SIZE)
+    def test_the_captured_bytes_survive_as_the_genesis_snapshot(self):
+        """C8.5J moved the capability and no value. Those bytes are history now."""
+        self.assertEqual(sha256_of(GENESIS_SNAPSHOT), CAPTURED_SHA256)
+        self.assertEqual(GENESIS_SNAPSHOT.stat().st_size, CAPTURED_SIZE)
+
+    def test_the_tracked_control_input_is_the_latest_succession_entry(self):
+        """S14.R2.R1: the live control is selected by the succession record, so a
+        reviewed `compare(update=True)` can advance it without erasing genesis."""
+        latest = latest_entry(load_succession())
+        self.assertEqual(sha256_of(TRACKED), latest["sha256"])
+        self.assertEqual(TRACKED.stat().st_size, latest["size_bytes"])
 
 
 # ---------------------------------------------------------------------------

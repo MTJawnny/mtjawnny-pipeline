@@ -177,8 +177,9 @@
       "bindings": [
         {
           "invariant_id": "RATCHET_BASELINE_BYTES",
-          "source_path": "config/baselines/foundry-audit-baseline.json",
-          "availability": "TRACKED"
+          "source_path": "refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json",
+          "availability": "TRACKED",
+          "note": "S14.R2.R1: C7.7 is the HISTORICAL exact-byte witness, so it binds the immutable P0.3A genesis snapshot. The live acceptance control config/baselines/foundry-audit-baseline.json may advance only through refoundation/conservation/RATCHET-BASELINE-SUCCESSION.json and is deliberately not this binding."
         },
         {
           "invariant_id": "CODEBOOK_AUTHORITY_IDENTITY",

@@ -38,6 +38,8 @@ import unittest
 from pathlib import Path
 
 from tests.refoundation.helpers import REPO_ROOT
+from tests.refoundation.test_ratchet_baseline_succession import (
+    GENESIS_SNAPSHOT, latest_entry, load_succession)
 
 from mtj_foundry.paths import ProjectPaths
 
@@ -46,7 +48,9 @@ MODULE_PATH = PATHS.legacy_experiments / "foundry_audit_baseline.py"
 TRACKED = PATHS.baselines / "foundry-audit-baseline.json"
 IGNORED_LEGACY = "experiments/out/foundry/audit-baseline.json"
 
-# The bytes P0.3A captured. The cutover must not move them.
+# The bytes P0.3A captured. The cutover did not move them, and they survive as the
+# immutable genesis snapshot. S14.R2.R1: the live TRACKED control is no longer
+# held to them forever -- it is held to the latest ratchet succession entry.
 CAPTURED_SHA256 = "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601"
 CAPTURED_SIZE = 4324
 
@@ -139,10 +143,20 @@ class TestTheBaselineIsTheTrackedFile(RatchetTestCase):
                 self.assertNotIn(forbidden, code_strings)
         self.assertIn("foundry-audit-baseline.json", code_strings)
 
-    def test_the_tracked_bytes_are_the_p0_3a_capture(self):
-        """The cutover repoints storage. It must not touch one value."""
-        self.assertEqual(sha256_of(TRACKED), CAPTURED_SHA256)
-        self.assertEqual(TRACKED.stat().st_size, CAPTURED_SIZE)
+    def test_the_captured_bytes_survive_as_the_genesis_snapshot(self):
+        """The cutover repointed storage and touched no value; the bytes it carried
+        are preserved as history independently of the live control."""
+        self.assertEqual(sha256_of(GENESIS_SNAPSHOT), CAPTURED_SHA256)
+        self.assertEqual(GENESIS_SNAPSHOT.stat().st_size, CAPTURED_SIZE)
+        genesis = load_succession()["entries"][0]
+        self.assertEqual((genesis["sha256"], genesis["size_bytes"]),
+                         (CAPTURED_SHA256, CAPTURED_SIZE))
+
+    def test_the_tracked_bytes_are_the_latest_succession_entry(self):
+        """The live control moves only through an explicit, reviewable entry."""
+        latest = latest_entry(load_succession())
+        self.assertEqual(sha256_of(TRACKED), latest["sha256"])
+        self.assertEqual(TRACKED.stat().st_size, latest["size_bytes"])
 
     def test_the_live_baseline_still_holds_every_pinned_section(self):
         self.assertGreaterEqual(len(self.pinned), 8)

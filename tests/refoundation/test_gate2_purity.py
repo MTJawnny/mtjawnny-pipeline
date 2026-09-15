@@ -464,11 +464,20 @@ class TestARowRunLeavesTrackedStateAlone(PurityGuard):
         self.assertIn("definition_drift", result.stdout)
 
     def test_the_ratchet_baseline_is_untouched_by_either_row(self):
-        baseline = RATCHET
+        """Purity is before == after across real row runs. S14.R2.R1 replaced the
+        slice-era hardcoded P0.3A digest: the bytes a row must leave alone are
+        whatever the latest ratchet succession entry selects."""
         import hashlib
-        self.assertEqual(hashlib.sha256(baseline.read_bytes()).hexdigest(),
-                         "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601")
-        self.assertEqual(baseline.stat().st_size, 4324)
+        from tests.refoundation.test_ratchet_baseline_succession import (
+            latest_entry, load_succession)
+        before = RATCHET.read_bytes()
+        for row in ("ruling_registry", "definition_drift"):
+            with self.subTest(row=row):
+                self.run_row(row)
+                self.assertEqual(RATCHET.read_bytes(), before)
+        latest = latest_entry(load_succession())
+        self.assertEqual(hashlib.sha256(before).hexdigest(), latest["sha256"])
+        self.assertEqual(len(before), latest["size_bytes"])
 
 
 # ---------------------------------------------------------------------------

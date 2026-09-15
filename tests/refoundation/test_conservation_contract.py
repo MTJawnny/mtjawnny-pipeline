@@ -35,6 +35,12 @@ PATHS = ProjectPaths.for_root(REPO_ROOT)
 CONTRACT_PATH = PATHS.conservation / "CONSERVATION-CONTRACT.json"
 INPUTS_PATH = PATHS.conservation / "BASELINE-INPUTS.yaml"
 
+# S14.R2.R1: C7.7 witnesses the IMMUTABLE P0.3A genesis snapshot on the refoundation
+# side. The live control `config/baselines/foundry-audit-baseline.json` may advance
+# through the ratchet succession record, so it is deliberately not the witness.
+GENESIS_SNAPSHOT_REL = "refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json"
+LIVE_BASELINE_REL = "config/baselines/foundry-audit-baseline.json"
+
 ACTIVE_EXPECTED = ("CODEBOOK_AUTHORITY_IDENTITY", "CR_EDITION_CONTENT",
                    "RATCHET_BASELINE_BYTES")
 DEFERRED_EXPECTED = ("GATE2_INVARIANTS_AND_KNOWN_DEBT", "ROUTING_RELATION",
@@ -137,8 +143,14 @@ class TestTheC7InventoryIsStatedInFull(ContractTestCase):
         self.assertEqual(len(set(paths.values())), 2, paths)
         self.assertEqual(paths["LEGACY_LOCAL"],
                          "experiments/out/foundry/audit-baseline.json")
-        self.assertEqual(paths["REFOUNDATION_TRACKED"],
-                         "config/baselines/foundry-audit-baseline.json")
+        self.assertEqual(paths["REFOUNDATION_TRACKED"], GENESIS_SNAPSHOT_REL)
+
+    def test_the_c7_7_witness_is_not_the_mutable_live_control(self):
+        """A witness bound to bytes that are allowed to move would report every
+        reviewed ratchet update as lost history."""
+        paths = {side.side_id: side.bindings["RATCHET_BASELINE_BYTES"].source_path
+                 for side in self.contract.sides.values()}
+        self.assertNotIn(LIVE_BASELINE_REL, paths.values())
 
     def test_the_gitignored_binding_is_declared_as_such(self):
         binding = self.contract.sides["LEGACY_LOCAL"].bindings["RATCHET_BASELINE_BYTES"]
@@ -190,9 +202,9 @@ class TestMeasuredAgainstRepositoryBytes(ContractTestCase):
         self.assertEqual(value["size_bytes"], int(recorded["source_size_bytes"]))
         self.assertEqual(value["sha256"], recorded["tracked_copy_sha256"])
 
-    def test_the_ratchet_value_is_the_bytes_of_the_tracked_copy(self):
+    def test_the_ratchet_value_is_the_bytes_of_the_genesis_snapshot(self):
         """Re-derived independently of the harness, so the test is not the code."""
-        target = PATHS.baselines / "foundry-audit-baseline.json"
+        target = REPO_ROOT / GENESIS_SNAPSHOT_REL
         self.assertEqual(self.measured["RATCHET_BASELINE_BYTES"].value["sha256"],
                          sha256_of(target))
         self.assertEqual(self.measured["RATCHET_BASELINE_BYTES"].value["size_bytes"],
@@ -290,7 +302,7 @@ class FixtureTestCase(ContractTestCase):
                   selector: dict | None = None) -> Path:
         root = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
-        real_ratchet = PATHS.baselines / "foundry-audit-baseline.json"
+        real_ratchet = REPO_ROOT / GENESIS_SNAPSHOT_REL
         self.write(root, ratchet_at,
                    real_ratchet.read_bytes() if ratchet_bytes is None else ratchet_bytes)
         selector_doc = selector if selector is not None else json.loads(
@@ -313,7 +325,7 @@ class FixtureTestCase(ContractTestCase):
 class TestPathIsEvidenceNotTruth(FixtureTestCase):
     def test_the_same_value_from_two_different_paths_is_conserved(self):
         legacy_root = self.make_root(ratchet_at="experiments/out/foundry/audit-baseline.json")
-        new_root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        new_root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
 
         left = cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root)
         right = cc.measure_side(self.contract, "REFOUNDATION_TRACKED", new_root)
@@ -336,7 +348,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
         new_root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json", selector=selector)
+            ratchet_at=GENESIS_SNAPSHOT_REL, selector=selector)
         # Reformat, changing bytes and key order but not one declared value.
         reformatted = json.dumps(dict(reversed(list(selector.items()))), indent=4)
         (new_root / "config" / "selectors" / "codebook-authority.json").write_text(reformatted,
@@ -364,7 +376,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
         new_root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json",
+            ratchet_at=GENESIS_SNAPSHOT_REL,
             selector=relabelled)
 
         report = cc.compare(self.contract,
@@ -383,7 +395,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
         new_root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json", selector=drifted)
+            ratchet_at=GENESIS_SNAPSHOT_REL, selector=drifted)
 
         report = cc.compare(self.contract,
                             cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root),
@@ -404,7 +416,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
         new_root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json", selector=drifted)
+            ratchet_at=GENESIS_SNAPSHOT_REL, selector=drifted)
 
         report = cc.compare(self.contract,
                             cc.measure_side(self.contract, "LEGACY_LOCAL", legacy_root),
@@ -417,11 +429,11 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
         self.assertEqual(verdict.differing_fields, ("selected_sha256",))
 
     def test_one_changed_byte_in_the_ratchet_is_drift(self):
-        real = (PATHS.baselines / "foundry-audit-baseline.json").read_bytes()
+        real = (REPO_ROOT / GENESIS_SNAPSHOT_REL).read_bytes()
         legacy_root = self.make_root(
             ratchet_at="experiments/out/foundry/audit-baseline.json")
         new_root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json",
+            ratchet_at=GENESIS_SNAPSHOT_REL,
             ratchet_bytes=real + b" ")
 
         report = cc.compare(self.contract,
@@ -438,7 +450,7 @@ class TestPathIsEvidenceNotTruth(FixtureTestCase):
 class TestDeferredIsNeverConserved(FixtureTestCase):
     def setUp(self):
         legacy = self.make_root(ratchet_at="experiments/out/foundry/audit-baseline.json")
-        new = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        new = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         self.report = cc.compare(
             self.contract,
             cc.measure_side(self.contract, "LEGACY_LOCAL", legacy),
@@ -510,7 +522,7 @@ class TestDeferredIsNeverConserved(FixtureTestCase):
 class TestDeterminism(FixtureTestCase):
     def test_two_runs_produce_a_byte_identical_report(self):
         legacy = self.make_root(ratchet_at="experiments/out/foundry/audit-baseline.json")
-        new = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        new = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
 
         def run() -> str:
             return cc.compare(
@@ -528,7 +540,7 @@ class TestDeterminism(FixtureTestCase):
 
     def test_the_verdict_order_is_the_c7_inventory_order(self):
         legacy = self.make_root(ratchet_at="experiments/out/foundry/audit-baseline.json")
-        new = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        new = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         report = cc.compare(self.contract,
                             cc.measure_side(self.contract, "LEGACY_LOCAL", legacy),
                             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", new))
@@ -537,7 +549,7 @@ class TestDeterminism(FixtureTestCase):
 
 class TestReadOnlyAndExplicit(FixtureTestCase):
     def test_measurement_writes_nothing_and_touches_nothing(self):
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
 
         def snapshot() -> dict[str, tuple[str, int]]:
             return {str(p.relative_to(root)): (sha256_of(p), p.stat().st_mtime_ns)
@@ -552,7 +564,7 @@ class TestReadOnlyAndExplicit(FixtureTestCase):
     def test_the_root_is_explicit_and_no_repository_is_discovered(self):
         """Measured from an unrelated working directory. A harness that rediscovered a
         root would answer about whichever tree it happened to be standing in."""
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         elsewhere = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, elsewhere, ignore_errors=True)
         here = os.getcwd()
@@ -566,12 +578,25 @@ class TestReadOnlyAndExplicit(FixtureTestCase):
     def test_only_declared_paths_are_opened_and_no_tree_is_walked(self):
         """A stray file next to a declared source must not enter the measurement —
         this is a contract, not a census."""
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         self.write(root, "config/baselines/not-declared.json", b"{}")
         measured = cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
         read = {m.evidence.source_path for m in measured}
         self.assertNotIn("config/baselines/not-declared.json", read)
         self.assertEqual(len(read), len(ACTIVE_EXPECTED))
+
+    def test_an_advanced_live_baseline_does_not_move_the_genesis_witness(self):
+        """S14.R2.R1: the live control sitting next to the snapshot with DIFFERENT
+        bytes — a reviewed successor — is not read, and C7.7 is still conserved."""
+        legacy = self.make_root(ratchet_at="experiments/out/foundry/audit-baseline.json")
+        new = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
+        self.write(new, LIVE_BASELINE_REL,
+                   (REPO_ROOT / GENESIS_SNAPSHOT_REL).read_bytes() + b" ")
+        right = cc.measure_side(self.contract, "REFOUNDATION_TRACKED", new)
+        self.assertNotIn(LIVE_BASELINE_REL, {m.evidence.source_path for m in right})
+        report = cc.compare(self.contract,
+                            cc.measure_side(self.contract, "LEGACY_LOCAL", legacy), right)
+        self.assertTrue(report.conserved)
 
 
 # ---------------------------------------------------------------------------
@@ -699,12 +724,12 @@ class TestMeasurementFailsClosed(FixtureTestCase):
     def test_an_absent_declared_source_stops_the_run(self):
         """Not skipped. A skipped invariant is an unmeasured one, and an unmeasured
         invariant that vanishes from the report looks conserved."""
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         with self.assertRaises(cc.SourceUnavailable):
             cc.measure_side(self.contract, "LEGACY_LOCAL", root)
 
     def test_an_unknown_side_is_refused(self):
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         with self.assertRaises(cc.ComparisonError):
             cc.measure_side(self.contract, "SOME_OTHER_SIDE", root)
 
@@ -712,7 +737,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["sha256"] = "not-a-digest"
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL,
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
@@ -722,7 +747,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["sha256"] = selector["sha256"].upper()
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL,
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
@@ -731,7 +756,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["byte_size"] = "5066147"
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL,
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
@@ -741,7 +766,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         selector["byte_size"] = True
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL,
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
@@ -753,20 +778,20 @@ class TestMeasurementFailsClosed(FixtureTestCase):
         selector = json.loads((PATHS.codebook_authority_selector)
                               .read_text(encoding="utf-8"))
         del selector["byte_size"]
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json",
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL,
                               selector=selector)
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
 
     def test_a_cr_file_with_no_declared_identity_stops_the_run(self):
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         self.write(root, "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
                    b"# Rules\n\nno front matter here\n")
         with self.assertRaises(cc.MeasurementError):
             cc.measure_side(self.contract, "REFOUNDATION_TRACKED", root)
 
     def test_front_matter_without_the_contracted_key_stops_the_run(self):
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         self.write(root, "config/cr/MTG_Comprehensive_Rules_2026-08-07_LLM.md",
                    b"---\ntitle: \"Rules\"\n---\n\nbody\n")
         with self.assertRaises(cc.MeasurementError):
@@ -778,7 +803,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
                        if i["invariant_id"] == "CODEBOOK_AUTHORITY_IDENTITY")
             row["value_fields"].append({"name": "not_produced", "type": "string"})
         contract = self.load_variant(mutate)
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         with self.assertRaises(cc.MeasurementError) as caught:
             cc.measure_side(contract, "REFOUNDATION_TRACKED", root)
         self.assertIn("missing", str(caught.exception))
@@ -791,7 +816,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
                        if i["invariant_id"] == "CODEBOOK_AUTHORITY_IDENTITY")
             row["extractor_args"]["fields"]["bucket"] = "bucket"
         contract = self.load_variant(mutate)
-        root = self.make_root(ratchet_at="config/baselines/foundry-audit-baseline.json")
+        root = self.make_root(ratchet_at=GENESIS_SNAPSHOT_REL)
         with self.assertRaises(cc.MeasurementError) as caught:
             cc.measure_side(contract, "REFOUNDATION_TRACKED", root)
         self.assertIn("unexpected", str(caught.exception))
@@ -800,7 +825,7 @@ class TestMeasurementFailsClosed(FixtureTestCase):
 class TestComparisonFailsClosed(FixtureTestCase):
     def setUp(self):
         self.root = self.make_root(
-            ratchet_at="config/baselines/foundry-audit-baseline.json")
+            ratchet_at=GENESIS_SNAPSHOT_REL)
         self.measured = list(cc.measure_side(self.contract, "REFOUNDATION_TRACKED",
                                              self.root))
 

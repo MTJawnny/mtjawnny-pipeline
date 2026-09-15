@@ -1,0 +1,24 @@
+{
+  "authority": {
+    "successor_authorized_by": "EXTERNAL_DURABLE_TASK_ONLY",
+    "this_record_ratifies": "NOTHING"
+  },
+  "entries": [
+    {
+      "authorization": "P0.3A commit 055a5611e6c6c6f8c6434ca9284a5b115ec3093a; succession record established by issue:1#issuecomment-5674435702",
+      "changed_sections": [],
+      "ordinal": 0,
+      "predecessor_sha256": null,
+      "reason": "P0.3A exact-byte capture of the ignored ratchet baseline, carried unchanged through the tracked cutover; no baseline value changed",
+      "sha256": "51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601",
+      "size_bytes": 4324
+    }
+  ],
+  "genesis": {
+    "capture_record_block": "ignored_ratchet_baseline",
+    "capture_record_path": "refoundation/conservation/BASELINE-INPUTS.yaml",
+    "snapshot_path": "refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json"
+  },
+  "live_baseline_path": "config/baselines/foundry-audit-baseline.json",
+  "schema": "mtj-ratchet-baseline-succession/1"
+}
