@@ -1,0 +1,262 @@
+{
+ "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "authority": {
+  "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
+  "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
+ },
+ "base_sha": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "blocker_count_old": 13,
+ "controls": {
+  "AQ4": "PAUSED",
+  "BRIDGE0": "PARKED_UNUSED",
+  "MERGE": "NO",
+  "STEP6": "NO"
+ },
+ "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "new_blocker_count": 8,
+ "new_blockers": [
+  {
+   "class": "FAILURE_OBSERVABILITY",
+   "clears_when": "Manager decides whether the abort is intended halt-loud behavior or a runner-level observability defect (no repair in R0; C8.5T SystemExit class is a standing negative control)",
+   "evidence": [
+    "clean checkout: python3 -m unittest discover -s tests/refoundation -t . ends with the corpus STOP and no 'Ran N tests' summary (rc 1); per-module isolation needed to observe anything",
+    "22 tests skip silently when ignored inputs are absent; 2 authority tests fail rather than skip"
+   ],
+   "id": "N01",
+   "status": "NEW_BLOCKED",
+   "title": "absent ignored input aborts the broad suite instead of reporting"
+  },
+  {
+   "class": "GUARD_POPULATION_PINS",
+   "clears_when": "each archive slice carries authorized, mechanical guard retargeting (S14 precedent) with before/after identity proof",
+   "evidence": [
+    "D1 rig: removing the 47 tracked experiments/** files that had no conservative live reach leaves Gate 2 unchanged (16/15/1 W6/0) but adds broad failures test_s10_card_text_owners::test_the_live_caller_set_is_exactly_the_reviewed_one, test_codebook_store (3 population/arithmetic pins) + 1 error",
+    "population walkers: layout_census, test_layout_delegation, codebook_consumer_analysis, test_det_batch_retirement, foundry_reachability, s10 sidecar"
+   ],
+   "id": "N02",
+   "status": "NEW_BLOCKED",
+   "title": "archive/delete of tracked legacy files changes guards, not just topology"
+  },
+  {
+   "class": "LAW_AND_GATE_ROUTES_THROUGH_LEGACY",
+   "clears_when": "Captain changes the CR-route law and the Gate-2 row, or explicitly keeps the shells permanent",
+   "evidence": [
+    "CLAUDE.md at BASE: 'Reach the CR only through experiments/foundry_cr.py' (operator-surface reference found by census)",
+    "Gate 2 row lint argv = experiments/foundry_codebook.py lint; 18 guard/test modules import foundry_common"
+   ],
+   "id": "N03",
+   "status": "DECISION_REQUIRED",
+   "title": "standing law and Gate 2 still route through legacy shells"
+  },
+  {
+   "class": "IGNORE_OWNERSHIP",
+   "clears_when": "Manager decides (negation rule, rename, or accepted exception) before any .gitignore change; no edit in R0",
+   "evidence": [
+    "git ls-files -ci --exclude-standard at BASE = [docs/architecture/preflight/s16b/claims.jsonl] (matches *.jsonl); edits stay tracked but a delete+re-add would be silently ignored"
+   ],
+   "id": "N04",
+   "status": "NEW_BLOCKED",
+   "title": "a tracked evidence file already matches an ignore rule"
+  },
+  {
+   "class": "TRUTH_HOME",
+   "clears_when": "separate AQ4 authority decides tracked freeze vs var runtime home",
+   "evidence": [
+    "experiments/out/aq4/triage-deterministic-census.json, unit-binding-adjudication-s0-a.json, unit-binding-workqueue.json (sha 7443de2e...; census: incident evidence AND benchmark queue)",
+    "var/benchmarks/aq4 named not physical; AQ4 PAUSED so no AQ4 work may relocate them"
+   ],
+   "id": "N05",
+   "status": "DECISION_REQUIRED",
+   "title": "ignored AQ4 governance/benchmark evidence has no physical home"
+  },
+  {
+   "class": "TRUTH_HOME",
+   "clears_when": "authorized, mechanically proven canonical-law extraction (AG-CLI-01/R8.3 precedent) or Captain keeps them",
+   "evidence": [
+    "registry sole homes: MASTER-HANDOFF.md [T0], MASTER-HANDOFF-ADDENDUM-3.md [D18], MASTER-HANDOFF-ADDENDUM-4.md [D34,D67,D77], SESSION-HANDOFF-2026-08-04-EVE.md [D8], WALK-RATIFICATION-EXECUTION-HANDOFF.md [G2-G7,Q10], PARENT-TREE-CANDIDATES.md [GRAMMAR-SS9,M1,M6,Q8.7,S2,S3], TRIAGE-BATCH-2.md [M2]"
+   ],
+   "id": "N06",
+   "status": "DECISION_REQUIRED",
+   "title": "sole-home stale/withheld documents"
+  },
+  {
+   "class": "UNKNOWN_PROVENANCE",
+   "clears_when": "Manager/Captain assigns archive vs retained-operator status with provenance evidence",
+   "evidence": [
+    "7 tracked experiments/** BLOCKED_UNKNOWN: foundry_digest.py, foundry_emit.py, foundry_enrich.py, foundry_review.html (R1 PROMOTE ops/axis_review superseded by S13.R1 retirement), foundry_slug_dossier.py, foundry_system_map.py (R1 ops/diagnostics not physical), foundry_membership_move.py (semantics in mtj_foundry.codebook_membership; operator continuation undecided)"
+   ],
+   "id": "N07",
+   "status": "DECISION_REQUIRED",
+   "title": "tracked legacy files with no accepted destination"
+  },
+  {
+   "class": "RECOVERY_MATERIAL",
+   "clears_when": "retention/owner decision before any runtime relocation",
+   "evidence": [
+    "experiments/out/foundry/backups/** 32 files (96.5 MB; codebook backups; AG-CLI-01 requires backups) and experiments/out/snapshots/_pre-restore-backups/** 140 files (153.9 MB); no ProjectPaths var/** backup owner"
+   ],
+   "id": "N08",
+   "status": "DECISION_REQUIRED",
+   "title": "ignored recovery backups have no successor owner"
+  }
+ ],
+ "old_blocker_reconciliation": [
+  {
+   "clears_when": "every live importer class (guards, tests, legacy scripts) is migrated or retired under authority, the sidecar is re-pinned by an authorized task, and frozen AQ4 surface needs are decided (AQ4 PAUSED)",
+   "evidence": [
+    "S10 accepted (8886a86): card-text ownership moved to mtj_foundry.corpus / oracle_text / mtg.text_match / mtg.shapes",
+    "experiments/foundry_common.py still exists as the legacy policy boundary; tests/refoundation/s10_foundry_common_callers.json pins 88 live importers (65 experiments/**, 17 tests/guards + tests/refoundation, 6 frozen benchmarks/aq4/**) and test_s10_card_text_owners asserts the set exactly",
+    "strict direct live behavioral importers 18 (Gate-2 guards incl. definition_drift, family_sweep, gate_audit, punctuation_audit); frozen AQ4 callers must keep their compatibility surface"
+   ],
+   "id": "B01",
+   "status": "STILL_BLOCKED",
+   "title": "S10 caller closure"
+  },
+  {
+   "clears_when": "physical runtime owner + ignore semantics + verified clean-checkout restore of the selected codebook, and the Gate-2 lint row no longer shells to the legacy module (authorized)",
+   "evidence": [
+    "S11 accepted (db1bcfd, 444b4e8): semantics in mtj_foundry.codebook* modules",
+    "operational mirror still experiments/out/foundry/codebook.json (ProjectPaths.legacy_codebook_json); var/codebook NAMED NOT PHYSICAL anywhere on this machine",
+    "clean checkout: Gate-2 lint/family_sweep/definition_drift STOP on the missing mirror; test_s11_codebook_kernel 6 skips",
+    "foundry_codebook.py is a COMPATIBILITY_SHELL_KEEP with strict live consumers (Gate-2 lint row argv, guards, tests); 32 ignored backups under experiments/out/foundry/backups have no named successor"
+   ],
+   "id": "B02",
+   "status": "STILL_BLOCKED",
+   "title": "store/runtime ownership"
+  },
+  {
+   "clears_when": "successor coverage for every legacy selftest control and process boundary is proven, and the restore controls run (not skip) in a pristine checkout",
+   "evidence": [
+    "S12 accepted (9d22a8f) + S13.R3: permanent owners mtj_foundry.authority / authority_transport / authority_status / authority_restore / authority_cli exist",
+    "experiments/foundry_authority.py self-declares 'the legacy compatibility and operator shell' and has strict live consumers (test_s12_authority_transport runs its legacy selftest as a control; test_s13r2/test_s13r3/test_codebook_store)",
+    "restore-order negative controls (8) and selected-truth checks (2) SKIP without the selected codebook (clean probe: test_s12 10 skips)",
+    "S12 compatibility/process-boundary negative controls have no stated successor that replaces the legacy selftest"
+   ],
+   "id": "B03",
+   "status": "STILL_BLOCKED",
+   "title": "authority/transport retirement boundaries"
+  },
+  {
+   "clears_when": "cleared",
+   "evidence": [
+    "S13.R1 (029c5c4): .claude/commands/triage-alpha|beta|emit.md are RETIRED halt-loud tombstones",
+    "reference census: 0 references from .claude/commands/** to any experiments/** candidate or experiments/out path; test_s13_operator_command_migration::test_no_command_names_a_legacy_or_archive_operational_path passes at BASE and in the clean checkout",
+    ".github/workflows/build.yml runs pipeline/*.py only (0 experiments/** references)",
+    "residual (NOT this blocker): the tombstones themselves are COMPATIBILITY_SHELL_KEEP (guard pins them tracked); CLAUDE.md law route to experiments/foundry_cr.py is N03"
+   ],
+   "id": "B04",
+   "status": "CLEARED",
+   "title": "command/operator stale references"
+  },
+  {
+   "clears_when": "cleared",
+   "evidence": [
+    "S14.R3.R1 accepted (49fcb29): 28 payload files R100 to benchmarks/aq4/** + README + FREEZE-MANIFEST.json (sha256 bb939fbf...); tracked experiments/aq4_benchmark/** and experiments/foundry_aq4_probes.py absent",
+    "test_s14_aq4_freeze_relocation 23 OK at BASE and in the clean checkout; NC6 proves deletion of frozen evidence goes RED",
+    "benchmarks/aq4/** is PROTECTED frozen evidence (KEEP_PERMANENT), not an experiments/** truth-home blocker and not a deletion candidate; AQ4 remains PAUSED",
+    "residuals carried as separate blockers: frozen callers still pin legacy module surfaces (B05-SURFACE, folded into B01/N02); ignored experiments/out/aq4/** evidence (N05)"
+   ],
+   "id": "B05",
+   "status": "CLEARED",
+   "title": "AQ4 truth-home relocation"
+  },
+  {
+   "clears_when": "cleared",
+   "evidence": [
+    "local read-only inventory of the primary checkout: 3,620 files / 3,355,335,202 B (experiments/out 3,321 == census known total; data 299); inventory digest ab3d1c10...",
+    "every file carries a consumer-derived role, disposition and blocker; 66 registered worktrees surveyed (partial copies only; no var/)",
+    "limits stated: .venv not enumerated, .claude/settings.local.json not read (possible credentials)",
+    "visibility is cleared; classification of what is now visible is NOT: 332 ignored files remain BLOCKED_UNKNOWN (149 unreferenced, 62 census derivable-candidates (hypothesis only), 51 dynamic-shape matches, 28 census UNKNOWN_REVIEW, 13 live-referenced-unclassified, 13 review outputs, 9 prose-only, 7 frozen /1 reconcile reports) -> B07/N07"
+   ],
+   "id": "B06",
+   "status": "CLEARED",
+   "title": "ignored runtime visibility"
+  },
+  {
+   "clears_when": "each unknown gets a consumer/provenance determination (archive/reports vs var vs proven-derivable) by an authorized decision; UNKNOWN is never promoted mechanically (NC10)",
+   "evidence": [
+    "the 9 census dynamic shapes now resolve to 59 visible files (batch assembled 7, consolidate_clusters_raw 7, consolidated_batch 7, stage1b_batch 8, completion_note 8, cost_estimate 7, raw_results 7, requests 7, candidate-manifest 1) but their consumers remain frozen/SUP history without a disposition",
+    "ignored BLOCKED_UNKNOWN rows: 332 files; 11 census-referenced paths are missing on this machine"
+   ],
+   "id": "B07",
+   "status": "STILL_BLOCKED",
+   "title": "dynamic/unresolved output consumers"
+  },
+  {
+   "clears_when": "an authorized ignore change with bidirectional controls (NC7/NC8 shape) establishes var/** ownership before any runtime relocation",
+   "evidence": [
+    ".gitignore byte-unchanged since the old head; var/ is NOT ignored: NC8b shows a var/codebook sentinel becomes an untracked, committable file at BASE",
+    "NC7/NC8a prove both directions are detectable (hide tracked control; expose runtime output)",
+    "tracked-but-ignored file already exists: docs/architecture/preflight/s16b/claims.jsonl matches *.jsonl (N04)"
+   ],
+   "id": "B08",
+   "status": "STILL_BLOCKED",
+   "title": ".gitignore / var/** ownership"
+  },
+  {
+   "clears_when": "any document/stub removal is paired with an authorized ratchet succession and before/after registry proof; no baseline update is authorized in R0",
+   "evidence": [
+    "registry at BASE 138 docs / 127 ids / 660 refs / 86 corroborated / 41 sole-home == live baseline ruling_registry section (succession ordinal 1)",
+    "D2 rig: removing 4 zero-ruling stubs -> Gate 2 ruling_registry RED (documents 138->134 WORSE) and test_s14_aq4_freeze_relocation::test_the_pinned_section_is_the_registry_measured_now RED",
+    "test_residual_routing_closeout pins archive/routing blobs (NC3); NC4 proves --check catches a synthetic sole home",
+    "known S1 false-positive behavior untouched (registry never emitted; --check-only / build() only)"
+   ],
+   "id": "B09",
+   "status": "STILL_BLOCKED",
+   "title": "document/ruling topology"
+  },
+  {
+   "clears_when": "differential oracles are retired or replaced by pinned golden manifests under authority, then the engine family archives as a set",
+   "evidence": [
+    "experiments/tier_engine.py: strict live consumers test_corpus_capability and test_oracle_text_capability (full-corpus differential oracles), 10 legacy importers; R1 plans archive/engine only after oracle retirement",
+    "emit_viewer.py BLOCKED_LIVE_CONSUMER (transitively reachable); serve_viewer.py / viewer.html ARCHIVE_PRESERVE only behind tier_engine",
+    "2,772 ignored experiments/out/snapshots/** files owned by snapshot.py/tier_engine; archive/engine and var/archive/engine named not physical"
+   ],
+   "id": "B10",
+   "status": "STILL_BLOCKED",
+   "title": "tier_engine / viewer / differential peer"
+  },
+  {
+   "clears_when": "a verified restore yields the byte-pinned corpus and selector-verified codebook in a pristine checkout, and the suite reports (not aborts) when they are absent",
+   "evidence": [
+    "clean checkout of exact BASE: Gate 2 rc 1, 16 run / 3 ok / 13 unexpected (3 STOP on missing codebook mirror, 10 STOP on missing corpus)",
+    "broad discover run ABORTS with no summary: SystemExit STOP from the corpus loader escapes test_mtg_shapes_substrate and kills the runner (N01)",
+    "per module: 30 modules OK with 22 skips (BASE populated: 0 skips); test_layout_delegation 12 inherited failures; test_s13r2_manual_operator_closure 2 clean-only failures",
+    "restore paths not verified: pipeline/fetch.py fetches current bulk (not byte-pinned to input-lock 2be88ba8...); authority restore needs the remote (not exercised)"
+   ],
+   "id": "B11",
+   "status": "STILL_BLOCKED",
+   "title": "pristine-checkout dependence on ignored state"
+  },
+  {
+   "evidence": [
+    "AG-CLI-01 sole home is docs/MEMBER-ADD-MUTATION-LAW.md (registry); docs/B-MIGRATION-DIRECTIVE.md is now a stub with no sole home (registry SAFE); its body is archive/routing/docs/B-MIGRATION-DIRECTIVE.md",
+    "R8.3 sole home is docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md",
+    "AG-CLI-01 remains behavior law, not authorization for a mutating CLI (pyproject installs only 3 read-only scripts; S13 guard test_the_installed_scripts_are_the_three_read_only_ones)",
+    "residual sole-home stale/withheld documents carried as N06"
+   ],
+   "id": "B12",
+   "status": "SUPERSEDED",
+   "superseded_by": "docs/MEMBER-ADD-MUTATION-LAW.md + docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md (current registry law)",
+   "title": "cleanup truth homes after AG-CLI-01 / R8.3 extraction"
+  },
+  {
+   "clears_when": "cleared (for base 49fcb292 only)",
+   "evidence": [
+    "this task re-derived the whole current set at accepted post-S14 head 49fcb292: all 86 tracked experiments/** files individually, 29 docs stubs, 2 router pointers, 1 AQ4 pointer, 7 sole-home documents, 3 command tombstones, 40 archive files, permanent/control sets, and the full visible ignored inventory; no old classification inherited",
+    "cleared ONLY as a timing precondition: the classifications remain non-authorizing, and a destructive task at any later base must re-run the census at that base"
+   ],
+   "id": "B13",
+   "status": "CLEARED",
+   "title": "mandatory post-S14 timing law"
+  }
+ ],
+ "old_status_counts": {
+  "CLEARED": 4,
+  "STILL_BLOCKED": 8,
+  "SUPERSEDED": 1
+ },
+ "proceed_rule": "A destructive S15 slice may proceed only for candidates whose blockers are CLEARED/SUPERSEDED at its own base and whose disposition is DELETE_SAFE/ARCHIVE_PRESERVE with prerequisites met, under a separately authorized T. No blocker count was forced toward zero.",
+ "schema": "s15-post-s14-blockers/1",
+ "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION"
+}

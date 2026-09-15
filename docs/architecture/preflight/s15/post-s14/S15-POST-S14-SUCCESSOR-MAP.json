@@ -1,0 +1,1752 @@
+{
+ "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "authority": {
+  "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
+  "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
+ },
+ "base_sha": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "controls": {
+  "AQ4": "PAUSED",
+  "BRIDGE0": "PARKED_UNUSED",
+  "MERGE": "NO",
+  "STEP6": "NO"
+ },
+ "entries": [
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/POKE-PUNCH-LIST.md",
+   "r1_plan": {
+    "r1_destination": "archive/reports/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "ruling-registry sweep first (R1 9 K13)"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/reports/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/emit_viewer.py",
+   "r1_plan": {
+    "r1_destination": "archive/engine/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/serve_viewer.py",
+    "experiments/tier_engine.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/engine/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch1_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch2_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch3_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch4_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch5_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch6_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_adapt_batch7_decisions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_any_damage_split.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch2.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch3.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch4.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch5.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch6.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_assemble_batch7.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "each batch's ratified record confirmed present in docs/"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/triage/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_audit_baseline.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "golden ratchet manifest pinned first (R1 11.1)"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": null
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_authority.py",
+   "r1_plan": {
+    "r1_destination": "authority + transport",
+    "r1_disposition": "PROMOTE_SHARED_CODEBOOK_SUBSTRATE (split law/transport)",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_codebook_store.py",
+    "tests/refoundation/test_s12_authority_transport.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py",
+    "tests/refoundation/test_s13r3_authority_layout_census.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.authority",
+     "mtj_foundry.authority_cli",
+     "mtj_foundry.authority_restore",
+     "mtj_foundry.authority_status",
+     "mtj_foundry.authority_transport",
+     "mtj_foundry.codebook",
+     "mtj_foundry.codebook_store"
+    ]
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_axis_merge_pointer_correction.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_axis_walk.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_batch7_pay_life_scrub.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_batch8_ab.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/batch8/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_batch8_canon_analysis.py",
+    "experiments/foundry_batch8_diff.py"
+   ],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/batch8/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_batch8_canon_analysis.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/batch8/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/batch8/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_batch8_diff.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/batch8/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_batch8_canon_analysis.py"
+   ],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/batch8/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_blanket_risk.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_build_reaudit_packet.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_residual_routing_closeout.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "RETIRED_CAPABILITY_TOMBSTONE",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_cdr09_derive.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_cdr09_walk.py"
+   ],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_cdr09_walk.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_codebook.py",
+   "r1_plan": {
+    "r1_destination": "codebook store",
+    "r1_disposition": "PROMOTE_SHARED_CODEBOOK_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_definition_drift.py",
+    "tests/guards/gate2/foundry_family_sweep.py",
+    "tests/guards/gate2/test_locality.py",
+    "tests/refoundation/test_codebook_capability.py",
+    "tests/refoundation/test_codebook_store.py",
+    "tests/refoundation/test_layout_delegation.py",
+    "tests/refoundation/test_s13_operator_command_migration.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_any_damage_split.py",
+    "experiments/foundry_authority.py",
+    "experiments/foundry_axis_merge_pointer_correction.py",
+    "experiments/foundry_cdr09_derive.py",
+    "experiments/foundry_cdr09_walk.py",
+    "experiments/foundry_consolidate_run1.py",
+    "experiments/foundry_consolidate_run1_apply.py",
+    "experiments/foundry_consolidate_run1_classify.py",
+    "experiments/foundry_consolidate_run1_enumerate.py",
+    "experiments/foundry_det_pass.py",
+    "experiments/foundry_gate0_scrub.py",
+    "experiments/foundry_locality_backfill.py",
+    "experiments/foundry_membership_move.py",
+    "experiments/foundry_migrate_codebook_v2.py",
+    "experiments/foundry_r5_attribution.py",
+    "experiments/foundry_reaudit.py",
+    "experiments/foundry_shape_extractor.py",
+    "experiments/foundry_slug_dossier.py",
+    "experiments/foundry_system_map.py",
+    "experiments/foundry_verify_migration.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook",
+     "mtj_foundry.codebook_store",
+     "mtj_foundry.lint_report"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_binding.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_common.py",
+   "r1_plan": {
+    "r1_destination": "mtg corpus/oracle_text + infra; halt/REPO_ROOT DELETE_AFTER_CONSERVATION",
+    "r1_disposition": "SPLIT",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_definition_drift.py",
+    "tests/guards/gate2/foundry_family_sweep.py",
+    "tests/guards/gate2/foundry_gate_audit.py",
+    "tests/guards/gate2/foundry_punctuation_audit.py",
+    "tests/guards/gate2/foundry_qualifier_census.py",
+    "tests/guards/gate2/foundry_reachability.py",
+    "tests/guards/gate2/foundry_routing_regression.py",
+    "tests/guards/gate2/foundry_ruling_registry.py",
+    "tests/guards/gate2/foundry_visibility_audit.py",
+    "tests/guards/gate2/test_ground_truth.py",
+    "tests/guards/gate2/test_locality.py",
+    "tests/guards/gate2/test_object_lattice.py",
+    "tests/guards/probe/foundry_probe.py",
+    "tests/refoundation/test_codebook_store.py",
+    "tests/refoundation/test_layout_delegation.py",
+    "tests/refoundation/test_mtg_shapes_substrate.py",
+    "tests/refoundation/test_readonly_runtime.py",
+    "tests/refoundation/test_s10_card_text_owners.py",
+    "tests/refoundation/test_s11_codebook_kernel.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_adapt_batch1_decisions.py",
+    "experiments/foundry_adapt_batch2_decisions.py",
+    "experiments/foundry_adapt_batch3_decisions.py",
+    "experiments/foundry_adapt_batch4_decisions.py",
+    "experiments/foundry_adapt_batch5_decisions.py",
+    "experiments/foundry_adapt_batch6_decisions.py",
+    "experiments/foundry_adapt_batch7_decisions.py",
+    "experiments/foundry_any_damage_split.py",
+    "experiments/foundry_assemble_batch2.py",
+    "experiments/foundry_assemble_batch3.py",
+    "experiments/foundry_assemble_batch4.py",
+    "experiments/foundry_assemble_batch5.py",
+    "experiments/foundry_assemble_batch6.py",
+    "experiments/foundry_assemble_batch7.py",
+    "experiments/foundry_authority.py",
+    "experiments/foundry_axis_merge_pointer_correction.py",
+    "experiments/foundry_axis_walk.py",
+    "experiments/foundry_batch7_pay_life_scrub.py",
+    "experiments/foundry_batch8_ab.py",
+    "experiments/foundry_batch8_canon_analysis.py",
+    "experiments/foundry_batch8_diff.py",
+    "experiments/foundry_blanket_risk.py",
+    "experiments/foundry_cdr09_derive.py",
+    "experiments/foundry_cdr09_walk.py",
+    "experiments/foundry_codebook.py",
+    "experiments/foundry_consolidate.py",
+    "experiments/foundry_consolidate_run1.py",
+    "experiments/foundry_consolidate_run1_apply.py",
+    "experiments/foundry_consolidate_run1_classify.py",
+    "experiments/foundry_consolidate_run1_enumerate.py",
+    "experiments/foundry_corpus_pass_run1.py",
+    "experiments/foundry_corroboration_pass.py",
+    "experiments/foundry_cr.py",
+    "experiments/foundry_cr702_classes.py",
+    "experiments/foundry_cr_checks.py",
+    "experiments/foundry_cr_edition_diff.py",
+    "experiments/foundry_det_pass.py",
+    "experiments/foundry_det_patterns_probe.py",
+    "experiments/foundry_digest.py",
+    "experiments/foundry_emit.py",
+    "experiments/foundry_enrich.py",
+    "experiments/foundry_gate0_scrub.py",
+    "experiments/foundry_keyword_buckets.py",
+    "experiments/foundry_locality.py",
+    "experiments/foundry_locality_backfill.py",
+    "experiments/foundry_membership_move.py",
+    "experiments/foundry_migrate_codebook_v2.py",
+    "experiments/foundry_object_lattice.py",
+    "experiments/foundry_prior_art.py",
+    "experiments/foundry_r5_attribution.py",
+    "experiments/foundry_reach_census.py",
+    "experiments/foundry_reaudit.py",
+    "experiments/foundry_reconcile.py",
+    "experiments/foundry_reminder_conformance.py",
+    "experiments/foundry_selfother_scope.py",
+    "experiments/foundry_shape_extractor.py",
+    "experiments/foundry_slug_reparse.py",
+    "experiments/foundry_stage1b.py",
+    "experiments/foundry_system_map.py",
+    "experiments/foundry_verify_migration.py",
+    "experiments/foundry_w3_census.py",
+    "experiments/foundry_wire_capability.py",
+    "experiments/foundry_wire_experiment.py",
+    "experiments/measure/axis_foundry.py",
+    "experiments/validate_slug.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_det_patterns",
+     "mtj_foundry.corpus",
+     "mtj_foundry.infra",
+     "mtj_foundry.infra.artifact",
+     "mtj_foundry.oracle_text",
+     "mtj_foundry.paths"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_consolidate.py",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_family_sweep.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_batch8_canon_analysis.py",
+    "experiments/foundry_consolidate_run1.py",
+    "experiments/foundry_consolidate_run1_classify.py",
+    "experiments/foundry_enrich.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_consolidate_run1.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_consolidate_run1_apply.py",
+    "experiments/foundry_consolidate_run1_classify.py",
+    "experiments/foundry_consolidate_run1_enumerate.py",
+    "experiments/foundry_r5_attribution.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/consolidation/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_consolidate_run1_apply.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/consolidation/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_consolidate_run1_classify.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_consolidate_run1_enumerate.py",
+    "experiments/foundry_r5_attribution.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/consolidation/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_consolidate_run1_enumerate.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/consolidation/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_corpus_pass_run1.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/consolidation/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_corroboration_pass.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/consolidation/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/consolidation/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_cr.py",
+   "r1_plan": {
+    "r1_destination": "mtg/cr/edition.py",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "CLAUDE.md",
+    "tests/guards/cr/test_cr_edition.py",
+    "tests/guards/gate2/foundry_family_sweep.py",
+    "tests/guards/gate2/foundry_qualifier_census.py",
+    "tests/refoundation/test_layout_delegation.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_cr702_classes.py",
+    "experiments/foundry_cr_checks.py",
+    "experiments/foundry_cr_edition_diff.py",
+    "experiments/foundry_keyword_buckets.py",
+    "experiments/foundry_object_lattice.py",
+    "experiments/foundry_shape_extractor.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.cr_edition_report",
+     "mtj_foundry.mtg.cr",
+     "mtj_foundry.mtg.cr.edition"
+    ]
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_cr702_classes.py",
+   "r1_plan": {
+    "r1_destination": "mtg/cr/keywords.py",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_gate_audit.py",
+    "tests/guards/gate2/foundry_qualifier_census.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_object_lattice.py",
+    "experiments/foundry_system_map.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.cr702_report",
+     "mtj_foundry.mtg.cr",
+     "mtj_foundry.mtg.cr.keywords"
+    ]
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_cr_checks.py",
+   "r1_plan": {
+    "r1_destination": "src/mtj_foundry/mtg/cr/*",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_s13_operator_command_migration.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_coverage",
+     "mtj_foundry.codebook_store",
+     "mtj_foundry.corpus",
+     "mtj_foundry.cr_checks_job",
+     "mtj_foundry.mtg.cr",
+     "mtj_foundry.mtg.cr.checks",
+     "mtj_foundry.mtg.cr.edition",
+     "mtj_foundry.paths"
+    ]
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_cr_edition_diff.py",
+   "r1_plan": {
+    "r1_destination": "src/mtj_foundry/mtg/cr/*",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.cr_edition_diff_report"
+    ]
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_det_pass.py",
+   "r1_plan": {
+    "r1_destination": "mtg derivation + codebook mutator",
+    "r1_disposition": "SPLIT",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/test_locality.py",
+    "tests/refoundation/test_s11_codebook_kernel.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_migrate_codebook_v2.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook",
+     "mtj_foundry.codebook_det_apply",
+     "mtj_foundry.codebook_det_patterns",
+     "mtj_foundry.codebook_det_resolution",
+     "mtj_foundry.codebook_lattice",
+     "mtj_foundry.det_pass_job",
+     "mtj_foundry.mtg",
+     "mtj_foundry.mtg.shapes",
+     "mtj_foundry.mtg.shapes.target_classes",
+     "mtj_foundry.mtg.text_match"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_det_patterns_probe.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_det_pass.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.infra",
+     "mtj_foundry.infra.artifact",
+     "mtj_foundry.oracle_text"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_digest.py",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_emit.py",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_enrich.py",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_gate0_scrub.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_keyword_buckets.py",
+   "r1_plan": {
+    "r1_destination": "src/mtj_foundry/mtg/cr/*",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_s13_operator_command_migration.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.keyword_buckets_job",
+     "mtj_foundry.mtg.cr",
+     "mtj_foundry.mtg.cr.keyword_buckets"
+    ]
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_locality.py",
+   "r1_plan": {
+    "r1_destination": "mtg/shapes/locality.py",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/test_locality.py",
+    "tests/refoundation/test_mtg_shapes_substrate.py",
+    "tests/refoundation/test_s10_card_text_owners.py",
+    "tests/refoundation/test_s11_codebook_kernel.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_det_pass.py",
+    "experiments/foundry_locality_backfill.py",
+    "experiments/foundry_object_lattice.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_locality",
+     "mtj_foundry.locality_report",
+     "mtj_foundry.mtg.shapes",
+     "mtj_foundry.mtg.shapes.locality"
+    ]
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_locality_backfill.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_membership_move.py",
+   "r1_plan": {
+    "r1_destination": "codebook/membership",
+    "r1_disposition": "PROMOTE_SHARED_CODEBOOK_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_migrate_codebook_v2.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/mutations/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_object_lattice.py",
+   "r1_plan": {
+    "r1_destination": "mtg/shapes/object_lattice (target_classes)",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_qualifier_census.py",
+    "tests/guards/gate2/test_object_lattice.py",
+    "tests/refoundation/test_mtg_shapes_substrate.py",
+    "tests/refoundation/test_s10_card_text_owners.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_det_pass.py",
+    "experiments/foundry_reach_census.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_lattice",
+     "mtj_foundry.codebook_store",
+     "mtj_foundry.mtg.shapes",
+     "mtj_foundry.mtg.shapes.target_classes",
+     "mtj_foundry.object_lattice_report",
+     "mtj_foundry.paths"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_prior_art.py",
+   "r1_plan": {
+    "r1_destination": "ops/diagnostics/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "destination not physical at BASE; SESSION-START-PROCEDURE is archived routing"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_layout_delegation.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_r5_attribution.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_layout_delegation.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/mutations/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_reach_census.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_reaudit.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_reconcile.py",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_migrate_codebook_v2.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_reminder_conformance.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_det_batch_retirement.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_review.html",
+   "r1_plan": {
+    "r1_destination": "ops/axis_review/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "SUPERSEDED: S13.R1 retired the triage loop with no /2 successor; reconcile is frozen /1"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_selfother_scope.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_pairing.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/foundry_shape_extractor.py",
+   "r1_plan": {
+    "r1_destination": "mtg/shapes/delivery.py",
+    "r1_disposition": "PROMOTE_SHARED_MTG_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_gate_audit.py",
+    "tests/guards/gate2/foundry_punctuation_audit.py",
+    "tests/guards/gate2/foundry_routing_regression.py",
+    "tests/guards/gate2/foundry_visibility_audit.py",
+    "tests/guards/gate2/test_ground_truth.py",
+    "tests/guards/probe/foundry_probe.py",
+    "tests/refoundation/test_layout_delegation.py",
+    "tests/refoundation/test_mtg_shapes_substrate.py",
+    "tests/refoundation/test_s10_card_text_owners.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_blanket_risk.py",
+    "experiments/foundry_cr702_classes.py",
+    "experiments/foundry_reach_census.py",
+    "experiments/foundry_reminder_conformance.py",
+    "experiments/foundry_selfother_scope.py",
+    "experiments/foundry_slug_reparse.py",
+    "experiments/foundry_system_map.py",
+    "experiments/foundry_w3_census.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_coverage",
+     "mtj_foundry.mtg.shapes",
+     "mtj_foundry.mtg.shapes.delivery",
+     "mtj_foundry.shape_report"
+    ]
+   }
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_slug_dossier.py",
+   "r1_plan": {
+    "r1_destination": "ops/diagnostics/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "destination not physical at BASE; SESSION-START-PROCEDURE is archived routing"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_slug_reparse.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_layout_delegation.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_stage1b.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/triage/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "never re-run to validate a migration"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_s11_codebook_kernel.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_batch8_ab.py",
+    "experiments/foundry_batch8_diff.py",
+    "experiments/foundry_corpus_pass_run1.py",
+    "experiments/foundry_corroboration_pass.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "intended_final_home": "archive/research/triage/**",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_det_patterns"
+    ]
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_synonym_collision.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "BLOCKED_UNKNOWN",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_system_map.py",
+   "r1_plan": {
+    "r1_destination": "ops/diagnostics/",
+    "r1_disposition": "PROMOTE_OPERATOR_TOOL",
+    "r1_note": "destination not physical at BASE; SESSION-START-PROCEDURE is archived routing"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PROVEN_SUCCESSOR",
+   "successor": null
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_verify_migration.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/mutations/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "migrate_codebook_v2 + verify_migration archive as a PAIR"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_codebook_store.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/mutations/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_w3_census.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_wire_capability.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_layout_delegation.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/foundry_wire_experiment.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_layout_delegation.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/research/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/invert_tags.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/FINDINGS-MEMO.md",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/axis_foundry.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/clean_recut.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/df_distributions.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/family_tree_evidence.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [
+    "experiments/measure/axis_foundry.py"
+   ],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/phase3_rebalance_shapes.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/measure/pip_normalization.py",
+   "r1_plan": {
+    "r1_destination": "archive/research/thesaurus-measurement/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "3 memos move with the code"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/research/thesaurus-measurement/**"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/serve_viewer.py",
+   "r1_plan": {
+    "r1_destination": "archive/engine/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/engine/**"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/snapshot.py",
+   "r1_plan": {
+    "r1_destination": "archive/engine/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_selftest_purity.py"
+   ],
+   "remaining_legacy_importers_strict": [],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/engine/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/tier_engine.py",
+   "r1_plan": {
+    "r1_destination": "archive/engine/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
+   },
+   "remaining_callers_strict": [
+    "tests/refoundation/test_corpus_capability.py",
+    "tests/refoundation/test_oracle_text_capability.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/emit_viewer.py",
+    "experiments/foundry_wire_experiment.py",
+    "experiments/measure/axis_foundry.py",
+    "experiments/measure/clean_recut.py",
+    "experiments/measure/df_distributions.py",
+    "experiments/measure/family_tree_evidence.py",
+    "experiments/measure/phase3_rebalance_shapes.py",
+    "experiments/measure/pip_normalization.py",
+    "experiments/serve_viewer.py",
+    "experiments/snapshot.py"
+   ],
+   "state": "NO_PERMANENT_SUCCESSOR_PROVEN",
+   "successor": {
+    "intended_final_home": "archive/engine/**",
+    "permanent_owner_modules_imported": []
+   }
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "frozen_aq4_surface_consumers": [
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_compare.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_population.py",
+    "benchmarks/aq4/experiments/aq4_benchmark/aq4_projection.py",
+    "benchmarks/aq4/experiments/foundry_aq4_probes.py"
+   ],
+   "legacy": "experiments/validate_slug.py",
+   "r1_plan": {
+    "r1_destination": "codebook slug",
+    "r1_disposition": "PROMOTE_SHARED_CODEBOOK_SUBSTRATE",
+    "r1_note": ""
+   },
+   "remaining_callers_strict": [
+    "tests/guards/gate2/foundry_family_sweep.py",
+    "tests/refoundation/test_s11_codebook_kernel.py",
+    "tests/refoundation/test_s13r2_manual_operator_closure.py"
+   ],
+   "remaining_legacy_importers_strict": [
+    "experiments/foundry_axis_walk.py",
+    "experiments/foundry_consolidate.py",
+    "experiments/foundry_consolidate_run1.py",
+    "experiments/foundry_consolidate_run1_classify.py",
+    "experiments/foundry_consolidate_run1_enumerate.py",
+    "experiments/foundry_object_lattice.py"
+   ],
+   "state": "OWNER_EXISTS_CALLER_COVERAGE_NOT_CLOSED",
+   "successor": {
+    "caller_coverage": "NOT_CLOSED",
+    "note": "the shell imports these owners; that proves delegation of some behavior, not caller closure",
+    "permanent_owner_modules_imported": [
+     "mtj_foundry.codebook_slug",
+     "mtj_foundry.slug_report"
+    ]
+   }
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "frozen_aq4_surface_consumers": [],
+   "legacy": "experiments/viewer.html",
+   "r1_plan": {
+    "r1_destination": "archive/engine/**",
+    "r1_disposition": "ARCHIVE_AS_HISTORY_EVIDENCE",
+    "r1_note": "follow tier_engine; oracle retirement first (R1 11.1)"
+   },
+   "remaining_callers_strict": [],
+   "remaining_legacy_importers_strict": [],
+   "state": "ARCHIVE_HOME_NAMED_NOT_PHYSICAL",
+   "successor": "archive/engine/**"
+  }
+ ],
+ "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "law": "Owner modules imported by a shell prove partial delegation, never caller closure. A shell with a remaining caller is not delete-safe.",
+ "non_experiments": [
+  {
+   "legacy": "experiments/moves/**",
+   "state": "MIGRATED_ABSENT_AT_BASE",
+   "successor": "tests/fixtures/ground_truth/** (20 tracked fixtures)"
+  },
+  {
+   "legacy": "experiments/aq4_benchmark/** + experiments/foundry_aq4_probes.py",
+   "state": "FROZEN_RELOCATED_ABSENT_AT_BASE",
+   "successor": "benchmarks/aq4/** (FREEZE-MANIFEST.json sha256 bb939fbf2ca4782bec6a54d53a3ef26722da9daddb004e9c3dd885fb49b2365b)"
+  },
+  {
+   "legacy": "docs/B-MIGRATION-DIRECTIVE.md (AG-CLI-01 body)",
+   "state": "LAW_EXTRACTED_STUB_REMAINS",
+   "successor": "docs/MEMBER-ADD-MUTATION-LAW.md (registry sole home AG-CLI-01); body at archive/routing/docs/B-MIGRATION-DIRECTIVE.md"
+  },
+  {
+   "legacy": "R8.3 historical homes",
+   "state": "LAW_EXTRACTED",
+   "successor": "docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md (registry sole home R8.3)"
+  },
+  {
+   "legacy": "experiments/out/foundry/audit-baseline.json",
+   "state": "SUPERSEDED_BYTES_CONSERVED_IN_GIT",
+   "successor": "config/baselines/foundry-audit-baseline.json (live, succession ordinal 1 sha256 b0f3d6d7...) + refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json (genesis, byte-equal to the ignored copy 51fca151...)"
+  },
+  {
+   "legacy": "experiments/out/foundry/codebook.json",
+   "state": "NOT_MIGRATED",
+   "successor": "var/codebook/** (ProjectPaths.var_codebook) NAMED NOT PHYSICAL; authority = config/selectors/codebook-authority.json + remote immutable object"
+  },
+  {
+   "legacy": ".claude/commands/triage-*.md loop",
+   "state": "RETIRED_TOMBSTONES",
+   "successor": "none (S13.R1: no /2 batch-triage successor)"
+  }
+ ],
+ "schema": "s15-post-s14-successor-map/1",
+ "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION"
+}

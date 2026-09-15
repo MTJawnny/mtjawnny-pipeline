@@ -1,0 +1,180 @@
+{
+ "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "authority": {
+  "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
+  "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
+ },
+ "base_sha": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "controls": {
+  "AQ4": "PAUSED",
+  "BRIDGE0": "PARKED_UNUSED",
+  "MERGE": "NO",
+  "STEP6": "NO"
+ },
+ "deletion_rule": "A summary elsewhere is not equivalent authority or provenance. Evidence never self-authorizes deletion.",
+ "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "homes": [
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "tests/fixtures/ground_truth/** (20)",
+   "truth_class": "behavioral ground truth"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "src/mtj_foundry/** (58)",
+   "truth_class": "permanent semantic substrate"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "config/selectors/codebook-authority.json",
+   "identity": "sha256 fa6686e0cb8b09b62ae46484069549d0212dc69b74dfc091f0b14cace77abed0",
+   "truth_class": "codebook authority selection"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "config/baselines/foundry-audit-baseline.json",
+   "identity": "sha256 b0f3d6d7580f507f65dd6d4c5ab8f21d4f230efe498c780d7711d4f9f166aaa1 (4324 B) == RATCHET-BASELINE-SUCCESSION latest (ordinal 1)",
+   "truth_class": "live ratchet control"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "refoundation/conservation/RATCHET-BASELINE-SUCCESSION.json",
+   "identity": "sha256 1de16afa224cb2cd7fa316efa388956b428765ca690e0fe8d77dda6762706dec",
+   "truth_class": "ratchet succession law"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json",
+   "identity": "sha256 51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601",
+   "truth_class": "immutable genesis ratchet capture"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "config/registers/family-sweep-known-debt.json",
+   "identity": "sha256 db9f0c456b245cd603cb9e29817341dc3564a7cb10d4836b4bfa9b7e75b8ddff",
+   "truth_class": "W6 authorized standing debt"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "docs/MEMBER-ADD-MUTATION-LAW.md",
+   "note": "behavior law, NOT authorization to install/expose a mutating CLI (pyproject installs only the three read-only scripts)",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 1,
+    "ruling_ids": [
+     "AG-CLI-01"
+    ],
+    "sole_home_for": [
+     "AG-CLI-01"
+    ]
+   },
+   "truth_class": "AG-CLI-01 member-add mutation law"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 1,
+    "ruling_ids": [
+     "R8.3"
+    ],
+    "sole_home_for": [
+     "R8.3"
+    ]
+   },
+   "truth_class": "R8.3 activated-regenerate-self law"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "docs/*.md population (138) + tests/guards/gate2/foundry_ruling_registry.py + ratchet section",
+   "metrics": {
+    "corroborated": 86,
+    "documents": 138,
+    "ruling_ids": 127,
+    "sole_home": 41,
+    "total_references": 660
+   },
+   "note": "known S1 false-positive collision behavior preserved (registry not regenerated; --check-only only)",
+   "truth_class": "ruling topology"
+  },
+  {
+   "disposition": "BLOCKED_TRUTH_HOME",
+   "home": "docs/MASTER-HANDOFF.md, MASTER-HANDOFF-ADDENDUM-3.md, MASTER-HANDOFF-ADDENDUM-4.md, SESSION-HANDOFF-2026-08-04-EVE.md, WALK-RATIFICATION-EXECUTION-HANDOFF.md, PARENT-TREE-CANDIDATES.md, TRIAGE-BATCH-2.md",
+   "truth_class": "sole-home stale/withheld documents"
+  },
+  {
+   "disposition": "KEEP_PERMANENT",
+   "home": "benchmarks/aq4/** (30 files)",
+   "identity": "FREEZE-MANIFEST.json sha256 bb939fbf2ca4782bec6a54d53a3ef26722da9daddb004e9c3dd885fb49b2365b",
+   "note": "AQ4 PAUSED; not a legacy deletion candidate; not an experiments/** truth-home blocker any more",
+   "protected": true,
+   "truth_class": "AQ4 frozen benchmark/precommit/holdout/incident evidence (tracked)"
+  },
+  {
+   "blocker": "N05",
+   "disposition": "BLOCKED_TRUTH_HOME",
+   "home": "experiments/out/aq4/{triage-deterministic-census.json, unit-binding-adjudication-s0-a.json, unit-binding-workqueue.json}",
+   "identity": "workqueue sha256 7443de2ec353236db54411c2c2d7782c6e5b384b4c88e7477210fc3fde3eac67 (census)",
+   "truth_class": "AQ4 governance/benchmark evidence (ignored)"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "home": "archive/routing/experiments/foundry_build_reaudit_packet.py + archive/routing/docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+   "note": "sole tracked copy of the blob (NC3)",
+   "truth_class": "retired generator provenance"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "home": "archive/routing/** (39)",
+   "truth_class": "cold-start routing history"
+  },
+  {
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "home": "experiments/foundry_reconcile.py",
+   "note": "refuses the live /2 codebook; S13 guard pins it byte-identical; must not become live implementation authority",
+   "truth_class": "frozen /1 reconcile provenance"
+  },
+  {
+   "disposition": "COMPATIBILITY_SHELL_KEEP",
+   "home": "src/mtj_foundry/cr702_report.py via experiments/foundry_cr702_classes.py; conserved by tests/refoundation/test_s13r2_manual_operator_closure.py::test_cr702_unstated_keyerror_debt_is_conserved",
+   "note": "debt preserved as debt; no repair",
+   "truth_class": "declared debt: cr702 --unstated KeyError"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE or BLOCKED_LIVE_CONSUMER per candidate",
+   "home": "experiments/** R1 archive families",
+   "note": "migrate_codebook_v2 + verify_migration are a PAIR; verify_migration still has a live test consumer",
+   "truth_class": "one-off mutation/measurement/batch research provenance"
+  },
+  {
+   "blocker": "B02",
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "home": "experiments/out/foundry/codebook.json",
+   "identity": "sha256 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c == selector",
+   "truth_class": "operational codebook local mirror"
+  },
+  {
+   "blocker": "B11",
+   "disposition": "BLOCKED_LIVE_CONSUMER",
+   "home": "data/raw/oracle-cards.jsonl.gz",
+   "identity": "sha256 2be88ba86da7ecbbb541094f28439c4888c5585c9ca8155e097f1cd0b548d872 == refoundation/path-e/input-lock.json",
+   "truth_class": "pinned pilot corpus"
+  },
+  {
+   "blocker": "N08",
+   "disposition": "BLOCKED_TRUTH_HOME",
+   "home": "experiments/out/foundry/backups/** (30 + 2 unknown), experiments/out/snapshots/_pre-restore-backups/** (139)",
+   "truth_class": "codebook/snapshot recovery backups (ignored)"
+  },
+  {
+   "disposition": "ARCHIVE_PRESERVE",
+   "home": "refoundation/preservation/captures/2026-08-30-local-research/**",
+   "note": "the primary checkout's 9 untracked docs/*.md are byte-identical to these captures",
+   "truth_class": "local research capture"
+  }
+ ],
+ "principle": "PRESERVE TRUTH, NOT PLUMBING",
+ "schema": "s15-post-s14-truth-home-matrix/1",
+ "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION"
+}

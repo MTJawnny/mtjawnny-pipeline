@@ -1,0 +1,712 @@
+{
+ "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "adversarial_history_still_binding": "deletable != zero ruling references; a stub's harvested lines keep registry topology; stub deletion is a registry-population change requiring authorized succession",
+ "authority": {
+  "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
+  "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
+ },
+ "base_sha": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "controls": {
+  "AQ4": "PAUSED",
+  "BRIDGE0": "PARKED_UNUSED",
+  "MERGE": "NO",
+  "STEP6": "NO"
+ },
+ "counts": {
+  "byte_preserved_in_archive_routing": 12,
+  "old_active_quarantine_items": 12,
+  "old_safe_for_eventual_deletion_now_deletable": 0,
+  "with_direct_stub_at_base": 9,
+  "without_stub_refoundation_bodies": 3
+ },
+ "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "items": [
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/NEXT-SESSION-CR-NORMALIZATION.md",
+   "blob_prefix": "f11c5f7926",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/NEXT-SESSION-CR-NORMALIZATION.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+   "blob_prefix": "04e5eb40b0",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+   "blob_prefix": "b510d3b970",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+   "blob_prefix": "75ac9e7659",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/CONSOLIDATION-RUN1-DIRECTIVE.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+   "blob_prefix": "3c47b2025b",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/DET-PATTERNS-RUN2-DIRECTIVE.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/SESSION-HANDOFF-2026-08-06.md",
+   "blob_prefix": "5fbb35d2c5",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/SESSION-HANDOFF-2026-08-06.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/SESSION-HANDOFF-2026-08-07.md",
+   "blob_prefix": "ce5ce94ac6",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/SESSION-HANDOFF-2026-08-07.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/docs/SESSION-HANDOFF-2026-08-09.md",
+   "blob_prefix": "2395024f8a",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "docs/SESSION-HANDOFF-2026-08-09.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/refoundation/ACTIVE-PHASE.yaml",
+   "blob_prefix": "a8a309d432",
+   "direct_path_stub_present_at_base": true,
+   "original_path": "refoundation/ACTIVE-PHASE.yaml",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/refoundation/MANAGER-START.md",
+   "blob_prefix": "5c3aed7de8",
+   "direct_path_stub_present_at_base": false,
+   "original_path": "refoundation/MANAGER-START.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/refoundation/README.md",
+   "blob_prefix": "01408a1b74",
+   "direct_path_stub_present_at_base": false,
+   "original_path": "refoundation/README.md",
+   "quarantine_blob_equals_archive_blob": true
+  },
+  {
+   "archive_blob_equals_old_head_original": true,
+   "archive_path": "archive/routing/refoundation/ROADMAP.md",
+   "blob_prefix": "47f5ad3b22",
+   "direct_path_stub_present_at_base": false,
+   "original_path": "refoundation/ROADMAP.md",
+   "quarantine_blob_equals_archive_blob": true
+  }
+ ],
+ "old_cleanup_branch": {
+  "ancestor_of_base": false,
+  "head": "fcb11e19296209aecac4c8b3526be39bcce0196a",
+  "note": "never merged; docs/to-be-deleted/REMOVAL-LEDGER.md exists only on that branch; the accepted lineage chose archive/routing + inert stubs instead",
+  "ref": "origin/cleanup/obsolete-doc-quarantine-2026-09-11"
+ },
+ "old_disposition_reconciliation": {
+  "move_to_final_history_archive (8)": "DONE on accepted lineage: all 8 bodies byte-preserved under archive/routing/**; 4 directive stubs + 2 refoundation router pointers remain at their direct paths (COMPATIBILITY_SHELL_KEEP)",
+  "safe_for_eventual_deletion_after_prerequisites (4: three handoffs + NEXT-SESSION-CR-NORMALIZATION)": "SUPERSEDED: bodies archived; the four remaining direct-path stubs are NOT deletable — D2 rig: Gate 2 ruling_registry RED (documents 138->134 WORSE) and test_s14 atomic-transition test RED"
+ },
+ "schema": "s15-post-s14-quarantine-reconciliation/1",
+ "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION",
+ "stubs_registry_check": {
+  "docs/B-CONSOLIDATION-REAUDIT-PACKET.md": {
+   "deletion_blocked": false,
+   "refs": 35,
+   "ruling_ids": [
+    "A1",
+    "A10",
+    "A11",
+    "A12",
+    "A14",
+    "A15",
+    "A2",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "AG-COUNT-01",
+    "D4",
+    "H-02",
+    "R5",
+    "R6",
+    "R7",
+    "R9"
+   ],
+   "sole_home_for": []
+  },
+  "docs/B-MIGRATION-DIRECTIVE.md": {
+   "deletion_blocked": false,
+   "refs": 4,
+   "ruling_ids": [
+    "A1",
+    "A15",
+    "B-02",
+    "CDR-11"
+   ],
+   "sole_home_for": []
+  },
+  "docs/CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md": {
+   "deletion_blocked": false,
+   "refs": 7,
+   "ruling_ids": [
+    "A1",
+    "A15",
+    "AG-COUNT-01",
+    "D4",
+    "H-02",
+    "R5"
+   ],
+   "sole_home_for": []
+  },
+  "docs/CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md": {
+   "deletion_blocked": false,
+   "refs": 2,
+   "ruling_ids": [
+    "A1",
+    "A15"
+   ],
+   "sole_home_for": []
+  },
+  "docs/CONSOLIDATION-RUN1-DIRECTIVE.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "G1"
+   ],
+   "sole_home_for": []
+  },
+  "docs/DET-PATTERNS-RUN2-DIRECTIVE.md": {
+   "deletion_blocked": false,
+   "refs": 3,
+   "ruling_ids": [
+    "A2",
+    "A8",
+    "NEW-02"
+   ],
+   "sole_home_for": []
+  },
+  "docs/MASTER-HANDOFF-ADDENDUM-2.md": {
+   "deletion_blocked": false,
+   "refs": 9,
+   "ruling_ids": [
+    "D5",
+    "D6",
+    "Q1",
+    "Q2",
+    "Q3",
+    "S1",
+    "S5",
+    "S7"
+   ],
+   "sole_home_for": []
+  },
+  "docs/NEXT-SESSION-CR-NORMALIZATION.md": {
+   "deletion_blocked": false,
+   "refs": 0,
+   "ruling_ids": [],
+   "sole_home_for": []
+  },
+  "docs/PICK-UP-HERE.md": {
+   "deletion_blocked": false,
+   "refs": 16,
+   "ruling_ids": [
+    "A1",
+    "A12",
+    "A15",
+    "A4",
+    "CDR-02",
+    "D2",
+    "D3",
+    "Q8.5",
+    "R2",
+    "R5"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-01.md": {
+   "deletion_blocked": false,
+   "refs": 35,
+   "ruling_ids": [
+    "A12",
+    "ADD-01",
+    "ADD-02",
+    "ADD-06",
+    "ADD-08",
+    "B-01",
+    "B-02",
+    "B-03",
+    "CDR-01",
+    "CDR-02",
+    "CDR-03",
+    "CDR-04",
+    "CDR-05",
+    "CDR-06",
+    "CDR-07",
+    "CDR-08",
+    "CDR-09",
+    "CDR-10",
+    "CDR-11",
+    "CDR-12",
+    "CDR-13",
+    "H-01",
+    "H-05",
+    "M-01",
+    "M-02",
+    "NEW-01",
+    "Q8.5"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-02-EVE.md": {
+   "deletion_blocked": false,
+   "refs": 11,
+   "ruling_ids": [
+    "ADD-01",
+    "CDR-01",
+    "CDR-02",
+    "CDR-09",
+    "D1",
+    "D12",
+    "D13",
+    "D7",
+    "Q8",
+    "S1",
+    "S7"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-02-PM.md": {
+   "deletion_blocked": false,
+   "refs": 7,
+   "ruling_ids": [
+    "ADD-08",
+    "CDR-02",
+    "CDR-09",
+    "D12",
+    "S1",
+    "S7"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-02.md": {
+   "deletion_blocked": false,
+   "refs": 21,
+   "ruling_ids": [
+    "ADD-06",
+    "ADD-08",
+    "B-01",
+    "B-02",
+    "B-03",
+    "CDR-01",
+    "CDR-02",
+    "CDR-04",
+    "CDR-05",
+    "CDR-06",
+    "CDR-07",
+    "CDR-09",
+    "CDR-13",
+    "S1",
+    "S7",
+    "T1",
+    "T2"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-03-EVE.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "CDR-09"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-03-PM.md": {
+   "deletion_blocked": false,
+   "refs": 2,
+   "ruling_ids": [
+    "CDR-01",
+    "S4"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-03.md": {
+   "deletion_blocked": false,
+   "refs": 5,
+   "ruling_ids": [
+    "CDR-01",
+    "CDR-11",
+    "D13",
+    "D14",
+    "S4"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-04.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "CDR-09"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-05.md": {
+   "deletion_blocked": false,
+   "refs": 4,
+   "ruling_ids": [
+    "D1",
+    "D2",
+    "D7",
+    "D9"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-06.md": {
+   "deletion_blocked": false,
+   "refs": 0,
+   "ruling_ids": [],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-07-EVE.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "T3"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-07.md": {
+   "deletion_blocked": false,
+   "refs": 0,
+   "ruling_ids": [],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-08.md": {
+   "deletion_blocked": false,
+   "refs": 3,
+   "ruling_ids": [
+    "D2",
+    "D3",
+    "D9"
+   ],
+   "sole_home_for": []
+  },
+  "docs/SESSION-HANDOFF-2026-08-09.md": {
+   "deletion_blocked": false,
+   "refs": 0,
+   "ruling_ids": [],
+   "sole_home_for": []
+  },
+  "docs/SESSION-START-PROCEDURE.md": {
+   "deletion_blocked": false,
+   "refs": 4,
+   "ruling_ids": [
+    "A15",
+    "CDR-09",
+    "D12"
+   ],
+   "sole_home_for": []
+  },
+  "docs/T3-AXIS-FOUNDRY-v3.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "T3"
+   ],
+   "sole_home_for": []
+  },
+  "docs/T3-BUILDOUT-PLAYBOOK.md": {
+   "deletion_blocked": false,
+   "refs": 5,
+   "ruling_ids": [
+    "D1",
+    "D2",
+    "T3"
+   ],
+   "sole_home_for": []
+  },
+  "docs/T3-BUILDOUT-STEP4-HANDOFF.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "T3"
+   ],
+   "sole_home_for": []
+  },
+  "docs/T3-BUILDOUT-STEP5-HANDOFF.md": {
+   "deletion_blocked": false,
+   "refs": 1,
+   "ruling_ids": [
+    "T3"
+   ],
+   "sole_home_for": []
+  },
+  "docs/WORK-PACKETS-2026-08-07.md": {
+   "deletion_blocked": false,
+   "refs": 3,
+   "ruling_ids": [
+    "CDR-09",
+    "S1",
+    "S6"
+   ],
+   "sole_home_for": []
+  }
+ },
+ "withheld_truth_homes_now": [
+  {
+   "now": "stub; registry SAFE (no sole home); AG-CLI-01 sole home is docs/MEMBER-ADD-MUTATION-LAW.md",
+   "old_state": "BLOCKED_TRUTH_HOME (sole home AG-CLI-01)",
+   "path": "docs/B-MIGRATION-DIRECTIVE.md",
+   "registry": {
+    "deletion_blocked": false,
+    "refs": 4,
+    "ruling_ids": [
+     "A1",
+     "A15",
+     "B-02",
+     "CDR-11"
+    ],
+    "sole_home_for": []
+   }
+  },
+  {
+   "now": "stub; registry SAFE; body archived",
+   "old_state": "BLOCKED_TRUTH_HOME_OR_CORROBORATED",
+   "path": "docs/B-CONSOLIDATION-REAUDIT-PACKET.md",
+   "registry": {
+    "deletion_blocked": false,
+    "refs": 35,
+    "ruling_ids": [
+     "A1",
+     "A10",
+     "A11",
+     "A12",
+     "A14",
+     "A15",
+     "A2",
+     "A5",
+     "A6",
+     "A7",
+     "A8",
+     "AG-COUNT-01",
+     "D4",
+     "H-02",
+     "R5",
+     "R6",
+     "R7",
+     "R9"
+    ],
+    "sole_home_for": []
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/MASTER-HANDOFF.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 6,
+    "ruling_ids": [
+     "R2",
+     "T0",
+     "T2",
+     "T3"
+    ],
+    "sole_home_for": [
+     "T0"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/MASTER-HANDOFF-ADDENDUM-3.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 13,
+    "ruling_ids": [
+     "D1",
+     "D10",
+     "D18",
+     "D2",
+     "D3",
+     "D4",
+     "D5",
+     "D6",
+     "D7",
+     "Q1"
+    ],
+    "sole_home_for": [
+     "D18"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/MASTER-HANDOFF-ADDENDUM-4.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 5,
+    "ruling_ids": [
+     "D17",
+     "D34",
+     "D67",
+     "D77",
+     "S1"
+    ],
+    "sole_home_for": [
+     "D34",
+     "D67",
+     "D77"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/SESSION-HANDOFF-2026-08-04-EVE.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 4,
+    "ruling_ids": [
+     "D5",
+     "D6",
+     "D8",
+     "D9"
+    ],
+    "sole_home_for": [
+     "D8"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/WALK-RATIFICATION-EXECUTION-HANDOFF.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 20,
+    "ruling_ids": [
+     "D2",
+     "D3",
+     "F2",
+     "F4",
+     "G1",
+     "G2",
+     "G3",
+     "G4",
+     "G5",
+     "G6",
+     "G7",
+     "Q1",
+     "Q10",
+     "Q2",
+     "Q3",
+     "Q4",
+     "Q5",
+     "Q6",
+     "Q8"
+    ],
+    "sole_home_for": [
+     "G2",
+     "G3",
+     "G4",
+     "G5",
+     "G6",
+     "G7",
+     "Q10"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/PARENT-TREE-CANDIDATES.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 18,
+    "ruling_ids": [
+     "D10",
+     "D16",
+     "D6",
+     "GRAMMAR-SS9",
+     "M1",
+     "M6",
+     "Q1",
+     "Q8.7",
+     "S1",
+     "S2",
+     "S3",
+     "S4",
+     "S5",
+     "S6",
+     "S7",
+     "T1",
+     "T2"
+    ],
+    "sole_home_for": [
+     "GRAMMAR-SS9",
+     "M1",
+     "M6",
+     "Q8.7",
+     "S2",
+     "S3"
+    ]
+   }
+  },
+  {
+   "now": "BLOCKED_TRUTH_HOME (sole home)",
+   "path": "docs/TRIAGE-BATCH-2.md",
+   "registry": {
+    "deletion_blocked": true,
+    "refs": 10,
+    "ruling_ids": [
+     "M2",
+     "Q1",
+     "Q2",
+     "Q3",
+     "Q4"
+    ],
+    "sole_home_for": [
+     "M2"
+    ]
+   }
+  },
+  {
+   "now": "stub; body archived (second pass); registry SAFE",
+   "old_state": "withheld (MASTER-HANDOFF*)",
+   "path": "docs/MASTER-HANDOFF-ADDENDUM-2.md",
+   "registry": {
+    "deletion_blocked": false,
+    "refs": 9,
+    "ruling_ids": [
+     "D5",
+     "D6",
+     "Q1",
+     "Q2",
+     "Q3",
+     "S1",
+     "S5",
+     "S7"
+    ],
+    "sole_home_for": []
+   }
+  }
+ ]
+}

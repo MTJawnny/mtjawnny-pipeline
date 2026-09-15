@@ -1,0 +1,748 @@
+{
+ "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "aq4_relocation_consequences": [
+  "21 experiments/** candidates left the universe",
+  "S10 sidecar frozen keys retargeted; frozen callers still pin foundry_common/foundry_codebook/foundry_cr/foundry_shape_extractor/foundry_object_lattice/foundry_locality/foundry_cr702_classes/validate_slug surfaces (B05-SURFACE)",
+  "registry population -6 docs / -25 refs"
+ ],
+ "authority": {
+  "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
+  "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
+ },
+ "base_sha": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+ "blocker_status_changes": {
+  "B01": "STILL_BLOCKED",
+  "B02": "STILL_BLOCKED",
+  "B03": "STILL_BLOCKED",
+  "B04": "CLEARED",
+  "B05": "CLEARED",
+  "B06": "CLEARED",
+  "B07": "STILL_BLOCKED",
+  "B08": "STILL_BLOCKED",
+  "B09": "STILL_BLOCKED",
+  "B10": "STILL_BLOCKED",
+  "B11": "STILL_BLOCKED",
+  "B12": "SUPERSEDED",
+  "B13": "CLEARED"
+ },
+ "candidate_universe": {
+  "added_candidate_classes": [
+   "29 docs compatibility stubs",
+   "2 archived router pointers",
+   "1 AQ4 paused pointer",
+   "7 sole-home stale/withheld documents (individually)",
+   "3 retired command tombstones (moved from KEEP_PERMANENT)",
+   "40 archive/** files (individually)",
+   "ignored runtime roles from a full local inventory (old: one wildcard)"
+  ],
+  "new_individual_candidates": 168,
+  "new_tracked_experiments": 86,
+  "old_candidates": 127,
+  "old_tracked_experiments": 107,
+  "removed_list": "experiments/aq4_benchmark/** (20) + experiments/foundry_aq4_probes.py (S14.R3.R1 R100 moves)",
+  "removed_tracked_experiments": 21,
+  "vocabulary_change": "old MIGRATED_REPLACED/ARCHIVE_EVIDENCE -> T-mandated COMPATIBILITY_SHELL_KEEP/ARCHIVE_PRESERVE/GENERATED_RUNTIME; old 'set inheritance' replaced by per-candidate evidence"
+ },
+ "command_and_shell_changes": [
+  "triage-alpha/beta/emit: legacy-path commands -> RETIRED halt-loud tombstones (S13.R1); guard pins them tracked",
+  "12 declared compatibility shells with live callers (were BLOCKED_LIVE_CONSUMER/LIVE_WRAPPERS)"
+ ],
+ "commits_between": 54,
+ "controls": {
+  "AQ4": "PAUSED",
+  "BRIDGE0": "PARKED_UNUSED",
+  "MERGE": "NO",
+  "STEP6": "NO"
+ },
+ "disposition_changes_for_old_members_and_current_experiments": [
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "KEEP_PERMANENT",
+   "path": ".claude/commands/triage-alpha.md",
+   "reason": "R-COMMAND-TOMBSTONE: RETIRED halt-loud command (S13.R1); names no experiments/** module or experiments/out path; test_s13_operator_command_migration pins the command paths as tracked and the halt as unweakened"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "KEEP_PERMANENT",
+   "path": ".claude/commands/triage-beta.md",
+   "reason": "R-COMMAND-TOMBSTONE: RETIRED halt-loud command (S13.R1); names no experiments/** module or experiments/out path; test_s13_operator_command_migration pins the command paths as tracked and the halt as unweakened"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "KEEP_PERMANENT",
+   "path": ".claude/commands/triage-emit.md",
+   "reason": "R-COMMAND-TOMBSTONE: RETIRED halt-loud command (S13.R1); names no experiments/** module or experiments/out path; test_s13_operator_command_migration pins the command paths as tracked and the halt as unweakened"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "archive/config/det-patterns-v1.json",
+   "reason": "R-ARCHIVE-FINAL-HOME: inert history in its accepted archive home; blob-pinned/routed by archive/routing/README.md and test_residual_routing_closeout where listed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/baselines/foundry-audit-baseline.json",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/cr/**",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/registers/**",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/selectors/codebook-authority.json",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/semantic/**",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "config/thesaurus/anchors.txt",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "docs/to-be-deleted/REMOVAL-LEDGER.md",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/POKE-PUNCH-LIST.md",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/reports/**; no strict live consumer"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/README.md",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/aq4_binding.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/aq4_compare.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/aq4_pairing.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/aq4_population.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/aq4_projection.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/binding-schema.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-1.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-2.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-3.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-6.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-7.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/cohorts/cohort-8.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/comparison-algebra.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/evaluation-projection-schema.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/holdout-seed-commitment.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/open-surface-manifest.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/pairs-open.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/population-manifest.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/aq4_benchmark/sampling.json",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch1_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch2_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch3_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch4_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch5_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch6_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_adapt_batch7_decisions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_any_damage_split.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_TRUTH_HOME",
+   "path": "experiments/foundry_aq4_probes.py",
+   "reason": "removed from experiments/** by S14 (frozen at benchmarks/aq4/**)"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch2.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch3.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch4.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch5.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch6.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_assemble_batch7.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/triage/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_authority.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 2) with strict live consumers"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_axis_merge_pointer_correction.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_axis_walk.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_batch7_pay_life_scrub.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_batch8_ab.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/batch8/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_batch8_canon_analysis.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/batch8/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_batch8_diff.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/batch8/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_blanket_risk.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_build_reaudit_packet.py",
+   "reason": "R-TOMBSTONE: halt-loud tombstone (build() raises RuntimeError, main() rc 2); original body byte-preserved at archive/routing/experiments/foundry_build_reaudit_packet.py; executed by tests/refoundation/test_residual_routing_closeout.py"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_cdr09_derive.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_cdr09_walk.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_codebook.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 96) with strict live consumers"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_consolidate.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_consolidate_run1.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_consolidate_run1_apply.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/consolidation/**; no strict live consumer"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_consolidate_run1_classify.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_consolidate_run1_enumerate.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/consolidation/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_corpus_pass_run1.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/consolidation/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_corroboration_pass.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/consolidation/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_cr.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 74) with strict live consumers"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_cr702_classes.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 67) with strict live consumers"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_cr_checks.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 108) with strict live consumers"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_cr_edition_diff.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 55) with strict live consumers"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_det_pass.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 48) with strict live consumers"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_det_patterns_probe.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "BLOCKED_UNKNOWN",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_digest.py",
+   "reason": "R-NO-FAMILY-NO-SUCCESSOR: no live consumer found, but no archive family, successor, or provenance determination exists; absence of consumers is not deletion evidence"
+  },
+  {
+   "new": "BLOCKED_UNKNOWN",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_emit.py",
+   "reason": "R-NO-FAMILY-NO-SUCCESSOR: no live consumer found, but no archive family, successor, or provenance determination exists; absence of consumers is not deletion evidence"
+  },
+  {
+   "new": "BLOCKED_UNKNOWN",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_enrich.py",
+   "reason": "R-CONSERVATIVE-ONLY-CONSUMER: no strict consumer, but conservative detection finds an unresolved string/loader reference; unknown stays blocked"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_gate0_scrub.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_keyword_buckets.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 86) with strict live consumers"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_locality.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 113) with strict live consumers"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_locality_backfill.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "BLOCKED_UNKNOWN",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_membership_move.py",
+   "reason": "R-NO-FAMILY-NO-SUCCESSOR: no live consumer found, but no archive family, successor, or provenance determination exists; absence of consumers is not deletion evidence"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_migrate_codebook_v2.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/mutations/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_object_lattice.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 89) with strict live consumers"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_prior_art.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_reach_census.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_reaudit.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_selfother_scope.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_shape_extractor.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 83) with strict live consumers"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_stage1b.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_synonym_collision.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "BLOCKED_UNKNOWN",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/foundry_system_map.py",
+   "reason": "R-CONSERVATIVE-ONLY-CONSUMER: no strict consumer, but conservative detection finds an unresolved string/loader reference; unknown stays blocked"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/foundry_verify_migration.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/foundry_w3_census.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/invert_tags.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/FINDINGS-MEMO.md",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/PHASE-1-CLEAN-RECUT-MEMO.md",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/PHASE-3-REBALANCE-SHAPES-MEMO.md",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/axis_foundry.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/clean_recut.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/df_distributions.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/family_tree_evidence.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/phase3_rebalance_shapes.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "ARCHIVE_EVIDENCE",
+   "path": "experiments/measure/pip_normalization.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/research/thesaurus-measurement/**; no strict live consumer"
+  },
+  {
+   "new": null,
+   "old": "MIGRATED_REPLACED",
+   "path": "experiments/moves/**",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/out/**",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/serve_viewer.py",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/engine/**; no strict live consumer"
+  },
+  {
+   "new": "BLOCKED_LIVE_CONSUMER",
+   "old": "BLOCKED_UNKNOWN",
+   "path": "experiments/snapshot.py",
+   "reason": "R-LIVE-CONSUMER: strict live consumer(s) and no declared delegation to a permanent owner"
+  },
+  {
+   "new": "COMPATIBILITY_SHELL_KEEP",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/validate_slug.py",
+   "reason": "R-SHELL-WITH-LIVE-CALLERS: declared shell/boundary (line 31) with strict live consumers"
+  },
+  {
+   "new": "ARCHIVE_PRESERVE",
+   "old": "BLOCKED_LIVE_CONSUMER",
+   "path": "experiments/viewer.html",
+   "reason": "R-ARCHIVE-FAMILY-NO-STRICT-CONSUMER: historical research/mutation provenance; ProjectPaths names destination archive/engine/**; no strict live consumer"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "refoundation/conservation/OUTPUT-EXCEPTION-CENSUS.yaml",
+   "reason": "set re-expressed"
+  },
+  {
+   "new": null,
+   "old": "KEEP_PERMANENT",
+   "path": "tests/guards/gate2/foundry_ruling_registry.py",
+   "reason": "set re-expressed"
+  }
+ ],
+ "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "new_blockers": [
+  "N01",
+  "N02",
+  "N03",
+  "N04",
+  "N05",
+  "N06",
+  "N07",
+  "N08"
+ ],
+ "no_history_rewrite": "Objective-4 files are preserved byte-identical; this delta explains, it does not relabel them.",
+ "old_evidence_commit_lineage": "origin/preflight/objective4-s15-deletion-readiness-2026-09-12 (transplanted to the accepted lineage by 603153d)",
+ "old_measured_head": "9f92039eb9c7132a351576c31472eb30a2957a67",
+ "runtime_visibility_changes": [
+  "old: GitHub-side, ignored bytes invisible -> new: full local inventory 3,620 files / 3,355,335,202 B",
+  "old: clean checkout not executable -> new: executed (Gate 2 3/16; discover aborts)",
+  "old: 9 unresolved dynamic shapes -> new: resolved to 59 local files (consumers still unresolved)"
+ ],
+ "schema": "s15-post-s14-delta/1",
+ "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION",
+ "successor_home_changes": [
+  "AQ4: experiments/** -> benchmarks/aq4/** (tracked, frozen, protected); ignored experiments/out/aq4/** unchanged (N05)",
+  "AG-CLI-01: docs/B-MIGRATION-DIRECTIVE.md (old sole home) -> docs/MEMBER-ADD-MUTATION-LAW.md",
+  "R8.3: -> docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md",
+  "foundry_build_reaudit_packet: BLOCKED_UNKNOWN -> halt-loud tombstone; body at archive/routing/experiments/",
+  "S10-S13 shells now import permanent owners (codebook_*, authority*, cr*_report/job, shape/locality/lattice reports, slug_report); caller coverage still open",
+  "ratchet: live baseline 51fca151 -> b0f3d6d7 via succession ordinal 1 (S14.R3.R1); genesis unchanged"
+ ]
+}
