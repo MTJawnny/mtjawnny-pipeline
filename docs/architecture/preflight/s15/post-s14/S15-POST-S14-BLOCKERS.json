@@ -1,6 +1,7 @@
 {
  "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -13,14 +14,18 @@
   "STEP6": "NO"
  },
  "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
- "new_blocker_count": 8,
+ "new_blocker_count": 9,
  "new_blockers": [
   {
    "class": "FAILURE_OBSERVABILITY",
    "clears_when": "Manager decides whether the abort is intended halt-loud behavior or a runner-level observability defect (no repair in R0; C8.5T SystemExit class is a standing negative control)",
    "evidence": [
-    "clean checkout: python3 -m unittest discover -s tests/refoundation -t . ends with the corpus STOP and no 'Ran N tests' summary (rc 1); per-module isolation needed to observe anything",
-    "22 tests skip silently when ignored inputs are absent; 2 authority tests fail rather than skip"
+    "clean checkout: broad discover ends with the corpus STOP and no summary after 13 of 32 modules; 786 tests in 19 modules never execute",
+    "test_mtg_shapes_substrate module run: 19 ok, then setUpClass ERROR (TestG4bOverTheSliceSevenTree; 3 tests never run) and 4 TestTheB8AndB9Controls ERRORs are printed without IDs in non-verbose mode, then TestTheKeywordHomeDerivationHasExactlyONEOwner.test_a_CR_spell_keyword_gets_a_HOME_and_NO_delivery_token raises SystemExit; 54 later tests never run",
+    "process isolation (one process per test, clean checkout): 46 ok / 28 FileNotFoundError on the corpus / 7 halt-loud SystemExit on the corpus; 0 semantic regressions; all non-OK outcomes are MISSING_INPUT",
+    "22 tests skip silently when ignored inputs are absent; 2 authority tests FAIL (not skip) because status short-circuits at NO_LOCAL_CODEBOOK, which also disarms a negative control",
+    "presentation: authority_cli prints 'selected authority NONE — manifest <path> absent' in the NO_LOCAL_CODEBOOK state although the tracked selector exists and was read; clean Gate 2 prints each failing row's standing semantic explanation for what are missing-input STOPs",
+    "halt-loud SystemExit behavior is preserved and was not caught or converted (C8.5T standing negative control)"
    ],
    "id": "N01",
    "status": "NEW_BLOCKED",
@@ -28,25 +33,37 @@
   },
   {
    "class": "GUARD_POPULATION_PINS",
-   "clears_when": "each archive slice carries authorized, mechanical guard retargeting (S14 precedent) with before/after identity proof",
+   "clears_when": "each archive slice conserves every guarded proposition its members participate in — value-identical after an authorized retarget to the archived location or a successor owner — or obtains a separately authorized retirement of that proposition; the slice's impact rig must show value-level (not method-ID-only) identity for every affected test and route/guard edges from the R2 census must be discharged, not retargeted mechanically",
    "evidence": [
-    "D1 rig: removing the 47 tracked experiments/** files that had no conservative live reach leaves Gate 2 unchanged (16/15/1 W6/0) but adds broad failures test_s10_card_text_owners::test_the_live_caller_set_is_exactly_the_reviewed_one, test_codebook_store (3 population/arithmetic pins) + 1 error",
-    "population walkers: layout_census, test_layout_delegation, codebook_consumer_analysis, test_det_batch_retirement, foundry_reachability, s10 sidecar"
+    "D1 raw: FAILED (failures=17, errors=8) vs BASE FAILED (failures=12); unique methods: 16 failing (4 new) + 1 new erroring method carrying 8 module= subtest errors",
+    "all 12 inherited-red test_layout_delegation methods change measured values under D1 (sys.path calls 81 -> 38, bootstrap experiments family 75 -> 34, delegations 145 -> 72) and one new subtest identity appears under an inherited method — invisible to method-ID comparison",
+    "mechanical attribution (repository analyzers, tracked-only BASE vs BASE-minus-D1): 8 C8.5V members -> 8 subtest KeyErrors; 9 consumer rows (the 8 + foundry_slug_dossier) -> totals 15 -> 6 and fan-in 28 -> 19; foundry_reach_census -> the only live UNKNOWN reach row (name-free dependency); 34 members -> s10 live caller set 88 -> 54",
+    "propositions protected: C8.5V nomination record and arithmetic, analyzer totals by identity, live UNKNOWN frontier exercise, exact s10 caller set, layout census counts and bootstrap families",
+    "R2 census beyond D1: source-inspection guards on foundry_reaudit, foundry_consolidate_run1_apply (codebook_store + layout_delegation), foundry_migrate_codebook_v2 (C3 facade guidance, verifier independence), archive/routing bodies (blob identity, stub/tombstone pointers), archive/config/det-patterns-v1.json (retirement guard); s10 sidecar pins 35 ARCHIVE_PRESERVE experiments + 1 archived importer",
+    "D1 is a 47-file batch experiment (42 ARCHIVE_PRESERVE + 5 BLOCKED_UNKNOWN) and proves nothing member-by-member or about candidates it did not remove"
    ],
    "id": "N02",
    "status": "NEW_BLOCKED",
-   "title": "archive/delete of tracked legacy files changes guards, not just topology"
+   "title": "archive/delete of tracked legacy files changes guarded propositions, not only topology"
   },
   {
    "class": "LAW_AND_GATE_ROUTES_THROUGH_LEGACY",
-   "clears_when": "Captain changes the CR-route law and the Gate-2 row, or explicitly keeps the shells permanent",
+   "clears_when": "each current law/operator route to a legacy path is retargeted, retired or explicitly kept under authority (law text: Captain; Gate-2 row and executable diagnostics: authorized source change with their guards), including the routes into ARCHIVE_PRESERVE candidates",
    "evidence": [
-    "CLAUDE.md at BASE: 'Reach the CR only through experiments/foundry_cr.py' (operator-surface reference found by census)",
-    "Gate 2 row lint argv = experiments/foundry_codebook.py lint; 18 guard/test modules import foundry_common"
+    "CLAUDE.md:125 at BASE: 'Reach the CR only through `experiments/foundry_cr.py`' (standing law route)",
+    "tests/guards/gate2/foundry_gate2.py:52: Gate-2 lint row executes experiments/foundry_codebook.py lint",
+    "docs/MEMBER-ADD-MUTATION-LAW.md:17: canonical AG-CLI-01 law names `experiments/foundry_codebook.py add-member` as the current legacy command embodiment",
+    "experiments/foundry_codebook.py:209-211: live /1 halt routes to experiments/foundry_migrate_codebook_v2.py (ARCHIVE_PRESERVE) or the frozen /1 producer foundry_reconcile.py; pinned by test_codebook_store.py:674",
+    "experiments/foundry_reconcile.py:74-77: frozen /1 refusal routes /2 writes to experiments/foundry_codebook.py",
+    "experiments/tier_engine.py:1249 (docstring :78): run experiments/invert_tags.py first; tier_engine report text also routes readers to POKE-PUNCH-LIST.md (:6692) and measure PHASE-1/PHASE-3 memos (:6551, :6599)",
+    "experiments/foundry_shape_extractor.py:187 and experiments/foundry_reach_census.py:84: run/regenerate with experiments/foundry_cr_checks.py",
+    "experiments/foundry_consolidate_run1_apply.py:1052-1053: NEXT python3 experiments/foundry_wire_experiment.py --json",
+    "archive/routing bodies are routed by live stubs, tombstones, canonical law provenance lines and the family_sweep known-debt register (paths must be conserved; no move planned)",
+    "codebook recovery backups (experiments/out/foundry/backups/**) are written by the legacy embodiment's backup policy that the legacy authority shell injects into mtj_foundry.authority_restore"
    ],
    "id": "N03",
    "status": "DECISION_REQUIRED",
-   "title": "standing law and Gate 2 still route through legacy shells"
+   "title": "current law, Gate 2 and executable operator diagnostics still route through legacy paths"
   },
   {
    "class": "IGNORE_OWNERSHIP",
@@ -93,11 +110,26 @@
    "class": "RECOVERY_MATERIAL",
    "clears_when": "retention/owner decision before any runtime relocation",
    "evidence": [
-    "experiments/out/foundry/backups/** 32 files (96.5 MB; codebook backups; AG-CLI-01 requires backups) and experiments/out/snapshots/_pre-restore-backups/** 140 files (153.9 MB); no ProjectPaths var/** backup owner"
+    "experiments/out/foundry/backups/**: 32 files = 30 RECOVERY_MATERIAL codebook backups (writer foundry_codebook.backup_codebook; AG-CLI-01 requires backups) + 2 UNKNOWN rows",
+    "experiments/out/snapshots/_pre-restore-backups/**: 140 files = 139 RECOVERY_MATERIAL snapshot pre-restore backups (writer experiments/snapshot.py) + 1 OS metadata file",
+    "no ProjectPaths var/** backup owner; the 169 RECOVERY_MATERIAL rows now link N08 (R0 linked them only to B02,N03)"
    ],
    "id": "N08",
    "status": "DECISION_REQUIRED",
    "title": "ignored recovery backups have no successor owner"
+  },
+  {
+   "class": "UNRESOLVED_ROUTE_EDGES",
+   "clears_when": "Manager/Captain adjudicates each edge (pending decision closed/superseded -> HISTORICAL_PROVENANCE; still live -> CURRENT_OPERATOR_OR_LAW_ROUTE with its own prerequisite); an UNKNOWN_BLOCK edge is never cleared by declaration (NC-R2-6)",
+   "evidence": [
+    "experiments/foundry_consolidate_run1_apply.py <- docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md: §4 THE PATH BACK TO AN APPLY: run1_apply --dry-run then --go-sha256",
+    "experiments/foundry_consolidate_run1_enumerate.py <- docs/CONSOLIDATION-APPLY-HALT-2026-08-09.md: §4 THE PATH BACK TO AN APPLY: regenerate with run1_enumerate after Captain rules D-APPLY-1/2",
+    "experiments/foundry_w3_census.py <- docs/W3-TRIGGER-VOCABULARY-2026-08-07.md: W3 partition numbers must be re-measured with the census script before the pending vocabulary ratification",
+    "experiments/measure/family_tree_evidence.py <- docs/PARENT-LAYER-OPENING-PACKET-2026-08-04.md: S7 gate for the five populated parent candidates is to run family_tree_evidence.py"
+   ],
+   "id": "N09",
+   "status": "DECISION_REQUIRED",
+   "title": "material route edges into ARCHIVE_PRESERVE candidates that tracked state cannot resolve"
   }
  ],
  "old_blocker_reconciliation": [
@@ -166,7 +198,8 @@
     "local read-only inventory of the primary checkout: 3,620 files / 3,355,335,202 B (experiments/out 3,321 == census known total; data 299); inventory digest ab3d1c10...",
     "every file carries a consumer-derived role, disposition and blocker; 66 registered worktrees surveyed (partial copies only; no var/)",
     "limits stated: .venv not enumerated, .claude/settings.local.json not read (possible credentials)",
-    "visibility is cleared; classification of what is now visible is NOT: 332 ignored files remain BLOCKED_UNKNOWN (149 unreferenced, 62 census derivable-candidates (hypothesis only), 51 dynamic-shape matches, 28 census UNKNOWN_REVIEW, 13 live-referenced-unclassified, 13 review outputs, 9 prose-only, 7 frozen /1 reconcile reports) -> B07/N07"
+    "visibility is cleared; classification of what is now visible is NOT: 332 ignored files remain BLOCKED_UNKNOWN (149 unreferenced, 62 census derivable-candidates (hypothesis only), 51 dynamic-shape matches, 28 census UNKNOWN_REVIEW, 13 live-referenced-unclassified, 13 review outputs, 9 prose-only, 7 frozen /1 reconcile reports) -> B07/N07",
+    "S15.R0.R2: visibility stays CLEARED; the 149 UNREFERENCED_UNKNOWN and 9 PROSE_OR_HISTORICAL_REFERENCE_ONLY rows that pointed only at B06 now link B07, the continuing classification blocker"
    ],
    "id": "B06",
    "status": "CLEARED",
@@ -176,7 +209,8 @@
    "clears_when": "each unknown gets a consumer/provenance determination (archive/reports vs var vs proven-derivable) by an authorized decision; UNKNOWN is never promoted mechanically (NC10)",
    "evidence": [
     "the 9 census dynamic shapes now resolve to 59 visible files (batch assembled 7, consolidate_clusters_raw 7, consolidated_batch 7, stage1b_batch 8, completion_note 8, cost_estimate 7, raw_results 7, requests 7, candidate-manifest 1) but their consumers remain frozen/SUP history without a disposition",
-    "ignored BLOCKED_UNKNOWN rows: 332 files; 11 census-referenced paths are missing on this machine"
+    "ignored BLOCKED_UNKNOWN rows: 332 files; 11 census-referenced paths are missing on this machine",
+    "S15.R0.R2: the 149 UNREFERENCED_UNKNOWN + 9 PROSE_OR_HISTORICAL_REFERENCE_ONLY rows (already inside the 332 count) now link B07 explicitly"
    ],
    "id": "B07",
    "status": "STILL_BLOCKED",
@@ -217,12 +251,13 @@
    "title": "tier_engine / viewer / differential peer"
   },
   {
-   "clears_when": "a verified restore yields the byte-pinned corpus and selector-verified codebook in a pristine checkout, and the suite reports (not aborts) when they are absent",
+   "clears_when": "a verified restore yields the selected corpus container (container AND content identity as the runtime enforces) and the selector-verified codebook (with an explicit backup policy) in a pristine checkout, and the suite reports (not aborts) when they are absent",
    "evidence": [
-    "clean checkout of exact BASE: Gate 2 rc 1, 16 run / 3 ok / 13 unexpected (3 STOP on missing codebook mirror, 10 STOP on missing corpus)",
-    "broad discover run ABORTS with no summary: SystemExit STOP from the corpus loader escapes test_mtg_shapes_substrate and kills the runner (N01)",
-    "per module: 30 modules OK with 22 skips (BASE populated: 0 skips); test_layout_delegation 12 inherited failures; test_s13r2_manual_operator_closure 2 clean-only failures",
-    "restore paths not verified: pipeline/fetch.py fetches current bulk (not byte-pinned to input-lock 2be88ba8...); authority restore needs the remote (not exercised)"
+    "S15.R0.R2 clean checkout of exact BASE re-derived: Gate 2 rc 1, 16 run / 3 ok / 13 unexpected (3 STOP on missing experiments/out/foundry/codebook.json, 10 STOP on missing data/raw/oracle-cards.jsonl.gz)",
+    "per module: 32 modules, 29 rc=0 (7 of them with 22 silent skips; populated BASE 0), 3 nonzero: test_layout_delegation (12 inherited failures), test_mtg_shapes_substrate (aborted, no summary), test_s13r2_manual_operator_closure (2 missing-input failures). R0's '30 modules OK' was false",
+    "broad discover aborts inside test_mtg_shapes_substrate after 13 modules; 19 modules (786 tests) never execute and 55 shapes tests are censored (N01)",
+    "restore paths inspected in tracked source only: pipeline/fetch.py defaults to LIVE Scryfall and also has --from-snapshot --snapshot-date (rclone; rulings fall back to live when not archived); input-lock (Path-E pilot only, not global corpus authority) records selected container 2be88ba8… vs archived container b46e0670… with shared content 5e47e132…, differing only in gzip MTIME; runtime checks container sha256 first; mtj_foundry.authority_restore requires a caller-supplied backup policy to replace a differing codebook and experiments/foundry_authority.py injects foundry_codebook.backup_codebook",
+    "verified remote restoration of the required corpus and codebook state is a later implementation prerequisite; neither R0 nor R2 executed or proved a restore"
    ],
    "id": "B11",
    "status": "STILL_BLOCKED",
@@ -244,7 +279,8 @@
    "clears_when": "cleared (for base 49fcb292 only)",
    "evidence": [
     "this task re-derived the whole current set at accepted post-S14 head 49fcb292: all 86 tracked experiments/** files individually, 29 docs stubs, 2 router pointers, 1 AQ4 pointer, 7 sole-home documents, 3 command tombstones, 40 archive files, permanent/control sets, and the full visible ignored inventory; no old classification inherited",
-    "cleared ONLY as a timing precondition: the classifications remain non-authorizing, and a destructive task at any later base must re-run the census at that base"
+    "cleared ONLY as a timing precondition: the classifications remain non-authorizing, and a destructive task at any later base must re-run the census at that base",
+    "S15.R0.R2 leaves B13 CLEARED in exactly this timing-only meaning; it is not an acceptance of R0 evidence quality, and R0.R2 acceptance is a separate Manager decision"
    ],
    "id": "B13",
    "status": "CLEARED",
@@ -257,6 +293,56 @@
   "SUPERSEDED": 1
  },
  "proceed_rule": "A destructive S15 slice may proceed only for candidates whose blockers are CLEARED/SUPERSEDED at its own base and whose disposition is DELETE_SAFE/ARCHIVE_PRESERVE with prerequisites met, under a separately authorized T. No blocker count was forced toward zero.",
+ "r2_repair": {
+  "authority": {
+   "measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "parent_review": "issue:1#issuecomment-5683255432 (V-20260915-S15-R0-R1-STOP-VALIDATED-ADVERSARIAL-AUDIT)",
+   "repair_commit_parent": "7aeb24721d7511f18644afbf46d7dc4ed2fc3088",
+   "selecting_checkpoint": "issue:1#issuecomment-5683296790 (K-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR-ISSUED)",
+   "status": "R0.R2 EVIDENCE REPAIR — acceptance is a separate Manager decision; nothing here authorizes deletion, archive, retirement, .gitignore, runtime, AQ4, merge or successor work",
+   "task": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)"
+  },
+  "changes": [
+   {
+    "change": "status unchanged CLEARED; stops being the sole link of 158 unknown/historical-only ignored rows",
+    "id": "B06"
+   },
+   {
+    "change": "status unchanged; now linked from 158 more ignored rows and 2 runtime sets",
+    "id": "B07"
+   },
+   {
+    "change": "evidence re-derived (clean counts, restore boundaries); clears_when made identity-precise; status unchanged STILL_BLOCKED",
+    "id": "B11"
+   },
+   {
+    "change": "evidence re-derived with verbose + isolated execution; status unchanged NEW_BLOCKED",
+    "id": "N01"
+   },
+   {
+    "change": "clears_when rewritten to guarded-proposition conservation (was 'authorized, mechanical guard retargeting'); evidence re-derived; status unchanged NEW_BLOCKED",
+    "id": "N02"
+   },
+   {
+    "change": "scope widened from two routes to every current law/operator route found by the R2 census; status unchanged DECISION_REQUIRED",
+    "id": "N03"
+   },
+   {
+    "change": "evidence partition made exact; now actually linked from the 169 recovery rows; status unchanged DECISION_REQUIRED",
+    "id": "N08"
+   },
+   {
+    "change": "status unchanged CLEARED (timing-only); explicit non-acceptance note added",
+    "id": "B13"
+   },
+   {
+    "change": "NEW (DECISION_REQUIRED): 4 UNKNOWN_BLOCK route edges (5 UNKNOWN_BLOCK mention lines) on 4 ARCHIVE_PRESERVE candidates",
+    "id": "N09"
+   }
+  ],
+  "proceed_rule_note": "readiness additionally requires every material R2 edge on the slice's members to be discharged; ARCHIVE_PRESERVE is never readiness",
+  "unchanged": "B01-B05, B08-B10, B12, N04-N07 statuses and texts unchanged; B04/B05/B06 remain CLEARED in their narrow meanings (not contradicted by R2 remeasurement)"
+ },
  "schema": "s15-post-s14-blockers/1",
  "status": "EVIDENCE_ONLY_NOT_DELETION_OR_ARCHIVE_AUTHORIZATION"
 }

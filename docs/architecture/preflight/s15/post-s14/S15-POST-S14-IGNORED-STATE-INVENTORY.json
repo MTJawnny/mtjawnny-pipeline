@@ -1534,6 +1534,7 @@
   }
  },
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -1546,7 +1547,10 @@
     "N01"
    ],
    "disposition": "BLOCKED_LIVE_CONSUMER",
-   "owner": "pipeline/fetch.py (fetches CURRENT Scryfall bulk, not the pinned bytes) / R2 snapshot copy (not verified in R0)",
+   "owner": "pipeline/fetch.py writes data/raw/oracle-cards.jsonl.gz: default mode streams the LIVE Scryfall bulk (not the pinned bytes); --from-snapshot --snapshot-date copies the archived R2 snapshot via rclone, and rulings fall back to live if no archived rulings file exists. The Path-E input lock is PATH_E_PILOT_ONLY (not global corpus authority): selected local container 2be88ba8…, archived R2 container b46e0670…, shared decompressed content 5e47e132…, differing only in gzip header MTIME bytes 4-6; the runtime checks the container sha256 first, so a raw snapshot copy is not proof of reconstructing the selected container. No restore was executed in R0 or R2.",
+   "r2_correction": {
+    "old_owner_text": "pipeline/fetch.py (fetches CURRENT Scryfall bulk, not the pinned bytes) / R2 snapshot copy (not verified in R0)"
+   },
    "role": "AUTHORITATIVE_INPUT_MIRROR",
    "successor": "none named beyond legacy_oracle_cards"
   },
@@ -2721,12 +2725,19 @@
     "pass": true
    },
    "C8_negative_controls_demonstrated": {
-    "evidence": "NC1-NC10 all rigged RED / unrigged GREEN with zero residue (S15-POST-S14-CONSERVATION-TEST-DESIGN.md; NC9 specifically proves the clean-checkout detector catches a hidden ignored dependency)",
+    "evidence": "NC1-NC10 hazard classes demonstrated: 11 paired sub-controls (NC1, NC2a, NC2b, NC3, NC4, NC5, NC6, NC7, NC8a, NC9, NC10) showed a normal/control state and a rigged RED/BLOCKED state; NC8b is an intentional standing-red BASE observation that var/** is currently exposed/unignored (B08) and has no green->red pair; zero residue after every restore is a Worker-execution claim recorded by R0, not independently repo-verifiable history (S15-POST-S14-CONSERVATION-TEST-DESIGN.md; NC9 proves the clean-checkout detector catches a hidden ignored dependency)",
     "pass": true
    }
   },
   "identical": true,
   "non_authorizing": "DELETE_SAFE is a readiness classification; R0 authorizes no deletion of tracked or ignored state",
+  "r2_recheck": {
+   "clean_checkout": "R2 clean per-module probe: test_output_census, test_ratchet_baseline_succession, test_ratchet_capability, test_ratchet_control, test_conservation_contract all rc 0 with the file absent",
+   "identity": "primary ignored experiments/out/foundry/audit-baseline.json re-hashed read-only at R2: sha256 51fca1518813760108ac44cb553e4bd8c2bcff48a2312b9054b3af1f5ad07601 == tracked refoundation/conservation/P0-3A-FOUNDRY-AUDIT-BASELINE.json at 49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "readers": "tracked mentions re-grepped at 49fcb292e0668b70901118c52dedc0ffd00f389f: experiments/foundry_audit_baseline.py (history docstring; reads config/baselines), foundry_det_pass.py (comment), refoundation/conservation/{BASELINE-INPUTS.yaml,CONSERVATION-CONTRACT.json,OUTPUT-EXCEPTION-CENSUS.yaml} (tracked records), src/mtj_foundry/codebook_lattice.py (docstring), tests: test_conservation_contract make_root synthetic temp roots, test_ratchet_control synthetic root, test_output_census / test_ratchet_baseline_succession tracked-census text pins; no live reader of the ignored bytes",
+   "status": "remains a QUALIFIED Worker-local DELETE_SAFE measurement; its bytes are Worker-local evidence; no deletion is authorized",
+   "value_level": "R0 D3 raw broad log re-parsed: every FAIL block body (12, test_layout_delegation) is identical to BASE at value level, not only by method ID; Gate-2 row outcomes identical (timing only differs)"
+  },
   "subject": "experiments/out/foundry/audit-baseline.json (IGNORED local copy only)"
  },
  "disposition_counts": {
@@ -2737,6 +2748,45 @@
   "GENERATED_RUNTIME": 341
  },
  "historical_input_not_authority": "docs/architecture/preflight/s15/S15-OBJECTIVE4-* (measured at 9f92039e; preserved byte-identical)",
+ "r2_repair": {
+  "authority": {
+   "measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+   "parent_review": "issue:1#issuecomment-5683255432 (V-20260915-S15-R0-R1-STOP-VALIDATED-ADVERSARIAL-AUDIT)",
+   "repair_commit_parent": "7aeb24721d7511f18644afbf46d7dc4ed2fc3088",
+   "selecting_checkpoint": "issue:1#issuecomment-5683296790 (K-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR-ISSUED)",
+   "status": "R0.R2 EVIDENCE REPAIR — acceptance is a separate Manager decision; nothing here authorizes deletion, archive, retirement, .gitignore, runtime, AQ4, merge or successor work",
+   "task": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)"
+  },
+  "c8_correction": "C8 evidence no longer claims all sub-controls were unrigged GREEN / rigged RED (NC8b); pass stays true because the criterion is hazard-class demonstration",
+  "evidence_worktree_clone": "the R0 evidence worktree's ignored clone digest e86e2683… equals R0's recorded post-BASE-verification state (only experiments/out/foundry/family_sweep_report.json rewritten by Gate 2); no unexplained drift",
+  "primary_inventory_rechecked": "R2 re-measured the primary checkout's data/ + experiments/out/ read-only with the R0 method before emitting: 3,620 files / 3,355,335,202 B / digest ab3d1c10b685f12bdcfc2f25cefe14de2e103ce16e2c3ed35d00665627a36d27 == R0 (no drift)",
+  "row_blocker_changes": [
+   {
+    "new": "B07",
+    "old": "B06",
+    "role": "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
+    "rows": 9
+   },
+   {
+    "new": "B02,N03,N08",
+    "old": "B02,N03",
+    "role": "RECOVERY_MATERIAL",
+    "rows": 30
+   },
+   {
+    "new": "B10,N08",
+    "old": "B02,N03",
+    "role": "RECOVERY_MATERIAL",
+    "rows": 139
+   },
+   {
+    "new": "B07",
+    "old": "B06",
+    "role": "UNREFERENCED_UNKNOWN",
+    "rows": 149
+   }
+  ]
+ },
  "role_bytes": {
   "ACCEPTANCE_CONTROL": 4324,
   "AUTHORITATIVE_INPUT_MIRROR": 27801663,
@@ -5253,7 +5303,7 @@
    4357164,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5261,7 +5311,7 @@
    4129515,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5269,7 +5319,7 @@
    4130091,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5277,7 +5327,7 @@
    4308935,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5285,7 +5335,7 @@
    3473931,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    2
   ],
   [
@@ -5293,7 +5343,7 @@
    3475825,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5301,7 +5351,7 @@
    3543909,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5309,7 +5359,7 @@
    3579635,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5317,7 +5367,7 @@
    3507328,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5325,7 +5375,7 @@
    3605207,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5333,7 +5383,7 @@
    3477752,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5341,7 +5391,7 @@
    3490008,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5349,7 +5399,7 @@
    3674378,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5357,7 +5407,7 @@
    3492970,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5365,7 +5415,7 @@
    3513308,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5373,7 +5423,7 @@
    3535266,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5381,7 +5431,7 @@
    3535552,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5389,7 +5439,7 @@
    785747,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    2
   ],
   [
@@ -5397,7 +5447,7 @@
    3385604,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5405,7 +5455,7 @@
    3693512,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5413,7 +5463,7 @@
    3782775,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5421,7 +5471,7 @@
    785747,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5429,7 +5479,7 @@
    3783270,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5453,7 +5503,7 @@
    4425891,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5461,7 +5511,7 @@
    3384958,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5469,7 +5519,7 @@
    4017161,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5477,7 +5527,7 @@
    557106,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5485,7 +5535,7 @@
    19155,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    1
   ],
   [
@@ -5493,7 +5543,7 @@
    19155,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5501,7 +5551,7 @@
    12539,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B02,N03,N08",
    0
   ],
   [
@@ -5581,7 +5631,7 @@
    247,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -5613,7 +5663,7 @@
    2145791,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -5789,7 +5839,7 @@
    421171,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    2
   ],
   [
@@ -5837,7 +5887,7 @@
    6890,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -5845,7 +5895,7 @@
    26985,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -5853,7 +5903,7 @@
    16497220,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -5885,7 +5935,7 @@
    109157,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -5901,7 +5951,7 @@
    1086,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    2
   ],
   [
@@ -6069,7 +6119,7 @@
    9346,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6197,7 +6247,7 @@
    1482,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6205,7 +6255,7 @@
    11950475,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6213,7 +6263,7 @@
    11949740,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6221,7 +6271,7 @@
    11949732,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6229,7 +6279,7 @@
    11951786,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6237,7 +6287,7 @@
    11952501,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6245,7 +6295,7 @@
    11943525,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6253,7 +6303,7 @@
    11943366,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6261,7 +6311,7 @@
    11943376,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6269,7 +6319,7 @@
    11944663,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6277,7 +6327,7 @@
    11944663,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6285,7 +6335,7 @@
    11869089,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6293,7 +6343,7 @@
    11872391,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6301,7 +6351,7 @@
    11914926,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6309,7 +6359,7 @@
    11912711,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6317,7 +6367,7 @@
    11915101,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6325,7 +6375,7 @@
    11929231,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6333,7 +6383,7 @@
    11929231,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6341,7 +6391,7 @@
    11929240,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6349,7 +6399,7 @@
    11929240,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6357,7 +6407,7 @@
    11930462,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6365,7 +6415,7 @@
    11930042,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6373,7 +6423,7 @@
    11930061,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6381,7 +6431,7 @@
    11929672,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6389,7 +6439,7 @@
    11930075,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6397,7 +6447,7 @@
    11930042,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6405,7 +6455,7 @@
    11941406,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6421,7 +6471,7 @@
    11970978,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6429,7 +6479,7 @@
    11941990,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6437,7 +6487,7 @@
    11940798,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6445,7 +6495,7 @@
    11940399,
    "PROSE_OR_HISTORICAL_REFERENCE_ONLY",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    1
   ],
   [
@@ -6453,7 +6503,7 @@
    11872401,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6469,7 +6519,7 @@
    11940996,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6477,7 +6527,7 @@
    11940798,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6485,7 +6535,7 @@
    11943333,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6493,7 +6543,7 @@
    11943525,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6501,7 +6551,7 @@
    11943525,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6517,7 +6567,7 @@
    11879569,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6525,7 +6575,7 @@
    11887972,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6533,7 +6583,7 @@
    11896775,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6541,7 +6591,7 @@
    11909432,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6549,7 +6599,7 @@
    11910162,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6557,7 +6607,7 @@
    11910490,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6565,7 +6615,7 @@
    11912189,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6581,7 +6631,7 @@
    11952501,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6597,7 +6647,7 @@
    11946087,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6605,7 +6655,7 @@
    11946217,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6613,7 +6663,7 @@
    11946616,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6621,7 +6671,7 @@
    11946616,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6629,7 +6679,7 @@
    11946965,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6637,7 +6687,7 @@
    11947944,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6645,7 +6695,7 @@
    11947897,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6653,7 +6703,7 @@
    11946965,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6661,7 +6711,7 @@
    11947945,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6669,7 +6719,7 @@
    11947945,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6677,7 +6727,7 @@
    11947945,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6685,7 +6735,7 @@
    11947944,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6693,7 +6743,7 @@
    11948308,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6701,7 +6751,7 @@
    11949477,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6709,7 +6759,7 @@
    11949509,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6717,7 +6767,7 @@
    11950176,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6725,7 +6775,7 @@
    11949509,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6733,7 +6783,7 @@
    11948820,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6741,7 +6791,7 @@
    11949028,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6749,7 +6799,7 @@
    11949076,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6757,7 +6807,7 @@
    11949529,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6765,7 +6815,7 @@
    11949629,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6773,7 +6823,7 @@
    11949651,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6781,7 +6831,7 @@
    11949730,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -6789,7 +6839,7 @@
    11949729,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7085,7 +7135,7 @@
    4554,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7405,7 +7455,7 @@
    2815,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7421,7 +7471,7 @@
    6560,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7525,7 +7575,7 @@
    60562,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7533,7 +7583,7 @@
    60330,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7541,7 +7591,7 @@
    61211,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7549,7 +7599,7 @@
    60632,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7557,7 +7607,7 @@
    60467,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7565,7 +7615,7 @@
    60021,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7573,7 +7623,7 @@
    61702,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7581,7 +7631,7 @@
    294775,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7589,7 +7639,7 @@
    41861,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7597,7 +7647,7 @@
    27422,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7605,7 +7655,7 @@
    337000,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7613,7 +7663,7 @@
    82395,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7621,7 +7671,7 @@
    257523,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7629,7 +7679,7 @@
    29621,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7637,7 +7687,7 @@
    77732,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7645,7 +7695,7 @@
    74136,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7653,7 +7703,7 @@
    70692,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7661,7 +7711,7 @@
    281718,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7669,7 +7719,7 @@
    138253,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7677,7 +7727,7 @@
    12072,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7685,7 +7735,7 @@
    61938,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7693,7 +7743,7 @@
    3157,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7701,7 +7751,7 @@
    9957,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7709,7 +7759,7 @@
    14346,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7717,7 +7767,7 @@
    138605,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7725,7 +7775,7 @@
    32938,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7733,7 +7783,7 @@
    5254,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7741,7 +7791,7 @@
    260794,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7749,7 +7799,7 @@
    219237,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7757,7 +7807,7 @@
    27732,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7765,7 +7815,7 @@
    11522,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7773,7 +7823,7 @@
    24854,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7781,7 +7831,7 @@
    29715,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7789,7 +7839,7 @@
    2881,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7797,7 +7847,7 @@
    322419,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7805,7 +7855,7 @@
    99234,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7813,7 +7863,7 @@
    169173,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7821,7 +7871,7 @@
    3317,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7829,7 +7879,7 @@
    26036,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7837,7 +7887,7 @@
    45681,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7845,7 +7895,7 @@
    204514,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7853,7 +7903,7 @@
    115596,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7861,7 +7911,7 @@
    139077,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7869,7 +7919,7 @@
    13083,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7877,7 +7927,7 @@
    34403,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7885,7 +7935,7 @@
    184838,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7893,7 +7943,7 @@
    30738,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7901,7 +7951,7 @@
    20735,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7917,7 +7967,7 @@
    115289,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7925,7 +7975,7 @@
    62269,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7933,7 +7983,7 @@
    60588,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7941,7 +7991,7 @@
    62145,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7949,7 +7999,7 @@
    61590,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7957,7 +8007,7 @@
    61812,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7965,7 +8015,7 @@
    62185,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7973,7 +8023,7 @@
    60093,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7981,7 +8031,7 @@
    60562,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7989,7 +8039,7 @@
    61700,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -7997,7 +8047,7 @@
    62998,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -8005,7 +8055,7 @@
    61437,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -8021,7 +8071,7 @@
    60540,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -8029,7 +8079,7 @@
    62011,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -8045,7 +8095,7 @@
    22706,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8053,7 +8103,7 @@
    23742,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8061,7 +8111,7 @@
    20372,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8069,7 +8119,7 @@
    4828,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8077,7 +8127,7 @@
    84164,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8085,7 +8135,7 @@
    29621,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8093,7 +8143,7 @@
    39006,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8101,7 +8151,7 @@
    72947,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8109,7 +8159,7 @@
    14080,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8117,7 +8167,7 @@
    9631,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8125,7 +8175,7 @@
    10784,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8133,7 +8183,7 @@
    5057,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8141,7 +8191,7 @@
    280733,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8149,7 +8199,7 @@
    6660,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8157,7 +8207,7 @@
    11880,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8165,7 +8215,7 @@
    21162,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8173,7 +8223,7 @@
    25773,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8181,7 +8231,7 @@
    3028,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8189,7 +8239,7 @@
    322419,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8197,7 +8247,7 @@
    3175,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8205,7 +8255,7 @@
    26036,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8213,7 +8263,7 @@
    14955,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8221,7 +8271,7 @@
    222483,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8229,7 +8279,7 @@
    166803,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8237,7 +8287,7 @@
    13083,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8245,7 +8295,7 @@
    195687,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8253,7 +8303,7 @@
    14447,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    2
   ],
   [
@@ -8261,7 +8311,7 @@
    117404,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8269,7 +8319,7 @@
    27130,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8277,7 +8327,7 @@
    24159,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8285,7 +8335,7 @@
    22448,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8293,7 +8343,7 @@
    22618,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8301,7 +8351,7 @@
    23280,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8309,7 +8359,7 @@
    22681,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8317,7 +8367,7 @@
    22690,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8325,7 +8375,7 @@
    23835,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8333,7 +8383,7 @@
    22458,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8341,7 +8391,7 @@
    4860,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    1
   ],
   [
@@ -8349,7 +8399,7 @@
    23210,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8357,7 +8407,7 @@
    202150,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8365,7 +8415,7 @@
    2417950,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8373,7 +8423,7 @@
    3815309,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8381,7 +8431,7 @@
    1009608,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8389,7 +8439,7 @@
    655379,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8397,7 +8447,7 @@
    2719921,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8405,7 +8455,7 @@
    1885897,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8413,7 +8463,7 @@
    1642198,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8421,7 +8471,7 @@
    2929272,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8429,7 +8479,7 @@
    649313,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8437,7 +8487,7 @@
    3544241,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8445,7 +8495,7 @@
    892006,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8453,7 +8503,7 @@
    873585,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8461,7 +8511,7 @@
    1355551,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8469,7 +8519,7 @@
    1809554,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8477,7 +8527,7 @@
    934452,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8485,7 +8535,7 @@
    1458594,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8493,7 +8543,7 @@
    2413971,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8501,7 +8551,7 @@
    5587139,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8509,7 +8559,7 @@
    84862,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8517,7 +8567,7 @@
    1385960,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8525,7 +8575,7 @@
    2663427,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8533,7 +8583,7 @@
    323030,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8541,7 +8591,7 @@
    1046111,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8549,7 +8599,7 @@
    135696,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8557,7 +8607,7 @@
    594001,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8565,7 +8615,7 @@
    2694962,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8573,7 +8623,7 @@
    825039,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8581,7 +8631,7 @@
    544931,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8589,7 +8639,7 @@
    3149143,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8597,7 +8647,7 @@
    1398668,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8605,7 +8655,7 @@
    110605,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8613,7 +8663,7 @@
    2444564,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8621,7 +8671,7 @@
    2969178,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8629,7 +8679,7 @@
    923467,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8637,7 +8687,7 @@
    993266,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8645,7 +8695,7 @@
    557416,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8653,7 +8703,7 @@
    5798786,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8661,7 +8711,7 @@
    1314446,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8669,7 +8719,7 @@
    334239,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8677,7 +8727,7 @@
    505804,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8685,7 +8735,7 @@
    2861390,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8693,7 +8743,7 @@
    3205084,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8701,7 +8751,7 @@
    1500651,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8709,7 +8759,7 @@
    111315,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8717,7 +8767,7 @@
    1979550,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8725,7 +8775,7 @@
    478551,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8733,7 +8783,7 @@
    1659775,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8741,7 +8791,7 @@
    24399,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8749,7 +8799,7 @@
    241019,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8757,7 +8807,7 @@
    1308137,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8765,7 +8815,7 @@
    1134934,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8773,7 +8823,7 @@
    137464,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8781,7 +8831,7 @@
    1020061,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8789,7 +8839,7 @@
    618382,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8797,7 +8847,7 @@
    878194,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8805,7 +8855,7 @@
    112128,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8813,7 +8863,7 @@
    2870589,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8821,7 +8871,7 @@
    689147,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8829,7 +8879,7 @@
    311170,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8837,7 +8887,7 @@
    2752879,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8845,7 +8895,7 @@
    922655,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8853,7 +8903,7 @@
    1507196,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8861,7 +8911,7 @@
    1661013,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8869,7 +8919,7 @@
    1158674,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8877,7 +8927,7 @@
    3078629,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8885,7 +8935,7 @@
    2584370,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8893,7 +8943,7 @@
    981272,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8901,7 +8951,7 @@
    2956426,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8909,7 +8959,7 @@
    1082071,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8917,7 +8967,7 @@
    824948,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8925,7 +8975,7 @@
    1085284,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8933,7 +8983,7 @@
    1528740,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8941,7 +8991,7 @@
    3020567,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8949,7 +8999,7 @@
    159147,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8957,7 +9007,7 @@
    1928578,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8965,7 +9015,7 @@
    1591107,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8973,7 +9023,7 @@
    707782,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8981,7 +9031,7 @@
    1076805,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8989,7 +9039,7 @@
    1003602,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -8997,7 +9047,7 @@
    1140575,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9005,7 +9055,7 @@
    1222098,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9013,7 +9063,7 @@
    253842,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9021,7 +9071,7 @@
    1108809,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9029,7 +9079,7 @@
    2587797,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9037,7 +9087,7 @@
    951837,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9045,7 +9095,7 @@
    2565799,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9053,7 +9103,7 @@
    207472,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9061,7 +9111,7 @@
    2648061,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9069,7 +9119,7 @@
    1902286,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9077,7 +9127,7 @@
    1511387,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9085,7 +9135,7 @@
    1179241,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9093,7 +9143,7 @@
    1028719,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9101,7 +9151,7 @@
    1834051,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9109,7 +9159,7 @@
    166117,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9117,7 +9167,7 @@
    4121925,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9125,7 +9175,7 @@
    832820,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9133,7 +9183,7 @@
    3419269,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9141,7 +9191,7 @@
    1863081,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -9149,7 +9199,7 @@
    942640,
    "RECOVERY_MATERIAL",
    "BLOCKED_TRUTH_HOME",
-   "B02,N03",
+   "B10,N08",
    0
   ],
   [
@@ -31637,7 +31687,7 @@
    661576,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31645,7 +31695,7 @@
    697780,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31653,7 +31703,7 @@
    2872336,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31661,7 +31711,7 @@
    244514,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31669,7 +31719,7 @@
    1481001,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31677,7 +31727,7 @@
    3364,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31685,7 +31735,7 @@
    3448006,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31693,7 +31743,7 @@
    405257,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31701,7 +31751,7 @@
    2268379,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31709,7 +31759,7 @@
    606733,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31717,7 +31767,7 @@
    3741412,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31725,7 +31775,7 @@
    2629945,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31733,7 +31783,7 @@
    3184782,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ],
   [
@@ -31741,7 +31791,7 @@
    1463943,
    "UNREFERENCED_UNKNOWN",
    "BLOCKED_UNKNOWN",
-   "B06",
+   "B07",
    0
   ]
  ],

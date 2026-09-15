@@ -1,6 +1,7 @@
 {
  "accepted_head": "49fcb292e0668b70901118c52dedc0ffd00f389f",
  "authority": {
+  "r2_repair": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
   "selecting_checkpoint": "issue:1#issuecomment-5675514144 (K-20260915-S15-R0-POST-S14-READINESS-REVALIDATION-ISSUED)",
   "task": "issue:1#issuecomment-5675512901 (S15.R0.POST-S14-READINESS-REVALIDATION)"
  },
@@ -23,14 +24,49 @@
   "present_on_this_machine": 95
  },
  "clean_checkout_probe": {
-  "answer": "Before a destructive S15 may call legacy/generated state disposable, a pristine checkout must be able to obtain the byte-pinned corpus and the selector-verified codebook through a verified, non-network-ambiguous restore, and the discover-level SystemExit abort must be understood (not converted); until then B11 and N01 stand.",
+  "answer": "Before a destructive S15 may call legacy/generated state disposable, a pristine checkout must obtain the selected corpus container and the selector-verified codebook through a verified restore whose identity checks match what the runtime enforces (container AND content for the corpus; selector sha for the codebook, with a caller-supplied backup policy), and the halt-loud SystemExit abort must be understood, not converted: 55 shapes-substrate tests and 19 whole modules are censored in a clean broad run. Until then B11 and N01 stand.",
   "broad_discover": {
    "rc": 1,
-   "summary": "NO_SUMMARY: process aborted by SystemExit('STOP — <CLEAN_CHECKOUT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first') raised from test_mtg_shapes_substrate setUpClass path; no test IDs reported"
+   "summary": "NO_SUMMARY: process ended by SystemExit STOP from the corpus loader inside test_mtg_shapes_substrate",
+   "verbose_rerun": {
+    "censored_inside_shapes_module": 55,
+    "errors_before_abort": "1 setUpClass (TestG4bOverTheSliceSevenTree) + 4 TestTheB8AndB9Controls tests",
+    "failures_before_abort": "12 inherited test_layout_delegation FAIL lines",
+    "last_module_reached": "test_mtg_shapes_substrate",
+    "modules_never_reached": [
+     "test_oracle_text_capability",
+     "test_output_census",
+     "test_package_skeleton",
+     "test_paths",
+     "test_ratchet_baseline_succession",
+     "test_ratchet_capability",
+     "test_ratchet_control",
+     "test_readonly_runtime",
+     "test_residual_routing_closeout",
+     "test_s10_card_text_owners",
+     "test_s11_codebook_kernel",
+     "test_s12_authority_transport",
+     "test_s13_operator_command_migration",
+     "test_s13r2_manual_operator_closure",
+     "test_s13r3_authority_layout_census",
+     "test_s14_aq4_freeze_relocation",
+     "test_selftest_purity",
+     "test_static_pilot",
+     "test_worker_operating_contract"
+    ],
+    "modules_reached_in_alphabetical_order": 13,
+    "outcome_lines_before_abort": {
+     "ERROR": 5,
+     "FAIL": 12,
+     "ok": 971,
+     "skipped": 2
+    },
+    "tests_never_executed_in_those_modules": 786
+   }
   },
   "clean_only_failures": [
-   "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport (status text says NO_LOCAL_CODEBOOK and reports the TRACKED selector as 'absent' although config/selectors/codebook-authority.json is present; observed, not diagnosed)",
-   "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote"
+   "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport — MISSING_INPUT: with no local codebook mirror, authority_status returns NO_LOCAL_CODEBOOK before any transport call, so 'AUTHORITY_UNVERIFIABLE' and the lsjson call never occur",
+   "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote — MISSING_INPUT: same short-circuit, so the rigged remote is never reached and the control's AssertionError is not raised (the control loses its power silently-as-FAIL in a clean checkout)"
   ],
   "clean_skips": {
    "base_populated_skips": 0,
@@ -43,13 +79,15 @@
     "test_s11_codebook_kernel": 6,
     "test_s12_authority_transport": 10
    },
+   "note": "skips are silent: a skip does not report which ignored input was missing",
    "total": 22
   },
   "commands": [
    "python3 tests/guards/gate2/foundry_gate2.py",
-   "python3 -m unittest discover -s tests/refoundation -t .",
    "per Gate-2 row: python3 <argv>",
-   "per module: python3 -m unittest tests.refoundation.<module>"
+   "python3 -m unittest discover -v -s tests/refoundation -t .",
+   "per module: python3 -m unittest -v tests.refoundation.<module>",
+   "test_mtg_shapes_substrate: python3 -m unittest -v <class> and <test id>, one process each"
   ],
   "gate2_rows": [
    {
@@ -57,7 +95,7 @@
      "experiments/foundry_codebook.py",
      "lint"
     ],
-    "first_halt": "STOP — <ROOT>/experiments/out/foundry/codebook.json not found",
+    "first_halt": "STOP — <CLEAN>/experiments/out/foundry/codebook.json not found",
     "gate": "lint",
     "rc": 1
    },
@@ -66,7 +104,7 @@
      "tests/guards/gate2/foundry_family_sweep.py",
      "--gate"
     ],
-    "first_halt": "STOP — <ROOT>/experiments/out/foundry/codebook.json not found",
+    "first_halt": "STOP — <CLEAN>/experiments/out/foundry/codebook.json not found",
     "gate": "family_sweep",
     "rc": 1
    },
@@ -75,7 +113,7 @@
      "tests/guards/gate2/foundry_definition_drift.py",
      "--check-only"
     ],
-    "first_halt": "STOP — <ROOT>/experiments/out/foundry/codebook.json not found",
+    "first_halt": "STOP — <CLEAN>/experiments/out/foundry/codebook.json not found",
     "gate": "definition_drift",
     "rc": 1
    },
@@ -92,7 +130,7 @@
     "argv": [
      "tests/guards/gate2/foundry_punctuation_audit.py"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "conservation",
     "rc": 1
    },
@@ -100,7 +138,7 @@
     "argv": [
      "tests/guards/gate2/foundry_visibility_audit.py"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "visibility",
     "rc": 1
    },
@@ -108,7 +146,7 @@
     "argv": [
      "tests/guards/gate2/test_ground_truth.py"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "ground_truth",
     "rc": 1
    },
@@ -117,7 +155,7 @@
      "tests/guards/gate2/test_ground_truth.py",
      "--wide"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "ground_truth_wide",
     "rc": 1
    },
@@ -125,7 +163,7 @@
     "argv": [
      "tests/guards/gate2/foundry_gate_audit.py"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "gate_audit",
     "rc": 1
    },
@@ -133,7 +171,7 @@
     "argv": [
      "tests/guards/probe/foundry_probe.py"
     ],
-    "first_halt": null,
+    "first_halt": "STOP — value(s) ['retired'] do not occur in the live domain of 'status'.",
     "gate": "probe_guards",
     "rc": 0
    },
@@ -142,7 +180,7 @@
      "tests/guards/gate2/foundry_recorded_numbers.py",
      "--strict"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "recorded_numbers",
     "rc": 1
    },
@@ -152,7 +190,7 @@
      "invariance",
      "--strict"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "invariance",
     "rc": 1
    },
@@ -169,7 +207,7 @@
      "tests/guards/gate2/test_object_lattice.py",
      "--gate"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "object_lattice",
     "rc": 1
    },
@@ -178,7 +216,7 @@
      "tests/guards/gate2/test_locality.py",
      "--gate"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "locality",
     "rc": 1
    },
@@ -187,7 +225,7 @@
      "tests/guards/gate2/foundry_qualifier_census.py",
      "--gate"
     ],
-    "first_halt": "STOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "first_halt": "STOP — <CLEAN>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
     "gate": "qualifier_census",
     "rc": 1
    }
@@ -210,294 +248,841 @@
    ],
    "gates_run": 16,
    "known_failing_excused": 0,
-   "known_rows": [],
    "passed": 3,
    "rc": 1,
+   "rederived_by": "S15.R0.R2 (runner + per-row argv in a fresh clean worktree of 49fcb292e0668b70901118c52dedc0ffd00f389f)",
+   "stop_causes": {
+    "data/raw/oracle-cards.jsonl.gz not found": 10,
+    "experiments/out/foundry/codebook.json not found": 3
+   },
    "unexpected": 13
+  },
+  "module_accounting": {
+   "modules": 32,
+   "nonzero": 3,
+   "nonzero_modules": {
+    "test_layout_delegation": "NONZERO_FAILED",
+    "test_mtg_shapes_substrate": "NONZERO_ABORTED_NO_SUMMARY",
+    "test_s13r2_manual_operator_closure": "NONZERO_FAILED"
+   },
+   "r0_claim_corrected": "R0 said '30 modules OK'; the R0 table itself had 29 rc=0 of 32 and R2 re-derives 29 rc=0 / 3 nonzero of 32",
+   "rc0": 29,
+   "rc0_with_skips": 7,
+   "tests_ran_in_rc0_modules": 1371
   },
   "per_module": [
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_captured_state",
-    "ran": "26",
+    "ran": 26,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_codebook_capability",
-    "ran": "60",
+    "ran": 60,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_codebook_store",
-    "ran": "201",
+    "ran": 201,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_conservation",
-    "ran": "42",
+    "ran": 42,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_conservation_contract",
-    "ran": "79",
+    "ran": 79,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_corpus_capability",
-    "ran": "38",
+    "ran": 38,
     "rc": 0,
+    "skips": 1,
+    "status": "RC0_OK_WITH_1_SKIPS",
     "summary": "OK (skipped=1)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_det_batch_retirement",
-    "ran": "9",
+    "ran": 9,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_evidence_index_retrieval",
-    "ran": "92",
+    "ran": 92,
     "rc": 0,
+    "skips": 1,
+    "status": "RC0_OK_WITH_1_SKIPS",
     "summary": "OK (skipped=1)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_gate2_purity",
-    "ran": "38",
+    "ran": 38,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_infra_artifact",
-    "ran": "8",
+    "ran": 8,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [
-     "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_every_sys_path_call_resolves_to_a_known_directory",
-     "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_the_families_are_exactly_the_pinned_three",
-     "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_every_file_lands_in_exactly_one_named_scope",
-     "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_tracked_and_walked_python_agree",
-     "tests.refoundation.test_layout_delegation.TestTheContractMatchesSource.test_the_declared_counts_match_the_measured_counts",
-     "tests.refoundation.test_layout_delegation.TestTheContractParityGuardActuallyFires.test_the_unmutated_contract_passes_every_one_of_those_checks",
-     "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to",
-     "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_forms_partition_the_total_with_no_remainder",
-     "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_local_layout_sites",
-     "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_real_sys_path_call_sites",
-     "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_scoped_delegation_total",
-     "tests.refoundation.test_layout_delegation.TestTheProviderRepair.test_the_pre_repair_rule_collapses_the_delegation_census"
+    "error_blocks": [],
+    "fail_blocks": [
+     [
+      "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_every_sys_path_call_resolves_to_a_known_directory",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_the_families_are_exactly_the_pinned_three",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_every_file_lands_in_exactly_one_named_scope",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_tracked_and_walked_python_agree",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheContractMatchesSource.test_the_declared_counts_match_the_measured_counts",
+      "family='LEGACY_SIBLING_IMPORT'"
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheContractParityGuardActuallyFires.test_the_unmutated_contract_passes_every_one_of_those_checks",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_forms_partition_the_total_with_no_remainder",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_local_layout_sites",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_real_sys_path_call_sites",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_scoped_delegation_total",
+      null
+     ],
+     [
+      "tests.refoundation.test_layout_delegation.TestTheProviderRepair.test_the_pre_repair_rule_collapses_the_delegation_census",
+      null
+     ]
     ],
-    "first_halt": "Traceback (most recent call last):",
     "module": "test_layout_delegation",
-    "ran": "353",
+    "ran": 353,
     "rc": 1,
+    "skips": 0,
+    "status": "NONZERO_FAILED",
     "summary": "FAILED (failures=12)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_mtg_cr_substrate",
-    "ran": "19",
+    "ran": 19,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": "..............E.....EEEESTOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_mtg_shapes_substrate",
     "ran": null,
     "rc": 1,
+    "skips": 0,
+    "status": "NONZERO_ABORTED_NO_SUMMARY",
     "summary": "NO_SUMMARY_PROCESS_ABORTED"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_oracle_text_capability",
-    "ran": "41",
+    "ran": 41,
     "rc": 0,
+    "skips": 1,
+    "status": "RC0_OK_WITH_1_SKIPS",
     "summary": "OK (skipped=1)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_output_census",
-    "ran": "41",
+    "ran": 41,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_package_skeleton",
-    "ran": "33",
+    "ran": 33,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_paths",
-    "ran": "30",
+    "ran": 30,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_ratchet_baseline_succession",
-    "ran": "39",
+    "ran": 39,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_ratchet_capability",
-    "ran": "64",
+    "ran": 64,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_ratchet_control",
-    "ran": "38",
+    "ran": 38,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_readonly_runtime",
-    "ran": "74",
+    "ran": 74,
     "rc": 0,
+    "skips": 1,
+    "status": "RC0_OK_WITH_1_SKIPS",
     "summary": "OK (skipped=1)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_residual_routing_closeout",
-    "ran": "7",
+    "ran": 7,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s10_card_text_owners",
-    "ran": "37",
+    "ran": 37,
     "rc": 0,
+    "skips": 2,
+    "status": "RC0_OK_WITH_2_SKIPS",
     "summary": "OK (skipped=2)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s11_codebook_kernel",
-    "ran": "48",
+    "ran": 48,
     "rc": 0,
+    "skips": 6,
+    "status": "RC0_OK_WITH_6_SKIPS",
     "summary": "OK (skipped=6)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s12_authority_transport",
-    "ran": "92",
+    "ran": 92,
     "rc": 0,
+    "skips": 10,
+    "status": "RC0_OK_WITH_10_SKIPS",
     "summary": "OK (skipped=10)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s13_operator_command_migration",
-    "ran": "38",
+    "ran": 38,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [
-     "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote",
-     "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport"
+    "error_blocks": [],
+    "fail_blocks": [
+     [
+      "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote",
+      null
+     ],
+     [
+      "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport",
+      null
+     ]
     ],
-    "first_halt": "Traceback (most recent call last):",
     "module": "test_s13r2_manual_operator_closure",
-    "ran": "27",
+    "ran": 27,
     "rc": 1,
+    "skips": 0,
+    "status": "NONZERO_FAILED",
     "summary": "FAILED (failures=2)"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s13r3_authority_layout_census",
-    "ran": "12",
+    "ran": 12,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_s14_aq4_freeze_relocation",
-    "ran": "23",
+    "ran": 23,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_selftest_purity",
-    "ran": "28",
+    "ran": 28,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_static_pilot",
-    "ran": "93",
+    "ran": 93,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    },
    {
-    "fail_or_error_ids": [],
-    "first_halt": null,
+    "error_blocks": [],
+    "fail_blocks": [],
     "module": "test_worker_operating_contract",
-    "ran": "21",
+    "ran": 21,
     "rc": 0,
+    "skips": 0,
+    "status": "RC0_OK",
     "summary": "OK"
    }
   ],
+  "presentation_observations": [
+   "src/mtj_foundry/authority_cli.py renders `selected authority  NONE — manifest <path> absent` whenever the status dict has no 'selected' key; authority_status's NO_LOCAL_CODEBOOK branch returns the manifest without 'selected', so a clean checkout prints that the TRACKED config/selectors/codebook-authority.json is absent while the same output's detail line says the manifest selects an authority. Diagnosed from source; not repaired (no source change authorized); recorded under N01 as a failure-observability/presentation-honesty finding",
+   "Gate 2 in the clean checkout prints each failing row's standing explanation (e.g. lint '-> the codebook is structurally invalid', conservation '-> text, a sentence or an ability was LOST') although every one of the 13 failures is a missing-input STOP; the STOP line is printed separately below the verdict"
+  ],
+  "r2_corrections": {
+   "authority": "issue:1#issuecomment-5683294052 (T-20260915-S15-R0-R2-ADVERSARIAL-AUDIT-EVIDENCE-REPAIR)",
+   "r0_values": {
+    "answer": "Before a destructive S15 may call legacy/generated state disposable, a pristine checkout must be able to obtain the byte-pinned corpus and the selector-verified codebook through a verified, non-network-ambiguous restore, and the discover-level SystemExit abort must be understood (not converted); until then B11 and N01 stand.",
+    "broad_discover": {
+     "rc": 1,
+     "summary": "NO_SUMMARY: process aborted by SystemExit('STOP — <CLEAN_CHECKOUT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first') raised from test_mtg_shapes_substrate setUpClass path; no test IDs reported"
+    },
+    "clean_only_failures": [
+     "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport (status text says NO_LOCAL_CODEBOOK and reports the TRACKED selector as 'absent' although config/selectors/codebook-authority.json is present; observed, not diagnosed)",
+     "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote"
+    ],
+    "clean_skips": {
+     "base_populated_skips": 0,
+     "modules": {
+      "test_corpus_capability": 1,
+      "test_evidence_index_retrieval": 1,
+      "test_oracle_text_capability": 1,
+      "test_readonly_runtime": 1,
+      "test_s10_card_text_owners": 2,
+      "test_s11_codebook_kernel": 6,
+      "test_s12_authority_transport": 10
+     },
+     "total": 22
+    },
+    "per_module": [
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_captured_state",
+      "ran": "26",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_codebook_capability",
+      "ran": "60",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_codebook_store",
+      "ran": "201",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_conservation",
+      "ran": "42",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_conservation_contract",
+      "ran": "79",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_corpus_capability",
+      "ran": "38",
+      "rc": 0,
+      "summary": "OK (skipped=1)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_det_batch_retirement",
+      "ran": "9",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_evidence_index_retrieval",
+      "ran": "92",
+      "rc": 0,
+      "summary": "OK (skipped=1)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_gate2_purity",
+      "ran": "38",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_infra_artifact",
+      "ran": "8",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [
+       "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_every_sys_path_call_resolves_to_a_known_directory",
+       "tests.refoundation.test_layout_delegation.TestTheBootstrapFamiliesArePinned.test_the_families_are_exactly_the_pinned_three",
+       "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_every_file_lands_in_exactly_one_named_scope",
+       "tests.refoundation.test_layout_delegation.TestTheCensusUniverseIsWhatItClaims.test_tracked_and_walked_python_agree",
+       "tests.refoundation.test_layout_delegation.TestTheContractMatchesSource.test_the_declared_counts_match_the_measured_counts",
+       "tests.refoundation.test_layout_delegation.TestTheContractParityGuardActuallyFires.test_the_unmutated_contract_passes_every_one_of_those_checks",
+       "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_raw_textual_equals_the_scoped_total_and_is_not_ASSUMED_to",
+       "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_forms_partition_the_total_with_no_remainder",
+       "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_local_layout_sites",
+       "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_real_sys_path_call_sites",
+       "tests.refoundation.test_layout_delegation.TestTheFreshCountsAndTheirReconciliation.test_the_scoped_delegation_total",
+       "tests.refoundation.test_layout_delegation.TestTheProviderRepair.test_the_pre_repair_rule_collapses_the_delegation_census"
+      ],
+      "first_halt": "Traceback (most recent call last):",
+      "module": "test_layout_delegation",
+      "ran": "353",
+      "rc": 1,
+      "summary": "FAILED (failures=12)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_mtg_cr_substrate",
+      "ran": "19",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": "..............E.....EEEESTOP — <ROOT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first",
+      "module": "test_mtg_shapes_substrate",
+      "ran": null,
+      "rc": 1,
+      "summary": "NO_SUMMARY_PROCESS_ABORTED"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_oracle_text_capability",
+      "ran": "41",
+      "rc": 0,
+      "summary": "OK (skipped=1)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_output_census",
+      "ran": "41",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_package_skeleton",
+      "ran": "33",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_paths",
+      "ran": "30",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_ratchet_baseline_succession",
+      "ran": "39",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_ratchet_capability",
+      "ran": "64",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_ratchet_control",
+      "ran": "38",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_readonly_runtime",
+      "ran": "74",
+      "rc": 0,
+      "summary": "OK (skipped=1)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_residual_routing_closeout",
+      "ran": "7",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s10_card_text_owners",
+      "ran": "37",
+      "rc": 0,
+      "summary": "OK (skipped=2)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s11_codebook_kernel",
+      "ran": "48",
+      "rc": 0,
+      "summary": "OK (skipped=6)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s12_authority_transport",
+      "ran": "92",
+      "rc": 0,
+      "summary": "OK (skipped=10)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s13_operator_command_migration",
+      "ran": "38",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [
+       "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_CONTROL_a_transport_that_bypasses_the_factory_reaches_the_rigged_remote",
+       "tests.refoundation.test_s13r2_manual_operator_closure.TestAuthorityOperatorBoundary.test_check_remote_goes_through_the_boundary_transport"
+      ],
+      "first_halt": "Traceback (most recent call last):",
+      "module": "test_s13r2_manual_operator_closure",
+      "ran": "27",
+      "rc": 1,
+      "summary": "FAILED (failures=2)"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s13r3_authority_layout_census",
+      "ran": "12",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_s14_aq4_freeze_relocation",
+      "ran": "23",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_selftest_purity",
+      "ran": "28",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_static_pilot",
+      "ran": "93",
+      "rc": 0,
+      "summary": "OK"
+     },
+     {
+      "fail_or_error_ids": [],
+      "first_halt": null,
+      "module": "test_worker_operating_contract",
+      "ran": "21",
+      "rc": 0,
+      "summary": "OK"
+     }
+    ],
+    "restore_paths_known": {
+     "codebook": "mtj_foundry.authority_restore via authority CLI against the selected remote object (remote; not exercised in R0; restore-order tests skip without the selected codebook)",
+     "corpus": "pipeline/fetch.py downloads CURRENT Scryfall bulk (not byte-pinned; input-lock requires sha 2be88ba8...) or rclone snapshot copy (remote; not exercised in R0)"
+    }
+   }
+  },
   "required_ignored_inputs": [
    "data/raw/oracle-cards.jsonl.gz (10 Gate-2 rows, shapes substrate, 7 skip sites)",
    "experiments/out/foundry/codebook.json (lint, family_sweep, definition_drift; S11/S12 skips; s13r2 2 failures)"
   ],
   "restore_paths_known": {
-   "codebook": "mtj_foundry.authority_restore via authority CLI against the selected remote object (remote; not exercised in R0; restore-order tests skip without the selected codebook)",
-   "corpus": "pipeline/fetch.py downloads CURRENT Scryfall bulk (not byte-pinned; input-lock requires sha 2be88ba8...) or rclone snapshot copy (remote; not exercised in R0)"
+   "codebook": "mtj_foundry.authority_restore.install_atomic/restore_snapshot refuse to replace an existing codebook with different bytes unless a caller supplies a backup callable (the library does not know where backups live); experiments/foundry_authority.py (legacy shell) injects functools.partial(foundry_codebook.backup_codebook, 'pre-restore-install') for both. The remote restore was not exercised in R0 or R2",
+   "corpus": "pipeline/fetch.py: default mode streams the LIVE Scryfall bulk-data API (not byte-pinned); `--from-snapshot --snapshot-date <date>` (default 2026-07-03) instead rclone-copies oracle-cards.jsonl.gz from r2:mtjawnny/data/snapshots/<date>, and if no archived rulings file exists there it FALLS BACK to a live rulings download. refoundation/path-e/input-lock.json (scope PATH_E_PILOT_ONLY, ratified false, explicitly not global corpus authority) records the selected local container sha256 2be88ba86da7ecbbb541094f28439c4888c5585c9ca8155e097f1cd0b548d872 and the archived R2 container sha256 b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217, with shared decompressed content sha256 5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c; the containers differ only at gzip header MTIME bytes 4-6. mtj_foundry.runtime.load_verified_corpus checks the container sha256 before content, so a raw snapshot copy does not by itself reconstruct the selected container",
+   "status": "Verified remote restoration of the required corpus and codebook state is a LATER IMPLEMENTATION PREREQUISITE (B11). R0.R2 is source inspection only and proves no restore"
   },
-  "setup": "git worktree add --detach <scratch>/cleanwt 49fcb292; no data/, no experiments/out/, no copied untracked/ignored state"
+  "setup": "git worktree add --detach <scratch>/wt_clean 49fcb292e0668b70901118c52dedc0ffd00f389f; no data/, no experiments/out/, no copied untracked/ignored state; PYTHONDONTWRITEBYTECODE=1; worktree removed after R2",
+  "shapes_substrate_isolation": {
+   "classes": 12,
+   "classification": "ALL 35 non-OK isolated outcomes are MISSING_INPUT (absent data/raw/oracle-cards.jsonl.gz: FileNotFoundError in setUpClass/fixtures, or the corpus loader's halt-loud STOP); 0 semantic regressions observed; the same 81 tests pass in the populated BASE broad run (0 errors)",
+   "errors_by_class_isolated": {
+    "TestB10TheCrHalfNeverReachesTheShapesHalf": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestEveryRepositoryOwnedInputArrivesEXPLICITLY": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestG4bOverTheSliceSevenTree": {
+     "aborted": false,
+     "rc": 1,
+     "summary": "FAILED (errors=1)"
+    },
+    "TestTextMatchIsRegexAndTextAndNothingElse": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestTheB8AndB9Controls": {
+     "aborted": false,
+     "rc": 1,
+     "summary": "FAILED (errors=4)"
+    },
+    "TestTheKeywordHomeDerivationHasExactlyONEOwner": {
+     "aborted": true,
+     "rc": 1,
+     "summary": null
+    },
+    "TestTheLegacyImportTimeHaltBoundary": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestTheShapesSubstrateDerivesNoRepositoryRoot": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestTheSignatureSetsAreDerivedAndPinnedByCONTENT": {
+     "aborted": false,
+     "rc": 1,
+     "summary": "FAILED (errors=1)"
+    },
+    "TestTheThirteenAcceptedNegativeControls": {
+     "aborted": false,
+     "rc": 1,
+     "summary": "FAILED (errors=13)"
+    },
+    "TestTheThreeStageBuildOrderIsPreserved": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    },
+    "TestWhatSliceSevenPROMOTEDAndWhatItLEFT": {
+     "aborted": false,
+     "rc": 0,
+     "summary": "OK"
+    }
+   },
+   "g4b_tests": [
+    "tests.refoundation.test_mtg_shapes_substrate.TestG4bOverTheSliceSevenTree.test_no_permanent_mtg_function_carries_process_or_operator_residue",
+    "tests.refoundation.test_mtg_shapes_substrate.TestG4bOverTheSliceSevenTree.test_the_permanent_mtg_tree_produces_no_finding_at_all",
+    "tests.refoundation.test_mtg_shapes_substrate.TestG4bOverTheSliceSevenTree.test_the_tree_actually_scanned_is_the_slice_seven_one"
+   ],
+   "isolated_error_and_abort_causes": {
+    "FileNotFoundError: [Errno 2] No such file or directory: '<CLEAN_CHECKOUT>/data/raw/oracle-cards.jsonl.gz'": 28,
+    "STOP — <CLEAN_CHECKOUT>/data/raw/oracle-cards.jsonl.gz not found — run pipeline/fetch.py or rclone copy the snapshot first": 7
+   },
+   "isolated_outcomes": {
+    "error": 28,
+    "ok": 46,
+    "systemexit_abort": 7
+   },
+   "method": "read-only process isolation in the clean checkout: `python3 -m unittest -v <id>` once per class (12) and once per test (81); no source/test edit; SystemExit not caught or converted",
+   "module_run": {
+    "aborting_test": "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_a_CR_spell_keyword_gets_a_HOME_and_NO_delivery_token",
+    "censored_classes": [
+     "TestTheKeywordHomeDerivationHasExactlyONEOwner",
+     "TestTheLegacyImportTimeHaltBoundary",
+     "TestTheShapesSubstrateDerivesNoRepositoryRoot",
+     "TestTheSignatureSetsAreDerivedAndPinnedByCONTENT",
+     "TestTheThirteenAcceptedNegativeControls",
+     "TestTheThreeStageBuildOrderIsPreserved",
+     "TestWhatSliceSevenPROMOTEDAndWhatItLEFT"
+    ],
+    "censored_including_aborting_test": 55,
+    "censored_never_executed": 54,
+    "error_outcome_lines_before_abort": 5,
+    "observable_pre_abort_error_identities": [
+     "setUpClass tests.refoundation.test_mtg_shapes_substrate.TestG4bOverTheSliceSevenTree (class-level; its 3 tests never ran in the module run)",
+     "tests.refoundation.test_mtg_shapes_substrate.TestTheB8AndB9Controls.test_B8_is_TRANSITIVE_so_a_caller_inherits_its_callees_io",
+     "tests.refoundation.test_mtg_shapes_substrate.TestTheB8AndB9Controls.test_a_fixture_table_reachable_only_from_an_io_function_fails_B9",
+     "tests.refoundation.test_mtg_shapes_substrate.TestTheB8AndB9Controls.test_a_print_in_an_mtg_function_fails_B8",
+     "tests.refoundation.test_mtg_shapes_substrate.TestTheB8AndB9Controls.test_the_OVERREACH_control_a_formatted_string_consumed_at_L2_is_GREEN"
+    ],
+    "ok_before_abort": 19
+   },
+   "systemexit_tests": [
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_a_CR_spell_keyword_gets_a_HOME_and_NO_delivery_token",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_build_keyword_homes_CONSUMES_the_single_derivation",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_membership_is_194_and_resolved_homes_are_151",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_the_CR_CLASS_FALLBACK_has_exactly_one_definition",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_the_live_split_is_91_by_text_plus_60_by_class_plus_43_unresolved",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_the_map_built_from_the_records_IS_the_live_map",
+    "tests.refoundation.test_mtg_shapes_substrate.TestTheKeywordHomeDerivationHasExactlyONEOwner.test_the_two_fail_loudly_witnesses_hold"
+   ],
+   "tests": 81
+  }
  },
  "controls": {
   "AQ4": "PAUSED",
@@ -547,6 +1132,7 @@
   "ignored_files_removed": [],
   "note": "measured by whole-inventory hash diff of the evidence worktree's cloned ignored state; the primary checkout was never written"
  },
+ "required_inputs_note_r2": "R2 re-derivation confirms the two missing inputs behind every clean-checkout STOP/skip: data/raw/oracle-cards.jsonl.gz and experiments/out/foundry/codebook.json",
  "runtime_owners": {
   "benchmarks/**": "tracked frozen evidence, not runtime",
   "data/**": "ProjectPaths.legacy_oracle_cards / legacy_data_artifacts (pipeline, physical, ignored)",
