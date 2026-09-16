@@ -35,7 +35,11 @@ For a topic, it reports in one pass:
               separated from prose, exactly as the slug dossier does
   2. CODE  -- existing helpers whose NAME matches, so a session builds nothing
               that is already built
-  3. ORPHANS -- a named artifact that a doc calls RATIFIED but which has no
+  3. HISTORICAL CODE -- the same two source shapes over the ARCHIVED D4 triage
+              set. Archiving relocates history; it must not delete the ability
+              to discover it. Reported as EVIDENCE of a past build, never as a
+              runnable successor.
+  4. ORPHANS -- a named artifact that a doc calls RATIFIED but which has no
               caller anywhere. This generalises the family sweep's existing
               BLOCKING check `ratified-pattern-has-no-axis`, whose own message
               names this exact failure: *"demotes it to the prefilter list
@@ -60,9 +64,33 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 import foundry_common as fc  # noqa: E402
+# The boundary above already put `src` on the path; this asks the ratified owner
+# of repository layout where the archived triage set lives instead of spelling a
+# second root arithmetic here. Same idiom as `foundry_cr_checks` and
+# `foundry_object_lattice`.
+from mtj_foundry.paths import ProjectPaths  # noqa: E402
 
 DOCS = fc.REPO_ROOT / "docs"
 CODE = fc.REPO_ROOT / "experiments"
+
+# S15.D4.R2 -- THE ARCHIVE IS STILL EVIDENCE.
+#
+# S15.D4 moved thirteen batch triage scripts out of `experiments/` into the
+# archive byte-for-byte. Nothing about this reader changed -- its blob is
+# identical either side of that commit -- but its code-evidence population is the
+# single directory `CODE`, so the move carried seven real `def` sites out of
+# scan range and
+#     foundry_prior_art.py resolve_removed_members --strict
+# went from a refusal (exit 1, seven artifacts) to a silent success (exit 0).
+# A hard failure had quietly become a success, which is the one conversion this
+# repository's governing principle never permits: the move was plumbing, the
+# refusal was truth.
+#
+# The owner is asked for the destination rather than told it, so re-pointing the
+# archive re-points this reader too. ONE archive family is added, deliberately:
+# the D4 triage set that regressed. This is not a general fix for every earlier
+# or future archive migration and must not be read as one.
+ARCHIVE_TRIAGE = ProjectPaths.for_root(fc.REPO_ROOT).archive_research_triage
 
 # Same idiom as foundry_slug_dossier.py -- a line that carries a VERDICT is not
 # the same kind of evidence as a line that merely mentions the topic.
@@ -97,6 +125,19 @@ def flexible_pattern(topic: str) -> str:
     return r"[-_ ]?".join(re.escape(w) for w in words) + r"[a-z]*"
 
 
+def code_shapes(flexible: str) -> tuple:
+    """The two source shapes a topic can ALREADY EXIST as: a definition and a
+    constant.
+
+    Spelled once and consumed by both the live search and the historical one.
+    Two copies would let the populations drift apart in what they even look
+    for, and a historical search that asked a narrower question than the live
+    one would report "nothing here" for a reason that has nothing to do with
+    the archive."""
+    return (rf"^\s*def\s+[a-z_]*{flexible}",
+            rf"^[A-Z_]*{flexible.upper()}[A-Z_]*\s*=")
+
+
 def _grep(pattern: str, root: Path) -> list:
     """(path, lineno, text) for every match. Uses grep so archive/ is included
     and the cost stays flat as docs/ grows."""
@@ -115,6 +156,78 @@ def _grep(pattern: str, root: Path) -> list:
             continue
         out.append((p, parts[1], parts[2].strip()))
     return out
+
+
+def _git(root: Path, *argv: str) -> str:
+    """One git query about `root`, with every failure LOUD.
+
+    An enumeration that breaks and returns nothing is indistinguishable, at the
+    call site, from a topic that genuinely has no prior art. This repair exists
+    precisely because a missing population once read as a clean result, so the
+    two are never allowed to share an exit path."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), *argv],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        fc.halt(f"could not query git about {root}: {e}. This is a broken "
+                f"enumeration, not an absence of prior art, and the two must "
+                f"never be reported the same way.")
+    if r.returncode != 0:
+        fc.halt(f"git {argv[0]} exited {r.returncode} under {root}: "
+                f"{r.stderr.strip()}. Refusing to report zero historical "
+                f"matches on the strength of a failed enumeration.")
+    return r.stdout
+
+
+def _tracked_archive_sources(root: Path) -> tuple:
+    """`(repository root, sorted repository-relative tracked paths)` under `root`.
+
+    TRACKED, not globbed, and that is the whole point. The live search greps a
+    DIRECTORY, so anything sitting in one counts -- including the multi-gigabyte
+    ignored `experiments/out/` tree. Historical evidence has to be the opposite:
+    a planted or ignored file must never become prior art, and the same commit
+    must always yield the same population. `git ls-files` is the only
+    enumeration that gives both.
+
+    The repository is derived FROM `root` rather than assumed to be this
+    checkout, so the population and every one of its failure modes can be
+    exercised against a disposable fixture repository instead of this one."""
+    top = Path(_git(root, "rev-parse", "--show-toplevel").strip())
+    listed = _git(root, "ls-files", "-z", "--full-name", "--", ".")
+    paths = sorted(p for p in listed.split("\0") if p)
+    if not paths:
+        fc.halt(f"no tracked historical source found under {root}. That "
+                f"population is REQUIRED evidence at this commit, so an empty "
+                f"one is a damaged or re-pointed archive -- not a topic miss.")
+    return top, paths
+
+
+def _historical_code(flexible: str, root: Path) -> list:
+    """(path, lineno, text) for the two code shapes across the archived set.
+
+    TEXT ONLY. The archived programs are read as bytes and matched with a
+    regex; nothing here imports, compiles, evaluates, executes or repairs them.
+    They are inert history, and a prior-art probe that ran them in order to find
+    out what they contain would be a far worse defect than the one it fixes."""
+    shapes = [re.compile(s, re.I) for s in code_shapes(flexible)]
+    top, paths = _tracked_archive_sources(root)
+    hits = []
+    for rel in paths:
+        path = top / rel
+        if path.is_symlink():
+            fc.halt(f"tracked historical source {rel} is a symlink; refusing to "
+                    f"follow it out of the archive and into whatever it points "
+                    f"at.")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            fc.halt(f"cannot read required tracked historical source {rel}: "
+                    f"{e}. Missing or damaged evidence is not the same event as "
+                    f"a topic with no prior art.")
+        for n, line in enumerate(text.splitlines(), 1):
+            if any(s.search(line) for s in shapes):
+                hits.append((rel, str(n), line.strip()))
+    return hits
 
 
 def cmd_topic(args) -> None:
@@ -145,13 +258,28 @@ def cmd_topic(args) -> None:
                 print(f"     {p.replace(str(DOCS.parent) + '/', '')}:{n}  {t[:110]}")
 
         # 2. CODE -- is a helper already built?
-        code = _grep(rf"^\s*def\s+[a-z_]*{flexible}", CODE)
-        code += _grep(rf"^[A-Z_]*{flexible.upper()}[A-Z_]*\s*=", CODE)
+        definition, constant = code_shapes(flexible)
+        code = _grep(definition, CODE)
+        code += _grep(constant, CODE)
         if code:
             found_any = True
             print(f"\n  ⚠ {len(code)} EXISTING CODE ARTIFACT(S) — do not rebuild:")
             for p, n, t in code[:args.limit]:
                 print(f"     {p.replace(str(REPO_ROOT.parent) + '/', '')}:{n}  {t[:100]}")
+
+        # 3. HISTORICAL CODE -- was it built once, and then archived?
+        historical = _historical_code(flexible, ARCHIVE_TRIAGE)
+        if historical:
+            found_any = True
+            print(f"\n  ⚠ {len(historical)} HISTORICAL CODE ARTIFACT(S) in the "
+                  f"archived triage set — this was already built once. Read it "
+                  f"as EVIDENCE: it is inert history, not a runnable successor, "
+                  f"and this is not an instruction to execute an archived "
+                  f"program:")
+            for p, n, t in historical[:args.limit]:
+                print(f"     {p}:{n}  {t[:100]}")
+            if len(historical) > args.limit:
+                print(f"     … and {len(historical) - args.limit} more")
         print()
 
     if args.strict and found_any:
