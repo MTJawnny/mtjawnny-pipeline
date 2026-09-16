@@ -90,7 +90,44 @@ CODE = fc.REPO_ROOT / "experiments"
 # archive re-points this reader too. ONE archive family is added, deliberately:
 # the D4 triage set that regressed. This is not a general fix for every earlier
 # or future archive migration and must not be read as one.
-ARCHIVE_TRIAGE = ProjectPaths.for_root(fc.REPO_ROOT).archive_research_triage
+_LAYOUT = ProjectPaths.for_root(fc.REPO_ROOT)
+ARCHIVE_TRIAGE = _LAYOUT.archive_research_triage
+
+# S15.D5.R1 -- THE SAME LOSS HAD ALREADY HAPPENED TWICE BEFORE D4.
+#
+# D4.R2 repaired ONE family and said so in the comment above. That was accurate
+# and it was also incomplete: S15.D3 archived the three Batch-8 research scripts
+# and S15.D6 archived the `/1 -> /2` migration pair, both BEFORE this arm
+# existed, so both were already invisible here. Measured at the D4.R2 head, with
+# the definitions demonstrably present in the archived files:
+#     agreement matrix / tail decay check / score pairs   -> exit 0, no artifact
+#     replay attribution / project through renames        -> exit 0, no artifact
+# "No prior art" was being reported for code that is sitting in the repository.
+# Same conversion, same principle, two families older.
+#
+# The fix is an EXPLICIT list, not a recursive walk. `archive/research/**` would
+# make every future directory prior art by accident -- the opposite of the
+# bounded-population discipline `_tracked_archive_sources` exists to enforce --
+# and it would let an unrelated family answer a topic query with evidence that
+# was never authorized as evidence. Each entry names an owner property (so the
+# layout owner still decides where the family lives) and the human-readable
+# label its hits are reported under, because a Batch-8 match described as triage
+# is a provenance lie even when the path printed beside it is correct.
+#
+# A later task adds ONE tuple here for its own ratified owner. That is the whole
+# extension mechanism; nothing about the scope becomes automatic.
+#
+# `_LAYOUT` is the SAME `for_root` call `ARCHIVE_TRIAGE` already made, reused
+# rather than repeated. A second call would add a real root-delegation site and
+# move three values inside the already-failing layout-delegation census, for no
+# behavioural gain; the raw-textual arm of that census counts the token itself,
+# so this note avoids spelling it too. This repair moves none of those values.
+HISTORICAL_FAMILIES = (
+    (ARCHIVE_TRIAGE, "archived triage set"),
+    (_LAYOUT.archive_research_batch8, "archived Batch-8 research set"),
+    (_LAYOUT.archive_research_mutations,
+     "archived foundry-codebook/1 -> /2 migration pair"),
+)
 
 # Same idiom as foundry_slug_dossier.py -- a line that carries a VERDICT is not
 # the same kind of evidence as a line that merely mentions the topic.
@@ -268,11 +305,17 @@ def cmd_topic(args) -> None:
                 print(f"     {p.replace(str(REPO_ROOT.parent) + '/', '')}:{n}  {t[:100]}")
 
         # 3. HISTORICAL CODE -- was it built once, and then archived?
-        historical = _historical_code(flexible, ARCHIVE_TRIAGE)
-        if historical:
+        # One family at a time, each reported under its OWN label. The results
+        # are deliberately not concatenated first: a single merged list would
+        # have to be printed under one family's name, and every hit from the
+        # other families would then carry a false provenance.
+        for owner, label in HISTORICAL_FAMILIES:
+            historical = _historical_code(flexible, owner)
+            if not historical:
+                continue
             found_any = True
             print(f"\n  ⚠ {len(historical)} HISTORICAL CODE ARTIFACT(S) in the "
-                  f"archived triage set — this was already built once. Read it "
+                  f"{label} — this was already built once. Read it "
                   f"as EVIDENCE: it is inert history, not a runnable successor, "
                   f"and this is not an instruction to execute an archived "
                   f"program:")

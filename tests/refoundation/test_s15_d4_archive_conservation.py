@@ -84,6 +84,9 @@ ARCHIVE_TRIAGE_REL = "archive/research/triage"
 # drifted repository FAILS rather than quietly re-deriving a new expectation.
 D6_HEAD = "b55294bc4b87ae0e761d223f6321872cc46f39f2"
 D4_HEAD = "739dcf2b2590c8ff95bf047d11cfc908487173f2"
+# S15.D5.R1's base: the accepted D4.R2 implementation, whose reader covered the
+# triage family ONLY. It is the reversion control for the repair below.
+ACCEPTED_HEAD = "3b73b044ea0f1b7b810b39c91bf205a551525231"
 
 # The authorized subject set, exactly thirteen, as the Captain direction names
 # it. Cross-checked against the archive tree below rather than derived from it:
@@ -823,6 +826,372 @@ class TestTheMaterialEdgeMethod(unittest.TestCase):
                     imported.add(node.module.split(".")[-1])
             with self.subTest(name=name):
                 self.assertEqual(imported & stems, set())
+
+# ===========================================================================
+# 7. S15.D5.R1 -- the OTHER archive families, which were dark all along
+# ===========================================================================
+#
+# D4.R2 repaired the triage family and said, in the reader's own source, that it
+# was not a general fix. That was honest and it was also a live defect: S15.D3
+# had already archived the Batch-8 research scripts and S15.D6 the `/1 -> /2`
+# migration pair, both BEFORE the historical arm existed. Measured at the D4.R2
+# head, with the definitions sitting in the tracked archive the whole time:
+#
+#     agreement matrix      -> 0 artifacts, exit 0
+#     tail decay check      -> 0 artifacts, exit 0
+#     score pairs           -> 0 artifacts, exit 0
+#     replay attribution    -> 0 artifacts, exit 0
+#
+# Same conversion as D4, two families older. These tests pin the repair AND the
+# boundary: the family list is EXPLICIT, so an unrelated archive directory does
+# not become prior art merely by existing.
+
+BATCH8_REL = "archive/research/batch8"
+MUTATIONS_REL = "archive/research/mutations"
+
+# Real definitions, each measured to exist in its archived family and to exist
+# NOWHERE in the live tree. A topic that also matched a live file would not
+# prove the historical arm found anything.
+DARK_QUERIES = (
+    ("agreement matrix", BATCH8_REL, "foundry_batch8_diff.py",
+     "def agreement_matrix"),
+    ("tail decay check", BATCH8_REL, "foundry_batch8_diff.py",
+     "def tail_decay_check"),
+    ("score pairs", BATCH8_REL, "foundry_batch8_canon_analysis.py",
+     "def score_pairs"),
+    ("replay attribution", MUTATIONS_REL, "foundry_migrate_codebook_v2.py",
+     "def replay_attribution"),
+    ("project through renames", MUTATIONS_REL, "foundry_migrate_codebook_v2.py",
+     "def project_through_renames"),
+    ("pay life pairs", MUTATIONS_REL, "foundry_migrate_codebook_v2.py",
+     "def pay_life_pairs"),
+)
+
+# The label each family's hits must be reported under. A Batch-8 match described
+# as triage is a provenance lie even when the path beside it is right.
+EXPECTED_LABELS = {
+    ARCHIVE_TRIAGE_REL: "archived triage set",
+    BATCH8_REL: "archived Batch-8 research set",
+    MUTATIONS_REL: "archived foundry-codebook/1 -> /2 migration pair",
+}
+
+
+def family_fixture(rel: str, tracked: dict, untracked: dict = None,
+                   ignored: dict = None) -> Path:
+    """A throwaway repository holding ONE archive family at `rel`.
+
+    The triage-only `fixture_repo` above cannot express a second family, and the
+    controls here must plant into a named one. Kept separate rather than
+    rewriting the accepted helper, so the D4 controls keep running on the exact
+    fixture they were accepted with."""
+    tmp = Path(tempfile.mkdtemp(prefix="s15d5r1-"))
+    family = tmp / rel
+    family.mkdir(parents=True)
+    for name, text in tracked.items():
+        (family / name).write_text(text, encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp), "init", "-q"], check=True)
+    if ignored:
+        (tmp / ".gitignore").write_text(
+            "".join(f"{n}\n" for n in ignored), encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp), "add", "-A"], check=True,
+                   capture_output=True)
+    for name, text in (untracked or {}).items():
+        (family / name).write_text(text, encoding="utf-8")
+    for name, text in (ignored or {}).items():
+        (family / name).write_text(text, encoding="utf-8")
+    return tmp
+
+
+class TestTheHistoricalFamilySetIsExplicitAndBounded(unittest.TestCase):
+    """The mechanism, not the contents: three named owners, no recursion."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def test_the_family_set_is_exactly_the_three_archived_owners(self):
+        from mtj_foundry.paths import ProjectPaths
+        layout = ProjectPaths.for_root(REPO_ROOT)
+        self.assertEqual(
+            [owner for owner, _ in self.pa.HISTORICAL_FAMILIES],
+            [layout.archive_research_triage,
+             layout.archive_research_batch8,
+             layout.archive_research_mutations])
+
+    def test_every_family_location_comes_from_the_layout_owner(self):
+        """Asked of `ProjectPaths`, never spelled a second time in the reader.
+        Re-pointing an owner re-points discovery with it."""
+        from mtj_foundry.paths import ProjectPaths
+        layout = ProjectPaths.for_root(REPO_ROOT)
+        named = {layout.archive_research_triage, layout.archive_research_batch8,
+                 layout.archive_research_mutations}
+        for owner, _ in self.pa.HISTORICAL_FAMILIES:
+            with self.subTest(owner=str(owner)):
+                self.assertIn(owner, named)
+
+    def test_each_family_carries_its_own_distinct_provenance_label(self):
+        labels = [label for _, label in self.pa.HISTORICAL_FAMILIES]
+        self.assertEqual(len(labels), len(set(labels)), labels)
+        for owner, label in self.pa.HISTORICAL_FAMILIES:
+            rel = str(owner.relative_to(REPO_ROOT))
+            with self.subTest(family=rel):
+                self.assertEqual(label, EXPECTED_LABELS[rel])
+
+    def test_discovery_is_not_recursive_over_the_archive(self):
+        """`archive/research/**` would make every future directory prior art by
+        accident. The reader must name its families, not walk for them."""
+        source = PRIOR_ART_PATH.read_text(encoding="utf-8")
+        self.assertNotIn("archive_research_consolidation", source)
+        self.assertNotIn("archive_research_thesaurus_measurement", source)
+        body = source.split("HISTORICAL_FAMILIES = (")[1].split(")\n")[0]
+        for enumerator in ("rglob", "glob", "iterdir", "walk", "scandir"):
+            with self.subTest(enumerator=enumerator):
+                self.assertNotIn(enumerator, body)
+
+    def test_the_D5_owner_is_NOT_registered_yet(self):
+        """D5 is blocked and its owner does not exist. Naming it here would be
+        both a forward reference to an absent property and a scope expansion."""
+        source = PRIOR_ART_PATH.read_text(encoding="utf-8")
+        self.assertNotIn("archive_research_codebook_transforms", source)
+        self.assertNotIn("codebook-transforms", source)
+
+
+class TestThePreviouslyDarkFamiliesAreDiscoverable(unittest.TestCase):
+    """The real repair, on real queries, against this repository."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def test_each_dark_query_finds_its_real_archived_definition(self):
+        for topic, rel, filename, definition in DARK_QUERIES:
+            with self.subTest(topic=topic):
+                hits = []
+                for owner, _ in self.pa.HISTORICAL_FAMILIES:
+                    hits += self.pa._historical_code(
+                        self.pa.flexible_pattern(topic), owner)
+                self.assertEqual(len(hits), 1, hits)
+                path, lineno, text = hits[0]
+                self.assertEqual(path, f"{rel}/{filename}")
+                self.assertTrue((REPO_ROOT / path).is_file(), path)
+                self.assertTrue(lineno.isdigit(), lineno)
+                self.assertIn(definition, text)
+
+    def test_each_dark_query_now_makes_strict_refuse(self):
+        """The whole point. Before this repair every one of these exited 0."""
+        for topic, _, _, _ in DARK_QUERIES:
+            with self.subTest(topic=topic):
+                status, _ = run_topic(self.pa, Args([topic], strict=True))
+                self.assertEqual(status, 1)
+
+    def test_each_dark_query_is_reported_under_its_OWN_family_label(self):
+        for topic, rel, _, _ in DARK_QUERIES:
+            with self.subTest(topic=topic):
+                _, out = run_topic(self.pa, Args([topic]))
+                self.assertIn(EXPECTED_LABELS[rel], out)
+                for other_rel, other_label in EXPECTED_LABELS.items():
+                    if other_rel != rel:
+                        self.assertNotIn(other_label, out)
+
+    def test_a_single_family_hit_is_enough_for_strict_to_refuse(self):
+        """`agreement matrix` hits Batch-8 only: no docs line, no live artifact,
+        nothing in triage or mutations. One family is sufficient."""
+        topic = "agreement matrix"
+        per_family = {
+            str(owner.relative_to(REPO_ROOT)):
+                len(self.pa._historical_code(
+                    self.pa.flexible_pattern(topic), owner))
+            for owner, _ in self.pa.HISTORICAL_FAMILIES}
+        self.assertEqual(per_family[BATCH8_REL], 1, per_family)
+        self.assertEqual(per_family[ARCHIVE_TRIAGE_REL], 0, per_family)
+        self.assertEqual(per_family[MUTATIONS_REL], 0, per_family)
+        status, _ = run_topic(self.pa, Args([topic], strict=True))
+        self.assertEqual(status, 1)
+
+    def test_the_accepted_triage_regression_is_conserved_exactly(self):
+        """D4.R2's contract, unchanged: same count, same paths, same refusal."""
+        hits = self.pa._historical_code(
+            self.pa.flexible_pattern(REGRESSION_TOPIC), self.pa.ARCHIVE_TRIAGE)
+        self.assertEqual(len(hits), REGRESSION_HITS, hits)
+        for rel, _, _ in hits:
+            self.assertTrue(rel.startswith(f"{ARCHIVE_TRIAGE_REL}/"), rel)
+        status, out = run_topic(self.pa, Args([REGRESSION_TOPIC], strict=True))
+        self.assertEqual(status, 1)
+        self.assertIn(EXPECTED_LABELS[ARCHIVE_TRIAGE_REL], out)
+
+    @unittest.skipUnless(
+        (REPO_ROOT / ".git").exists() and have_object(ACCEPTED_HEAD),
+        "the accepted D4.R2 commit is needed as the reversion control")
+    def test_the_old_accepted_reader_finds_none_of_them(self):
+        """The reversion control. The accepted D4.R2 reader, on this same
+        repository, must report these topics as having no prior art -- otherwise
+        the tests above prove nothing about this repair."""
+        source = git("cat-file", "blob",
+                     f"{ACCEPTED_HEAD}:experiments/foundry_prior_art.py")
+        self.assertIn("ARCHIVE_TRIAGE = ", source)
+        self.assertNotIn("HISTORICAL_FAMILIES", source)
+
+
+class TestTheNewFamiliesKeepEveryAcceptedGuard(unittest.TestCase):
+    """Every property D4.R2 proved for triage, re-proved per family. A guard
+    that was only ever exercised on one family is not known to hold on three."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def search(self, root: Path, topic: str) -> list:
+        return self.pa._historical_code(self.pa.flexible_pattern(topic), root)
+
+    def test_an_UNTRACKED_planted_file_is_not_evidence_in_any_family(self):
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                repo = family_fixture(
+                    rel, {"tracked.py": "def sequoia_marker_one():\n    pass\n"},
+                    untracked={"loose.py":
+                               "def sequoia_marker_two():\n    pass\n"})
+                family = repo / rel
+                self.assertEqual(len(self.search(family, "sequoia_marker_one")), 1)
+                self.assertEqual(self.search(family, "sequoia_marker_two"), [])
+
+    def test_an_IGNORED_planted_file_is_not_evidence_in_any_family(self):
+        """Distinct from merely untracked: a `.gitignore`d file is invisible to
+        `git ls-files` for a different reason, and must stay invisible here."""
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                repo = family_fixture(
+                    rel, {"tracked.py": "def cedar_marker_one():\n    pass\n"},
+                    ignored={"ignored.py":
+                             "def cedar_marker_two():\n    pass\n"})
+                family = repo / rel
+                self.assertEqual(len(self.search(family, "cedar_marker_one")), 1)
+                self.assertEqual(self.search(family, "cedar_marker_two"), [])
+
+    def test_archived_source_is_READ_never_EXECUTED_in_any_family(self):
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                sentinel = Path(tempfile.mkdtemp(prefix="s15d5r1-trap-")) / "fired"
+                trap = (f"import pathlib\n"
+                        f"pathlib.Path({str(sentinel)!r}).write_text('fired')\n"
+                        f"raise SystemExit('the archive was executed')\n"
+                        f"def banyan_trap_helper():\n    pass\n")
+                repo = family_fixture(rel, {"trap.py": trap})
+                hits = self.search(repo / rel, "banyan_trap_helper")
+                self.assertEqual(len(hits), 1, hits)
+                self.assertFalse(sentinel.exists(),
+                                 "the archived program was executed")
+
+    def test_a_MISSING_required_source_halts_loudly_in_any_family(self):
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                repo = family_fixture(
+                    rel, {"gone.py": "def willow_helper():\n    pass\n"})
+                family = repo / rel
+                self.assertEqual(len(self.search(family, "willow_helper")), 1)
+                (family / "gone.py").unlink()
+                with self.assertRaises(SystemExit) as raised:
+                    self.search(family, "willow_helper")
+                self.assertEqual(raised.exception.code, 1)
+
+    def test_a_SYMLINKED_source_is_refused_in_any_family(self):
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                repo = family_fixture(
+                    rel, {"real.py": "def alder_helper():\n    pass\n"})
+                family = repo / rel
+                target = repo / "elsewhere.py"
+                target.write_text("def alder_helper():\n    pass\n",
+                                  encoding="utf-8")
+                (family / "link.py").symlink_to(target)
+                subprocess.run(["git", "-C", str(repo), "add", "-A"],
+                               check=True, capture_output=True)
+                with self.assertRaises(SystemExit) as raised:
+                    self.search(family, "alder_helper")
+                self.assertEqual(raised.exception.code, 1)
+
+    def test_a_BROKEN_enumeration_halts_instead_of_returning_zero(self):
+        """`git ls-files` cannot answer at all. A broken population reading as
+        "no prior art" is the exact failure this whole line of repair forbids."""
+        outside = Path(tempfile.mkdtemp(prefix="s15d5r1-nogit-"))
+        with self.assertRaises(SystemExit) as raised:
+            self.search(outside, "anything_at_all")
+        self.assertEqual(raised.exception.code, 1)
+
+    def test_an_EMPTY_tracked_family_halts(self):
+        for rel in (BATCH8_REL, MUTATIONS_REL):
+            with self.subTest(family=rel):
+                repo = family_fixture(rel, {"kept.py": "x = 1\n"})
+                empty = repo / rel / "nothing"
+                empty.mkdir()
+                with self.assertRaises(SystemExit) as raised:
+                    self.search(empty, "anything_at_all")
+                self.assertEqual(raised.exception.code, 1)
+
+
+class TestUnrelatedArchivePathsStayOutOfPriorArt(unittest.TestCase):
+    """The bounded-population half of the repair. Not vacuous: the file used
+    here IS discoverable when the reader is pointed straight at it, and is
+    absent only because its directory is not a registered family."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def test_a_real_tracked_archive_file_outside_the_family_set_is_excluded(self):
+        outsider = "archive/routing/experiments/foundry_build_reaudit_packet.py"
+        self.assertTrue((REPO_ROOT / outsider).is_file(), outsider)
+        flexible = self.pa.flexible_pattern("esc")
+
+        direct = self.pa._historical_code(
+            flexible, REPO_ROOT / "archive/routing/experiments")
+        self.assertTrue(any(p == outsider for p, _, _ in direct), direct)
+
+        via_families = []
+        for owner, _ in self.pa.HISTORICAL_FAMILIES:
+            via_families += self.pa._historical_code(flexible, owner)
+        self.assertEqual(
+            [p for p, _, _ in via_families if p.startswith("archive/routing/")],
+            [])
+
+    def test_a_planted_tracked_file_outside_the_family_set_is_excluded(self):
+        repo = family_fixture(
+            BATCH8_REL, {"inside.py": "def maple_marker_in():\n    pass\n"})
+        stranger = repo / "archive" / "research" / "consolidation"
+        stranger.mkdir(parents=True)
+        (stranger / "outside.py").write_text(
+            "def maple_marker_out():\n    pass\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True,
+                       capture_output=True)
+        family = repo / BATCH8_REL
+        self.assertEqual(
+            len(self.pa._historical_code(
+                self.pa.flexible_pattern("maple_marker_in"), family)), 1)
+        self.assertEqual(
+            self.pa._historical_code(
+                self.pa.flexible_pattern("maple_marker_out"), family), [])
+
+
+class TestTheLivePopulationIsUnchangedByThisRepair(unittest.TestCase):
+    """This task touched only the historical arm."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def test_the_live_code_population_is_still_the_experiments_directory(self):
+        self.assertEqual(self.pa.CODE, REPO_ROOT / "experiments")
+        self.assertEqual(self.pa.DOCS, REPO_ROOT / "docs")
+
+    def test_the_orphans_contract_never_learned_about_families(self):
+        source = PRIOR_ART_PATH.read_text(encoding="utf-8")
+        body = source.split("def cmd_orphans")[1].split("\ndef main")[0]
+        self.assertNotIn("HISTORICAL_FAMILIES", body)
+        self.assertNotIn("_historical_code", body)
+        self.assertIn("if args.strict and bypassers:", body)
+
+    def test_the_bootstrap_is_still_a_single_sys_path_site(self):
+        source = PRIOR_ART_PATH.read_text(encoding="utf-8")
+        self.assertEqual(source.count("sys.path.insert"), 1)
 
 
 if __name__ == "__main__":
