@@ -5,6 +5,19 @@
     "archive/research/batch8/foundry_batch8_diff.py",
     "archive/research/mutations/foundry_migrate_codebook_v2.py",
     "archive/research/mutations/foundry_verify_migration.py",
+    "archive/research/triage/foundry_adapt_batch1_decisions.py",
+    "archive/research/triage/foundry_adapt_batch2_decisions.py",
+    "archive/research/triage/foundry_adapt_batch3_decisions.py",
+    "archive/research/triage/foundry_adapt_batch4_decisions.py",
+    "archive/research/triage/foundry_adapt_batch5_decisions.py",
+    "archive/research/triage/foundry_adapt_batch6_decisions.py",
+    "archive/research/triage/foundry_adapt_batch7_decisions.py",
+    "archive/research/triage/foundry_assemble_batch2.py",
+    "archive/research/triage/foundry_assemble_batch3.py",
+    "archive/research/triage/foundry_assemble_batch4.py",
+    "archive/research/triage/foundry_assemble_batch5.py",
+    "archive/research/triage/foundry_assemble_batch6.py",
+    "archive/research/triage/foundry_assemble_batch7.py",
     "archive/routing/experiments/foundry_build_reaudit_packet.py"
   ],
   "base_measured": {
@@ -40,57 +53,6 @@
       "is_mode_line",
       "load_corpus_gated"
     ],
-    "experiments/foundry_adapt_batch1_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch2_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch3_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch4_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch5_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch6_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "gate_passes",
-      "halt",
-      "load_corpus",
-      "load_corpus_gated",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_adapt_batch7_decisions.py": [
-      "FOUNDRY_OUT_DIR",
-      "gate_passes",
-      "halt",
-      "load_corpus",
-      "load_corpus_gated",
-      "resolve_name",
-      "write_json"
-    ],
     "experiments/foundry_any_damage_split.py": [
       "halt"
     ],
@@ -100,46 +62,6 @@
       "full_oracle_text",
       "halt",
       "load_corpus_gated"
-    ],
-    "experiments/foundry_assemble_batch2.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_assemble_batch3.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name"
-    ],
-    "experiments/foundry_assemble_batch4.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_assemble_batch5.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
-    ],
-    "experiments/foundry_assemble_batch6.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name"
-    ],
-    "experiments/foundry_assemble_batch7.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus_gated",
-      "resolve_name",
-      "write_json"
     ],
     "experiments/foundry_authority.py": [
       "CONFIG_SELECTORS",
@@ -595,5 +517,149 @@
       }
     },
     "rule": "S15.D6 byte-identical R100 archive of the completed /1 -> /2 codebook migration pair to archive/research/mutations/, under Captain direction D-20260915-S15-D6-RETIRE-V1-MIGRATION-SUPPORT (Issue #1 comment 5693041826), which retired routine /1 -> /2 conversion. archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row is byte-for-byte unchanged and archive importers are never counted as live."
+  },
+  "s15_d4_amendment": {
+    "head_base": "b55294bc4b87ae0e761d223f6321872cc46f39f2",
+    "live_importers": {
+      "before": 83,
+      "after": 70
+    },
+    "archive_importers": {
+      "before": 6,
+      "after": 19
+    },
+    "rows_moved_to_archive": {
+      "experiments/foundry_adapt_batch1_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch1_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch2_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch2_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch3_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch3_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch4_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch4_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch5_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch5_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch6_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch6_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "gate_passes",
+          "halt",
+          "load_corpus",
+          "load_corpus_gated",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_adapt_batch7_decisions.py": {
+        "archived_path": "archive/research/triage/foundry_adapt_batch7_decisions.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "gate_passes",
+          "halt",
+          "load_corpus",
+          "load_corpus_gated",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_assemble_batch2.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch2.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_assemble_batch3.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch3.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name"
+        ]
+      },
+      "experiments/foundry_assemble_batch4.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch4.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_assemble_batch5.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch5.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_assemble_batch6.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch6.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name"
+        ]
+      },
+      "experiments/foundry_assemble_batch7.py": {
+        "archived_path": "archive/research/triage/foundry_assemble_batch7.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus_gated",
+          "resolve_name",
+          "write_json"
+        ]
+      }
+    },
+    "rule": "S15.D4 byte-identical R100 archive of the thirteen batch triage scripts (seven decision adapters and six batch assemblers) to archive/research/triage/, under Captain direction D-20260916-S15-D4-TRIAGE-ARCHIVE-EXECUTION (Issue #1 comment 5698387022). archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row and every prior amendment (S11, S15.D3, S15.D6) is byte-for-byte unchanged, and archive importers are never counted as live."
   }
 }
