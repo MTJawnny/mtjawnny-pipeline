@@ -13,10 +13,23 @@ Three claims:
    still escaping raw.
 
 The third claim carries the load. A13's whole point is that a mutation is not
-trusted because the writer says so, and the two controls that enforce that —
-`foundry_verify_migration`'s independence and its `os.replace` interruption rig
-— must still be able to fail after this cut. Both are asserted here, one
-structurally and one by the shape of the exception that escapes.
+trusted because the writer says so, and the controls that enforce that must
+still be able to fail after this cut.
+
+S15.D6 split those controls by tense, because they were never one thing:
+
+* The **live** interruption control is asserted HERE, behaviourally, by the
+  shape of the exception that escapes —
+  `TestTheProtocolRefusesBeforeInstalling.test_an_interrupted_rename_raises_a_RAW_OSError`
+  for the permanent protocol and
+  `TestTheLegacyWriterBoundary.test_an_interrupted_rename_still_escapes_the_facade_RAW`
+  for the facade. Neither needs the historical verifier, and both fail when the
+  protected behaviour is broken.
+* The **historical** independence record is asserted structurally, by reading
+  the archived verifier's BYTES. Routine `/1 -> /2` migration is retired and the
+  pair is archived under `archive/research/mutations/`; an archived file is
+  retained because it is historical, so these checks read it and never import
+  or execute it.
 
 Every write in this file lands in an OS temp directory. No repository path is
 constructed, no root is derived, and the operational codebook is never a target.
@@ -667,15 +680,87 @@ class TestTheLegacyLoaderBoundary(unittest.TestCase):
                          if isinstance(c, ast.Call)]
                 self.assertIn("fc.halt", calls)
 
-    def test_the_v1_guidance_text_lives_HERE_and_only_here(self):
-        """C3's other half: the facade must still carry the exact legacy
-        sentence, rebuilt from the typed error's structured attributes."""
-        body = ast.unparse(self.require_wrapper())
-        for required in ("experiments/foundry_migrate_codebook_v2.py",
-                         "foundry_reconcile.py", "pre-migration",
-                         "SCHEMA_V1", "error.actual"):
-            with self.subTest(required=required):
-                self.assertIn(required, body)
+    # --- the `/1` guidance: C3's other half, restated for S15.D6 -------------
+    #
+    # This used to pin the exact legacy sentence, including the literal
+    # `experiments/foundry_migrate_codebook_v2.py`. That pin had a hole D6
+    # measured: it reads a string in a THIRD file, so it stayed GREEN after the
+    # migrator moved, while the instruction it protected had become false. A
+    # text pin cannot notice that its own advice stopped resolving.
+    #
+    # So the guidance is now checked by BEHAVIOUR and by RESOLUTION: run the
+    # real `/1` path, read what the operator is actually told, and prove the
+    # procedure it names exists and describes this operation.
+
+    def _v1_halt(self):
+        """Run the real `/1` route and return (exit_code, stderr text)."""
+        with tempfile.TemporaryDirectory(prefix="s15d6-v1-") as d:
+            p = Path(d) / "v1.json"
+            p.write_text(json.dumps({"schema": codebook.SCHEMA_V1, "axes": {}}),
+                         encoding="utf-8")
+            buffer = io.StringIO()
+            with contextlib.redirect_stderr(buffer):
+                with self.assertRaises(SystemExit) as exited:
+                    self.fcb.load_codebook(p)
+        code = exited.exception.code
+        return (code, buffer.getvalue())
+
+    def test_the_v1_route_still_halts_loudly_and_states_the_facts(self):
+        """The STOP/exit contract is unchanged; only the advice changed."""
+        code, text = self._v1_halt()
+        self.assertEqual(code, 1)
+        self.assertIn("STOP — ", text)
+        self.assertIn(codebook.SCHEMA_V1, text)
+        self.assertIn(codebook.SCHEMA_V2, text)
+
+    def test_the_v1_guidance_says_conversion_is_RETIRED(self):
+        """The current contract, positively stated: this reader is `/2`-only and
+        no current command converts a `/1`."""
+        _, text = self._v1_halt()
+        self.assertIn("RETIRED", text)
+        self.assertIn("no current command performs it", text)
+
+    def test_the_v1_guidance_offers_no_retired_or_archived_remedy(self):
+        """The exact regression this slice exists to prevent: advice naming a
+        file that has left the live tree, or telling an operator to execute
+        inert history. `archive/` is never a live path."""
+        _, text = self._v1_halt()
+        for stale in ("foundry_migrate_codebook_v2", "foundry_reconcile",
+                      "experiments/", "archive/"):
+            with self.subTest(stale=stale):
+                self.assertNotIn(stale, text)
+
+    def test_the_v1_guidance_hands_over_no_runnable_command(self):
+        """A failed READ must not hand an operator a ready-to-paste command that
+        overwrites authority. Restoring is a decision, not an autocomplete."""
+        _, text = self._v1_halt()
+        for runnable in ("python3 ", "python ", "rclone ", "$ ", "--install",
+                         "authority restore", "restore --"):
+            with self.subTest(runnable=runnable):
+                self.assertNotIn(runnable, text)
+
+    def test_the_named_recovery_procedure_RESOLVES_and_describes_this_operation(self):
+        """Mere path existence is not enough. The document the halt names must
+        exist AND actually describe the applicable operation, or the new advice
+        is the old defect with a different filename."""
+        _, text = self._v1_halt()
+        named = [tok.strip(" .,;)") for tok in text.replace("\n", " ").split()
+                 if tok.strip(" .,;)").endswith(".md")]
+        self.assertEqual(len(named), 1, f"expected exactly one named procedure, got {named}")
+        doc = REPO_ROOT / named[0]
+        self.assertTrue(doc.is_file(), f"the halt names {named[0]}, which does not exist")
+        body = doc.read_text(encoding="utf-8")
+        # it describes the SUPPORTED operation ...
+        for topic in ("authority_restore", codebook.SCHEMA_V2):
+            with self.subTest(topic=topic):
+                self.assertIn(topic, body)
+        # ... and it states the retirement it is being cited for.
+        self.assertIn("RETIRED", body)
+        # ... and it does not re-introduce the advice the halt just dropped.
+        for revived in ("run experiments/foundry_migrate_codebook_v2.py",
+                        "run archive/research/mutations/foundry_migrate_codebook_v2.py"):
+            with self.subTest(revived=revived):
+                self.assertNotIn(revived, body)
 
 
 class TestTheLegacyWriterBoundary(TempTargetTestCase):
@@ -835,22 +920,43 @@ class TestTheLegacyWriterBoundary(TempTargetTestCase):
 # ===========================================================================
 
 class TestTheVerifierIndependenceBoundary(unittest.TestCase):
-    """`foundry_verify_migration.py` is DENIED to this slice. This guards it; it
-    does not touch it.
+    """HISTORICAL EVIDENCE CHECK — the archived verifier's independence, read
+    from its bytes.
 
-    A13's demand is a verification path on a SEPARATE CODE PATH from the writer.
-    The risk this cut creates is not that the verifier breaks — it is that a
-    later tidy-up hoists the now-permanent `codebook_store` import to module
-    scope for convenience, collapsing the verifier onto the writer's vocabulary
-    while every test stays green."""
+    A13's demand was a verification path on a SEPARATE CODE PATH from the
+    writer, and `foundry_verify_migration.py` was the module that satisfied it
+    for the completed `/1 -> /2` migration. S15.D6 retired routine `/1`
+    conversion and archived that migrator with its verifier, so this class
+    changed TENSE, not subject: it still proves the same five properties of the
+    same bytes, but it now states them about a historical record.
+
+    IT READS THE SOURCE; IT NEVER IMPORTS IT. The archived file is inert
+    history (`ProjectPaths` records that nothing under `archive/` is a live
+    path). Importing it to obtain source would be worse than useless here: its
+    own `REPO_ROOT = Path(__file__).resolve().parents[1]` re-derives to
+    `archive/research` from the new address, so an import-based version of this
+    guard would go GREEN while describing a module that could no longer perform
+    the verification it is the proof of. Reading bytes cannot drift that way.
+
+    The LIVE interruption control does not live here and never depended on this
+    class — see the module docstring."""
 
     WRITER_MODULES = ("foundry_codebook", "foundry_migrate_codebook_v2",
                       "mtj_foundry.codebook", "mtj_foundry.codebook_store")
 
+    ARCHIVED_VERIFIER = (REPO_ROOT / "archive" / "research" / "mutations"
+                         / "foundry_verify_migration.py")
+
     @classmethod
     def setUpClass(cls):
-        cls.verifier = load_legacy("foundry_verify_migration")
-        cls.tree = ast.parse(inspect.getsource(cls.verifier))
+        if not cls.ARCHIVED_VERIFIER.is_file():
+            raise AssertionError(
+                "the archived historical verifier is missing from its owned "
+                f"destination: {cls.ARCHIVED_VERIFIER}. S15.D6 archived the "
+                "migration pair there as evidence; without these bytes the A13 "
+                "independence record cannot be checked at all.")
+        cls.source = cls.ARCHIVED_VERIFIER.read_text(encoding="utf-8")
+        cls.tree = ast.parse(cls.source)
 
     def imports_in(self, node):
         """Every module an import statement REACHES, in all three spellings.
@@ -908,13 +1014,15 @@ class TestTheVerifierIndependenceBoundary(unittest.TestCase):
                    and set(self.imports_in(n)) & set(self.WRITER_MODULES)]
         self.assertEqual(holders, ["negative_tests"])
 
-    def test_the_shared_os_replace_interruption_rig_is_still_present(self):
-        """The rig patches the SHARED `os` module, which is why the store must
-        keep calling `os.replace` late-bound. If this assignment ever leaves the
-        verifier, the control it powers has left with it."""
-        source = inspect.getsource(self.verifier)
-        self.assertIn("os.replace = boom", source)
-        self.assertIn("os.replace = real_replace", source)
+    def test_the_shared_os_replace_interruption_rig_is_recorded(self):
+        """HISTORICAL. The original rig patched the SHARED `os` module, which is
+        the reason the permanent store still calls `os.replace` late-bound.
+
+        This asserts the archived record still CONTAINS that rig — it does not
+        make the live control depend on it. The live control is behavioural and
+        lives in this file; see the module docstring."""
+        self.assertIn("os.replace = boom", self.source)
+        self.assertIn("os.replace = real_replace", self.source)
 
 
 # ===========================================================================

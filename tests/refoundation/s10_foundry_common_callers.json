@@ -3,6 +3,8 @@
     "archive/research/batch8/foundry_batch8_ab.py",
     "archive/research/batch8/foundry_batch8_canon_analysis.py",
     "archive/research/batch8/foundry_batch8_diff.py",
+    "archive/research/mutations/foundry_migrate_codebook_v2.py",
+    "archive/research/mutations/foundry_verify_migration.py",
     "archive/routing/experiments/foundry_build_reaudit_packet.py"
   ],
   "base_measured": {
@@ -293,17 +295,6 @@
     "experiments/foundry_membership_move.py": [
       "halt"
     ],
-    "experiments/foundry_migrate_codebook_v2.py": [
-      "CONFIG_SEMANTIC",
-      "FOUNDRY_OUT_DIR",
-      "det_scan_texts",
-      "full_oracle_text",
-      "halt",
-      "load_corpus",
-      "load_corpus_gated",
-      "resolve_name",
-      "write_json"
-    ],
     "experiments/foundry_object_lattice.py": [
       "CONFIG_SEMANTIC",
       "FOUNDRY_OUT_DIR",
@@ -379,16 +370,6 @@
     ],
     "experiments/foundry_system_map.py": [
       "load_corpus_gated"
-    ],
-    "experiments/foundry_verify_migration.py": [
-      "CONFIG_SEMANTIC",
-      "FOUNDRY_OUT_DIR",
-      "det_scan_texts",
-      "full_oracle_text",
-      "halt",
-      "load_corpus",
-      "resolve_name",
-      "write_json"
     ],
     "experiments/foundry_w3_census.py": [
       "halt",
@@ -573,5 +554,46 @@
       }
     },
     "rule": "S15.D3 byte-identical R100 archive of the three Batch-8 research scripts to archive/research/batch8/. archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row is byte-for-byte unchanged and archive importers are never counted as live."
+  },
+  "s15_d6_amendment": {
+    "head_base": "6a52098e1e809a330f5469f759e5272f62e757ad",
+    "live_importers": {
+      "before": 85,
+      "after": 83
+    },
+    "archive_importers": {
+      "before": 4,
+      "after": 6
+    },
+    "rows_moved_to_archive": {
+      "experiments/foundry_migrate_codebook_v2.py": {
+        "archived_path": "archive/research/mutations/foundry_migrate_codebook_v2.py",
+        "foundry_common_names": [
+          "CONFIG_SEMANTIC",
+          "FOUNDRY_OUT_DIR",
+          "det_scan_texts",
+          "full_oracle_text",
+          "halt",
+          "load_corpus",
+          "load_corpus_gated",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_verify_migration.py": {
+        "archived_path": "archive/research/mutations/foundry_verify_migration.py",
+        "foundry_common_names": [
+          "CONFIG_SEMANTIC",
+          "FOUNDRY_OUT_DIR",
+          "det_scan_texts",
+          "full_oracle_text",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      }
+    },
+    "rule": "S15.D6 byte-identical R100 archive of the completed /1 -> /2 codebook migration pair to archive/research/mutations/, under Captain direction D-20260915-S15-D6-RETIRE-V1-MIGRATION-SUPPORT (Issue #1 comment 5693041826), which retired routine /1 -> /2 conversion. archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row is byte-for-byte unchanged and archive importers are never counted as live."
   }
 }

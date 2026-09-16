@@ -454,19 +454,23 @@ class TestSlug(unittest.TestCase):
 
 ROLE_NAMES = ("is_prefilter_pattern", "is_lattice_pattern", "pattern_slug")
 CANONICAL = "src/mtj_foundry/codebook_det_patterns.py"
-# The ONE executable inline copy of a role's EXPRESSION that S11 may not edit:
-# `foundry_verify_migration.py`, the /1 -> /2 migration's independent verifier.
-# S15 preflight classifies it ARCHIVE_MUTATION_PROVENANCE / ARCHIVE_EVIDENCE: the
-# executor/verifier provenance set is preserved as-is for archival, so its
-# independent re-derivation is historical verification evidence, not a live
-# consumer. S11 removed the copies in `foundry_family_sweep.load_stores` and
+# Declared inline copies of a role's EXPRESSION that S11 may not edit.
+# S11 removed the copies in `foundry_family_sweep.load_stores` and
 # `foundry_object_lattice.ratified_total`; S11.R1 removed the one in the live
 # executable `foundry_stage1b.load_det_owned_slugs`.
+#
+# S15.D6 emptied the set. Its last member was the independent verifier of the
+# completed /1 -> /2 migration, which the S15 preflight classified
+# ARCHIVE_MUTATION_PROVENANCE / ARCHIVE_EVIDENCE — historical verification
+# evidence, never a live consumer. The Captain retired routine /1 conversion and
+# authorized archiving that pair, so the file left this census the way the
+# comment below always allowed: `tracked_python` excludes `archive/` by
+# construction, so the copy is not hidden, it is no longer live code.
+# The archived bytes are unchanged; only the population changed.
+#
 # Source inside a string literal (an NC fixture) is not code and is not counted.
 # This set may shrink; it may not grow.
-DECLARED_INLINE = {
-    ("experiments/foundry_verify_migration.py", "pattern_slug"),
-}
+DECLARED_INLINE = set()
 INLINE_SHAPES = {
     "pattern_slug": ".split(' (')[0].split(' ')[0]",
     "is_prefilter_pattern": "'pre-filter' in ",

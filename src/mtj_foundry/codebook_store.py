@@ -50,9 +50,13 @@ properties are deliberately not reproduced:
 
 * **`os.replace` stays late-bound through the `os` module.** `from os import
   replace` would be equivalent Python and would silently disarm the ratified
-  interruption control: `foundry_verify_migration.negative_tests` patches
-  `os.replace` on the shared module to prove an interrupted write leaves the
-  live file byte-identical. Same for `os.fsync` and `json.load`.
+  interruption control, which patches `os.replace` on the shared module to
+  prove an interrupted write leaves the live file byte-identical. Its live home
+  is `tests/refoundation/test_codebook_store.py`
+  (`TestTheProtocolRefusesBeforeInstalling.
+  test_an_interrupted_rename_raises_a_RAW_OSError`); the original
+  `foundry_verify_migration.negative_tests` rig is archived historical evidence
+  as of S15.D6. Same for `os.fsync` and `json.load`.
 * **`OSError` propagates unwrapped.** The interruption control asserts a *raw*
   `OSError` escapes. Catching it here to raise something friendlier would turn
   that control green while removing what it proves.
@@ -136,11 +140,15 @@ class SchemaMismatchError(CodebookReadError):
     `expected`.
 
     C8.5P.V correction C3: the message states the FACT and nothing else. The
-    legacy loader's `/1` text names `experiments/foundry_migrate_codebook_v2.py`
-    and `foundry_reconcile.py` — repository-relative guidance about where a
-    migration script lives, which a permanent library must not carry. The
-    structured attributes are what let the legacy facade rebuild that exact
-    sentence at its own boundary, where the guidance belongs.
+    legacy loader's `/1` text carries repository-relative operator guidance,
+    which a permanent library must not carry. The structured attributes are
+    what let the legacy facade build that sentence at its own boundary, where
+    the guidance belongs.
+
+    S15.D6 rewrote the facade's sentence — routine `/1 -> /2` conversion is
+    retired, so it now names the supported authority-restore procedure rather
+    than a migration script. The boundary is unchanged: this class still
+    carries only `path`, `actual` and `expected`, and still names no path.
     """
 
     def __init__(self, path, actual, expected):
