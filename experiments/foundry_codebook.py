@@ -190,13 +190,20 @@ def load_codebook(path: Path = None) -> dict:
     The DEFAULT. `read()` takes an explicit path and knows no repository; the
     `path is None` case is resolved here against `CODEBOOK_PATH`, unchanged.
 
-    The `/1` GUIDANCE. The legacy halt names `experiments/foundry_migrate_codebook_v2.py`
-    and `foundry_reconcile.py` — repository-relative advice about where a
-    migration script lives. A permanent library may not carry that (C8.5P.V
-    correction C3), so `SchemaMismatchError` carries the FACTS (`path`,
-    `actual`, `expected`) and this wrapper rebuilds the exact legacy sentence
-    from them. The `/1` branch is therefore deliberate, not incidental: it is
-    the one case whose text is richer than the error's own.
+    The `/1` GUIDANCE. The halt carries repository-relative advice about how a
+    `/1` document is handled here. A permanent library may not carry that
+    (C8.5P.V correction C3), so `SchemaMismatchError` carries the FACTS
+    (`path`, `actual`, `expected`) and this wrapper builds the operator
+    sentence from them. The `/1` branch is therefore deliberate, not
+    incidental: it is the one case whose text is richer than the error's own.
+
+    S15.D6 changed WHAT that sentence says, not where it lives. Routine
+    `/1 -> /2` conversion is retired: the historical migrator and its verifier
+    are archived as inert evidence, so naming them as a remedy would instruct
+    an operator to run a file that is no longer a live path. The sentence now
+    names the supported authority-restore procedure instead, and deliberately
+    emits no runnable command — restoring authority is an operator decision,
+    not something a failed read should hand over ready to paste.
 
     `OSError`, `json.JSONDecodeError` and `UnicodeDecodeError` are NOT caught,
     exactly as before -- the old body translated none of them either."""
@@ -206,9 +213,11 @@ def load_codebook(path: Path = None) -> dict:
         fc.halt(str(error))
     except _codebook_store.SchemaMismatchError as error:
         if error.actual == SCHEMA_V1:
-            fc.halt(f"{error.path} is schema {SCHEMA_V1!r} (pre-migration). This loader reads {SCHEMA_V2!r} only "
-                    f"— run experiments/foundry_migrate_codebook_v2.py, or use the frozen /1 producer "
-                    f"(foundry_reconcile.py) if you genuinely meant the legacy shape")
+            fc.halt(f"{error.path} is schema {SCHEMA_V1!r} (pre-migration). This loader reads {SCHEMA_V2!r} only, "
+                    f"and routine {SCHEMA_V1!r} -> {SCHEMA_V2!r} conversion is RETIRED — no current command performs it. "
+                    f"To recover a working codebook, follow the supported authority-restore procedure described in "
+                    f"docs/architecture/S15-D6-MIGRATION-RETIREMENT.md. Reconstructing this {SCHEMA_V1!r} document is "
+                    f"separately scoped historical work and is not a step in that procedure")
         fc.halt(str(error))
 
 
@@ -245,11 +254,19 @@ def write_codebook_atomic(path: Path, codebook: dict, path_label: str = None) ->
 
     THE THREE CAUGHT ERRORS ARE THE THREE THE LEGACY BODY USED TO HALT ON, and
     the list is closed on purpose. `OSError` is NOT among them: the ratified A13
-    interruption control in `foundry_verify_migration.negative_tests` patches
-    `os.replace` to raise one and requires it to escape RAW, with the live file
-    byte-identical and an inert `.tmp` left behind. Catching it here -- or
+    interruption behaviour requires a raw `OSError` to escape, with the live
+    file byte-identical and an inert `.tmp` left behind. Catching it here -- or
     catching `Exception` -- would turn that control green while deleting what it
     proves.
+
+    S15.D6: the LIVE home of that control is
+    `tests/refoundation/test_codebook_store.py` --
+    `TestTheLegacyWriterBoundary.test_an_interrupted_rename_still_escapes_the_facade_RAW`
+    covers this function, and `TestTheProtocolRefusesBeforeInstalling.
+    test_an_interrupted_rename_raises_a_RAW_OSError` covers the permanent
+    protocol underneath it. `foundry_verify_migration.negative_tests` carried
+    the original rig; it is now archived historical evidence, so it is no
+    longer what keeps this list closed.
     """
     try:
         return _codebook_store.write_atomic(path, codebook, path_label)

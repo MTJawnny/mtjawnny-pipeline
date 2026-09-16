@@ -4346,12 +4346,25 @@ CENSUS_HEAD = {
                        "experiments_measure": 6},
 }
 
-# The one live site in legacy production whose LINE carries the text
-# `sys.path.insert` while the module makes no such call: the text is inside an
-# f-string that builds a shell command for `os.system`. P0.4N classified it by a
-# text match and put it in the bootstrap bucket; P0.4P corrected it. The
-# correction is kept here as a test rather than as a sentence.
-TEXT_ONLY_SYS_PATH = ("experiments/foundry_verify_migration.py", 571)
+# The site whose LINE carries the text `sys.path.insert` while the module makes
+# no such call: the text is inside an f-string that builds a shell command for
+# `os.system`. P0.4N classified it by a text match and put it in the bootstrap
+# bucket; P0.4P corrected it. The correction is kept here as a test rather than
+# as a sentence.
+#
+# S15.D6 moved this witness OUT of legacy production. The Captain retired routine
+# /1 -> /2 migration and authorized archiving the migration pair, so the file now
+# lives at the address below and its scope is `other`, not `experiments`.
+#
+# The classifier proposition is unchanged and is still proved on real bytes — see
+# `test_the_historical_site_that_proves_it_is_still_readable`. What changed is the
+# POPULATION: legacy production now contains no such disagreement at all, which
+# `test_no_such_line_remains_in_legacy_production` asserts positively. P0.4P's own
+# review recorded this census as ACCEPTED_AS_TRANSITION_EVIDENCE_NOT_RATCHET and
+# P0.4P itself assigned this module to step 8, so a departure is the census
+# working, not a witness being lost. No replacement production discrepancy was
+# manufactured to keep the old shape.
+TEXT_ONLY_SYS_PATH = ("archive/research/mutations/foundry_verify_migration.py", 571)
 
 
 def _census_inputs():
@@ -4981,9 +4994,12 @@ class TestRealBootstrapCallsAreSeparatedFromText(unittest.TestCase):
         self.assertEqual(layout_census.sys_path_call_nodes(ast.parse(source)), [])
         self.assertEqual(len(layout_census.sys_path_text_lines(source)), 1)
 
-    def test_the_live_site_that_proves_it_is_still_there(self):
-        """P0.4N put this row in the bootstrap bucket on a text match. It is the
-        only legacy-production line where the text and the AST disagree."""
+    def test_the_historical_site_that_proves_it_is_still_readable(self):
+        """P0.4N put this row in the bootstrap bucket on a text match; P0.4P
+        corrected it on the AST. HISTORICAL as of S15.D6: the bytes are archived,
+        so this reads them at their archived address. The classifier is still
+        exercised against a REAL disagreeing line rather than only a synthetic
+        one -- if the archived evidence were lost or damaged, this goes red."""
         path, lineno = TEXT_ONLY_SYS_PATH
         source = (REPO_ROOT / path).read_text(encoding="utf-8")
         call_lines = {c.lineno for c in
@@ -4991,7 +5007,21 @@ class TestRealBootstrapCallsAreSeparatedFromText(unittest.TestCase):
         self.assertIn(lineno, layout_census.sys_path_text_lines(source))
         self.assertNotIn(lineno, call_lines)
 
-    def test_it_is_the_only_such_line_in_legacy_production(self):
+    def test_the_witness_has_left_legacy_production(self):
+        """The departure, asserted rather than assumed: the file is no longer in
+        a legacy-production scope, and it IS in the tracked archive."""
+        path, _ = TEXT_ONLY_SYS_PATH
+        rel = Path(path)
+        self.assertTrue((REPO_ROOT / rel).is_file())
+        self.assertNotIn(layout_census.scope_of(rel),
+                         layout_census.LEGACY_PRODUCTION)
+        self.assertNotIn("experiments/foundry_verify_migration.py",
+                         {r.as_posix() for r in
+                          layout_census.tracked_python(REPO_ROOT)})
+
+    def test_no_such_line_remains_in_legacy_production(self):
+        """The current population, measured. S15.D6 emptied it; nothing was
+        substituted to keep the old count."""
         disagreements = []
         for rel in layout_census.tracked_python(REPO_ROOT):
             if layout_census.scope_of(rel) not in layout_census.LEGACY_PRODUCTION:
@@ -5002,7 +5032,7 @@ class TestRealBootstrapCallsAreSeparatedFromText(unittest.TestCase):
             disagreements += [(rel.as_posix(), n)
                               for n in layout_census.sys_path_text_lines(source)
                               if n not in call_lines]
-        self.assertEqual(disagreements, [TEXT_ONLY_SYS_PATH])
+        self.assertEqual(disagreements, [])
 
 
 class TestTheFreshCountsAndTheirReconciliation(unittest.TestCase):
@@ -5384,16 +5414,29 @@ class TestTheDownstreamPeerConsumersAreGone(unittest.TestCase):
                 source, rel, providers)}
         self.assertEqual(modules, {"foundry_common"})
 
-    def test_the_remaining_data_artifacts_site_is_named_not_hidden(self):
+    def test_the_data_artifacts_site_has_left_the_live_population(self):
         """`foundry_verify_migration.py` builds its OWN
-        `data/artifacts/latest.json` from a local root. It is outside this
-        task's authorized scope — P0.4P assigns that module to step 8 — so it
-        is recorded here rather than left to look like absence. It is one of the
-        60 remaining local consumption sites."""
-        source = (EXPERIMENTS / "foundry_verify_migration.py").read_text(
-            encoding="utf-8")
+        `data/artifacts/latest.json` from a local root. P0.4P assigned that
+        module to step 8 and recorded the site here rather than letting it look
+        like absence, while it was still one of the remaining local consumption
+        sites.
+
+        S15.D6 executed that step-8 departure: the Captain retired routine
+        /1 -> /2 migration and the pair is archived. So the proposition flips
+        from "recorded as still live" to "proved gone from the live tree", and
+        the construction is asserted to survive in the archived evidence — the
+        site was not hidden, edited away, or silently dropped from the census."""
+        live = EXPERIMENTS / "foundry_verify_migration.py"
+        self.assertFalse(live.exists(),
+                         f"{live} is back in the live tree; the S15.D6 "
+                         "departure this census records did not hold")
+        archived = (REPO_ROOT / "archive" / "research" / "mutations"
+                    / "foundry_verify_migration.py")
+        self.assertTrue(archived.is_file(),
+                        f"the archived evidence is missing: {archived}")
         self.assertIn('LATEST_ARTIFACT_PATH = REPO_ROOT / "data" / "artifacts"'
-                      ' / "latest.json"', source)
+                      ' / "latest.json"',
+                      archived.read_text(encoding="utf-8"))
 
 
 class TestC85CNegativeControls(unittest.TestCase):
