@@ -1,0 +1,121 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "what": "fresh current truth reconciled against the accepted evidence package",
+  "baseline": {
+    "evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+    "measured_at": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+    "note": "that package is NOT present in the implementation tree; its absence is lineage, not drift"
+  },
+  "old_evidence_not_rewritten": true,
+  "candidate_universe": {
+    "old_unit": "168 individuals + 24 sets (not carried forward)",
+    "new_method": "mechanical enumeration of tracked paths at the accepted head",
+    "tracked_total": 561,
+    "note": "the old counts were deliberately not used as a starting point"
+  },
+  "live_to_archive_movements": [
+    {
+      "slice": "S15.D3",
+      "family": "batch8",
+      "members": 3,
+      "accepted_head": "6a52098e"
+    },
+    {
+      "slice": "S15.D6.R1",
+      "family": "mutations",
+      "members": 2,
+      "accepted_head": "b55294bc"
+    },
+    {
+      "slice": "S15.D4.R1",
+      "family": "triage",
+      "members": 13,
+      "accepted_head": "739dcf2b"
+    },
+    {
+      "slice": "S15.D5.R3",
+      "family": "codebook-transforms",
+      "members": 7,
+      "accepted_head": "9b7203d3"
+    }
+  ],
+  "total_members_archived_since_baseline": 25,
+  "caller_count_changes": {
+    "foundry_common_live_old": 88,
+    "foundry_common_live_now": 63,
+    "archive_now": 26,
+    "method": "independent caller_census, not the sidecar's number"
+  },
+  "newly_created_permanent_tests_guards": [
+    "tests/refoundation/test_s15_d4_archive_conservation.py (D4.R2, extended by D5.R1 and D5.R3)",
+    "tests/refoundation/test_s15_d5_codebook_transforms_archive.py (D5.R3)",
+    "experiments/foundry_prior_art.py explicit HISTORICAL_FAMILIES registry (D4.R2 -> D5.R1 -> D5.R3)"
+  ],
+  "prior_art_consequences": {
+    "historical_families_old": 0,
+    "historical_families_now": 4,
+    "defect_class": "a strict refusal silently becoming a success when history moved out of scan range",
+    "status": "repaired for all four accepted families and re-proven here with real content queries"
+  },
+  "migration_pair_retirement_consequences": {
+    "v1_support_retired": true,
+    "live_scripts_absent": true,
+    "n03_edge_discharged": "the /1 migration instruction edge is genuinely gone",
+    "residual": "documentation and conservation tests only"
+  },
+  "runtime_ignored_changes": {
+    "recovery_rows_old": 169,
+    "recovery_rows_now": 172,
+    "delta": 3,
+    "aq4_governance_artifacts_old": 3,
+    "now": 3
+  },
+  "blocker_transitions": {
+    "cleared_since_baseline": [
+      "B05 (AQ4 truth-home relocation: the two AQ4 addenda now live under benchmarks/aq4/docs/)"
+    ],
+    "remaining_from_baseline": [
+      "B01",
+      "B02",
+      "B03",
+      "B07",
+      "B08",
+      "B09",
+      "B10",
+      "B11",
+      "N01",
+      "N02",
+      "N03(partial)",
+      "N04",
+      "N05",
+      "N06",
+      "N07",
+      "N08",
+      "N09"
+    ],
+    "newly_discovered": [
+      "N10 stale tracked ruling registry"
+    ],
+    "note": "No blocker was moved toward CLEARED without a mechanical measurement supporting it."
+  },
+  "successor_home_changes": {
+    "aq4_docs": "docs/AQ4-*ADDENDUM* -> benchmarks/aq4/docs/ (explains the 142 -> 138 doc-count drop exactly)",
+    "law_extraction": "ACTIVATED-REGENERATE-SELF-DET-LAW.md and MEMBER-ADD-MUTATION-LAW.md are now permanent law homes"
+  },
+  "sole_home_changes": {
+    "old_listed": 7,
+    "now_deletion_blocked": 13,
+    "all_old_still_blocked": true
+  }
+}

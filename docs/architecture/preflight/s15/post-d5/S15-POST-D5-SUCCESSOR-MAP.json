@@ -1,0 +1,73 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "measured_at_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "historical_measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+  "authority": "GitHub Issue #1 latest K -> active T (5709682778 selects 5709680459)",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "historical_input_not_authority": "R0's post-s14 package at adbe6197a92711cfab5bb5e98fdd6e98c330f006 is a comparison baseline only. No classification below is inherited; each was re-measured at 9b7203d337c6685563ff45a76ef51432dd8c2f0c.",
+  "what": "permanent successors and accepted archive owners at this head",
+  "archive_owners": {
+    "archive/research/triage": {
+      "python_members": 13,
+      "closed": true,
+      "prior_art_family": true
+    },
+    "archive/research/batch8": {
+      "python_members": 3,
+      "closed": true,
+      "prior_art_family": true
+    },
+    "archive/research/mutations": {
+      "python_members": 2,
+      "closed": true,
+      "prior_art_family": true
+    },
+    "archive/research/codebook-transforms": {
+      "python_members": 7,
+      "closed": true,
+      "prior_art_family": true
+    }
+  },
+  "named_but_absent_owners": [
+    "archive/research/consolidation",
+    "archive/research/thesaurus-measurement"
+  ],
+  "permanent_package": {
+    "path": "src/mtj_foundry",
+    "modules": 55,
+    "note": "owns extracted capabilities; does not yet retire experiments/foundry_common.py"
+  },
+  "prior_art_registry": {
+    "count": 4,
+    "explicit": true,
+    "recursive_scan": false,
+    "families": [
+      [
+        "archive/research/triage",
+        "archived triage set"
+      ],
+      [
+        "archive/research/batch8",
+        "archived Batch-8 research set"
+      ],
+      [
+        "archive/research/mutations",
+        "archived foundry-codebook/1 -> /2 migration pair"
+      ],
+      [
+        "archive/research/codebook-transforms",
+        "archived codebook-transforms set"
+      ]
+    ]
+  }
+}

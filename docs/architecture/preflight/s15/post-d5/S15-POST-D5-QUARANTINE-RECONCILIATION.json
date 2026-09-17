@@ -1,0 +1,108 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "historical_measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "historical_input_not_authority": "R0's post-s14 package is a baseline only; every value below was re-measured at 9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "what": "accepted S15 archive slices re-proven from current head",
+  "method": "blob identity compared against each slice's own accepted head; live path absence checked on disk and in git ls-files",
+  "batch8": {
+    "accepted_head": "6a52098e1e809a330f5469f759e5272f62e757ad",
+    "members": 3,
+    "blob_identical": true,
+    "live_paths_absent": true,
+    "stale_route_reintroduced": false,
+    "verdict": "CONSERVED"
+  },
+  "migration_pair": {
+    "accepted_head": "b55294bc4b87ae0e761d223f6321872cc46f39f2",
+    "members": 2,
+    "blob_identical": true,
+    "live_paths_absent": true,
+    "owner_still_closed_pair": true,
+    "transforms_folded_in": false,
+    "retired_v1_support_still_retired": true,
+    "no_current_route_to_absent_live_script": true,
+    "residual_references": "docs/history, S10 census artifacts and conservation tests only",
+    "verdict": "CONSERVED"
+  },
+  "triage": {
+    "accepted_head": "739dcf2b2590c8ff95bf047d11cfc908487173f2",
+    "members": 13,
+    "blob_identical": true,
+    "live_paths_absent": true,
+    "closed_population": true,
+    "verdict": "CONSERVED"
+  },
+  "codebook_transforms": {
+    "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+    "members": 7,
+    "eighth_py": false,
+    "blob_identical_R100": true,
+    "live_paths_absent": true,
+    "distinct_from_mutations": true,
+    "cdr09_pair_together": true,
+    "historical_only": true,
+    "prior_art_family_registered_once": true,
+    "label": "archived codebook-transforms set",
+    "verdict": "CONSERVED"
+  },
+  "prior_art_registry": {
+    "family_count": 4,
+    "explicit_allowlist": true,
+    "recursive_scan": false,
+    "labels_distinct": true
+  },
+  "real_query_conservation": [
+    {
+      "family": "triage",
+      "query": "resolve removed members",
+      "live_hits": 0,
+      "historical_hits": 7,
+      "in_family": 7,
+      "strict_exit": 1,
+      "label": "archived triage set",
+      "foreign_labels": 0
+    },
+    {
+      "family": "batch8",
+      "query": "agreement matrix",
+      "live_hits": 0,
+      "historical_hits": 1,
+      "in_family": 1,
+      "strict_exit": 1,
+      "label": "archived Batch-8 research set",
+      "foreign_labels": 0
+    },
+    {
+      "family": "mutations",
+      "query": "replay attribution",
+      "live_hits": 0,
+      "historical_hits": 1,
+      "in_family": 1,
+      "strict_exit": 1,
+      "label": "archived foundry-codebook/1 -> /2 migration pair",
+      "foreign_labels": 0
+    },
+    {
+      "family": "codebook-transforms",
+      "query": "strip locality",
+      "live_hits": 0,
+      "historical_hits": 1,
+      "in_family": 1,
+      "strict_exit": 1,
+      "label": "archived codebook-transforms set",
+      "foreign_labels": 0
+    }
+  ],
+  "query_note": "All four queries are derived from real source CONTENT (a def or constant), never from a filename."
+}

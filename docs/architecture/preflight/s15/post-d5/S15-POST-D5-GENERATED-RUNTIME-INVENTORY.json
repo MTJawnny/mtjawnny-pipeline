@@ -1,0 +1,108 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "what": "generated/runtime state produced or consumed at this head",
+  "machine_limitation": "Measured on the Worker machine only. Absence elsewhere is not proof of absence.",
+  "credentials_note": "No credential file was read. .claude/settings.local.json was deliberately NOT read.",
+  "entries": [
+    {
+      "path": "experiments/out/foundry",
+      "files": 276,
+      "size": "1.4G",
+      "state": "ignored",
+      "role": "operational Foundry outputs incl. the selected codebook",
+      "producer": "legacy experiments/ operators",
+      "consumer": "Gate 2, broad refoundation suite, prior-art live arm",
+      "klass": "authoritative+mirror",
+      "physical_successor": "none tracked",
+      "disposition": "GENERATED_RUNTIME",
+      "blocker": "B02"
+    },
+    {
+      "path": "experiments/out/snapshots",
+      "files": 2949,
+      "size": "1.2G",
+      "state": "ignored",
+      "role": "snapshot history incl. _pre-restore-backups",
+      "producer": "restore/snapshot tooling",
+      "consumer": "recovery only",
+      "klass": "recovery",
+      "physical_successor": "none tracked",
+      "disposition": "GENERATED_RUNTIME",
+      "blocker": "N08"
+    },
+    {
+      "path": "experiments/out/aq4",
+      "files": 3,
+      "size": "992K",
+      "state": "ignored",
+      "role": "AQ4 unit-binding workqueue, adjudication and deterministic census",
+      "producer": "AQ4 (PAUSED)",
+      "consumer": "AQ4 only",
+      "klass": "unknown",
+      "physical_successor": "none tracked",
+      "disposition": "BLOCKED_TRUTH_HOME",
+      "blocker": "N05"
+    },
+    {
+      "path": "data/raw",
+      "files": 3,
+      "size": "32M",
+      "state": "ignored",
+      "role": "selected corpus container",
+      "producer": "pipeline/fetch.py",
+      "consumer": "Gate 2, corpus capability",
+      "klass": "authoritative",
+      "physical_successor": "none tracked",
+      "disposition": "GENERATED_RUNTIME",
+      "blocker": "B02"
+    },
+    {
+      "path": "data/artifacts",
+      "files": 292,
+      "size": "307M",
+      "state": "ignored",
+      "role": "corpus artifacts",
+      "producer": "pipeline",
+      "consumer": "runtime",
+      "klass": "mirror",
+      "physical_successor": "none tracked",
+      "disposition": "GENERATED_RUNTIME",
+      "blocker": "B02"
+    },
+    {
+      "path": "var/**",
+      "files": 0,
+      "size": "0",
+      "state": "absent",
+      "role": "named successor runtime root",
+      "producer": "none yet",
+      "consumer": "none yet",
+      "klass": "unknown",
+      "physical_successor": "ProjectPaths.var* owners exist",
+      "disposition": "BLOCKED_UNKNOWN",
+      "blocker": "B08"
+    }
+  ],
+  "recovery_material": {
+    "backups": 32,
+    "pre_restore_backups": 140,
+    "total_rows": 172,
+    "old_accepted_count": 169,
+    "delta": 3,
+    "tracked_successor_owners": 0,
+    "retention_decision": "absent",
+    "disposition": "GENERATED_RUNTIME",
+    "blocker": "N08"
+  }
+}

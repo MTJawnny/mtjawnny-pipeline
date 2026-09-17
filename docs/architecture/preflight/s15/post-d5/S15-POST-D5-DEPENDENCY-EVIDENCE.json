@@ -1,0 +1,97 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "measured_at_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "historical_measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+  "authority": "GitHub Issue #1 latest K -> active T (5709682778 selects 5709680459)",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "historical_input_not_authority": "R0's post-s14 package at adbe6197a92711cfab5bb5e98fdd6e98c330f006 is a comparison baseline only. No classification below is inherited; each was re-measured at 9b7203d337c6685563ff45a76ef51432dd8c2f0c.",
+  "what": "caller/consumer reachability measured at this head",
+  "foundry_common": {
+    "method": "tests.refoundation.test_s10_card_text_owners.caller_census over git ls-files *.py",
+    "live_callers": 63,
+    "archive_callers": 26,
+    "total": 89,
+    "live_by_area": {
+      "experiments": 40,
+      "tests": 17,
+      "benchmarks": 6
+    },
+    "sidecar_live": 63,
+    "sidecar_archive": 26,
+    "census_equals_sidecar": true,
+    "verdict": "compatibility shell with 63 live consumers; not retirable at this head"
+  },
+  "n07_candidates": {
+    "experiments/foundry_digest.py": {
+      "present": true,
+      "tracked_code_referrers": 1
+    },
+    "experiments/foundry_emit.py": {
+      "present": true,
+      "tracked_code_referrers": 5
+    },
+    "experiments/foundry_enrich.py": {
+      "present": true,
+      "tracked_code_referrers": 5
+    },
+    "experiments/foundry_review.html": {
+      "present": true,
+      "tracked_code_referrers": 8
+    },
+    "experiments/foundry_slug_dossier.py": {
+      "present": true,
+      "tracked_code_referrers": 4
+    },
+    "experiments/foundry_system_map.py": {
+      "present": true,
+      "tracked_code_referrers": 4
+    },
+    "experiments/foundry_membership_move.py": {
+      "present": true,
+      "tracked_code_referrers": 5
+    }
+  },
+  "n09_candidates": {
+    "experiments/foundry_consolidate_run1_apply.py": {
+      "present": true,
+      "non_doc_referrers": 4,
+      "reclassified_by_later_authority": false
+    },
+    "experiments/foundry_consolidate_run1_enumerate.py": {
+      "present": true,
+      "non_doc_referrers": 2,
+      "reclassified_by_later_authority": false
+    },
+    "experiments/foundry_w3_census.py": {
+      "present": true,
+      "non_doc_referrers": 1,
+      "reclassified_by_later_authority": false
+    },
+    "experiments/measure/family_tree_evidence.py": {
+      "present": true,
+      "non_doc_referrers": 1,
+      "reclassified_by_later_authority": false
+    }
+  },
+  "dynamic_and_subprocess": {
+    "searched": [
+      "import",
+      "from-import",
+      "module strings",
+      "subprocess",
+      "python3 path.py",
+      "source-inspection guards"
+    ],
+    "new_unlisted_consumer_found": false
+  }
+}

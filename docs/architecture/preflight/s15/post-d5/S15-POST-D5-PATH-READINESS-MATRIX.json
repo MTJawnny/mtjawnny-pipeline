@@ -1,0 +1,250 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "measured_at_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "historical_measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+  "authority": "GitHub Issue #1 latest K -> active T (5709682778 selects 5709680459)",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "historical_input_not_authority": "R0's post-s14 package at adbe6197a92711cfab5bb5e98fdd6e98c330f006 is a comparison baseline only. No classification below is inherited; each was re-measured at 9b7203d337c6685563ff45a76ef51432dd8c2f0c.",
+  "what": "current-head path readiness at the accepted implementation head",
+  "tracked_total": 561,
+  "tracked_by_area": {
+    ".claude": 3,
+    ".github": 1,
+    ".gitignore": 1,
+    "CLAUDE.md": 1,
+    "LICENSE": 1,
+    "README.md": 1,
+    "archive": 67,
+    "benchmarks": 30,
+    "config": 10,
+    "docs": 206,
+    "experiments": 61,
+    "pipeline": 11,
+    "pyproject.toml": 1,
+    "recipes": 1,
+    "refoundation": 27,
+    "requirements.txt": 1,
+    "src": 58,
+    "tags": 1,
+    "tests": 79
+  },
+  "experiments_tracked": 61,
+  "experiments_py": 55,
+  "src_mtj_foundry_py": 55,
+  "project_paths_public_properties": 52,
+  "disposition_counts": {
+    "COMPATIBILITY_SHELL_KEEP": 1,
+    "ARCHIVE_PRESERVE": 4,
+    "KEEP_PERMANENT": 3,
+    "BLOCKED_LIVE_CONSUMER": 7,
+    "BLOCKED_UNKNOWN": 4,
+    "BLOCKED_TRUTH_HOME": 3,
+    "GENERATED_RUNTIME": 2
+  },
+  "delete_safe_count": 0,
+  "delete_safe_note": "DELETE_SAFE is 0. The eight-part burden is not met by any current candidate.",
+  "rows": [
+    {
+      "path": "experiments/foundry_common.py",
+      "state": "tracked",
+      "disposition": "COMPATIBILITY_SHELL_KEEP",
+      "reason": "63 live tracked callers measured independently by caller_census at this head",
+      "blocker": "B01",
+      "permanent_successor": "partial: mtj_foundry.* owns extracted capabilities, shell not retired"
+    },
+    {
+      "path": "archive/research/triage/",
+      "state": "tracked",
+      "disposition": "ARCHIVE_PRESERVE",
+      "reason": "accepted closed archive owner, 13 Python members, blob-identical to its accepted head, registered once in the prior-art historical family registry",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "archive/research/batch8/",
+      "state": "tracked",
+      "disposition": "ARCHIVE_PRESERVE",
+      "reason": "accepted closed archive owner, 3 Python members, blob-identical to its accepted head, registered once in the prior-art historical family registry",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "archive/research/mutations/",
+      "state": "tracked",
+      "disposition": "ARCHIVE_PRESERVE",
+      "reason": "accepted closed archive owner, 2 Python members, blob-identical to its accepted head, registered once in the prior-art historical family registry",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "archive/research/codebook-transforms/",
+      "state": "tracked",
+      "disposition": "ARCHIVE_PRESERVE",
+      "reason": "accepted closed archive owner, 7 Python members, blob-identical to its accepted head, registered once in the prior-art historical family registry",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "archive/research/consolidation/",
+      "state": "named-not-present",
+      "disposition": "KEEP_PERMANENT",
+      "reason": "ProjectPaths owner named but directory does not exist; naming a destination is not a candidate",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "archive/research/thesaurus-measurement/",
+      "state": "named-not-present",
+      "disposition": "KEEP_PERMANENT",
+      "reason": "ProjectPaths owner named but directory does not exist",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "benchmarks/aq4/**",
+      "state": "tracked",
+      "disposition": "KEEP_PERMANENT",
+      "reason": "30 tracked frozen AQ4 evidence files incl. FREEZE-MANIFEST.json; protected frozen evidence, never an S15 disposal candidate; AQ4 remains PAUSED",
+      "blocker": null,
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_digest.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_emit.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_enrich.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_review.html",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_slug_dossier.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_system_map.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_membership_move.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_LIVE_CONSUMER",
+      "reason": "N07 candidate: live tracked code consumers measured at this head",
+      "blocker": "N07",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1_apply.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_UNKNOWN",
+      "reason": "N09 unresolved route edge; no durable authority after the accepted checkpoint reclassified it, so it may not be converted to historical",
+      "blocker": "N09",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_consolidate_run1_enumerate.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_UNKNOWN",
+      "reason": "N09 unresolved route edge; no durable authority after the accepted checkpoint reclassified it, so it may not be converted to historical",
+      "blocker": "N09",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/foundry_w3_census.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_UNKNOWN",
+      "reason": "N09 unresolved route edge; no durable authority after the accepted checkpoint reclassified it, so it may not be converted to historical",
+      "blocker": "N09",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/measure/family_tree_evidence.py",
+      "state": "tracked",
+      "disposition": "BLOCKED_UNKNOWN",
+      "reason": "N09 unresolved route edge; no durable authority after the accepted checkpoint reclassified it, so it may not be converted to historical",
+      "blocker": "N09",
+      "permanent_successor": null
+    },
+    {
+      "path": "docs/RATIFIED-RULINGS-REGISTRY.md",
+      "state": "tracked",
+      "disposition": "BLOCKED_TRUTH_HOME",
+      "reason": "generated tracked artifact whose committed content does not match regeneration at this head",
+      "blocker": "N10",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/out/**",
+      "state": "ignored",
+      "disposition": "GENERATED_RUNTIME",
+      "reason": "2.7G operational runtime state on the Worker machine; Gate 2 and the broad suite depend on it",
+      "blocker": "B02/B11",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/out/foundry/backups/** + experiments/out/snapshots/_pre-restore-backups/**",
+      "state": "ignored",
+      "disposition": "GENERATED_RUNTIME",
+      "reason": "172 recovery rows measured; zero tracked successor owners",
+      "blocker": "N08",
+      "permanent_successor": null
+    },
+    {
+      "path": "experiments/out/aq4/**",
+      "state": "ignored",
+      "disposition": "BLOCKED_TRUTH_HOME",
+      "reason": "three AQ4 governance artifacts with no tracked home; AQ4 PAUSED so not relocated",
+      "blocker": "N05",
+      "permanent_successor": null
+    },
+    {
+      "path": "docs/architecture/preflight/s16b/claims.jsonl",
+      "state": "tracked",
+      "disposition": "BLOCKED_TRUTH_HOME",
+      "reason": "tracked file matches an ignore rule (*.jsonl); ownership collision unresolved",
+      "blocker": "N04",
+      "permanent_successor": null
+    }
+  ]
+}

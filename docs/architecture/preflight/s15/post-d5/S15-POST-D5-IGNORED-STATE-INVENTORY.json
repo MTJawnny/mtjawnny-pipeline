@@ -1,0 +1,68 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "what": "ignored-state visibility and ownership at this head",
+  "method": "git check-ignore over the Worker machine working tree; aggregate counts only",
+  "n04": {
+    "tracked_files_matching_an_ignore_rule": 1,
+    "paths": [
+      "docs/architecture/preflight/s16b/claims.jsonl"
+    ],
+    "rule": "*.jsonl",
+    "status": "STILL_BLOCKED",
+    "note": "a tracked evidence file is covered by an ignore rule; ownership collision unresolved"
+  },
+  "n05": {
+    "ignored_aq4_governance_artifacts": 3,
+    "paths": [
+      "experiments/out/aq4/unit-binding-workqueue.json",
+      "experiments/out/aq4/unit-binding-adjudication-s0-a.json",
+      "experiments/out/aq4/triage-deterministic-census.json"
+    ],
+    "tracked_home": false,
+    "relocated": false,
+    "aq4_state": "PAUSED",
+    "status": "DECISION_REQUIRED"
+  },
+  "b08": {
+    "gitignore_rules": [
+      "data/",
+      "*.jsonl",
+      "*.jsonl.gz",
+      "*.parquet",
+      "*.sqlite",
+      "experiments/out/"
+    ],
+    "var_directory_present": false,
+    "project_paths_var_owners_named": true,
+    "status": "STILL_BLOCKED",
+    "note": "var/** is named by ProjectPaths but does not exist; no runtime has been relocated into it"
+  },
+  "b06_visibility": {
+    "ignored_roots_visible": [
+      "experiments/out",
+      "data",
+      ".claude"
+    ],
+    "total_ignored_files_measured": 3620,
+    "status": "CLEARED",
+    "note": "visibility itself is no longer the blocker; ownership is, and that is B02/B08/N05/N08"
+  },
+  "frozen_protected": {
+    "path": "benchmarks/aq4/**",
+    "tracked_files": 30,
+    "freeze_manifest": true,
+    "disposition": "KEEP_PERMANENT",
+    "note": "frozen tracked AQ4 evidence, never an S15 disposal candidate"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "historical_measurement_base": "49fcb292e0668b70901118c52dedc0ffd00f389f",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "historical_input_not_authority": "R0's post-s14 package is a baseline only; every value below was re-measured at 9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "what": "sole-home / truth-owner topology measured at this head",
+  "method": "tests/guards/gate2/foundry_ruling_registry.py regenerated at this head; per-doc output read from its JSON",
+  "documents_scanned": 138,
+  "ruling_references": 660,
+  "distinct_ruling_ids": 127,
+  "corroborated": 86,
+  "sole_home_ruling_ids": 41,
+  "deletion_blocked_documents": 13,
+  "deletion_blocked": {
+    "ACTIVATED-REGENERATE-SELF-DET-LAW.md": [
+      "R8.3"
+    ],
+    "B-MIGRATION-DISCOVERY.md": [
+      "A3",
+      "A9",
+      "H-03",
+      "H-04",
+      "H-06",
+      "M-03",
+      "M01",
+      "R10",
+      "R11",
+      "R12",
+      "R13",
+      "R8"
+    ],
+    "CDR-PROPOSALS.md": [
+      "ADD-03",
+      "ADD-04",
+      "ADD-05",
+      "ADD-07",
+      "AG-NODE-01"
+    ],
+    "CODEBOOK-NAMING-GRAMMAR.md": [
+      "F3"
+    ],
+    "MASTER-HANDOFF-ADDENDUM-3.md": [
+      "D18"
+    ],
+    "MASTER-HANDOFF-ADDENDUM-4.md": [
+      "D34",
+      "D67",
+      "D77"
+    ],
+    "MASTER-HANDOFF.md": [
+      "T0"
+    ],
+    "MEMBER-ADD-MUTATION-LAW.md": [
+      "AG-CLI-01"
+    ],
+    "PARENT-TREE-CANDIDATES.md": [
+      "GRAMMAR-SS9",
+      "M1",
+      "M6",
+      "Q8.7",
+      "S2",
+      "S3"
+    ],
+    "RULING-MANIFEST-2026-07-09.md": [
+      "F7"
+    ],
+    "SESSION-HANDOFF-2026-08-04-EVE.md": [
+      "D8"
+    ],
+    "TRIAGE-BATCH-2.md": [
+      "M2"
+    ],
+    "WALK-RATIFICATION-EXECUTION-HANDOFF.md": [
+      "G2",
+      "G3",
+      "G4",
+      "G5",
+      "G6",
+      "G7",
+      "Q10"
+    ]
+  },
+  "old_accepted_list_of_seven": [
+    "MASTER-HANDOFF.md",
+    "MASTER-HANDOFF-ADDENDUM-3.md",
+    "MASTER-HANDOFF-ADDENDUM-4.md",
+    "SESSION-HANDOFF-2026-08-04-EVE.md",
+    "WALK-RATIFICATION-EXECUTION-HANDOFF.md",
+    "PARENT-TREE-CANDIDATES.md",
+    "TRIAGE-BATCH-2.md"
+  ],
+  "all_seven_still_blocked": true,
+  "newly_blocked_since_accepted_evidence": [
+    "ACTIVATED-REGENERATE-SELF-DET-LAW.md",
+    "B-MIGRATION-DISCOVERY.md",
+    "CDR-PROPOSALS.md",
+    "CODEBOOK-NAMING-GRAMMAR.md",
+    "MEMBER-ADD-MUTATION-LAW.md",
+    "RULING-MANIFEST-2026-07-09.md"
+  ],
+  "reading": "The accepted evidence listed seven sole-home documents. All seven are still deletion-blocked at this head, and six more are now blocked. Two of the six (ACTIVATED-REGENERATE-SELF-DET-LAW.md, MEMBER-ADD-MUTATION-LAW.md) are the permanent law homes created by the accepted R8.3 / AG-CLI-01 extraction, so they are KEEP_PERMANENT rather than stale handoffs. The set did not shrink.",
+  "n06_status": "DECISION_REQUIRED"
+}

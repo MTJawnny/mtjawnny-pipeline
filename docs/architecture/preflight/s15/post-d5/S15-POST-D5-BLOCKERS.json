@@ -1,0 +1,164 @@
+{
+  "schema": "mtj-s15-post-d5/1",
+  "accepted_head": "9b7203d337c6685563ff45a76ef51432dd8c2f0c",
+  "accepted_evidence_head": "adbe6197a92711cfab5bb5e98fdd6e98c330f006",
+  "mutation_authority": "EVIDENCE_FILES_ONLY",
+  "controls": {
+    "AQ4": "PAUSED",
+    "BRIDGE0": "PARKED_UNUSED",
+    "STEP6": "NO",
+    "DESTRUCTIVE_S15": "NO",
+    "MERGE": "NO",
+    "MAIN_MOVE": "NO"
+  },
+  "what": "blocker register freshly classified at this head",
+  "old_blocker_reconciliation": [
+    {
+      "id": "B01",
+      "title": "S10 / foundry_common caller closure",
+      "status": "STILL_BLOCKED",
+      "evidence": "independent caller_census at this head: 63 live callers (experiments 40, tests 17, benchmarks 6), 26 archive. Shell not retirable."
+    },
+    {
+      "id": "B02",
+      "title": "codebook store / runtime ownership",
+      "status": "STILL_BLOCKED",
+      "evidence": "selected codebook lives only in ignored experiments/out/foundry/codebook.json; identity matches the tracked selector; no tracked physical successor; Gate 2 depends on it."
+    },
+    {
+      "id": "B03",
+      "title": "authority / transport retirement boundary",
+      "status": "STILL_BLOCKED",
+      "evidence": "src/mtj_foundry/authority_cli.py and authority_restore.py exist as permanent owners, but the legacy shell still has live callers inside the 63; existence of a successor is not retirement."
+    },
+    {
+      "id": "B04",
+      "title": "command / operator stale routes",
+      "status": "CLEARED",
+      "evidence": ".claude/commands/** carry no experiments/*.py invocation at this head."
+    },
+    {
+      "id": "B05",
+      "title": "AQ4 truth-home relocation",
+      "status": "CLEARED",
+      "evidence": "the AQ4 architecture addenda are tracked under benchmarks/aq4/docs/; this exactly explains the docs 142 -> 138 change."
+    },
+    {
+      "id": "B06",
+      "title": "ignored runtime visibility",
+      "status": "CLEARED",
+      "evidence": "ignored roots are enumerable and were enumerated; visibility is no longer the constraint."
+    },
+    {
+      "id": "B07",
+      "title": "dynamic / unresolved output consumers",
+      "status": "STILL_BLOCKED",
+      "evidence": "N09's four route edges remain unresolved at this head and no later authority reclassified them."
+    },
+    {
+      "id": "B08",
+      "title": ".gitignore / var/** ownership",
+      "status": "STILL_BLOCKED",
+      "evidence": "ProjectPaths names var/* owners; var/ does not exist; no runtime relocated into it."
+    },
+    {
+      "id": "B09",
+      "title": "document / ruling topology",
+      "status": "STILL_BLOCKED",
+      "evidence": "13 deletion-blocked documents, 41 sole-home ruling ids, and the tracked registry is stale (see N10)."
+    },
+    {
+      "id": "B10",
+      "title": "tier_engine / viewer / differential peer",
+      "status": "STILL_BLOCKED",
+      "evidence": "experiments/tier_engine.py, emit_viewer.py, serve_viewer.py, viewer.html all tracked and live at this head."
+    },
+    {
+      "id": "B11",
+      "title": "pristine-checkout dependence on ignored state",
+      "status": "STILL_BLOCKED",
+      "evidence": "pristine probe: Gate 2 16 run / 3 pass / 13 UNEXPECTED failures; broad suite aborted on a missing corpus STOP without completing."
+    },
+    {
+      "id": "B12",
+      "title": "cleanup truth homes after AG-CLI-01 / R8.3 extraction",
+      "status": "SUPERSEDED",
+      "evidence": "the extractions landed: MEMBER-ADD-MUTATION-LAW.md (AG-CLI-01) and ACTIVATED-REGENERATE-SELF-DET-LAW.md (R8.3) are sole homes and deletion-blocked; the open question is folded into B09/N10."
+    },
+    {
+      "id": "B13",
+      "title": "mandatory post-head remeasurement timing law",
+      "status": "CLEARED",
+      "evidence": "this task remeasures at the accepted head 9b7203d. Narrow meaning only: satisfying the timing law is NOT a statement that S15 is complete."
+    }
+  ],
+  "new_blockers": [
+    {
+      "id": "N01",
+      "title": "failure observability: absent ignored input aborts broad discovery",
+      "status": "STILL_BLOCKED",
+      "evidence": "pristine broad suite produced no 'Ran N tests' line; it aborted on a STOP naming the missing corpus. Not repaired here."
+    },
+    {
+      "id": "N02",
+      "title": "guard-population conservation",
+      "status": "PARTIALLY_CLEARED",
+      "evidence": "the four accepted archive slices each re-aimed guards with value-identical propositions (C8.5V nomination set still 15, verdict totals unchanged; prior-art strict semantics preserved). It still constrains every remaining N07/N09 candidate, so it is not globally cleared."
+    },
+    {
+      "id": "N03",
+      "title": "current law/operator routes through legacy paths",
+      "status": "DECISION_REQUIRED",
+      "evidence": "re-derived edge by edge: CLAUDE.md CR route -> experiments/foundry_cr.py STILL CURRENT; Gate 2 lint argv -> experiments/foundry_codebook.py STILL CURRENT; run1_apply -> foundry_wire_experiment.py STILL CURRENT; tier_engine/viewer STILL CURRENT; reconcile refusal STILL CURRENT; the /1 migration instruction edge is DISCHARGED by D6. Partial discharge is not clearance."
+    },
+    {
+      "id": "N04",
+      "title": "ignore-ownership collision",
+      "status": "STILL_BLOCKED",
+      "evidence": "git ls-files -ci --exclude-standard returns exactly 1: docs/architecture/preflight/s16b/claims.jsonl."
+    },
+    {
+      "id": "N05",
+      "title": "ignored AQ4 governance artifacts have no home",
+      "status": "DECISION_REQUIRED",
+      "evidence": "exactly three remain under experiments/out/aq4/ with no tracked successor. AQ4 is PAUSED and they were not relocated."
+    },
+    {
+      "id": "N06",
+      "title": "sole-home documents",
+      "status": "DECISION_REQUIRED",
+      "evidence": "all seven previously listed documents are still deletion-blocked; six more joined them (13 total). The set grew rather than shrank."
+    },
+    {
+      "id": "N07",
+      "title": "tracked legacy files with no accepted destination",
+      "status": "DECISION_REQUIRED",
+      "evidence": "all seven remain present with live tracked code consumers (1,5,5,8,4,4,5 referrers). None meets the DELETE_SAFE burden."
+    },
+    {
+      "id": "N08",
+      "title": "ignored recovery material has no successor owner",
+      "status": "DECISION_REQUIRED",
+      "evidence": "172 recovery rows measured (old 169); zero tracked successor owners; no retention rule."
+    },
+    {
+      "id": "N09",
+      "title": "unresolved route edges",
+      "status": "DECISION_REQUIRED",
+      "evidence": "all four candidates present with live referrers; no durable authority after the accepted checkpoint reclassified them. They may not be converted to historical to unblock cleanup."
+    },
+    {
+      "id": "N10",
+      "title": "tracked ruling registry is stale at the accepted head",
+      "status": "NEW_BLOCKED",
+      "evidence": "docs/RATIFIED-RULINGS-REGISTRY.md records 142 documents / 684 references; regeneration at this head yields 138 / 660. It still lists two AQ4 addenda that have moved to benchmarks/aq4/docs/, and OMITS docs/ACTIVATED-REGENERATE-SELF-DET-LAW.md, which is the sole home for R8.3 and is deletion-BLOCKED. Gate 2's ruling_registry row runs --check-only and compares pinned metrics (127/86/41), which are unchanged, so it exits 0 and the stale document table is not caught."
+    }
+  ],
+  "old_status_counts": {
+    "CLEARED": 4,
+    "STILL_BLOCKED": 7,
+    "SUPERSEDED": 1,
+    "note": "B13 CLEARED narrowly"
+  },
+  "proceed_rule": "Unknown remains blocked. No blocker was forced toward CLEARED."
+}
