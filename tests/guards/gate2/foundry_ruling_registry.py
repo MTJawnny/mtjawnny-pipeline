@@ -48,6 +48,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -100,6 +101,12 @@ OUT_MD = DOCS / "RATIFIED-RULINGS-REGISTRY.md"
 # Generated artifact -- never a harvest source (it would cite every ruling
 # and make every doc look redundantly covered).
 SELF_EXCLUDE = {"RATIFIED-RULINGS-REGISTRY.md"}
+
+# S15.R2: what a stale-registry diagnostic tells the reader to run. The REAL
+# guard path, deliberately -- the generated preamble still carries the old
+# `experiments/` spelling, which is N03 routing debt this slice preserves for
+# byte compatibility but must not propagate into anything new.
+REGENERATE_CMD = "python3 tests/guards/gate2/foundry_ruling_registry.py"
 
 # IDs whose shape is unambiguous: harvested wherever they appear.
 UNAMBIGUOUS = re.compile(
@@ -278,7 +285,30 @@ def build() -> dict:
     }
 
 
-def write_markdown(reg: dict) -> None:
+def render_markdown(reg: dict) -> str:
+    """The registry's Markdown, as a STRING. Pure: it writes nothing.
+
+    S15.R2 extracted this from `write_markdown` WITHOUT touching a single line
+    of the construction below, so the rendering is the same rendering — the
+    emitter and the freshness check cannot disagree about what the artifact is
+    supposed to contain, because there is only one of them.
+
+    Why that split is the repair rather than a tidy-up: `--check-only` used to
+    derive its verdict from `build()` alone, so it compared the registry against
+    the ratchet and never against the tracked artifact at all. The committed
+    Markdown could therefore drift arbitrarily far from the current population
+    while Gate 2 stayed green — measured at this task's base, it recorded 142
+    documents / 684 references against a live 138 / 660, still named AQ4 addenda
+    that had left `docs/`, and OMITTED the sole home of `R8.3`. A deletion gate
+    that is not the current deletion gate is worse than none, because it is
+    consulted.
+
+    The preamble's `experiments/...` invocation text is PRE-EXISTING ROUTING
+    DEBT (N03) and is preserved verbatim here: this slice contracts byte
+    compatibility with the unchanged format, and opportunistically repairing an
+    unrelated blocker inside a freshness slice is how a bounded task stops being
+    bounded. New diagnostics name the real guard path instead.
+    """
     L: list[str] = []
     A = L.append
     A("# RATIFIED RULINGS REGISTRY — generated, do not hand-edit")
@@ -344,7 +374,18 @@ def write_markdown(reg: dict) -> None:
         for o in occ:
             A(f"- `{o['doc']}:{o['line']}` — {o['statement']}")
         A("")
-    OUT_MD.write_text("\n".join(L) + "\n", encoding="utf-8")
+    return "\n".join(L) + "\n"
+
+
+def write_markdown(reg: dict) -> None:
+    """Emit the artifact. A THIN wrapper over `render_markdown`, deliberately.
+
+    `write_bytes` on an explicitly UTF-8-encoded string, not `write_text`: the
+    checker compares RAW BYTES, so the emitter must not go through a text layer
+    that could translate `\\n` on some platform and make a file this tool just
+    wrote fail its own freshness check.
+    """
+    OUT_MD.write_bytes(render_markdown(reg).encode("utf-8"))
 
 
 def emit_outputs(reg: dict, *, emit: bool) -> list:
@@ -375,6 +416,56 @@ def emit_outputs(reg: dict, *, emit: bool) -> list:
     )
     write_markdown(reg)
     return [OUT_MD, OUT_JSON]
+
+
+def check_markdown_freshness(reg: dict) -> str | None:
+    """Is the TRACKED artifact byte-identical to what `reg` renders to?
+
+    Returns `None` when it is, or a plain-English diagnostic when it is not.
+    READ-ONLY by construction: it renders in memory and reads the artifact's
+    raw bytes. It never emits, never repairs, and never touches the ratchet.
+
+    Read from the WORKING TREE, never from a HEAD blob. A refreshed candidate
+    has to be checkable BEFORE it is committed, otherwise the only way to find
+    out whether the fix is correct is to commit it first.
+
+    Compared as raw bytes with no normalisation: no whitespace stripping, no
+    line-ending translation, no skipping the header, no comparing counts
+    instead of content, and no stored digest. Every one of those would be a
+    hole, and the last one would be a second artifact to keep fresh. The five
+    ratchet metrics are exactly what a comparison of counts already gets wrong
+    — the audit's synthetic replacement of `R8.3` by an absent `F99` moves the
+    registry's TRUTH while leaving documents/ids/references/corroborated/
+    sole-home all five unchanged.
+
+    Missing and unreadable are FAILURES, not first runs. Treating an absent
+    deletion gate as "nothing to compare" is precisely how a gate disappears
+    quietly.
+    """
+    expected = render_markdown(reg).encode("utf-8")
+    try:
+        actual = OUT_MD.read_bytes()
+    except FileNotFoundError:
+        return (f"STALE REGISTRY: {OUT_MD} is MISSING.\n"
+                f"  The deletion gate is absent, which is a failure and not a "
+                f"first run.\n"
+                f"  Regenerate it with:  {REGENERATE_CMD}")
+    except OSError as exc:
+        return (f"STALE REGISTRY: {OUT_MD} could not be read: {exc}\n"
+                f"  Freshness is UNKNOWN, which this gate reports as red.\n"
+                f"  Regenerate it with:  {REGENERATE_CMD}")
+    if actual == expected:
+        return None
+    return (f"STALE REGISTRY: {OUT_MD} is not the current rendering.\n"
+            f"  tracked artifact   {len(actual):>7} bytes  "
+            f"sha256 {hashlib.sha256(actual).hexdigest()}\n"
+            f"  current rendering  {len(expected):>7} bytes  "
+            f"sha256 {hashlib.sha256(expected).hexdigest()}\n"
+            f"  The committed deletion gate disagrees with the documents Git "
+            f"actually tracks,\n"
+            f"  so it may name a home a ruling no longer has. Regenerate it "
+            f"with:\n"
+            f"      {REGENERATE_CMD}")
 
 
 def _selftest() -> int:
@@ -587,11 +678,29 @@ def main() -> int:
                          "--check DOC, which asks about ONE document's deletability.")
     args = ap.parse_args()
 
+    # EVERY --check-only combination is rejected HERE, ahead of `--selftest`'s
+    # early return and ahead of any write. S15.R2 made --check-only carry a
+    # promise -- the tracked artifact is byte-current -- and a mode that returns
+    # before that comparison runs would let the promise be bypassed by an extra
+    # flag rather than refused. So the rejection must precede the early returns,
+    # not sit among them.
     if args.check_only and args.update_baseline:
         # Contradictory rather than redundant: --update-baseline WRITES the ratchet.
         print("HALT: --check-only and --update-baseline contradict each other. "
               "--check-only writes nothing; --update-baseline exists to write the "
               "ratchet.", file=sys.stderr)
+        return 2
+    if args.check_only and args.check:
+        print("HALT: --check-only and --check contradict each other. --check-only "
+              "asks whether the whole tracked registry is current; --check DOC asks "
+              "whether ONE document is deletable, and returns before the freshness "
+              "comparison runs.", file=sys.stderr)
+        return 2
+    if args.check_only and args.selftest:
+        print("HALT: --check-only and --selftest contradict each other. --selftest "
+              "runs the population-boundary controls against a throwaway repository "
+              "and never reaches this repository's registry, so it cannot answer the "
+              "freshness question --check-only exists to ask.", file=sys.stderr)
         return 2
 
     if args.selftest:
@@ -667,8 +776,30 @@ def main() -> int:
     print("\n" + "=" * 62)
     print("BASELINE — ruling registry")
     print("=" * 62)
-    return 1 if ratchet.report(RATCHET_BASELINE, "ruling_registry", metrics,
-                               args.update_baseline) else 0
+    regressions = ratchet.report(RATCHET_BASELINE, "ruling_registry", metrics,
+                                 args.update_baseline)
+
+    # S15.R2. The ratchet above is a SAFETY check on five aggregate numbers; the
+    # check below is a FRESHNESS check on the tracked artifact. They answer
+    # different questions and neither replaces the other, so both run and both
+    # are reported -- a stale registry whose counts happen to satisfy the
+    # baseline must still be red, and a current registry whose counts regressed
+    # must still be red.
+    #
+    # Only on the read-only path. The emitting path has just written the file
+    # from this same renderer, so asking it whether its own output is current
+    # would test `write_bytes`, not the repository.
+    stale = check_markdown_freshness(reg) if args.check_only else None
+    if stale is not None:
+        print("\n" + "=" * 62, file=sys.stderr)
+        print("FRESHNESS — ruling registry", file=sys.stderr)
+        print("=" * 62, file=sys.stderr)
+        print(stale, file=sys.stderr)
+    elif args.check_only:
+        print("\n  ✓ the tracked registry is byte-identical to the current "
+              "rendering.")
+
+    return 1 if (regressions or stale is not None) else 0
 
 
 if __name__ == "__main__":
