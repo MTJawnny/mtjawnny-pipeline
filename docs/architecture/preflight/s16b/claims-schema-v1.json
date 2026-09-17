@@ -1,0 +1,41 @@
+{
+  "schema": "mtj-s16b-claim-schema/1",
+  "status": "PREFLIGHT_CANDIDATE_NOT_SEMANTIC_AUTHORITY",
+  "required_top_level": [
+    "schema",
+    "id",
+    "accessed",
+    "source_class",
+    "reliability",
+    "url",
+    "title",
+    "claim",
+    "entities",
+    "category",
+    "cross_check",
+    "conflicts",
+    "provenance"
+  ],
+  "required_provenance": [
+    "published_at",
+    "published_at_status",
+    "source_lineage",
+    "independent_corroboration_count"
+  ],
+  "laws": [
+    "Exact source object required; site-root-only locators are insufficient when a specific object exists.",
+    "Publication or source date must be recorded when known; null requires an explicit status or reason.",
+    "Source lineage must be explicit so mirrors, reviews, and reruns do not masquerade as independent corroboration.",
+    "independent_corroboration_count counts additional independent source lineages beyond the primary source; same-lineage reviews or reruns do not increment it.",
+    "Community or editorial evidence may establish vocabulary usage or strategic framing but cannot override pinned Oracle or Comprehensive Rules mechanics.",
+    "Repository measurements are evidence about measured system behavior, never relevance ground truth.",
+    "A benchmark row may link multiple claims; every claim id must resolve exactly once.",
+    "Candidate S16B output may never corroborate its own benchmark."
+  ],
+  "accepted_mechanical_inputs": {
+    "corpus_content_sha256": "5e47e1325a3987db745a941307080830696cbac2f6aa80d8f88f8a6dad90723c",
+    "corpus_container_sha256": "b46e0670a8f3fa2d5357ec35ff7f8d58e7c2f9f15db0e27a3b0543672b00c217",
+    "cr_effective_date": "2026-08-07",
+    "cr_sha256": "ca904dc900ce8e06c240960f937590df431aa2d97ec1569140cc910c56202d8b"
+  }
+}
