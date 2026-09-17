@@ -131,11 +131,18 @@ contexts:
 # guard re-derives this table and fails if source and contract disagree in
 # either direction.
 #
-# The measured total was 89 at C8.5C, 82 after S9, and is 56 after S15 -- ten
-# bootstraps left legacy production with the guards that owned them, four were
-# added for the test-owned probe, and twenty-six more departed with the files
-# the accepted S15 archive slices moved into `archive/`. The COUNT is not the
-# contract; the families are, there are four, and none was added or removed.
+# The measured total was 89 at C8.5C, was TRACKED as 82 after S9, and is 56 at
+# the accepted head -- ten bootstraps left legacy production with the guards
+# that owned them, and four were added for the test-owned probe.
+#
+# The 82 -> 56 change is TWO different things and must not be read as one.
+# Source measured 81, not 82, at the pre-S10 head a77e679: the S9-era tracked
+# total was already one site high before the migration began. So 82 -> 56 is a
+# one-site correction of inherited pin drift (82 -> 81) PLUS 25 accepted
+# departures (81 -> 56). Only the 25 are movement; the remaining site never
+# existed in source and was never deleted.
+# The COUNT is not the contract; the families are, there are four, and none was
+# added or removed.
 # ---------------------------------------------------------------------------
 bootstrap_families:
 
@@ -172,20 +179,34 @@ bootstrap_families:
     # member of this same family at its new address -- still import-only, still
     # this family's debt, still outside the measured scope. NOTHING WAS DELETED.
     #
-    # S15.R4: 76 -> 50, the same shape twenty-six more times, and again NOTHING
-    # WAS DELETED. The accepted S15 archive slices (Batch-8, the D6 migration
-    # pair, the thirteen batch-triage scripts, the codebook-transforms set) moved
-    # 25 research scripts out of legacy production into `archive/research/`, and
-    # each carried its own import-only bootstrap out of the MEASURED SCOPE with
-    # it. Archived material is historical: it is not live legacy-production debt
-    # and it is not a deletion. The deletion prerequisite below is unchanged and
-    # still covers every one of the 50 that remain.
+    # S15.R4: the tracked pin goes 76 -> 50, and again NOTHING WAS DELETED.
     #
-    # This figure was frozen at 76 across the whole accepted S10-S15 migration
-    # while source fell to 50, so the parity guard that re-derives this table was
-    # red on twelve nodes. It is re-pinned here by measurement at the accepted
-    # head b687f70. The COUNT is still not the contract; the families are, and
-    # all four are unchanged.
+    # That single arrow is TWO facts, and collapsing them into "twenty-six
+    # departures" would be false. Measured at the pre-S10 head a77e679, source
+    # carried 75 sites, not the 76 this contract declared. So:
+    #
+    #   76 -> 75   INHERITED PIN DRIFT. The S9-era pin was already one site high
+    #              before the migration started. No site departed; none ever
+    #              existed. R4 corrects the record, it does not record a move.
+    #   75 -> 50   ACCEPTED DEPARTURES, 25 of them. The accepted S15 archive
+    #              slices (Batch-8, the D6 migration pair, the thirteen
+    #              batch-triage scripts, the codebook-transforms set) moved 25
+    #              research scripts out of legacy production into
+    #              `archive/research/`, and each carried its own import-only
+    #              bootstrap out of the MEASURED SCOPE with it.
+    #
+    # So the accepted migration accounts for 25 sites, and exactly one site of
+    # the 76 -> 50 delta is a correction rather than a movement.
+    #
+    # Archived material is historical: it is not live legacy-production debt and
+    # it is not a deletion. R4 deletes no bootstrap. The deletion prerequisite
+    # below is unchanged and still covers every one of the 50 that remain.
+    #
+    # The pin was frozen at 76 across the whole accepted S10-S15 migration while
+    # source fell to 50, so the parity guard that re-derives this table was red
+    # on twelve nodes. It is re-pinned here by measurement at the accepted head
+    # b687f70. The COUNT is still not the contract; the families are, and all
+    # four are unchanged.
     sites: 50
     migrated_out_of_scope_was: experiments/foundry_ground_truth.py
     migrated_out_of_scope_now: tests/guards/gate2/test_ground_truth.py
@@ -296,9 +317,14 @@ transition:
   layout_census_movement: MOVED_BY_ACCEPTED_S10_S15_MIGRATION
   layout_census_movement_measured_at_head: b687f7086b05cf9e0e28ba0194481933e7021105
   layout_census_movement_detail: >-
-    LEGACY_SIBLING_IMPORT 76 -> 50 and the bootstrap total 82 -> 56, all by
-    DEPARTURE with the files the accepted S15 archive slices moved into
-    `archive/`. Legacy-production delegations 146 -> 79, delegation files
+    LEGACY_SIBLING_IMPORT 76 -> 50 and the bootstrap total 82 -> 56. Each of
+    those is an inherited one-site pin correction PLUS 25 accepted departures,
+    NOT 26 departures: source measured 75 sites and 81 total at the pre-S10 head
+    a77e679, so the S9-era pins were already one high before the migration
+    began. The 25 departures are the S15-archived research scripts, which
+    carried their import-only bootstraps out of the measured scope with them.
+    No bootstrap was deleted, by the migration or by R4.
+    Legacy-production delegations 146 -> 79, delegation files
     49 -> 27, local layout sites 67 -> 55. Tracked Python 171 -> 208, with
     `src` 31 -> 55 (S10-S12 capability moves), `tests` 43 -> 54,
     `aq4_PAUSED` 6 -> 7 (S14 freeze) and a new 26-file archived population.
