@@ -3,6 +3,13 @@
     "archive/research/batch8/foundry_batch8_ab.py",
     "archive/research/batch8/foundry_batch8_canon_analysis.py",
     "archive/research/batch8/foundry_batch8_diff.py",
+    "archive/research/codebook-transforms/foundry_any_damage_split.py",
+    "archive/research/codebook-transforms/foundry_axis_merge_pointer_correction.py",
+    "archive/research/codebook-transforms/foundry_batch7_pay_life_scrub.py",
+    "archive/research/codebook-transforms/foundry_cdr09_derive.py",
+    "archive/research/codebook-transforms/foundry_cdr09_walk.py",
+    "archive/research/codebook-transforms/foundry_gate0_scrub.py",
+    "archive/research/codebook-transforms/foundry_locality_backfill.py",
     "archive/research/mutations/foundry_migrate_codebook_v2.py",
     "archive/research/mutations/foundry_verify_migration.py",
     "archive/research/triage/foundry_adapt_batch1_decisions.py",
@@ -53,9 +60,6 @@
       "is_mode_line",
       "load_corpus_gated"
     ],
-    "experiments/foundry_any_damage_split.py": [
-      "halt"
-    ],
     "benchmarks/aq4/experiments/foundry_aq4_probes.py": [
       "CARDNAME_TOKEN",
       "canonicalize_self_reference",
@@ -68,32 +72,15 @@
       "FOUNDRY_OUT_DIR",
       "halt"
     ],
-    "experiments/foundry_axis_merge_pointer_correction.py": [
-      "halt"
-    ],
     "experiments/foundry_axis_walk.py": [
       "CONFIG_SEMANTIC",
       "FOUNDRY_OUT_DIR",
-      "write_json"
-    ],
-    "experiments/foundry_batch7_pay_life_scrub.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus",
-      "resolve_name",
       "write_json"
     ],
     "experiments/foundry_blanket_risk.py": [
       "canonicalize_self_reference",
       "is_mode_line",
       "load_corpus_gated"
-    ],
-    "experiments/foundry_cdr09_derive.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt"
-    ],
-    "experiments/foundry_cdr09_walk.py": [
-      "halt"
     ],
     "experiments/foundry_codebook.py": [
       "DATA_ARTIFACTS_DIR",
@@ -188,13 +175,6 @@
       "raw_faces",
       "write_json"
     ],
-    "experiments/foundry_gate0_scrub.py": [
-      "FOUNDRY_OUT_DIR",
-      "gate_passes",
-      "halt",
-      "load_corpus",
-      "write_json"
-    ],
     "experiments/foundry_keyword_buckets.py": [
       "FOUNDRY_OUT_DIR",
       "halt",
@@ -206,12 +186,6 @@
       "halt",
       "load_corpus_gated",
       "raw_faces",
-      "write_json"
-    ],
-    "experiments/foundry_locality_backfill.py": [
-      "FOUNDRY_OUT_DIR",
-      "halt",
-      "load_corpus_gated",
       "write_json"
     ],
     "experiments/foundry_membership_move.py": [
@@ -661,5 +635,73 @@
       }
     },
     "rule": "S15.D4 byte-identical R100 archive of the thirteen batch triage scripts (seven decision adapters and six batch assemblers) to archive/research/triage/, under Captain direction D-20260916-S15-D4-TRIAGE-ARCHIVE-EXECUTION (Issue #1 comment 5698387022). archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim; every other row and every prior amendment (S11, S15.D3, S15.D6) is byte-for-byte unchanged, and archive importers are never counted as live."
+  },
+  "s15_d5_amendment": {
+    "head_base": "f429776fb5fa461b9d44425bf40e858d4527a17b",
+    "live_importers": {
+      "before": 70,
+      "after": 63
+    },
+    "archive_importers": {
+      "before": 19,
+      "after": 26
+    },
+    "rows_moved_to_archive": {
+      "experiments/foundry_any_damage_split.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_any_damage_split.py",
+        "foundry_common_names": [
+          "halt"
+        ]
+      },
+      "experiments/foundry_axis_merge_pointer_correction.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_axis_merge_pointer_correction.py",
+        "foundry_common_names": [
+          "halt"
+        ]
+      },
+      "experiments/foundry_batch7_pay_life_scrub.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_batch7_pay_life_scrub.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus",
+          "resolve_name",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_cdr09_derive.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_cdr09_derive.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt"
+        ]
+      },
+      "experiments/foundry_cdr09_walk.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_cdr09_walk.py",
+        "foundry_common_names": [
+          "halt"
+        ]
+      },
+      "experiments/foundry_gate0_scrub.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_gate0_scrub.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "gate_passes",
+          "halt",
+          "load_corpus",
+          "write_json"
+        ]
+      },
+      "experiments/foundry_locality_backfill.py": {
+        "archived_path": "archive/research/codebook-transforms/foundry_locality_backfill.py",
+        "foundry_common_names": [
+          "FOUNDRY_OUT_DIR",
+          "halt",
+          "load_corpus_gated",
+          "write_json"
+        ]
+      }
+    },
+    "rule": "S15.D5 byte-identical R100 archive of the seven retired codebook-CONTENT transforms to archive/research/codebook-transforms/, under Captain direction D-20260916-S15-D5-R2-CODEBOOK-TRANSFORMS-EXECUTION as corrected by D-20260916-S15-D5-R3-LAYOUT-PIN-ALLOWLIST-CORRECTION. archive_importers records paths only, so each moved row's recorded foundry_common name set is preserved here verbatim. The CDR-09 derivation and walk are one evidence pair and moved atomically. This owner is codebook CONTENT; the closed /1 -> /2 SCHEMA migration pair remains in archive/research/mutations."
   }
 }

@@ -357,13 +357,34 @@ class ProjectPaths:
 
     @property
     def archive_research_mutations(self) -> Path:
-        """One-off codebook executors, archived as a group.
+        """The CLOSED `foundry-codebook/1 -> foundry-codebook/2` migration pair.
 
-        The plan keeps a mutator and its verifier together: the verifier is the
-        migration's only proof, so archiving them apart would retain the record
-        of a change without the evidence that it was correct.
+        Exactly two files: the schema mutator and its independent verifier. This
+        is NOT a generic home for one-off codebook programs -- that reading is
+        what the opening line used to invite, and it once sent a migration plan
+        to the wrong owner. Transformations of codebook CONTENT belong to
+        `archive_research_codebook_transforms`; this owner is one completed
+        SCHEMA migration and is closed to anything else.
+
+        The pair stays together, and that is a rule rather than a convenience:
+        the verifier is the migration's only proof, so archiving them apart
+        would retain the record of a change without the evidence that it was
+        correct.
         """
         return self.archive_research / "mutations"
+
+    @property
+    def archive_research_codebook_transforms(self) -> Path:
+        """Retired one-shot transformations of codebook CONTENT.
+
+        Members, slugs and axis/assertion fields -- not schema. Each artifact's
+        authorized effect is already embodied in the selected codebook and its
+        authorization in a tracked ruling, so these are retained as provenance
+        only: never supported operators, never a recovery procedure. Derivation
+        or proof companions are archived alongside the transformation they
+        belong to, which is why the CDR-09 derivation sits here with its walk.
+        """
+        return self.archive_research / "codebook-transforms"
 
     @property
     def archive_research_batch8(self) -> Path:

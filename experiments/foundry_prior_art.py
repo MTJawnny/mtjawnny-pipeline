@@ -127,6 +127,13 @@ HISTORICAL_FAMILIES = (
     (_LAYOUT.archive_research_batch8, "archived Batch-8 research set"),
     (_LAYOUT.archive_research_mutations,
      "archived foundry-codebook/1 -> /2 migration pair"),
+    # S15.D5 archived seven retired codebook-CONTENT transforms. Registered the
+    # moment they moved, in the same commit, so the strict refusal never lapses
+    # between the move and its coverage -- that gap is exactly what made D4 a
+    # defect. Its own label: a content transform is not the schema migration,
+    # and neither is triage or Batch-8.
+    (_LAYOUT.archive_research_codebook_transforms,
+     "archived codebook-transforms set"),
 )
 
 # Same idiom as foundry_slug_dossier.py -- a line that carries a VERDICT is not
