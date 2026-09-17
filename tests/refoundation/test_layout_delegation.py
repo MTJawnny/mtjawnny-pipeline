@@ -3650,6 +3650,9 @@ class TestProjectPathsGainedOnlyTheSmallestProperty(unittest.TestCase):
             # -- migration slice 1: archive destinations ------------------ S1
             "archive", "archive_config", "archive_engine", "archive_reports",
             "archive_research", "archive_research_batch8",
+            # S15.D5.R3 ADVANCES THIS PIN RATHER THAN LOOSENING IT. The list
+            # stays exhaustive and stays exact; one ratified owner is added.
+            "archive_research_codebook_transforms",
             "archive_research_consolidation", "archive_research_mutations",
             "archive_research_thesaurus_measurement", "archive_research_triage",
             # -------------------------------------------------------------

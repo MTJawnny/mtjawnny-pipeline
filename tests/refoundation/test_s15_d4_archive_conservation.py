@@ -57,6 +57,7 @@ enumerates thirteen files.
 from __future__ import annotations
 
 import ast
+import collections
 import contextlib
 import hashlib
 import importlib.util
@@ -226,6 +227,39 @@ def measured_archive_symbols() -> dict:
             if p.startswith(f"{ARCHIVE_TRIAGE_REL}/")}
 
 
+def sidecar_delta_against_D4(raw: bytes, accepted: bytes) -> dict:
+    """Everything S15.D5 changed in the sidecar, as an explicit difference.
+
+    S15.D4.R2 could demand the artifact be byte-identical to accepted D4,
+    because that repair was forbidden to touch it. S15.D5 IS authorized to touch
+    it, so the guarantee is kept in the only honest form left: name the exact
+    authorized delta and require everything else to be unchanged -- including
+    ORDER, which a set comparison would lose and which a byte digest of a
+    rebuilt file cannot check without first assuming the order it is testing."""
+    now = json.loads(raw, object_pairs_hook=collections.OrderedDict)
+    was = json.loads(accepted, object_pairs_hook=collections.OrderedDict)
+    moved = now["s15_d5_amendment"]["rows_moved_to_archive"]
+    return {
+        # order-sensitive: D4's live rows, minus exactly the seven D5 removed
+        "expected_live_pairs": [(k, v) for k, v in was["live_importers"].items()
+                                if k not in moved],
+        "live_pairs": list(now["live_importers"].items()),
+        "expected_archive": sorted(was["archive_importers"]
+                                   + [r["archived_path"] for r in moved.values()]),
+        "archive": now["archive_importers"],
+        # D5's own amendment is excluded here and asserted by `added_keys`
+        # instead; comparing a new section against an absent one proves nothing.
+        "expected_other_sections": {k: json.dumps(v, sort_keys=False)
+                                    for k, v in was.items()
+                                    if k not in ("live_importers", "archive_importers")},
+        "other_sections": {k: json.dumps(v, sort_keys=False)
+                           for k, v in now.items()
+                           if k not in ("live_importers", "archive_importers")
+                           and k in was},
+        "added_keys": set(now) - set(was),
+    }
+
+
 @requires_history
 class TestTheSidecarIsUnchangedAndItsD4AmendmentIsTrue(unittest.TestCase):
 
@@ -236,14 +270,18 @@ class TestTheSidecarIsUnchangedAndItsD4AmendmentIsTrue(unittest.TestCase):
         cls.amendment = cls.data["s15_d4_amendment"]
         cls.rows = cls.amendment["rows_moved_to_archive"]
 
-    def test_the_whole_sidecar_is_byte_identical_to_accepted_D4(self):
-        """Not field-by-field: the ENTIRE artifact, bytes included. The repair is
-        forbidden to touch it, and a conservation claim about a file nobody
-        compared in full is not a conservation claim."""
+    def test_everything_outside_the_authorized_D5_delta_is_unchanged_from_D4(self):
+        """The post-D5 form of D4.R2's whole-artifact digest. Not field-by-field
+        and not order-blind: D4's live rows minus exactly D5's seven must equal
+        the current live rows IN ORDER, the archive list must be D4's plus
+        exactly D5's seven, every other section must serialize identically, and
+        the only new top-level key may be D5's own amendment."""
         accepted = git("cat-file", "blob", f"{D4_HEAD}:{SIDECAR_REL}", binary=True)
-        self.assertEqual(hashlib.sha256(self.raw).hexdigest(),
-                         hashlib.sha256(accepted).hexdigest())
-        self.assertEqual(self.raw, accepted)
+        d = sidecar_delta_against_D4(self.raw, accepted)
+        self.assertEqual(d["live_pairs"], d["expected_live_pairs"])
+        self.assertEqual(d["archive"], d["expected_archive"])
+        self.assertEqual(d["other_sections"], d["expected_other_sections"])
+        self.assertEqual(d["added_keys"], {"s15_d5_amendment"})
 
     def test_the_amendment_base_is_the_exact_D6_commit(self):
         self.assertEqual(self.amendment["head_base"], D6_HEAD)
@@ -273,8 +311,18 @@ class TestTheSidecarIsUnchangedAndItsD4AmendmentIsTrue(unittest.TestCase):
                                  f"{ARCHIVE_TRIAGE_REL}/{Path(old).name}")
 
     def test_the_declared_live_and_archive_totals_agree_with_the_sidecar_body(self):
-        self.assertEqual(len(self.data["live_importers"]), LIVE_AFTER)
-        self.assertEqual(len(self.data["archive_importers"]), ARCHIVE_AFTER)
+        """D4's own declared transition (83 -> 70, 6 -> 19) stays pinned by
+        `test_the_recorded_population_transfer_is_the_accepted_one`; it is a
+        historical record and does not move. What the BODY now totals is D4's
+        result plus D5's authorized seven-row transfer, so the body is checked
+        against the later amendment's after-values rather than D4's."""
+        d5 = self.data["s15_d5_amendment"]
+        self.assertEqual(d5["live_importers"]["before"], LIVE_AFTER)
+        self.assertEqual(d5["archive_importers"]["before"], ARCHIVE_AFTER)
+        self.assertEqual(len(self.data["live_importers"]),
+                         d5["live_importers"]["after"])
+        self.assertEqual(len(self.data["archive_importers"]),
+                         d5["archive_importers"]["after"])
         for row in self.rows.values():
             with self.subTest(path=row["archived_path"]):
                 self.assertIn(row["archived_path"], self.data["archive_importers"])
@@ -387,8 +435,21 @@ class TestTheSidecarConservationControls(unittest.TestCase):
         comparison above and is exactly what the whole-file digest is for."""
         raw = (REPO_ROOT / SIDECAR_REL).read_bytes()
         accepted = git("cat-file", "blob", f"{D4_HEAD}:{SIDECAR_REL}", binary=True)
-        self.assertEqual(raw, accepted)
-        self.assertNotEqual(raw.replace(b"halt", b"hal7", 1), accepted)
+        clean = sidecar_delta_against_D4(raw, accepted)
+        self.assertEqual(clean["live_pairs"], clean["expected_live_pairs"])
+
+        tampered = sidecar_delta_against_D4(
+            raw.replace(b'"halt"', b'"hal7"', 1), accepted)
+        self.assertNotEqual(tampered["live_pairs"],
+                            tampered["expected_live_pairs"])
+
+        reordered = json.loads(raw, object_pairs_hook=collections.OrderedDict)
+        items = list(reordered["live_importers"].items())
+        reordered["live_importers"] = collections.OrderedDict(
+            [items[1], items[0]] + items[2:])
+        swapped = sidecar_delta_against_D4(
+            json.dumps(reordered, indent=2).encode() + b"\n", accepted)
+        self.assertNotEqual(swapped["live_pairs"], swapped["expected_live_pairs"])
 
 
 # ===========================================================================
@@ -848,6 +909,8 @@ class TestTheMaterialEdgeMethod(unittest.TestCase):
 
 BATCH8_REL = "archive/research/batch8"
 MUTATIONS_REL = "archive/research/mutations"
+# S15.D5's owner, registered in the same commit that moved its seven files.
+TRANSFORMS_REL = "archive/research/codebook-transforms"
 
 # Real definitions, each measured to exist in its archived family and to exist
 # NOWHERE in the live tree. A topic that also matched a live file would not
@@ -873,6 +936,7 @@ EXPECTED_LABELS = {
     ARCHIVE_TRIAGE_REL: "archived triage set",
     BATCH8_REL: "archived Batch-8 research set",
     MUTATIONS_REL: "archived foundry-codebook/1 -> /2 migration pair",
+    TRANSFORMS_REL: "archived codebook-transforms set",
 }
 
 
@@ -903,20 +967,26 @@ def family_fixture(rel: str, tracked: dict, untracked: dict = None,
 
 
 class TestTheHistoricalFamilySetIsExplicitAndBounded(unittest.TestCase):
-    """The mechanism, not the contents: three named owners, no recursion."""
+    """The mechanism, not the contents: four named owners, no recursion.
+
+    S15.D5 carried this class from three owners to four. Not one control was
+    dropped for changing its expected state -- each became its post-D5 form,
+    because a control deleted at the moment its answer changes is a control that
+    was never load-bearing."""
 
     @classmethod
     def setUpClass(cls):
         cls.pa = load_prior_art()
 
-    def test_the_family_set_is_exactly_the_three_archived_owners(self):
+    def test_the_family_set_is_exactly_the_four_archived_owners(self):
         from mtj_foundry.paths import ProjectPaths
         layout = ProjectPaths.for_root(REPO_ROOT)
         self.assertEqual(
             [owner for owner, _ in self.pa.HISTORICAL_FAMILIES],
             [layout.archive_research_triage,
              layout.archive_research_batch8,
-             layout.archive_research_mutations])
+             layout.archive_research_mutations,
+             layout.archive_research_codebook_transforms])
 
     def test_every_family_location_comes_from_the_layout_owner(self):
         """Asked of `ProjectPaths`, never spelled a second time in the reader.
@@ -924,7 +994,8 @@ class TestTheHistoricalFamilySetIsExplicitAndBounded(unittest.TestCase):
         from mtj_foundry.paths import ProjectPaths
         layout = ProjectPaths.for_root(REPO_ROOT)
         named = {layout.archive_research_triage, layout.archive_research_batch8,
-                 layout.archive_research_mutations}
+                 layout.archive_research_mutations,
+                 layout.archive_research_codebook_transforms}
         for owner, _ in self.pa.HISTORICAL_FAMILIES:
             with self.subTest(owner=str(owner)):
                 self.assertIn(owner, named)
@@ -948,12 +1019,29 @@ class TestTheHistoricalFamilySetIsExplicitAndBounded(unittest.TestCase):
             with self.subTest(enumerator=enumerator):
                 self.assertNotIn(enumerator, body)
 
-    def test_the_D5_owner_is_NOT_registered_yet(self):
-        """D5 is blocked and its owner does not exist. Naming it here would be
-        both a forward reference to an absent property and a scope expansion."""
-        source = PRIOR_ART_PATH.read_text(encoding="utf-8")
-        self.assertNotIn("archive_research_codebook_transforms", source)
-        self.assertNotIn("codebook-transforms", source)
+    def test_the_D5_owner_is_registered_EXACTLY_ONCE(self):
+        """The post-D5 form of R1's "the D5 owner is absent" control. Registered
+        once, under its own label, and not duplicated into a second tuple."""
+        from mtj_foundry.paths import ProjectPaths
+        layout = ProjectPaths.for_root(REPO_ROOT)
+        owners = [owner for owner, _ in self.pa.HISTORICAL_FAMILIES]
+        self.assertEqual(
+            owners.count(layout.archive_research_codebook_transforms), 1)
+        self.assertEqual(
+            dict(self.pa.HISTORICAL_FAMILIES)[
+                layout.archive_research_codebook_transforms],
+            "archived codebook-transforms set")
+
+    def test_the_migration_pair_owner_did_not_absorb_the_new_family(self):
+        """`/1 -> /2` stays its own closed owner. D5 adding a neighbour must not
+        quietly re-point or widen it."""
+        from mtj_foundry.paths import ProjectPaths
+        layout = ProjectPaths.for_root(REPO_ROOT)
+        self.assertNotEqual(layout.archive_research_mutations,
+                            layout.archive_research_codebook_transforms)
+        self.assertEqual(
+            {p.name for p in layout.archive_research_mutations.glob("*.py")},
+            {"foundry_migrate_codebook_v2.py", "foundry_verify_migration.py"})
 
 
 class TestThePreviouslyDarkFamiliesAreDiscoverable(unittest.TestCase):

@@ -1848,9 +1848,28 @@ RUN1_APPLY_REL = "experiments/foundry_consolidate_run1_apply.py"
 # `git ls-files "*.py"` over the whole repository, not one directory), so they
 # are still measured -- at their new addresses. Dropping them would shrink a
 # pinned nomination set to make a path change go quiet.
+# S15.D5 moved six more of the fifteen out of `experiments/` without changing
+# what they are: they are retired codebook-content transforms and now live at
+# their archive owner. Same rule as the two above -- the analyzer walks
+# `git ls-files "*.py"` over the whole repository, so they are still measured,
+# at their new addresses. `batch7_pay_life_scrub` moved in the same task but is
+# NOT a C8.5V nominee and therefore is deliberately absent from this map.
 _C8_5V_MOVED = {
     "definition_drift": "tests/guards/gate2/foundry_definition_drift.py",
     "family_sweep": "tests/guards/gate2/foundry_family_sweep.py",
+    "any_damage_split":
+        "archive/research/codebook-transforms/foundry_any_damage_split.py",
+    "axis_merge_pointer_correction":
+        "archive/research/codebook-transforms/"
+        "foundry_axis_merge_pointer_correction.py",
+    "cdr09_derive":
+        "archive/research/codebook-transforms/foundry_cdr09_derive.py",
+    "cdr09_walk":
+        "archive/research/codebook-transforms/foundry_cdr09_walk.py",
+    "gate0_scrub":
+        "archive/research/codebook-transforms/foundry_gate0_scrub.py",
+    "locality_backfill":
+        "archive/research/codebook-transforms/foundry_locality_backfill.py",
 }
 # Sorted by PATH, not by module name: the two moved entries no longer share the
 # `experiments/` prefix, and the assertion below compares against a

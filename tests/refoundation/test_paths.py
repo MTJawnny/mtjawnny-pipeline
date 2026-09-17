@@ -261,6 +261,9 @@ S1_DESTINATIONS: dict[str, str] = {
     "archive_research_triage": "archive/research/triage",
     "archive_research_consolidation": "archive/research/consolidation",
     "archive_research_mutations": "archive/research/mutations",
+    # S15.D5: the seven retired codebook-CONTENT transforms. Distinct from
+    # `mutations`, which is the closed `/1 -> /2` SCHEMA migration pair.
+    "archive_research_codebook_transforms": "archive/research/codebook-transforms",
     "archive_research_batch8": "archive/research/batch8",
     "archive_research_thesaurus_measurement": "archive/research/thesaurus-measurement",
 }
@@ -357,6 +360,8 @@ class TestSliceOneDestinationsAreNamed(unittest.TestCase):
             (p.archive_research_triage, p.archive_research, "triage"),
             (p.archive_research_consolidation, p.archive_research, "consolidation"),
             (p.archive_research_mutations, p.archive_research, "mutations"),
+            (p.archive_research_codebook_transforms,
+             p.archive_research, "codebook-transforms"),
             (p.archive_research_batch8, p.archive_research, "batch8"),
             (p.archive_research_thesaurus_measurement,
              p.archive_research, "thesaurus-measurement"),
