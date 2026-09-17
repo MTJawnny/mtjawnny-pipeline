@@ -1,5 +1,11 @@
 data/
 *.jsonl
+# S15.R4 (N04): this ONE tracked file is deliberate S16B preflight evidence --
+# the machine-readable claim store named by S16B-GAMEPLAY-DNA-PREFLIGHT-REPORT.md.
+# It is genuinely JSON Lines, so renaming it to .json would misdescribe its
+# format. The repository-wide *.jsonl rule above is NOT weakened: this negation
+# names one exact path and nothing else.
+!docs/architecture/preflight/s16b/claims.jsonl
 *.jsonl.gz
 *.parquet
 *.sqlite
