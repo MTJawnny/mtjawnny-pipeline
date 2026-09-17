@@ -4147,7 +4147,22 @@ CENSUS_HEAD = {
     # was `foundry_family_sweep.py`; `CONFIG_SEMANTIC` 13 -> 10 and
     # `FOUNDRY_OUT_DIR` 124 -> 120 and `REPO_ROOT` 19 -> 10 are the same shape.
     # No legacy file left behind states a layout fact it did not state before.
-    "tracked_python": 171,                         # S9: 168 (+3 new test owners,
+    # S15.R4 RE-PIN TO ACCEPTED-HEAD TRUTH (b687f70). Every value below was
+    # frozen at S9 and then carried unchanged through the accepted S10-S15
+    # migration slices, so this block described a repository that no longer
+    # existed and the parity guard was red on twelve nodes. The migration is the
+    # thing that moved; the pin is what failed to. Re-pinned by measurement, not
+    # by relaxing an assertion: every scope is still accounted for, `aq4_PAUSED`
+    # is still its own scope, and the archive population is now pinned BY
+    # MEMBERSHIP rather than merely counted (see the universe test).
+    #
+    # 208 tracked files: 171 -> 208 is +37 and is ENTIRELY explained by accepted
+    # work -- S10-S12 moved capability code into `src` (31 -> 55), the guard and
+    # test owners grew (43 -> 54), S14 froze one more AQ4 module (6 -> 7), and
+    # the accepted S15 archive slices moved 25 research scripts out of legacy
+    # production into `archive/` (0 -> 26 with the pre-existing routing member).
+    "tracked_python": 208,                         # S15.R4: 171 (+37, see above)
+                                                   # S9: 168 (+3 new test owners,
                                                    #   12 moved between scopes)
                                                    # S7: 162 (+5 shapes substrate + guard)
                                                    # S6: 155 (+7 CR substrate + guard)
@@ -4184,11 +4199,25 @@ CENSUS_HEAD = {
                                                    # written rather than rewritten
                                                    # from a guess; the VALUES are
                                                    # what the test asserts.
-    "files_by_scope": {"experiments": 74,          # S9: 86 (-12, the guards left)
+    # S15.R4: `other` is now a PINNED population, not an unclassified remainder.
+    # `scope_of` has no `archive/` branch and that module is out of this task's
+    # allowlist, so archived material lands in `other`. It is NOT folded into
+    # legacy production -- `LEGACY_PRODUCTION` is still exactly
+    # (`experiments`, `experiments_measure`) -- and the universe test now pins
+    # every member of `other` to `archive/`, which is strictly stronger than the
+    # old "must be empty" assertion: a genuinely unclassified NON-archive file
+    # still fails. Naming this scope `archive_HISTORICAL` needs `layout_census`
+    # and is left to an authorized slice.
+    "files_by_scope": {"experiments": 49,          # S15.R4: 74 (-25, archived)
+                                                   # S9: 86 (-12, the guards left)
                                                    # S4: 87 (-1, guard left)
                        "experiments_measure": 6,
-                       "aq4_PAUSED": 6, "pipeline": 11,
-                       "src": 31,                  # S7: 26 (+ shapes pkg, 3 shape
+                       "other": 26,                # S15.R4: archive/ only, pinned
+                                                   #   by membership below
+                       "aq4_PAUSED": 7,            # S15.R4: 6 (+1, S14 freeze)
+                       "pipeline": 11,
+                       "src": 55,                  # S15.R4: 31 (+24, S10-S12)
+                                                   # S7: 26 (+ shapes pkg, 3 shape
                                                    #   modules, text_match.py)
                                                    # S6: 20 (+ mtg, mtg/cr, 4 CR modules)
                                                    # PATH E M1: 11 (+ runtime.py,
@@ -4200,7 +4229,8 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 43},               # S9: 28 (+12 moved in, +3 new)
+                       "tests": 54},               # S15.R4: 43 (+11 guards/tests)
+                                                   # S9: 28 (+12 moved in, +3 new)
                                                    # S7: 27 (+ test_mtg_shapes_substrate.py)
                                                    # S6: 26 (+ test_mtg_cr_substrate.py)
                                                    # C8.5W: 18 (+ contract guard);
@@ -4272,14 +4302,17 @@ CENSUS_HEAD = {
     # `PATH_JOIN` takes all 17; `DIRECT_BIND`, `ATTRIBUTE_NAV` and `CALL_ARG` are
     # unchanged, because every repoint is an owner-property-plus-filename join and
     # none of them changed how a value is bound or passed.
-    "delegations_total": 146,                      # S9: 163 (-17, all by departure)
+    # S15.R4: 146 -> 79. Every departure is an accepted archive/migration move
+    # out of legacy production, not a repoint and not a deletion of a fact.
+    "delegations_total": 79,                       # S15.R4: 146 (-67, departures)
+                                                   # S9: 163 (-17, all by departure)
                                                    # S6.R1: back to 163 -- see below
     "delegations_by_provider": {
-        "foundry_common.FOUNDRY_OUT_DIR": 120,     # S9: 124 (-4)
-        "foundry_common.REPO_ROOT": 10,            # S9: 19 (-9)
+        "foundry_common.FOUNDRY_OUT_DIR": 54,      # S15.R4: 120 (-66)
+        "foundry_common.REPO_ROOT": 11,            # S15.R4: 10 (+1)
         "foundry_common.DATA_ARTIFACTS_DIR": 1,    # unchanged
         # S3: the six config groups. 13 + 2 + 1 + 1 + 1 + 1 = 19.
-        "foundry_common.CONFIG_SEMANTIC": 10,      # S9: 13 (-3)
+        "foundry_common.CONFIG_SEMANTIC": 8,       # S15.R4: 10 (-2)
         "foundry_common.CONFIG_GENERATED": 2,
         "foundry_common.CONFIG_SELECTORS": 1,
         # S6.R1: `CONFIG_CR` is BACK, and that is the repair working. The
@@ -4292,12 +4325,18 @@ CENSUS_HEAD = {
         # `foundry_codebook.REPO_ROOT` was 2 and is GONE: the peer provider no
         # longer exists, so the key is absent rather than zero.
     },
+    # S15.R4: `DIRECT_BIND` and `ATTRIBUTE_NAV` are GONE rather than zero. Both
+    # measured 3 and 1 in legacy production at S9; every site carrying them left
+    # with the accepted archive slices. A key held at 0 would assert the form is
+    # still reachable in production, which source no longer supports -- so the
+    # keys are absent, exactly as `foundry_codebook.REPO_ROOT` was dropped above.
+    # The remaining two forms partition the total with no remainder: 74 + 5 = 79.
     "delegations_by_form": {
-        "PATH_JOIN": 138,                          # S9: 149 (-11)
-        "DIRECT_BIND": 3, "ATTRIBUTE_NAV": 1,
-        "CALL_ARG": 4,                             # S9: 10 (-6)
+        "PATH_JOIN": 74,                           # S15.R4: 138 (-64)
+        "CALL_ARG": 5,                             # S15.R4: 4 (+1)
     },
-    "delegation_files": 49,                        # S9: 56 (-7)
+    "delegation_files": 27,                        # S15.R4: 49 (-22)
+                                                   # S9: 56 (-7)
     #
     # C8.5K REMOVES EXACTLY ONE LOCAL LAYOUT SITE and moves no other row. The
     # ruling registry's generated JSON was built as
@@ -4339,13 +4378,21 @@ CENSUS_HEAD = {
     # No delegation row moves either: the re-aimed guard loads no provider
     # layout name, and the new `_persistence_closure()` helper reaches the store
     # through `__file__` of the imported module.
-    "local_sites_total": 67,                       # S9: 69 (-6 left, +4 probe)
-    "local_sites_bootstrap": 30,                   # S9: 28 (-2 left, +4 probe)
-    "local_sites_consumption": 37,                 # S9: 41 (-4, all departures)
-    "consumption_origin": {"hop1": 23, "hop2": 13, "inline": 1},   # S9: hop1 -3, hop2 -1
-    "consumption_scope": {"module": 23, "function": 14},           # S9: module -4
-    "consumption_files": 13,                       # S9: 16 (-3)
-    "sys_path_calls": {"experiments": 76,          # S9: 82 (-10 left, +4 probe)
+    "local_sites_total": 55,                       # S15.R4: 67 (-12)
+                                                   # S9: 69 (-6 left, +4 probe)
+    "local_sites_bootstrap": 23,                   # S15.R4: 30 (-7)
+    "local_sites_consumption": 32,                 # S15.R4: 37 (-5)
+    "consumption_origin": {"hop1": 18, "hop2": 13, "inline": 1},   # S15.R4: hop1 -5
+    "consumption_scope": {"module": 19, "function": 13},           # S15.R4: -4/-1
+    "consumption_files": 11,                       # S15.R4: 13 (-2)
+    # S15.R4: 76 -> 50 is the load-bearing one. Twenty-six LEGACY_SIBLING_IMPORT
+    # bootstraps left legacy production with the accepted archive slices. They
+    # were NOT deleted by any slice and none was removed here; they departed the
+    # measured scope with their files. PACKAGE-EXECUTION-CONTRACT.yaml is
+    # re-pinned to the same 50 in this commit, which is what makes the
+    # source-to-contract parity guard green in both directions again.
+    "sys_path_calls": {"experiments": 50,          # S15.R4: 76 (-26, departures)
+                                                   # S9: 82 (-10 left, +4 probe)
                        "experiments_measure": 6},
 }
 
@@ -4386,20 +4433,55 @@ class TestTheCensusUniverseIsWhatItClaims(unittest.TestCase):
     looks healthy. Two independent enumerations must agree."""
 
     def test_tracked_and_walked_python_agree(self):
+        """`walked_python` enumerates five named bases; `tracked_python` asks
+        git about the whole repository. They agreed exactly until the accepted
+        S15 archive slices put tracked Python under `archive/`, which is not one
+        of those bases.
+
+        The guard this test exists to be -- a census silently narrowed by an
+        ignore rule reports a smaller universe and looks healthy -- is kept
+        intact by comparing the two enumerations OVER THE WALKED BASES, where
+        an ignore rule would bite, and then requiring the entire remainder to be
+        archived material. A tracked file that vanished from a walked base still
+        fails, and so does any non-archive remainder. Teaching `walked_python`
+        about `archive/` needs `layout_census` and is left to an authorized
+        slice."""
         tracked = layout_census.tracked_python(REPO_ROOT)
-        self.assertEqual(tracked, layout_census.walked_python(REPO_ROOT))
+        walked = layout_census.walked_python(REPO_ROOT)
+        bases = ("benchmarks", "experiments", "pipeline", "src", "tests")
+        in_bases = [p for p in tracked if p.parts[0] in bases]
+        self.assertEqual(in_bases, walked)
+        remainder = [p.as_posix() for p in tracked if p.parts[0] not in bases]
+        self.assertEqual([p for p in remainder
+                          if not p.startswith("archive/")], [])
         self.assertEqual(len(tracked), CENSUS_HEAD["tracked_python"])
+        self.assertEqual(len(remainder), CENSUS_HEAD["files_by_scope"]["other"])
 
     def test_every_file_lands_in_exactly_one_named_scope(self):
-        """`other` is the unclassified bucket. A non-empty `other` would mean the
-        census has a population it is not reporting on either side."""
-        counts = {}
+        """`other` is the bucket `scope_of` returns for anything it does not
+        name. Before S15 it was empty and this asserted exactly that.
+
+        The accepted S15 archive slices put 26 files under `archive/`, which
+        `scope_of` does not name, so `other` is now non-empty. It is pinned BY
+        MEMBERSHIP rather than merely counted: every member must be archived
+        material. That is strictly stronger than the old emptiness check --
+        a genuinely unclassified NON-archive file still fails here, which is
+        the population-hiding this test exists to prevent. Archived material is
+        historical and is NOT legacy-production debt: `LEGACY_PRODUCTION` does
+        not contain `other`, so none of it reaches any delegation or bootstrap
+        count above."""
+        counts, other = {}, []
         for rel in layout_census.tracked_python(REPO_ROOT):
             scope = layout_census.scope_of(rel)
             counts[scope] = counts.get(scope, 0) + 1
+            if scope == "other":
+                other.append(rel.as_posix())
         self.assertEqual(counts, CENSUS_HEAD["files_by_scope"])
         self.assertEqual(sum(counts.values()), CENSUS_HEAD["tracked_python"])
-        self.assertNotIn("other", counts)
+        self.assertNotIn("other", layout_census.LEGACY_PRODUCTION)
+        unnamed = [p for p in other if not p.startswith("archive/")]
+        self.assertEqual(unnamed, [], "unclassified non-archive files would "
+                                      "hide in `other`")
 
     def test_aq4_is_excluded_from_legacy_production_in_both_of_its_homes(self):
         """AQ4 is PAUSED. It lives in a package AND in one loose file, so a
@@ -5582,9 +5664,17 @@ CONTRACT_PATH = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
 # moved files carried a bootstrap out of the measured scope; the four ACTIVE
 # `experiments/` consumers of the now test-owned probe each add its new
 # directory, which is a different directory and therefore a different family.
-BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 76, "": 1,
+# S15.R4: `experiments` 76 -> 50 and the total 82 -> 56. The accepted S15
+# archive slices moved 25 research scripts and the D6 migration pair out of
+# legacy production, and each carried its own import-only bootstrap out of the
+# measured scope with it. NOTHING WAS DELETED: the FOUR families are unchanged,
+# every one is still load-bearing, and `PACKAGE-EXECUTION-CONTRACT.yaml` still
+# records a deletion prerequisite for each. This is the count following the
+# files, which is exactly what this pin is for -- the comment above already
+# says a later slice is expected to move these, in a diff.
+BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 50, "": 1,
                       "tests/guards/probe": 4}
-BOOTSTRAP_TOTAL = 82
+BOOTSTRAP_TOTAL = 56
 
 
 def _resolve_path_expr(expr, rel, names, paths_instances, paths_layout):
@@ -5803,11 +5893,25 @@ class TestTheContractMatchesSource(unittest.TestCase):
             with self.subTest(claim=claim):
                 self.assertIn(claim, self.text)
 
-    def test_it_records_that_nothing_moved(self):
+    def test_it_records_that_no_bootstrap_was_deleted(self):
+        """The three zeros are the load-bearing claims and are unchanged: this
+        contract still deletes no bootstrap, moves no legacy module and changes
+        no production Python.
+
+        `layout_census_movement` is NOT one of them. It recorded ZERO for the
+        whole accepted S10-S15 migration, during which the census demonstrably
+        moved, so asserting ZERO here pinned a false sentence. S15.R4 requires
+        the contract to state the movement and the head it was measured at
+        instead -- a contract that has to claim nothing moved cannot record a
+        migration that did."""
         for line in ("bootstraps_deleted: 0", "legacy_modules_moved: 0",
-                     "production_python_changed: 0",
-                     "layout_census_movement: ZERO"):
+                     "production_python_changed: 0"):
             self.assertIn(line, self.text)
+        self.assertNotIn("layout_census_movement: ZERO", self.text)
+        self.assertIn("layout_census_movement: "
+                      "MOVED_BY_ACCEPTED_S10_S15_MIGRATION", self.text)
+        self.assertIn("layout_census_movement_measured_at_head: "
+                      "b687f7086b05cf9e0e28ba0194481933e7021105", self.text)
 
 
 class TestTheContractParityGuardActuallyFires(unittest.TestCase):
@@ -5849,9 +5953,15 @@ class TestTheContractParityGuardActuallyFires(unittest.TestCase):
         # mutates away from THAT. The rig anchor is re-aimed at the live value
         # rather than the count being loosened -- a control pointed at a number
         # the document no longer carries would silently stop rigging anything.
+        # S15.R4: the declared count is now 50 (twenty-six more bootstraps left
+        # the measured scope with the archived files), so the rig anchor is
+        # re-aimed at THAT for the same reason S9 re-aimed it: a control pointed
+        # at a number the document no longer carries rigs nothing and goes
+        # quietly green. The `assertNotEqual(broken, self.text)` below is what
+        # proves the anchor still bites.
         broken = self.text.replace(
-            "    sites: 76\n    migrated_out_of_scope_was:",
-            "    sites: 77\n    migrated_out_of_scope_was:")
+            "    sites: 50\n    migrated_out_of_scope_was:",
+            "    sites: 51\n    migrated_out_of_scope_was:")
         self.assertNotEqual(broken, self.text)
         entry = next(e for e in contract_bootstrap_families(broken).values()
                      if e["adds"] == "experiments")
