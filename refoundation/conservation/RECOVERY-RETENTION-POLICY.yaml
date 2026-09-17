@@ -1,0 +1,84 @@
+schema: mtj-recovery-retention-policy/1
+id: RECOVERY-RETENTION-POLICY
+status: ACTIVE
+established_by: S15.R4.QUOTA-SAFE-FINAL-CLOSEOUT
+authority:
+  captain_disposition: C3_OPTION_1_WRITE_RETENTION_POLICY
+  evidence: issue:1#issuecomment-5719097608
+  self_authority: false
+
+scope: S15_MEASURED_RECOVERY_FAMILIES
+
+# The rule. RETAIN is the governing fact; everything else below is evidence.
+disposition: RETAIN
+automatic_deletion: FORBIDDEN
+automatic_expiration: FORBIDDEN
+automatic_relocation: FORBIDDEN
+disposable_inference: FORBIDDEN
+supersession_requires: CAPTAIN_AUTHORIZED_DURABLE_RULE
+
+statement: >-
+  Existing recovery, backup and snapshot material is RETAINED. Nothing in the
+  recovery families measured by S15.R3 may be automatically deleted, expired,
+  relocated, or treated as disposable until a later Captain-authorized
+  retention/deletion rule explicitly supersedes this policy. This policy
+  authorizes ZERO deletion and establishes no deletion schedule.
+
+families:
+  - id: CODEBOOK_AND_GRAMMAR_PRE_MUTATION_BACKUPS
+    path: experiments/out/foundry/backups/
+    state: ignored
+    producer: >-
+      live tracked code — experiments/snapshot.py backup_current_outputs(), and
+      the injected pre-install backup callable that
+      src/mtj_foundry/authority_restore.py REFUSES to proceed without.
+    programmatic_reader: NONE
+    reproducible: NOT_ESTABLISHED
+    tracked_successor_owner: NONE
+    disposition: RETAIN
+
+  - id: PRE_RESTORE_OUTPUT_SNAPSHOTS
+    path: experiments/out/snapshots/_pre-restore-backups/
+    state: ignored
+    producer: experiments/snapshot.py backup_current_outputs()
+    programmatic_reader: NONE
+    reader_note: >-
+      Human-directed recovery only; the path is surfaced in halt text at
+      experiments/snapshot.py:327.
+    reproducible: NOT_ESTABLISHED
+    tracked_successor_owner: NONE
+    disposition: RETAIN
+
+# EVIDENCE, NOT AN INVARIANT. These are what S15.R3 measured at one head on one
+# machine. They are recorded so a later reader can see what the policy was
+# written against, NOT as a size/count contract.
+measurement:
+  measured_at_head: b687f7086b05cf9e0e28ba0194481933e7021105
+  measured_rows: 172
+  measured_bytes: 250371305
+  measured_on: WORKER_MACHINE_ONLY
+  is_an_invariant: false
+  growth_rule: >-
+    Future growth or shrinkage of the count or the byte total does not itself
+    violate this policy and is not drift. The governing fact is RETAIN unless
+    superseded; the numbers above are a dated observation, not a limit.
+
+non_claims:
+  - id: NOT_A_DELETION_SCHEDULE
+    statement: >-
+      This policy names no expiry, no age cap, no count cap and no rotation. It
+      is not a licence to prune anything later "per policy".
+  - id: NOT_A_REPRODUCIBILITY_CLAIM
+    statement: >-
+      Reproducibility was NOT established for either family. Absence of a
+      programmatic reader is not evidence that material is derivable or
+      disposable.
+  - id: NOT_A_RELOCATION
+    statement: >-
+      No recovery byte is moved by this policy. Relocating this material into
+      var/** is Step6 work and remains outside S15.
+  - id: CONSISTENT_WITH_CAPTURED_STATE
+    statement: >-
+      refoundation/conservation/ tracked law already asserts
+      may_be_relied_on_for_deletion: false over the ignored output tree. This
+      policy agrees with that and does not lift it.
