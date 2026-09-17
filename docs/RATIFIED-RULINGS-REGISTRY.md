@@ -14,8 +14,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ## Summary
 
-- documents scanned: **142 documents under docs/**
-- ruling references found: **684**
+- documents scanned: **138 documents under docs/**
+- ruling references found: **660**
 - distinct ruling ids: **127**
 - corroborated (appear in >1 doc): **86**
 - **sole-home (appear in exactly 1 doc): 41**
@@ -25,12 +25,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | document | lines | rulings | sole home for | deletable |
 |---|---:|---:|---:|---|
 | `A15-VOCAB-01-RULING-2026-08-09.md` | 610 | 6 | 0 | yes |
-| `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md` | 686 | 6 | 0 | yes |
-| `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md` | 839 | 2 | 0 | yes |
-| `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` | 2104 | 2 | 0 | yes |
+| `ACTIVATED-REGENERATE-SELF-DET-LAW.md` | 25 | 1 | 1 | **NO** |
+| `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md` | 18 | 2 | 0 | yes |
 | `ARCHITECTURE-AUDIT.md` | 1272 | 2 | 0 | yes |
-| `B-CONSOLIDATION-REAUDIT-PACKET.md` | 1834 | 19 | 1 | **NO** |
-| `B-MIGRATION-DIRECTIVE.md` | 142 | 5 | 1 | **NO** |
+| `B-CONSOLIDATION-REAUDIT-PACKET.md` | 40 | 18 | 0 | yes |
+| `B-MIGRATION-DIRECTIVE.md` | 15 | 4 | 0 | yes |
 | `B-MIGRATION-DISCOVERY.md` | 975 | 59 | 12 | **NO** |
 | `BACKEND-BUILD-PLAN.md` | 284 | 1 | 0 | yes |
 | `BECOMES-TAPPED-RULING-2026-08-03.md` | 141 | 1 | 0 | yes |
@@ -39,10 +38,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `CDR-PROPOSALS.md` | 528 | 31 | 5 | **NO** |
 | `CODEBOOK-NAMING-GRAMMAR.md` | 1351 | 19 | 1 | **NO** |
 | `CONCEPT-AXIS-HOMES-2026-08-09.md` | 242 | 1 | 0 | yes |
-| `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 125 | 6 | 0 | yes |
-| `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 94 | 2 | 0 | yes |
+| `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md` | 21 | 6 | 0 | yes |
+| `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md` | 16 | 2 | 0 | yes |
 | `CONSOLIDATION-APPLY-HALT-2026-08-09.md` | 260 | 3 | 0 | yes |
-| `CONSOLIDATION-RUN1-DIRECTIVE.md` | 209 | 1 | 0 | yes |
+| `CONSOLIDATION-RUN1-DIRECTIVE.md` | 16 | 1 | 0 | yes |
 | `CORPUS-PASS-PLAN.md` | 247 | 2 | 0 | yes |
 | `COUNTER-PLACED-RULING-2026-08-04.md` | 154 | 2 | 0 | yes |
 | `CR-COVERAGE-PACKET-2026-08-02.md` | 134 | 2 | 0 | yes |
@@ -51,21 +50,22 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `D4-KEYWORD-FORMS-2026-08-04.md` | 168 | 1 | 0 | yes |
 | `DEFINITION-DRIFT-AUDIT-2026-08-02.md` | 207 | 2 | 0 | yes |
 | `DELIVERY-VOCABULARY-BATCH-2026-08-03.md` | 554 | 11 | 0 | yes |
-| `DET-PATTERNS-RUN2-DIRECTIVE.md` | 99 | 3 | 0 | yes |
+| `DET-PATTERNS-RUN2-DIRECTIVE.md` | 17 | 3 | 0 | yes |
 | `END-STEP-TRIGGER-RULING-2026-08-03.md` | 111 | 2 | 0 | yes |
 | `EXTRACTOR-REPAIR-LOG-2026-08-04.md` | 168 | 1 | 0 | yes |
 | `GAIN-LIFE-TRIGGER-RULING-2026-08-04.md` | 113 | 1 | 0 | yes |
 | `KEYWORD-LEDGER-CANDIDATES.md` | 179 | 3 | 0 | yes |
-| `MASTER-HANDOFF-ADDENDUM-2.md` | 223 | 8 | 0 | yes |
-| `MASTER-HANDOFF-ADDENDUM-3.md` | 308 | 10 | 1 | **NO** |
-| `MASTER-HANDOFF-ADDENDUM-4.md` | 264 | 5 | 3 | **NO** |
-| `MASTER-HANDOFF.md` | 267 | 4 | 1 | **NO** |
+| `MASTER-HANDOFF-ADDENDUM-2.md` | 22 | 8 | 0 | yes |
+| `MASTER-HANDOFF-ADDENDUM-3.md` | 320 | 10 | 1 | **NO** |
+| `MASTER-HANDOFF-ADDENDUM-4.md` | 276 | 5 | 3 | **NO** |
+| `MASTER-HANDOFF.md` | 279 | 4 | 1 | **NO** |
+| `MEMBER-ADD-MUTATION-LAW.md` | 23 | 1 | 1 | **NO** |
 | `OBJECT-LATTICE-2026-08-09.md` | 301 | 5 | 0 | yes |
 | `OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md` | 372 | 1 | 0 | yes |
 | `P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md` | 756 | 1 | 0 | yes |
 | `PARENT-LAYER-OPENING-PACKET-2026-08-04.md` | 149 | 1 | 0 | yes |
 | `PARENT-TREE-CANDIDATES.md` | 433 | 17 | 6 | **NO** |
-| `PICK-UP-HERE.md` | 777 | 10 | 0 | yes |
+| `PICK-UP-HERE.md` | 28 | 10 | 0 | yes |
 | `PLAYER-ATTACK-RULING-2026-08-03.md` | 131 | 1 | 0 | yes |
 | `PRE-STEP-2-AUDIT-2026-08-04.md` | 336 | 1 | 0 | yes |
 | `PRODUCT-REALITY-AUDIT-2026-08-09.md` | 182 | 2 | 0 | yes |
@@ -77,25 +77,24 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `RULING-MANIFEST-2026-07-09.md` | 219 | 11 | 1 | **NO** |
 | `SACRIFICE-TRIGGER-RULING-2026-08-03.md` | 153 | 1 | 0 | yes |
 | `SAGA-CHAPTER-RULING-2026-08-03.md` | 172 | 1 | 0 | yes |
-| `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md` | 491 | 4 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-01.md` | 217 | 27 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02-EVE.md` | 154 | 11 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02-PM.md` | 255 | 6 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-02.md` | 217 | 17 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03-EVE.md` | 192 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03-PM.md` | 201 | 2 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-03.md` | 118 | 5 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-04-EVE.md` | 292 | 4 | 1 | **NO** |
-| `SESSION-HANDOFF-2026-08-04.md` | 225 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-05.md` | 246 | 4 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-07-EVE.md` | 314 | 1 | 0 | yes |
-| `SESSION-HANDOFF-2026-08-08.md` | 347 | 3 | 0 | yes |
-| `SESSION-START-PROCEDURE.md` | 298 | 3 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-01.md` | 37 | 27 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02-EVE.md` | 22 | 11 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02-PM.md` | 20 | 6 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-02.md` | 27 | 17 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-EVE.md` | 16 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03-PM.md` | 17 | 2 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-03.md` | 20 | 5 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-04-EVE.md` | 304 | 4 | 1 | **NO** |
+| `SESSION-HANDOFF-2026-08-04.md` | 16 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-05.md` | 16 | 4 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-07-EVE.md` | 16 | 1 | 0 | yes |
+| `SESSION-HANDOFF-2026-08-08.md` | 17 | 3 | 0 | yes |
+| `SESSION-START-PROCEDURE.md` | 17 | 3 | 0 | yes |
 | `SUP-TRIAGE-PROTOCOL.md` | 158 | 1 | 0 | yes |
-| `T3-AXIS-FOUNDRY-v3.md` | 208 | 1 | 0 | yes |
-| `T3-BUILDOUT-PLAYBOOK.md` | 258 | 3 | 0 | yes |
-| `T3-BUILDOUT-STEP4-HANDOFF.md` | 161 | 1 | 0 | yes |
-| `T3-BUILDOUT-STEP5-HANDOFF.md` | 151 | 1 | 0 | yes |
+| `T3-AXIS-FOUNDRY-v3.md` | 15 | 1 | 0 | yes |
+| `T3-BUILDOUT-PLAYBOOK.md` | 19 | 3 | 0 | yes |
+| `T3-BUILDOUT-STEP4-HANDOFF.md` | 16 | 1 | 0 | yes |
+| `T3-BUILDOUT-STEP5-HANDOFF.md` | 16 | 1 | 0 | yes |
 | `TIER-3-DECISION-PACKET-2026-08-02.md` | 600 | 6 | 0 | yes |
 | `TIER-4-DECISION-PACKET-2026-08-02.md` | 438 | 10 | 0 | yes |
 | `TIER-4-DECISION-SHEET-2026-08-02.md` | 244 | 2 | 0 | yes |
@@ -106,22 +105,18 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 | `TRIAGE-BATCH-5.md` | 1072 | 8 | 0 | yes |
 | `TRIAGE-BATCH-7.md` | 785 | 6 | 0 | yes |
 | `W3-TRIGGER-VOCABULARY-2026-08-07.md` | 391 | 2 | 0 | yes |
-| `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 228 | 19 | 7 | **NO** |
-| `WORK-PACKETS-2026-08-07.md` | 477 | 3 | 0 | yes |
+| `WALK-RATIFICATION-EXECUTION-HANDOFF.md` | 240 | 19 | 7 | **NO** |
+| `WORK-PACKETS-2026-08-07.md` | 17 | 3 | 0 | yes |
 
 ### Documents carrying no ruling reference (deletable on this test alone)
 
-`ABILITY-WORD-CR207-2026-08-06.md`, `AQ4-PREIMPLEMENTATION-ADVERSARIAL-CORRECTIONS-2026-08-14.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CR-REFRESH-2026-08-09.md`, `CR-REFRESH-MANA-ABILITIES.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `INCIDENT-AQ4-PACKET7-STOP-BREACH-2026-08-17.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `MTG_Comprehensive_Rules_2026-08-07_LLM.md`, `NEXT-SESSION-CR-NORMALIZATION.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07.md`, `SESSION-HANDOFF-2026-08-09.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `SYSTEM-SELF-TEST-2026-08-09.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`, `W1-W2-RECORD.md`, `W4-ANTHEM-2026-08-09.md`, `W4-KEYWORD-GRANT-2026-08-09.md`, `WIDE-TRIAGE-2026-08-09.md`, `WIRE-PREDICTIONS-2026-08-09.md`, `WIRE-RESULT-2026-08-09.md`
+`ABILITY-WORD-CR207-2026-08-06.md`, `AUDIT-5-2026-08-05.md`, `C4-DECISION-SHEET-2026-08-02.md`, `CLUE-INSTANTIATION-2026-08-03.md`, `CR-DERIVED-CHECKS-PROPOSAL-2026-08-02.md`, `CR-LAW-AUDIT-2026-08-05.md`, `CR-REFRESH-2026-08-09.md`, `CR-REFRESH-MANA-ABILITIES.md`, `CYCLING-RULING-2026-08-03.md`, `D5-REPLACEMENT-WINDOW-2026-08-04.md`, `D6-COST-HEAD-2026-08-04.md`, `D8-KEYWORD-LIST-SPLIT-2026-08-04.md`, `DAMAGE-DELIVERY-RULING-2026-08-02.md`, `DELIVERY-GAP-CENSUS-2026-08-03.md`, `DERIVED-TAG-LAYER-SPEC.md`, `DISCARD-TRIGGER-RULING-2026-08-03.md`, `DRAW-STEP-RULING-2026-08-04.md`, `FAMILY-TREE-EVIDENCE.md`, `IN-CARD-SEPARATION-CENSUS-2026-08-06.md`, `IS-ATTACKED-RULING-2026-08-03.md`, `IS-DEALT-DAMAGE-RULING-2026-08-04.md`, `KEYWORD-ROUTER-FIX-2026-08-04.md`, `LINKED-ABILITIES-CR607-2026-08-05.md`, `MAIN-PHASE-RULING-2026-08-04.md`, `MEMBERSHIP-RATIFICATION-PACKET-2026-08-02.md`, `MODE-NAMES-CR700-2026-08-06.md`, `NEXT-SESSION-CR-NORMALIZATION.md`, `OUT-OF-SCOPE.md`, `REAUDIT-TIER-1-FINDINGS-2026-08-02.md`, `REAUDIT-TIER-3-3-2026-08-02.md`, `REAUDIT-TIER-4-4-2026-08-02.md`, `REMINDER-TEXT-DET-CONFORMANCE-2026-08-07.md`, `REMINDER-TEXT-QUALIFICATION-CASCADE-ISSUE.md`, `ROLE-SHAPES-2026-08-02.md`, `S7-GATE-NOT-RUNNABLE-2026-08-05.md`, `SELF-REFERENCE-CR205-2026-08-05.md`, `SEMANTIC-ADDRESS-PREIMPLEMENTATION-CHECK-2026-08-13.md`, `SESSION-HANDOFF-2026-08-06.md`, `SESSION-HANDOFF-2026-08-07.md`, `SESSION-HANDOFF-2026-08-09.md`, `SPELL-OR-STATIC-AUDIT-2026-08-04.md`, `STEP-2A-STATIC-GRANT-2026-08-05.md`, `STEP-2B-STATIC-CONDITION-2026-08-05.md`, `STEP-2C-SELF-STATEMENT-2026-08-05.md`, `SYSTEM-SELF-TEST-2026-08-09.md`, `TIER-2-DECISION-PACKET-2026-08-02.md`, `TRIGGER-VERB-DERIVATION-2026-08-04.md`, `TURNED-FACE-UP-RULING-2026-08-04.md`, `VOCABULARY-COMPLETION-2026-08-05.md`, `W1-W2-RECORD.md`, `W4-ANTHEM-2026-08-09.md`, `W4-KEYWORD-GRANT-2026-08-09.md`, `WIDE-TRIAGE-2026-08-09.md`, `WIRE-PREDICTIONS-2026-08-09.md`, `WIRE-RESULT-2026-08-09.md`
 
 ## Sole-home rulings — these block their document
 
-**`B-CONSOLIDATION-REAUDIT-PACKET.md`** — sole home for 1:
+**`ACTIVATED-REGENERATE-SELF-DET-LAW.md`** — sole home for 1:
 
-- `R8.3` (line 1671) — routing-report** — R8.3 ratified that this axis is being AUTHORED properly via the DET path, with a drafted pattern and a fixed-seed sample sheet, going live only on Captain's pattern ratification in session 4. Routing …
-
-**`B-MIGRATION-DIRECTIVE.md`** — sole home for 1:
-
-- `AG-CLI-01` (line 45) — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/
+- `R8.3` (line 11) — R8.3** — ratified that this axis is being AUTHORED properly via the DET path, with a drafted pattern and a fixed-seed sample sheet, going live only on Captain's pattern ratification in session 4. Routing this hit now wo…
 
 **`B-MIGRATION-DISCOVERY.md`** — sole home for 12:
 
@@ -152,17 +147,21 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`MASTER-HANDOFF-ADDENDUM-3.md`** — sole home for 1:
 
-- `D18` (line 250) — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
+- `D18` (line 262) — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
 **`MASTER-HANDOFF-ADDENDUM-4.md`** — sole home for 3:
 
-- `D34` (line 133) — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
-- `D67` (line 134) — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
-- `D77` (line 134) — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
+- `D34` (line 145) — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
+- `D67` (line 146) — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
+- `D77` (line 146) — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
 **`MASTER-HANDOFF.md`** — sole home for 1:
 
-- `T0` (line 59) — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
+- `T0` (line 71) — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
+
+**`MEMBER-ADD-MUTATION-LAW.md`** — sole home for 1:
+
+- `AG-CLI-01` (line 9) — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/evidence, backs up, MERGES an assertion (never overwrites), appends history, lints, writes atomically, prints final sha256, halts on DET-axis operations ot…
 
 **`PARENT-TREE-CANDIDATES.md`** — sole home for 6:
 
@@ -179,7 +178,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`SESSION-HANDOFF-2026-08-04-EVE.md`** — sole home for 1:
 
-- `D8` (line 212) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+- `D8` (line 224) — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 **`TRIAGE-BATCH-2.md`** — sole home for 1:
 
@@ -187,58 +186,51 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 **`WALK-RATIFICATION-EXECUTION-HANDOFF.md`** — sole home for 7:
 
-- `G2` (line 196) — G2 (enters-tapped subject check):** the pattern "enters tapped" will
-- `G3` (line 202) — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
-- `G4` (line 205) — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
-- `G5` (line 207) — G5 (rename sweep completeness):** every rename must sweep slug
-- `G6` (line 211) — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
-- `G7` (line 214) — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
-- `Q10` (line 93) — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
+- `G2` (line 208) — G2 (enters-tapped subject check):** the pattern "enters tapped" will
+- `G3` (line 214) — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
+- `G4` (line 217) — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
+- `G5` (line 219) — G5 (rename sweep completeness):** every rename must sweep slug
+- `G6` (line 223) — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
+- `G7` (line 226) — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
+- `Q10` (line 105) — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
 ## Full registry
 
-### `A1` — 20 reference(s) across 11 doc(s)
+### `A1` — 13 reference(s) across 8 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:37` — paragraph owner [face, paragraph] ← RATIFIED (FL-2/A1–A4)
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:322` — from the owning header"*). Captain's structure is A4 given a shape, not A1
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
-- `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md:49` — amendments A1–A4) to answer a question that ruling deliberately did not
-- `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md:156` — reserved-coordinate move is the ratified pattern (A1 reserved child
-- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:129` — `B-MIGRATION-DISCOVERY.md` §11, verbatim text + amendments A1–A4.
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:109` — Part 3 — THE SCHEMA THE PLAN WRITES INTO (ratified amendment A1)
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1708` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-MIGRATION-DIRECTIVE.md:4` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
+- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:16` — `B-MIGRATION-DISCOVERY.md` §11, verbatim text + amendments A1–A4.
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:18` — Part 3 — THE SCHEMA THE PLAN WRITES INTO (ratified amendment A1)
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:34` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `B-MIGRATION-DIRECTIVE.md:13` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
 - `B-MIGRATION-DISCOVERY.md:715` — A1 (amends R1, Captain YES 2026-08-01) — multi-assertion members.**
 - `B-MIGRATION-DISCOVERY.md:858` — here because §10's A1 defines the assertion object this amends, and
 - `B-MIGRATION-DISCOVERY.md:921` — 11.2 Amendments A1–A4 (from the architecture review, RATIFY WITH AMENDMENTS)
 - `CDR-PROPOSALS.md:261` — This is an amendment to ratified A1 and needs ratifying as one.
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `PICK-UP-HERE.md:180` — sits with §10's A1 — the section that defines the assertion object FL-2 amends,
-- `PICK-UP-HERE.md:182` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
-- `PICK-UP-HERE.md:196` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:157` — amendment deliberately refuses to store. **Amendment A1 rejected a stored
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:426` — §1–§13, the locality amendments A1–A4, and the census inventory, before
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:16` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:16` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `PICK-UP-HERE.md:17` — sits with §10's A1 — the section that defines the assertion object FL-2 amends,
+- `PICK-UP-HERE.md:18` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
+- `PICK-UP-HERE.md:19` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
 
 ### `A10` — 3 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:21` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:24` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-MIGRATION-DISCOVERY.md:803` — A10 (CDR-10):** temporary keyword grants route to
 
 ### `A11` — 2 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1686` — A11** — members hold DIRECT assertions only; parent rollups stay
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:30` — A11** — members hold DIRECT assertions only; parent rollups stay
 - `B-MIGRATION-DISCOVERY.md:806` — A11 (CDR-01):** members hold DIRECT assertions only; parent rollups
 
 ### `A12` — 6 reference(s) across 5 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:9` — This is the ratified A12 checkpoint.** A multi-session arc is rewriting a
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:25` — all since fixed. You are the different-family check that ruling A12 actually
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:14` — This is the ratified A12 checkpoint.** A multi-session arc is rewriting a
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:15` — all since fixed. You are the different-family check that ruling A12 actually
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
 - `OBJECT-LATTICE-RESIDUAL-RULING-2026-08-13.md:209` — A 12-row sample of what WAS produced cannot see a membership that is
-- `PICK-UP-HERE.md:356` — A 12-ROW SAMPLE OF WHAT WAS PRODUCED CANNOT SEE A MEMBERSHIP THAT IS
-- `SESSION-HANDOFF-2026-08-01.md:93` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
+- `PICK-UP-HERE.md:20` — A 12-ROW SAMPLE OF WHAT WAS PRODUCED CANNOT SEE A MEMBERSHIP THAT IS
+- `SESSION-HANDOFF-2026-08-01.md:20` — was verified true.** This is the ratified A12 checkpoint and it is DISCHARGED —
 
 ### `A13` — 2 reference(s) across 2 doc(s)
 
@@ -247,7 +239,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `A14` — 2 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1688` — A14** — killed-slug routing is a closed data vocabulary with every
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:31` — A14** — killed-slug routing is a closed data vocabulary with every
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
 
 ### `A15` — 23 reference(s) across 10 doc(s)
@@ -258,74 +250,65 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `A15-VOCAB-01-RULING-2026-08-09.md:289` — The ratification did what it was for.** Re-running session 2a's A15
 - `A15-VOCAB-01-RULING-2026-08-09.md:409` — A15-VOCAB-01's headline *"209 rows blocked"* reproduces as **190**.
 - `A15-VOCAB-01-RULING-2026-08-09.md:435` — `corpus_pass_run1_classification.PRE-A15-RULING-20260809.json` (`72d090d2…`,
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1350` — A15 — free-lane clusters whose canonical form matches a ratified grammar
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1672` — placeholder-clusters** — A15 names ONE `<state>`-placeholder cluster (10 rows) as report-only. Measurement finds 15 placeholder-bearing clusters totalling 26 rows — SYNTH emitted grammar facet placeholders verbatim more…
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1708` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1761` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
-- `B-MIGRATION-DIRECTIVE.md:4` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:16` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:17` — The contradiction, precisely: ruling **R6/A15** names these clusters
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:22` — A15 — free-lane clusters whose canonical form matches a ratified grammar
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:25` — placeholder-clusters** — A15 names ONE `<state>`-placeholder cluster (10 rows) as report-only. Measurement finds 15 placeholder-bearing clusters totalling 26 rows — SYNTH emitted grammar facet placeholders verbatim more…
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:34` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:39` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
+- `B-MIGRATION-DIRECTIVE.md:13` — §10, A1–A15). Captain-ratified 2026-08-01. ZERO API SPEND — all local
 - `B-MIGRATION-DISCOVERY.md:836` — A15 (H-03, amends R6's framing):** the 213 rows are promoted as
 - `CDR-PROPOSALS.md:92` — not ratified vocabulary at all (§1 above). **A15-VOCAB-01 was never a
 - `CDR-PROPOSALS.md:285` — A15-instantiated axes (`rule:activated-tap-opponent-artifact` and node
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:60` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
-- `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:7` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
-- `PICK-UP-HERE.md:436` — `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
-- `PICK-UP-HERE.md:475` — `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:16` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:21` — A15: the 213 rows, EACH re-validated through `validate_slug` exactly as
+- `CONSOLIDATION-2B-ENUMERATE-DIRECTIVE.md:16` — Governed by B-MIGRATION-DISCOVERY.md §10 (A1–A15) and §9 where unamended.
+- `PICK-UP-HERE.md:22` — `docs/A15-VOCAB-01-RULING-2026-08-09.md`.** It was never ONE decision and
+- `PICK-UP-HERE.md:27` — `...PRE-A15-RULING-20260809.json`. New contract: **0 blocked, 194 promoted,
 - `PRODUCT-REALITY-AUDIT-2026-08-09.md:157` — 2. **Unblock `A15-VOCAB-01`** — ONE Captain decision, open since 2026-08-02,
-- `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
+- `SESSION-START-PROCEDURE.md:17` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 
 ### `A2` — 4 reference(s) across 4 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1679` — A2** — a revived axis enters `deferred`, never active-at-n=0.
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:26` — A2** — a revived axis enters `deferred`, never active-at-n=0.
 - `B-MIGRATION-DISCOVERY.md:761` — A2 (amends R8, Captain YES 2026-08-01) — revived axes enter
 - `CDR-PROPOSALS.md:173` — itself. A2 set this precedent for revived axes; this applies it to identical
-- `DET-PATTERNS-RUN2-DIRECTIVE.md:4` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
+- `DET-PATTERNS-RUN2-DIRECTIVE.md:16` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
 
 ### `A3` — 1 reference(s) across 1 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:769` — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
 
-### `A4` — 15 reference(s) across 6 doc(s)
+### `A4` — 6 reference(s) across 3 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:37` — paragraph owner [face, paragraph] ← RATIFIED (FL-2/A1–A4)
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:102` — header per ratified A4.
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:321` — assertion, and A4 already ratified its content (*"exclusivity is derived
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:322` — from the owning header"*). Captain's structure is A4 given a shape, not A1
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
-- `AQ4-CROSS-CARD-NORMALIZATION-ARCHITECTURE-ADDENDUM-2026-08-14.md:49` — amendments A1–A4) to answer a question that ruling deliberately did not
-- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:129` — `B-MIGRATION-DISCOVERY.md` §11, verbatim text + amendments A1–A4.
-- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:620` — header per ratified A4; derived-and-materialized in generated artifacts,
+- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:16` — `B-MIGRATION-DISCOVERY.md` §11, verbatim text + amendments A1–A4.
+- `AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md:17` — header per ratified A4; derived-and-materialized in generated artifacts,
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `B-MIGRATION-DISCOVERY.md:921` — 11.2 Amendments A1–A4 (from the architecture review, RATIFY WITH AMENDMENTS)
-- `PICK-UP-HERE.md:182` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
-- `PICK-UP-HERE.md:196` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:104` — (`ARCHITECTURE-AUDIT.md` §13, quoted verbatim in the decision packet's A4).
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:151` — header** (amendment A4), so a consumer can already tell that Active Volcano's
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:426` — §1–§13, the locality amendments A1–A4, and the census inventory, before
+- `PICK-UP-HERE.md:18` — authority. §11 carries the ratification text verbatim, amendments A1–A4, the
+- `PICK-UP-HERE.md:19` — Amendments A1–A4 are restated in full at §11.2 of the canonical tracked
 
 ### `A5` — 2 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1680` — A5** — class = who made the PER-CARD judgment. Bulk transformation of
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:27` — A5** — class = who made the PER-CARD judgment. Bulk transformation of
 - `B-MIGRATION-DISCOVERY.md:780` — A5 (CDR-08):** class boundary principle recorded: class = who made
 
 ### `A6` — 2 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1682` — A6** — the token→created-tokens synonym is a WHOLE-SLUG alias, not a
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:28` — A6** — the token→created-tokens synonym is a WHOLE-SLUG alias, not a
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
 ### `A7` — 3 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:21` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:24` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
 
 ### `A8` — 3 reference(s) across 3 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1684` — A8** — a rule-derived refresh replaces only its own assertions and
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:29` — A8** — a rule-derived refresh replaces only its own assertions and
 - `B-MIGRATION-DISCOVERY.md:795` — A8 (CDR-07):** DET refresh updates ONLY rule-derived assertions —
-- `DET-PATTERNS-RUN2-DIRECTIVE.md:4` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
+- `DET-PATTERNS-RUN2-DIRECTIVE.md:16` — B-MIGRATION-DISCOVERY.md §10 (A2, A8) and the standing DET pattern
 
 ### `A9` — 1 reference(s) across 1 doc(s)
 
@@ -335,8 +318,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:23` — ADD-01 — the three orphaned DET patterns. CAPTAIN RULED: Option A
 - `CDR-PROPOSALS.md:192` — belongs to the ratified DET pattern per ADD-01. Most surviving subsets will
-- `SESSION-HANDOFF-2026-08-01.md:159` — Already ruled, no action needed:** ADD-01 — the three orphaned DET patterns
-- `SESSION-HANDOFF-2026-08-02-EVE.md:100` — and it collides with ADD-01's session-4 DET plan. It is a merge-or-extend
+- `SESSION-HANDOFF-2026-08-01.md:31` — Already ruled, no action needed:** ADD-01 — the three orphaned DET patterns
+- `SESSION-HANDOFF-2026-08-02-EVE.md:19` — and it collides with ADD-01's session-4 DET plan. It is a merge-or-extend
 - `TIER-3-DECISION-PACKET-2026-08-02.md:446` — ADD-01 (Captain-ruled 2026-08-01) says the by-power axis gets its axis via the
 - `TIER-3-DECISION-PACKET-2026-08-02.md:459` — Either way this **interacts with ADD-01's session-4 DET plan**, which expects
 - `TIER-3-DECISION-PACKET-2026-08-02.md:462` — these two axes, but every one of those predates Q8 (2026-07-31) and ADD-01
@@ -347,8 +330,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:200` — ADD-02.
 - `CDR-PROPOSALS.md:464` — ADD-02 — reconcile `validate_slug` with the grammar doc BEFORE re-running
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:157` — Standing rules **NEW-01/02** and **ADD-02..08**
-- `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+- `SESSION-HANDOFF-2026-08-01.md:30` — Standing rules **NEW-01/02** and **ADD-02..08**
+- `SESSION-HANDOFF-2026-08-01.md:33` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
 
 ### `ADD-03` — 2 reference(s) across 1 doc(s)
 
@@ -367,8 +350,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CDR-PROPOSALS.md:482` — ADD-06 — generated-numbers discipline.** Prose numbers must be pasted from
 - `CODEBOOK-NAMING-GRAMMAR.md:1246` — the axis count by one. Third arithmetic drift caught in rev 2; see ADD-06.
-- `SESSION-HANDOFF-2026-08-01.md:205` — generator output (ADD-06).
-- `SESSION-HANDOFF-2026-08-02.md:206` — generator output (ADD-06).
+- `SESSION-HANDOFF-2026-08-01.md:36` — generator output (ADD-06).
+- `SESSION-HANDOFF-2026-08-02.md:27` — generator output (ADD-06).
 - `TO-GRAVEYARD-RULING-2026-08-04.md:102` — breakdown** (ADD-06, `COUNTER-PLACED-RULING` §3b, now this). Standing lesson
 
 ### `ADD-07` — 1 reference(s) across 1 doc(s)
@@ -382,23 +365,23 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:1121` — Consequence for the canonicalizer (ADD-08), measured 2026-08-02.**
 - `CODEBOOK-NAMING-GRAMMAR.md:1140` — the names, and both must be fixed before ADD-08 is implemented:
 - `CODEBOOK-NAMING-GRAMMAR.md:1154` — be zero. ADD-08 stays blocked on §12a either way.
-- `SESSION-HANDOFF-2026-08-01.md:184` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
-- `SESSION-HANDOFF-2026-08-02-PM.md:114` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
-- `SESSION-HANDOFF-2026-08-02.md:86` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
-- `SESSION-HANDOFF-2026-08-02.md:113` — Two corrections to the ADD-08 rule** (measured, recorded in grammar §8a) —
-- `SESSION-HANDOFF-2026-08-02.md:176` — Tier-0 bug 4 (ADD-08)** — blocked on the walk, measured, rule corrections
+- `SESSION-HANDOFF-2026-08-01.md:35` — `counters` buckets as EFFECT even in noun slugs (ADD-08).
+- `SESSION-HANDOFF-2026-08-02-PM.md:18` — `/triage-*` skills load it) · `docs/CR-VOCABULARY-AUDIT.md` (ADD-08's §4) ·
+- `SESSION-HANDOFF-2026-08-02.md:16` — ADD-08 / Tier-0 bug 4** — measured this session: the adjacency rule
+- `SESSION-HANDOFF-2026-08-02.md:23` — Two corrections to the ADD-08 rule** (measured, recorded in grammar §8a) —
+- `SESSION-HANDOFF-2026-08-02.md:24` — Tier-0 bug 4 (ADD-08)** — blocked on the walk, measured, rule corrections
 
 ### `AG-CLI-01` — 1 reference(s) across 1 doc(s)
 
-- `B-MIGRATION-DIRECTIVE.md:45` — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/
+- `MEMBER-ADD-MUTATION-LAW.md:9` — Member-add CLI (AG-CLI-01): validates schema/target status/UUID/evidence, backs up, MERGES an assertion (never overwrites), appends history, lints, writes atomically, prints final sha256, halts on DET-axis operations ot…
 
 ### `AG-COUNT-01` — 5 reference(s) across 4 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:150` — Part 4 — THE 95-NODE CLASSIFICATION (AG-COUNT-01)
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1742` — (AG-COUNT-01), each classified into the closed vocabulary:
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:19` — Part 4 — THE 95-NODE CLASSIFICATION (AG-COUNT-01)
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:35` — (AG-COUNT-01), each classified into the closed vocabulary:
 - `B-MIGRATION-DISCOVERY.md:813` — the 93-node classification (AG-COUNT-01), all routing, all
 - `CDR-PROPOSALS.md:490` — auditor's AG-COUNT-01 shape as a named gate. Category-sum totals drop rows that
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:41` — (AG-COUNT-01), each classified into the closed vocabulary:
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:17` — (AG-COUNT-01), each classified into the closed vocabulary:
 
 ### `AG-EQUIV-01` — 3 reference(s) across 2 doc(s)
 
@@ -413,27 +396,27 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `B-01` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
-- `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
-- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:17` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
+- `SESSION-HANDOFF-2026-08-02.md:25` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `B-02` — 10 reference(s) across 6 doc(s)
 
-- `B-MIGRATION-DIRECTIVE.md:76` — 3. Independent verifier (A13 / B-02 — the audit's core demand)
+- `B-MIGRATION-DIRECTIVE.md:15` — 3. Independent verifier (A13 / B-02 — the audit's core demand)
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
 - `B-MIGRATION-DISCOVERY.md:823` — A13 (B-02):** an independent verifier is REQUIRED before any
 - `CDR-PROPOSALS.md:127` — The model had nowhere correct to put it.** This reframes part of blocker B-02
 - `CDR-PROPOSALS.md:287` — created by two routes in one session — neither the B-02 review nor rev 1's
 - `CDR-PROPOSALS.md:526` — remaining work item is the B-02 semantic repair of the 93 nodes, gated on
 - `CONSOLIDATION-APPLY-HALT-2026-08-09.md:202` — > single-member axes created by two routes in one session — neither the B-02
-- `SESSION-HANDOFF-2026-08-01.md:89` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
-- `SESSION-HANDOFF-2026-08-01.md:171` — the B-02 semantic repair.
-- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:17` — Three blockers: (B-01) A15 presented a false three-way choice; (B-02) many of
+- `SESSION-HANDOFF-2026-08-01.md:34` — the B-02 semantic repair.
+- `SESSION-HANDOFF-2026-08-02.md:25` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `B-03` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:703` — Verification outcome: B-01/B-02 correct; B-03 correct in its main claim;
-- `SESSION-HANDOFF-2026-08-01.md:91` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
-- `SESSION-HANDOFF-2026-08-02.md:180` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
+- `SESSION-HANDOFF-2026-08-01.md:18` — imply coherent axis; (B-03) exact counts already wrong (a 94th axis uncounted,
+- `SESSION-HANDOFF-2026-08-02.md:25` — external re-audit (verdict NO-GO-AS-WRITTEN, blockers B-01/B-02/B-03). It
 
 ### `CDR-01` — 16 reference(s) across 11 doc(s)
 
@@ -443,12 +426,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:527` — (88 Alchemy) · CDR-01 · Saga/Class chapter vocabulary (576 lines, 221 cards —
-- `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
-- `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
-- `SESSION-HANDOFF-2026-08-02-EVE.md:108` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
-- `SESSION-HANDOFF-2026-08-02.md:109` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
-- `SESSION-HANDOFF-2026-08-03-PM.md:163` — CDR-01 · `begin-combat-trigger` + Saga-chapter vocabulary
-- `SESSION-HANDOFF-2026-08-03.md:89` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
+- `SESSION-HANDOFF-2026-08-01.md:22` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
+- `SESSION-HANDOFF-2026-08-01.md:32` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:20` — CDR-01** — n=1 → `deferred`. Still unruled, and it would retroactively
+- `SESSION-HANDOFF-2026-08-02.md:20` — Carried forward from `CDR-PROPOSALS.md`:** CDR-01, 03, 05, 07, 08, 10, 11,
+- `SESSION-HANDOFF-2026-08-03-PM.md:16` — CDR-01 · `begin-combat-trigger` + Saga-chapter vocabulary
+- `SESSION-HANDOFF-2026-08-03.md:19` — Alchemy memberships) · **CDR-01** · `begin-combat-trigger` + Saga-chapter
 - `TIER-3-DECISION-PACKET-2026-08-02.md:57` — > packet's precedent (its four n=1 axes are all `active`). CDR-01 — which
 - `TIER-4-DECISION-PACKET-2026-08-02.md:130` — grammar-composable, but at n=1 CDR-01 would defer it anyway.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:155` — extension, not new territory. n=1 → CDR-01 would defer.
@@ -460,13 +443,13 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:774` — A4 (CDR-02):** R4's "permanent rebuild chain" sentence is RETRACTED
 - `CDR-PROPOSALS.md:38` — the cluster is a grab bag; see CDR-02).
 - `CDR-PROPOSALS.md:179` — CDR-02 — A15 cluster disposition (rev 1's framing withdrawn)
-- `PICK-UP-HERE.md:465` — A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
-- `SESSION-HANDOFF-2026-08-01.md:149` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
-- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:109` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
-- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
-- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `PICK-UP-HERE.md:26` — A15-VOCAB-01's "209 blocked" reproduces as **190**, and CDR-02's "21-row
+- `SESSION-HANDOFF-2026-08-01.md:22` — CDR-01** singleton node activation · **CDR-02** A15 disposition ·
+- `SESSION-HANDOFF-2026-08-02-EVE.md:21` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-PM.md:17` — CDR-02/05/06) · `docs/CDR-PROPOSALS.md` (CDR-02, 04, 06 parked)
+- `SESSION-HANDOFF-2026-08-02-PM.md:20` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:19` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-02.md:22` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-03` — 6 reference(s) across 4 doc(s)
 
@@ -475,14 +458,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:769` — A3 (CDR-03):** quoteless captain-seed rows are KEPT and marked
 - `CDR-PROPOSALS.md:204` — CDR-03 — R5 revalidation method
 - `CDR-PROPOSALS.md:478` — alongside CDR-03's 6.
-- `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
+- `SESSION-HANDOFF-2026-08-01.md:23` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
 
 ### `CDR-04` — 4 reference(s) across 4 doc(s)
 
 - `A15-VOCAB-01-RULING-2026-08-09.md:504` — resolve the pair. CDR-04's "keep both quotes in one assertion" is a *proposal*,
 - `CDR-PROPOSALS.md:226` — CDR-04 — Duplicate same-run quotes: one assertion or a linked artifact
-- `SESSION-HANDOFF-2026-08-01.md:150` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
-- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `SESSION-HANDOFF-2026-08-01.md:23` — CDR-03** R5 revalidation · **CDR-04** duplicate-quote schema (an A1
+- `SESSION-HANDOFF-2026-08-02.md:22` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-05` — 9 reference(s) across 7 doc(s)
 
@@ -493,32 +476,32 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CDR-PROPOSALS.md:480` — ADD-05 — AG-EQUIV-01 scope must include A15-instantiated axes** (CDR-05).
 - `CODEBOOK-NAMING-GRAMMAR.md:1258` — CDR-05.
 - `CONSOLIDATION-APPLY-HALT-2026-08-09.md:210` — near-duplicate pass CDR-05 already recommends. A one-member axis reserved by a
-- `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
-- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-01.md:24` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
+- `SESSION-HANDOFF-2026-08-02.md:19` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
 
 ### `CDR-06` — 5 reference(s) across 4 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:791` — A7 (CDR-06):** clarification recorded against b1-Q1 (no reversal —
 - `CDR-PROPOSALS.md:292` — CDR-06 — Routing target for temporary multi-keyword grants
-- `SESSION-HANDOFF-2026-08-01.md:151` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
-- `SESSION-HANDOFF-2026-08-02.md:106` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
-- `SESSION-HANDOFF-2026-08-02.md:111` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
+- `SESSION-HANDOFF-2026-08-01.md:24` — amendment) · **CDR-05** near-duplicate axes · **CDR-06** multi-keyword grant
+- `SESSION-HANDOFF-2026-08-02.md:19` — `docs/PARENT-TREE-CANDIDATES.md`. These gate CDR-02, CDR-05 and CDR-06,
+- `SESSION-HANDOFF-2026-08-02.md:22` — CDR-02, CDR-04, CDR-06 remain parked for discussion.
 
 ### `CDR-07` — 5 reference(s) across 4 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:795` — A8 (CDR-07):** DET refresh updates ONLY rule-derived assertions —
 - `CDR-PROPOSALS.md:309` — CDR-07 — Final status of semantically repaired nodes
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
-- `SESSION-HANDOFF-2026-08-01.md:152` — routing · **CDR-07** repaired-node status
-- `SESSION-HANDOFF-2026-08-02.md:185` — "Captain's review surface is a tool, not a document."* Captain's CDR-07
+- `SESSION-HANDOFF-2026-08-01.md:25` — routing · **CDR-07** repaired-node status
+- `SESSION-HANDOFF-2026-08-02.md:26` — "Captain's review surface is a tool, not a document."* Captain's CDR-07
 
 ### `CDR-08` — 5 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:780` — A5 (CDR-08):** class boundary principle recorded: class = who made
 - `CDR-PROPOSALS.md:71` — to rename four live axes is a migration call — see CDR-08.**
 - `CDR-PROPOSALS.md:319` — CDR-08 (NEW) — Rename the four slot-order violators?
-- `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
-- `SESSION-HANDOFF-2026-08-01.md:214` — contradictions — CDR-08 territory).
+- `SESSION-HANDOFF-2026-08-01.md:26` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
+- `SESSION-HANDOFF-2026-08-01.md:37` — contradictions — CDR-08 territory).
 
 ### `CDR-09` — 35 reference(s) across 22 doc(s)
 
@@ -544,65 +527,63 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `GAIN-LIFE-TRIGGER-RULING-2026-08-04.md:8` — (n=8), itself a CDR-09 walk rename of `rule:lifegain-triggered-counter`. The
 - `PARENT-LAYER-OPENING-PACKET-2026-08-04.md:60` — This is **exactly the CDR-09 homograph failure**, reproduced by me in one line:
 - `REAUDIT-TIER-2-FINDINGS-2026-08-02.md:31` — Note this axis was renamed by today's CDR-09 walk (from
-- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:153` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
-- `SESSION-HANDOFF-2026-08-02-EVE.md:8` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
-- `SESSION-HANDOFF-2026-08-02-PM.md:129` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
-- `SESSION-HANDOFF-2026-08-02.md:110` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
-- `SESSION-HANDOFF-2026-08-03-EVE.md:41` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
-- `SESSION-HANDOFF-2026-08-04.md:140` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
-- `SESSION-START-PROCEDURE.md:15` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
-- `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
+- `SESSION-HANDOFF-2026-08-01.md:21` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:26` — CDR-08** rename the 4 slot-order violators · **CDR-09** the `counter`
+- `SESSION-HANDOFF-2026-08-02-EVE.md:16` — remains the accurate record of the CDR-09 walk and the tier-1/2 re-audits.
+- `SESSION-HANDOFF-2026-08-02-PM.md:19` — 1. **CDR-09 §12a walk EXECUTED** — 16 counter-homograph renames, name-only.
+- `SESSION-HANDOFF-2026-08-02.md:21` — 12, 13 are RULED. **CDR-09 is RULED and recorded** (grammar §8a + §12a).
+- `SESSION-HANDOFF-2026-08-03-EVE.md:16` — 359, assertions 8,571 → 8,740 (+169 rename copies, CDR-09 tombstone model).
+- `SESSION-HANDOFF-2026-08-04.md:16` — I reproduced the CDR-09 homograph failure in one line.** Grepping children for
+- `SESSION-START-PROCEDURE.md:16` — Measured cost of that shape: the CDR-09 derivation knew grammar §8a alone and
+- `SESSION-START-PROCEDURE.md:17` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-3-DECISION-PACKET-2026-08-02.md:547` — `rule:etb-with-negative-counters`** — Leech Bonder, Bristlebane Battler, Morselhoarder, all "enters with N -1/-1 counters" ✓. §8a satisfied by the `with`-binding. **Its existence is already ruled** (batch-5 ordered MERG…
 - `TIER-4-DECISION-PACKET-2026-08-02.md:160` — the codebook. CDR-09's walk record §4.1 documented it and left it as out of
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:360` — 2. **`counters` (noun plural) read as CR 701.6's verb** — the CDR-09
-- `WORK-PACKETS-2026-08-07.md:430` — vs energy counters. Same failure as CDR-09.
+- `WORK-PACKETS-2026-08-07.md:16` — vs energy counters. Same failure as CDR-09.
 
 ### `CDR-10` — 5 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:803` — A10 (CDR-10):** temporary keyword grants route to
 - `CDR-PROPOSALS.md:359` — CDR-10 (NEW) — The `exile` homograph (F-H)
 - `CDR-PROPOSALS.md:443` — CDR-10 folds into this.** The `exile` ruling becomes one ledger row rather
-- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:154` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
+- `SESSION-HANDOFF-2026-08-01.md:21` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:27` — homograph (~15 renames; 3 need a wording ruling) · **CDR-10** the `exile`
 
 ### `CDR-11` — 9 reference(s) across 6 doc(s)
 
-- `B-MIGRATION-DIRECTIVE.md:68` — "foundry-codebook/2"; `member_oracle_ids` renamed `members` (A1/CDR-11);
+- `B-MIGRATION-DIRECTIVE.md:14` — "foundry-codebook/2"; `member_oracle_ids` renamed `members` (A1/CDR-11);
 - `B-MIGRATION-DISCOVERY.md:716` — `member_oracle_ids` is renamed `members` (CDR-11) and each member holds a
 - `CDR-PROPOSALS.md:371` — CDR-11 (NEW) — Predestined tags: derive axes from the CR top-down
 - `CDR-PROPOSALS.md:408` — Recommend: treat as CDR-11's first application after token types.** These are
 - `CDR-PROPOSALS.md:527` — CDR-01, CDR-07, and — per ADD-02 and CDR-11 — on the vocabulary being complete
 - `CODEBOOK-NAMING-GRAMMAR.md:973` — 8.4a. `role` is ONE umbrella token type — CDR-11 RESOLVED (Captain-ratified 2026-08-02)
-- `SESSION-HANDOFF-2026-08-01.md:155` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
-- `SESSION-HANDOFF-2026-08-01.md:167` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
-- `SESSION-HANDOFF-2026-08-03.md:54` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
+- `SESSION-HANDOFF-2026-08-01.md:28` — homograph · **CDR-11** predestined tags (and: 7 Role values or one `role`
+- `SESSION-HANDOFF-2026-08-01.md:33` — 2. **Vocabulary completion before node review** (ADD-02 + CDR-11). Reviewing
+- `SESSION-HANDOFF-2026-08-03.md:16` — type-agnostic. Resolves **CDR-11**. Carries a standing reversal condition.
 
 ### `CDR-12` — 3 reference(s) across 3 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:808` — A12 (CDR-12):** FOUR sessions, each Captain-triggered:
 - `CDR-PROPOSALS.md:403` — CDR-12 (NEW) — The CR keyword-action gap (F-F)
-- `SESSION-HANDOFF-2026-08-01.md:156` — umbrella?) · **CDR-12** the CR keyword-action gap
+- `SESSION-HANDOFF-2026-08-01.md:29` — umbrella?) · **CDR-12** the CR keyword-action gap
 
 ### `CDR-13` — 6 reference(s) across 4 doc(s)
 
 - `CDR-09-WALK-DERIVATION-2026-08-02.md:113` — corrections are implemented). CDR-13's Homograph Form Ledger — its "zero new
 - `CDR-PROPOSALS.md:416` — CDR-13 (NEW) — Homograph Form Ledger; answers Captain's CR-audit question
 - `CDR-PROPOSALS.md:525` — Nothing proceeds until CDR-01 through CDR-13 are ruled.** The largest
-- `SESSION-HANDOFF-2026-08-01.md:114` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
-- `SESSION-HANDOFF-2026-08-01.md:166` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
-- `SESSION-HANDOFF-2026-08-02.md:89` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
+- `SESSION-HANDOFF-2026-08-01.md:21` — ZERO new churn beyond CDR-09's already-ruled renames. Became CDR-13; CDR-10
+- `SESSION-HANDOFF-2026-08-01.md:32` — 1. **Rule CDR-01 through CDR-13.** Nothing downstream can move first.
+- `SESSION-HANDOFF-2026-08-02.md:17` — CDR-13's Homograph Form Ledger** — its "zero new churn" claim rests
 
-### `D1` — 24 reference(s) across 11 doc(s)
+### `D1` — 22 reference(s) across 10 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:536` — a tie is outcome A**, by the reversibility precedent (D-1…D-5: when
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:177` — RATIFIED (D-1): `death-trigger` stays the family word for dies-triggers;
 - `CODEBOOK-NAMING-GRAMMAR.md:1306` — D-1:** `death-trigger-` stays the family word (no `dies-` slugs).
 - `CR-VOCABULARY-AUDIT.md:58` — Heaviest: `grants` (22 axes), `pump` (13), `death` (10 — ratified D-1, though
-- `MASTER-HANDOFF-ADDENDUM-3.md:156` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
-- `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
+- `MASTER-HANDOFF-ADDENDUM-3.md:168` — D1: activated-tap-target-creature KEEP, remove 9 members, NO SPLIT.
+- `MASTER-HANDOFF-ADDENDUM-3.md:262` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:27` — D1 — `rule:activated-tap-target-creature` (n=16): KEEP, member removals
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:170` — D1 — LEGALITY GATE (new standing ruling, brand-wide; EXPLICIT PARTIAL REVERSAL)
@@ -611,10 +592,10 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:388` — silently guessed broad; flagging it explicitly so Captain can correct it if D1's "every
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:409` — Precedent rescan** (D1's second ask): walked every string value in `decisions/batch-1.json`
-- `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
-- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
-- `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
-- `T3-BUILDOUT-PLAYBOOK.md:69` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
+- `SESSION-HANDOFF-2026-08-02-EVE.md:17` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
+- `SESSION-HANDOFF-2026-08-05.md:16` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `T3-BUILDOUT-PLAYBOOK.md:14` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
+- `T3-BUILDOUT-PLAYBOOK.md:16` — 4. **D1 — superset gate.** Port docs' audit harness into the gate suite as
 - `TIER-3-DECISION-PACKET-2026-08-02.md:42` — > 1. **The executor had no way to edit a scope field.** D1's ratified scope
 - `TIER-3-DECISION-PACKET-2026-08-02.md:504` — Why this needs a ruling rather than a script.** Gate #0 (batch-6 D1) keeps
 - `TRIAGE-BATCH-5.md:820` — D1 — Verdict lines stand, with three KILLs added
@@ -622,7 +603,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D10` — 4 reference(s) across 4 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-3.md:281` — own commit. Batch-5's ledger entries (D10's ratified depth-3 etb/
+- `MASTER-HANDOFF-ADDENDUM-3.md:293` — own commit. Batch-5's ledger entries (D10's ratified depth-3 etb/
 - `PARENT-TREE-CANDIDATES.md:113` — Depth-3 etb scheme, EXECUTED (batch-5 D10, Captain, per
 - `TIER-4-DECISION-PACKET-2026-08-02.md:230` — `<trigger>-create-token-<type>` grammar **is ratified** (batch-5 D10, extended
 - `TRIAGE-BATCH-5.md:936` — D10 — ETB and LTB token families restructured (ratified depth-3 etb
@@ -634,17 +615,17 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `D12` — 6 reference(s) across 4 doc(s)
 
-- `SESSION-HANDOFF-2026-08-02-EVE.md:49` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
-- `SESSION-HANDOFF-2026-08-02-PM.md:101` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
-- `SESSION-START-PROCEDURE.md:36` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
+- `SESSION-HANDOFF-2026-08-02-EVE.md:17` — 1. **Tier-3 re-audit executed** (D1–D12 + M, Captain-ratified). 23 axes / 69
+- `SESSION-HANDOFF-2026-08-02-PM.md:16` — counter-polarity-is-a-parameter ruling and D12; the archived walk-ratification
+- `SESSION-START-PROCEDURE.md:17` — ruling IDs (`D12`, `CDR-09`, `A15`), not on slugs.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:157` — E6 — `rule:draw-second-card-trigger-plus1-counter` — THE 2×2, AND D12 ALREADY RATIFIED THE FIX
 - `TIER-4-DECISION-PACKET-2026-08-02.md:174` — The fix does not need new ratification.** Batch-5 D12 ledgered the full
 - `TIER-4-DECISION-PACKET-2026-08-02.md:432` — E6 needs no new ratification** — batch-5 D12 ledgered the scheme and
 
 ### `D13` — 6 reference(s) across 4 doc(s)
 
-- `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
-- `SESSION-HANDOFF-2026-08-03.md:88` — Carried: **D13** (by-power family, still a sweep blocker) · **§S** (88
+- `SESSION-HANDOFF-2026-08-02-EVE.md:18` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
+- `SESSION-HANDOFF-2026-08-03.md:18` — Carried: **D13** (by-power family, still a sweep blocker) · **§S** (88
 - `TIER-3-DECISION-PACKET-2026-08-02.md:61` — > **Not executed, and not in scope of this ratification:** D13 (by-power
 - `TIER-3-DECISION-PACKET-2026-08-02.md:427` — D13 — `rule:evasion-vs-high-power-blockers` vs the ratified `cant-be-blocked-<restriction>` grammar
 - `TIER-3-DECISION-PACKET-2026-08-02.md:595` — D13 is where a ratified grammar and a blocking gate disagree with live
@@ -653,7 +634,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D14` — 3 reference(s) across 3 doc(s)
 
 - `CR-COVERAGE-PACKET-2026-08-02.md:42` — `create-token-<type>` is an **already ratified grammar family** (batch-5 D14).
-- `SESSION-HANDOFF-2026-08-03.md:98` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
+- `SESSION-HANDOFF-2026-08-03.md:20` — ratification**: `clue` is ratified vocabulary, batch-5 D14 named the slug as a
 - `TRIAGE-BATCH-5.md:990` — D14 — Naming standard + renames executed now (explicit Captain
 
 ### `D16` — 6 reference(s) across 6 doc(s)
@@ -668,34 +649,34 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `D17` — 3 reference(s) across 3 doc(s)
 
 - `CORPUS-PASS-PLAN.md:159` — 3. Sequencing (amends batch-5 §11.3/D17)
-- `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
+- `MASTER-HANDOFF-ADDENDUM-4.md:145` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:348` — 11.3 Sequencing (amends batch-5 D17; registry update)
 
 ### `D18` — 1 reference(s) across 1 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-3.md:250` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
+- `MASTER-HANDOFF-ADDENDUM-3.md:262` — ratified via TRIAGE-BATCH-5.md §10 (D1-D18) + emitted (codebook v0.5,
 
 ### `D2` — 19 reference(s) across 11 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:627` — RATIFIED (D-2): bare verb stem everywhere EXCEPT the `counters-` verb
 - `CODEBOOK-NAMING-GRAMMAR.md:1307` — D-2:** bare verb stems; `counters-` verb form retained (section 8).
-- `MASTER-HANDOFF-ADDENDUM-3.md:161` — D2: Klothys and Item Crate member removals ratified (Item Crate →
+- `MASTER-HANDOFF-ADDENDUM-3.md:173` — D2: Klothys and Item Crate member removals ratified (Item Crate →
 - `OBJECT-LATTICE-2026-08-09.md:241` — action whose choice is the ability (b6 D2 ratified `activated-tap-or-untap-<scope>`
-- `PICK-UP-HERE.md:398` — nine `activated-tap-or-untap-*` are **not** this (b6 D2 ratified that grammar;
-- `PICK-UP-HERE.md:696` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:21` — nine `activated-tap-or-untap-*` are **not** this (b6 D2 ratified that grammar;
+- `PICK-UP-HERE.md:28` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:40` — D2 — Member removals ratified (single-card, no axis-level action).**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
-- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
-- `SESSION-HANDOFF-2026-08-08.md:216` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
-- `T3-BUILDOUT-PLAYBOOK.md:51` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
-- `T3-BUILDOUT-PLAYBOOK.md:55` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
+- `SESSION-HANDOFF-2026-08-05.md:16` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:16` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
+- `T3-BUILDOUT-PLAYBOOK.md:14` — (items D1, D2, N1, N2 only), the punch-list standing-practice header.
+- `T3-BUILDOUT-PLAYBOOK.md:15` — 1. **D2 — seeding floor alignment.** In `gather_candidate_pool()`, the
 - `TRIAGE-BATCH-5.md:330` — `rule:targeted-creature-damage` (n=15) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see sect…
 - `TRIAGE-BATCH-5.md:334` — `rule:targeted-planeswalker-damage` (n=2) — VERDICT: KEEP — NOTE: D2-style reconcile addition: add Reiterating Bolt and Torch the Tower here per the killed rule:damage-creature-or-planeswalker's M8 redistribution (see s…
 - `TRIAGE-BATCH-5.md:838` — D2 — Q1 ruled: MERGE
 - `TRIAGE-BATCH-5.md:1057` — per D2). Captain-authored additions this batch (12):
 - `TRIAGE-BATCH-7.md:708` — D2 — Scaling-axis surgery (answers the section-1 line-84 VERDICT question)
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:107` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
 ### `D3` — 21 reference(s) across 11 doc(s)
 
@@ -704,101 +685,96 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:921` — `lifegain-scales-with-sacrificed-creature-toughness` was ratified as a D-3
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1308` — D-3:** `-scales-with-` is the sole scaling connective; `-scaled-by-`
-- `MASTER-HANDOFF-ADDENDUM-3.md:163` — D3: Breya adds targeted-planeswalker-damage per M8.
+- `MASTER-HANDOFF-ADDENDUM-3.md:175` — D3: Breya adds targeted-planeswalker-damage per M8.
 - `OBJECT-LATTICE-2026-08-09.md:41` — batch-6 D3)"*. `TIER-4-DECISION-PACKET-2026-08-02.md` §231 applies it —
-- `PICK-UP-HERE.md:696` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
+- `PICK-UP-HERE.md:28` — D2/D3 as a blanket grammar family.** Built exactly as ratified and it
 - `PUNCTUATION-RESCAN-2026-08-06.md:77` — delivery (D3); inheriting "no ratified token" is the right answer, not a loss.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:50` — D3 — `rule:targeted-planeswalker-damage`: add Breya, Etherium Shaper at
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:253` — D1–D3. Zero KILLs, zero MERGEs remains true at axis level. New captain-authored axes
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:476` — captain-authored axes from D2/D3 (activated-tap-or-untap-any-permanent,
-- `SESSION-HANDOFF-2026-08-08.md:216` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
+- `SESSION-HANDOFF-2026-08-08.md:16` — B. D2/D3 — **WITHDRAWN, needs Captain again.** See §5a.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:79` — Batch-6 D3 ruled this exact clause on the sibling axis: *"`rule:etb-pump-target-creature`:
 - `TIER-4-DECISION-PACKET-2026-08-02.md:84` — ✅ **Apply batch-6 D3's precedent verbatim** — drop the clause, keep all
 - `TIER-4-DECISION-PACKET-2026-08-02.md:393` — `rule:etb-pump-target-creature`** — all four ETB pumps. **Confirms batch-6 D3's dropped-ownership-clause ruling is holding at n=4.** Guac & Marshmallow Pizza's "Untap it." rider is a multi-facet note only.
 - `TIER-4-DECISION-SHEET-2026-08-02.md:91` — precedent** — batch-6 D3 ruled this exact clause on its sibling axis and
 - `TIER-4-DECISION-SHEET-2026-08-02.md:188` — for game logic."* Batch-6 D3 ruled the opposite, on a sibling axis, by name:
 - `TRIAGE-BATCH-7.md:713` — The `-scales-with-` connective standard is ratified via GRAMMAR D-3; the
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:107` — §2.2.1's 19 structural renames** ratified (15 × D-3 connective, 1 × D-2
 
 ### `D34` — 1 reference(s) across 1 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-4.md:133` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
+- `MASTER-HANDOFF-ADDENDUM-4.md:145` — D N=20 repeat. Raw exact-set: A-B 18.2/A-C 16.8/A-D 17.2/B-D 34.3%.
 
-### `D4` — 19 reference(s) across 11 doc(s)
+### `D4` — 17 reference(s) across 9 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:69` — per refresh, halt on unresolved: **D-4's ratified identity law applies
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1746` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:21` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:24` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:36` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `B-MIGRATION-DISCOVERY.md:641` — D4 standing rule; the grammar lane gains the killed/merged/renamed checks
 - `B-MIGRATION-DISCOVERY.md:804` — rule:temporary-keyword-grant per the b4-D4 standing rule (already
 - `CODEBOOK-NAMING-GRAMMAR.md:925` — parameterized stat** (tier-3 D4, Captain-ratified 2026-08-02). Both were
 - `CODEBOOK-NAMING-GRAMMAR.md:932` — `docs/TIER-3-DECISION-PACKET-2026-08-02.md` D3/D4.
 - `CODEBOOK-NAMING-GRAMMAR.md:1310` — D-4:** the §3 activation-restriction enumeration is DET-owned; SYNTH is
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:45` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:18` — redirect-per-D4 (Zidane, Tantalus Thief → `rule:temporary-keyword-grant`);
 - `D3-MODAL-MODES-2026-08-04.md:103` — the audit predates this session's 14 ratified §2 rows and D4, which gave several
-- `MASTER-HANDOFF-ADDENDUM-3.md:164` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
+- `MASTER-HANDOFF-ADDENDUM-3.md:176` — D4: merges ratified incl. STANDING RULE: any grants-temporary-<keyword>
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:59` — D4 — Merges ratified.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:251` — D4 — All remaining verdicts stand
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:321` — (c) unit identity across corpus refreshes — for which D-4's ratified answer
 - `TIER-4-DECISION-PACKET-2026-08-02.md:69` — call: batch-4 D4 is a **standing rule** — "any `grants-temporary-<keyword>`
 - `TRIAGE-BATCH-5.md:208` — `rule:damage-then-exile-instead-of-die` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- same continuous-replacement-effect pattern as batch-4's replaces-death-with-exile merge (D4), just phras…
 - `TRIAGE-BATCH-5.md:318` — `rule:replacement-graveyard-to-exile-self` (n=2) — VERDICT: MERGE — merge_into=rule:graveyard-to-exile-replacement -- direct resurrection of batch-4's replacement-exile-instead-of-graveyard merge (D4), same self-protect…
 - `TRIAGE-BATCH-5.md:852` — D4 — OTHER-lane promotions ratified
 
-### `D5` — 10 reference(s) across 7 doc(s)
+### `D5` — 8 reference(s) across 6 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:536` — a tie is outcome A**, by the reversibility precedent (D-1…D-5: when
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
 - `B-MIGRATION-DISCOVERY.md:763` — authored"; the ratified b4-D5 status exists for exactly this). They flip
 - `CODEBOOK-NAMING-GRAMMAR.md:3` — Status: RATIFIED by Captain, 2026-07-30 (decisions D-1 through D-5 resolved per
 - `CODEBOOK-NAMING-GRAMMAR.md:1312` — D-5:** banned-token list (§10.2) and per-slug idiomatic-leaf exemption
-- `MASTER-HANDOFF-ADDENDUM-2.md:183` — 4. D5 follow-up (NEW, batch 4): Captain rules on
-- `MASTER-HANDOFF-ADDENDUM-3.md:166` — D5: two pump merges DEFERRED pending Captain review of
+- `MASTER-HANDOFF-ADDENDUM-2.md:22` — 4. D5 follow-up (NEW, batch 4): Captain rules on
+- `MASTER-HANDOFF-ADDENDUM-3.md:178` — D5: two pump merges DEFERRED pending Captain review of
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:80` — D5 — HELD, not parsed into this emit's codebook build as KEEP/KILL/MERGE.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:257` — D5 — STANDING PROTOCOL RULE: remove-and-rehome
-- `SESSION-HANDOFF-2026-08-04-EVE.md:197` — D5 — `foundry_shape_extractor.py` line ~902.**
+- `SESSION-HANDOFF-2026-08-04-EVE.md:209` — D5 — `foundry_shape_extractor.py` line ~902.**
 
-### `D6` — 13 reference(s) across 7 doc(s)
+### `D6` — 12 reference(s) across 6 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-2.md:87` — batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
-- `MASTER-HANDOFF-ADDENDUM-3.md:151` — forced sac as effect) — now partially ratified via the D6 reversal
-- `MASTER-HANDOFF-ADDENDUM-3.md:169` — D6: PRECEDENT REVERSAL.** b2/b3 "cost-shape riders are not axes" is
-- `MASTER-HANDOFF-ADDENDUM-3.md:238` — rulings registry, never parsed silently (D6 is the model case).
+- `MASTER-HANDOFF-ADDENDUM-2.md:16` — batch-4-deferred-examples.md); **D6 overturns the b2/b3 cost-shape-riders-
+- `MASTER-HANDOFF-ADDENDUM-3.md:163` — forced sac as effect) — now partially ratified via the D6 reversal
+- `MASTER-HANDOFF-ADDENDUM-3.md:181` — D6: PRECEDENT REVERSAL.** b2/b3 "cost-shape riders are not axes" is
+- `MASTER-HANDOFF-ADDENDUM-3.md:250` — rulings registry, never parsed silently (D6 is the model case).
 - `PARENT-TREE-CANDIDATES.md:230` — Cost-shape facet scheme (batch-4, Captain, §10 STEP 2b, per the D6
 - `PARENT-TREE-CANDIDATES.md:242` — Precedent reversal (batch-4 D6, Captain): "cost-shape riders are not
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:91` — D6 — PRECEDENT REVERSAL: cost-shape riders are legitimate wide-net axes.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:111` — Every axis in sections 1a/1b not named in D1–D6 above ratifies exactly as
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:185` — sole exclusion. Logged Captain-explicit, D6-style.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
-- `SEMANTIC-IR-PROPOSAL-REVIEW-2026-08-14.md:396` — rulings (KEEP/MERGE verdicts), the deferred-status D6-style reversals,
-- `SESSION-HANDOFF-2026-08-04-EVE.md:204` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
+- `SESSION-HANDOFF-2026-08-04-EVE.md:216` — D6 — line ~571.** `[{}]|\bsacrifice\b|\bdiscard\b|\bpay\b|\btap\b|\bexile\b|\bremove\b`
 - `TRIAGE-BATCH-7.md:742` — D6 — Forsaken Crossroads rehome (SUP "no axis fits" overturned)
 
 ### `D67` — 1 reference(s) across 1 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
+- `MASTER-HANDOFF-ADDENDUM-4.md:146` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
 ### `D7` — 9 reference(s) across 7 doc(s)
 
 - `CORPUS-PASS-PLAN.md:136` — WIRED 2026-07-31** (walk-ratification session, batch-7 D7): `foundry_stage1b.py`'s
 - `CORPUS-PASS-PLAN.md:189` — (D7). Codebook now v0.7, 305 active axes. DET pattern set finalized at 42 ratified
-- `MASTER-HANDOFF-ADDENDUM-3.md:177` — D7: all other verdicts stand.
+- `MASTER-HANDOFF-ADDENDUM-3.md:189` — D7: all other verdicts stand.
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:110` — D7 — All other section-1 verdicts stand as written.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:372` — the FIND-AND-CONFIRM tasks (D1 scrub + precedent rescan, D6 roster, D7 appendix) and the
-- `SESSION-HANDOFF-2026-08-02-EVE.md:120` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
-- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-02-EVE.md:22` — claim D7 ruled false, and needed a follow-up spec. **Fix before the next
+- `SESSION-HANDOFF-2026-08-05.md:16` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
 - `TIER-3-DECISION-PACKET-2026-08-02.md:50` — > claim D7 ruled false. Caught on post-execution readback, corrected to
 - `TRIAGE-BATCH-7.md:748` — D7 — Grammar instantiation (standing behavior from this emit forward)
 
 ### `D77` — 1 reference(s) across 1 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-4.md:134` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
+- `MASTER-HANDOFF-ADDENDUM-4.md:146` — Codebook-lane canonical: A-B 67.2/A-C 68.6/A-D 67.5/B-D 77.4%. Free-lane
 
 ### `D8` — 1 reference(s) across 1 doc(s)
 
-- `SESSION-HANDOFF-2026-08-04-EVE.md:212` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
+- `SESSION-HANDOFF-2026-08-04-EVE.md:224` — D8 — semicolon-joined keyword lines** (`Flying; banding`, `Defender; reach`).
 
 ### `D9` — 9 reference(s) across 8 doc(s)
 
@@ -806,17 +782,17 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `EXTRACTOR-REPAIR-LOG-2026-08-04.md:32` — Consequence for the plan: D9 needs no Captain ruling.** Its disposition is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:9` — > **D9 is a Captain ruling (Phase B), not a fix. What remains of this audit is
 - `PRE-STEP-2-AUDIT-2026-08-04.md:227` — D9 — 1,229 lines blocked by 49 CR 702 keywords with no §2 home — **a Captain ruling, not a fix**
-- `SESSION-HANDOFF-2026-08-04-EVE.md:245` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
-- `SESSION-HANDOFF-2026-08-05.md:141` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
-- `SESSION-HANDOFF-2026-08-08.md:260` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
+- `SESSION-HANDOFF-2026-08-04-EVE.md:257` — UNBLOCKED — D9, ~1,229 lines, needs no ruling.** Flashback 209, Partner 129,
+- `SESSION-HANDOFF-2026-08-05.md:16` — D7 was a measurement correction, D9 is a Captain ruling (Phase B), and D1/D2
+- `SESSION-HANDOFF-2026-08-08.md:17` — tokens** (§2b + §8b + §11). D9 is ruled-not-ratified and needs no action.
 - `TRIAGE-BATCH-7.md:764` — D9 — All remaining verdicts stand; process items
 - `W3-TRIGGER-VOCABULARY-2026-08-07.md:299` — D9 — RULED, NOT RATIFIED: `you tap an untapped creature an opponent controls` · 4 lines
 
 ### `F2` — 3 reference(s) across 2 doc(s)
 
 - `TIER-4-DECISION-PACKET-2026-08-02.md:323` — Root cause.** The F2 walk fix (walk-ratification §2.1) widened these patterns
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:155` — landfall-produces-mana fixed per F2. Report the final ratified count
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:173` — 6. F2 pattern sweep + re-probe; assemble the final ratified DET pattern file
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:167` — landfall-produces-mana fixed per F2. Report the final ratified count
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:185` — 6. F2 pattern sweep + re-probe; assemble the final ratified DET pattern file
 
 ### `F3` — 2 reference(s) across 1 doc(s)
 
@@ -827,7 +803,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `CODEBOOK-NAMING-GRAMMAR.md:1320` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CODEBOOK-NAMING-GRAMMAR.md:1337` — F4 soft-warning tier:** `and` is ratified vocabulary (closed-vocab check
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:100` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
 ### `F7` — 1 reference(s) across 1 doc(s)
 
@@ -835,32 +811,32 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `G1` — 2 reference(s) across 2 doc(s)
 
-- `CONSOLIDATION-RUN1-DIRECTIVE.md:36` — No engine/scoring changes. G1: ratified constants untouchable
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:190` — G1 (constants untouchable):** the DET pass will eventually multiply
+- `CONSOLIDATION-RUN1-DIRECTIVE.md:16` — No engine/scoring changes. G1: ratified constants untouchable
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:202` — G1 (constants untouchable):** the DET pass will eventually multiply
 
 ### `G2` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:196` — G2 (enters-tapped subject check):** the pattern "enters tapped" will
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:208` — G2 (enters-tapped subject check):** the pattern "enters tapped" will
 
 ### `G3` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:202` — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:214` — G3 (no facet-leaf authoring):** §2.4.4's minimal-churn rule is binding —
 
 ### `G4` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:205` — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:217` — G4 (generated artifacts get generator fixes):** F1's rule generalizes —
 
 ### `G5` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:207` — G5 (rename sweep completeness):** every rename must sweep slug
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:219` — G5 (rename sweep completeness):** every rename must sweep slug
 
 ### `G6` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:211` — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:223` — G6 (Gate #0 everywhere):** every corpus probe and future DET pass runs
 
 ### `G7` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:214` — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:226` — G7 (scope of this session):** no batch-8 assembly, no SYNTH submission,
 
 ### `GRAMMAR-SS9` — 1 reference(s) across 1 doc(s)
 
@@ -871,14 +847,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:706` — `token`, a global synonym map would have corrupted them; H-01 caught a
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:19` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `H-02` — 4 reference(s) across 3 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1752` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:37` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:51` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:19` — (A14/H-02/R10). Every killed-, merged-, or renamed-slug hit enumerated
 
 ### `H-03` — 2 reference(s) across 1 doc(s)
 
@@ -893,7 +869,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `B-MIGRATION-DISCOVERY.md:704` — H-01/H-02/H-03/H-05/H-06 and M-03 correct (H-05 caught a real 92-vs-93
 - `B-MIGRATION-DISCOVERY.md:828` — A14 (H-01/H-02/H-05 fixes):** clean virtual nodes = 93 (95 − 2
-- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:19` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `H-06` — 2 reference(s) across 1 doc(s)
 
@@ -903,12 +879,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `M-01` — 2 reference(s) across 2 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:710` — fair); M-01 refuted on substance (b1-Q1's ratified text says "PURE
-- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:19` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `M-02` — 2 reference(s) across 2 doc(s)
 
 - `B-MIGRATION-DISCOVERY.md:707` — transcript-hygiene violation in the session-2 directive); H-04 and M-02
-- `SESSION-HANDOFF-2026-08-01.md:92` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
+- `SESSION-HANDOFF-2026-08-01.md:19` — a redirect row omitted). Plus H-01..H-05, M-01..M-02. **Every checkable claim
 
 ### `M-03` — 1 reference(s) across 1 doc(s)
 
@@ -930,9 +906,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `PARENT-TREE-CANDIDATES.md:85` — (batch-2 M6 ruling): damage-scales-with-creature-count,
 
-### `M8` — 11 reference(s) across 5 doc(s)
+### `M8` — 10 reference(s) across 4 doc(s)
 
-- `AQ4-BENCHMARK-PRECOMMIT-ARCHITECTURE-ADDENDUM-2026-08-14.md:561` — every batch ruling, M8, A1–A4, D-1…D-5, evidence law, backup law, the
 - `OBJECT-LATTICE-2026-08-09.md:1` — THE OBJECT LATTICE — M8 was ratified in batch 6 and never implemented
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:51` — reconcile, per the ratified M8 per-object-class mixed-target rule.**
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:226` — rule:targeted-bounce-creature.** Ruled: **M8 GENERALIZES from damage to every
@@ -947,12 +922,12 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `NEW-01` — 2 reference(s) across 2 doc(s)
 
 - `CDR-PROPOSALS.md:450` — NEW-01 — DET-owned guard at the write boundary.** No free-lane or
-- `SESSION-HANDOFF-2026-08-01.md:157` — Standing rules **NEW-01/02** and **ADD-02..08**
+- `SESSION-HANDOFF-2026-08-01.md:30` — Standing rules **NEW-01/02** and **ADD-02..08**
 
 ### `NEW-02` — 2 reference(s) across 2 doc(s)
 
 - `CDR-PROPOSALS.md:458` — NEW-02 — `rule:forced-attack-each-combat` pattern fix → session 4**, through
-- `DET-PATTERNS-RUN2-DIRECTIVE.md:48` — 4a. NEW-02 — `rule:forced-attack-each-combat` widening (measured 2026-08-02, NOT applied)
+- `DET-PATTERNS-RUN2-DIRECTIVE.md:17` — 4a. NEW-02 — `rule:forced-attack-each-combat` widening (measured 2026-08-02, NOT applied)
 
 ### `Q1` — 22 reference(s) across 11 doc(s)
 
@@ -963,8 +938,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:59` — Seven numbered questions, **Q1–Q7**. Q1 is the big one (1,558 cards) and the
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:252` — > **Q1.** Ratify a **DELIVERY subject prefix**, applied to the existing §2
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:500` — With Q1 ratified, these are the delivery tokens the four 2026-08-03 rulings
-- `MASTER-HANDOFF-ADDENDUM-2.md:105` — Captain's annotations so far: Q1 answered (stun-counter-lockdown
-- `MASTER-HANDOFF-ADDENDUM-3.md:113` — ratification, mirrors b1-Q1.
+- `MASTER-HANDOFF-ADDENDUM-2.md:18` — Captain's annotations so far: Q1 answered (stun-counter-lockdown
+- `MASTER-HANDOFF-ADDENDUM-3.md:125` — ratification, mirrors b1-Q1.
 - `PARENT-TREE-CANDIDATES.md:425` — Q1 redundancy ruling because the engine indexes the grant but not the
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:207` — D2 — Q1 ruled: (b), expand — with the lattice grammar noted in §11
 - `TRIAGE-BATCH-1.md:198` — Q1 — Keyword-grant axes vs the engine's granted-keyword dimension.**
@@ -977,11 +952,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-5.md:149` — `rule:activated-prevent-damage-any-target` (n=3) — VERDICT: QUESTION — see Q1
 - `TRIAGE-BATCH-5.md:349` — Q1 — `rule:activated-prevent-damage-any-target` (n=3: Daru Healer,
 - `TRIAGE-BATCH-5.md:838` — D2 — Q1 ruled: MERGE
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:77` — Q1** 9-bucket keyword taxonomy; "casting-modifier" demoted to the
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:89` — Q1** 9-bucket keyword taxonomy; "casting-modifier" demoted to the
 
 ### `Q10` — 1 reference(s) across 1 doc(s)
 
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:93` — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:105` — Q10** All 4 combat-damage renames: `combat-damage-triggers-{discard,
 
 ### `Q2` — 17 reference(s) across 11 doc(s)
 
@@ -991,8 +966,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:15` — > Q2 ratified with it: opponent-controlled subjects follow the printed word.
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:295` — > **Q2.** For opponent-controlled subjects, follow the **printed** word (`any-`)
 - `KEYWORD-LEDGER-CANDIDATES.md:154` — Killed axis:** `rule:etb-grants-energy-counters` (Q2, Captain-ratified
-- `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
-- `MASTER-HANDOFF-ADDENDUM-2.md:108` — Q2 (energy = archetype vs ledger) and Q3 (perpetual, Alchemy-only)
+- `MASTER-HANDOFF-ADDENDUM-2.md:17` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
+- `MASTER-HANDOFF-ADDENDUM-2.md:19` — Q2 (energy = archetype vs ledger) and Q3 (perpetual, Alchemy-only)
 - `RATIFIED-DIRECTIVES-BATCH-4-6.md:214` — D3 — Q2 ruled: (a), plus member surgery from the independent audit
 - `REAUDIT-TIER-0-1-2026-08-02.md:18` — definition:** An activated ability that spends energy counters with no upper bound on how many times it can be used, limited only by available energy -- as opposed to a once-per-turn or conditional outlet. Registered pe…
 - `REAUDIT-TIER-0-1-2026-08-02.md:29` — definition:** Gives the controller energy counters only when a recurring game-state condition is met, as opposed to unconditionally on cast/ETB -- sibling of rule:gives-energy-counters-immediately. Registered per Captai…
@@ -1001,7 +976,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-2.md:297` — Q2 — `rule:sacrifice-for-creature-token` vs. existing
 - `TRIAGE-BATCH-3.md:312` — Q2 — `rule:etb-grants-energy-counters` (2: Aether Inspector, Riparian
 - `TRIAGE-BATCH-3.md:442` — and Perpetual pending Q2/Q3's rulings — add if Captain rules
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:80` — Q2** Closed DELIVERY vocabulary gains `becomes-targeted-trigger` and
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:92` — Q2** Closed DELIVERY vocabulary gains `becomes-targeted-trigger` and
 
 ### `Q3` — 16 reference(s) across 9 doc(s)
 
@@ -1013,14 +988,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `END-STEP-TRIGGER-RULING-2026-08-03.md:57` — > **✅ RATIFIED 2026-08-03 (batch Q7 + Q3).** Now grammar §2 vocabulary; the
 - `KEYWORD-LEDGER-CANDIDATES.md:125` — Killed axis:** `rule:draft-from-spellbook` (Q3, Captain-ratified
 - `KEYWORD-LEDGER-CANDIDATES.md:171` — Killed axis:** `rule:perpetual-any-color-mana-cast` (Q3, Captain-
-- `MASTER-HANDOFF-ADDENDUM-2.md:102` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
+- `MASTER-HANDOFF-ADDENDUM-2.md:17` — here. Q2/Q3 answered, ratified via TRIAGE-BATCH-3.md's prose annotations
 - `TRIAGE-BATCH-1.md:229` — Q3 — Cantrip.** (cantrip-card-draw, "Draw a card." DF 2,473)
 - `TRIAGE-BATCH-2.md:307` — Q3 — `rule:draft-from-spellbook` (2: Key to the Archive, March Toward
 - `TRIAGE-BATCH-2.md:424` — pending Q3's ruling — add if Captain rules kill-and-ledger.
 - `TRIAGE-BATCH-3.md:324` — Q3 — `rule:perpetual-any-color-mana-cast` (2: Clone Crafter, Soul
 - `TRIAGE-BATCH-3.md:442` — and Perpetual pending Q2/Q3's rulings — add if Captain rules
 - `TRIAGE-BATCH-3.md:461` — fill `-> RULE:` blanks for Q1–Q3, add `## CAPTAIN-AUTHORED` blocks for any
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:83` — Q3** Editorial fix to CODEBOOK-NAMING-GRAMMAR.md §2: DELIVERY table value
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:95` — Q3** Editorial fix to CODEBOOK-NAMING-GRAMMAR.md §2: DELIVERY table value
 
 ### `Q4` — 8 reference(s) across 5 doc(s)
 
@@ -1031,7 +1006,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `TRIAGE-BATCH-2.md:85` — parent split at the schema pass, per batch-1's Q4 ruling. Not restructured
 - `TRIAGE-BATCH-2.md:317` — Q4 — `rule:grants-controller-hexproof` (2): mixed coherence within the
 - `TRIAGE-BATCH-2.md:451` — Q1–Q4, add `## CAPTAIN-AUTHORED` blocks for any new axes), then run
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:85` — Q4** `rule:cant-be-countered` → `rule:spell-uncounterable`;
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:97` — Q4** `rule:cant-be-countered` → `rule:spell-uncounterable`;
 
 ### `Q5` — 11 reference(s) across 7 doc(s)
 
@@ -1045,7 +1020,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:36` — > | **Q5** | **CR 702.1** — the keyword is a name; *"reminder text **summarizes**"* | the CR rule, not the reminder text, is the definition — the same boundary §6a draws |
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:473` — > **Q5.** Adopt **"a CR 702 keyword's DELIVERY is whatever its `702.Na`
 - `TRIAGE-BATCH-1.md:246` — Q5 — self-counter-growth** (A-Shipwreck tap-ability + Mikaeus). Marginal:
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:88` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:100` — Q5** Vocabulary-extension list ratified (per F4's "and" carve-out);
 
 ### `Q6` — 7 reference(s) across 4 doc(s)
 
@@ -1055,7 +1030,7 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:22` — > ## ✅ Q3, Q5, Q6, Q7 RATIFIED by Captain, 2026-08-03
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:35` — > | **Q6** | **CR 201.5c** — *"Text printed on some cards refers to that card by a **shortened version of its name** … treated as though they used the card's **full name**."* | the canonicalizer isn't "a bug fix under a…
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:162` — > **Q6 (mechanical).** Confirm the canonicalizer change is a bug fix under the
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:90` — Q6** All 7 idiomatic-leaf exemptions ratified: burst-draw, cantrip,
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:102` — Q6** All 7 idiomatic-leaf exemptions ratified: burst-draw, cantrip,
 
 ### `Q7` — 5 reference(s) across 2 doc(s)
 
@@ -1068,9 +1043,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `Q8` — 4 reference(s) across 4 doc(s)
 
 - `CODEBOOK-NAMING-GRAMMAR.md:1341` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
-- `SESSION-HANDOFF-2026-08-02-EVE.md:98` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
+- `SESSION-HANDOFF-2026-08-02-EVE.md:18` — Tier-3 D13** — `evasion-vs-high/low-power-blockers` vs Q8's ratified
 - `TIER-4-DECISION-PACKET-2026-08-02.md:395` — `rule:evasion-vs-low-power-blockers`** — all four "can't be blocked by creatures with power 2 or less" ✓. Its **name** is the open tier-3 D13 question (Q8's ratified `cant-be-blocked-<restriction>` grammar); **not re-ra…
-- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:170` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
+- `WALK-RATIFICATION-EXECUTION-HANDOFF.md:182` — 5. Q8: grammars.json updates (reject entry, new family), the three grant-axis
 
 ### `Q8.5` — 7 reference(s) across 5 doc(s)
 
@@ -1079,8 +1054,8 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `CODEBOOK-NAMING-GRAMMAR.md:1320` — F3, Q5, F4, Q6, Q8.5); see that document for the full ruling text.
 - `CODEBOOK-NAMING-GRAMMAR.md:1341` — Q8.5 `cant-be-blocked` compound stem token** ratified into vocabulary
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:411` — > distinction, and `own` is the same kind of coinage. §14 Q8.5 already ratified
-- `PICK-UP-HERE.md:438` — bug** in `validate_slug` against grammar §13 Q8.5 (ratified 2026-07-31),
-- `SESSION-HANDOFF-2026-08-01.md:78` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
+- `PICK-UP-HERE.md:23` — bug** in `validate_slug` against grammar §13 Q8.5 (ratified 2026-07-31),
+- `SESSION-HANDOFF-2026-08-01.md:16` — `as-long-as-<state>` are the *same ratified family* in grammar Q8.5 **and** the
 
 ### `Q8.7` — 1 reference(s) across 1 doc(s)
 
@@ -1114,9 +1089,9 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `BACKEND-BUILD-PLAN.md:3` — The build plan. Architecture: Option A from BACKEND-RESEARCH-FINDINGS.md (static artifacts + GitHub Actions pipeline + R2, no server). Locked decisions: PNG print-quality images, one per card (backfilled 2026-07-03: 36,…
 - `BACKEND-BUILD-PLAN.md:103` — Why this phase no longer stands alone.** Phase 1 was originally "sync the existing site jpgs to R2 ahead of the pipeline, so the repo stops growing immediately." The one-lane decisions locked this session (PNG only, `or…
 - `BACKEND-BUILD-PLAN.md:214` — Halt-loudly behavior (the whole safety mechanism):** any of {name matched zero cards, name matched more than one card, image missing in R2, slug already taken} → the resolver **stops and prints a plain-English line nami…
-- `MASTER-HANDOFF.md:19` — R2, no live backend), every scoring constant a ratified ruling, gates +
+- `MASTER-HANDOFF.md:31` — R2, no live backend), every scoring constant a ratified ruling, gates +
 - `P3-CODEBOOK-DURABILITY-PACKET-2026-08-14.md:17` — > | **P3-1** | **RULED — C6.** The authoritative codebook is the **EXACT IMMUTABLE R2 SNAPSHOT SELECTED BY THE TRACKED MANIFEST IN THE CURRENT GIT REVISION.** Not "the newest snapshot". An uploaded R2 object no committe…
-- `PICK-UP-HERE.md:35` — RULING.** Git selects; R2 stores. An uploaded R2 object that no committed
+- `PICK-UP-HERE.md:16` — RULING.** Git selects; R2 stores. An uploaded R2 object that no committed
 - `RULING-MANIFEST-2026-07-09.md:43` — R2 — TWO METRICS FOR T1, PER PARAGRAPH. Paragraphs of >=5 tokens use
 
 ### `R3` — 2 reference(s) across 2 doc(s)
@@ -1132,28 +1107,28 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 ### `R5` — 7 reference(s) across 6 doc(s)
 
 - `A15-VOCAB-01-RULING-2026-08-09.md:365` — 9a. R5 141 → 163 is eight ratified codebook mutations
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1759` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:38` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
 - `B-MIGRATION-DISCOVERY.md:621` — R5 — The 141 exact-match free-lane reinventions PROMOTE (OQ6=A)** as
-- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:58` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
-- `PICK-UP-HERE.md:454` — R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
-- `PICK-UP-HERE.md:456` — codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
+- `CONSOLIDATION-2A-CLASSIFY-DIRECTIVE.md:20` — R5: the 141 exact-match free-lane reinventions, split into the 45 new
+- `PICK-UP-HERE.md:24` — R5 IS ATTRIBUTED AND 2a NOW COMPLETES — → ruling doc §9.**
+- `PICK-UP-HERE.md:25` — codebook backup. R5 141 → 163 is **eight ratified mutations**, every delta
 - `RULING-MANIFEST-2026-07-09.md:68` — R5 — MANA-FACT SYSTEM (ratified). Extractors over mana-producing
 
 ### `R6` — 5 reference(s) across 3 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:77` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:86` — The contradiction, precisely: ruling **R6/A15** names these clusters
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:16` — Two ratified A15 promotion clusters fail validate_slug purely on closed-vocabulary grounds, so R6 (these clusters PROMOTE) and A15 (rows failing validation fall back to discovery) contradict.
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:17` — The contradiction, precisely: ruling **R6/A15** names these clusters
 - `B-MIGRATION-DISCOVERY.md:625` — R6 — Reorder promotion (audit proposal #1, accepted).** Of the 6
 - `B-MIGRATION-DISCOVERY.md:836` — A15 (H-03, amends R6's framing):** the 213 rows are promoted as
 - `RULING-MANIFEST-2026-07-09.md:83` — R6 — MANA-PIP KINSHIP TIER RULE. Same mana-ability shape sharing at least
 
 ### `R7` — 7 reference(s) across 3 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:169` — > collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and the rename target's …
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:175` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1668` — node-report-only** — collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and t…
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1669` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1691` — R7** — faceted keyword-grant axes (scope / delivery / context) are
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:20` — > collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and the rename target's …
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:21` — > collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:23` — node-report-only** — collides with a RENAMED shell (renamed_to='rule:draw-second-card-trigger-plus1-counter') that still holds 2 legacy audit row(s). R7 makes this a REPORT ROW for Captain: the node's payoff sense and t…
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:24` — node-redirect** — collides with a KILLED axis. R7/A7: bare unscoped grants are engine-redundant and stay killed; the member routes to rule:temporary-keyword-grant per the ratified b4-D4 standing rule (A10).
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:32` — R7** — faceted keyword-grant axes (scope / delivery / context) are
 - `B-MIGRATION-DISCOVERY.md:635` — R7 — OQ5 resolved via the hexproof precedent, ZERO reversal of b1-Q1.**
 - `RULING-MANIFEST-2026-07-09.md:90` — R7 — STRUCK / PARKED. Black Market Connections is OFF the F1
 
@@ -1164,11 +1139,11 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 ### `R8.3` — 1 reference(s) across 1 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1671` — routing-report** — R8.3 ratified that this axis is being AUTHORED properly via the DET path, with a drafted pattern and a fixed-seed sample sheet, going live only on Captain's pattern ratification in session 4. Routing …
+- `ACTIVATED-REGENERATE-SELF-DET-LAW.md:11` — R8.3** — ratified that this axis is being AUTHORED properly via the DET path, with a drafted pattern and a fixed-seed sample sheet, going live only on Captain's pattern ratification in session 4. Routing this hit now wo…
 
 ### `R9` — 3 reference(s) across 2 doc(s)
 
-- `B-CONSOLIDATION-REAUDIT-PACKET.md:1693` — R9** — vocabulary additions are ratified like any other constant:
+- `B-CONSOLIDATION-REAUDIT-PACKET.md:33` — R9** — vocabulary additions are ratified like any other constant:
 - `B-MIGRATION-DISCOVERY.md:669` — R9 — Canonicalizer synonym additions** exposed by the audit (starting
 - `B-MIGRATION-DISCOVERY.md:786` — A6 (CDR-05, amends R9):** the global token→created-tokens synonym is
 
@@ -1178,14 +1153,14 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `ARCHITECTURE-AUDIT.md:747` — re-open ratified structural law, S1–S7 and the naming grammar, on the strength
 - `ARCHITECTURE-AUDIT.md:1219` — Tradeoff:* the axis is ratified law, S1–S7 and the naming grammar are built on
 - `B-MIGRATION-DISCOVERY.md:973` — Also unchanged by this ruling:** parent law S1–S7
-- `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
-- `MASTER-HANDOFF-ADDENDUM-4.md:217` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
+- `MASTER-HANDOFF-ADDENDUM-2.md:21` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
+- `MASTER-HANDOFF-ADDENDUM-4.md:229` — S1–S7 + T1 (keyword-grant tension, still parked; unblockable carve-out is
 - `OBJECT-LATTICE-2026-08-09.md:275` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
 - `PARENT-TREE-CANDIDATES.md:12` — S1. Parents are DERIVED: union of ratified children computed at
-- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
-- `WORK-PACKETS-2026-08-07.md:403` — S1 — parents are DERIVED.** *"Union of ratified children computed at
+- `SESSION-HANDOFF-2026-08-02-EVE.md:21` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-PM.md:20` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:18` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `WORK-PACKETS-2026-08-07.md:14` — S1 — parents are DERIVED.** *"Union of ratified children computed at
 
 ### `S2` — 1 reference(s) across 1 doc(s)
 
@@ -1199,37 +1174,37 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 
 - `DELIVERY-VOCABULARY-BATCH-2026-08-03.md:210` — This is the seventh instance of the standing lesson** (§S4 154→90→44 · C4f ·
 - `PARENT-TREE-CANDIDATES.md:21` — S4. Multiple parents allowed when earned (stun-counter sits under both
-- `SESSION-HANDOFF-2026-08-03-PM.md:190` — Standing lesson, now on its fifth instance (§S4 154→90→44 · C4f · Roles 85% ·
-- `SESSION-HANDOFF-2026-08-03.md:82` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
+- `SESSION-HANDOFF-2026-08-03-PM.md:17` — Standing lesson, now on its fifth instance (§S4 154→90→44 · C4f · Roles 85% ·
+- `SESSION-HANDOFF-2026-08-03.md:17` — Tier-4 call 6 / §S4** — ruled YES; the **preprocessor fix is not built**.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:358` — token's** printed text."* That rule was ratified against SYNTH misfiles; §S4
 - `TIER-4-DECISION-PACKET-2026-08-02.md:425` — Plus §S4, which is its own ruling and larger than all of the above combined.
 - `TIER-4-DECISION-PACKET-2026-08-02.md:429` — §S4 is the finding.** A ratified DET pattern set has been writing
 
 ### `S5` — 2 reference(s) across 2 doc(s)
 
-- `MASTER-HANDOFF-ADDENDUM-2.md:146` — ruling S5, needs thought); ~11 backlogged proposed parents from b1–b2;
+- `MASTER-HANDOFF-ADDENDUM-2.md:20` — ruling S5, needs thought); ~11 backlogged proposed parents from b1–b2;
 - `PARENT-TREE-CANDIDATES.md:57` — S5. Implication edges ("counts toward"): a superset-scoped tag counts
 
 ### `S6` — 2 reference(s) across 2 doc(s)
 
 - `PARENT-TREE-CANDIDATES.md:64` — S6. Parent names are the USER-FACING vocabulary (lockdown, ramp,
-- `WORK-PACKETS-2026-08-07.md:414` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
+- `WORK-PACKETS-2026-08-07.md:15` — S6 — parent names are the USER-FACING vocabulary.** Lifegain, landfall,
 
 ### `S7` — 9 reference(s) across 8 doc(s)
 
 - `ARCHITECTURE-AUDIT.md:747` — re-open ratified structural law, S1–S7 and the naming grammar, on the strength
 - `ARCHITECTURE-AUDIT.md:1219` — Tradeoff:* the axis is ratified law, S1–S7 and the naming grammar are built on
 - `B-MIGRATION-DISCOVERY.md:973` — Also unchanged by this ruling:** parent law S1–S7
-- `MASTER-HANDOFF-ADDENDUM-2.md:148` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
+- `MASTER-HANDOFF-ADDENDUM-2.md:21` — minus1-counters-matter. Structural rulings S1–S7 pending at schema pass
 - `OBJECT-LATTICE-2026-08-09.md:275` — and `PARENT-TREE-CANDIDATES.md` S1–S7 already ratifies parents as derived.
 - `PARENT-TREE-CANDIDATES.md:68` — S7. Validation: proposed parents get the family-tree evidence check
-- `SESSION-HANDOFF-2026-08-02-EVE.md:111` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
-- `SESSION-HANDOFF-2026-08-02-PM.md:210` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
-- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02-EVE.md:21` — 6 sweep blockers · 6 family rulings · S1–S7 · CDR-02/04/06.
+- `SESSION-HANDOFF-2026-08-02-PM.md:20` — 6 family rulings, S1–S7, CDR-02/04/06 — see §2e.
+- `SESSION-HANDOFF-2026-08-02.md:18` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T0` — 1 reference(s) across 1 doc(s)
 
-- `MASTER-HANDOFF.md:59` — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
+- `MASTER-HANDOFF.md:71` — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
 
 ### `T1` — 5 reference(s) across 4 doc(s)
 
@@ -1237,28 +1212,28 @@ python3 experiments/foundry_ruling_registry.py --check <NAME>.md
 - `B-MIGRATION-DISCOVERY.md:644` — REPORT ROW for Captain at consolidation. T1 stays parked for schema pass.
 - `PARENT-TREE-CANDIDATES.md:420` — T1. Company Commander example (batch-3 §1) assigns
 - `RULING-MANIFEST-2026-07-09.md:55` — T1 and T2 get SEPARATE constants (Captain ruling) — Phase 1 produces
-- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02.md:18` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T2` — 5 reference(s) across 4 doc(s)
 
-- `MASTER-HANDOFF.md:59` — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
+- `MASTER-HANDOFF.md:71` — D. Step-back verdict.** Verbatim tiers (T0–T2): near-optimal, audit-
 - `PARENT-TREE-CANDIDATES.md:428` — T2. Cantrip predicate refined again (batch-3 §1): draw must occur upon
 - `RULING-MANIFEST-2026-07-09.md:55` — T1 and T2 get SEPARATE constants (Captain ruling) — Phase 1 produces
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
-- `SESSION-HANDOFF-2026-08-02.md:105` — S1–S7 structural rulings + T1/T2 open tensions** —
+- `SESSION-HANDOFF-2026-08-02.md:18` — S1–S7 structural rulings + T1/T2 open tensions** —
 
 ### `T3` — 12 reference(s) across 10 doc(s)
 
 - `KEYWORD-LEDGER-CANDIDATES.md:3` — Standing doc for keyword mechanics killed out of the T3 axis foundry's
-- `MASTER-HANDOFF.md:65` — T3." Growth path: engine-DERIVED structural rule: tags (generalizing the
-- `MASTER-HANDOFF.md:90` — Step 3: additive T3 term landed. Ratified: **DERIVED_WEIGHT = 0.5**
-- `MASTER-HANDOFF.md:119` — → **T3-AXIS-FOUNDRY-v3.md** (v1/v2 superseded): dual-source mining
+- `MASTER-HANDOFF.md:77` — T3." Growth path: engine-DERIVED structural rule: tags (generalizing the
+- `MASTER-HANDOFF.md:102` — Step 3: additive T3 term landed. Ratified: **DERIVED_WEIGHT = 0.5**
+- `MASTER-HANDOFF.md:131` — → **T3-AXIS-FOUNDRY-v3.md** (v1/v2 superseded): dual-source mining
 - `PRODUCT-REALITY-AUDIT-2026-08-09.md:11` — Verdict: the T3 foundry is well-built and is not connected to the product.**
 - `RULING-MANIFEST-2026-07-09.md:87` — NOT T2 via this path; such cards fall through to T3 tags (Captain: Option
-- `SESSION-HANDOFF-2026-08-07-EVE.md:83` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
+- `SESSION-HANDOFF-2026-08-07-EVE.md:16` — T3 arc state + ratified constants** — `docs/MASTER-HANDOFF.md`.
 - `SUP-TRIAGE-PROTOCOL.md:5` — Ratified deviation from T3-AXIS-FOUNDRY-v3: SUP performs full-pass triage;
-- `T3-AXIS-FOUNDRY-v3.md:4` — T3-BUILDOUT-PLAYBOOK.md between Steps 5 and 6; inherits every standing
-- `T3-BUILDOUT-PLAYBOOK.md:230` — Captain each anchor's new T3 band for eyeball, punch-list style: findings
-- `T3-BUILDOUT-STEP4-HANDOFF.md:160` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
-- `T3-BUILDOUT-STEP5-HANDOFF.md:150` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
+- `T3-AXIS-FOUNDRY-v3.md:14` — T3-BUILDOUT-PLAYBOOK.md between Steps 5 and 6; inherits every standing
+- `T3-BUILDOUT-PLAYBOOK.md:18` — Captain each anchor's new T3 band for eyeball, punch-list style: findings
+- `T3-BUILDOUT-STEP4-HANDOFF.md:16` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
+- `T3-BUILDOUT-STEP5-HANDOFF.md:16` — `docs/T3-BUILDOUT-PLAYBOOK.md`'s own "Standing rules" section for the
 
