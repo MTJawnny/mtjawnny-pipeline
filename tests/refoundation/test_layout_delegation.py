@@ -4385,13 +4385,13 @@ CENSUS_HEAD = {
     "consumption_origin": {"hop1": 18, "hop2": 13, "inline": 1},   # S15.R4: hop1 -5
     "consumption_scope": {"module": 19, "function": 13},           # S15.R4: -4/-1
     "consumption_files": 11,                       # S15.R4: 13 (-2)
-    # S15.R4: 76 -> 50 is the load-bearing one. Twenty-six LEGACY_SIBLING_IMPORT
-    # bootstraps left legacy production with the accepted archive slices. They
-    # were NOT deleted by any slice and none was removed here; they departed the
-    # measured scope with their files. PACKAGE-EXECUTION-CONTRACT.yaml is
-    # re-pinned to the same 50 in this commit, which is what makes the
-    # source-to-contract parity guard green in both directions again.
-    "sys_path_calls": {"experiments": 50,          # S15.R4: 76 (-26, departures)
+    # S15.R4: the tracked 76 -> 50 is two facts, not 26 departures.
+    # Source already measured 75 before S10, so 76 -> 75 is inherited pin drift;
+    # the accepted S15 archive slices then carried 25 LEGACY_SIBLING_IMPORT
+    # bootstraps out of the measured legacy-production scope, 75 -> 50.
+    # NOTHING WAS DELETED. PACKAGE-EXECUTION-CONTRACT.yaml records the same
+    # decomposition and is re-pinned to the measured 50.
+    "sys_path_calls": {"experiments": 50,          # S15.R4: source 75 -> 50 (-25 departures); tracked 76 also corrects -1 drift
                                                    # S9: 82 (-10 left, +4 probe)
                        "experiments_measure": 6},
 }
@@ -5664,14 +5664,15 @@ CONTRACT_PATH = REPO_ROOT / "refoundation" / "PACKAGE-EXECUTION-CONTRACT.yaml"
 # moved files carried a bootstrap out of the measured scope; the four ACTIVE
 # `experiments/` consumers of the now test-owned probe each add its new
 # directory, which is a different directory and therefore a different family.
-# S15.R4: `experiments` 76 -> 50 and the total 82 -> 56. The accepted S15
-# archive slices moved 25 research scripts and the D6 migration pair out of
-# legacy production, and each carried its own import-only bootstrap out of the
-# measured scope with it. NOTHING WAS DELETED: the FOUR families are unchanged,
-# every one is still load-bearing, and `PACKAGE-EXECUTION-CONTRACT.yaml` still
-# records a deletion prerequisite for each. This is the count following the
-# files, which is exactly what this pin is for -- the comment above already
-# says a later slice is expected to move these, in a diff.
+# S15.R4: the tracked `experiments` 76 -> 50 and total 82 -> 56 each combine
+# two facts. Source measured 75 sites / 81 total before S10, so 76 -> 75 and
+# 82 -> 81 are inherited one-site pin corrections, not movements. The accepted
+# S15 archive slices then moved 25 research scripts TOTAL (including the D6
+# migration pair) out of legacy production, each carrying its import-only
+# bootstrap out of the measured scope: 75 -> 50 and 81 -> 56. NOTHING WAS
+# DELETED: the FOUR families are unchanged, every one remains load-bearing, and
+# `PACKAGE-EXECUTION-CONTRACT.yaml` still records a deletion prerequisite for
+# each.
 BOOTSTRAP_FAMILIES = {"src": 1, "experiments": 50, "": 1,
                       "tests/guards/probe": 4}
 BOOTSTRAP_TOTAL = 56
@@ -5953,11 +5954,12 @@ class TestTheContractParityGuardActuallyFires(unittest.TestCase):
         # mutates away from THAT. The rig anchor is re-aimed at the live value
         # rather than the count being loosened -- a control pointed at a number
         # the document no longer carries would silently stop rigging anything.
-        # S15.R4: the declared count is now 50 (twenty-six more bootstraps left
-        # the measured scope with the archived files), so the rig anchor is
-        # re-aimed at THAT for the same reason S9 re-aimed it: a control pointed
-        # at a number the document no longer carries rigs nothing and goes
-        # quietly green. The `assertNotEqual(broken, self.text)` below is what
+        # S15.R4: the declared count is now 50. The tracked 76 -> 50 delta is
+        # one inherited pin correction (76 -> 75) plus 25 accepted departures
+        # with the archived files (75 -> 50), not twenty-six departures. The rig
+        # anchor is re-aimed at 50 for the same reason S9 re-aimed it: a control
+        # pointed at a number the document no longer carries rigs nothing and
+        # goes quietly green. The `assertNotEqual(broken, self.text)` below
         # proves the anchor still bites.
         broken = self.text.replace(
             "    sites: 50\n    migrated_out_of_scope_was:",
