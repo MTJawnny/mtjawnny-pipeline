@@ -32,6 +32,7 @@ Usage:
 import sys
 import re
 import json
+import hashlib
 import argparse
 from pathlib import Path
 
@@ -58,6 +59,7 @@ from mtj_foundry.paths import ProjectPaths  # noqa: E402
 RATCHET_BASELINE = ProjectPaths.for_root(fc.REPO_ROOT).foundry_audit_baseline
 REPORT_MD = REPO_ROOT.parent / "docs" / "DEFINITION-DRIFT-AUDIT-2026-08-02.md"
 REPORT_JSON = fc.FOUNDRY_OUT_DIR / "definition_drift_report.json"
+REGENERATE_CMD = "python3 tests/guards/gate2/foundry_definition_drift.py"
 
 # --- Ratified exemptions ------------------------------------------------------
 # Idiomatic job-names, EXEMPT as leaves: "jobs are parent/display vocabulary;
@@ -472,7 +474,13 @@ def audit(cb: dict, cards: dict) -> list:
     return findings
 
 
-def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
+def render_markdown(findings: list, n_active: int, corpus_note: str) -> str:
+    """Pure tracked-report renderer.
+
+    S16.P5 gives --check-only something exact to compare without writing. The
+    emitter below consumes this SAME renderer, so generation and verification
+    cannot drift into separate definitions.
+    """
     by_check = {}
     for f in findings:
         by_check.setdefault(f["check"], []).append(f)
@@ -565,7 +573,42 @@ def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
             if f.get("members"):
                 lines.append("")
             lines += [f"*Proposed:* {f['fix']}", ""]
-    REPORT_MD.write_text("\n".join(lines))
+    return "\n".join(lines)
+
+
+def write_markdown(findings: list, n_active: int, corpus_note: str) -> None:
+    """Emit the tracked Markdown through the single pure renderer."""
+    REPORT_MD.write_bytes(
+        render_markdown(findings, n_active, corpus_note).encode("utf-8"))
+
+
+def check_markdown_freshness(findings: list, n_active: int,
+                             corpus_note: str) -> str | None:
+    """Return None iff the tracked report is byte-exact to current evidence.
+
+    READ-ONLY: render in memory, read raw bytes, never repair. Counts are not a
+    substitute for identity -- a finding can be replaced by a different one
+    while every ratchet metric remains unchanged.
+    """
+    expected = render_markdown(findings, n_active, corpus_note).encode("utf-8")
+    try:
+        actual = REPORT_MD.read_bytes()
+    except FileNotFoundError:
+        return (f"STALE DEFINITION-DRIFT REPORT: {REPORT_MD} is MISSING.\n"
+                f"  Regenerate it with:  {REGENERATE_CMD}")
+    except OSError as exc:
+        return (f"STALE DEFINITION-DRIFT REPORT: {REPORT_MD} could not be read: "
+                f"{exc}\n  Freshness is UNKNOWN, which is red.\n"
+                f"  Regenerate it with:  {REGENERATE_CMD}")
+    if actual == expected:
+        return None
+    return (f"STALE DEFINITION-DRIFT REPORT: {REPORT_MD} is not the current "
+            f"rendering.\n"
+            f"  tracked artifact   {len(actual):>7} bytes  "
+            f"sha256 {hashlib.sha256(actual).hexdigest()}\n"
+            f"  current rendering  {len(expected):>7} bytes  "
+            f"sha256 {hashlib.sha256(expected).hexdigest()}\n"
+            f"  Regenerate it with:  {REGENERATE_CMD}")
 
 
 def emit_reports(findings, n_active, note, *, emit: bool) -> list:
@@ -658,8 +701,25 @@ def main():
     print("\n" + "=" * 62)
     print("BASELINE — definition drift")
     print("=" * 62)
-    return 1 if ratchet.report(RATCHET_BASELINE, "definition_drift", metrics,
-                               args.update_baseline) else 0
+    regressions = ratchet.report(RATCHET_BASELINE, "definition_drift", metrics,
+                                 args.update_baseline)
+
+    # S16.P5: freshness and safety are independent. The ratchet above protects
+    # aggregate findings metrics; this check protects the exact tracked report
+    # identity. Only the read-only path compares, because the emitting path has
+    # just generated the artifact from this same renderer.
+    stale = (check_markdown_freshness(findings, n_active, note)
+             if args.check_only else None)
+    if stale is not None:
+        print("\n" + "=" * 62, file=sys.stderr)
+        print("FRESHNESS — definition drift", file=sys.stderr)
+        print("=" * 62, file=sys.stderr)
+        print(stale, file=sys.stderr)
+    elif args.check_only:
+        print("\n  ✓ the tracked definition-drift report is byte-identical "
+              "to the current rendering.")
+
+    return 1 if (regressions or stale is not None) else 0
 
 
 if __name__ == "__main__":
