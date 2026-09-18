@@ -11,7 +11,7 @@ This candidate repairs provenance only. It does not change S16B vocabulary, card
 - adds `claims-schema-v1.json` and marks every claim as `mtj-s16b-claim/1`;
 - makes source-date status, source lineage and independent-corroboration count explicit on every claim;
 - replaces C017's subreddit-root locator with four specific dated r/EDH discussion objects while preserving the original conflict claim and making no majority inference;
-- replaces C023's generic Issue locator with exact M2 measurement comment 5593343748, Manager review 5593405124, truth-only rerun 5594358320, and the frozen M2 panel lineage;
+- replaces C023's generic Issue locator with the accepted M2 R1 Manager review 5595331993, accepted R1 Worker result 5594358320, and the frozen M2 panel lineage; rejected predecessor review 5593405124 is not acceptance/corroboration evidence;
 - adds pinned-corpus Oracle claims C024-C033 and C035 for the six previously claimless benchmark rows;
 - adds CR claim C034 (112.1, 113.1c, 701.6a) for Counterspell/Stifle object-class distinction;
 - adds community functional-vocabulary claim C036 for board preservation/protection;
