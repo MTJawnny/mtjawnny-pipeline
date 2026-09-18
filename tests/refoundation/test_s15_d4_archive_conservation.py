@@ -478,23 +478,29 @@ class Args:
 
 
 def run_topic(pa, args, live_hits=()):
-    """`cmd_topic` with the LIVE population stubbed, returning (exit, output).
+    """`cmd_topic` with DOCS and LIVE code stubbed, returning (exit, output).
 
-    The live half is stubbed for isolation and for cost: it greps the
-    `experiments/` directory, which on a developer checkout also holds the
-    ignored multi-gigabyte `out/` tree. Stubbing it states exactly which
-    population each arm below is about; the unstubbed command is measured
-    end-to-end separately."""
-    original = pa._grep
+    S16.P2 made topic-code discovery tracked and multi-family. The historical
+    family arm remains real in this helper; docs are suppressed and a supplied
+    live hit is injected only into the legacy/compatibility family, so each test
+    states exactly which decision arm it is exercising.
+    """
+    original_grep = pa._grep
+    original_live = pa._tracked_live_code
     buffer, status = io.StringIO(), 0
     try:
-        pa._grep = lambda pattern, root: list(live_hits)
+        pa._grep = lambda pattern, root: []
+        pa._tracked_live_code = (
+            lambda flexible, root, label:
+            list(live_hits) if root == pa.CODE else []
+        )
         with contextlib.redirect_stdout(buffer):
             pa.cmd_topic(args)
     except SystemExit as exit_:
         status = exit_.code
     finally:
-        pa._grep = original
+        pa._grep = original_grep
+        pa._tracked_live_code = original_live
     return status, buffer.getvalue()
 
 
@@ -580,6 +586,81 @@ class TestTheRealRegressionCommand(unittest.TestCase):
     def test_a_true_miss_still_exits_zero_end_to_end(self):
         code, out, _err = self.run_cli("zzz_no_such_topic_anywhere", "--strict")
         self.assertEqual(code, 0, out)
+
+    def test_A01_real_package_parser_is_now_prior_art(self):
+        """The exact Astra reproduction: live package code may not read absent."""
+        code, out, err = self.run_cli("parse_deliveries", "--strict")
+        self.assertEqual(code, 1, (out, err))
+        self.assertIn("src/mtj_foundry/mtg/shapes/delivery.py", out)
+        self.assertIn("live permanent package", out)
+        self.assertIn("Prior art exists", err)
+
+
+def live_fixture(tracked: dict, *, untracked: dict = None,
+                 family_rel: str = "src/mtj_foundry") -> tuple[Path, Path]:
+    """Disposable git repo containing one required live source family."""
+    tmp = Path(tempfile.mkdtemp(prefix="s16p2-live-"))
+    family = tmp / family_rel
+    family.mkdir(parents=True)
+    for name, text in tracked.items():
+        path = family / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(tmp), "add", "-A"], check=True,
+                   capture_output=True)
+    for name, text in (untracked or {}).items():
+        path = family / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    return tmp, family
+
+
+class TestS16P2TrackedLiveDiscoveryControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.pa = load_prior_art()
+
+    def search(self, root: Path, topic: str, label: str = "fixture live") -> list:
+        return self.pa._tracked_live_code(
+            self.pa.flexible_pattern(topic), root, label)
+
+    def test_declared_live_families_are_explicit_and_separately_labelled(self):
+        expected = (
+            (REPO_ROOT / "src" / "mtj_foundry", "live permanent package"),
+            (REPO_ROOT / "experiments", "live legacy/compatibility tree"),
+            (REPO_ROOT / "tests" / "guards", "live guard/validator tree"),
+        )
+        self.assertEqual(self.pa.LIVE_CODE_FAMILIES, expected)
+
+    def test_control_an_UNTRACKED_live_helper_is_not_evidence(self):
+        _repo, family = live_fixture(
+            {"kept.py": "def harmless_kept_helper():\n    pass\n"},
+            untracked={"planted.py":
+                       "def untracked_prior_art_sentinel():\n    pass\n"})
+        self.assertEqual(self.search(family, "untracked prior art sentinel"), [])
+
+    def test_control_a_BROKEN_live_enumeration_halts(self):
+        outside = Path(tempfile.mkdtemp(prefix="s16p2-nogit-"))
+        with self.assertRaises(SystemExit) as raised:
+            self.search(outside, "anything")
+        self.assertEqual(raised.exception.code, 1)
+
+    def test_control_an_EMPTY_required_live_family_halts(self):
+        repo, family = live_fixture({"README.txt": "tracked but not Python\n"})
+        # README is staged; the required family's tracked-Python population is
+        # deliberately empty.
+        with self.assertRaises(SystemExit) as raised:
+            self.search(family, "anything")
+        self.assertEqual(raised.exception.code, 1)
+
+    def test_control_a_tracked_live_definition_is_found(self):
+        _repo, family = live_fixture(
+            {"owned.py": "def durable_live_helper():\n    return 1\n"})
+        hits = self.search(family, "durable live helper")
+        self.assertEqual(len(hits), 1, hits)
+        self.assertTrue(hits[0][0].endswith("/owned.py") or
+                        hits[0][0].endswith("owned.py"))
 
 
 # ===========================================================================

@@ -73,6 +73,24 @@ from mtj_foundry.paths import ProjectPaths  # noqa: E402
 DOCS = fc.REPO_ROOT / "docs"
 CODE = fc.REPO_ROOT / "experiments"
 
+# S16.P2 / Astra A01 -- TOPIC discovery and ORPHAN discovery ask different
+# questions and therefore keep different populations. `CODE` above remains
+# the legacy experiments-only runtime population for `--orphans`; changing it
+# would silently alter that older audit contract.
+#
+# Topic discovery, however, must not report "nothing built" merely because the
+# implementation moved from experiments/ into the permanent package. The live
+# arm is therefore an EXPLICIT set of tracked source families, each with its own
+# provenance label. It is intentionally not a recursive repository scan:
+# production package, compatibility/legacy code, and live guards are three
+# different kinds of evidence, and future families do not become authority just
+# by appearing on disk.
+LIVE_CODE_FAMILIES = (
+    (fc.REPO_ROOT / "src" / "mtj_foundry", "live permanent package"),
+    (CODE, "live legacy/compatibility tree"),
+    (fc.REPO_ROOT / "tests" / "guards", "live guard/validator tree"),
+)
+
 # S15.D4.R2 -- THE ARCHIVE IS STILL EVIDENCE.
 #
 # S15.D4 moved thirteen batch triage scripts out of `experiments/` into the
@@ -246,6 +264,47 @@ def _tracked_archive_sources(root: Path) -> tuple:
     return top, paths
 
 
+def _tracked_live_code(flexible: str, root: Path, label: str) -> list:
+    """Tracked Python definition/constant hits in one REQUIRED live family.
+
+    The pre-S16 live arm grepped a filesystem directory. That made two bad
+    states indistinguishable from "no prior art": a definition that had moved
+    into `src/`, and a damaged/missing live directory. It also admitted
+    untracked or ignored files as evidence merely because they happened to sit
+    under experiments/.
+
+    This reader instead enumerates the family's tracked Python files with Git,
+    fails closed when enumeration is broken or empty, and reads those files as
+    inert UTF-8 text. Each caller supplies the family label so a hit from the
+    permanent package can never be described as legacy compatibility code.
+    """
+    shapes = [re.compile(s, re.I) for s in code_shapes(flexible)]
+    top = Path(_git(root, "rev-parse", "--show-toplevel").strip())
+    listed = _git(root, "ls-files", "-z", "--full-name", "--", ".")
+    paths = sorted(p for p in listed.split("\0") if p and p.endswith(".py"))
+    if not paths:
+        fc.halt(f"no tracked Python source found in required live family "
+                f"{label!r} at {root}. A broken or empty live population is "
+                f"not evidence that prior art is absent.")
+
+    hits = []
+    for rel in paths:
+        path = top / rel
+        if path.is_symlink():
+            fc.halt(f"tracked live source {rel} in {label!r} is a symlink; "
+                    f"refusing to follow it outside the declared population.")
+        try:
+            source = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            fc.halt(f"cannot read required tracked live source {rel} in "
+                    f"{label!r}: {e}. Missing or damaged live evidence is not "
+                    f"the same event as a topic with no prior art.")
+        for n, line in enumerate(source.splitlines(), 1):
+            if any(s.search(line) for s in shapes):
+                hits.append((rel, str(n), line.strip()))
+    return hits
+
+
 def _historical_code(flexible: str, root: Path) -> list:
     """(path, lineno, text) for the two code shapes across the archived set.
 
@@ -301,15 +360,21 @@ def cmd_topic(args) -> None:
             for p, n, t in prose[:args.limit]:
                 print(f"     {p.replace(str(DOCS.parent) + '/', '')}:{n}  {t[:110]}")
 
-        # 2. CODE -- is a helper already built?
-        definition, constant = code_shapes(flexible)
-        code = _grep(definition, CODE)
-        code += _grep(constant, CODE)
-        if code:
+        # 2. LIVE CODE -- is a helper already built anywhere in the declared
+        # current source topology? One tracked family at a time, each under its
+        # own provenance label. A package hit is not legacy compatibility code,
+        # and a guard hit is not production authority.
+        for owner, label in LIVE_CODE_FAMILIES:
+            code = _tracked_live_code(flexible, owner, label)
+            if not code:
+                continue
             found_any = True
-            print(f"\n  ⚠ {len(code)} EXISTING CODE ARTIFACT(S) — do not rebuild:")
+            print(f"\n  ⚠ {len(code)} EXISTING CODE ARTIFACT(S) in the {label} — "
+                  f"do not rebuild:")
             for p, n, t in code[:args.limit]:
-                print(f"     {p.replace(str(REPO_ROOT.parent) + '/', '')}:{n}  {t[:100]}")
+                print(f"     {p}:{n}  {t[:100]}")
+            if len(code) > args.limit:
+                print(f"     … and {len(code) - args.limit} more")
 
         # 3. HISTORICAL CODE -- was it built once, and then archived?
         # One family at a time, each reported under its OWN label. The results
