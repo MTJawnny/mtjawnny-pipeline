@@ -75,7 +75,7 @@
       "mechanical_difference": "hexproof+indestructible versus selective phasing versus player-wide phasing plus life/protection effects",
       "required_coordinates": ["protected_scope", "threat_classes_answered", "phasing_vs_indestructible", "targeting_protection", "player_protection", "duration"],
       "claims": ["C024", "C025", "C026", "C036"],
-      "confidence": "MEDIUM; current Oracle sources collected, formal claim rows required before benchmark freeze"
+      "confidence": "MEDIUM; pinned Oracle claims recorded for all three cards plus community protection-family evidence; final freeze still requires independent adjudication"
     },
     {
       "id": "P07",
@@ -153,7 +153,7 @@
       "why_not_same_job": "one primarily generates card access from spell casting; the other primarily generates mana resources from card draws",
       "required_coordinates": ["trigger_event", "default_reward", "opponent_payment", "resource_created"],
       "claims": ["C028", "C029"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N02",
@@ -233,7 +233,7 @@
       "why_not_same_job": "countering a spell and countering a triggered/activated ability answer different stack object classes",
       "required_coordinates": ["stack_object_class", "target_scope", "timing"],
       "claims": ["C032", "C033", "C034"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N10",
@@ -253,7 +253,7 @@
       "why_not_same_job": "mana generation from draw events versus attack deterrence/resource gating",
       "required_coordinates": ["trigger/action_gated", "resource_paid", "default_consequence", "strategic_job"],
       "claims": ["C029", "C035"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N12",
@@ -263,7 +263,7 @@
       "why_not_same_job": "board protection from targeting/destruction versus temporary combat-damage prevention; threat classes barely overlap",
       "required_coordinates": ["protected_entity", "threat_class", "damage_prevention", "destruction_protection", "targeting_protection", "duration"],
       "claims": ["C024", "C027", "C036"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     }
   ],
   "precommitment": {
