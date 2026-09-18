@@ -295,6 +295,56 @@ class TestDefinitionDriftEmitSplit(EmitSplitTestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("contradict", result.stderr)
 
+    @staticmethod
+    def _finding(slug):
+        return {
+            "check": "C3",
+            "law": "synthetic law",
+            "slug": slug,
+            "what": "synthetic finding",
+            "members": [],
+            "fix": "synthetic fix",
+        }
+
+    def test_freshness_is_exact_bytes_not_equal_counts(self):
+        """Same finding count, different identity must be stale."""
+        original = self.module.REPORT_MD
+        root = Path(tempfile.mkdtemp(prefix="definition-drift-freshness-"))
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        try:
+            self.module.REPORT_MD = root / "report.md"
+            a = [self._finding("rule:alpha")]
+            b = [self._finding("rule:beta")]
+            self.module.REPORT_MD.write_bytes(
+                self.module.render_markdown(a, 1, "note").encode("utf-8"))
+            self.assertIsNone(
+                self.module.check_markdown_freshness(a, 1, "note"))
+            stale = self.module.check_markdown_freshness(b, 1, "note")
+            self.assertIsNotNone(stale)
+            self.assertIn("STALE DEFINITION-DRIFT REPORT", stale)
+        finally:
+            self.module.REPORT_MD = original
+
+    def test_missing_tracked_report_is_red(self):
+        original = self.module.REPORT_MD
+        root = Path(tempfile.mkdtemp(prefix="definition-drift-missing-"))
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        try:
+            self.module.REPORT_MD = root / "missing.md"
+            stale = self.module.check_markdown_freshness(
+                [self._finding("rule:alpha")], 1, "note")
+            self.assertIn("MISSING", stale)
+        finally:
+            self.module.REPORT_MD = original
+
+    def test_the_cli_calls_freshness_only_on_check_only(self):
+        source = (GATE2_GUARDS / "foundry_definition_drift.py").read_text(
+            encoding="utf-8")
+        self.assertIn(
+            "check_markdown_freshness(findings, n_active, note)", source)
+        self.assertIn("if args.check_only else None", source)
+        self.assertIn("regressions or stale is not None", source)
+
 
 class TestRulingRegistryEmitSplit(EmitSplitTestCase):
     @classmethod
