@@ -74,8 +74,8 @@
       "context": "protecting a developed board from removal/sweepers",
       "mechanical_difference": "hexproof+indestructible versus selective phasing versus player-wide phasing plus life/protection effects",
       "required_coordinates": ["protected_scope", "threat_classes_answered", "phasing_vs_indestructible", "targeting_protection", "player_protection", "duration"],
-      "claims": [],
-      "confidence": "MEDIUM; current Oracle sources collected, formal claim rows required before benchmark freeze"
+      "claims": ["C024", "C025", "C026", "C036"],
+      "confidence": "MEDIUM; pinned Oracle claims recorded for all three cards plus community protection-family evidence; final freeze still requires independent adjudication"
     },
     {
       "id": "P07",
@@ -152,7 +152,8 @@
       "trap": "similar opponent-action tax-or-reward template",
       "why_not_same_job": "one primarily generates card access from spell casting; the other primarily generates mana resources from card draws",
       "required_coordinates": ["trigger_event", "default_reward", "opponent_payment", "resource_created"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "claims": ["C028", "C029"],
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N02",
@@ -191,6 +192,7 @@
       "trap": "same library-search action",
       "why_not_same_job": "in context-free card access, destination hand versus graveyard changes immediate usability; only an explicit reanimator context can promote this pair to contextual functional similarity",
       "required_coordinates": ["destination", "context", "follow_up_requirement", "immediate_access"],
+      "claims": ["C008", "C030", "C031"],
       "confidence": "MEDIUM"
     },
     {
@@ -230,7 +232,8 @@
       "trap": "shared English verb counter",
       "why_not_same_job": "countering a spell and countering a triggered/activated ability answer different stack object classes",
       "required_coordinates": ["stack_object_class", "target_scope", "timing"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "claims": ["C032", "C033", "C034"],
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N10",
@@ -249,7 +252,8 @@
       "trap": "both impose opponent-facing taxes",
       "why_not_same_job": "mana generation from draw events versus attack deterrence/resource gating",
       "required_coordinates": ["trigger/action_gated", "resource_paid", "default_consequence", "strategic_job"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "claims": ["C029", "C035"],
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     },
     {
       "id": "N12",
@@ -258,7 +262,8 @@
       "trap": "both are commonly defensive/protective plays",
       "why_not_same_job": "board protection from targeting/destruction versus temporary combat-damage prevention; threat classes barely overlap",
       "required_coordinates": ["protected_entity", "threat_class", "damage_prevention", "destruction_protection", "targeting_protection", "duration"],
-      "confidence": "MEDIUM; pinned Oracle recheck required"
+      "claims": ["C024", "C027", "C036"],
+      "confidence": "MEDIUM; pinned Oracle claims recorded; final freeze still requires independent adjudication"
     }
   ],
   "precommitment": {
