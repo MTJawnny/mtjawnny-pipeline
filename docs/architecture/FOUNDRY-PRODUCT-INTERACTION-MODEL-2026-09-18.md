@@ -309,7 +309,166 @@ The same canonical semantic facts and coordinates should power all current surfa
 
 ---
 
-## 9. Immediate consequence for Objective 6
+## 9. Tabled future state — probabilistic deck-context reasoning for Complete My Deck
+
+**Status: CAPTAIN-DIRECTED FUTURE PRODUCT CONCEPT — TABLED. NO CURRENT IMPLEMENTATION AUTHORIZATION.**
+
+This section preserves a future direction for the separate **Complete My Deck** layer. It is not part of current Foundry-core recommendation behavior and does not authorize implementation during Objective 6 / S16B.
+
+### 9.1 Canonical semantics and deck-context evaluation remain separate
+
+Foundry should continue to answer the canonical question:
+
+> **What can this card mechanically do?**
+
+A later deck-context layer may answer a different question:
+
+> **How reliably, how early, and at what practical throughput is this deck likely to realize that function?**
+
+Deck composition must not rewrite canonical card semantics. For example:
+
+- **Explore** remains Ramp even in a deck with too few lands to exploit its additional-land permission reliably;
+- **Sram, Senior Edificer** remains a Card Engine even in a deck with very few qualifying Auras, Equipment, or Vehicles.
+
+The future strategic layer may evaluate whether the deck actually supplies the prerequisites needed to realize those functions efficiently.
+
+### 9.2 Deck/format context may be inferred, but not from deck size alone
+
+A supplied list may contain a few cards, a partial deck, or a complete deck. Deck size and singleton structure can provide evidence about likely format context, but heuristics such as `100 cards => Commander` must not become an unquestioned hard rule.
+
+Where possible, future context inference should combine deck size with legality, duplicate structure, commander designation/eligibility, sideboard information, and other available evidence.
+
+### 9.3 Realization prerequisites become quantitative inputs
+
+The semantic substrate should preserve enough mechanical detail that a later layer can convert card requirements into measurable deck-context variables.
+
+Conceptual future pipeline:
+
+```text
+canonical Oracle/rules facts
+-> semantic function + mechanical prerequisites
+-> deck ability to supply those prerequisites
+-> probability/timing of realization
+-> expected functional output / throughput
+-> plain-English explanation of the result
+```
+
+Examples of relevant prerequisite dimensions include:
+
+- card/resource type required;
+- quantity required;
+- mana value and mana cost;
+- color requirements;
+- timing/window restrictions;
+- whether the input must be cast, enter, attack, deal damage, die, be discarded, be sacrificed, etc.;
+- whether the input is consumed;
+- whether multiple inputs can be processed in one turn/opportunity;
+- whether output is capped, compressed, delayed, or scalable;
+- whether other Card Access, tutoring, ramp, cost reduction, recursion, or mana production changes the availability of the required inputs.
+
+### 9.4 Explore as a future probabilistic-realization example
+
+Explore's canonical semantics include card replacement/card access plus permission to play an additional land that turn. The additional-land component has a realization prerequisite: the player must actually have another playable land available.
+
+A future Complete My Deck layer could therefore estimate quantities such as:
+
+- probability of having sufficient lands to cast Explore on a relevant turn;
+- probability of still having an additional land available after the normal land drop;
+- expected turn on which the additional-land permission is realizable;
+- effect of mulligans;
+- effect of card draw / Card Access on seeing additional lands;
+- effect of land tutors or land-to-hand effects;
+- effect of mana creatures or other ramp on when Explore can be cast.
+
+A raw statement such as `25 lands = Explore is bad` would be too crude. A low land count may be partly offset by unusually high card throughput or other ways of putting lands into hand. The future layer should model those interactions rather than apply a fixed land-count threshold.
+
+### 9.5 Sram demonstrates why raw qualifying-card count is insufficient
+
+For Sram, merely counting qualifying Auras, Equipment, and Vehicles is not enough to estimate practical Card Engine output.
+
+Two decks can each contain 30 qualifying Sram inputs while producing radically different practical throughput:
+
+- a deck whose qualifying inputs are mostly low-cost can begin triggering Sram earlier and may cast several qualifying cards in one turn;
+- a deck whose qualifying inputs are mostly six mana or more may not begin producing Sram card output until much later and may process only one qualifying card in a turn;
+- ramp, cost reduction, alternate costs, mana production, and Card Access can materially change those expectations.
+
+The future model therefore needs both **input density** and **input usability/distribution**.
+
+Useful future measurements may include:
+
+- count of qualifying inputs;
+- mana-value / mana-cost distribution of those inputs;
+- color requirements and expected castability;
+- expected turn each class of input becomes castable;
+- probability of having one or more qualifying inputs available when Sram is active;
+- expected number of qualifying inputs that can be cast in the same turn;
+- expected trigger throughput by turn or mana-development state;
+- effects of ramp, cost reduction, tutors, general Card Access, and recursion;
+- expected delay before the engine begins producing card resources.
+
+This generalizes beyond Sram. A sacrifice engine with many expensive creature inputs, a landfall engine with many lands but few ways to create multiple land entries, or an artifact engine whose artifacts are too costly to chain can all have high raw support counts but low practical throughput.
+
+### 9.6 Preserve rich mechanical truth during future corpus scans
+
+A future deck-context model depends on the corpus scan retaining more than binary semantic labels such as `CARD_ENGINE = true`.
+
+The scan should preserve the mechanical facts needed later to reconstruct:
+
+- timing;
+- cost;
+- dependency;
+- qualifying input identity;
+- input quantity and aggregation;
+- throughput/caps;
+- setup versus operating requirements;
+- relevant zones and destinations;
+- resource conversion;
+- and other mechanically justified coordinates.
+
+The governing design principle is:
+
+> **Extract rich mechanical truth now; derive strategic usefulness later.**
+
+Raw semantic-role counts should remain useful, but they must not become the only retained information if doing so would prevent later probabilistic reasoning.
+
+### 9.7 Mathematics and simulation
+
+Many future questions can be expressed directly with probability distributions such as hypergeometric calculations for cards seen by a particular point in the game.
+
+More complicated cases may require deterministic state models or simulation when mulligans, variable cast turns, tutors, draw engines, cost reduction, alternate mana, recursion, or interacting resources make a single closed-form equation impractical.
+
+The implementation method may vary by question. The output should remain explainable and should expose material assumptions rather than collapsing everything into an opaque synergy score.
+
+Preferred future explanation style:
+
+- identify the card function being evaluated;
+- identify the deck variables that support or inhibit realization;
+- report the relevant probability/expected timing/throughput where justified;
+- explain which variables materially drove the result.
+
+Avoid an unexplained `63/100 synergy` style score as the sole output.
+
+### 9.8 Architectural boundary
+
+This future layer should consume canonical Foundry semantics rather than redefining them.
+
+Conceptually:
+
+```text
+Foundry canonical semantic substrate
+-> mechanical prerequisites / qualifiers
+-> deck-context measurements
+-> probabilistic or simulated realization model
+-> strategic interpretation / recommendation
+```
+
+This preserves the current separation between deterministic semantic truth and later strategic judgment.
+
+Nothing in this section authorizes implementation now.
+
+---
+
+## 10. Immediate consequence for Objective 6
 
 When semantic review resumes, evaluate each vocabulary term with two product questions in addition to its hard definition:
 
@@ -322,7 +481,7 @@ Current examples already under discussion include `cantrip`, `card advantage`, m
 
 ---
 
-## 10. Control boundary
+## 11. Control boundary
 
 This document records product direction only.
 
@@ -334,6 +493,7 @@ It does not:
 - authorize merge or main movement;
 - resume AQ4;
 - authorize Step6;
+- implement the tabled Complete My Deck probabilistic/deck-context layer;
 - or make the examples above canonical semantic definitions.
 
 Semantic terms continue through the bounded Objective 6 / S16 review and Captain-ratification process.
