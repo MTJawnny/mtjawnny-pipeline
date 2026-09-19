@@ -107,6 +107,36 @@ This should **not** be implemented as a blind text-match rule. `one or more` is 
 
 This refinement provides an important extraction clue for the future slow corpus pass: preserve aggregation language such as `one or more`, `two or more`, `for the first time`, `only once`, and explicit frequency restrictions as mechanical evidence before semantic adjudication.
 
+### 3.5 Inherently bounded dimensions do not rescue Engine membership — CAPTAIN-APPROVED REFINEMENT
+
+A processor should not qualify as an Engine merely because some secondary dimension can technically create more than one trigger when that dimension is itself inherently truncated by the structure of the game or format.
+
+The practical test is:
+
+> **After accounting for input-compression language such as `one or more`, does the mechanism still preserve scalable throughput along a mechanically meaningful input dimension that is not inherently capped by a small game-structural cardinality?**
+
+This distinguishes ordinary resource/fuel limits from structural limits:
+
+- a player may run out of creatures, cards, lands, life, artifacts, or other fuel, but those are availability constraints rather than a small fixed ceiling imposed by the game architecture;
+- player count is different: the number of players in the game is established by the game/format and is inherently bounded, so "one trigger per damaged player" does not provide the kind of open-ended processor scalability required for Engine membership.
+
+**Grazilaxx, Illithid Scholar — Card Engine: NO under the current working model.**
+
+Its `one or more creatures` wording compresses creature multiplicity: dealing combat damage to one player with one creature or many creatures still creates only one trigger for that player. Although damaging multiple different players can create multiple trigger instances, player count is itself a structurally bounded game parameter. That bounded secondary dimension does not rescue Engine membership.
+
+By contrast:
+
+- **Toski** preserves creature multiplicity. Increasing the number of creatures that deal combat damage can continue increasing trigger/output count without the processor imposing a small game-structural ceiling.
+- **Lotus Cobra** preserves land-entry multiplicity. Additional land-entry events continue creating additional trigger/output instances; the ordinary land-play rule constrains one input source, not the processor's throughput.
+
+For Engine analysis, Foundry should therefore distinguish:
+
+- **fuel/availability bound** — how much qualifying input happens to be available; compatible with Engine membership;
+- **processor-imposed bound** — the mechanism aggregates or caps qualifying inputs; evidence against Engine membership;
+- **game-structural cardinality bound** — the only remaining multiplicity is limited by a small fixed game parameter such as player count; does not rescue an otherwise input-compressed mechanism into Engine membership.
+
+This refinement intentionally uses mechanical structure rather than literal mathematical infinity. The relevant distinction is whether the processor is meaningfully scalable with supplied gameplay inputs, not whether any physical game can contain a literally infinite number of objects.
+
 ## 4. Children may be organized by different mechanical dimensions
 
 Not every Engine child must be defined solely by output type.
@@ -143,6 +173,10 @@ Phyrexian Arena remains recurring Card Advantage but not a Card Engine under the
 ### Chivalric Alliance
 
 Chivalric Alliance remains recurring Card Advantage potential but not a Card Engine under the current working model. Additional attacking creatures beyond the two-creature threshold do not increase output in that attack; another draw generally requires another qualifying attack opportunity.
+
+### Grazilaxx, Illithid Scholar
+
+Grazilaxx is a negative **Card Engine** anchor under the refined scalability test. Its `one or more creatures` wording compresses creature multiplicity for each damaged player, and the remaining per-player multiplicity is inherently bounded by player count.
 
 ### Lotus Cobra
 
