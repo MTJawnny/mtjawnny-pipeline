@@ -87,6 +87,26 @@ Its processor is keyed to each land entering under the controller's control, not
 
 Therefore Lotus Cobra remains a positive **Mana Engine** anchor under the current working model.
 
+### 3.4 `one or more` as an input-compression signal — CAPTAIN-APPROVED REFINEMENT
+
+The Oracle phrase **`one or more`** is a strong semantic signal for Engine review because it commonly indicates that multiple otherwise-relevant objects/events are intentionally aggregated into one triggering condition.
+
+Working interpretation:
+
+> When a trigger is written as `one or more [objects/events] ...`, increasing the number of qualifying objects inside that same triggering event normally does not increase the number of outputs from that trigger. Multiple outputs require multiple distinct trigger instances, and therefore normally multiple distinct qualifying events/opportunities.
+
+This is mechanically different from a trigger such as Lotus Cobra's `Whenever a land enters ...`, where each qualifying land-entry event can independently create another processor firing.
+
+Accordingly:
+
+- **singular/per-instance trigger structure** is evidence that input multiplicity may be preserved as output multiplicity;
+- **`one or more` / threshold aggregation structure** is evidence that input multiplicity is being compressed before output;
+- such compression is a strong candidate reason for Engine disqualification when additional output requires a new discrete opportunity rather than additional inputs to the existing opportunity.
+
+This should **not** be implemented as a blind text-match rule. `one or more` is a diagnostic feature whose semantic effect must be resolved in the actual trigger structure. A card may still create multiple trigger instances if the game creates multiple distinct qualifying events represented by that wording. The hard question remains whether additional supplied inputs to one processor opportunity independently increase throughput.
+
+This refinement provides an important extraction clue for the future slow corpus pass: preserve aggregation language such as `one or more`, `two or more`, `for the first time`, `only once`, and explicit frequency restrictions as mechanical evidence before semantic adjudication.
+
 ## 4. Children may be organized by different mechanical dimensions
 
 Not every Engine child must be defined solely by output type.
