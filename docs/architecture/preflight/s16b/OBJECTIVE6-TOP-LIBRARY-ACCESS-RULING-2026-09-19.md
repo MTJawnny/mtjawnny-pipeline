@@ -14,9 +14,38 @@ Primary product reason: players should be able to explicitly **include or exclud
 
 The current name is provisional and must be reconsidered during the later cool-name audit, even if the concept remains machine-facing or tag-facing rather than a top-level public tree.
 
-## Core mechanical idea
+## Hard boundary
 
-A card qualifies when its rules text grants meaningful access to the current top card or top position of a library through a permission or usable-information mechanism that is materially distinct from simply drawing that card.
+Top-Library Access means that an effect grants meaningful permission to **use, play, cast, or otherwise directly deploy the current top card of a library** while it remains the top card or top-position candidate.
+
+The tag is about **ongoing or conditional access to the current top card**, not merely about interacting with the top of the library.
+
+The following do **not** qualify by themselves:
+
+- searching a library and putting a found card on top;
+- tutoring to the top of a library;
+- rearranging or filtering top cards;
+- revealing the top card;
+- looking at the top card;
+- moving a known card onto the top of the library.
+
+Those operations may overlap with Tutor, Card Filtering, library inspection/visibility, or destination coordinates, but they are not Top-Library Access unless the effect also grants permission to use the top card.
+
+### Critical negative anchor — Enlightened Tutor
+
+**Enlightened Tutor is not Top-Library Access.**
+
+Its relevant function is targeted library retrieval with `destination = library_top`. The fact that the retrieved card becomes the top card does not grant permission to play or cast that card from the library.
+
+Therefore Foundry must not treat `Tutor -> library top` as semantically equivalent or near-equivalent to continuous top-library access.
+
+### Positive contrast
+
+An effect of the form "keep/reveal the top card of your library; if it is an eligible card, you may cast/play it" is Top-Library Access because it grants direct permission to use the current top card from the library.
+
+The reveal component is only a visibility fact. The **permission** is what makes it Top-Library Access.
+
+## Canonical anchors
 
 Canonical anchors include effects such as:
 
@@ -32,7 +61,7 @@ Top-Library Access must preserve at least:
 - `source_zone = library_top`;
 - whose library is being accessed;
 - visibility/reveal state;
-- `permission = PLAY` versus `permission = CAST` versus look/reveal-only information;
+- `permission = PLAY` versus `permission = CAST` versus other direct deployment permission;
 - card-type or other eligibility restrictions;
 - ordinary payment versus alternate/modified payment;
 - access horizon / duration;
@@ -41,6 +70,8 @@ Top-Library Access must preserve at least:
 - any additional land-play permission or other deployment constraints;
 - ownership/provenance of the accessible card.
 
+Visibility alone is not sufficient for membership. `look` / `reveal` without use permission belongs in separate inspection/visibility facts.
+
 ## Important distinction: PLAY vs CAST
 
 Foundry must preserve `PLAY` and `CAST` as distinct permissions.
@@ -48,6 +79,17 @@ Foundry must preserve `PLAY` and `CAST` as distinct permissions.
 `PLAY` may permit a land to be played when normal land-play rules allow it. `CAST` does not permit land play.
 
 This is the same hard distinction already accepted for alternate-zone access generally and must remain visible for top-library access as well.
+
+## Relationship to Tutor
+
+Tutor and Top-Library Access are wholly different mechanisms even when a Tutor's destination is the top of the library.
+
+- **Tutor** changes which card occupies or reaches a destination by searching a broader library domain.
+- **Top-Library Access** changes what the player is allowed to do with the card that currently occupies the top position.
+
+A card may theoretically contain both mechanisms, but neither implies the other.
+
+Similarity and substitution systems must not infer strong functional equivalence merely from shared `library_top` coordinates.
 
 ## Relationship to Card Access
 
@@ -90,7 +132,10 @@ The later whole-vocabulary audit must confirm that:
 4. cards with materially different restrictions remain distinguishable through coordinates;
 5. the tag improves include/exclude querying without forcing noun proliferation elsewhere;
 6. interaction with Card Filtering, Tutor, Bounded Extraction, Sequential Library Traversal, and Graveyard Access remains non-confusing;
-7. the chosen final name is clear, concise, player-recognizable, and passes the cool-name audit.
+7. Tutor-to-top cards such as Enlightened Tutor do not receive Top-Library Access absent an actual use permission;
+8. reveal/look-only effects do not receive the tag absent an actual use permission;
+9. similarity ranking does not over-weight the shared `library_top` location across otherwise unrelated mechanisms;
+10. the chosen final name is clear, concise, player-recognizable, and passes the cool-name audit.
 
 ## Control boundary
 
