@@ -1,19 +1,28 @@
-# Objective 6 — Card Resource Differential — Structural Revision
+# Objective 6 — Card Resource Delta — Freeze-Candidate Accounting Name
 
 **Date:** 2026-09-19  
-**Status:** **AUDIT-REVISED WORKING ACCOUNTING CONCEPT — NOT A FAMILY; FINAL NAME STILL SUBJECT TO NAMING AUDIT**
+**Former working name:** `Card Resource Differential`  
+**Status:** **AUDIT-REVISED DERIVED ACCOUNTING FACT / PROPOSED FINAL NAME — NOT FROZEN**
 
-## 1. Revised structural status
+## 1. Naming decision
 
-The earlier naming correction from `Card Advantage` to **Card Resource Differential** was directionally correct because Foundry should not redefine the established Magic theory term `Card Advantage`.
+The global naming audit proposes **Card Resource Delta** as the final name for Foundry's narrower card-origin accounting projection.
 
-The whole-vocabulary adversarial audit makes a second correction:
+Reasons:
 
-> **Card Resource Differential is a derived accounting fact, not a canonical semantic family/trunk.**
+- preserves the useful **CRD** acronym;
+- shorter than `Card Resource Differential`;
+- `delta` accurately describes before/after resource change;
+- opponent-relative comparisons can be represented explicitly as pairwise/relative deltas rather than overloading the concept name;
+- remains distinct from established Magic theory language `Card Advantage`.
 
-Canonical Foundry should preserve the underlying card identities, zones, permissions, expenditures, gains/losses, and player-relative changes. The differential is computed from those facts under an explicit comparison context.
+## 2. Structural status
 
-## 2. Accounting object
+> **Card Resource Delta is a derived accounting fact, not a canonical semantic family/trunk.**
+
+Canonical Foundry preserves underlying card identities, zones, permissions, expenditures, gains/losses, and player-relative changes. CRD is computed from those facts under an explicit comparison context.
+
+## 3. Accounting object
 
 The accounting unit is a **distinct underlying card-origin resource**, not:
 
@@ -21,11 +30,11 @@ The accounting unit is a **distinct underlying card-origin resource**, not:
 - a spell/card copy;
 - a token or generated non-card object;
 - a mana resource;
-- an additional execution opportunity of the same underlying card.
+- an Additional Execution opportunity of the same underlying card.
 
-A card moving from hand to battlefield is still the same underlying card-origin object. Its zone changed; Foundry must not count the move itself as creation of another card resource.
+A card moving from hand to battlefield is still the same underlying card-origin object. Its zone changed; no second card resource was created.
 
-## 3. Required underlying facts
+## 4. Required underlying facts
 
 Preserve at minimum:
 
@@ -33,102 +42,92 @@ Preserve at minimum:
 - owner/provenance;
 - current zone/position;
 - player with access/control/permission;
-- card resource expended/lost/denied;
-- card resource gained/recovered/newly made accessible;
+- resource expended/lost/denied;
+- resource gained/recovered/newly made accessible;
 - source retained vs consumed;
-- `PLAY` / `CAST` / direct deployment permission;
-- permission duration/window;
+- `PLAY` / `CAST` / Direct Placement permission;
+- Permission Window;
 - categorical eligibility restrictions;
 - current-action timing/land-play constraints;
-- payment method / alternative cost facts;
-- repeat execution facts;
+- Payment Method / Alternative Cost facts;
+- Additional Execution facts;
 - copy provenance;
 - per-player before/after resource set;
 - pairwise opponent-relative result where needed.
 
-## 4. Top-library accounting
+## 5. Top-Library Access accounting
 
-Top-Library Access can affect the derived resource set when it grants use of an underlying top card that would otherwise be inaccessible.
+Top-Library Access can affect Card Resource Delta when it grants use of an underlying top card that would otherwise be inaccessible.
 
 Working rules:
 
 1. The current top position ordinarily exposes **one underlying card at a time**.
-2. Continuous refreshability after that card leaves is a throughput/access fact, not an unbounded simultaneous resource count.
-3. `CAST` access does not make a land eligible through that permission.
-4. `PLAY` may cover lands, subject to ordinary land-play constraints.
+2. Continuous refreshability after that card leaves is access throughput, not an unbounded simultaneous resource count.
+3. `CAST` does not make a land eligible through that permission.
+4. `PLAY` may cover lands subject to ordinary land-play constraints.
 5. Merely revealing/looking at the top card is not resource access.
-6. A Tutor that puts a card on top does not by itself make that top card accessible.
+6. A Tutor that puts a card on top does not by itself grant Top-Library Access.
 
-## 5. Affordability and present actionability
+## 6. Affordability and current actionability
 
-The audit rejects a rule that a spell must be **presently affordable** to count as a card-origin resource.
+A spell does **not** need to be presently affordable to remain a card-origin resource.
 
-A card in hand does not stop being a card resource because its controller lacks enough mana at this instant. The same principle applies to an otherwise valid alternate-zone permission.
+A card in hand does not vanish from the player's resources because they lack enough mana this instant. Apply the same principle to otherwise valid alternate-zone permissions.
 
-Therefore separate:
+Separate:
 
-- **resource/access identity** — the underlying card is available under the relevant permission/horizon; from
-- **current actionability/realization** — current mana, timing, land-play allowance, targets, game restrictions, or other state permits immediate use right now.
+- **resource/access identity** — the underlying card is available under the relevant permission/window; from
+- **current actionability/realization** — current mana, timing, land-play allowance, targets, restrictions, or other state permits immediate use.
 
-This prevents Card Resource Differential from turning into a volatile generic `what can I cast this second?` score.
+This keeps CRD from becoming a volatile `what can I cast this second?` score.
 
-## 6. Graveyard and temporary access
+## 7. Graveyard and temporary access
 
-If a permission newly makes an underlying graveyard/exile/top-library card available, the accessible card-resource set may change for the permission window.
+If a permission newly makes an underlying graveyard/exile/top-library card available, the accessible card-resource set may change for the Permission Window.
 
 However:
 
-- moving an already-usable graveyard card to hand does not automatically create another distinct underlying resource;
-- expiration of temporary permission can remove access without the card object ceasing to exist;
-- shared fuel such as Underworld Breach escape cards can constrain realization without changing the identity count of the permissions/resources themselves.
+- moving an already-usable graveyard card to hand does not automatically create another distinct resource;
+- expiration of permission can remove access without the card object ceasing to exist;
+- shared fuel can constrain realization without changing underlying resource identity.
 
-## 7. Repeat-use and copies
+## 8. Additional Execution and copies
 
-Additional executions are separately typed.
+Additional Execution remains separately typed.
 
-Examples:
+Flashback, Retrace, Rebound, Mnemonic Deluge, Isochron Scepter, and similar mechanics may create later or repeated executions. They do not authorize counting each execution/copy as another underlying card-origin resource.
 
-- Flashback can give the same underlying card another execution opportunity;
-- Retrace can enable repeated casts of the same underlying card;
-- Rebound schedules another cast opportunity;
-- Mnemonic Deluge can create three spell copies from one graveyard card;
-- Isochron Scepter repeatedly copies an imprinted card.
+## 9. Generated objects remain separate
 
-None of those facts authorizes counting each later execution or copy as another underlying card-origin resource.
+Creature tokens, Treasures, Clues, Maps, Powerstones, token copies, and other generated game objects are not silently converted into Card Resource Delta units.
 
-## 8. Generated objects remain separate
+Record their actual resource/object types under the Typed Resources model.
 
-Creature tokens, Treasures, Clues, Maps, Powerstones, token copies, and other generated game objects are not silently converted into Card Resource Differential units.
+## 10. Multiplayer
 
-Record their actual resource/object types.
+Retain per-player and pairwise deltas. A compact projection may report:
 
-This does not dispute broad Magic theory uses of `card advantage`; it preserves a narrower typed Foundry accounting layer.
-
-## 9. Multiplayer
-
-Retain per-player and pairwise facts. Useful reduction states remain:
-
-- positive/nonnegative relative result;
+- positive;
 - parity;
-- negative/nonpositive relative result;
-- mixed vector where some opponent-relative comparisons are positive and others negative.
+- negative;
+- mixed where pairwise results differ.
 
-Do not replace the vector with an average that hides distribution.
+Do not hide distribution behind an opaque average.
 
-## 10. Relationship to Card Advantage
+## 11. Relationship to Card Advantage
 
 `Card Advantage` remains established community/theory vocabulary. `Virtual Card Advantage` and `Card Quality` are even more context-sensitive.
 
-Those terms belong in educational/strategic reasoning over the canonical resource facts, not as replacements for the typed mechanical accounting.
+Those belong in educational/strategic reasoning over the canonical resource facts, not as replacements for CRD.
 
-## 11. Remaining OPEN item
+## 12. Remaining OPEN item
 
-Whether the UI should separately expose a `currently actionable` card-resource view remains open.
+Whether the UI should separately expose a `currently actionable` view remains open.
 
-If future evidence justifies it, it must be derived from the same permission/timing/payment facts. It must **not** resurrect the rejected `Card Access Differential` concept under a new name.
+If future evidence justifies it, derive it from Card Use Permission, timing, land-play, payment, and state facts. Do not resurrect the rejected `Card Access Differential` under another name.
 
-## 12. Control boundary
+## 13. Control boundary
 
-No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized here.
+`Card Resource Delta` is a freeze-candidate name, not a freeze. No corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
