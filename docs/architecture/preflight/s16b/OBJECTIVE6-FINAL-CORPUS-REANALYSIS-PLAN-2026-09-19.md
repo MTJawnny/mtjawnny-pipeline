@@ -1,54 +1,56 @@
 # Objective 6 — Final Corpus Reanalysis Plan
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-DIRECTED FUTURE EXECUTION PLAN — NOT YET AUTHORIZED FOR CORPUS EXECUTION**
+**Revised:** 2026-09-20 after whole-vocabulary / naming audit and stale cleanup  
+**Status:** **CAPTAIN-DIRECTED FUTURE EXECUTION PLAN — NOT AUTHORIZED FOR CORPUS EXECUTION**  
+**Current semantic routing:** `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
 ## 1. Purpose
 
-After the Objective 6 semantic vocabulary, keyword consequences, and cross-concept boundaries receive their final audit, Foundry should perform a **clean-room reanalysis of the entire in-scope playable-card corpus**.
+After Objective 6 completes its remaining bounded validation and receives an explicit formal semantic freeze, Foundry should perform a **clean-room reanalysis of the entire in-scope playable-card corpus**.
 
-This final pass should prioritize semantic correctness and provenance over throughput.
-
-Governing principle:
+This final pass prioritizes semantic correctness and provenance over throughput.
 
 > **There is no value in spending this much effort on semantic precision and then rushing the one pass that applies it to every card.**
 
-The final pass should take as long as necessary to produce a trustworthy substrate.
-
 ---
 
-## 2. Preconditions
+## 2. Current readiness state
 
-Do not begin the final full-corpus reanalysis merely because the current concept-by-concept conversation ends.
+Already completed:
 
-Required readiness work includes:
+- broad concept-definition work;
+- Card Access prior-art research;
+- Card Advantage prior-art/adversarial research;
+- weird-card adversarial corpus hunt;
+- whole-vocabulary adversarial semantic audit;
+- global naming audit;
+- structural corrections to key candidate records;
+- stale-document cleanup and current-state routing.
 
-1. finish the broad concept-definition pass;
-2. complete the whole-vocabulary semantic audit;
-3. complete the canonical naming/tapestry review;
-4. perform dedicated adversarial/research passes for broad concepts where warranted, especially Card Advantage;
-5. complete the Keyword Consequence Registry / compound-keyword distillation gate;
-6. validate primitives, event/output signatures, qualifiers, dependencies, and retrieval-semantic DNA against hard examples and near-misses;
-7. freeze/version the semantic contract used by the run;
-8. define the exact card legality / format scope from a current authoritative corpus snapshot;
-9. complete a stratified calibration run before estimating total duration.
+Still required before an actual full-corpus run:
 
-Old Foundry assertions may be used as comparison/evidence, but they must not force preservation of prior classifications.
+1. **Card Resource Delta stateful fixture validation**;
+2. **Sample Selection retrieval/UI fixture validation**;
+3. **Keyword Consequence Registry census/design gate**;
+4. final stale-routing verification;
+5. explicit Captain-authorized **formal S16B freeze review and freeze**, if the evidence passes;
+6. exact supported-format/card-scope resolution from the execution-time authoritative corpus snapshot;
+7. a stratified calibration run under the frozen semantic contract.
+
+Old Foundry assertions may be used as comparison/evidence but must not force preservation of prior classifications.
 
 ---
 
 ## 3. Corpus scope
 
-Captain direction is to focus the final production corpus on cards legal in formats that are actually being played rather than spend equivalent analytical effort on cards unusable in the supported product context.
+Captain direction is to focus the production corpus on cards legal in formats the product supports rather than spend equivalent analytical effort on irrelevant/unplayable cards.
 
 The exact supported-format union must be resolved immediately before execution using current authoritative legality data.
 
-Important practical note:
+If Commander remains in scope, legality filtering may still leave a population close to the overall Oracle-card corpus. Treat legality filtering as product relevance, not an assumed major workload reduction.
 
-- if Commander remains in scope, the eligible population is expected to remain close to the size of the overall Oracle-card corpus because Commander legality is broad;
-- therefore legality filtering should be treated as a product relevance rule, not assumed to create a dramatic workload reduction.
-
-Any numerical corpus-size estimate recorded during planning is provisional until regenerated from the execution snapshot.
+Any corpus-size estimate recorded during planning is provisional until regenerated from the execution snapshot.
 
 ---
 
@@ -56,22 +58,20 @@ Any numerical corpus-size estimate recorded during planning is provisional until
 
 ### Default
 
-**25 cards per deep-analysis batch** is the current recommended default starting point.
+**25 cards per deep-analysis batch** remains the recommended starting point.
 
 Rationale:
 
-- small enough that a semantic defect cannot silently spread across hundreds/thousands of cards before review;
-- large enough to amortize pipeline/setup overhead;
-- reviewable as a coherent packet;
-- permits per-card evidence and explanations without creating an opaque output wall.
+- limits the blast radius of a semantic defect;
+- remains human-reviewable;
+- allows per-card evidence/explanations;
+- amortizes setup overhead without creating opaque output walls.
 
 ### Adaptive sizing
 
-Batch size should respond to complexity:
-
 - **10–15 cards** for highly adversarial/complex populations;
 - **25 cards** normal default;
-- up to **50 cards** only for well-understood/simple cards after measured validation shows the pipeline is stable.
+- up to **50 cards** only for well-understood/simple populations after measured validation demonstrates stability.
 
 Do not increase batch size merely to meet a calendar target.
 
@@ -82,46 +82,52 @@ Do not increase batch size merely to meet a calendar target.
 Recommended hierarchy:
 
 - **25 cards** — atomic execution/review batch;
-- **100 cards** — semantic checkpoint (four ordinary batches);
+- **100 cards** — semantic checkpoint;
 - **500 cards** — larger regression epoch;
-- corpus-wide milestones only after the smaller checkpoints stay stable.
+- corpus-wide milestones only after smaller checkpoints stay stable.
 
-Initial parallelism should remain bounded. A reasonable starting ceiling is approximately four ordinary batches / **100 cards in flight**, with lower concurrency for difficult families.
+Initial parallelism should remain bounded. A reasonable starting ceiling is approximately four ordinary batches / **100 cards in flight**, with lower concurrency for pathological populations.
 
-The purpose is to limit correlated semantic error. Massive parallelization before stability is demonstrated could make one bad predicate contaminate thousands of cards.
+The purpose is to prevent one bad predicate or registry expansion from contaminating thousands of cards before detection.
 
 ---
 
 ## 6. Per-card analytical depth
 
-A final accepted card record should be able to preserve, where applicable:
+A final accepted card record should preserve, where applicable:
 
 - exact Oracle/rules evidence and locality;
 - face/paragraph ownership;
-- keyword consequence expansions;
+- Keyword Consequence expansions;
 - mechanical primitives;
-- event/output producer signatures;
-- consumer/listener signatures;
+- Producer Signatures;
+- Consumer Signatures;
 - zones and transitions;
 - trigger/activation/static/replacement architecture;
 - targets / selection authority;
 - scope / quantity;
-- costs and resource conversions;
+- costs, Alternative Costs, Additional Costs, Cost Reduction, and Payment Methods;
+- Card Use Permission and Permission Window;
 - restrictions and eligibility;
 - token identities and functional consequences;
 - copied/inherited payload behavior;
+- Additional Execution and copy provenance;
 - timing / delayed events;
-- relevant non-events / negative facts;
-- hard functional memberships;
-- functional qualifiers;
+- relevant negative/non-event facts;
+- strong functional memberships;
+- surfaced facets/tags;
 - semantic DNA / community aliases where retrieval-relevant;
 - dependencies / realization prerequisites;
-- Role Compression / Engine / other cross-cutting structure when applicable;
+- processor input/aggregation/firing/output/retention facts;
+- typed resource facts and Card Resource Delta inputs;
+- derived Role Compression data where appropriate;
 - ambiguity/adjudication state;
-- definition/rules version provenance;
-- concise human-readable explanation of each important membership.
+- semantic/rules version provenance;
+- concise human-readable explanation of important matches.
 
 The output is intentionally richer than a tag list.
+
+`Engine`, `Card Engine`, and similar phrases may be derived/search views over processor facts; they are not canonical family memberships to stamp onto the corpus.
 
 ---
 
@@ -134,11 +140,12 @@ Preferred cascade:
 ```text
 Oracle / Comprehensive Rules evidence
 -> normalized card/face text
--> canonical keyword consequence expansion
+-> canonical Keyword Consequence expansion
 -> deterministic mechanical fact extraction where possible
--> event/output signatures
--> hard semantic predicate evaluation
--> model reasoning for contextual/compositional questions
+-> Producer / Consumer Signatures
+-> strong functional predicates + surfaced facets
+-> processor/resource/accounting facts
+-> model reasoning for compositional/context-sensitive questions
 -> adversarial / ambiguity checks
 -> higher-reasoning or human adjudication only where required
 -> accepted assertion + explanation + provenance
@@ -146,76 +153,76 @@ Oracle / Comprehensive Rules evidence
 
 Known structures should be reused deterministically.
 
-A Myriad card should invoke the canonical Myriad consequence map; it should not spend a full reasoning cycle rediscovering the rules of Myriad.
+A Myriad card should invoke the canonical Myriad consequence map rather than rediscovering Myriad per card.
 
 ---
 
 ## 8. Calibration before full execution
 
-Before a 30k+-scale run, execute a **200-card stratified calibration**.
+Before a 30k+-scale run, execute a **200-card stratified calibration** under the frozen contract.
 
-Suggested initial composition:
+Suggested composition:
 
 - 50 simple / straightforward cards;
 - 50 ordinary modern cards;
 - 50 complex cards;
 - 50 deliberately adversarial/weird cards.
 
-The adversarial stratum should intentionally contain examples involving:
+The adversarial stratum should include examples involving:
 
 - compound keywords;
-- copying;
+- copies and Additional Execution;
 - replacement effects;
 - multiplayer scaling;
 - MDFCs / multiple faces / unusual layouts;
 - death vs LTB vs exile distinctions;
 - temporary tokens;
-- alternate zones/costs;
-- permission/tax/lockdown effects;
-- multiple overlapping functional roles;
-- Engines / throughput boundaries;
-- Card Advantage edge cases.
+- unusual zones and Permission Windows;
+- Alternative Cost versus Payment Method distinctions;
+- permission/tax/denial effects;
+- multiple overlapping functions;
+- processor throughput/firing-cap boundaries;
+- Card Resource Delta edge cases;
+- Sample Selection vs Tutor vs Library Traversal;
+- Top-Library Access and opponent-owned card access.
 
 Measure at minimum:
 
 - median and p90/p95 processing time per card;
-- assertions per card;
-- event signatures per card;
+- assertions/signatures per card;
 - automatic vs adjudication rate;
 - human audit time;
 - corrected assertion rate;
-- false-positive / false-negative rates by semantic family;
+- false-positive / false-negative rates by family/facet/signature;
 - near-miss error rate;
 - deterministic rerun stability;
 - definition/predicate violations;
 - cross-batch semantic consistency.
 
-Only after this calibration should the project convert card count into a serious duration estimate.
+Only after calibration should card count be converted into a serious duration estimate.
 
 ---
 
 ## 9. Working time estimate — planning only
 
-Before calibration, any per-card runtime is an engineering estimate rather than a measured fact.
+Before calibration, any per-card runtime remains an engineering estimate.
 
-Current planning assumption for full-depth analysis:
+Prior planning assumptions remain illustrative only:
 
-- simple card: approximately 5–15 seconds of automated/deep semantic processing;
-- ordinary card: approximately 15–40 seconds;
-- complex card: approximately 40–90 seconds;
-- genuinely adversarial card: approximately 1–5+ minutes or explicit adjudication.
+- simple card: ~5–15 seconds;
+- ordinary card: ~15–40 seconds;
+- complex card: ~40–90 seconds;
+- genuinely adversarial card: ~1–5+ minutes or explicit adjudication.
 
-A corpus-wide average in the rough neighborhood of **30–60 seconds per card** would make a 30k+-card first pass hundreds of compute-hours before review/retries/adjudication.
+A corpus average around 30–60 seconds per card would imply hundreds of compute-hours before review/retries/adjudication for a 30k+-card population.
 
-Therefore a calendar duration on the order of **several weeks (roughly 4–8 weeks as a planning envelope)** is entirely plausible for a deliberately thorough final program.
-
-This is not a deadline and should not be optimized against until real calibration exists.
+A calendar envelope of several weeks may therefore be reasonable, but calibration evidence must replace planning estimates before execution scheduling.
 
 ---
 
 ## 10. STOP / adjudication is a successful outcome
 
-The final pass should support:
+Supported run states should include:
 
 - PASS / accepted;
 - NEEDS ADJUDICATION;
@@ -226,41 +233,42 @@ The final pass should support:
 
 A forced classification is worse than an honest unresolved card.
 
-Cards stopped for adjudication should remain isolated from accepted assertions until the underlying question is resolved and affected populations are rerun where necessary.
+Stopped cards remain isolated from accepted assertions until the underlying issue is resolved and affected populations are rerun where necessary.
 
 ---
 
-## 11. Definition drift during the run
+## 11. Definition drift during execution
 
-If a definition changes after analysis has begun:
+If a frozen definition must change after analysis begins:
 
-1. identify the affected assertions/cards through dependency/provenance records;
+1. identify affected assertions/cards through dependency/provenance records;
 2. stop related downstream batches if continuing would multiply stale semantics;
-3. rerun the affected population under the new version;
-4. preserve before/after metrics;
-5. confirm unaffected populations remain stable.
+3. version the change explicitly;
+4. rerun the affected population;
+5. preserve before/after metrics;
+6. confirm unaffected populations remain stable.
 
-The final pass must be version-aware. “Analyzed” is meaningless without the semantic/rules version that produced the result.
+`Analyzed` is meaningless without the semantic/rules version that produced the result.
 
 ---
 
 ## 12. Relationship to continuous future ingestion
 
-The final whole-corpus reanalysis is intended to establish a trustworthy new baseline.
+The final whole-corpus reanalysis establishes the trustworthy new baseline.
 
-After that baseline exists, ordinary maintenance should move to incremental ingestion rather than repeating the entire whole-corpus program for each release.
+After that baseline exists, ordinary maintenance should move to incremental ingestion rather than repeating the entire corpus run for each release.
 
-Future design is recorded in:
+Future design:
 
 `docs/architecture/future-state/AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md`
 
-New/Oracle-changed cards should receive incremental analysis; definition/rules changes should trigger targeted affected-population reruns.
+New/Oracle-changed cards receive incremental analysis; definition/rules changes trigger targeted dependency-aware reruns.
 
 ---
 
 ## 13. Control boundary
 
-This plan does **not** authorize the final corpus run now.
+This plan does **not** authorize the corpus run now.
 
 It does not authorize:
 
@@ -273,4 +281,4 @@ It does not authorize:
 - merge;
 - movement of accepted implementation head or `main`.
 
-A later explicit Captain execution direction and bounded contract are required.
+A later explicit Captain direction and bounded execution contract are required.
