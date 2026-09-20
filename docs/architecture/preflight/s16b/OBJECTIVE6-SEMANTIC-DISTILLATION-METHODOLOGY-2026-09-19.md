@@ -1,147 +1,160 @@
 # Objective 6 — Semantic Distillation Methodology
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-DIRECTED S16B METHODOLOGY — NOT A FREEZE OR CORPUS EXECUTION AUTHORIZATION**
+**Revised:** 2026-09-20 after completion of the weird-card / whole-vocabulary / naming program  
+**Status:** **ACTIVE S16B METHODOLOGY — VALIDATED BY ADVERSARIAL AUDIT; NOT A FREEZE OR CORPUS EXECUTION AUTHORIZATION**  
+**Current routing:** `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
 ## 1. Goal
 
-Objective 6 is not trying to preserve every community term as a first-class ontology node.
+Objective 6 does not preserve every community term as a first-class ontology node.
 
 The goal is:
 
-> **Take useful Magic concepts — including community-derived concepts such as Edict, Burn, Ramp, Card Advantage, and similar gameplay language — and distill them as simply as possible into Foundry's semantic foundation.**
+> **Take useful Magic concepts and distill them as simply and faithfully as possible into Foundry's semantic foundation.**
 
-The preferred semantic foundation consists of reusable mechanical primitives, event/output signatures, hard functional predicates, qualifiers/coordinates, dependencies, and retrieval-relevant lower-level patterns.
+The preferred foundation consists of:
 
-A community term earns canonical treatment only when its gameplay meaning can be represented cleanly and consistently under those constraints.
+- reusable mechanical primitives;
+- Producer / Consumer Signatures;
+- strong functional predicates where evidence supports a family;
+- surfaced include/exclude facets;
+- qualifiers/coordinates;
+- dependencies;
+- typed resource facts;
+- processor throughput facts;
+- retrieval-relevant lower-level patterns and aliases.
+
+A community term earns canonical family treatment only when its gameplay meaning can be represented cleanly, mechanically, and consistently.
 
 ## 2. Simplicity is a design criterion
 
-Foundry should not bend the semantic substrate around a familiar term merely because players commonly use that term.
+Foundry should not bend the substrate around a familiar term merely because players commonly use it.
 
-Preferred outcome:
+Preferred process:
 
-1. identify the gameplay phenomenon the term is pointing at;
-2. determine whether it decomposes naturally into existing primitives/predicates/qualifiers/event signatures;
-3. preserve the useful retrieval relationship;
-4. create a named family only when the distinction has a stable, mechanically defensible boundary.
+1. identify the gameplay phenomenon the term points at;
+2. determine whether it decomposes naturally into existing facts;
+3. preserve useful retrieval language;
+4. create a named family only when the distinction has a stable, mechanically defensible boundary and meaningful retrieval value.
 
-Examples from the current work:
+Post-audit examples:
 
-- **Edict** can be preserved as retrieval-relevant semantic DNA: sacrifice-based Removal + affected-player selection + eligible set + quantity + scope, without requiring Edict to become a top-level Interaction family.
-- **Burn** can be represented through Damage/Life Loss primitives plus recipient, amount, targeting, Removal/player-pressure context, and related qualifiers rather than forcing a broad Burn family.
-- **Stax** was retired because the community term collapses multiple mechanically different forms of Interaction; the underlying Taxation, Permission Denial, Lockdown, Graveyard Denial, Removal, and other facts remain available.
-- **Token Generation** survives as a mechanical primitive while the gameplay significance comes from the token object and its downstream functions.
+- **Edict** -> sacrifice-based Removal + affected-player selection + eligible set + quantity/scope; community/search alias rather than top-level family.
+- **Burn** -> damage/life-loss primitives + recipient/amount/targeting; community/strategic alias rather than broad canonical family.
+- **Stax** -> community/search alias over several different interaction mechanisms; canonical family remains retired.
+- **Engine** -> derived/search/community language over hard processor facts rather than a canonical parent tree.
+- **Card Filtering** -> broad UI/search umbrella; harder operations such as Sample Selection carry the stronger similarity signal.
+- **Token Creation** -> primitive/event signature; token characteristics and downstream function remain separately typed.
 
-The objective is not ontology completeness by vocabulary accumulation. It is semantic usefulness through clean decomposition.
+The objective is semantic usefulness through clean decomposition, not vocabulary accumulation.
 
 ## 3. Difficulty is evidence
 
-If a proposed concept cannot be defined cleanly under the established constraints, do not keep adding exceptions merely to save the label.
+If a concept cannot be defined cleanly, do not add exceptions merely to preserve the label.
 
-Difficulty in clean definition is itself useful evidence.
+A resistant concept should trigger the smallest bounded question needed:
 
-A resistant concept should trigger its own bounded checking question, for example:
+- Is this several different mechanics hidden under one community term?
+- Is it a primitive/signature rather than a family?
+- Is it only a surfaced facet or retrieval alias?
+- Is it a derived accounting/product fact?
+- Is it strategic/deck-context reasoning that belongs above the canonical substrate?
+- Does new evidence require a dedicated adversarial pass?
 
-- Is this actually several different mechanics hidden behind one community term?
-- Is this a mechanical primitive rather than a functional family?
-- Is it only a retrieval alias over lower-level semantic DNA?
-- Is it a strategic/deck-context concept that belongs above the canonical substrate?
-- Is it a role or outcome that depends too heavily on game state to be canonical at card level?
-- Does it need a dedicated research/adversarial pass before any decision?
+The correct response to semantic resistance is **investigation, decomposition, or demotion**, not special pleading.
 
-The correct response to semantic resistance is therefore **investigation or demotion**, not increasingly elaborate special pleading.
+## 4. Whole-vocabulary audit discipline
 
-## 4. Continue breadth-first concept work, then perform a whole-vocabulary audit
+The required whole-vocabulary audit has now been completed. Its questions remain the standing methodology for future changes.
 
-The current conversational pass should continue identifying and adjudicating major concepts and hard boundaries.
+For every proposed or modified concept, test:
 
-After the major concept pass, perform an explicit **whole-vocabulary semantic audit** before S16B freeze.
+1. **Definition** — can it be stated clearly/mechanically?
+2. **Positive anchors** — do representative cards fit without exception inflation?
+3. **Negative/near-miss anchors** — can the boundary reject superficial similarity for a principled reason?
+4. **Decomposition** — can existing primitives/signatures/coordinates represent the same truth more cleanly?
+5. **Overlap** — does overlap add information rather than duplicate another concept?
+6. **Retrieval value** — does it improve Searcher B or deck explanation?
+7. **User explanation** — can Foundry explain the match from the same underlying facts?
+8. **Corpus stability** — is the definition likely to survive adversarial corpus examples?
+9. **Community-language mapping** — can familiar but fuzzy language remain an alias/search view?
+10. **Strategic-layer boundary** — does the concept depend on deck/game-state evaluation rather than canonical card mechanics?
 
-For every proposed concept, test at minimum:
+Possible outcomes include:
 
-1. **Definition:** Can the concept be stated clearly and mechanically?
-2. **Positive anchors:** Do representative cards fit without caveat inflation?
-3. **Negative/near-miss anchors:** Can the boundary reject superficially similar cards for a principled reason?
-4. **Decomposition:** Can the same information be represented more cleanly by existing primitives, qualifiers, event signatures, or semantic DNA?
-5. **Overlap:** Does membership overlap with other concepts in a meaningful way rather than merely duplicate them?
-6. **Retrieval value:** Does preserving the concept improve Searcher B or deck explanation?
-7. **User explanation:** Can Foundry succinctly explain why the card counts?
-8. **Corpus stability:** Is the definition likely to survive broad corpus examples without a proliferation of exceptions?
-9. **Community-language mapping:** If the community term is useful but ontologically messy, can it remain as an alias/search concept over cleaner underlying facts?
-10. **Strategic-layer boundary:** Is the concept actually deck/game-state reasoning that should be derived later rather than asserted canonically per card?
-
-Possible audit outcomes include:
-
-- canonical functional family/trunk/child;
-- mechanical primitive;
-- qualifier/coordinate;
+- strong functional family;
+- surfaced facet/tag;
+- primitive;
+- coordinate;
 - event/output signature;
-- retrieval-relevant semantic DNA;
-- community/search alias only;
+- derived accounting/product fact;
+- keyword consequence signature;
+- retrieval/community alias;
 - strategic-layer concept;
-- OPEN / dedicated research required;
-- RETIRE from canonical vocabulary.
+- OPEN / dedicated bounded research;
+- RETIRE/COLLAPSE.
 
-## 5. Research parity requirement
+## 5. Research parity — status after audit
 
-Ramp received a dedicated external research pass to enumerate mechanisms and adversarial boundaries. Other important concepts have not necessarily received equivalent breadth.
+Dedicated breadth-first/adversarial research has now been completed for major risk areas including:
 
-Before final semantic freeze, concepts that materially affect the substrate should receive whatever bounded research/audit depth is necessary to establish confidence.
+- Ramp;
+- Card Access;
+- Card Advantage;
+- weird-card cross-vocabulary stress cases.
 
-In particular, **Card Advantage should receive a dedicated breadth-first research/adversarial pass comparable in spirit to the Ramp work** before its final hard predicate is accepted.
+Card Advantage research did **not** justify a canonical Card Advantage family. The post-audit direction is to preserve harder resource/access facts and Card Resource Delta inputs while keeping Card Advantage as established theory/community/strategic language.
 
-This does not mean every concept needs identical research volume. Research depth should follow semantic risk and breadth. Simple concepts that distill cleanly may require little additional work; broad or contested concepts should receive more.
+Future research depth should follow semantic risk rather than enforce identical research volume for every simple concept.
 
 ## 6. Expected discovery mode
 
-The later audit and corpus work are expected to surface community-derived concepts that were not exhaustively enumerated during the conversational design phase.
+Future corpus work may surface community-derived concepts not exhaustively enumerated during design.
 
-That is desirable.
-
-When a concept such as Edict, Burn, Saboteur, Aristocrats-adjacent language, or another established gameplay term appears, the first question should be:
+When a term such as Edict, Burn, Saboteur, Aristocrats-adjacent language, or another established gameplay phrase appears, ask first:
 
 > **Can this be easily and faithfully distilled into the semantic foundation we already have?**
 
-If yes, preserve the semantic relationship at the smallest useful level.
+If yes, preserve the relationship at the smallest useful structural level.
 
-If no, do not force it. Record the ambiguity and launch the smallest bounded check needed to determine whether the concept deserves a new primitive/family, an alias, a strategic-layer treatment, or retirement.
+If no, record the ambiguity and launch the smallest bounded check needed to decide whether evidence warrants a new primitive/family, a surfaced facet, an alias, strategic treatment, or retirement.
+
+Do not reopen the broad vocabulary-design cycle merely because a new community label appears.
 
 ## 7. Relationship to Keyword Consequence Distillation
 
-This methodology complements `OBJECTIVE6-KEYWORD-CONSEQUENCE-DISTILLATION-GATE-2026-09-19.md`.
+This methodology complements:
 
-Keywords and compact rules constructs should first be expanded into their canonical gameplay consequences. Community and strategic concepts should then be evaluated against those already-distilled mechanical facts.
+`OBJECTIVE6-KEYWORD-CONSEQUENCE-DISTILLATION-GATE-2026-09-19.md`
 
 Conceptually:
 
-`Comprehensive Rules / Oracle evidence`
+```text
+Comprehensive Rules / Oracle evidence
+-> Keyword Consequence expansion
+-> mechanical primitives + Producer / Consumer Signatures
+-> strong functional predicates + surfaced facets + coordinates
+-> community/search alias distillation
+-> adversarial checks
+-> only then accepted corpus assertions
+```
 
--> `keyword consequence expansion`
-
--> `mechanical primitives + event/output signatures`
-
--> `hard functional predicates + qualifiers`
-
--> `community-concept distillation / retrieval DNA`
-
--> `whole-vocabulary adversarial audit`
-
--> `only then broad accepted semantic corpus assertions`
+Keywords and compact rules constructs should be expanded into canonical gameplay consequences before higher-level retrieval language is applied.
 
 ## 8. Governing heuristic
 
 > **Prefer easy, faithful distillation over preserving terminology. If a concept fits cleanly, keep the useful distinction. If it fights the substrate, make the concept prove that it deserves additional structure.**
 
-This heuristic is subordinate to the project-wide principle:
+Subordinate project principle:
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
 
 ## 9. Control boundary
 
-This document does **not** authorize:
+This methodology does not authorize:
 
-- broad corpus classification or reclassification;
+- broad corpus classification/reclassification;
 - S16B freeze;
 - implementation acceptance;
 - AQ4 resumption;
@@ -149,5 +162,3 @@ This document does **not** authorize:
 - Step6;
 - merge;
 - movement of the accepted implementation head or `main`.
-
-It records the Captain-directed methodology for completing and auditing the Objective 6 semantic vocabulary.
