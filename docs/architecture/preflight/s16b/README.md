@@ -12,8 +12,9 @@ For current Objective 6 semantic state, read:
 
 1. `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 2. `OBJECTIVE6-POST-AUDIT-CLEANUP-2026-09-20.md`
+3. `OBJECTIVE6-STALE-ROUTING-VERIFICATION-2026-09-20.md`
 
-Those files route the surviving candidate records and explain which historical working structures were retired.
+Those files route the surviving candidate records, explain which historical working structures were retired, and record the final stale-routing PASS.
 
 Do **not** reconstruct current semantics by sorting files by date or by treating every `CAPTAIN-APPROVED`, `RULING`, `RESEARCH`, or historical filename as equal present-tense authority.
 
@@ -71,6 +72,7 @@ Examples include:
 
 - `OBJECTIVE6-CARD-ACCESS-PRIOR-ART-RESEARCH-2026-09-19.md`
 - `OBJECTIVE6-CARD-ADVANTAGE-PRIOR-ART-AND-ADVERSARIAL-REVIEW-2026-09-19.md`
+- chronological findings inside the weird-card and whole-vocabulary audit artifacts.
 
 When research and current candidate records differ, preserve the research as provenance and use the post-audit current-state routing for the candidate decision.
 
@@ -133,6 +135,20 @@ When research and current candidate records differ, preserve the research as pro
 
 ---
 
+## Stale-routing verification
+
+The 2026-09-20 net-diff verification is **PASS**.
+
+Old terminology that remains in dedicated research/adversarial evidence is preserved intentionally as provenance. It is not current semantic authority.
+
+Historical filenames that contain revised candidate bodies are also intentional and are explicitly mapped above.
+
+See:
+
+`OBJECTIVE6-STALE-ROUTING-VERIFICATION-2026-09-20.md`
+
+---
+
 ## Remaining pre-freeze validation
 
 Do not start the full corpus pass yet.
@@ -142,8 +158,10 @@ Remaining bounded work:
 1. Card Resource Delta stateful fixtures;
 2. Sample Selection retrieval/UI fixtures;
 3. Keyword Consequence Registry census/design gate;
-4. final stale-routing verification;
+4. Lockdown boundary audit only if new evidence forces it;
 5. formal S16B freeze review only when explicitly authorized by the Captain.
+
+The broad vocabulary-design / naming cycle should not be reopened absent new evidence.
 
 ---
 
