@@ -1,17 +1,27 @@
-# Objective 6 — Card Access Components — Audit Revision
+# Objective 6 — Card Access Components — Freeze-Candidate Names
 
 **Date:** 2026-09-19  
-**Status:** **MECHANICAL COMPONENTS RETAINED; STRUCTURAL TYPES REVISED; FINAL NAMES PENDING GLOBAL NAMING AUDIT**
+**Status:** **STRUCTURALLY AUDITED / PROPOSED FINAL NAMES — NOT FROZEN**
 
-## 1. Purpose
+## 1. Structural summary
 
-The earlier component review correctly identified several load-bearing Card Access facts. The whole-vocabulary adversarial audit changes **what kind of semantic thing** several of them are.
+The Card Access neighborhood is deliberately shallow. Exact permissions, zones, identities, destinations, timing, and event signatures carry the truth; user-facing tags provide handles for browsing.
 
-The project should preserve the facts without turning every useful fact into a family/noun.
+Proposed freeze-candidate component names:
 
-## 2. Permission Window (formerly working `Access Horizon`)
+- **Permission Window** — duration/expiration coordinate;
+- **Card Use Permission** — primitive permission assertion preserving `PLAY` vs `CAST`;
+- **Top-Library Access** — surfaced include/exclude facet;
+- **Library Traversal** — ordered library-processing event signature with explicit stop rule;
+- **Additional Execution** — execution-multiplicity signature;
+- **Typed Resources** — substrate/data-model invariant;
+- **Card Resource Delta** — derived accounting fact;
+- **Sample Selection** — surfaced finite-sample selection signature;
+- **Tutor** — surfaced broader-library search/retrieval family.
 
-**Structural type:** coordinate on a use permission.
+## 2. Permission Window
+
+Former working name: `Access Horizon`.
 
 Preserve expiration/duration shapes including:
 
@@ -24,46 +34,57 @@ Preserve expiration/duration shapes including:
 - indefinite;
 - recurring/capped windows.
 
-The duration is player-visible and filterable, but it is not a separate family or independent advantage metric.
+It is player-visible/filterable but not a separate family or advantage metric.
 
-## 3. Alternate-zone use permission
+## 3. Card Use Permission
 
-**Structural type:** primitive permission assertion.
+Former working umbrella: `Alternate-Zone Play/Cast Access`.
 
-Preserve at minimum:
+Preserve:
 
 - permission holder;
-- owner/provenance of the underlying card;
+- owner/provenance of underlying card;
 - source zone/position;
-- `PLAY` vs `CAST` vs direct-deployment action;
-- card/characteristic eligibility;
-- permission window;
+- action: `PLAY` / `CAST` / other explicitly modeled use;
+- eligibility;
+- Permission Window;
 - timing overrides/restrictions;
-- payment method / alternative cost;
+- payment method / Alternative Cost;
 - source/link dependency;
 - unused-card disposition.
 
-### Hard rule — PLAY vs CAST
+### PLAY vs CAST
 
-`PLAY` and `CAST` remain distinct.
+This distinction is hard and survives unchanged.
 
-Ragavan is the canonical cast-only anchor: an exiled land cannot be played through its permission.
+Ragavan is the canonical cast-only anchor: a land exiled by Ragavan cannot be played through that permission.
 
-Praetor's Grasp and Haldan demonstrate `PLAY` permissions that can cover lands when other rules permit land play.
+Praetor's Grasp and Haldan are PLAY-permission anchors capable of covering lands subject to normal land-play rules.
 
 ## 4. Top-Library Access
 
-**Structural type:** surfaced include/exclude facet over use-permission assertions.
+Structural type: surfaced include/exclude facet over Card Use Permission.
 
-This remains separately queryable because players need to include/exclude the pattern directly.
+Positive anchors:
 
-Do not infer it from `library_top` involvement alone. Enlightened Tutor remains a hard negative because putting a card on top grants no use permission.
+- Future Sight;
+- Mystic Forge;
+- Oracle of Mul Daya;
+- Bolas's Citadel;
+- Experimental Frenzy;
+- Xanathar, Guild Kingpin.
 
-## 5. Ordered Library Traversal (formerly working `Sequential Library Traversal`)
+Critical negative:
 
-**Structural type:** event/output signature; optionally surfaced facet.
+- Enlightened Tutor puts a card on top but grants no permission to use the top card.
 
-The weird-card audit broadens the stop architecture beyond Cascade/Discover.
+Shared `library_top` involvement alone is not similarity evidence.
+
+## 5. Library Traversal
+
+Former working name: `Sequential Library Traversal`.
+
+Structural type: event/output signature; optionally surfaced for search.
 
 Preserve:
 
@@ -77,7 +98,7 @@ Preserve:
 - disposition of traversed cards;
 - action applied to qualifying/result cards.
 
-Anchors now include:
+Required fixtures:
 
 - Cascade;
 - Discover;
@@ -85,13 +106,13 @@ Anchors now include:
 - Ad Nauseam;
 - Primal Surge;
 - Possibility Storm;
-- official preview **Dack Fayden, Helping Hand**, which stops after X creature cards where X is the number of opponents.
+- Dack Fayden, Helping Hand (official 2026-09-18 preview; stops after X creature cards where X is number of opponents).
 
-## 6. Additional Execution (formerly `Repeat-Use / Additional Execution`)
+## 6. Additional Execution
 
-**Structural type:** event/output signature + coordinates.
+Former working name: `Repeat-Use / Additional Execution`.
 
-The common fact is that one source/underlying card can generate more than one spell/action execution opportunity. Do not infer that another physical/card-origin resource exists.
+Structural type: event/output signature + coordinates.
 
 Distinguish:
 
@@ -100,83 +121,89 @@ Distinguish:
 - recurring graveyard permission;
 - buyback/return enabling reuse;
 - copy creation followed by casting the copy;
-- repeatable copying from an imprinted/stored card;
+- repeatable copying from stored/imprinted card;
 - finite vs reusable execution count;
 - source zone;
 - costs/payment;
 - exile/consumption/replacement after execution.
 
-Flashback, Rebound, Retrace, Mizzix's Mastery, Mnemonic Deluge, Isochron Scepter, and Arcane Bombardment are required adversarial fixtures.
+Additional Execution does **not** mean another underlying card-origin resource.
 
-## 7. Typed Resource Model (formerly `Resource-Type Separation`)
+Fixtures include Flashback, Rebound, Retrace, Mizzix's Mastery, Mnemonic Deluge, Isochron Scepter, and Arcane Bombardment.
 
-**Structural type:** substrate/data-model invariant, not a card concept.
+## 7. Typed Resources
 
-Never flatten unlike resources into one generic value score.
+Former working name: `Resource-Type Separation`.
 
-At minimum keep distinct:
+Structural type: substrate/data-model invariant.
+
+Keep distinct:
 
 - underlying card-origin resources;
 - temporary/conditional permissions;
-- spell/card copies and execution opportunities;
+- copies and execution opportunities;
 - generated board objects/tokens;
 - mana / mana-capable objects;
 - life;
-- counters / stored capacity;
+- counters / Stored Capacity;
 - other mechanically defined resource/state types.
 
-Ragavan is a strong fixture because one combat-damage event can produce both a Treasure and temporary opponent-card cast access.
+Do not flatten them into one generic `value` quantity.
 
-Uldaros Theorix is a stronger modern fixture because one effect can involve underlying grave cards, copies, free spell executions, and resulting permanent tokens.
+## 8. Card Resource Delta
 
-## 8. Card Resource Differential
+Former working name: `Card Resource Differential`.
 
-**Structural type:** derived accounting fact, not another Card Access family.
+Structural type: derived accounting fact.
 
-It consumes underlying typed resource/access facts; it does not erase their mechanisms.
-
-Important rules now preserved in its dedicated revised record:
+Key laws:
 
 - count distinct underlying card-origin resources, not permission clauses or copies;
 - present mana affordability is not required for resource identity;
-- categorical permission eligibility still matters (`CAST` does not cover lands);
+- categorical permission eligibility matters (`CAST` does not cover lands);
 - current actionability/timing remains a separate projection;
-- continuous top access is one current underlying top-card slot plus refreshability, not infinite simultaneous resources;
-- repeated executions of one card remain execution multiplicity rather than extra card-origin stock.
+- continuous Top-Library Access exposes one current underlying top-card slot plus refreshability, not infinite simultaneous resources;
+- Additional Execution does not create extra card-origin stock.
 
-There is **no separate Card Access Differential metric**.
+There is no separate `Card Access Differential` metric.
 
-## 9. Card Filtering / finite-sample selection
+## 9. Sample Selection
 
-Card Filtering is now treated as a broad UI/search umbrella over harder operation signatures.
+Former working names: `Card Prospecting`, `Bounded Extraction`.
 
-Finite-sample selection remains a surfaced signature/facet with sample depth, selection authority, selected count, eligibility, destination/use, and unselected disposition.
+Structural type: surfaced finite-sample-selection signature.
 
-This keeps Dig Through Time / Collected Company / Plunge into Darkness distinct from Faithless Looting / scry / surveil / reorder-only effects.
+A finite exposed library sample is produced without searching the broader library; one or more cards are selected from it for privileged destination/use.
 
-## 10. Tutor
+The sample may be fixed, variable, state-derived, resource-controlled, or large.
 
-Tutor remains a strong player-facing functional concept for broader-library search/retrieval.
+Required coordinates:
 
-Destination, search domain, quantity, chooser, reveal, and CR 701.23 failure-to-find behavior are coordinates beneath the surfaced concept.
+- sample depth/expression;
+- selection cardinality;
+- eligibility;
+- selection authority / staged partition;
+- selected destination/use;
+- unselected disposition;
+- visibility;
+- repetition/frequency.
 
-## 11. Resource and mechanism composition
+Plunge into Darkness remains the key proof that `finite sample` does not mean fixed/small N.
 
-One card may legitimately carry several independent facts.
+## 10. Card Filtering
 
-Examples:
+Card Filtering remains a broad UI/search umbrella over harder operation signatures rather than a high-information canonical family.
 
-- **Ragavan:** temporary cast access + opponent provenance + Treasure creation + combat-damage trigger;
-- **Bolas's Citadel:** Top-Library Access + PLAY/CAST + formal alternative life cost for spells;
-- **Collected Company:** finite-sample selection + Direct Placement;
-- **Etali:** ordered multiplayer traversal + cast permission + formal zero-mana alternative cost;
-- **Underworld Breach:** graveyard CAST permission + alternative Escape costs + shared graveyard fuel;
-- **Mnemonic Deluge:** graveyard targeting + card-copy generation + multiple free copy executions.
+Sample Selection is one independently queryable pattern beneath/adjacent to that umbrella. Faithless Looting, scry, surveil, reorder-only operations, and Sample Selection should not become strongly equivalent merely because the UI groups them as Filtering.
 
-Foundry should preserve the composition rather than choose one exclusive branch.
+## 11. Tutor
+
+Tutor remains a strong surfaced functional family for broader-library search/retrieval.
+
+Preserve search domain, whose library, quantity, selection authority, reveal, destination, and CR 701.23 failure-to-find behavior.
 
 ## 12. Control boundary
 
-No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
+These are proposed freeze-candidate names only. No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
