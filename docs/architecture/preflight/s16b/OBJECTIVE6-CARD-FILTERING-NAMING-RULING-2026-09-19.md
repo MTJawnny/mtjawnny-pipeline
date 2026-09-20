@@ -1,92 +1,67 @@
-# Objective 6 — Card Filtering Naming Ruling
+# Objective 6 — Card Filtering Naming — Revised After Whole-Vocabulary Audit
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-APPROVED VOCABULARY CONSOLIDATION — VALIDATION STILL REQUIRED BEFORE S16B FREEZE**  
-**Scope:** Consolidates the previously ratified `Card Sifting` trunk into the clearer user-facing name `Card Filtering` without changing its mechanical membership.
+**Status:** **CARD FILTERING NAME RETAINED; EARLIER HARD-FAMILY MAP SUPERSEDED**
 
-## 1. Captain ruling
+## 1. Name retained
 
-**Card Sifting and Card Filtering are not separate Foundry concepts.**
+`Card Sifting` remains retired. **Card Filtering** remains the preferred player-facing name.
 
-The previously ratified `Card Sifting` trunk is renamed **Card Filtering**.
+The later adversarial audit changes its structural type:
 
-`Card Sifting` is now superseded vocabulary and should not remain as a separate user-facing family.
+> **Card Filtering is a broad UI/search umbrella and derived tag over harder card-flow operations, not a high-information canonical similarity family.**
 
-The reason is product clarity: players are more familiar with the idea of **card filtering**, and maintaining `selection`, `filtering`, and `sifting` as neighboring public nouns would create unnecessary conceptual friction.
+This prevents Faithless Looting, scry, surveil, self-mill, reorder effects, and finite-sample selection from becoming strongly equivalent merely because players reasonably group all of them under `filtering`.
 
-## 2. Mechanical meaning is preserved
+## 2. Finite-sample operation renamed
 
-This is a naming consolidation, not a semantic reclassification.
+Earlier working names:
 
-**Card Filtering** retains the prior mechanical scope of Card Sifting:
+- `Card Prospecting` — retired;
+- `Bounded Extraction` — retired.
 
-> Effects that change which cards a player moves through, sees, exposes, filters, reorders, discards, mills, cycles through, or otherwise changes the accessibility/order of, without requiring positive Card Advantage.
+Proposed final name:
 
-Accepted anchors remain:
+- **Sample Selection**.
 
-- Ponder
-- Preordain
-- Brainstorm
-- Faithless Looting
-- surveil
-- cycling
-- self-mill
-- looting
-- rummaging
-- Index-style effects
+Sample Selection remains independently queryable because Dig Through Time, Collected Company, Plunge into Darkness, Impulse, Fact or Fiction, Genesis Wave, Winota, Gonti, and similar cards share a real finite-sample choice pattern.
 
-## 3. Selection is not a sibling tree
+## 3. Selection is still not its own broad sibling family
 
-`Selection` should not become a separate user-facing semantic family merely because a player chooses among cards.
+Generic `selection` remains an operation/coordinate. What makes **Sample Selection** independently surfaced is the full signature:
 
-Selection is better preserved as an underlying mechanical operation/coordinate where useful, for example:
-
-- cards/sample seen;
-- cards chosen;
+- a finite exposed library sample;
+- no broad-library search;
+- selected-card privileged destination/use;
+- sample depth;
+- selection cardinality;
 - selection authority;
-- chosen destination/use;
-- disposition of unchosen cards;
-- reorder permission;
-- discard/mill requirement;
-- bounded versus broad-library search.
+- eligibility;
+- unselected disposition.
 
-This allows Foundry to retain mechanical precision without exposing redundant terminology to players.
+## 4. Tutor remains distinct
 
-## 4. Boundary against Card Prospecting and Tutor
+Tutor searches a broader library domain under CR search rules.
 
-The earlier structural distinction remains unchanged:
+There is no numeric threshold separating Tutor from Sample Selection; the distinction is **search domain vs finite exposed sample**.
 
-- **Card Filtering** — modifies card quality/order/accessibility without requiring privileged extraction from a bounded sample.
-- **Card Prospecting** — current working name for choosing one or more cards from a bounded sample of 3+ library cards and granting privileged access/use; this name remains subject to the later naming pass.
-- **Tutor** — targeted retrieval/search from the broader library for a specific or qualifying card.
+## 5. Updated Card Access neighborhood
 
-A card may overlap multiple functions where it independently performs them.
+Useful player-facing handles now include:
 
-## 5. User-facing vocabulary direction
+- Card Filtering;
+- Sample Selection;
+- Tutor;
+- Top-Library Access;
+- Exile Access;
+- Graveyard Access;
+- Cantrip;
+- other surfaced access facets derived from Card Use Permission and exact operations.
 
-Current Card Access umbrella should now be read as:
-
-- Card Replacement
-- Card Advantage
-- **Card Filtering**
-- Card Prospecting *(working name; later naming pass)*
-- Tutor
-
-The later vocabulary/naming audit remains required for terms whose mechanics are sound but whose names are weak or overly technical.
+`Card Replacement` is retired. `Card Advantage` is community/theory language. `Card Resource Delta` is derived typed accounting.
 
 ## 6. Control boundary
 
-This ruling records vocabulary consolidation only. It does **not** authorize:
-
-- S16B freeze;
-- broad corpus classification/reclassification;
-- implementation acceptance;
-- merge;
-- accepted-head or `main` movement;
-- AQ4 resumption;
-- Bridge v0 activation;
-- Step6.
-
-The governing principle remains:
+No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
