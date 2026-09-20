@@ -1,127 +1,134 @@
-# Objective 6 — Card Resource Differential Naming Ruling
+# Objective 6 — Card Resource Differential — Structural Revision
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-APPROVED NAMING / SEMANTIC-SCOPE CORRECTION — FINAL NAME STILL SUBJECT TO GLOBAL NAMING AUDIT**  
-**Scope:** Renames Foundry's narrower factual card-resource accounting concept from `Card Advantage` to `Card Resource Differential`, while preserving `Card Advantage` as established Magic/community theory vocabulary rather than redefining that term.
+**Status:** **AUDIT-REVISED WORKING ACCOUNTING CONCEPT — NOT A FAMILY; FINAL NAME STILL SUBJECT TO NAMING AUDIT**
 
-## 1. Captain ruling
+## 1. Revised structural status
 
-Foundry should not redefine the established Magic term **Card Advantage** to mean only the narrower card-origin accounting model being developed for the canonical semantic substrate.
+The earlier naming correction from `Card Advantage` to **Card Resource Differential** was directionally correct because Foundry should not redefine the established Magic theory term `Card Advantage`.
 
-The Foundry-specific factual accounting concept is therefore renamed:
+The whole-vocabulary adversarial audit makes a second correction:
 
-> **Card Resource Differential**
+> **Card Resource Differential is a derived accounting fact, not a canonical semantic family/trunk.**
 
-This name is accepted as the current working canonical term and remains eligible for reconsideration during the later whole-vocabulary naming audit.
+Canonical Foundry should preserve the underlying card identities, zones, permissions, expenditures, gains/losses, and player-relative changes. The differential is computed from those facts under an explicit comparison context.
 
-## 2. Why the rename is necessary
+## 2. Accounting object
 
-Established Magic theory uses `Card Advantage` more broadly than Foundry's intended canonical measurement. Official Wizards educational material treats traditional card advantage as including two-for-ones created through several mechanisms and can, in strict technical treatments, count independently usable generated creatures such as the two Soldier tokens from Raise the Alarm or two Goblin tokens from Dragon Fodder as technical card advantage.
+The accounting unit is a **distinct underlying card-origin resource**, not:
 
-Foundry intentionally needs a narrower factual measurement so that token generation, mana resources, temporary objects, repeated-use capability, and other kinds of value do not all collapse into one generic `Card Advantage` label.
+- a permission clause;
+- a spell/card copy;
+- a token or generated non-card object;
+- a mana resource;
+- an additional execution opportunity of the same underlying card.
 
-Therefore:
+A card moving from hand to battlefield is still the same underlying card-origin object. Its zone changed; Foundry must not count the move itself as creation of another card resource.
 
-- **Card Advantage** remains community/theory vocabulary and may be explained educationally;
-- **Card Resource Differential** is Foundry's precise canonical measurement of card-origin resource change.
+## 3. Required underlying facts
 
-## 3. Working meaning
+Preserve at minimum:
 
-> **Card Resource Differential** — the change in distinct usable card-origin resources available to a player, compared with the corresponding card-origin-resource change of one or more opponents.
+- underlying card/resource identity where resolvable;
+- owner/provenance;
+- current zone/position;
+- player with access/control/permission;
+- card resource expended/lost/denied;
+- card resource gained/recovered/newly made accessible;
+- source retained vs consumed;
+- `PLAY` / `CAST` / direct deployment permission;
+- permission duration/window;
+- categorical eligibility restrictions;
+- current-action timing/land-play constraints;
+- payment method / alternative cost facts;
+- repeat execution facts;
+- copy provenance;
+- per-player before/after resource set;
+- pairwise opponent-relative result where needed.
 
-The substrate should preserve the underlying resource facts rather than relying only on a headline label.
+## 4. Top-library accounting
 
-Useful fields include:
+Top-Library Access can affect the derived resource set when it grants use of an underlying top card that would otherwise be inaccessible.
 
-- card-origin resources expended;
-- card-origin resources gained;
-- card-origin resources recovered;
-- card-origin resources denied/removed from each opponent;
-- source retained versus expended;
-- access zone;
-- access duration;
-- temporary versus persistent usability;
-- repeat-use permissions;
-- per-player resource delta;
-- pairwise opponent-relative differential.
+Working rules:
 
-## 4. Relationship to prior Card Advantage decisions
+1. The current top position ordinarily exposes **one underlying card at a time**.
+2. Continuous refreshability after that card leaves is a throughput/access fact, not an unbounded simultaneous resource count.
+3. `CAST` access does not make a land eligible through that permission.
+4. `PLAY` may cover lands, subject to ordinary land-play constraints.
+5. Merely revealing/looking at the top card is not resource access.
+6. A Tutor that puts a card on top does not by itself make that top card accessible.
 
-Prior Foundry work concerning relative accounting, multiplayer pairwise vectors, retained card-origin permanents, conditional realization, and the separation of semantic capability from realized game-state output remains useful, but references to the narrower canonical Foundry metric should now be read as **Card Resource Differential** rather than an attempted redefinition of all established Magic `Card Advantage` theory.
+## 5. Affordability and present actionability
 
-The existing multiplayer result states remain useful working accounting outputs:
+The audit rejects a rule that a spell must be **presently affordable** to count as a card-origin resource.
 
-- Advantage — all opponent-relative differentials are nonnegative and at least one is positive;
-- Parity — all opponent-relative differentials are zero;
-- Disadvantage — all opponent-relative differentials are nonpositive and at least one is negative;
-- Mixed — at least one opponent-relative differential is positive and at least one is negative.
+A card in hand does not stop being a card resource because its controller lacks enough mana at this instant. The same principle applies to an otherwise valid alternate-zone permission.
 
-These are accounting states, not separate semantic trees.
+Therefore separate:
 
-## 5. Generated non-card objects remain separate resources
+- **resource/access identity** — the underlying card is available under the relevant permission/horizon; from
+- **current actionability/realization** — current mana, timing, land-play allowance, targets, game restrictions, or other state permits immediate use right now.
 
-Generated tokens and other non-card objects should not automatically be converted into units of Card Resource Differential merely because they are independently usable.
+This prevents Card Resource Differential from turning into a volatile generic `what can I cast this second?` score.
+
+## 6. Graveyard and temporary access
+
+If a permission newly makes an underlying graveyard/exile/top-library card available, the accessible card-resource set may change for the permission window.
+
+However:
+
+- moving an already-usable graveyard card to hand does not automatically create another distinct underlying resource;
+- expiration of temporary permission can remove access without the card object ceasing to exist;
+- shared fuel such as Underworld Breach escape cards can constrain realization without changing the identity count of the permissions/resources themselves.
+
+## 7. Repeat-use and copies
+
+Additional executions are separately typed.
 
 Examples:
 
-- Dragon Fodder: source card expended; two creature tokens generated. Token/object production is recorded separately from card-origin resource accounting.
-- Treasure production: mana-resource production, not card-origin resource gain.
-- Food, Clue, Map, Powerstone, creature tokens, and other generated objects retain their own mechanical/resource identities.
+- Flashback can give the same underlying card another execution opportunity;
+- Retrace can enable repeated casts of the same underlying card;
+- Rebound schedules another cast opportunity;
+- Mnemonic Deluge can create three spell copies from one graveyard card;
+- Isochron Scepter repeatedly copies an imprinted card.
 
-This does not claim that traditional Magic theory is wrong to discuss such cases as technical or virtual card advantage. It means Foundry's canonical metric is intentionally narrower and more explicit.
+None of those facts authorizes counting each later execution or copy as another underlying card-origin resource.
 
-## 6. Retained card-origin permanents
+## 8. Generated objects remain separate
 
-A card moved from hand to the battlefield is still the same card-origin resource rather than a newly created card resource. If it remains as a usable permanent while its ability grants access to another distinct card-origin resource, both resources may be present simultaneously.
+Creature tokens, Treasures, Clues, Maps, Powerstones, token copies, and other generated game objects are not silently converted into Card Resource Differential units.
 
-Therefore examples such as Elvish Visionary or Eternal Witness can produce positive Card Resource Differential while generated non-card tokens do not automatically do so.
+Record their actual resource/object types.
 
-## 7. Chivalric Alliance
+This does not dispute broad Magic theory uses of `card advantage`; it preserves a narrower typed Foundry accounting layer.
 
-The earlier Captain distinction is preserved:
+## 9. Multiplayer
 
-- Chivalric Alliance can have **conditional positive Card Resource Differential capability** when a qualifying attack produces another card while the Alliance remains a usable card-origin permanent;
-- Chivalric Alliance is **not a Card Engine** under the current Engine model because its throughput is tied to discrete attack/combat opportunities and is not intrinsically input-scalable.
+Retain per-player and pairwise facts. Useful reduction states remain:
 
-The actual attack condition should remain represented through hard mechanical facts rather than a named `Conditional Card Resource Differential` subclass.
+- positive/nonnegative relative result;
+- parity;
+- negative/nonpositive relative result;
+- mixed vector where some opponent-relative comparisons are positive and others negative.
 
-## 8. Mana/payment advantage remains separate
+Do not replace the vector with an average that hides distribution.
 
-Avoided mana/payment is not itself Card Resource Differential.
+## 10. Relationship to Card Advantage
 
-Cascade and discover are important examples:
+`Card Advantage` remains established community/theory vocabulary. `Virtual Card Advantage` and `Card Quality` are even more context-sensitive.
 
-- library traversal / privileged access may expose another card-origin resource;
-- the source plus the accessed card may create positive Card Resource Differential depending on the source and resulting resource state;
-- casting without paying the mana cost is separately represented as payment/mana advantage.
+Those terms belong in educational/strategic reasoning over the canonical resource facts, not as replacements for the typed mechanical accounting.
 
-Do not collapse these resources into one number at the canonical semantic layer.
+## 11. Remaining OPEN item
 
-## 9. Strategic / virtual Card Advantage remains downstream
+Whether the UI should separately expose a `currently actionable` card-resource view remains open.
 
-`Virtual Card Advantage`, card quality, blanking otherwise technically available cards, and judgments about whether a resource is strategically meaningful depend heavily on game state, deck construction, matchup, timing, and realization.
+If future evidence justifies it, it must be derived from the same permission/timing/payment facts. It must **not** resurrect the rejected `Card Access Differential` concept under a new name.
 
-These belong in later contextual/strategic reasoning such as Complete My Deck, not in canonical Foundry truth.
+## 12. Control boundary
 
-## 10. Naming-audit boundary
-
-`Card Resource Differential` is accepted now so semantic work can proceed without misusing the established term `Card Advantage`.
-
-The later whole-vocabulary naming audit may replace it with a clearer or more player-friendly name if the underlying meaning remains unchanged.
-
-## 11. Control boundary
-
-This ruling does **not** authorize:
-
-- S16B freeze;
-- broad corpus classification/reclassification;
-- implementation acceptance;
-- merge;
-- accepted-head or `main` movement;
-- AQ4 resumption;
-- Bridge v0 activation;
-- Step6.
-
-The governing principle remains:
+No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized here.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
