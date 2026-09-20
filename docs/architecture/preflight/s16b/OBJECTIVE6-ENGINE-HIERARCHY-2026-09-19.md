@@ -1,229 +1,154 @@
-# Objective 6 — Engine Hierarchy Ruling
+# Objective 6 — Engine Structure — Audit Revision
 
 **Date:** 2026-09-19  
-**Status:** Captain-approved working semantic structure; hard predicates for specific engine families remain subject to validation before S16B freeze.  
-**Authority boundary:** Documentation only. This does not accept implementation, freeze S16B, merge PR #70, move the accepted implementation head, resume AQ4, activate Bridge v0, authorize Step6, or move `main`.
+**Status:** **EARLIER CANONICAL ENGINE TREE SUPERSEDED BY ADVERSARIAL AUDIT; HARD PROCESSOR FACTS RETAINED**
 
-## 1. Structural ruling
+## 1. Structural correction
 
-**Engine is the parent concept.**
+The earlier version of this file treated **Engine** as a canonical parent with children such as Card Engine, Mana Engine, Blink Engine, Death-Trigger Engine, and a candidate Sacrifice Engine.
 
-The term `Engine` should describe the reusable/scalable processing structure itself, independent of what resource, event, zone transition, or gameplay output the mechanism operates on.
+The whole-vocabulary adversarial audit rejects that ontology shape.
 
-Domain-specific engine terms should descend from this parent only when they earn a mechanically meaningful and independently testable definition.
+> **Engine should not be a canonical hard family tree.**
 
-Working hierarchy:
+The investigation that produced the tree was still valuable: it uncovered real mechanical facts about repeatability, input aggregation, throughput, stored capacity, opportunity windows, and processor retention. Those facts survive and should become the canonical substrate.
 
-- **Engine** — parent structural concept.
-  - **Card Engine** — an Engine whose relevant scalable output is usable card-resource access.
-  - **Mana Engine** — an Engine whose relevant scalable output or conversion is mana.
-  - **Blink Engine** — an Engine whose repeated processing performs exile/return operations.
-  - **Death-Trigger Engine** — an Engine whose repeated processing converts deaths into triggers or downstream effects.
-  - **Sacrifice Engine** — candidate child for Engines that repeatedly process sacrifice inputs; exact boundary against `Sacrifice Outlet` remains to be adjudicated.
-  - Other domain-specific engine families may be added only after their own hard predicates are established.
+`Engine` remains useful as a **derived/search/community label** over those harder facts.
 
-The examples above are not an exhaustive ontology.
+## 2. Why the family tree is demoted
 
-## 2. Parent membership comes first
-
-A card should not receive a domain-specific `... Engine` label merely because community language commonly uses that phrase.
-
-The correct order is:
-
-1. determine whether the mechanism satisfies the parent **Engine** predicate;
-2. if yes, determine which domain-specific engine family or families its operation satisfies;
-3. describe additional mechanics through coordinates/facets rather than creating unnecessary child names.
-
-Therefore a card colloquially called a `blink engine`, `mana engine`, or `draw engine` may still fail Foundry Engine membership if the mechanism is intrinsically hard-capped, self-exhausting, or otherwise fails the eventual parent predicate.
-
-A mechanism being usable only during, or triggered only within, a particular phase/step/combat window does **not by itself** disqualify it from Engine membership. The harder question is whether additional qualifying inputs available within the relevant opportunity can produce additional outputs, or whether the processor collapses them into a single output and requires another discrete turn-structure opportunity before it can produce again.
-
-## 3. Input supply, opportunity windows, and processor throughput — CAPTAIN-APPROVED REFINEMENT
-
-Engine classification must separate three different mechanical questions:
-
-1. **Input supply** — are additional qualifying objects/events/resources available?
-2. **Opportunity window** — when can the mechanism process those inputs?
-3. **Processor throughput** — if multiple qualifying inputs are available in that opportunity, can they produce additional processor firings/outputs?
-
-External fuel dependence is normal for an Engine. Running out of fuel is not the same as the processor imposing a throughput ceiling.
-
-Likewise, merely being combat-gated, phase-gated, or step-gated is not automatically a throughput ceiling.
-
-### 3.1 `turn_structure_bound`
-
-The working hard meaning of `turn_structure_bound` is now narrower:
-
-> **turn_structure_bound** — after one qualifying output opportunity occurs, additional otherwise-qualifying inputs within that same ordinary opportunity cannot produce additional processor outputs; obtaining another output requires another discrete turn-structure opportunity such as another combat/attack declaration, upkeep, end step, phase, or turn.
-
-The important question is therefore not simply **where in the turn the ability operates**, but whether **input multiplicity is preserved as output multiplicity inside that opportunity**.
-
-A processor may be window-gated yet still be an Engine if additional qualifying inputs within that window independently produce additional outputs.
-
-### 3.2 Toski versus Chivalric Alliance
-
-**Toski, Bearer of Secrets — Card Engine: YES under the current working model.**
-
-Toski's card-draw trigger is keyed to each creature the controller controls dealing combat damage to a player. If several creatures connect in one combat-damage step, those creature inputs can produce several draw triggers. The combat window constrains when the inputs can occur, but Toski does not collapse all successful creatures into a single draw opportunity.
-
-This is input-scalable processing inside one combat opportunity.
-
-**Chivalric Alliance — Card Engine: NO under the current working model.**
-
-Its draw trigger is keyed to the single event of the controller attacking with two or more creatures. Supplying three, five, or ten attacking creatures in the same attack does not proportionally increase draw throughput. Once the threshold is met, the attack event produces one draw trigger. Another draw generally requires another qualifying attack declaration/combat opportunity.
-
-This is therefore `turn_structure_bound` in the working sense.
-
-The distinction is **not simply game object versus turn phase**. It is the granularity at which the processor recognizes qualifying inputs:
-
-- Toski preserves per-creature multiplicity inside the combat window;
-- Chivalric Alliance threshold-compresses many attacking creatures into one attack-event output.
-
-### 3.3 Lotus Cobra parallel
-
-Lotus Cobra supports the same distinction outside combat.
-
-Its processor is keyed to each land entering under the controller's control, not specifically to the controller's normal land play for the turn. The ordinary one-land-play rule constrains only one common source of land-entry inputs. Fetch lands, ramp effects, land tokens, and other put-onto-battlefield effects can supply additional land-entry events in the same turn, and the Cobra mechanism can process those additional inputs.
-
-Therefore Lotus Cobra remains a positive **Mana Engine** anchor under the current working model.
-
-### 3.4 `one or more` as an input-compression signal — CAPTAIN-APPROVED REFINEMENT
-
-The Oracle phrase **`one or more`** is a strong semantic signal for Engine review because it commonly indicates that multiple otherwise-relevant objects/events are intentionally aggregated into one triggering condition.
-
-Working interpretation:
-
-> When a trigger is written as `one or more [objects/events] ...`, increasing the number of qualifying objects inside that same triggering event normally does not increase the number of outputs from that trigger. Multiple outputs require multiple distinct trigger instances, and therefore normally multiple distinct qualifying events/opportunities.
-
-This is mechanically different from a trigger such as Lotus Cobra's `Whenever a land enters ...`, where each qualifying land-entry event can independently create another processor firing.
-
-Accordingly:
-
-- **singular/per-instance trigger structure** is evidence that input multiplicity may be preserved as output multiplicity;
-- **`one or more` / threshold aggregation structure** is evidence that input multiplicity is being compressed before output;
-- such compression is a strong candidate reason for Engine disqualification when additional output requires a new discrete opportunity rather than additional inputs to the existing opportunity.
-
-This should **not** be implemented as a blind text-match rule. `one or more` is a diagnostic feature whose semantic effect must be resolved in the actual trigger structure. A card may still create multiple trigger instances if the game creates multiple distinct qualifying events represented by that wording. The hard question remains whether additional supplied inputs to one processor opportunity independently increase throughput.
-
-This refinement provides an important extraction clue for the future slow corpus pass: preserve aggregation language such as `one or more`, `two or more`, `for the first time`, `only once`, and explicit frequency restrictions as mechanical evidence before semantic adjudication.
-
-### 3.5 Inherently bounded dimensions do not rescue Engine membership — CAPTAIN-APPROVED REFINEMENT
-
-A processor should not qualify as an Engine merely because some secondary dimension can technically create more than one trigger when that dimension is itself inherently truncated by the structure of the game or format.
-
-The practical test is:
-
-> **After accounting for input-compression language such as `one or more`, does the mechanism still preserve scalable throughput along a mechanically meaningful input dimension that is not inherently capped by a small game-structural cardinality?**
-
-This distinguishes ordinary resource/fuel limits from structural limits:
-
-- a player may run out of creatures, cards, lands, life, artifacts, or other fuel, but those are availability constraints rather than a small fixed ceiling imposed by the game architecture;
-- player count is different: the number of players in the game is established by the game/format and is inherently bounded, so "one trigger per damaged player" does not provide the kind of open-ended processor scalability required for Engine membership.
-
-**Grazilaxx, Illithid Scholar — Card Engine: NO under the current working model.**
-
-Its `one or more creatures` wording compresses creature multiplicity: dealing combat damage to one player with one creature or many creatures still creates only one trigger for that player. Although damaging multiple different players can create multiple trigger instances, player count is itself a structurally bounded game parameter. That bounded secondary dimension does not rescue Engine membership.
-
-By contrast:
-
-- **Toski** preserves creature multiplicity. Increasing the number of creatures that deal combat damage can continue increasing trigger/output count without the processor imposing a small game-structural ceiling.
-- **Lotus Cobra** preserves land-entry multiplicity. Additional land-entry events continue creating additional trigger/output instances; the ordinary land-play rule constrains one input source, not the processor's throughput.
-
-For Engine analysis, Foundry should therefore distinguish:
-
-- **fuel/availability bound** — how much qualifying input happens to be available; compatible with Engine membership;
-- **processor-imposed bound** — the mechanism aggregates or caps qualifying inputs; evidence against Engine membership;
-- **game-structural cardinality bound** — the only remaining multiplicity is limited by a small fixed game parameter such as player count; does not rescue an otherwise input-compressed mechanism into Engine membership.
-
-This refinement intentionally uses mechanical structure rather than literal mathematical infinity. The relevant distinction is whether the processor is meaningfully scalable with supplied gameplay inputs, not whether any physical game can contain a literally infinite number of objects.
-
-## 4. Children may be organized by different mechanical dimensions
-
-Not every Engine child must be defined solely by output type.
+The current strict Engine predicate diverges materially from established player usage.
 
 Examples:
 
-- `Card Engine` and `Mana Engine` are naturally output-oriented.
-- `Blink Engine` is primarily operation-oriented: repeated exile/return processing.
-- `Death-Trigger Engine` is event/trigger-oriented.
-- `Sacrifice Engine` may be input/processing-oriented.
+- Phyrexian Arena and The One Ring are commonly sought/described as card/draw engines despite scheduled or tap-limited native firing;
+- Chivalric Alliance and Grazilaxx produce recurring card flow but fail the prior project-specific scalability gate;
+- Toski and Well of Lost Dreams satisfy more open-ended throughput tests;
+- Nest of Scarabs scales output magnitude but does not itself provide a feedback loop;
+- Carrion Feeder, Sram, Rhystic Study, Lotus Cobra, and Skirge Familiar expose still other processor shapes.
 
-This is acceptable because the shared parent predicate establishes the structural fact that all of them are Engines. The child concept identifies the domain of repeated processing.
+Those distinctions matter. The word `Engine` is the wrong place to make them authoritative.
 
-## 5. Anchors
+A strict ontology gate would separate mechanically adjacent recurring-value cards largely because Foundry chose a narrower custom meaning for a broad community term. Searcher B is better served by comparing the actual processor coordinates.
 
-### Carrion Feeder
+## 3. Canonical processor facts
 
-Carrion Feeder remains a positive **Engine** anchor because its sacrifice ability can repeatedly process supplied creature inputs without an intrinsic once-per-turn, phase, or tap ceiling.
+Preserve at minimum:
 
-Its final narrower child classification remains open. It may overlap with concepts such as `Sacrifice Outlet`, `Sacrifice Engine`, or another more precise sacrifice-family term depending on later adjudication.
+- **input/event kind** — what event/object/resource can cause or fuel another operation;
+- **input consumed** — whether the input is consumed;
+- **input aggregation** — per-object/per-event, threshold, `one or more`, per-player, etc.;
+- **trigger/firing multiplicity** — how many processor firings can arise from qualifying inputs;
+- **output kind** — card access, mana, tokens, zone changes, counters, damage, etc.;
+- **output magnitude** — fixed/variable/state-scaled;
+- **output multiplicity** — number of separately produced outputs/executions;
+- **intrinsic firing cap** — once per turn/phase/step/combat, first each turn, tap activation, none, other;
+- **opportunity window** — when processing may occur;
+- **processor retention** — whether firing leaves the mechanism able to fire again;
+- **future-eligibility effect** — preserves/degrades/destroys prerequisites;
+- **external fuel dependency**;
+- **stored capacity/repertoire**;
+- **feedback dependency** — whether recurrence comes from the card itself or an assembled multi-card loop;
+- **game-structural cardinality bound** where relevant.
 
-### Rhystic Study / Sram, Senior Edificer
+These facts are mechanically meaningful whether or not the UI calls the card an Engine.
 
-These remain positive **Card Engine** anchors under the working model because their card-resource output can scale with repeated qualifying external events/inputs rather than a fixed scheduled output window.
+## 4. Preserved adversarial lessons
 
-### Toski, Bearer of Secrets
+### Toski vs Chivalric Alliance
 
-Toski is a positive **Card Engine** anchor under the refined throughput test. Multiple creatures dealing combat damage in the same combat opportunity can generate multiple card-draw outputs. Combat gating therefore does not by itself imply `turn_structure_bound`.
+The difference remains real:
 
-### Phyrexian Arena
+- Toski preserves per-creature multiplicity inside one combat-damage opportunity;
+- Chivalric Alliance threshold-compresses multiple attackers into one draw trigger per qualifying attack event.
 
-Phyrexian Arena remains recurring Card Advantage but not a Card Engine under the current working model because its draw production is intrinsically scheduled by upkeep and another draw requires another upkeep opportunity.
+Store that as input aggregation + firing multiplicity/opportunity facts.
 
-### Chivalric Alliance
+### Grazilaxx
 
-Chivalric Alliance remains recurring Card Advantage potential but not a Card Engine under the current working model. Additional attacking creatures beyond the two-creature threshold do not increase output in that attack; another draw generally requires another qualifying attack opportunity.
+`one or more creatures` compresses creature multiplicity for a damaged player. Multiple damaged players can still produce multiple triggers. Preserve both aggregation and player-cardinality structure.
 
-### Grazilaxx, Illithid Scholar
+### Nest of Scarabs
 
-Grazilaxx is a negative **Card Engine** anchor under the refined scalability test. Its `one or more creatures` wording compresses creature multiplicity for each damaged player, and the remaining per-player multiplicity is inherently bounded by player count.
+`one or more` can compress **trigger count** while `that many` preserves **output magnitude**. Trigger multiplicity and output magnitude are different coordinates.
 
 ### Lotus Cobra
 
-Lotus Cobra remains a positive **Mana Engine** anchor. Additional land-entry events can produce additional mana outputs without the processor itself imposing a once-per-turn ceiling, and those inputs are not limited to the normal land play for the turn.
+Each land-entry event can independently produce mana. The normal one-land-play rule constrains one input source; it is not a processor-intrinsic once-per-turn cap.
 
-## 6. Non-proliferation rule
+### Phyrexian Arena / The One Ring
 
-Foundry should not pre-create a flat list of every community phrase ending in `Engine`.
+Scheduled/tap-limited firing is a hard fact. It should not force the cards out of an ordinary player search for `card engine`; the UI can instead show the throughput profile.
 
-A proposed child should receive a canonical name only when:
+## 5. Derived `Engine` search view
 
-- the parent Engine predicate is satisfied;
-- the child identifies a mechanically meaningful repeated-processing domain;
-- a hard membership predicate can be stated;
-- useful positive anchors and hard near-misses can be identified;
-- the distinction is more useful as a noun than as a coordinate/facet.
+Foundry may expose an `Engine` filter/search alias built from processor facts.
 
-Otherwise the behavior should remain represented through the parent Engine membership plus underlying semantic coordinates.
+The final strategic/search layer may support profiles such as:
 
-## 7. Working hierarchy summary
+- recurring value source;
+- input-scalable processor;
+- scheduled recurring source;
+- repeatable activated processor;
+- stored-capacity source;
+- event-responsive processor;
+- combo/loop component.
 
-```text
-Engine
-|
-+-- Card Engine
-+-- Mana Engine
-+-- Blink Engine
-+-- Death-Trigger Engine
-+-- Sacrifice Engine (candidate; exact boundary unresolved)
-+-- other validated engine families
-```
+Those are search/explanation projections. They should not become mutually exclusive canonical families unless later evidence forces one.
 
-The hierarchy is intentionally extensible but not permissive: new children require adjudication rather than automatic creation.
+## 6. Former Engine children
 
-## 8. Control boundary
+The earlier children are demoted as canonical ontology nodes:
 
-This ruling preserves semantic structure only. It does **not** authorize:
+- Card Engine;
+- Mana Engine;
+- Blink Engine;
+- Death-Trigger Engine;
+- Sacrifice Engine.
 
-- S16A implementation acceptance;
-- S16B semantic freeze;
-- merge of PR #70 or any other draft PR;
-- movement of the accepted implementation head;
-- AQ4 resumption;
-- Bridge v0 activation;
-- Step6;
-- main-branch movement.
+Their useful queries remain available compositionally:
 
-The governing principle remains:
+- processor facts + `output_resource = card-origin`;
+- processor facts + `output_resource = mana`;
+- processor facts + `operation = exile/return`;
+- processor facts + `input/listener = dies/death event`;
+- processor facts + `input/action = sacrifice`.
+
+This is more consistent and avoids a heterogeneous child tree organized by different dimensions.
+
+## 7. `turn_structure_bound`
+
+The old name remains mechanically useful only as a coordinate and is subject to the naming audit.
+
+The surviving fact is approximately:
+
+> after one output opportunity, another output requires another discrete turn-structure opportunity rather than additional supplied inputs within the current opportunity.
+
+This should be represented as a firing/opportunity cap, not as a family.
+
+## 8. Combo relationship
+
+Infinite-combo potential remains separate from processor mechanics.
+
+A card may:
+
+- participate in a loop without being independently repeatable;
+- be a repeatable processor without forming a combo;
+- be both;
+- be neither.
+
+Future combo graph work should use producer/consumer signatures rather than retrofit `Engine` membership.
+
+## 9. Searcher B consequence
+
+Searcher B should compare the canonical processor coordinates directly.
+
+A user searching `engine` can receive a derived view, but similarity should not be dominated by whether two cards cross a custom boolean Engine threshold.
+
+This change preserves the useful discoveries from the earlier Engine work while removing the weakest part: a project-specific redefinition of a broad community noun.
+
+## 10. Control boundary
+
+No S16B freeze, broad corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
