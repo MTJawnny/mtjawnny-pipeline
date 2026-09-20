@@ -1,13 +1,13 @@
 # Future State — Complete My Deck Probabilistic Context
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-DIRECTED FUTURE PRODUCT CONCEPT — TABLED; NO CURRENT IMPLEMENTATION AUTHORIZATION**
+**Revised:** 2026-09-20 after Objective 6 adversarial audit  
+**Status:** **CAPTAIN-DIRECTED FUTURE PRODUCT CONCEPT — TABLED; NO CURRENT IMPLEMENTATION AUTHORIZATION**  
+**Current semantic routing:** `docs/architecture/preflight/s16b/OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
 ## 1. Purpose
 
-This document isolates the future probabilistic/deck-context direction previously recorded inside `docs/architecture/FOUNDRY-PRODUCT-INTERACTION-MODEL-2026-09-18.md`.
-
-It is intentionally separate from the current Foundry core.
+This document isolates the future probabilistic/deck-context direction from the current Foundry core.
 
 Current Foundry canonical semantics should answer:
 
@@ -17,7 +17,7 @@ A later Complete My Deck layer may answer:
 
 > **How reliably, how early, and at what practical throughput is this deck likely to realize that function?**
 
-Deck composition must not rewrite canonical card semantics.
+Deck composition must not rewrite canonical card mechanics.
 
 ---
 
@@ -34,7 +34,7 @@ canonical Foundry semantic substrate
 -> explainable recommendation or deck-completion suggestion
 ```
 
-The future strategic layer consumes canonical truth; it does not replace it.
+The strategic layer consumes canonical truth; it does not replace it.
 
 ---
 
@@ -49,15 +49,19 @@ Important retained facts include:
 - source/host requirements;
 - qualifying input identity and quantity;
 - zones and destinations;
-- timing/windows;
-- trigger granularity;
+- timing / Permission Windows;
+- trigger and input aggregation;
 - whether input is consumed;
-- whether output is capped/compressed/scalable;
+- output magnitude and multiplicity;
+- intrinsic firing/opportunity caps;
 - setup dependency vs operating dependency;
-- turn-structure bounds;
 - resource conversions;
-- Card Access / Tutor / Ramp / Cost Reduction / recursion support;
-- producer/consumer event signatures.
+- Card Use Permission and `PLAY`/`CAST` distinction;
+- Tutor / Sample Selection / Library Traversal facts;
+- Ramp / Cost Reduction / Alternative Cost / Payment Method facts;
+- Additional Execution and copy provenance;
+- Producer / Consumer Signatures;
+- typed resource facts and Card Resource Delta inputs.
 
 Governing maxim:
 
@@ -75,14 +79,14 @@ Potential methods include:
 - deterministic state models;
 - Monte Carlo simulation;
 - turn-by-turn resource simulations;
-- conditional models incorporating tutors, draw, recursion, ramp, cost reduction, alternate costs, and mulligans.
+- conditional models incorporating tutors, draw/access, recursion, ramp, cost/payment mechanics, mulligans, and interaction.
 
 The output should expose material assumptions rather than collapse everything into an unexplained score.
 
 Preferred explanation shape:
 
-1. identify the semantic function being evaluated;
-2. identify the deck variables that enable/inhibit it;
+1. identify the canonical function or processor behavior being evaluated;
+2. identify the deck variables that enable or inhibit it;
 3. report probability / expected timing / expected throughput where justified;
 4. explain which variables materially drove the result.
 
@@ -90,29 +94,31 @@ Avoid opaque `63/100 synergy` style output as the sole explanation.
 
 ---
 
-## 5. Explore example
+## 5. Explore fixture
 
-Explore remains canonical Ramp/card-resource functionality even when a particular deck has too few lands to exploit its extra-land permission reliably.
+Explore remains canonical Ramp behavior regardless of deck composition because it grants an additional-land-play opportunity in addition to drawing a card.
 
-A later Complete My Deck layer could estimate:
+A later Complete My Deck layer may estimate:
 
-- probability of having enough lands to cast Explore on a relevant turn;
-- probability another playable land remains after the normal land drop;
-- expected turn when the additional-land permission is realizable;
+- probability of having enough mana to cast Explore at a relevant time;
+- probability an additional playable land remains after the normal land play;
+- expected turn when the extra-land permission is realizable;
 - mulligan effects;
-- effect of draw/Card Access on finding lands;
-- land-to-hand/tutor effects;
-- other ramp changing the practical cast/realization turn.
+- Card Access effects on finding lands;
+- land-to-hand / Tutor effects;
+- other Ramp effects changing the cast/realization turn.
 
 A raw rule such as `25 lands => Explore bad` is too crude. Other deck variables can materially change realization.
 
 ---
 
-## 6. Sram example
+## 6. Sram fixture — processor throughput without canonical Engine membership
 
-Sram, Senior Edificer remains a canonical Card Engine even if placed in a deck with very few Auras, Equipment, or Vehicles.
+The Objective 6 audit demoted `Engine` and `Card Engine` from canonical ontology membership to derived/search/community labels over harder processor facts.
 
-Future deck-context reasoning asks whether the deck supplies useful fuel.
+Sram, Senior Edificer remains a useful throughput fixture because its Oracle-defined behavior listens for qualifying Aura, Equipment, and Vehicle casts and can draw a card for each qualifying event.
+
+Future deck-context reasoning asks whether the deck supplies usable fuel.
 
 Raw qualifying-card count is insufficient.
 
@@ -121,7 +127,7 @@ Two decks could each contain 30 qualifying Sram inputs but have very different p
 - one set of inputs is mostly cheap;
 - the other is mostly expensive;
 - color requirements differ;
-- ramp/cost reduction differs;
+- ramp/cost reduction/payment methods differ;
 - card access differs;
 - recursion differs;
 - expected castability differs.
@@ -131,12 +137,14 @@ Useful future measures include:
 - qualifying input count;
 - mana-cost/value distribution;
 - color/castability distribution;
-- probability of one or more usable inputs when Sram is active;
+- probability of one or more usable inputs while Sram is active;
 - expected number of qualifying casts in one turn;
 - expected trigger throughput by turn/resource state;
-- expected delay until the engine begins generating card resources.
+- expected delay until the processor begins generating additional card access.
 
-The same pattern applies to sacrifice engines, landfall engines, artifact engines, and other mechanisms where raw support count is not equivalent to usable throughput.
+The same pattern applies to sacrifice processors, landfall processors, artifact processors, scheduled recurring sources, and other mechanisms where raw support count is not equivalent to realized throughput.
+
+The UI may still let a player search for `card engine`; that search is derived from processor facts rather than a canonical `CARD_ENGINE = true` label.
 
 ---
 
@@ -155,7 +163,7 @@ Potential evidence includes:
 - sideboard information;
 - other available metadata.
 
-Format/player-count context can matter both for strategy and for some derived semantics such as multiplayer Card Advantage accounting.
+Format/player-count context can matter for strategy and for derived multiplayer resource accounting.
 
 ---
 
@@ -163,10 +171,11 @@ Format/player-count context can matter both for strategy and for some derived se
 
 Current Foundry core remains descriptive:
 
-- what functions are represented;
-- which cards perform them;
+- what canonical functions and mechanical signatures are represented;
+- which cards produce or consume relevant events/resources;
 - how cards are mechanically similar/different;
-- how a proposed substitution changes factual semantic counts/coordinates.
+- how a proposed substitution changes factual semantic counts/coordinates;
+- how typed resource/accounting facts change when a defined comparison context exists.
 
 Complete My Deck is the later layer allowed to make strategic recommendations.
 
