@@ -1,24 +1,23 @@
-# Objective 6 — Top-Library Access Ruling
+# Objective 6 — Top-Library Access — Freeze-Candidate Ruling
 
 **Date:** 2026-09-19  
-**Status:** CAPTAIN-APPROVED SEMANTIC TAG/FACET — naming and final whole-vocabulary validation still pending.  
-**Authority boundary:** This is a semantic decision record only. It does not freeze S16B, accept implementation, merge PR #70, move the accepted implementation head, resume AQ4, activate Bridge v0, authorize Step6, or move `main`.
+**Revised:** 2026-09-20 after whole-vocabulary and naming audit  
+**Status:** **SURFACED SEMANTIC FACET — FREEZE CANDIDATE, NOT FROZEN**  
+**Current routing:** `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
-## Captain decision
+## 1. Structural decision
 
-**Top-Library Access** is a real surfaced semantic tag/facet in Foundry.
+**Top-Library Access** survives the adversarial audit as a surfaced include/exclude facet.
 
-It must not exist only as a hidden low-level coordinate.
+It is not merely a hidden zone coordinate because players need to explicitly search for or exclude cards that grant permission to use the current top card of a library.
 
-Primary product reason: players should be able to explicitly **include or exclude** cards that grant access to the top of a library in search, Thesaurus, Explorer, Deck Workspace, and later substitution/recommendation workflows.
+The name survives the global naming audit.
 
-The current name is provisional and must be reconsidered during the later cool-name audit, even if the concept remains machine-facing or tag-facing rather than a top-level public tree.
+## 2. Hard boundary
 
-## Hard boundary
+Top-Library Access means an effect grants meaningful permission to **play, cast, or otherwise use the card currently occupying the top position of a library**, subject to eligibility restrictions.
 
-Top-Library Access means that an effect grants meaningful permission to **use, play, cast, or otherwise directly deploy the current top card of a library** while it remains the top card or top-position candidate.
-
-The tag is about **ongoing or conditional access to the current top card**, not merely about interacting with the top of the library.
+The facet is permission-based, not word/zone-based.
 
 The following do **not** qualify by themselves:
 
@@ -27,118 +26,128 @@ The following do **not** qualify by themselves:
 - rearranging or filtering top cards;
 - revealing the top card;
 - looking at the top card;
-- moving a known card onto the top of the library.
+- moving a known card onto the top of a library.
 
-Those operations may overlap with Tutor, Card Filtering, library inspection/visibility, or destination coordinates, but they are not Top-Library Access unless the effect also grants permission to use the top card.
+Those operations may involve the same position without granting use permission.
 
 ### Critical negative anchor — Enlightened Tutor
 
 **Enlightened Tutor is not Top-Library Access.**
 
-Its relevant function is targeted library retrieval with `destination = library_top`. The fact that the retrieved card becomes the top card does not grant permission to play or cast that card from the library.
+Its function is Tutor with `destination = library_top`. It changes which card occupies the top position but grants no permission to use that card from the library.
 
-Therefore Foundry must not treat `Tutor -> library top` as semantically equivalent or near-equivalent to continuous top-library access.
+Shared `library_top` involvement must therefore contribute little or no direct similarity between Tutor-to-top and top-use-permission effects.
 
-### Positive contrast
+## 3. Positive anchors
 
-An effect of the form "keep/reveal the top card of your library; if it is an eligible card, you may cast/play it" is Top-Library Access because it grants direct permission to use the current top card from the library.
+- **Future Sight** — continuous top-card use permission.
+- **Mystic Forge** — restricted top-card CAST permission.
+- **Oracle of Mul Daya** — top-card land PLAY permission plus additional-land-play capacity.
+- **Bolas's Citadel** — top-card spell casting with an Alternative Cost using life.
+- **Experimental Frenzy** — top-card permission paired with denial of ordinary hand play/cast.
+- **Xanathar, Guild Kingpin** — opponent-library top-card access during a defined Permission Window.
 
-The reveal component is only a visibility fact. The **permission** is what makes it Top-Library Access.
+## 4. Required underlying facts
 
-## Canonical anchors
-
-Canonical anchors include effects such as:
-
-- **Future Sight**-style continuous permission to play from the top of the controller's library;
-- **Mystic Forge**-style restricted top-library casting access;
-- **Oracle of Mul Daya**-style top-library land-play access;
-- **Bolas's Citadel**-style top-library casting access with alternate life payment.
-
-## Required mechanical coordinates
-
-Top-Library Access must preserve at least:
+Top-Library Access must be backed by Card Use Permission and related coordinates, including:
 
 - `source_zone = library_top`;
-- whose library is being accessed;
+- whose library is accessed;
+- owner/provenance of the current top card;
 - visibility/reveal state;
-- `permission = PLAY` versus `permission = CAST` versus other direct deployment permission;
-- card-type or other eligibility restrictions;
-- ordinary payment versus alternate/modified payment;
-- access horizon / duration;
+- `permission_action = PLAY | CAST | other explicit use`;
+- eligibility restrictions;
+- Permission Window;
+- ordinary timing restrictions and any overrides;
+- ordinary payment, Alternative Cost, Cost Reduction, or Payment Method facts;
+- additional land-play allowance where relevant;
 - continuous versus capped access;
-- whether changing the top card refreshes access to a new candidate;
-- any additional land-play permission or other deployment constraints;
-- ownership/provenance of the accessible card.
+- whether removal of the current top card refreshes access to the new top card;
+- source/link dependency where permission depends on another object.
 
-Visibility alone is not sufficient for membership. `look` / `reveal` without use permission belongs in separate inspection/visibility facts.
+Visibility alone is not membership.
 
-## Important distinction: PLAY vs CAST
+## 5. PLAY vs CAST
 
-Foundry must preserve `PLAY` and `CAST` as distinct permissions.
+The distinction is hard and must survive.
 
-`PLAY` may permit a land to be played when normal land-play rules allow it. `CAST` does not permit land play.
+- `PLAY` can include a land play when ordinary land-play rules permit it.
+- `CAST` does not permit playing a land.
 
-This is the same hard distinction already accepted for alternate-zone access generally and must remain visible for top-library access as well.
+A land on top under Mystic Forge may be visible but is not usable through the Forge's CAST permission. Oracle of Mul Daya's PLAY permission can cover a land subject to ordinary land-play constraints.
 
-## Relationship to Tutor
+## 6. Card Resource Delta interaction
 
-Tutor and Top-Library Access are wholly different mechanisms even when a Tutor's destination is the top of the library.
+Top-Library Access can affect **Card Resource Delta** when it newly makes an underlying card-origin resource accessible.
 
-- **Tutor** changes which card occupies or reaches a destination by searching a broader library domain.
-- **Top-Library Access** changes what the player is allowed to do with the card that currently occupies the top position.
+Current freeze-candidate accounting rules:
 
-A card may theoretically contain both mechanisms, but neither implies the other.
+1. categorical eligibility matters (`CAST` does not cover a land);
+2. present mana affordability is not required for resource identity;
+3. timing/land-play availability remains a separate current-actionability projection;
+4. the current top position normally exposes one underlying card at a time;
+5. refreshability after that card leaves is throughput/access structure, not infinite simultaneous stock;
+6. merely revealing the top card creates no card-resource access;
+7. Tutor-to-top creates no Top-Library Access absent a separate permission.
 
-Similarity and substitution systems must not infer strong functional equivalence merely from shared `library_top` coordinates.
+Do not create a separate Card Access Differential metric to handle these cases.
 
-## Relationship to Card Access
+## 7. Relationship to neighboring structures
 
-Top-Library Access belongs under the broader Card Access navigation/semantic umbrella, but it is primarily a surfaced tag/facet rather than necessarily a large standalone ontology branch.
+Top-Library Access may compose with:
 
-It may overlap with:
+- Card Use Permission;
+- Permission Window;
+- Draw/inspection/reveal facts;
+- Card Filtering;
+- Sample Selection;
+- Tutor;
+- Library Traversal;
+- Alternative Cost / Payment Method / Cost Reduction;
+- Additional Land Play;
+- Permission Denial;
+- Card Resource Delta.
 
-- Alternate-Zone Play/Cast Access;
-- Card Resource Differential accounting;
-- Cost Reduction / Alternate Payment;
-- additional land deployment;
-- visibility/reveal information;
-- Repeat-Use / Additional Execution where applicable.
+Composition does not make these structures synonymous.
 
-The overlap is intentional. Foundry should represent the composition rather than forcing one exclusive family assignment.
+## 8. Searcher B / UI consequence
 
-## Player-facing search requirement
+Players should be able to:
 
-The concept must be queryable both positively and negatively.
+- include/exclude Top-Library Access;
+- require PLAY or CAST permission;
+- distinguish own-library from opponent-library access;
+- restrict by eligibility;
+- restrict by Permission Window;
+- distinguish continuous access from resolution-only opportunities;
+- distinguish top-use permission from Tutor-to-top, reveal-only, filtering, or traversal.
 
-Examples:
+The broad Card Access umbrella may group these for navigation, but similarity should be driven by the harder permission/operation facts.
 
-- include cards with Top-Library Access;
-- exclude cards with Top-Library Access;
-- require `permission = PLAY`;
-- require `permission = CAST`;
-- exclude land-only access;
-- restrict to continuous access;
-- restrict by access horizon or payment mode.
+## 9. Remaining validation
 
-This is a factual filtering capability, not a strategic recommendation.
+Top-Library membership itself is considered structurally strong after the whole-vocabulary audit.
 
-## Validation requirements for final audit
+Remaining validation belongs primarily to the bounded Card Resource Delta stateful fixture set, especially:
 
-The later whole-vocabulary audit must confirm that:
+- CAST access with a land on top;
+- PLAY access with/without remaining land-play allowance;
+- continuous refresh after a top card leaves;
+- temporary source-dependent permission;
+- opponent-owned top-card access;
+- simultaneous loss of access elsewhere, as with Experimental Frenzy-like restrictions.
 
-1. Top-Library Access remains retrieval-useful as a surfaced tag;
-2. it does not duplicate Alternate-Zone Access in a way that harms Searcher B;
-3. PLAY versus CAST remains recoverable and visible;
-4. cards with materially different restrictions remain distinguishable through coordinates;
-5. the tag improves include/exclude querying without forcing noun proliferation elsewhere;
-6. interaction with Card Filtering, Tutor, Bounded Extraction, Sequential Library Traversal, and Graveyard Access remains non-confusing;
-7. Tutor-to-top cards such as Enlightened Tutor do not receive Top-Library Access absent an actual use permission;
-8. reveal/look-only effects do not receive the tag absent an actual use permission;
-9. similarity ranking does not over-weight the shared `library_top` location across otherwise unrelated mechanisms;
-10. the chosen final name is clear, concise, player-recognizable, and passes the cool-name audit.
+## 10. Control boundary
 
-## Control boundary
+This record does not authorize:
 
-This ruling preserves semantic direction only. It does not authorize implementation acceptance, semantic freeze, merge, deployment, AQ4 resumption, Bridge activation, Step6, accepted-head movement, or main-branch movement.
+- S16B freeze;
+- broad corpus reclassification;
+- implementation acceptance;
+- merge;
+- accepted-head/main movement;
+- AQ4 resumption;
+- Bridge activation;
+- Step6.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
