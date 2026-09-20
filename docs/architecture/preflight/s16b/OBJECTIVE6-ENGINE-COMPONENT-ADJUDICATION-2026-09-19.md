@@ -76,7 +76,37 @@ The Engine test should therefore ask both:
 
 Nest answers the first question yes and the second question no under the Captain adjudication.
 
-## 6. Control boundary
+## 6. Engine membership is independent of infinite-combo potential — CAPTAIN-APPROVED
+
+Infinite-combo potential must **not** be part of the Engine membership predicate.
+
+An infinite combo is a separate relationship/state in which a set of cards can produce an indefinitely repeatable loop or a game-winning outcome under the relevant rules and prerequisites. Whether a card participates in such a loop does not make it more or less of an Engine.
+
+The semantic questions are separate:
+
+- **Engine:** does this card provide a reusable processing mechanism that repeatedly advances resources, actions, or game state when supplied with ordinary qualifying inputs?
+- **Combo component:** can this card participate in a multi-card interaction loop?
+- **Infinite / deterministic win line:** can an assembled interaction repeat indefinitely or otherwise produce a game-winning state?
+
+An Engine is therefore better understood as **infrastructure that helps drive a game plan forward**, not as a synonym for a win condition.
+
+Positive contrast:
+
+- **Sram, Senior Edificer** can be a Card Engine because ordinary qualifying inputs — casting Auras, Equipment, and Vehicles — repeatedly produce card-resource output. Sram need not form an infinite loop and need not win the game directly.
+- **Nest of Scarabs** can be a powerful combo component and may participate in infinite creature/death-trigger assemblies, but that win-line potential does not establish Engine membership.
+
+Accordingly:
+
+> **Never use “can go infinite,” “participates in an infinite combo,” or “forms a game-winning loop” as positive evidence for Engine membership. Engine semantics measure reusable value-processing structure; combo/win-condition semantics are separate.**
+
+This also means a card may be:
+
+- an Engine with no known infinite combo;
+- both an Engine and a combo component;
+- a combo component but not an Engine;
+- neither.
+
+## 7. Control boundary
 
 This document records a semantic refinement only. It does **not** authorize:
 
