@@ -1,150 +1,182 @@
-# Objective 6 — Card Access Accepted Components
+# Objective 6 — Card Access Components — Audit Revision
 
 **Date:** 2026-09-19  
-**Status:** CAPTAIN-APPROVED semantic components; names are provisional and all are explicitly subject to the later cool-name audit, including machine-facing/internal labels.  
-**Control boundary:** Semantic documentation only. This does not freeze S16B, accept implementation, merge PR #70, move accepted head, resume AQ4, activate Bridge v0, authorize Step6, or move `main`.
+**Status:** **MECHANICAL COMPONENTS RETAINED; STRUCTURAL TYPES REVISED; FINAL NAMES PENDING GLOBAL NAMING AUDIT**
 
-## Governing naming rule
+## 1. Purpose
 
-All accepted components in this record are semantically accepted but **not naming-final**. The later vocabulary/cool-name audit may rename public or internal concepts for clarity, player recognition, consistency, and quality of terminology without reopening the mechanical distinction itself unless new evidence requires it.
+The earlier component review correctly identified several load-bearing Card Access facts. The whole-vocabulary adversarial audit changes **what kind of semantic thing** several of them are.
 
-## 1. Access Horizon — ACCEPTED METRIC
+The project should preserve the facts without turning every useful fact into a family/noun.
 
-Foundry must expose how long an accessed card remains usable.
+## 2. Permission Window (formerly working `Access Horizon`)
 
-At minimum, preserve mechanically distinct horizons such as:
-- this turn / until end of turn;
-- through the end of the controller's next turn;
-- until a specified next step/end step;
+**Structural type:** coordinate on a use permission.
+
+Preserve expiration/duration shapes including:
+
+- resolution-only;
+- until end of current turn;
+- through end of next turn;
+- until named step/phase/event;
+- while a source/condition remains true;
+- while the card remains in a zone;
 - indefinite;
-- while a condition/source remains true;
-- one immediate resolution-only opportunity.
+- recurring/capped windows.
 
-This is intended to be visible to players where relevant because two otherwise similar access effects may offer materially different opportunity windows.
+The duration is player-visible and filterable, but it is not a separate family or independent advantage metric.
 
-Access horizon is not by itself equivalent to Card Resource Differential; it is a separate factual property affecting opportunity for realization.
+## 3. Alternate-zone use permission
 
-## 2. Alternate-Zone Play/Cast Access — ACCEPTED
+**Structural type:** primitive permission assertion.
 
-Foundry must distinguish permission to **play** a card from permission to **cast** a card.
+Preserve at minimum:
 
-- `play` permission can include lands when all other land-play rules are satisfied;
-- `cast` permission applies only to cards that can be cast as spells and does not permit land plays.
-
-Required coordinates include at least:
-- source zone;
-- card ownership/control provenance;
-- permission kind: `PLAY` vs `CAST`;
-- eligible card types or restrictions;
-- access horizon;
-- timing restrictions/overrides;
-- payment handling: normal cost, alternate cost, without paying mana cost, or other modification;
+- permission holder;
+- owner/provenance of the underlying card;
+- source zone/position;
+- `PLAY` vs `CAST` vs direct-deployment action;
+- card/characteristic eligibility;
+- permission window;
+- timing overrides/restrictions;
+- payment method / alternative cost;
+- source/link dependency;
 - unused-card disposition.
 
-### Anchor: Ragavan, Nimble Pilferer
+### Hard rule — PLAY vs CAST
 
-Ragavan exiles the top card of the damaged player's library and permits the controller to **cast** it until end of turn. A land exiled this way cannot be played. Ragavan therefore demonstrates why `CAST` and `PLAY` cannot be collapsed.
+`PLAY` and `CAST` remain distinct.
 
-Ragavan can simultaneously produce:
-- a retained creature source;
-- a Treasure mana object;
-- temporary access to an opponent-owned card;
-- an end-of-turn access horizon.
+Ragavan is the canonical cast-only anchor: an exiled land cannot be played through its permission.
 
-Those resources must remain separately represented rather than collapsed into one generic advantage value.
+Praetor's Grasp and Haldan demonstrate `PLAY` permissions that can cover lands when other rules permit land play.
 
-## 3. Sequential Library Traversal — ACCEPTED
+## 4. Top-Library Access
 
-Foundry needs a mechanical access pattern for operations that traverse cards in library order until a qualifying stopping condition is reached, then grant privileged use/access to one or more resulting cards.
+**Structural type:** surfaced include/exclude facet over use-permission assertions.
 
-This remains distinct from:
-- Tutor/search;
-- bounded sample extraction;
-- ordinary Filtering;
-- literal Draw.
+This remains separately queryable because players need to include/exclude the pattern directly.
 
-Relevant coordinates include:
-- whose library/libraries are traversed;
-- traversal direction/order;
+Do not infer it from `library_top` involvement alone. Enlightened Tutor remains a hard negative because putting a card on top grants no use permission.
+
+## 5. Ordered Library Traversal (formerly working `Sequential Library Traversal`)
+
+**Structural type:** event/output signature; optionally surfaced facet.
+
+The weird-card audit broadens the stop architecture beyond Cascade/Discover.
+
+Preserve:
+
+- library owner(s);
+- ordered traversal direction;
+- exposure action;
+- continue/stop rule;
 - stopping predicate;
-- whether the qualifying card is selected or mechanically determined;
-- whether multiple players/libraries are traversed;
-- result destination/permission;
-- cast/play permission;
-- payment modification;
-- nonqualifying-card disposition.
+- qualifying-card count expression (`first`, `Xth`, etc.);
+- player-controlled stop where present;
+- disposition of traversed cards;
+- action applied to qualifying/result cards.
 
-### Anchors
+Anchors now include:
 
-- Cascade: traverse controller library until the first qualifying nonland card by mana-value restriction, with optional cast permission without paying its mana cost.
-- Discover: traverse until the first qualifying nonland card by value threshold, then either cast it without paying its mana cost or put it into hand.
-- Etali, Primal Conqueror: independently traverse the top of **each player's** library until that player reveals/exiles a nonland card, then permit casting any number of those nonland cards without paying their mana costs.
+- Cascade;
+- Discover;
+- Etali, Primal Conqueror;
+- Ad Nauseam;
+- Primal Surge;
+- Possibility Storm;
+- official preview **Dack Fayden, Helping Hand**, which stops after X creature cards where X is the number of opponents.
 
-Etali is an important multiplayer anchor because Sequential Library Traversal may operate across multiple owners/libraries in one event.
+## 6. Additional Execution (formerly `Repeat-Use / Additional Execution`)
 
-## 4. Repeat-Use / Additional Execution — ACCEPTED
+**Structural type:** event/output signature + coordinates.
 
-Foundry must represent when one underlying card resource can generate multiple distinct uses/executions over time without pretending that a new physical/card-origin resource was created.
+The common fact is that one source/underlying card can generate more than one spell/action execution opportunity. Do not infer that another physical/card-origin resource exists.
 
-Examples include patterns such as flashback, rebound, aftermath-like second use, retrace-like recasting, and other effects that give an existing card another spell/use opportunity.
+Distinguish:
 
-Required facts may include:
-- underlying card identity/resource;
-- first-use zone;
-- later-use source zone;
-- number/bounds of additional executions;
-- alternate/additional costs;
-- timing/access horizon;
-- whether later use consumes/exiles the card;
-- whether the repeated execution is optional or automatic.
+- same underlying card re-cast;
+- delayed re-cast permission;
+- recurring graveyard permission;
+- buyback/return enabling reuse;
+- copy creation followed by casting the copy;
+- repeatable copying from an imprinted/stored card;
+- finite vs reusable execution count;
+- source zone;
+- costs/payment;
+- exile/consumption/replacement after execution.
 
-This component is distinct from Card Resource Differential, though repeated execution may contribute to broader realized value.
+Flashback, Rebound, Retrace, Mizzix's Mastery, Mnemonic Deluge, Isochron Scepter, and Arcane Bombardment are required adversarial fixtures.
 
-## 5. Resource-Type Separation — ACCEPTED
+## 7. Typed Resource Model (formerly `Resource-Type Separation`)
 
-Foundry must preserve materially different resources as separate dimensions instead of converting all generated value into a single generic advantage score.
+**Structural type:** substrate/data-model invariant, not a card concept.
 
-Simple governing rule:
+Never flatten unlike resources into one generic value score.
 
-> **Say what resource was gained, lost, preserved, or accessed. Do not call unlike resources the same thing merely because all are valuable.**
+At minimum keep distinct:
 
-At minimum, Foundry should be capable of distinguishing:
-- card-origin resources / Card Resource Differential inputs;
-- temporary card access permissions;
-- generated board objects/material such as creature tokens;
-- mana resources and mana-producing objects such as Treasure;
-- repeat-use/additional-execution opportunities;
+- underlying card-origin resources;
+- temporary/conditional permissions;
+- spell/card copies and execution opportunities;
+- generated board objects/tokens;
+- mana / mana-capable objects;
 - life;
-- counters/stored state;
-- other mechanically distinct resources when necessary.
+- counters / stored capacity;
+- other mechanically defined resource/state types.
 
-### Why this matters
+Ragavan is a strong fixture because one combat-damage event can produce both a Treasure and temporary opponent-card cast access.
 
-- Divination primarily changes card-origin resources.
-- Dragon Fodder consumes one card and creates two creature-token objects; token material is not silently converted into two card-origin resources.
-- Big Score can simultaneously change hand/card resources and create Treasure mana objects.
-- Ragavan can retain a creature, create Treasure, and grant temporary cast-only access to an opponent-owned card.
+Uldaros Theorix is a stronger modern fixture because one effect can involve underlying grave cards, copies, free spell executions, and resulting permanent tokens.
 
-The purpose is decomposition, not value judgment. Later strategic systems may reason about how desirable or powerful those resources are in context.
+## 8. Card Resource Differential
 
-## 6. Card Resource Differential relationship
+**Structural type:** derived accounting fact, not another Card Access family.
 
-`Card Resource Differential` remains Foundry's current working name for its narrower factual accounting of distinct usable card-origin resources. It is itself subject to the later naming audit.
+It consumes underlying typed resource/access facts; it does not erase their mechanisms.
 
-Resource-Type Separation protects that metric from swallowing token production, mana generation, repeat-use opportunity, and other unlike resources.
+Important rules now preserved in its dedicated revised record:
 
-## 7. Naming audit requirement
+- count distinct underlying card-origin resources, not permission clauses or copies;
+- present mana affordability is not required for resource identity;
+- categorical permission eligibility still matters (`CAST` does not cover lands);
+- current actionability/timing remains a separate projection;
+- continuous top access is one current underlying top-card slot plus refreshability, not infinite simultaneous resources;
+- repeated executions of one card remain execution multiplicity rather than extra card-origin stock.
 
-The later naming audit must review **all** accepted terms here, including internal-only terms:
-- Access Horizon;
-- Alternate-Zone Play/Cast Access;
-- Sequential Library Traversal;
-- Repeat-Use / Additional Execution;
-- Resource-Type Separation;
-- Card Resource Differential.
+There is **no separate Card Access Differential metric**.
 
-Semantic acceptance does not imply these are final labels.
+## 9. Card Filtering / finite-sample selection
 
-## Control reminder
+Card Filtering is now treated as a broad UI/search umbrella over harder operation signatures.
 
-PRESERVE TRUTH, NOT PLUMBING.
+Finite-sample selection remains a surfaced signature/facet with sample depth, selection authority, selected count, eligibility, destination/use, and unselected disposition.
+
+This keeps Dig Through Time / Collected Company / Plunge into Darkness distinct from Faithless Looting / scry / surveil / reorder-only effects.
+
+## 10. Tutor
+
+Tutor remains a strong player-facing functional concept for broader-library search/retrieval.
+
+Destination, search domain, quantity, chooser, reveal, and CR 701.23 failure-to-find behavior are coordinates beneath the surfaced concept.
+
+## 11. Resource and mechanism composition
+
+One card may legitimately carry several independent facts.
+
+Examples:
+
+- **Ragavan:** temporary cast access + opponent provenance + Treasure creation + combat-damage trigger;
+- **Bolas's Citadel:** Top-Library Access + PLAY/CAST + formal alternative life cost for spells;
+- **Collected Company:** finite-sample selection + Direct Placement;
+- **Etali:** ordered multiplayer traversal + cast permission + formal zero-mana alternative cost;
+- **Underworld Breach:** graveyard CAST permission + alternative Escape costs + shared graveyard fuel;
+- **Mnemonic Deluge:** graveyard targeting + card-copy generation + multiple free copy executions.
+
+Foundry should preserve the composition rather than choose one exclusive branch.
+
+## 12. Control boundary
+
+No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
+
+> **PRESERVE TRUTH, NOT PLUMBING.**
