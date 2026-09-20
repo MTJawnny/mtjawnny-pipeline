@@ -1,25 +1,33 @@
 # Objective 6 — Post-Audit Current State
 
 **Date:** 2026-09-19  
+**Revised:** 2026-09-20 after stale-document cleanup  
 **Status:** **CURRENT S16B OBJECTIVE 6 SEMANTIC ROUTING / FREEZE CANDIDATE — NOT FROZEN**  
-**Scope:** Documentation-only state on PR #70.  
-**Governing principle:** **PRESERVE TRUTH, NOT PLUMBING.**
+**Scope:** Documentation-only state on PR #70  
+**Governing principle:** **PRESERVE TRUTH, NOT PLUMBING.**  
+**Research principle:** **THOROUGHNESS OVER THROUGHPUT.**
 
-## 1. Why this file exists
+## 1. Authority and routing
 
-The 2026-09-19 Objective 6 session deliberately invalidated several earlier working decisions after a weird-card corpus attack and whole-vocabulary adversarial audit.
+For a cold reader, this file is the current Objective 6 semantic routing layer on PR #70.
 
-Older session ledgers, handoffs, and working rulings remain useful historical evidence, but some of them contain statements that are no longer current, including the former canonical Engine hierarchy and pre-audit Card Filtering / Bounded Extraction structure.
+The earlier pre-audit decision ledger, Captain semantic-decision record, completed audit handoff, rejected Card Access Differential artifact, and superseded Card Advantage/Engine refinement have been removed from the active S16B surface. Their history remains recoverable in Git.
 
-For a cold reader, **this file is the current routing layer for Objective 6 semantic design on PR #70.**
+Cleanup record:
 
-If an older Objective 6 document conflicts with the post-audit artifacts listed below, the post-audit artifact wins as the current candidate direction. This does not convert the candidate into a frozen architecture.
+`OBJECTIVE6-POST-AUDIT-CLEANUP-2026-09-20.md`
+
+If an older surviving research document contains a recommendation or working term that conflicts with the post-audit evidence chain below, the post-audit evidence/current candidate record controls. Research evidence is not semantic authority by itself.
+
+No content in this file constitutes an actual S16B freeze.
+
+---
 
 ## 2. Ordered adversarial program completed
 
 The required order was preserved:
 
-1. **Weird-card research / adversarial corpus hunt**
+1. **Weird-card adversarial corpus hunt**
    - `OBJECTIVE6-WEIRD-CARD-ADVERSARIAL-CORPUS-HUNT-2026-09-19.md`
    - initial durable commit: `c3407c6`
 2. **Whole-vocabulary adversarial semantic audit**
@@ -28,8 +36,12 @@ The required order was preserved:
 3. **Global naming audit**
    - `OBJECTIVE6-GLOBAL-NAMING-AUDIT-FREEZE-CANDIDATE-2026-09-19.md`
    - initial durable commit: `1b3bc8b`
+4. **Stale-document cleanup**
+   - `OBJECTIVE6-POST-AUDIT-CLEANUP-2026-09-20.md`
 
-Subsequent commits applied the structural and naming conclusions back into the key candidate records.
+The weird-card evidence came first; structural corrections followed; naming followed structure.
+
+---
 
 ## 3. Current structural verdict
 
@@ -44,7 +56,7 @@ Retain:
 - Permission Denial;
 - Hand Disruption.
 
-These names do not by themselves erase their lower-level mechanism, object, scope, duration, eligibility, or destination facts.
+These names do not erase lower-level mechanism, participant, scope, timing, restriction, destination, payment, or duration facts.
 
 ### Surfaced facets / tags / search views
 
@@ -65,23 +77,24 @@ Retain or promote:
 Preserve directly:
 
 - Draw;
-- Card Use Permission with `PLAY` vs `CAST`;
+- Card Use Permission;
+- `PLAY` versus `CAST`;
 - Permission Window;
-- Library Traversal + explicit stop rule;
+- Library Traversal plus explicit stop rule;
 - selection authority and cardinality;
 - source/destination/owner/controller/provenance;
 - Additional Execution;
 - copy/execution provenance;
 - Cost Reduction;
-- Alternative Cost in the formal CR sense;
+- Alternative Cost in the formal Comprehensive Rules sense;
 - Additional Cost;
 - Payment Method;
 - Direct Placement events;
 - Typed Resources;
 - Stored Capacity;
-- processor throughput/firing-cap facts;
+- processor input/aggregation/firing/output/retention facts;
 - Ramp mechanism/resource facts;
-- keyword-consequence Producer / Consumer Signatures.
+- Keyword Consequence Producer / Consumer Signatures.
 
 ### Derived accounting / product facts
 
@@ -90,9 +103,9 @@ Preserve directly:
 - Role Compression;
 - processor/throughput profiles.
 
-### Community / theory / strategic terms
+### Community / theory / strategic / search language
 
-Keep searchable and explainable without asserting them as canonical hard families where inappropriate:
+Keep searchable and explainable without forcing canonical hard-family membership:
 
 - Engine / Card Engine / Mana Engine and other Engine phrases;
 - Card Advantage / Virtual Card Advantage / Card Quality;
@@ -103,7 +116,7 @@ Keep searchable and explainable without asserting them as canonical hard familie
 - Burn;
 - Stax;
 - Sweeper / Board Wipe;
-- Lockdown pending a dedicated hard-boundary audit.
+- Lockdown pending dedicated boundary evidence.
 
 ### Retired canonical concepts
 
@@ -117,62 +130,97 @@ Keep searchable and explainable without asserting them as canonical hard familie
 - canonical Engine parent/child hierarchy;
 - Resource-Type Separation as an ontology noun.
 
+---
+
 ## 4. Key adversarial corrections
 
 ### Engine
 
-The prior `Engine is the canonical parent` decision is superseded.
+The former `Engine is the canonical parent` decision is superseded.
 
-The evidence supports hard processor facts such as input aggregation, firing multiplicity/cap, opportunity window, output magnitude/multiplicity, retention, external fuel, and feedback dependency. The word `Engine` is broader in player usage than the former Foundry predicate.
+The evidence supports hard processor facts such as:
 
-Therefore Engine remains a derived/search/community label over harder facts rather than a boolean ontology gate.
+- input/event kind;
+- input aggregation;
+- firing multiplicity and cap;
+- opportunity window;
+- output kind/magnitude/multiplicity;
+- processor retention;
+- future-eligibility effect;
+- external fuel;
+- stored capacity;
+- feedback dependency.
+
+`Engine` remains a derived/search/community label over those facts.
 
 ### Card Filtering / Sample Selection
 
-Generic Card Filtering is now a broad UI/search umbrella, not high-information semantic membership.
+Generic Card Filtering is a broad UI/search umbrella and low-information similarity signal.
 
-The independently queryable finite-sample pattern is **Sample Selection**. Plunge into Darkness proves the sample depth may be variable/player-controlled rather than a fixed small N.
+The independently queryable finite-sample pattern is **Sample Selection**.
+
+The sample may be fixed, variable, state-derived, resource-controlled, or large. Plunge into Darkness is the key proof that finite does not mean fixed/small.
 
 ### Card Resource Delta
 
 Former working name: Card Resource Differential.
 
-CRD is a **derived accounting fact** over distinct underlying card-origin resources and access, not a family.
+CRD is a **derived accounting fact** over distinct underlying card-origin resources/access, not a semantic family.
 
-Do not count spell copies, repeated executions, or the same physical card in a new zone as newly created card-origin resources.
+Do not count:
 
-Present mana affordability is a current-actionability fact, not a prerequisite for resource identity.
+- spell/card copies as additional card-origin resources;
+- repeated executions as additional underlying cards;
+- the same physical card again merely because it moved zones;
+- the source permanent twice merely because it persists while granting access.
+
+Present mana affordability belongs to current actionability/realization, not resource identity.
+
+Top-library access exposes the current eligible top card plus refreshability, not infinite simultaneous stock.
 
 ### Card Access Differential
 
 Retired. No replacement metric.
 
+A future `currently actionable` UI projection, if proven useful, must derive from existing permission/timing/land-play/payment/state facts.
+
 ### Payment semantics
 
-The old Alternate Payment umbrella is retired.
+The old `Alternate Payment` umbrella is retired.
 
-Distinguish:
+Keep distinct:
 
 - Cost Reduction;
-- Alternative Cost in the CR 118.9 sense;
+- Alternative Cost under CR 118.9;
 - Additional Cost;
 - Payment Method.
 
-Convoke, Delve, and Improvise belong to Payment Method facts, not formal Alternative Cost.
+Convoke, Delve, and Improvise are Payment Method facts, not formal Alternative Costs.
 
 ### Direct Placement
 
 Former working name: Deployment Bypass.
 
-The cast-vs-put distinction survives strongly. Omniscience is a critical negative: a free spell is still cast; Elvish Piper/Reanimate/Collected Company-style placement is not.
+The cast-versus-put distinction survives strongly.
 
-## 5. Current freeze-candidate names
+- Omniscience / Cascade / Discover free casts are still casts.
+- Elvish Piper / Reanimate / Collected Company-style battlefield placement is not a cast of the placed card.
 
-Use the global naming artifact for the full crosswalk. The largest changes are:
+### Top-Library Access
 
-- `Bounded Extraction` -> **Sample Selection**;
+Retains surfaced include/exclude value.
+
+Positive examples grant actual use permission for the current top card. Tutor-to-top, reveal-only, and reorder-only effects remain negative unless they independently grant use permission.
+
+`PLAY` and `CAST` remain hard-distinct.
+
+---
+
+## 5. Freeze-candidate naming crosswalk — key changes
+
+- `Card Prospecting` / `Bounded Extraction` -> **Sample Selection**;
 - `Access Horizon` -> **Permission Window**;
-- `Alternate-Zone Play/Cast Access` -> **Card Use Permission**;
+- alternate-zone play/cast umbrella -> **Card Use Permission** + source-zone facts;
 - `Sequential Library Traversal` -> **Library Traversal**;
 - `Repeat-Use / Additional Execution` -> **Additional Execution**;
 - `Resource-Type Separation` -> **Typed Resources**;
@@ -181,41 +229,78 @@ Use the global naming artifact for the full crosswalk. The largest changes are:
 - `Payment Substitution` -> **Payment Method**;
 - `turn_structure_bound` -> machine candidate **requires_new_opportunity**.
 
+The global naming artifact contains the full crosswalk.
+
+---
+
 ## 6. Current live candidate records
 
-Prefer these revised records over earlier versions where they conflict:
+Use these current/revised records where applicable:
 
 - `OBJECTIVE6-CARD-ACCESS-ACCEPTED-COMPONENTS-2026-09-19.md`;
-- `OBJECTIVE6-CARD-RESOURCE-DIFFERENTIAL-NAMING-RULING-2026-09-19.md` (filename historical; content now Card Resource Delta);
-- `OBJECTIVE6-CARD-FILTERING-BOUNDED-EXTRACTION-CONSOLIDATION-CANDIDATE-2026-09-19.md` (filename historical; content now Sample Selection);
+- `OBJECTIVE6-CARD-RESOURCE-DIFFERENTIAL-NAMING-RULING-2026-09-19.md` — historical filename; content is Card Resource Delta;
+- `OBJECTIVE6-CARD-FILTERING-BOUNDED-EXTRACTION-CONSOLIDATION-CANDIDATE-2026-09-19.md` — historical filename; content is Sample Selection;
 - `OBJECTIVE6-CARD-FILTERING-NAMING-RULING-2026-09-19.md`;
-- `OBJECTIVE6-ENGINE-HIERARCHY-2026-09-19.md` (now explicitly records hierarchy demotion);
+- `OBJECTIVE6-ENGINE-HIERARCHY-2026-09-19.md` — now records Engine hierarchy demotion;
 - `OBJECTIVE6-ENGINE-COMPONENT-ADJUDICATION-2026-09-19.md`;
-- `OBJECTIVE6-COST-REDUCTION-AND-ALTERNATE-PAYMENT-2026-09-19.md` (filename historical; content now split cost/payment model);
-- `OBJECTIVE6-NORMAL-DEPLOYMENT-BYPASS-BOUNDARY-2026-09-19.md` (filename historical; content now Direct Placement);
+- `OBJECTIVE6-COST-REDUCTION-AND-ALTERNATE-PAYMENT-2026-09-19.md` — historical filename; content is split cost/payment model;
+- `OBJECTIVE6-NORMAL-DEPLOYMENT-BYPASS-BOUNDARY-2026-09-19.md` — historical filename; content is Direct Placement;
 - `OBJECTIVE6-RAMP-DECISION-MAP-2026-09-19.md`;
-- `OBJECTIVE6-CARD-ADVANTAGE-ENGINE-REFINEMENT-2026-09-19.md` (explicit historical/superseded marker);
-- `OBJECTIVE6-KEYWORD-CONSEQUENCE-DISTILLATION-GATE-2026-09-19.md`.
+- `OBJECTIVE6-TOP-LIBRARY-ACCESS-RULING-2026-09-19.md`;
+- `OBJECTIVE6-CANTRIP-AND-TEMPORARY-EXILE-ACCESS-RULING-2026-09-19.md`;
+- `OBJECTIVE6-CARD-REPLACEMENT-RETIREMENT-RULING-2026-09-19.md`;
+- `OBJECTIVE6-KEYWORD-CONSEQUENCE-DISTILLATION-GATE-2026-09-19.md`;
+- `OBJECTIVE6-SEMANTIC-DISTILLATION-METHODOLOGY-2026-09-19.md`;
+- `OBJECTIVE6-FINAL-CORPUS-REANALYSIS-PLAN-2026-09-19.md`.
 
-Historical filenames are intentionally not renamed during this pass so Git/review references remain stable. Their current file bodies state the revised semantics.
+Research/adversarial records remain evidence inputs, not independent current semantic authority.
 
-## 7. Remaining uncertainties before formal freeze review
+Historical filenames have not been cosmetically renamed where doing so would add churn without changing truth. Their file bodies state the revised semantics.
 
-Objective 6 is a semantic freeze **candidate**, not yet ready for the actual freeze decision.
+---
 
-Before formal freeze review, complete/verify at least:
+## 7. Remaining bounded work before formal freeze review
 
-1. a bounded **Card Resource Delta stateful fixture set** covering top access, graveyard/exile permission, same-card reuse, copies, recovery, source-retention identity, and multiplayer vectors;
-2. a bounded **Sample Selection retrieval/UI fixture set** proving it remains distinct from ordinary Filtering, Tutor, and Library Traversal;
-3. the required **Keyword Consequence Registry census/design gate** before any broad corpus run;
-4. a final stale-document/routing sweep after this current-state file replaces the pre-audit ledger as the cold-reader entry point;
-5. a bounded decision on `Lockdown` only if evidence forces it to become more than a search/community label.
+Objective 6 is a semantic freeze **candidate**, not an actual freeze.
 
-These are validation/freeze-review tasks. They are not permission to invent more families.
+Remaining validation work:
+
+1. **Card Resource Delta stateful fixtures**
+   - top-library access;
+   - graveyard/exile permission;
+   - same-card reuse;
+   - copies;
+   - recovery of already-usable cards;
+   - source identity / no double counting;
+   - multiplayer vectors.
+
+2. **Sample Selection retrieval/UI fixtures**
+   - prove strong distinction from ordinary Filtering;
+   - distinguish Tutor;
+   - distinguish Library Traversal;
+   - cover variable/resource-controlled depth and staged selection authority.
+
+3. **Keyword Consequence Registry census/design gate**
+   - current CR-derived construct census;
+   - canonical consequence maps;
+   - Producer / Consumer Signatures;
+   - delayed consequences;
+   - negative/non-events;
+   - deterministic reuse during later corpus analysis.
+
+4. **Final stale-routing verification**
+   - confirm remaining active docs do not present superseded semantics as current truth.
+
+5. **Lockdown**
+   - run a dedicated hard-boundary audit only if evidence requires more than a search/community label.
+
+The broad design/invention pass should not be restarted without new evidence.
+
+---
 
 ## 8. Standing controls
 
-Remain in force unless a newer durable Captain direction explicitly supersedes them:
+Remain in force unless explicitly superseded by a newer Captain direction:
 
 - S15 CLOSED;
 - S16B NOT FROZEN;
@@ -224,6 +309,6 @@ Remain in force unless a newer durable Captain direction explicitly supersedes t
 - Step6 NO;
 - MERGE NO;
 - MAIN_MOVE NO;
-- PR #70 remains documentation-only, draft, and unmerged.
+- PR #70 documentation-only, draft, unmerged.
 
 No semantic freeze is authorized by this file.
