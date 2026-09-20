@@ -1,157 +1,157 @@
-# Objective 6 — Cost Reduction and Alternate Payment
+# Objective 6 — Cost and Payment Structure — Audit Revision
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-APPROVED SEMANTIC STRUCTURE — VALIDATION STILL REQUIRED BEFORE S16B FREEZE**  
-**Scope:** Separates Cost Reduction from Ramp and from Alternate Payment / Payment Substitution. These are two distinct semantic trees because they have different rules consequences.
+**Status:** **AUDIT-REVISED MECHANICAL STRUCTURE — FINAL NAMES PENDING GLOBAL NAMING AUDIT**
 
-## 1. Captain ruling
+## 1. Structural correction
 
-Foundry should preserve three different mechanical ideas:
+The earlier version correctly separated Ramp from cost/payment mechanics, but its `Alternate Payment / Payment Substitution` parent conflated two different Comprehensive Rules categories.
 
-1. **Ramp** — increases the controller's usable mana or mana-producing capacity beyond ordinary resource development.
-2. **Cost Reduction** — decreases the mana cost required for a qualifying spell/action.
-3. **Alternate Payment / Payment Substitution** — allows another resource, object, zone resource, or game action to satisfy some portion of a mana payment without simply reducing the underlying cost in the same way as Cost Reduction.
+The CR requires a sharper structure:
 
-**Cost Reduction is not Ramp.**  
-**Alternate Payment / Payment Substitution is not Ramp.**  
-**Cost Reduction and Alternate Payment are separate semantic trees.**
+1. **Cost modification** — changes the total cost itself, e.g. Cost Reduction.
+2. **Formal alternative cost** — a cost paid instead of the spell's mana cost under CR 118.9.
+3. **Additional cost** — a cost added to the cost of casting/activating.
+4. **Payment method/substitution** — changes how an already-determined cost or mana symbol can be paid.
 
-They may create similar strategic consequences — e.g. allowing a player to deploy more spells with the same amount of available mana — but Foundry should preserve the mechanically different path by which that result is achieved.
+These are independent semantic facts. They should not be forced into one `Alternate Payment` tree.
 
----
+## 2. Cost Reduction
 
-## 2. Cost Reduction tree
+**Structural type:** primitive / surfaced mechanical tag.
 
-Working parent definition:
+Working operation:
 
-> **Cost Reduction** — a card/effect decreases the mana cost required to cast or perform a qualifying spell/action.
+> decrease part of the total cost required for a qualifying spell/action.
 
-Positive anchors:
+Preserve:
 
-- **Jet Medallion** — reduces qualifying black-spell costs.
-- **Goblin Electromancer** — reduces qualifying instant/sorcery spell costs.
-- **Urza's Incubator** — reduces costs of creature spells of the chosen type.
-- **Heartless Summoning** — reduces creature-spell costs while also imposing a separate downside.
-- **Affinity** — keyword/rules mechanism that reduces generic mana cost according to its stated affinity quantity; therefore belongs under Cost Reduction rather than Alternate Payment.
-
-Useful coordinates/facets to preserve later include:
-
-- affected spell/action class;
-- generic vs colored reduction;
-- reduction amount / formula;
+- affected action/spell domain;
+- generic vs colored/symbol-specific component;
+- amount/formula;
 - conditionality;
-- chosen characteristic/type/color;
-- static vs temporary/one-shot;
-- minimum-cost/floor rules where applicable;
-- attached downside or tradeoff;
-- source/dependency requirements.
+- characteristic/type/color dependency;
+- duration;
+- floors/minimums;
+- attached downside/tradeoff.
 
-Working tree:
+### Positive anchor — Affinity
 
-```text
-Cost Reduction
-|
-+-- generic cost reduction
-+-- colored / symbol-specific reduction (if rules evidence supports a stable child)
-+-- conditional / characteristic-bound reduction
-+-- Affinity-style quantity-derived reduction
-+-- other validated cost-reduction mechanisms
-```
+Affinity is cost reduction. Its rules reduce generic cost according to the relevant affinity quantity.
 
-The child names above are working structural descriptions, not a frozen public taxonomy. The important Captain-approved point is the distinct **Cost Reduction parent** and its non-Ramp boundary.
+## 3. Formal Alternative Cost
 
----
+**Structural type:** CR-grounded primitive.
 
-## 3. Alternate Payment / Payment Substitution tree
+Use `alternative cost` only in the Comprehensive Rules sense.
 
-Working parent definition:
+CR 118.9 defines an alternative cost as a cost paid **rather than** the spell's mana cost. `Cast ... without paying its mana cost` is an alternative cost.
 
-> **Alternate Payment / Payment Substitution** — a card/effect permits a nonstandard resource, object, zone resource, or game action to satisfy some portion of a mana payment, rather than merely decreasing the mana cost through a Cost Reduction effect.
+Examples include:
 
-Current positive anchors:
+- Omniscience-style `without paying` permission;
+- Cascade/Discover free-cast permission;
+- Dream Halls-style `rather than pay` structure;
+- Flashback/Escape and other keywords whose CR entry establishes an alternative cost.
 
-- **Convoke** — creatures can be tapped as part of paying the spell's cost, with the rules determining what mana each tapped creature can pay.
-- **Improvise** — artifacts can be tapped to help pay generic mana in the spell's cost.
-- **Delve** — cards can be exiled from the graveyard to help pay generic mana in the spell's cost.
+Preserve:
 
-Working tree:
+- alternative-cost expression;
+- source/effect granting it;
+- eligibility;
+- whether value choices such as X are constrained;
+- other additional costs that still must be paid;
+- timing/permission restrictions.
 
-```text
-Alternate Payment / Payment Substitution
-|
-+-- Convoke
-+-- Improvise
-+-- Delve
-+-- other validated payment-substitution mechanisms
-```
+## 4. Additional Cost
 
-These mechanisms are not Cost Reduction merely because they can reduce the amount of mana actually spent from mana sources. The underlying rules operation is different: another resource/action is used to satisfy payment.
+**Structural type:** primitive/coordinate.
 
-### 3.1 Naming remains open
+Examples include sacrifice/discard/life or other requirements that are added to a spell/action cost.
 
-`Alternate Payment` and `Payment Substitution` are both acceptable working labels for the semantic parent. The final public-facing name should be chosen during the later whole-vocabulary naming pass without reopening the approved mechanical distinction.
+Do not confuse an additional cost with either reduction or alternative cost.
 
-### 3.2 Boundary to broader alternate costs remains open
+## 5. Payment Method / Payment Substitution
 
-This ruling does **not yet** decide whether every Magic mechanic conventionally described as an `alternative cost` belongs inside this same parent.
+**Structural type:** primitive/coordinate.
 
-Examples such as alternate casting costs, life payments, pitch spells, Evoke, Dash, or other rules packages may require their own rules-consequence review before being placed here.
+This captures cases where another resource/action satisfies an already-determined payment requirement or mana symbol.
 
-Do not broaden this tree merely because ordinary language calls several different mechanisms "alternate costs."
+### CR hard boundary
 
----
+The current CR explicitly states:
 
-## 4. Why Foundry must keep the trees distinct
+- **Convoke — CR 702.51b:** not an additional or alternative cost; applies after total cost is determined.
+- **Delve — CR 702.66b:** not an additional or alternative cost; applies after total cost is determined.
+- **Improvise — CR 702.126b:** not an additional or alternative cost; applies after total cost is determined.
 
-The distinction supports both rules precision and retrieval/explanation.
+Therefore those mechanics must **not** be canonical children of `Alternative Cost`.
 
-Examples:
+Their harder fact is how the determined cost can be paid:
 
-- **Jet Medallion:** `Cost Reduction` — the qualifying spell costs less mana.
-- **Convoke:** `Alternate Payment` — creatures can help pay the spell's cost.
-- **Improvise:** `Alternate Payment` — artifacts can help pay generic mana.
-- **Delve:** `Alternate Payment` — graveyard cards can help pay generic mana.
-- **Sol Ring:** `Ramp` — produces additional usable mana; it does not reduce or substitute the cost.
+- Convoke — tapping creatures can pay portions of the cost;
+- Delve — exiling graveyard cards can pay generic portions;
+- Improvise — tapping artifacts can pay generic portions.
 
-These effects can all improve effective spell-deployment capacity, but that strategic similarity must not erase the rules-level distinction.
+K'rrik-style Phyrexian-symbol life payment similarly belongs in payment-method facts rather than being mislabeled as a generic alternative-cost tree merely because mana expenditure is avoided.
 
-Foundry should therefore be able to return cards as strategically adjacent while still explaining **why** their semantic mechanism differs.
+## 6. Recommended machine structure
 
----
-
-## 5. Explicit non-Ramp rule
-
-Neither Cost Reduction nor Alternate Payment should inflate the Ramp count merely because the card can enable a player to cast a larger spell or more spells than their raw mana production alone would permit.
-
-Ramp remains tied to **usable mana / mana-producing capacity**.
-
-Cost Reduction and Alternate Payment instead modify the **cost/payment side** of the transaction.
-
-This provides a useful accounting split:
+Prefer compositional fields such as:
 
 ```text
-mana-side change       -> Ramp
-cost-size change       -> Cost Reduction
-payment-method change  -> Alternate Payment / Payment Substitution
+cost_modifier:
+  operation: reduce | increase | set | other
+  amount_or_formula: ...
+
+formal_alternative_cost:
+  present: true | false
+  expression: ...
+
+additional_costs:
+  - resource/action + quantity/expression
+
+payment_methods:
+  - requirement/symbol satisfied
+  - substitute resource/action
+  - conversion rate / restrictions
 ```
 
-Cards may of course carry more than one of these functions if their actual rules text independently satisfies more than one predicate.
+Exact storage syntax is implementation work, not ratified here. The semantic split is the important part.
 
----
+## 7. Ramp boundary
 
-## 6. Control boundary
+Ramp remains a separate functional family because it changes usable mana or mana-producing capacity.
 
-This document records semantic structure only. It does **not** authorize:
+Cost/payment mechanics may let the player deploy more with the same mana, but that does not make them Ramp.
 
-- S16B freeze;
-- broad corpus classification/reclassification;
-- implementation acceptance;
-- merge;
-- accepted-head or `main` movement;
-- AQ4 resumption;
-- Bridge v0 activation;
-- Step6.
+Useful contrast:
 
-The governing project principle remains:
+- Sol Ring -> mana-side change -> Ramp;
+- Affinity / Jet Medallion -> cost-size change -> Cost Reduction;
+- Convoke / Delve / Improvise -> payment-method change;
+- Dream Halls / Omniscience free casting -> formal Alternative Cost;
+- Elvish Piper / Reanimate -> Direct Placement; no spell cast for the placed permanent.
+
+## 8. Searcher B consequence
+
+These mechanisms may be strategically adjacent while remaining mechanically different.
+
+Similarity may use a later shared outcome such as `reduces raw mana needed from sources`, but canonical explanation must preserve *why*:
+
+- cost got smaller;
+- another payment method satisfied it;
+- an alternative cost replaced mana cost;
+- or the cast transaction was bypassed entirely.
+
+## 9. Naming boundary
+
+The final naming pass should prefer Magic's formal `Alternative Cost` only for the CR category.
+
+The working phrase `Payment Substitution` may be renamed if a clearer machine/player term exists, but it must not imply that Convoke/Delve/Improvise are formal alternative costs.
+
+## 10. Control boundary
+
+No S16B freeze, corpus reclassification, implementation acceptance, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
