@@ -1,107 +1,119 @@
-# Objective 6 — Card Filtering / Bounded Extraction Consolidation Candidate
+# Objective 6 — Card Filtering / Finite-Sample Selection — Audit Revision
 
 **Date:** 2026-09-19  
-**Status:** Captain-approved provisional semantic consolidation; mandatory re-audit before S16B freeze.  
-**Authority boundary:** This records a semantic candidate only. It does not freeze S16B, accept implementation, merge PR #70, move the accepted implementation head, resume AQ4, activate Bridge v0, authorize Step6, or move `main`.
+**Status:** **AUDIT-REVISED STRUCTURE — FINAL NAMES PENDING GLOBAL NAMING AUDIT**
 
-## Decision under test
+## 1. Audit decision
 
-For the current working model, treat **Card Filtering** as the broader semantic family that may include both ordinary filtering and limited-sample extraction effects.
+The earlier candidate asked whether `Card Filtering` could remain the broader family while `Bounded Extraction` became a required qualifier/signature.
 
-Effects such as:
+The weird-card pass supports **part** of that consolidation and rejects part of it.
 
-- Dig Through Time;
-- Collected Company;
-- Plunge into Darkness;
-- Impulse;
+### Survives
 
-may therefore receive **Card Filtering** family membership while also carrying an explicit **Bounded Extraction** qualifier/signature.
+A finite-sample-selection pattern is mechanically real and must remain independently queryable.
 
-This is a deliberate change from the earlier working direction that kept Bounded Extraction / Card Prospecting as a separate family from Card Filtering.
+### Changes
 
-The change is provisional because the Captain wants the later whole-vocabulary audit to test whether this consolidation was actually beneficial.
+`Card Filtering` is too broad to function as a strong canonical similarity family. It should be treated as a **UI/search umbrella and derived player-facing tag** over harder operation signatures.
 
-## Why this may be the better model
+Therefore:
 
-The common mechanical idea is that the card improves access to useful cards by constraining or transforming the set of available options rather than performing a broad, deterministic library search.
+> **Do not restore finite-sample selection as a peer trunk, but do not let generic Filtering membership carry strong semantic similarity either.**
 
-Within that broader family, the **Bounded Extraction** qualifier preserves the materially important distinction:
+The canonical substrate should store the exact operation; UI/search may group those operations under Filtering.
 
-> expose a finite sample from the library, then choose one or more cards from only that sample for privileged access or destination.
+## 2. Finite-sample selection signature
 
-This lets Foundry group these cards with Card Filtering for broad retrieval while still surfacing their tutor-adjacent behavior precisely.
+Working structural meaning:
 
-## Bounded Extraction must remain explicit
+> A library operation exposes a finite sample whose membership is determined without searching the broader library, then one or more cards are selected from that sample for a privileged destination or use.
 
-The consolidation is acceptable only if Bounded Extraction remains independently queryable/taggable.
+The sample may be:
 
-Required anchors include at minimum:
+- fixed-size;
+- variable-size;
+- resource-controlled;
+- state-derived;
+- large;
+- generated repeatedly by separate triggers.
 
-- **Dig Through Time** — finite sample, choose two;
-- **Collected Company** — finite sample, eligibility restricted, up to two cards, battlefield destination;
-- **Plunge into Darkness** — variable finite sample chosen through life payment, choose one, remainder exiled;
-- **Impulse** — finite sample, choose one, remainder repositioned.
+`Finite` does **not** mean `small`, and there is no 3-card minimum.
 
-The qualifier should support coordinates such as:
+Plunge into Darkness remains the gold-standard boundary anchor: player-paid life sets an arbitrary finite sample depth.
 
-- sample / exposure depth;
-- fixed versus variable depth;
-- resource-controlled depth;
-- selection count;
-- eligibility/domain restriction;
-- selected destination;
-- unselected-card disposition;
+## 3. Positive anchors
+
+- **Impulse** — top four, one to hand.
+- **Dig Through Time** — top seven, two to hand.
+- **Collected Company** — top six, up to two eligible creatures to battlefield.
+- **Plunge into Darkness** — variable life-controlled depth, one to hand, rest exiled.
+- **Fact or Fiction** — top five, opponent partitions, controller chooses a pile.
+- **Genesis Wave** — top X, any number of eligible permanents to battlefield.
+- **Winota, Joiner of Forces** — repeated top-six samples, optional eligible Human directly to battlefield.
+- **Gonti, Lord of Luxury / Thief of Sanity** — samples of an opponent's library with exile/cast access.
+
+## 4. Critical negative/near-miss anchors
+
+- **Faithless Looting** — draw/discard turnover, not finite-sample selection.
+- **Index** — inspection/reorder, no privileged selected acquisition.
+- **Lim-Dûl's Vault** — repeated five-card inspection windows and reorder, but no selected card gets privileged destination/use.
+- **Enlightened Tutor** — broader-library search, not finite exposed sample.
+- **Ad Nauseam** — sequential one-card acquisition with player-controlled continuation, better represented as ordered traversal.
+- **Cascade / Discover** — ordered traversal to stopping predicate, not finite sample chosen from simultaneously exposed candidates.
+
+## 5. Required coordinates
+
+Store at minimum:
+
+- source library/player;
+- sample depth expression;
+- fixed / variable / resource-controlled / state-derived depth;
+- exposure mechanism (look/reveal/exile/other);
+- selection cardinality;
+- eligibility restriction;
 - selection authority;
-- retrieval determinism / search scope.
+- multi-stage selection/partition where present;
+- selected destination/use;
+- unselected disposition;
+- visibility;
+- repetition/frequency;
+- direct-placement or cast/play permission if the selected result uses those mechanisms.
 
-`Bounded` must not be interpreted as `small fixed N`. Plunge into Darkness is the key adversarial anchor proving that the sample may be variable and potentially deep while remaining finite and non-tutor-like.
+## 6. Card Filtering umbrella
 
-## Tutor boundary
+Player-facing `Card Filtering` can still group operations that improve card flow/selection such as:
 
-The intended distinction remains:
+- looting/rummaging;
+- scry/surveil;
+- cycling/self-replacement;
+- Brainstorm/Index-like reorder/disposition;
+- self-mill where used as a card-flow/search surface;
+- finite-sample selection.
 
-- **Tutor** — targeted retrieval from the broader qualifying contents of the library;
-- **Bounded Extraction** — selection is restricted to a finite exposed sample.
+But the machine must not treat those cards as strongly equivalent merely because they share the umbrella.
 
-This distinction is valuable even if both live under a broader Card Access / Card Filtering presentation layer.
+Searcher B should weight the underlying operation signature far more heavily than `Filtering = yes`.
 
-Bounded Extraction is especially important for later substitution tools because it can preserve strong card-selection value while giving up full-library determinism. This may support players who want tutor-adjacent functionality without making every game converge on the same deterministic line.
+## 7. Tutor boundary
 
-That strategic preference is not part of the canonical predicate. Foundry should expose the factual tradeoffs; downstream strategic systems may later reason about deck-to-deck implications.
+Tutor remains broader-library search/retrieval.
 
-## Mandatory future audit questions
+The decisive distinction is not merely `sample size`:
 
-The whole-vocabulary / semantic audit must explicitly revisit this consolidation and answer:
+- finite-sample selection is limited to the exposed sample produced by the effect;
+- Tutor searches a broader library domain for a matching card or quantity under CR search rules.
 
-1. **Retrieval quality:** Does putting Dig Through Time, Faithless Looting, Brainstorm, Collected Company, and Plunge into Darkness in one broader Card Filtering family improve recall without destroying precision?
-2. **Similarity behavior:** Does the broader family cause mechanically dissimilar cards to rank too closely unless the Bounded Extraction qualifier is strongly weighted?
-3. **Explanation quality:** Can the UI clearly explain why Faithless Looting and Dig Through Time share the broader family while still emphasizing that their operations are materially different?
-4. **Searcher B utility:** Does this structure help users discover meaningful substitutes and adjacent cards, especially tutor-adjacent non-tutors?
-5. **Qualifier sufficiency:** Is Bounded Extraction as a qualifier/signature enough, or does corpus behavior demonstrate that it deserves a separate family after all?
-6. **Threshold risk:** Does any arbitrary minimum sample-size rule create false boundaries? The model should prefer mechanical structure over a magic-number threshold unless corpus evidence proves otherwise.
-7. **Naming:** Are `Card Filtering` and `Bounded Extraction` still the best names after the final clarity/consistency/player-recognition/cool-name audit?
+Selection authority and destination remain independent dimensions in both structures.
 
-## Failure conditions
+## 8. Naming boundary
 
-The consolidation should be reversed during the audit if it causes any of the following without a clean coordinate-level remedy:
+`Bounded Extraction` and `Card Filtering` remain eligible for the global naming audit.
 
-- bounded-extraction cards become hard to retrieve distinctly;
-- similarity ranking overweights generic filtering membership;
-- user-facing explanations flatten materially different mechanisms;
-- the qualifier requires extensive exceptions or bespoke patches;
-- corpus classification becomes less stable or less intuitive;
-- Tutor-adjacent substitution behavior becomes harder rather than easier to express.
+The structural concept that must survive naming is **finite-sample selection**. The final label should not imply hand-only extraction or a fixed/small N.
 
-If those failures do not occur, the broader-family-plus-qualifier model is preferred because it reduces unnecessary ontology branching while preserving the high-value mechanical distinction.
+## 9. Control boundary
 
-## Product note
-
-The Captain specifically wants cards such as Dig Through Time, Collected Company, and Plunge into Darkness to be easy to surface because they can act as substantive, less deterministic alternatives to Tutors. Foundry should make this mechanical distinction visible without turning that preference into a canonical strategic judgment.
-
-## Naming audit boundary
-
-All names in this record, including `Card Filtering`, `Bounded Extraction`, `retrieval determinism`, and `search scope`, are provisional and subject to the later whole-system naming / cool-name audit, whether or not they remain player-facing.
-
-## Governing principle
+No S16B freeze, implementation acceptance, corpus reclassification, merge, accepted-head/main movement, AQ4 resumption, Bridge activation, or Step6 is authorized.
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
