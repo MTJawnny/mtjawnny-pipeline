@@ -118,6 +118,21 @@ Captain direction already recorded during Objective 6:
 
 This is not implementation authorization; it is a later semantic/presentation audit.
 
+### G. Realization, ceiling, and game horizon — FUTURE QUANTITATIVE STRATEGIC MODEL
+
+Dedicated record:
+
+- `REALIZATION-CEILING-AND-GAME-HORIZON.md`
+
+Core direction:
+
+- keep canonical capability separate from opportunity count, realization probability/rate, and expected realized output;
+- evaluate usefulness over an explicit remaining game horizon rather than assuming a permanent remains relevant indefinitely;
+- treat the Captain's current roughly turn-7-to-8 Commander horizon as a hypothesis/modeling assumption to validate empirically rather than a hard-coded truth;
+- preserve controller agency/opponent dependency as factual realization coordinates;
+- use Explore as a prerequisite-realization fixture and Smuggler's Share as a repeated-opportunity-versus-realized-output fixture;
+- allow measured/modelled results to contradict Captain or community expectations.
+
 ---
 
 ## 2. What does NOT belong in this future-state directory
@@ -157,6 +172,7 @@ If a future-state idea becomes active work, it should receive a new bounded cont
 - `README.md` — this index/audit and repository-hygiene rule.
 - `AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md` — continuous card ingestion, semantic automation, dependency-aware refresh, and rapid image/preview intake.
 - `COMPLETE-MY-DECK-PROBABILISTIC-CONTEXT.md` — future deck-context probability/simulation layer.
+- `REALIZATION-CEILING-AND-GAME-HORIZON.md` — future quantitative distinction between ceiling, opportunity, realization, and expected throughput over an explicit game horizon.
 - `STRATEGIC-RESEARCH-ENRICHMENT.md` — future community/prior-art/strategic knowledge layer with provenance boundaries.
 
 Near-term final corpus execution planning remains under S16B preflight rather than this directory:
