@@ -57,8 +57,9 @@ Examples:
 
 - `CARD-RESOURCE-DIFFERENTIAL...` now records **Card Resource Delta**.
 - `...BOUNDED-EXTRACTION...` now records **Sample Selection**.
-- `...ALTERNATE-PAYMENT...` now records the split between **Alternative Cost** and **Payment Method**.
+- `...ALTERNATE-PAYMENT...` now records **Cost Reduction / Alternative Cost / Additional Cost / Payment Method** distinctions.
 - `...DEPLOYMENT-BYPASS...` now records **Direct Placement**.
+- `...TEMPORARY-EXILE-ACCESS...` now records **Exile Access** plus Permission Window.
 
 ---
 
@@ -70,7 +71,6 @@ Examples include:
 
 - `OBJECTIVE6-CARD-ACCESS-PRIOR-ART-RESEARCH-2026-09-19.md`
 - `OBJECTIVE6-CARD-ADVANTAGE-PRIOR-ART-AND-ADVERSARIAL-REVIEW-2026-09-19.md`
-- external research notes under this preflight area where clearly marked research-only.
 
 When research and current candidate records differ, preserve the research as provenance and use the post-audit current-state routing for the candidate decision.
 
