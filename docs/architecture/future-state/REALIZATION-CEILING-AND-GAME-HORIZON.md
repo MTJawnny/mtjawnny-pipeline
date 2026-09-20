@@ -158,7 +158,58 @@ This is an extension of the project-wide principle:
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
 
-## 9. Control boundary
+## 9. Factual realization reporting before judgment — CAPTAIN-DIRECTED
+
+Foundry should preserve a strict separation between **factual realization analysis** and **strategic judgment**.
+
+The canonical semantic substrate and the future realization layer may report measurable facts such as:
+
+- how early a card can become active;
+- how long until its first output;
+- how many output opportunities remain in a stated game horizon;
+- whether its throughput is fixed, scalable, or conditional;
+- what prerequisites must be supplied;
+- who controls or influences those prerequisites;
+- expected or observed cumulative output over time;
+- how output changes when the same card is drawn or resolved earlier versus later.
+
+Those layers should not turn those measurements into normative conclusions such as `good`, `bad`, `too slow`, `must include`, `overrated`, or `cut this card`.
+
+Any later evaluative judgment belongs to the separate **Complete My Deck / strategic recommendation layer**, where it must be supported by an explicit objective, deck context, assumptions, and evidence.
+
+Governing rule:
+
+> **Measure first. Describe the realized facts. Reserve judgment for the explicit strategic/recommendation layer.**
+
+### 9.1 Phyrexian Arena fixture — temporal accumulation is factual
+
+Phyrexian Arena is a useful factual fixture because its card-resource output is scheduled and easy to express without evaluating whether the card is desirable.
+
+Relevant facts include:
+
+- after it resolves, its extra card output occurs during the controller's future upkeeps;
+- it does not provide its first extra draw immediately on resolution;
+- each subsequent controller upkeep while it remains active supplies one additional card;
+- therefore the number of cards it can produce over a specified horizon is strongly determined by **when it becomes active** and **how many controller upkeeps remain**;
+- drawing/resolving it earlier creates more possible future draw opportunities;
+- drawing/resolving it later necessarily leaves fewer possible future draw opportunities;
+- its throughput is scheduled at one extra card per qualifying upkeep rather than scaling with additional supplied gameplay inputs inside the same turn.
+
+Illustrative horizon only:
+
+If Phyrexian Arena becomes active on turn 3 and the controller subsequently receives upkeeps on turns 4 through 9 while Arena remains active, those six upkeeps create six extra-card outputs. If the same card becomes active much later, fewer qualifying upkeeps remain, so its possible cumulative output is correspondingly smaller.
+
+Those are temporal/output facts. Foundry need not label either outcome `good` or `bad` in the factual layers.
+
+This fixture complements:
+
+- **Explore**, where realization depends on satisfying a deck-supplied prerequisite at the relevant time;
+- **Sram**, where card-resource throughput can scale with controller-supplied qualifying casts;
+- **Smuggler's Share**, where repeated opportunities exist but realization depends substantially on opponent events.
+
+Together these fixtures establish distinct realization geometries without requiring strategic judgment.
+
+## 10. Control boundary
 
 This document does not authorize:
 
