@@ -24,7 +24,11 @@ The 2026-09-18/19 product and semantic conversations contain several distinct fo
 
 ### A. Complete My Deck / probabilistic deck-context reasoning — FUTURE PRODUCT LAYER
 
-Existing source record:
+Dedicated future-state record:
+
+- `COMPLETE-MY-DECK-PROBABILISTIC-CONTEXT.md`
+
+Original source record remains:
 
 - `docs/architecture/FOUNDRY-PRODUCT-INTERACTION-MODEL-2026-09-18.md`, especially Section 9, **Tabled future state — probabilistic deck-context reasoning for Complete My Deck**.
 
@@ -40,6 +44,10 @@ This remains future product work and should not become present-tense S16B semant
 
 ### B. External strategic/recommendation enrichment — FUTURE STRATEGIC LAYER
 
+Dedicated future-state record:
+
+- `STRATEGIC-RESEARCH-ENRICHMENT.md`
+
 Captain-directed future program discussed during S16 planning:
 
 - community strategy knowledge and claim-level provenance;
@@ -53,7 +61,7 @@ This belongs above Foundry's semantic substrate. It must not be imported into ca
 
 ### C. Automated semantic distillation and continuous corpus refresh — FUTURE RUNTIME/PIPELINE CAPABILITY
 
-New Captain direction preserved in:
+Dedicated record:
 
 - `AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md`
 
@@ -146,8 +154,14 @@ If a future-state idea becomes active work, it should receive a new bounded cont
 
 ## 4. Current future-state files
 
-- `README.md` — this index/audit.
-- `AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md` — continuous card ingestion, semantic automation, and rapid image/preview intake.
+- `README.md` — this index/audit and repository-hygiene rule.
+- `AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md` — continuous card ingestion, semantic automation, dependency-aware refresh, and rapid image/preview intake.
+- `COMPLETE-MY-DECK-PROBABILISTIC-CONTEXT.md` — future deck-context probability/simulation layer.
+- `STRATEGIC-RESEARCH-ENRICHMENT.md` — future community/prior-art/strategic knowledge layer with provenance boundaries.
+
+Near-term final corpus execution planning remains under S16B preflight rather than this directory:
+
+- `docs/architecture/preflight/s16b/OBJECTIVE6-FINAL-CORPUS-REANALYSIS-PLAN-2026-09-19.md`
 
 Existing source material still located elsewhere remains authoritative as a historical source until deliberately migrated. This index does not silently supersede or delete those records.
 
