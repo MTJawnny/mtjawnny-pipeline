@@ -1,95 +1,100 @@
 # Objective 6 — Card Replacement Retirement Ruling
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-APPROVED SEMANTIC SIMPLIFICATION — VALIDATION STILL REQUIRED BEFORE S16B FREEZE**  
-**Scope:** Retires `Card Replacement` as a canonical semantic family while preserving self-replacement / card-neutrality as a derived resource-accounting fact.
+**Revised:** 2026-09-20 after whole-vocabulary and naming audit  
+**Status:** **RETIRED CANONICAL FAMILY / DERIVED SELF-REPLACING ACCOUNTING — NOT FROZEN**  
+**Current routing:** `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
-## 1. Captain ruling
+## 1. Ruling
 
-**Card Replacement should not remain a standalone Foundry semantic tree.**
+**Card Replacement does not remain a standalone Foundry semantic family.**
 
-The term describes the **accounting outcome** of an access operation rather than the mechanically meaningful way a card grants access to another card resource.
+It describes a resource-accounting outcome shared by mechanically different operations rather than the gameplay mechanism itself.
 
-A card that expends one card resource and gains one usable card resource may be self-replacing / card-neutral, but that fact does not imply that cards producing the same parity result belong to the same semantic family.
+A card that expends one card-origin resource and results in one accessible card-origin resource may be self-replacing / card-neutral, but mechanically unrelated cards should not become one similarity family merely because their net card-resource result is parity.
 
-## 2. Why the tree is retired
+## 2. Why the family is retired
 
-Mechanically different cards can all end at the same one-for-one resource result:
+Mechanically different examples can all be self-replacing or parity-like:
 
-- Shelter — Protection + draw / Cantrip behavior;
-- Regrowth — Graveyard Access / Recursion;
+- Shelter — Protection + Draw / Cantrip behavior;
+- Regrowth — Graveyard Access;
 - Demonic Tutor — Tutor;
-- Impulse — bounded-sample extraction;
-- Cycling — Filtering + draw.
+- Impulse — Sample Selection;
+- Cycling — Draw/Filtering consequence structure.
 
-Grouping these under `Card Replacement` obscures the actual access mechanism.
+Searcher B should compare how those effects work before considering the derived resource outcome.
 
-The ontology should answer **how the card grants access**, while resource accounting separately reports the resulting card-resource delta.
+## 3. Preserved derived accounting facts
 
-## 3. Preserved derived facts
+Foundry should retain hard inputs such as:
 
-Foundry should retain mechanically grounded resource-accounting fields such as:
-
-- card resources expended;
-- card resources gained/accessed;
-- source retained versus consumed;
+- distinct underlying card-origin resources before/after;
+- resources expended/lost/denied;
+- resources newly gained or made accessible;
+- owner/provenance;
 - source and destination zones;
-- access duration where relevant;
-- usable card-resource delta;
-- opponent-relative resource delta where Card Advantage accounting applies.
+- Card Use Permission;
+- Permission Window;
+- source retained/consumed as object identity, without double-counting the same card;
+- per-player and pairwise changes where relevant.
 
-From these facts Foundry may derive and explain states such as:
+From those facts Foundry may derive/explain:
 
 - self-replacing;
 - card-neutral / parity;
-- positive card-resource gain;
-- negative card-resource result;
-- multiplayer Advantage / Parity / Disadvantage / Mixed where applicable.
+- positive Card Resource Delta;
+- negative Card Resource Delta;
+- pairwise/multiplayer positive, parity, negative, or mixed results.
 
 ## 4. UI terminology
 
-`Card Replacement` should not be exposed as a major public branch.
+Do not expose `Card Replacement` as a major public branch.
 
-Plain-language statements remain useful, especially:
+Plain-language explanation remains useful:
 
 > **This card replaces itself.**
 
-`Self-replacing` is preferred to `replacement effect` language because Magic uses **replacement effect** as a formal rules term with a different meaning.
+`Self-replacing` is preferred to `replacement effect`, which is a formal Magic rules term with a different meaning.
 
 ## 5. Relationship to Cantrip
 
-Cantrip has now been realigned toward established Magic/player usage rather than the earlier narrow Foundry-specific predicate.
+Cantrip uses established player language and is a surfaced derived/community tag grounded in literal Draw/self-replacement behavior.
 
-A Cantrip can therefore be **self-replacing** as an accounting property without requiring a separate `Card Replacement` ontology membership.
+A Cantrip may be self-replacing without requiring a Card Replacement ontology membership.
 
-## 6. Updated Card Access implication
+Non-Draw parity mechanisms do not become Cantrips merely because they are card-neutral.
 
-The public Card Access neighborhood should no longer include `Card Replacement` as a peer family.
+## 6. Current Card Access neighborhood
 
-Current major structures under active adjudication include:
+The current post-audit Card Access surface includes mechanisms/views such as:
 
-- Card Advantage;
-- Card Filtering;
-- bounded-sample extraction / former `Card Prospecting` distinction (final name pending);
+- Draw;
+- Card Filtering as a broad UI/search umbrella;
+- Sample Selection;
 - Tutor;
-- Graveyard Access and other alternate-zone access structures;
-- literal draw and other lower-level access modes/patterns.
+- Top-Library Access;
+- Exile Access;
+- Graveyard Access;
+- Card Use Permission;
+- Library Traversal;
+- Additional Execution.
 
-Self-replacement/parity remains a derived fact across any of these mechanisms.
+`Card Advantage` remains theory/community language over harder resource facts rather than a canonical peer family.
+
+Self-replacement/parity remains a derived fact across these mechanisms.
 
 ## 7. Control boundary
 
-This ruling does **not** authorize:
+This ruling does not authorize:
 
 - S16B freeze;
-- broad corpus classification/reclassification;
+- broad corpus reclassification;
 - implementation acceptance;
 - merge;
-- accepted-head or `main` movement;
+- accepted-head/main movement;
 - AQ4 resumption;
-- Bridge v0 activation;
+- Bridge activation;
 - Step6.
-
-The governing principle remains:
 
 > **PRESERVE TRUTH, NOT PLUMBING.**
