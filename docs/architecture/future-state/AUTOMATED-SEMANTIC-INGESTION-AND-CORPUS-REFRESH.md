@@ -1,29 +1,31 @@
 # Future State — Automated Semantic Ingestion and Corpus Refresh
 
 **Date:** 2026-09-19  
-**Status:** **CAPTAIN-DIRECTED FUTURE CONCEPT — TABLED; NO CURRENT IMPLEMENTATION AUTHORIZATION**
+**Revised:** 2026-09-20 after Objective 6 adversarial audit  
+**Status:** **CAPTAIN-DIRECTED FUTURE CONCEPT — TABLED; NO CURRENT IMPLEMENTATION AUTHORIZATION**  
+**Current semantic routing:** `docs/architecture/preflight/s16b/OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
 
 ## 1. Goal
 
-Foundry should eventually be able to ingest newly released or previewed Magic cards incrementally and derive most of their semantic representation automatically from the stable semantic substrate.
+Foundry should eventually ingest newly released or previewed Magic cards incrementally and derive most of their semantic representation automatically from a stable semantic substrate.
 
-The project should not require another full month-scale corpus reanalysis every time Wizards releases a set.
+The project should not require another whole-corpus month-scale analysis every time Wizards releases a set.
 
-The future system should exploit the fact that most new cards are composed from recurring Magic structures:
+The future system should reuse established structures such as:
 
-- known keyword abilities/actions;
-- known zones and transitions;
-- known trigger forms;
-- known costs and restrictions;
-- known token definitions;
-- known producer/consumer event signatures;
-- known functional predicates such as Ramp, Removal, Protection, Tutor, Card Advantage, Interaction families, etc.;
-- known lower-level semantic DNA such as Edict-like sacrifice/selection structure;
-- combinations of already understood primitives.
+- keyword abilities/actions and their consequence maps;
+- zones and transitions;
+- trigger/activation/static/replacement architecture;
+- costs, Alternative Costs, Additional Costs, Cost Reduction, and Payment Methods;
+- token definitions;
+- Producer / Consumer Signatures;
+- strong functional families such as Ramp, Tutor, Removal, Taxation, Permission Denial, and Hand Disruption;
+- surfaced facets such as Top-Library Access, Sample Selection, Exile Access, Graveyard Access, Direct Placement, Fast Mana, Mass Removal, and Cantrip;
+- processor throughput facts underlying derived/community `Engine` searches;
+- lower-level semantic DNA such as Edict-like sacrifice/selection structure;
+- typed resource facts and derived accounting inputs.
 
-Novel wording should still receive deep reasoning when necessary. Automation is intended to remove redundant analysis, not reduce semantic depth.
-
-Governing principle:
+Novel wording should still receive deep reasoning when necessary. Automation removes redundant analysis; it does not reduce semantic depth.
 
 > **Do the expensive semantic thinking once when possible, encode the result as reusable structure, and make later cards prove that they are genuinely novel before paying the full reasoning cost again.**
 
@@ -31,270 +33,241 @@ Governing principle:
 
 ## 2. Future ingestion pipeline
 
-Conceptual pipeline:
-
 ```text
 new card evidence
 -> card identity / provenance resolution
 -> Oracle/rules text normalization
 -> keyword consequence expansion
 -> mechanical primitive extraction
--> event/output producer signatures
--> consumer/listener signatures
+-> Producer Signatures
+-> Consumer Signatures
 -> costs / restrictions / dependencies / zones / destinations
--> hard semantic predicates
+-> strong functional predicates + surfaced facets
+-> processor/resource/accounting facts
 -> cross-concept relationships
 -> human-readable explanation
 -> deterministic validation
--> ambiguity / novelty scoring
+-> ambiguity / novelty routing
 -> automatic acceptance OR bounded adjudication
 -> incremental index/site publication
 ```
 
-The system should prefer deterministic/rules-backed extraction wherever possible and reserve higher-cost model reasoning for semantic ambiguity, novel structures, and cross-card contextual questions.
+The pipeline should prefer deterministic/rules-backed extraction wherever possible and reserve higher-cost reasoning for ambiguity, novelty, boundary-sensitive composition, and contextual questions.
 
 ---
 
 ## 3. Reusable semantic distillation layer
 
-The future automation tool should consume the artifacts produced by the current Objective 6 work rather than create a competing ontology.
+The future automation tool should consume the artifacts produced by Objective 6 rather than create a competing ontology.
 
 Important reusable inputs include:
 
 - Keyword Consequence Registry;
 - mechanical primitive definitions;
-- event/output signature vocabulary;
+- Producer / Consumer Signature vocabulary;
 - token-function definitions;
 - zone-transition definitions;
-- functional hard predicates;
+- strong functional predicates;
+- surfaced facets/tags;
 - qualifiers and dependency coordinates;
-- community-term aliases / retrieval DNA;
+- processor throughput/firing-cap facts;
+- typed resource model;
+- community/search aliases and retrieval DNA;
 - positive/negative/near-miss fixtures;
-- final whole-vocabulary audit results;
+- whole-vocabulary adversarial audit;
 - semantic-definition version identifiers.
 
 Example:
 
-A future card with **Myriad** should not cause a model to rediscover Myriad from scratch. The analyzer should expand the keyword from the canonical registry, then overlay the card's own copied payload, ETB/LTB/combat-damage abilities, restrictions, and other text.
+A future card with **Myriad** should invoke the canonical Myriad consequence expansion and overlay the card-specific payload. It should not rediscover Myriad from scratch.
 
-Likewise, if a new card says “target opponent sacrifices a creature,” the extractor should recognize sacrifice-based Removal plus affected-player selection and Edict semantic DNA rather than requiring an unconstrained natural-language invention step.
+Likewise, `target opponent sacrifices a creature` should resolve into sacrifice-based Removal plus affected-player selection and related Edict retrieval DNA rather than requiring a new family.
 
 ---
 
 ## 4. Novelty / adjudication routing
 
-Not every card should receive the same reasoning budget.
+A future analyzer should distinguish at least:
 
-A future analyzer should estimate whether a card is:
-
-1. **Routine** — entirely composed from known patterns and predicates;
-2. **Compositional** — known pieces combined in a new way but mechanically straightforward;
-3. **Boundary-sensitive** — touches a known hard edge or near-miss;
-4. **Novel** — introduces wording/mechanics not represented in the semantic registry;
+1. **Routine** — known patterns and predicates;
+2. **Compositional** — known pieces combined in a new but straightforward way;
+3. **Boundary-sensitive** — touches a known hard edge or adversarial fixture;
+4. **Novel** — introduces structure not represented in the registry;
 5. **Ambiguous / rules-sensitive** — needs rules research or human/higher-model adjudication.
 
 Routine cards should be cheap and fast.
 
-Novel/boundary-sensitive cards should receive deeper analysis and produce a STOP/NEEDS-ADJUDICATION state when the system cannot justify a classification confidently.
-
-The automation system must never manufacture certainty merely to keep throughput high.
+Boundary-sensitive, novel, or ambiguous cards should receive deeper analysis and may produce STOP / NEEDS-ADJUDICATION rather than manufactured certainty.
 
 ---
 
 ## 5. Individual card image ingestion
 
-The Captain should eventually be able to submit a single card image and request immediate Foundry ingestion.
-
-This is especially useful during preview seasons, when the canonical bulk corpus will necessarily lag newly revealed cards.
+The Captain should eventually be able to submit a single preview/new-card image for rapid ingestion.
 
 ### 5.1 Intended flow
 
 ```text
 uploaded card image
--> visual transcription / card-frame parsing
+-> visual transcription / frame parsing
 -> identity + set/collector metadata when visible
 -> transcription confidence check
 -> source/provenance record
 -> authoritative lookup when available
 -> semantic ingestion pipeline
--> provisional card page / thesaurus entry
+-> provisional card page / Thesaurus entry
 -> later reconciliation with official Oracle data
 ```
 
-### 5.2 Image text is evidence, not automatically Oracle authority
+### 5.2 Evidence status
 
-For a preview card not yet present in an authoritative feed, the image may temporarily be the best available rules-text evidence.
+Distinguish at least:
 
-The system should therefore distinguish at least:
+- `OFFICIAL_ORACLE`;
+- `OFFICIAL_PREVIEW`;
+- `THIRD_PARTY_PREVIEW`;
+- `USER_IMAGE_TRANSCRIPTION`.
 
-- `OFFICIAL_ORACLE` — authoritative current card text resolved from the canonical data source;
-- `OFFICIAL_PREVIEW` — officially published preview evidence, not yet reconciled into canonical Oracle feed;
-- `THIRD_PARTY_PREVIEW` — lower-confidence preview evidence requiring provenance/caution;
-- `USER_IMAGE_TRANSCRIPTION` — user-submitted evidence whose transcription has not yet been externally verified.
+A provisional entry may be searchable quickly while remaining visibly noncanonical.
 
-A card may be published to a preview/new-card surface immediately while remaining visibly provisional.
-
-When authoritative Oracle data arrives, Foundry should automatically compare:
-
-- name;
-- mana cost;
-- types/subtypes;
-- rules text;
-- power/toughness/loyalty/defense where applicable;
-- faces/layout;
-- semantic assertions derived from the earlier transcription.
-
-Any material difference should trigger reanalysis rather than silently preserving stale preview semantics.
+When authoritative Oracle data arrives, compare rules-relevant fields and rederive semantics if anything material differs.
 
 ### 5.3 Human correction loop
 
-If image transcription is uncertain, the UI should permit a rapid correction before semantic publication.
-
-The ideal interaction is not a full manual data-entry form. The system should show the extracted card facts, highlight low-confidence fields, and allow the Captain to correct only what is wrong.
+Where transcription is uncertain, show extracted facts and highlight low-confidence fields so the user can correct only what is wrong.
 
 ---
 
-## 6. Immediate website publication vs semantic authority
+## 6. Timely publication does not erase authority boundaries
 
-“Push it into the website immediately” should not require collapsing provisional and canonical truth.
+Rapid website publication should not collapse provisional and canonical truth.
 
-Recommended future state:
+A preview/newly-ingested card may become searchable while preserving:
 
-- a preview/newly-ingested card can become searchable quickly;
-- the card receives a visible evidence status;
-- provisional semantic assertions are versioned and traceable to the exact source text/image;
-- official reconciliation can promote the record without changing its stable card identity where possible;
-- semantic differences caused by Oracle changes are diffed and re-derived.
-
-This lets Foundry be timely without sacrificing the project-wide truth-preservation discipline.
+- evidence status;
+- exact source text/image provenance;
+- semantic-definition version;
+- provisional assertions;
+- later Oracle reconciliation and semantic diff.
 
 ---
 
 ## 7. Incremental corpus refresh
 
-After the initial final clean-room corpus pass, normal corpus maintenance should be incremental.
+After the final clean-room baseline exists, ordinary maintenance should be incremental.
 
 For each upstream card-data refresh:
 
-1. compare card identities and Oracle/rules-relevant fields against the previous authoritative snapshot;
-2. partition into:
-   - unchanged cards;
-   - new cards;
-   - Oracle-changed cards;
-   - legality/status changes;
-   - rules/keyword changes that may alter derived semantics;
+1. compare card identities and rules-relevant fields with the previous authoritative snapshot;
+2. partition into unchanged, new, Oracle-changed, legality/status-changed, and rules/keyword-dependent populations;
 3. reanalyze only affected cards by default;
-4. run dependency-aware regressions for cards whose semantics rely on a changed keyword/rule/definition;
+4. run dependency-aware regressions for changed definitions/rules/keywords;
 5. publish a semantic delta report;
 6. retain reproducible version/provenance for every accepted assertion.
 
-A new set should therefore usually mean hundreds of new/changed cards, not a forced re-read of 30,000+ unchanged cards.
+A new set should normally mean analysis of new/changed cards, not a forced reread of every unchanged card.
 
 ---
 
-## 8. Definition changes require affected-corpus reruns
+## 8. Definition changes require affected-population reruns
 
-Incremental ingestion cannot mean that old cards become frozen forever.
+Old cards do not become semantically frozen forever.
 
-When a canonical semantic definition changes, Foundry should identify the likely affected population from mechanical facts and rerun that population.
+When a semantic definition changes, identify and rerun the affected population through dependency/provenance records.
 
-Examples:
+Examples after the Objective 6 audit:
 
-- changing the hard predicate for Card Engine should trigger re-evaluation of cards with relevant recurring/card-output processor signatures;
-- changing the definition of Board Wipe should re-evaluate mass battlefield/stack/neutralization candidates;
-- changing a Keyword Consequence Registry entry should re-evaluate every card invoking that keyword;
-- changing a predefined token's rules meaning should re-evaluate generators/consumers of that token type.
+- changing a **Ramp** hard predicate should rerun relevant mana/development candidates;
+- changing the **Sample Selection** signature should rerun finite-sample candidates;
+- changing **processor throughput** definitions should rerun recurring processor candidates and any derived `Engine` search projection;
+- changing the **Mass Removal** derivation should rerun relevant interaction populations;
+- changing a Keyword Consequence Registry entry should rerun every card invoking that construct;
+- changing a predefined token's rules meaning should rerun generators/consumers of that token type.
 
-The future semantic system therefore needs **dependency tracing from accepted assertion back to the definition/rule/keyword facts that produced it**.
+Do not key dependency invalidation to obsolete ontology concepts such as canonical `Card Engine` membership.
 
 ---
 
 ## 9. Semantic artifact expected per analyzed card
 
-The future analyzer should produce a rich structured record rather than only a list of labels.
+Preserve, where applicable:
 
-At minimum, preserve:
-
-- exact source evidence and source version;
+- exact source evidence and version;
 - card/face/paragraph locality;
 - normalized operations;
 - keyword expansions invoked;
 - mechanical primitives;
 - zones and transitions;
 - trigger/activation/static/replacement architecture;
-- produced events and objects;
-- consumed/listened-for events;
+- Produced events/objects/resources;
+- Consumed/listened-for events;
 - costs and resource conversions;
-- targeting/selection authority;
+- targeting and selection authority;
 - scope and quantity;
 - restrictions and eligibility;
+- permission actions and Permission Windows;
+- token identities and consequences;
+- copied/inherited payload behavior;
 - timing and delayed consequences;
-- token definitions/functions;
-- functional memberships;
-- lower-level semantic DNA;
-- positive membership reasons;
 - negative/non-event facts where material;
+- strong functional memberships;
+- surfaced facets;
+- processor facts;
+- lower-level retrieval DNA / aliases;
 - dependencies/prerequisites;
-- confidence / ambiguity status;
+- typed resource/accounting inputs;
+- confidence / ambiguity state;
 - semantic-definition version;
 - plain-English explanation.
 
-This rich representation is what permits future deck reasoning without rescanning raw Oracle text from scratch.
+The output should remain richer than a tag list.
 
 ---
 
 ## 10. Relation to future Complete My Deck
 
-Automated semantic ingestion strengthens the later strategic layer, but the two must remain separate.
-
 The ingestion system answers:
 
-> **What does this card mechanically produce, consume, require, and accomplish?**
+> **What does this card mechanically produce, consume, require, permit, deny, and accomplish?**
 
 The future Complete My Deck layer may then ask:
 
 > **Given this specific deck, how often and how effectively can those functions be realized, and what additions/substitutions satisfy the player's stated goals?**
 
-The second layer may use probability, simulation, deck construction knowledge, external strategic evidence, and recommendation logic.
-
-It must consume rather than overwrite canonical semantic truth.
+Probability, simulation, strategic evidence, and recommendation logic remain downstream.
 
 ---
 
 ## 11. Future acceptance target
 
-A mature automated ingestion system should be evaluated on more than raw throughput.
-
 Useful metrics include:
 
 - exact mechanical-fact agreement with audited ground truth;
-- semantic membership precision/recall by family;
+- family/facet precision and recall where applicable;
 - near-miss false-positive rate;
 - missed-function false-negative rate;
 - keyword-expansion accuracy;
-- producer/consumer event-signature accuracy;
+- Producer / Consumer Signature accuracy;
 - deterministic rerun stability;
 - percentage automatically accepted;
 - percentage routed to adjudication;
 - correction rate after human audit;
 - semantic drift after definition/rules updates;
-- time from official preview/new Oracle record to searchable Foundry entry.
+- time from official preview/new Oracle record to searchable entry.
 
-The goal is not “zero human review.” The goal is to spend human/higher-model attention only where it adds information.
+The goal is not zero human review. The goal is to spend human/higher-model attention only where it adds information.
 
 ---
 
 ## 12. Control boundary
 
-This document is a tabled future-state design note.
+This document does **not** authorize:
 
-It does **not** authorize:
-
-- implementation of image ingestion;
+- image-ingestion implementation;
 - website preview publishing;
 - automated semantic acceptance;
 - live corpus mutation;
-- current broad corpus analysis;
+- broad corpus execution;
 - S16B freeze;
 - AQ4 resumption;
 - Bridge v0 activation;
