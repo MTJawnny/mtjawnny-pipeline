@@ -11,11 +11,15 @@
 
 For a cold reader, this file is the current Objective 6 semantic routing layer on PR #70.
 
-The earlier pre-audit decision ledger, Captain semantic-decision record, completed audit handoff, rejected Card Access Differential artifact, and superseded Card Advantage/Engine refinement have been removed from the active S16B surface. Their history remains recoverable in Git.
+Directory landing page:
+
+`README.md`
 
 Cleanup record:
 
 `OBJECTIVE6-POST-AUDIT-CLEANUP-2026-09-20.md`
+
+The earlier pre-audit decision ledger, Captain semantic-decision record, completed audit handoff, rejected Card Access Differential artifact, and superseded Card Advantage/Engine refinement have been removed from the active S16B surface. Their history remains recoverable in Git.
 
 If an older surviving research document contains a recommendation or working term that conflicts with the post-audit evidence chain below, the post-audit evidence/current candidate record controls. Research evidence is not semantic authority by itself.
 
@@ -243,11 +247,11 @@ Use these current/revised records where applicable:
 - `OBJECTIVE6-CARD-FILTERING-NAMING-RULING-2026-09-19.md`;
 - `OBJECTIVE6-ENGINE-HIERARCHY-2026-09-19.md` — now records Engine hierarchy demotion;
 - `OBJECTIVE6-ENGINE-COMPONENT-ADJUDICATION-2026-09-19.md`;
-- `OBJECTIVE6-COST-REDUCTION-AND-ALTERNATE-PAYMENT-2026-09-19.md` — historical filename; content is split cost/payment model;
+- `OBJECTIVE6-COST-REDUCTION-AND-ALTERNATE-PAYMENT-2026-09-19.md` — historical filename; content is the final split cost/payment model;
 - `OBJECTIVE6-NORMAL-DEPLOYMENT-BYPASS-BOUNDARY-2026-09-19.md` — historical filename; content is Direct Placement;
 - `OBJECTIVE6-RAMP-DECISION-MAP-2026-09-19.md`;
 - `OBJECTIVE6-TOP-LIBRARY-ACCESS-RULING-2026-09-19.md`;
-- `OBJECTIVE6-CANTRIP-AND-TEMPORARY-EXILE-ACCESS-RULING-2026-09-19.md`;
+- `OBJECTIVE6-CANTRIP-AND-TEMPORARY-EXILE-ACCESS-RULING-2026-09-19.md` — historical filename; content is Cantrip + Exile Access;
 - `OBJECTIVE6-CARD-REPLACEMENT-RETIREMENT-RULING-2026-09-19.md`;
 - `OBJECTIVE6-KEYWORD-CONSEQUENCE-DISTILLATION-GATE-2026-09-19.md`;
 - `OBJECTIVE6-SEMANTIC-DISTILLATION-METHODOLOGY-2026-09-19.md`;
