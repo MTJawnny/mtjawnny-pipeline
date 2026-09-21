@@ -1,23 +1,23 @@
 # Foundry Future-State Index
 
 **Date:** 2026-09-19  
-**Revised:** 2026-09-20 after Objective 6 adversarial audit / cleanup  
+**Revised:** 2026-09-21 after S16B closure  
 **Status:** **TABLED FUTURE-STATE INDEX — NO IMPLEMENTATION AUTHORIZATION**  
 **Branch:** `docs/foundry-product-interaction-model-2026-09-18`
 
 ## Purpose
 
-This directory keeps forward-looking product, automation, strategic-research, and quantitative-model ideas out of the active Objective 6 semantic-definition surface.
+This directory keeps forward-looking product, automation, strategic-research, and quantitative-model ideas out of the closed S16B semantic-definition surface.
 
-Current Objective 6 semantic routing lives at:
+Current S16B status lives at:
 
-`docs/architecture/preflight/s16b/OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
+`docs/architecture/preflight/s16b/S16B-CLOSED-CURRENT-STATUS-2026-09-21.md`
 
-Future-state documents may consume that substrate, but they do not define it.
+S16B is **CLOSED**, cleared from active routing, and was **not formally frozen**. Future-state documents may consume the documented S16B semantic snapshot where appropriate, but they do not define it and they do not reopen S16B.
 
-> **Future-state concepts belong here unless they are an active prerequisite for the current Objective 6 semantic/corpus work.**
+> **Future-state concepts belong here until a new bounded contract explicitly activates them.**
 
-Nothing in this directory authorizes implementation, S16B freeze, corpus execution, AQ4 resumption, Bridge v0 activation, Step6, merge, accepted-head movement, or `main` movement.
+Nothing in this directory authorizes implementation, corpus execution, AQ4 resumption, Bridge v0 activation, Step6, merge, accepted-head movement, `main` movement, or reopening/formally freezing S16B.
 
 ---
 
@@ -62,10 +62,12 @@ Record:
 
 Direction:
 
-- reuse the stable semantic substrate, Keyword Consequence Registry, Producer / Consumer Signatures, strong functional predicates, surfaced facets, processor facts, and typed resources;
+- reuse the stable semantic substrate, Keyword Consequence Registry design, Producer / Consumer Signatures, strong functional predicates, surfaced facets, processor facts, and typed resources;
 - automate routine/compositional new-card analysis;
 - reserve deeper reasoning/adjudication for boundary-sensitive, novel, or ambiguous cards;
 - support dependency-aware incremental refresh rather than routine whole-corpus reruns.
+
+These remain future implementation concepts. S16B closure did not implement a physical Keyword Consequence Registry or ingestion/compiler path.
 
 ### D. Rapid single-card image / preview-card intake
 
@@ -98,25 +100,30 @@ Direction:
 
 ---
 
-## 2. Near-term Objective 6 work that does NOT belong here
+## 2. S16B disposition
 
-The following remain active S16B/pre-corpus work under `docs/architecture/preflight/s16b/`:
+There is **no active S16B/pre-corpus work queue** in this future-state directory or under `docs/architecture/preflight/s16b/`.
 
-- post-audit current-state routing;
-- Card Resource Delta stateful validation;
-- Sample Selection retrieval/UI validation;
-- Keyword Consequence Registry census/design gate;
-- semantic distillation methodology;
-- final clean-room corpus reanalysis planning;
-- formal S16B freeze review when explicitly authorized.
+The bounded S16B work that this index previously listed as pending was completed:
 
-The weird-card research, whole-vocabulary audit, and global naming audit have already been completed and are active evidence for the freeze candidate.
+- Card Resource Delta stateful validation — **PASS**;
+- Sample Selection retrieval/UI validation — **PASS**;
+- Keyword Consequence Registry census/design gate — `REGISTRY_DESIGN_SUFFICIENT_FOR_S16B_FREEZE`;
+- stale-routing verification — complete;
+- whole-model conservation — **PASS at S16B design level**;
+- no item remains classified `BLOCKS_S16B_FREEZE`.
+
+The historical readiness token `S16B_READY_FOR_FORMAL_FREEZE_REVIEW` is not an active next step. The Captain has closed/cleared the S16B workstream rather than queueing a formal freeze review.
+
+A formal freeze or S16B reopening would require a new explicit Captain direction.
+
+Downstream implementation debts recorded by S16B remain potential inputs to future S16A/AQ4/compiler/ingestion work, but they are not unfinished S16B tasks.
 
 ---
 
-## 3. Current naming/structure note
+## 3. Closed S16B naming/structure note
 
-The prior broad naming pass is complete. Current freeze-candidate terminology includes, among other changes:
+The S16B naming/design pass is complete and closed. The preserved snapshot includes, among other changes:
 
 - `Card Prospecting` / `Bounded Extraction` -> **Sample Selection**;
 - `Access Horizon` -> **Permission Window**;
@@ -129,9 +136,9 @@ The prior broad naming pass is complete. Current freeze-candidate terminology in
 - `Payment Substitution` -> **Payment Method**;
 - canonical Engine hierarchy -> retired in favor of processor facts + derived/search `Engine` language.
 
-`Lockdown` remains structurally OPEN as a possible search/community label pending evidence.
+`Lockdown` remains community/search language; the bounded closeout did not force canonical promotion.
 
-This index does not itself freeze any of those names.
+This index does not itself create a formal semantic freeze.
 
 ---
 
@@ -143,7 +150,7 @@ When a substantial idea is explicitly tabled for later:
 2. mark it `TABLED` / `NO CURRENT IMPLEMENTATION AUTHORIZATION`;
 3. identify which current subsystem it would consume;
 4. identify what must be true before it can activate;
-5. avoid adding present-tense routing language to active preflight documents;
+5. avoid adding present-tense routing language to closed/historical preflight documents;
 6. keep canonical semantics, product strategy, and speculative reasoning visibly separated;
 7. update future-state examples when the canonical substrate changes so obsolete ontology claims do not survive as misleading examples.
 
@@ -159,9 +166,11 @@ If a tabled concept becomes active work, it requires a new bounded contract.
 - `REALIZATION-CEILING-AND-GAME-HORIZON.md` — ceiling/opportunity/realization/expected-throughput model.
 - `STRATEGIC-RESEARCH-ENRICHMENT.md` — external strategic knowledge/prior-art layer with provenance boundaries.
 
-Near-term final corpus execution planning remains at:
+The historical full-corpus planning record remains at:
 
 - `docs/architecture/preflight/s16b/OBJECTIVE6-FINAL-CORPUS-REANALYSIS-PLAN-2026-09-19.md`
+
+That plan is not an active S16B task or execution authorization. Any future corpus run requires a new bounded execution contract against the implementation and authoritative corpus state that exist at that time.
 
 ---
 
@@ -172,7 +181,7 @@ This directory does **not** authorize:
 - implementation of any future-state feature;
 - current recommendation behavior;
 - broad corpus execution;
-- S16B freeze;
+- S16B reopening or formal freeze;
 - merge;
 - movement of accepted implementation head or `main`;
 - AQ4 resumption;
