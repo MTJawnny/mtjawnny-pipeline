@@ -295,11 +295,86 @@ PRE_S1_PROPERTIES: dict[str, str] = {
     "tests": "tests",
 }
 
+# M00 is a new bootstrap slice. These names did not exist during migration
+# Slice 1, so they stay in their own set rather than rewriting historical law.
+COMPILER_BOOTSTRAP_DESTINATIONS: dict[str, str] = {
+    "oracle_compiler": "oracle_compiler",
+    "oracle_compiler_analysis": "oracle_compiler/analysis",
+    "oracle_compiler_measurement": "oracle_compiler/measurement",
+    "oracle_compiler_archive": "oracle_compiler/archive",
+    "oracle_ingest_src": "src/mtj_foundry/oracle_ingest",
+    "oracle_ingest_tests": "tests/oracle_ingest",
+    "oracle_ingest_experiments": "experiments/oracle_ingest",
+    "oracle_ingest_output": "experiments/out/oracle_ingest",
+}
+
 
 def _public_properties() -> set[str]:
     return {n for n in dir(ProjectPaths)
             if not n.startswith("_")
             and isinstance(getattr(ProjectPaths, n), property)}
+
+
+class TestCompilerBootstrapDestinationsAreNamed(unittest.TestCase):
+    """M00: name compiler destinations without rewriting Slice-1 history."""
+
+    def test_every_compiler_destination_resolves_to_its_ratified_path(self):
+        paths = ProjectPaths.for_root("/r")
+        for name, relative in sorted(COMPILER_BOOTSTRAP_DESTINATIONS.items()):
+            with self.subTest(destination=name):
+                self.assertEqual(getattr(paths, name),
+                                 Path("/r").joinpath(*relative.split("/")))
+
+    def test_the_compiler_destination_set_is_complete(self):
+        """M00 NEGATIVE CONTROL: a missing/renamed property must fail loudly."""
+        missing = sorted(set(COMPILER_BOOTSTRAP_DESTINATIONS) - _public_properties())
+        self.assertEqual(missing, [],
+                         f"compiler bootstrap destination properties are missing: {missing}")
+
+    def test_compiler_children_derive_from_their_intermediate_owner(self):
+        p = ProjectPaths.for_root("/r")
+        for child, owner, segment in [
+            (p.oracle_compiler_analysis, p.oracle_compiler, "analysis"),
+            (p.oracle_compiler_measurement, p.oracle_compiler, "measurement"),
+            (p.oracle_compiler_archive, p.oracle_compiler, "archive"),
+            (p.oracle_ingest_src, p.src, "mtj_foundry/oracle_ingest"),
+            (p.oracle_ingest_tests, p.tests, "oracle_ingest"),
+            (p.oracle_ingest_experiments, p.legacy_experiments, "oracle_ingest"),
+            (p.oracle_ingest_output, p.legacy_experiments_out, "oracle_ingest"),
+        ]:
+            with self.subTest(child=str(child)):
+                self.assertEqual(child, owner.joinpath(*segment.split("/")))
+
+    def test_compiler_destination_sets_are_historically_disjoint(self):
+        compiler = set(COMPILER_BOOTSTRAP_DESTINATIONS)
+        self.assertEqual(compiler & set(PRE_S1_PROPERTIES), set())
+        self.assertEqual(compiler & set(S1_DESTINATIONS), set())
+
+    def test_naming_compiler_destinations_touches_no_filesystem(self):
+        with unittest.mock.patch.object(Path, "exists",
+                                        side_effect=AssertionError("existence checked")), \
+             unittest.mock.patch.object(Path, "resolve",
+                                        side_effect=AssertionError("resolve() called")), \
+             unittest.mock.patch.object(Path, "stat",
+                                        side_effect=AssertionError("stat() called")), \
+             unittest.mock.patch.object(Path, "mkdir",
+                                        side_effect=AssertionError("mkdir() called")), \
+             unittest.mock.patch.object(Path, "iterdir",
+                                        side_effect=AssertionError("iterdir() called")):
+            paths = ProjectPaths.for_root("/nonexistent-root-m00")
+            for name in sorted(COMPILER_BOOTSTRAP_DESTINATIONS):
+                self.assertTrue(str(getattr(paths, name)).startswith("/nonexistent-root-m00"))
+
+    def test_compiler_destinations_are_cwd_stable(self):
+        original = os.getcwd()
+        self.addCleanup(os.chdir, original)
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            os.chdir(a)
+            paths = ProjectPaths.for_root("relative-root")
+            before = {n: getattr(paths, n) for n in COMPILER_BOOTSTRAP_DESTINATIONS}
+            os.chdir(b)
+            self.assertEqual(before,
+                             {n: getattr(paths, n) for n in COMPILER_BOOTSTRAP_DESTINATIONS})
 
 
 class TestSliceOneDestinationsAreNamed(unittest.TestCase):
@@ -433,9 +508,12 @@ class TestSliceOneDestinationsAreNamed(unittest.TestCase):
                 self.assertEqual(getattr(paths, name),
                                  Path("/r").joinpath(*relative.split("/")))
 
-    def test_the_two_property_sets_are_disjoint_and_together_are_everything(self):
-        """No pre-S1 name was reused for a destination, and nothing else was
-        added while the slice was open."""
-        self.assertEqual(set(PRE_S1_PROPERTIES) & set(S1_DESTINATIONS), set())
-        self.assertEqual(set(PRE_S1_PROPERTIES) | set(S1_DESTINATIONS),
-                         _public_properties())
+    def test_the_three_property_sets_are_pairwise_disjoint_and_together_are_everything(self):
+        """Historical sets stay disjoint; M00 adds only its explicit bootstrap set."""
+        pre = set(PRE_S1_PROPERTIES)
+        s1 = set(S1_DESTINATIONS)
+        compiler = set(COMPILER_BOOTSTRAP_DESTINATIONS)
+        self.assertEqual(pre & s1, set())
+        self.assertEqual(pre & compiler, set())
+        self.assertEqual(s1 & compiler, set())
+        self.assertEqual(pre | s1 | compiler, _public_properties())

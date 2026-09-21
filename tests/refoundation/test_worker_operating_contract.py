@@ -14,6 +14,7 @@ README = REPO_ROOT / 'README.md'
 CLAUDE = REPO_ROOT / 'CLAUDE.md'
 WORKER = REPO_ROOT / 'refoundation' / 'WORKER-START.md'
 PROTOCOL = REPO_ROOT / 'refoundation' / 'SESSION-PROTOCOL.md'
+COMPILER = REPO_ROOT / 'oracle_compiler' / 'README.md'
 ACTIVE_TOMBSTONE = REPO_ROOT / 'refoundation' / 'ACTIVE-PHASE.yaml'
 BOOTSTRAP_TOMBSTONE = REPO_ROOT / 'refoundation' / 'BOOTSTRAP-STATE.yaml'
 CURRENT_ROUTING = {
@@ -21,6 +22,7 @@ CURRENT_ROUTING = {
     'CLAUDE.md': CLAUDE,
     'refoundation/WORKER-START.md': WORKER,
     'refoundation/SESSION-PROTOCOL.md': PROTOCOL,
+    'oracle_compiler/README.md': COMPILER,
 }
 ARCHIVED_ROUTING = (
     REPO_ROOT / 'archive/routing/refoundation/ACTIVE-PHASE.yaml',
@@ -99,11 +101,14 @@ class TestColdStartContract(unittest.TestCase):
     def setUp(self):
         self.text={n:p.read_text(encoding='utf-8') for n,p in CURRENT_ROUTING.items()}
         self.claude=self.text['CLAUDE.md']; self.protocol=self.text['refoundation/SESSION-PROTOCOL.md']
+        self.compiler=self.text['oracle_compiler/README.md']
     def test_current_routing_files_exist_and_archived_bodies_are_retained(self):
         for p in CURRENT_ROUTING.values(): self.assertTrue(p.is_file(),p)
         for p in ARCHIVED_ROUTING: self.assertTrue(p.is_file(),p)
     def test_generic_root_router_points_only_to_durable_authority(self):
         self.assertEqual(generic_router_problems(self.text['README.md']),[])
+    def test_compiler_router_points_only_to_durable_authority(self):
+        self.assertEqual(generic_router_problems(self.compiler),[])
     def test_no_current_routing_document_routes_through_superseded_state(self):
         for n,t in self.text.items():
             with self.subTest(n=n): self.assertEqual(historical_routing_problems(t),[])
@@ -132,10 +137,12 @@ class TestColdStartContract(unittest.TestCase):
         self.assertLessEqual(len(self.text['README.md'].splitlines()),40)
         self.assertLessEqual(len(self.text['refoundation/WORKER-START.md'].splitlines()),25)
         self.assertLessEqual(len(self.protocol.splitlines()),140)
+        self.assertLessEqual(len(self.compiler.splitlines()),40)
 
 class TestColdStartNegativeControls(unittest.TestCase):
     def setUp(self):
         self.claude=CLAUDE.read_text(); self.protocol=PROTOCOL.read_text(); self.readme=README.read_text()
+        self.compiler=COMPILER.read_text()
     def test_NC1_dated_handoff_route_is_red(self):
         self.assertTrue(historical_routing_problems(self.readme+'\nRead docs/SESSION-HANDOFF-2026-08-09.md'))
     def test_NC2_phase_import_is_red(self):
@@ -162,5 +169,15 @@ class TestColdStartNegativeControls(unittest.TestCase):
     def test_NC10_reactivating_tombstone_is_red(self):
         t=ACTIVE_TOMBSTONE.read_text()+'\nphase: DO_THIS_NEXT\n'
         self.assertTrue(tombstone_problems(t,'archive/routing/refoundation/ACTIVE-PHASE.yaml'))
+    def test_NC11_compiler_missing_or_stale_selector_is_red(self):
+        missing=self.compiler.replace('latest `K` -> active `T`','whichever task looks current')
+        stale=self.compiler.replace('latest `K` -> active `T`','latest accepted `K` -> active `T`')
+        self.assertTrue(selector_problems(missing))
+        self.assertTrue(selector_problems(stale))
+    def test_NC12_compiler_mirrored_SHA_is_red(self):
+        self.assertTrue(generic_router_problems(
+            self.compiler+'\naccepted: 9412e9e6236dd6509941b668f0951fdbfc213d29'))
+    def test_NC13_compiler_mirrored_PR_state_is_red(self):
+        self.assertTrue(generic_router_problems(self.compiler+'\nPR #64 is current'))
 
 if __name__=='__main__': unittest.main()

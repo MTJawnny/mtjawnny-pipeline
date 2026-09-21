@@ -160,6 +160,43 @@ class ProjectPaths:
     def conservation(self) -> Path:
         return self.refoundation / "conservation"
 
+    # ---- Oracle Compiler bootstrap destinations (NAMED, NOT CREATED) -----
+    # M00 adds durable names for the ratified compiler workspace and prototype
+    # surfaces. This is a new bootstrap destination set, not part of historical
+    # migration Slice 1. Naming these paths creates nothing and authorizes no
+    # compiler execution.
+    @property
+    def oracle_compiler(self) -> Path:
+        return self.root / "oracle_compiler"
+
+    @property
+    def oracle_compiler_analysis(self) -> Path:
+        return self.oracle_compiler / "analysis"
+
+    @property
+    def oracle_compiler_measurement(self) -> Path:
+        return self.oracle_compiler / "measurement"
+
+    @property
+    def oracle_compiler_archive(self) -> Path:
+        return self.oracle_compiler / "archive"
+
+    @property
+    def oracle_ingest_src(self) -> Path:
+        return self.src / "mtj_foundry" / "oracle_ingest"
+
+    @property
+    def oracle_ingest_tests(self) -> Path:
+        return self.tests / "oracle_ingest"
+
+    @property
+    def oracle_ingest_experiments(self) -> Path:
+        return self.legacy_experiments / "oracle_ingest"
+
+    @property
+    def oracle_ingest_output(self) -> Path:
+        return self.legacy_experiments_out / "oracle_ingest"
+
     # ---- accepted destination layout (NAMED, NOT CREATED) ----------------
     # Migration slice 1. The accepted experiments-migration master plan
     # (R2/R3/R4/R5 as corrected by R6) relocates configuration, generated
