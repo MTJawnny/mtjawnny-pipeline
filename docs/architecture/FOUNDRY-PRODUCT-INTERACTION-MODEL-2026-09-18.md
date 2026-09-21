@@ -1,16 +1,16 @@
 # Foundry Product Interaction Model
 
 **Date:** 2026-09-18  
-**Revised:** 2026-09-20 after Objective 6 weird-card / whole-vocabulary / naming audit  
+**Revised:** 2026-09-21 after S16B closure  
 **Status:** Captain product direction — documentation only; not semantic freeze or implementation acceptance  
 **Base accepted implementation head:** `fdb66e659d81f4efa373ab8e86329485c0205966`  
-**Current semantic routing:** `docs/architecture/preflight/s16b/OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
+**Current S16B routing:** `docs/architecture/preflight/s16b/S16B-CLOSED-CURRENT-STATUS-2026-09-21.md`
 
 ## Purpose
 
 This document records the intended Foundry user interaction model. It is product direction, not an independent semantic authority.
 
-Where an example or term in an older product discussion conflicts with the post-audit Objective 6 semantic records, the post-audit semantic record controls.
+Where an example or term in an older product discussion conflicts with the closed S16B semantic records, the closed S16B semantic snapshot controls until a later authorized workstream explicitly changes the owning semantics.
 
 Governing product principle:
 
@@ -113,7 +113,7 @@ Examples:
 
 Derived resource/accounting views may report Card Resource Delta, parity, or pairwise resource changes when the required state/context is available.
 
-`Card Advantage` remains useful established theory/player language, but current Objective 6 does not require it to be a canonical ontology family. Educational or later strategic views may explain Card Advantage from harder resource facts.
+`Card Advantage` remains useful established theory/player language, but the closed S16B design does not require it to be a canonical ontology family. Educational or later strategic views may explain Card Advantage from harder resource facts.
 
 ---
 
@@ -121,7 +121,7 @@ Derived resource/accounting views may report Card Resource Delta, parity, or pai
 
 A loaded deck should aggregate canonical semantic assertions into factual counts and drill-downs.
 
-Likely high-level handles include ratified families and surfaced views such as:
+Likely high-level handles include retained families and surfaced views such as:
 
 - Removal;
 - Ramp;
@@ -192,7 +192,7 @@ After replacement, the workspace recalculates the same canonical facts and prese
 
 ## 6. Vocabulary design follows the product without becoming product-owned truth
 
-The post-audit semantic design intentionally distinguishes among:
+The closed S16B semantic design distinguishes among:
 
 - strong functional families;
 - surfaced include/exclude facets;
@@ -223,7 +223,7 @@ The system should preserve familiar search language aggressively while keeping c
 
 ## 7. Role Compression is derived product/accounting information
 
-The Objective 6 audit no longer treats Role Compression as a new canonical card family requiring an independent hard ontology predicate.
+The S16B audit does not treat Role Compression as a new canonical card family requiring an independent hard ontology predicate.
 
 The underlying facts already exist: a card may satisfy several materially distinct functions.
 
@@ -287,21 +287,23 @@ Dedicated future-state records:
 
 ---
 
-## 10. Current Objective 6 semantic authority boundary
+## 10. S16B semantic authority boundary
 
-For the current S16B semantic freeze candidate, start with:
+S16B is now **CLOSED**, cleared from active routing, and was **not formally frozen**.
 
-`docs/architecture/preflight/s16b/OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
+For the current S16B disposition, start with:
 
-That file routes to:
+`docs/architecture/preflight/s16b/S16B-CLOSED-CURRENT-STATUS-2026-09-21.md`
 
-- the weird-card adversarial corpus hunt;
-- the whole-vocabulary semantic audit;
-- the global naming audit;
-- revised per-concept candidate records;
-- remaining freeze-review validation work.
+For the terminal bounded-closeout evidence, see:
 
-The product model does not override those records.
+`docs/architecture/preflight/s16b/OBJECTIVE6-BOUNDED-CLOSEOUT-FREEZE-READINESS-2026-09-21.md`
+
+The historical token `S16B_READY_FOR_FORMAL_FREEZE_REVIEW` records the closeout result but is not the next queued action.
+
+Older S16B documents remain provenance/evidence and may contain status labels that were true at the time they were written. They must not be read as active routing over the closure record.
+
+The product model does not reopen or override the closed S16B semantic snapshot.
 
 ---
 
@@ -309,14 +311,16 @@ The product model does not override those records.
 
 This document does not authorize:
 
-- S16B freeze;
+- reopening or formally freezing S16B;
 - broad corpus reclassification;
 - implementation acceptance;
-- AQ4 resumption;
+- S16A implementation;
+- AQ4 resumption/execution;
+- Oracle Ingest Compiler work;
 - Bridge v0 activation;
 - Step6;
 - merge of PR #70;
 - movement of the accepted implementation head;
 - movement of `main`.
 
-Standing controls remain unchanged until explicitly superseded by the Captain.
+Standing controls remain unchanged except for the explicitly recorded routing disposition: **S16B CLOSED — not formally frozen**.
