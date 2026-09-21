@@ -1,23 +1,27 @@
 # Objective 6 — Final Corpus Reanalysis Plan
 
 **Date:** 2026-09-19  
-**Revised:** 2026-09-20 after whole-vocabulary / naming audit and stale cleanup  
-**Status:** **CAPTAIN-DIRECTED FUTURE EXECUTION PLAN — NOT AUTHORIZED FOR CORPUS EXECUTION**  
-**Current semantic routing:** `OBJECTIVE6-POST-AUDIT-CURRENT-STATE-2026-09-19.md`
+**Revised:** 2026-09-21 after S16B closure  
+**Status:** **HISTORICAL/FUTURE EXECUTION PLAN — NOT AN ACTIVE S16B TASK — NOT AUTHORIZED FOR CORPUS EXECUTION**  
+**Current S16B status:** `S16B-CLOSED-CURRENT-STATUS-2026-09-21.md`
 
 ## 1. Purpose
 
-After Objective 6 completes its remaining bounded validation and receives an explicit formal semantic freeze, Foundry should perform a **clean-room reanalysis of the entire in-scope playable-card corpus**.
+This document preserves the planning shape for a future clean-room reanalysis of the in-scope playable-card corpus.
 
-This final pass prioritizes semantic correctness and provenance over throughput.
+S16B is now **CLOSED**, cleared from active routing, and was **not formally frozen**. Therefore this plan is no longer a list of unfinished S16B prerequisites and does not create a pending S16B corpus task.
+
+A future whole-corpus run, if still desired, must be authorized under a new bounded execution contract against the implementation, semantic contract, rules corpus, and authoritative Oracle snapshot that exist at that time.
+
+This plan continues to express a useful execution principle:
 
 > **There is no value in spending this much effort on semantic precision and then rushing the one pass that applies it to every card.**
 
 ---
 
-## 2. Current readiness state
+## 2. Readiness state after S16B closure
 
-Already completed:
+Completed during S16B:
 
 - broad concept-definition work;
 - Card Access prior-art research;
@@ -26,17 +30,25 @@ Already completed:
 - whole-vocabulary adversarial semantic audit;
 - global naming audit;
 - structural corrections to key candidate records;
-- stale-document cleanup and current-state routing.
+- stale-document cleanup/current-state routing;
+- Card Resource Delta stateful fixture validation — **PASS**;
+- Sample Selection retrieval/UI fixture validation — **PASS**;
+- Keyword Consequence Registry census/design gate — `REGISTRY_DESIGN_SUFFICIENT_FOR_S16B_FREEZE`;
+- final bounded reconciliation/whole-model conservation — **PASS at S16B design level**;
+- `BLOCKS_S16B_FREEZE` — **none found**.
 
-Still required before an actual full-corpus run:
+The historical readiness token `S16B_READY_FOR_FORMAL_FREEZE_REVIEW` is not an active next step. The Captain closed/cleared S16B rather than queueing a formal freeze review.
 
-1. **Card Resource Delta stateful fixture validation**;
-2. **Sample Selection retrieval/UI fixture validation**;
-3. **Keyword Consequence Registry census/design gate**;
-4. final stale-routing verification;
-5. explicit Captain-authorized **formal S16B freeze review and freeze**, if the evidence passes;
-6. exact supported-format/card-scope resolution from the execution-time authoritative corpus snapshot;
-7. a stratified calibration run under the frozen semantic contract.
+Before any future full-corpus run, the owning execution workstream must freshly resolve at least:
+
+1. the production semantic/compiler/substrate implementation actually responsible for emitting the required semantics;
+2. any S16A/AQ4/compiler dependencies that the future implementation contract adopts;
+3. exact supported-format/card scope from the execution-time authoritative corpus snapshot;
+4. semantic/rules/version provenance for that run;
+5. a stratified calibration under the then-authoritative semantic contract;
+6. bounded STOP/adjudication behavior and rerun/dependency policy.
+
+Those are future execution prerequisites, **not unfinished S16B work**.
 
 Old Foundry assertions may be used as comparison/evidence but must not force preservation of prior classifications.
 
@@ -159,7 +171,7 @@ A Myriad card should invoke the canonical Myriad consequence map rather than red
 
 ## 8. Calibration before full execution
 
-Before a 30k+-scale run, execute a **200-card stratified calibration** under the frozen contract.
+Before a 30k+-scale run, execute a **200-card stratified calibration** under the then-authoritative semantic contract.
 
 Suggested composition:
 
@@ -239,7 +251,7 @@ Stopped cards remain isolated from accepted assertions until the underlying issu
 
 ## 11. Definition drift during execution
 
-If a frozen definition must change after analysis begins:
+If an authoritative definition must change after a future analysis begins:
 
 1. identify affected assertions/cards through dependency/provenance records;
 2. stop related downstream batches if continuing would multiply stale semantics;
@@ -254,31 +266,33 @@ If a frozen definition must change after analysis begins:
 
 ## 12. Relationship to continuous future ingestion
 
-The final whole-corpus reanalysis establishes the trustworthy new baseline.
+A future whole-corpus reanalysis could establish a trustworthy new production baseline.
 
-After that baseline exists, ordinary maintenance should move to incremental ingestion rather than repeating the entire corpus run for each release.
+After such a baseline exists, ordinary maintenance should move to incremental ingestion rather than repeating the entire corpus run for each release.
 
 Future design:
 
 `docs/architecture/future-state/AUTOMATED-SEMANTIC-INGESTION-AND-CORPUS-REFRESH.md`
 
-New/Oracle-changed cards receive incremental analysis; definition/rules changes trigger targeted dependency-aware reruns.
+New/Oracle-changed cards may then receive incremental analysis; definition/rules changes may trigger targeted dependency-aware reruns.
 
 ---
 
 ## 13. Control boundary
 
-This plan does **not** authorize the corpus run now.
+This historical/future plan does **not** authorize the corpus run now.
 
 It does not authorize:
 
 - corpus mutation/reclassification;
-- S16B freeze;
+- reopening or formally freezing S16B;
 - implementation acceptance;
-- AQ4 resumption;
+- S16A implementation;
+- AQ4 resumption/execution;
+- Oracle Ingest Compiler work;
 - Bridge v0 activation;
 - Step6;
 - merge;
 - movement of accepted implementation head or `main`.
 
-A later explicit Captain direction and bounded execution contract are required.
+A later explicit Captain direction and new bounded execution contract are required.
