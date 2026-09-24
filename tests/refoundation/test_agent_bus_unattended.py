@@ -676,13 +676,34 @@ class TestServiceEnvironmentIsDerived(unittest.TestCase):
             W.install(ARGV_ARMED, dry_run=True, which=fake_which({}))
         self.assertFalse(Path(W.plist_path()).is_file())
 
-    def test_NC_the_launchd_default_path_alone_cannot_find_the_real_tools(self):
-        # The defect this repair exists for, stated as a test: on the PATH launchd
-        # actually gives an agent, `gh` and `claude` are absent on this machine.
+    def test_the_derived_path_can_find_every_required_executable_here(self):
+        # The invariant, checked against THIS machine whatever it is: whatever the
+        # derivation produces, the tools are findable on it. Asserting instead that
+        # some tool is MISSING from launchd's default PATH would encode one
+        # machine's layout -- true on the operator's laptop, false on a CI runner
+        # that ships `gh` in /usr/bin, and a statement about neither the code nor
+        # the repair.
         import shutil
-        default = ":".join(W.LAUNCHD_DEFAULT_PATH)
-        self.assertIsNone(shutil.which("gh", path=default))
-        self.assertIsNotNone(shutil.which("git", path=default))
+        names = W.required_executables(ARGV_ARMED)
+        try:
+            resolved = W.resolve_executables(names)
+        except BusError:
+            self.skipTest("this machine does not have the armed-service tools")
+        derived = W.service_path(resolved)
+        for name in names:
+            with self.subTest(name=name):
+                self.assertIsNotNone(shutil.which(name, path=derived))
+
+    def test_NC_a_tool_outside_the_launchd_defaults_is_why_derivation_exists(self):
+        # The defect, stated portably: when a required tool lives somewhere
+        # launchd's default PATH does not cover, the derived PATH covers it and
+        # the defaults alone do not.
+        import shutil
+        resolved = W.resolve_executables(("git", "gh"), fake_which(
+            {"git": "/usr/bin/git", "gh": "/opt/tools/bin/gh"}))
+        derived = W.service_path(resolved)
+        self.assertIn("/opt/tools/bin", derived.split(":"))
+        self.assertNotIn("/opt/tools/bin", W.LAUNCHD_DEFAULT_PATH)
 
 
 class TestControlledRuntimeFailure(unittest.TestCase):
