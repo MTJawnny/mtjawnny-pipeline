@@ -24,16 +24,21 @@ rather than waited for. The service files live under the operator's own
 from __future__ import annotations
 
 import fcntl
+import json
 import os
 import re
+import shutil
 import signal
+import sys
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import Callable, Mapping, Sequence
 
 from agent_bus import errors as E
 from agent_bus.errors import BusError
+from agent_bus.issue import AuthorityError
 from agent_bus.shell import Runner
 
 LABEL = "com.mtjawnny.agent-bus"
@@ -44,6 +49,89 @@ LAUNCH_AGENTS = Path("~/Library/LaunchAgents")
 # against the transport's own error text, which is the only place the CLI reports
 # them; a wrong guess here costs a longer sleep, never a lost failure.
 QUOTA_RE = re.compile(r"(?i)(quota|rate[ _-]?limit|usage limit|429|too many requests|overloaded)")
+
+# What launchd gives a user agent when the plist says nothing. Measured with
+# `launchctl getenv PATH`, which is unset -- so this built-in default applies.
+LAUNCHD_DEFAULT_PATH = ("/usr/bin", "/bin", "/usr/sbin", "/sbin")
+
+# The executables this package shells out to, and where. They are NAMED here
+# rather than located here: the directories come from resolving these names on
+# the machine being installed to, so nothing hardcodes one operator's Homebrew.
+BASE_EXECUTABLES = ("git", "gh")        # agent_bus.git_evidence, agent_bus.issue
+EXECUTE_EXECUTABLES = ("claude",)       # agent_bus.transport, only when arming
+
+
+def required_executables(program_args: Sequence[str]) -> tuple[str, ...]:
+    """`git` and `gh` always; `claude` too when the service may actually run waves.
+
+    A watcher installed without `--execute` never invokes a model, so demanding
+    `claude` from it would fail an installation that would have worked.
+    """
+    names = list(BASE_EXECUTABLES)
+    if "--execute" in tuple(program_args):
+        names += list(EXECUTE_EXECUTABLES)
+    return tuple(names)
+
+
+def resolve_executables(names: Sequence[str],
+                        which: Callable[[str], str | None] = shutil.which
+                        ) -> dict[str, str]:
+    """Locate every required executable, or refuse loudly naming all of them.
+
+    Loudly, and BEFORE installation. An agent that installs cleanly and then
+    cannot find `gh` is indistinguishable, from the outside, from one that is
+    running -- launchd will keep restarting it and `launchctl print` will keep
+    saying it started.
+    """
+    found: dict[str, str] = {}
+    missing: list[str] = []
+    for name in names:
+        location = which(name)
+        if location:
+            found[name] = location
+        else:
+            missing.append(name)
+    if missing:
+        raise BusError(
+            E.EXECUTABLE_NOT_FOUND,
+            "cannot resolve required executable(s) for the service: "
+            + ", ".join(missing)
+            + " -- install them, or put them on PATH before installing the agent")
+    return found
+
+
+def service_path(resolved: Mapping[str, str],
+                 defaults: Sequence[str] = LAUNCHD_DEFAULT_PATH) -> str:
+    """The PATH the agent runs with: where the tools actually are, then the defaults.
+
+    Order is the declared order of the executables, then the system defaults,
+    each added once. Derived from measurement, so the same call on a machine
+    where `gh` lives in /usr/local/bin produces /usr/local/bin.
+    """
+    directories: list[str] = []
+    for name in resolved:
+        directory = str(Path(resolved[name]).parent)
+        if directory not in directories:
+            directories.append(directory)
+    for directory in defaults:
+        if directory not in directories:
+            directories.append(directory)
+    return ":".join(directories)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _stdout_line(entry: dict) -> None:
+    """One JSON line per cycle, flushed.
+
+    Flushed because launchd redirects stdout to a file, Python block-buffers a
+    file, and a long-running watcher would otherwise write its first log line
+    when it exits -- which for a healthy watcher is never.
+    """
+    sys.stdout.write(json.dumps(entry, sort_keys=True) + "\n")
+    sys.stdout.flush()
 
 
 @dataclass(frozen=True)
@@ -117,6 +205,10 @@ class Watcher:
     lock: SingleInstance | None = None
     sleep: Callable[[float], None] = time.sleep
     floor: float = 15.0
+    # One record per cycle, written AS THE CYCLE COMPLETES. The returned log is
+    # for callers that end the loop; the emitter is for the ones that never do.
+    emit: Callable[[dict], None] = _stdout_line
+    clock: Callable[[], str] = _utc_now
 
     def __post_init__(self) -> None:
         self._stop = False
@@ -145,7 +237,7 @@ class Watcher:
             count = 0
             while not self._stop and (cycles is None or count < cycles):
                 count += 1
-                entry: dict = {"cycle": count}
+                entry: dict = {"cycle": count, "at": self.clock()}
                 try:
                     report = self.supervisor.poll_once(execute=execute)
                     entry["action"] = report.get("action")
@@ -154,14 +246,24 @@ class Watcher:
                     failures = 0
                     delay = max(self.interval, self.floor)
                     entry["outcome"] = "polled"
-                except BusError as exc:
+                # AuthorityError is caught alongside BusError on purpose. GitHub
+                # being unreachable is an expected condition of a service that
+                # runs for days, not a bug -- and left uncaught it would kill the
+                # loop and hand the restart to KeepAlive, which is the crash loop
+                # this repair exists to remove.
+                except (BusError, AuthorityError) as exc:
                     failures += 1
-                    quota = bool(QUOTA_RE.search(exc.detail))
+                    code = getattr(exc, "code", E.AUTHORITY_UNRESOLVED)
+                    detail = getattr(exc, "detail", str(exc))
+                    quota = bool(QUOTA_RE.search(detail))
                     delay = self.backoff.delay(failures, quota)
-                    entry.update({"outcome": "failed", "code": exc.code,
+                    entry.update({"outcome": "failed", "code": code, "detail": detail,
                                   "quota": quota, "failures": failures})
                 entry["sleep"] = delay
                 log.append(entry)
+                # Emitted BEFORE the sleep. A record that appears only after the
+                # wait is a record of what the watcher WAS doing two minutes ago.
+                self.emit(entry)
                 if self._stop or (cycles is not None and count >= cycles):
                     break
                 self.sleep(delay)
@@ -224,18 +326,32 @@ def _domain() -> str:
 
 def install(program_args: Sequence[str], label: str = LABEL, workdir: str = ".",
             environment: dict[str, str] | None = None, run: Runner | None = None,
-            dry_run: bool = True) -> dict:
+            dry_run: bool = True,
+            which: Callable[[str], str | None] = shutil.which) -> dict:
+    """Write and load the agent -- after proving it could actually run.
+
+    Resolution happens FIRST, and on a dry run too. The point of the dry run is
+    to find out that this machine cannot host the service before the service is
+    installed, not after.
+
+    PATH is DERIVED, and derivation wins: a caller may add variables through
+    `environment`, but not replace the one thing that decides whether the agent
+    can find its own tools.
+    """
+    resolved = resolve_executables(required_executables(program_args), which)
+    env = dict(environment or {})
+    env["PATH"] = service_path(resolved)
     path = plist_path(label)
-    document = plist(program_args, label, workdir, environment)
+    document = plist(program_args, label, workdir, env)
     plan = {"action": "install", "label": label, "plist": str(path),
             "launchctl": ["launchctl", "bootstrap", _domain(), str(path)],
-            "dry_run": dry_run}
+            "executables": resolved, "path": env["PATH"], "dry_run": dry_run}
     if dry_run:
         plan["document"] = document
         return plan
     path.parent.mkdir(parents=True, exist_ok=True)
     STATE_DIR.expanduser().mkdir(parents=True, exist_ok=True)
-    path.write_text(document, encoding="utf-8")
+    path.write_text(document, encoding="utf-8")  # only reached when dry_run is False
     result = (run or Runner())(plan["launchctl"])
     plan["returncode"] = result.returncode
     plan["stderr"] = result.stderr.strip()
