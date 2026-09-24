@@ -96,6 +96,10 @@ class Supervisor:
             "rejected": [r.as_dict() for r in state.rejected()],
             "inert": sum(1 for r in state.records if r.status == "INERT"),
             "pending": [e.message_id for e in state.pending_for(self.actor)],
+            # Cancellation and supersession are reported, never queued: they are
+            # state the Worker obeys by NOT dispatching, not work it can finish.
+            "aborted": sorted(w for w, s in state.waves.items() if s.aborted),
+            "superseded": state.superseded(),
             "action": None,
             "reason": None,
             "dispatch": None,
@@ -109,12 +113,6 @@ class Supervisor:
 
         envelope = pending[0]
         report["selected"] = envelope.message_id
-
-        if envelope.kind == "WAVE_ABORT":
-            report["action"] = "ABORT"
-            report["reason"] = envelope.body["reason"]
-            return report
-
         wave_state = state.waves[envelope.wave]
         plan = wave_state.plan
         assert plan is not None  # a command without a plan cannot be ACCEPTED

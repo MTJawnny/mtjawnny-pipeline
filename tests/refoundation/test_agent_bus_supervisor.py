@@ -231,7 +231,10 @@ class TestPollingRestraint(unittest.TestCase):
         abort = dict(kind="WAVE_ABORT", actor="MANAGER", message_id="m-abort-0001")
         runner = FakeRunner(stream(comment_body(**COMMAND), comment_body(**abort)))
         report = supervisor(runner).poll_once()
-        self.assertEqual(report["action"], "ABORT")
+        self.assertEqual(report["action"], "NONE")
+        self.assertEqual(report["reason"], E.NOTHING_ACTIONABLE)
+        self.assertEqual(report["aborted"], [WAVE])
+        self.assertEqual(report["pending"], [])
         self.assertEqual(runner.claude_calls, [])
 
     def test_a_stale_command_is_rejected_and_nothing_runs(self):

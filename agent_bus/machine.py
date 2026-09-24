@@ -138,12 +138,41 @@ class BusState:
     def rejected(self) -> list[Record]:
         return [r for r in self.records if r.status == REJECTED]
 
+    def newest_command(self) -> Envelope | None:
+        """The last WAVE_COMMAND accepted under the live authority, or None.
+
+        Every accepted command already cites the same checkpoint and task, so
+        "newest" is the Manager's latest word inside the selected task. It is
+        positional, not "newest still runnable": aborting the newest command
+        must leave nothing to run, never hand the Worker the one before it.
+        """
+        commands = [e for e in self.accepted() if e.kind == "WAVE_COMMAND"]
+        return commands[-1] if commands else None
+
+    def superseded(self) -> list[str]:
+        """Waves whose command a newer accepted command has replaced, in order."""
+        newest = self.newest_command()
+        return [e.wave for e in self.accepted()
+                if e.kind == "WAVE_COMMAND" and e is not newest]
+
     def pending_for(self, actor: str) -> list[Envelope]:
         """Messages this actor must act on, oldest first.
 
         A message wakes an actor only when its KIND is addressed to that actor
         and its ACTOR is somebody else, so no agent can ever wake itself.
+
+        Two things are never Worker work, and that is what keeps the queue from
+        starving:
+
+        * a WAVE_ABORT. Cancellation is applied when the abort is folded -- its
+          wave's command stops being pending, permanently -- so there is nothing
+          left for the Worker to DO. An abort that stayed queued could never be
+          answered by anybody, and would sit ahead of every later command forever.
+        * a command that a newer accepted command has superseded. At most one
+          command is ever pending: the newest, and only while it is neither
+          answered nor aborted.
         """
+        newest = self.newest_command()
         out: list[Envelope] = []
         for env in self.accepted():
             if not env.wakes(actor):
@@ -151,14 +180,15 @@ class BusState:
             state = self.waves.get(env.wave)
             if state is None:
                 continue
+            if env.kind == "WAVE_ABORT":
+                continue
             # A CLAIMED command stays pending on purpose. Half-finished work is
             # still work; whether to re-enter it is a dispatch decision made once,
             # with durable evidence in hand -- see `Supervisor.poll_once`.
-            if env.kind == "WAVE_COMMAND" and (state.answered or state.aborted):
+            if env.kind == "WAVE_COMMAND" and (
+                    env is not newest or state.answered or state.aborted):
                 continue
             if env.kind in ("WAVE_RESULT", "CAPTAIN_REQUIRED") and state.review is not None:
-                continue
-            if env.kind == "WAVE_ABORT" and state.answered:
                 continue
             out.append(env)
         return out
@@ -203,6 +233,7 @@ class BusState:
         return plan
 
     def as_dict(self) -> dict:
+        superseded = set(self.superseded())
         return {
             "schema_state": "mtj-agent-bus-state/1",
             "authority": self.authority.as_dict(),
@@ -224,6 +255,7 @@ class BusState:
                     "result": s.result.message_id if s.result else None,
                     "review": s.review.body["verdict"] if s.review else None,
                     "aborted": bool(s.aborted),
+                    "superseded": w in superseded,
                 }
                 for w, s in sorted(self.waves.items())
             },

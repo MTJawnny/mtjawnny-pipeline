@@ -93,10 +93,12 @@ class TestIdempotency(unittest.TestCase):
         self.assertTrue(state.waves[WAVE].claimed)
 
     def test_an_aborted_wave_stops_waking_the_worker_with_its_command(self):
+        # R3: the abort is applied at fold time and is NOT itself queued. Queued,
+        # it could never be answered and would starve every later command.
         abort = dict(kind="WAVE_ABORT", actor="MANAGER", message_id="m-abort-0001")
         state = fold([raw(10, **COMMAND), raw(11, **abort)], AUTHORITY, TRUSTED)
-        self.assertEqual([e.message_id for e in state.pending_for("WORKER")],
-                         ["m-abort-0001"])
+        self.assertEqual(state.pending_for("WORKER"), [])
+        self.assertIsNotNone(state.waves[WAVE].aborted)
 
 
 class TestStaleness(unittest.TestCase):

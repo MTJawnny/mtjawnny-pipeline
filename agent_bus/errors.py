@@ -86,6 +86,15 @@ ALREADY_CLAIMED = "BUS_ALREADY_CLAIMED"
 NOTHING_ACTIONABLE = "BUS_NOTHING_ACTIONABLE"
 TRANSPORT_FAILED = "BUS_TRANSPORT_FAILED"
 
+# --- Manager wake pre-gate ------------------------------------------------------------
+# Every one of these ends a GitHub event BEFORE any model is invoked.
+GATE_WRONG_EVENT = "BUS_GATE_WRONG_EVENT"
+GATE_WRONG_SURFACE = "BUS_GATE_WRONG_SURFACE"
+GATE_NO_ENVELOPE = "BUS_GATE_NO_ENVELOPE"
+GATE_NOT_FOR_MANAGER = "BUS_GATE_NOT_FOR_MANAGER"
+GATE_COMMENT_MISMATCH = "BUS_GATE_COMMENT_MISMATCH"
+GATE_ALREADY_HANDLED = "BUS_GATE_ALREADY_HANDLED"
+
 CODES = frozenset(
     v for k, v in list(globals().items())
     if k.isupper() and isinstance(v, str) and v.startswith("BUS_")
