@@ -51,6 +51,28 @@ UNIT_SCOPE_MISSING = "BUS_UNIT_SCOPE_MISSING"
 UNIT_VALIDATION_MISSING = "BUS_UNIT_VALIDATION_MISSING"
 EMPTY_WAVE = "BUS_EMPTY_WAVE"
 
+# --- speaker trust (fail closed) ---------------------------------------------------
+TRUST_NOT_CONFIGURED = "BUS_TRUST_NOT_CONFIGURED"
+
+# --- checkout preflight -------------------------------------------------------------
+WRONG_WORKTREE = "BUS_WRONG_WORKTREE"
+WRONG_BRANCH = "BUS_WRONG_BRANCH"
+BASE_NOT_ANCESTOR = "BUS_BASE_NOT_ANCESTOR"
+PROGRESS_HEAD_MISMATCH = "BUS_PROGRESS_HEAD_MISMATCH"
+UNEXPECTED_DIRT = "BUS_UNEXPECTED_DIRT"
+PREFLIGHT_FAILED = "BUS_PREFLIGHT_FAILED"
+
+# --- unit boundary enforcement --------------------------------------------------------
+UNIT_NO_COMMIT = "BUS_UNIT_NO_COMMIT"
+UNIT_TRAILER_MISSING = "BUS_UNIT_TRAILER_MISSING"
+UNIT_SCOPE_ESCAPE = "BUS_UNIT_SCOPE_ESCAPE"
+UNIT_UNCOMMITTED = "BUS_UNIT_UNCOMMITTED"
+READONLY_UNIT_MUTATED = "BUS_READONLY_UNIT_MUTATED"
+
+# --- watcher ----------------------------------------------------------------------------
+WATCHER_ALREADY_RUNNING = "BUS_WATCHER_ALREADY_RUNNING"
+WATCHER_NOT_INSTALLED = "BUS_WATCHER_NOT_INSTALLED"
+
 # --- dispatch ---------------------------------------------------------------------
 ALREADY_CLAIMED = "BUS_ALREADY_CLAIMED"
 NOTHING_ACTIONABLE = "BUS_NOTHING_ACTIONABLE"
