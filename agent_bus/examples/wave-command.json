@@ -1,0 +1,44 @@
+{
+  "schema": "mtj-agent-bus/1",
+  "message_id": "m-wave-0001-command",
+  "actor": "MANAGER",
+  "kind": "WAVE_COMMAND",
+  "wave": "INFRA.AGENT-BUS-V1.W1",
+  "parent": null,
+  "authority": {
+    "issue": 1,
+    "checkpoint": 5805993653,
+    "task": 5805989871
+  },
+  "base": "89a147125ec93f1ee7ab564473835acff813a9f9",
+  "created_at": "2026-09-23T20:00:00Z",
+  "body": {
+    "branch": "infra/agent-bus-v1-bootstrap-2026-09-23",
+    "review_boundary": "one Manager review after every unit lands; no review between units",
+    "stop_conditions": [
+      "the live checkpoint stops selecting this task",
+      "a unit needs a semantic decision",
+      "a unit needs a credential"
+    ],
+    "units": [
+      {
+        "id": "U1-PROTOCOL",
+        "objective": "the typed envelope, strictly validated",
+        "depends_on": [],
+        "allow_paths": ["agent_bus/**", "tests/refoundation/test_agent_bus_protocol.py"],
+        "validation": ["python3 -m agent_bus selftest"],
+        "negative_controls": ["unsupported schema version", "actor/kind mismatch"],
+        "mutating": true
+      },
+      {
+        "id": "U2-MACHINE",
+        "objective": "fold a comment stream into state under an external authority",
+        "depends_on": ["U1-PROTOCOL"],
+        "allow_paths": ["agent_bus/**", "tests/refoundation/test_agent_bus_machine.py"],
+        "validation": ["python3 -m agent_bus selftest"],
+        "negative_controls": ["duplicate delivery", "stale base", "forged accepted head"],
+        "mutating": true
+      }
+    ]
+  }
+}

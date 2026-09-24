@@ -1,0 +1,19 @@
+{
+  "schema": "mtj-agent-bus/1",
+  "message_id": "m-wave-0001-review",
+  "actor": "MANAGER",
+  "kind": "WAVE_REVIEW",
+  "wave": "INFRA.AGENT-BUS-V1.W1",
+  "parent": "w-wave-0001-result",
+  "authority": {
+    "issue": 1,
+    "checkpoint": 5805993653,
+    "task": 5805989871
+  },
+  "base": "89a147125ec93f1ee7ab564473835acff813a9f9",
+  "created_at": "2026-09-23T23:00:00Z",
+  "body": {
+    "verdict": "REPAIR",
+    "note": "a verdict is a proposal; the accepted head moves only when a K says so"
+  }
+}
