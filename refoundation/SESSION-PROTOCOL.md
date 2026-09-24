@@ -130,9 +130,11 @@ Different sessions expose different tools. A Manager session doing repository
 work needs live GitHub access; one without it may reason about supplied evidence
 but must not claim to have inspected live state.
 
-## 10. No uncontrolled autonomy
+## 10. Bounded autonomy, not uncontrolled autonomy
 
-The GitHub bridge is a control plane, not authorization for an autonomous loop:
-one task, one execution, one durable result, one review, Captain decisions when
-needed, explicit next authorization. Automation of the loop itself waits until
-the state machine is trustworthy.
+The GitHub bridge is a control plane, never authorization for an open loop. A
+`T` may authorize a bounded WAVE of pre-authorized units: the Worker crosses
+unit boundaries alone and STOPs at the wave's review boundary, where the Manager
+reviews independently and Captain still decides semantics. Only typed Agent Bus
+messages may drive an agent, a redelivered message is a no-op, and no message
+moves the accepted head. Transport law: `refoundation/AGENT-BUS.md`.

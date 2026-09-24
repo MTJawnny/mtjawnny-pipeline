@@ -15,4 +15,8 @@ and builds corpus artifacts for mtjawnny.com's tools. Card data is external to g
 Claude Code Workers also obey root `CLAUDE.md`, the role-specific operating contract.
 Other LLMs should use this router plus Issue #1 and the exact active task.
 
+A selected `T` may authorize a bounded wave of pre-authorized units carried by
+typed Agent Bus messages. That layer is transport and never a second selector;
+its rules live in `refoundation/AGENT-BUS.md`.
+
 `archive/` is inert history. Files there may explain prior work but never assign current work.
