@@ -122,6 +122,22 @@ continues the same conversation rather than starting a stranger.
 
 Dry run is the default everywhere, and it returns the argv without executing it.
 
+**The mechanism was exercised, not assumed.** A green unit test proves the argv
+is built correctly; it says nothing about whether the shipped command runs in
+this environment. Two bounded probes were run with no tools at all, so neither
+could touch the repository:
+
+1. `claude -p <prompt> --output-format json --tools "" --session-id <uuid>`
+   returned `subtype: success`, `is_error: false`, and the session id it was
+   given.
+2. A second invocation with `--resume <uuid>` and no restatement of the first
+   prompt recovered the earlier turn's content.
+
+So headless execution works from the operator's own authenticated session, and
+session resume — the mechanism an interrupted wave depends on — works across
+separate processes. The session id in both was derived from a wave name by the
+package's own `session_id()`.
+
 `HostedActionTransport` exists as a named, declared transport that refuses with
 the exact missing prerequisites rather than pretending to dispatch. Rejected as
 the primary path because it needs an API-key secret the repository does not have
