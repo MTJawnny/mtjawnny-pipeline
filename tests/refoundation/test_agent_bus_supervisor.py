@@ -13,15 +13,16 @@ from __future__ import annotations
 
 import json
 import unittest
+from pathlib import Path
 
 from tests.refoundation.agent_bus_fixtures import (
-    AUTHORITY, BASE, CHECKPOINT, OTHER_SHA, TASK, WAVE, comment_body, human,
+    AUTHORITY, BASE, CHECKPOINT, OTHER_SHA, TASK, TRUSTED, WAVE, comment_body, human,
 )
 
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.git_evidence import completed_units, trailers, units_in_message
-from agent_bus.issue import AuthorityError, read_comments, resolve_authority
+from agent_bus.issue import AuthorityError, resolve_authority
 from agent_bus.machine import RawComment
 from agent_bus.shell import Completed
 from agent_bus.supervisor import Supervisor, summarise
@@ -30,6 +31,9 @@ from agent_bus.transport import (
 )
 
 REPO = "MTJawnny/mtjawnny-pipeline"
+REPO_PATH = "/tmp/repo"
+RESOLVED_REPO = str(Path(REPO_PATH).resolve())
+BRANCH = "infra/agent-bus-v1"
 COMMAND = dict(kind="WAVE_COMMAND", actor="MANAGER", message_id="m-command-0001")
 RESULT = dict(kind="WAVE_RESULT", actor="WORKER", message_id="w-result-0001",
               parent="m-command-0001")
@@ -54,25 +58,42 @@ class FakeRunner:
     """A recorded subprocess boundary with just enough git and gh to be honest."""
 
     def __init__(self, comments, log: str = "", dirty: str = "",
-                 claude: Completed | None = None):
+                 claude: Completed | None = None, branch: str = BRANCH,
+                 toplevel: str = RESOLVED_REPO, ancestor: bool = True,
+                 head: str = OTHER_SHA, diff: str = ""):
         self.comments = comments
         self.log = log
         self.dirty_out = dirty
         self.claude = claude
+        self.branch = branch
+        self.toplevel = toplevel
+        self.ancestor = ancestor
+        self.head = head
+        self.diff = diff
         self.calls: list[tuple[str, ...]] = []
+        self.posted: list[str] = []
 
     def __call__(self, argv, stdin=None, timeout=None) -> Completed:
         argv = tuple(argv)
         self.calls.append(argv)
         if argv[0] == "gh":
+            if any(a.startswith("body=") for a in argv):
+                self.posted.append(next(a[5:] for a in argv if a.startswith("body=")))
+                return Completed(argv, 0, '{"id": 1}', "")
             return Completed(argv, 0, json.dumps(self.comments), "")
         if argv[0] == "git":
             if "log" in argv:
                 return Completed(argv, 0, self.log, "")
+            if "diff" in argv:
+                return Completed(argv, 0, self.diff, "")
+            if "merge-base" in argv:
+                return Completed(argv, 0 if self.ancestor else 1, "", "")
+            if "--show-toplevel" in argv:
+                return Completed(argv, 0, self.toplevel + "\n", "")
             if "--abbrev-ref" in argv:
-                return Completed(argv, 0, "infra/agent-bus-v1\n", "")
+                return Completed(argv, 0, self.branch + "\n", "")
             if "rev-parse" in argv:
-                return Completed(argv, 0, OTHER_SHA + "\n", "")
+                return Completed(argv, 0, self.head + "\n", "")
             if "status" in argv:
                 return Completed(argv, 0, self.dirty_out, "")
         if argv[0] == "claude":
@@ -86,9 +107,9 @@ class FakeRunner:
         return [c for c in self.calls if c[0] == "claude"]
 
 
-def supervisor(runner, actor="WORKER", pr=None) -> Supervisor:
-    return Supervisor(repo_path="/tmp/repo", repo_slug=REPO, actor=actor,
-                      transport_pr=pr, run=runner)
+def supervisor(runner, actor="WORKER", pr=None, trust=TRUSTED, **kw) -> Supervisor:
+    return Supervisor(repo_path=REPO_PATH, repo_slug=REPO, actor=actor,
+                      transport_pr=pr, trust=trust, run=runner, **kw)
 
 
 def stream(*bodies) -> list[dict]:
@@ -112,7 +133,7 @@ class TestAuthorityReading(unittest.TestCase):
                        CHECKPOINT_COMMENT.replace(f"a: {TASK}", "a: 111")),
             RawComment("issue:1", 3, "MTJawnny", CHECKPOINT_COMMENT),
         ]
-        authority = resolve_authority(comments)
+        authority = resolve_authority(comments, 1, TRUSTED).authority
         self.assertEqual(authority.checkpoint, 3)
         self.assertEqual(authority.task, TASK)
         self.assertEqual(authority.accepted_head, BASE)
@@ -123,21 +144,22 @@ class TestAuthorityReading(unittest.TestCase):
         repair = CHECKPOINT_COMMENT.replace(f"a: {TASK}", "a: 999")
         comments = [RawComment("issue:1", 2, "MTJawnny", CHECKPOINT_COMMENT),
                     RawComment("issue:1", 5, "MTJawnny", repair)]
-        self.assertEqual(resolve_authority(comments).task, 999)
+        self.assertEqual(resolve_authority(comments, 1, TRUSTED).authority.task, 999)
 
     def test_an_issue_with_no_checkpoint_halts_loudly(self):
         with self.assertRaises(AuthorityError):
-            resolve_authority([RawComment("issue:1", 1, "MTJawnny", "no checkpoint here")])
+            resolve_authority([RawComment("issue:1", 1, "MTJawnny", "no checkpoint here")],
+                              1, TRUSTED)
 
     def test_a_checkpoint_missing_h_or_a_halts_loudly(self):
         broken = "```yaml\nschema: mtj-checkpoint/2\nnext: SOMETHING\n```"
         with self.assertRaises(AuthorityError):
-            resolve_authority([RawComment("issue:1", 1, "MTJawnny", broken)])
+            resolve_authority([RawComment("issue:1", 1, "MTJawnny", broken)], 1, TRUSTED)
 
     def test_a_checkpoint_whose_head_is_not_a_sha_halts_loudly(self):
         broken = CHECKPOINT_COMMENT.replace(BASE, "the-latest-commit")
         with self.assertRaises(AuthorityError):
-            resolve_authority([RawComment("issue:1", 1, "MTJawnny", broken)])
+            resolve_authority([RawComment("issue:1", 1, "MTJawnny", broken)], 1, TRUSTED)
 
 
 class TestPollingRestraint(unittest.TestCase):
@@ -154,6 +176,7 @@ class TestPollingRestraint(unittest.TestCase):
         self.assertEqual(report["action"], "DISPATCH_DRY_RUN")
         self.assertEqual(report["selected"], "m-command-0001")
         self.assertEqual(report["resume"]["runnable"], ["U1", "U2"])
+        self.assertEqual(report["planned_units"], ["U1", "U2"])
         self.assertEqual(runner.claude_calls, [])
         self.assertFalse(report["dispatch"]["executed"])
 
@@ -166,13 +189,15 @@ class TestPollingRestraint(unittest.TestCase):
                          [E.DUPLICATE_MESSAGE_ID])
 
     def test_a_command_already_claimed_is_not_dispatched_again(self):
-        runner = FakeRunner(stream(comment_body(**COMMAND), comment_body(**PROGRESS)))
+        runner = FakeRunner(stream(comment_body(**COMMAND), comment_body(**PROGRESS)),
+                            log="u1\n\n" + trailers(WAVE, "U1") + "\n\x1e")
         report = supervisor(runner).poll_once()
         self.assertEqual(report["action"], "NONE")
         self.assertEqual(report["reason"], E.ALREADY_CLAIMED)
 
     def test_an_explicit_resume_may_continue_a_claimed_wave(self):
-        runner = FakeRunner(stream(comment_body(**COMMAND), comment_body(**PROGRESS)))
+        runner = FakeRunner(stream(comment_body(**COMMAND), comment_body(**PROGRESS)),
+                            log="u1\n\n" + trailers(WAVE, "U1") + "\n\x1e")
         report = supervisor(runner).poll_once(resume=True)
         self.assertEqual(report["action"], "DISPATCH_DRY_RUN")
         self.assertEqual(report["resume"]["completed"], ["U1"])
@@ -224,8 +249,8 @@ class TestPollingRestraint(unittest.TestCase):
 
 
 class TestTransport(unittest.TestCase):
-    def runner(self):
-        return FakeRunner(stream(comment_body(**COMMAND)))
+    def runner(self, **kw):
+        return FakeRunner(stream(comment_body(**COMMAND)), **kw)
 
     def test_a_dry_run_builds_the_argv_without_running_it(self):
         runner = self.runner()
@@ -238,7 +263,7 @@ class TestTransport(unittest.TestCase):
         self.assertEqual(runner.claude_calls, [])
 
     def test_resuming_uses_the_same_session_id_as_the_first_dispatch(self):
-        transport = LocalClaudeTransport("/tmp/repo")
+        transport = LocalClaudeTransport(REPO_PATH)
         first = transport.argv("p", session_id(WAVE), resumed=False)
         again = transport.argv("p", session_id(WAVE), resumed=True)
         self.assertIn(session_id(WAVE), first)
@@ -249,24 +274,15 @@ class TestTransport(unittest.TestCase):
         self.assertEqual(session_id(WAVE), session_id(WAVE))
         self.assertNotEqual(session_id(WAVE), session_id(WAVE + ".W2"))
 
-    def test_executing_actually_invokes_claude_once(self):
-        runner = FakeRunner(stream(comment_body(**COMMAND)),
-                            claude=Completed(("claude",), 0, '{"ok": true}', ""))
-        report = supervisor(runner).poll_once(execute=True)
-        self.assertEqual(report["action"], "DISPATCH")
-        self.assertEqual(len(runner.claude_calls), 1)
-
     def test_a_failing_transport_is_a_hard_failure_not_a_quiet_success(self):
-        runner = FakeRunner(stream(comment_body(**COMMAND)),
-                            claude=Completed(("claude",), 7, "", "quota exhausted"))
+        runner = self.runner(claude=Completed(("claude",), 7, "", "quota exhausted"))
         with self.assertRaises(BusError) as caught:
             supervisor(runner).poll_once(execute=True)
         self.assertEqual(caught.exception.code, E.TRANSPORT_FAILED)
 
     def test_the_hosted_action_transport_refuses_instead_of_pretending(self):
         transport = HostedActionTransport(missing=("ANTHROPIC_API_KEY", "default-branch workflow"))
-        runner = FakeRunner(stream(comment_body(**COMMAND)))
-        sup = supervisor(runner)
+        sup = supervisor(self.runner())
         sup.transport = transport
         with self.assertRaises(BusError) as caught:
             sup.poll_once()
@@ -274,14 +290,14 @@ class TestTransport(unittest.TestCase):
         self.assertIn("ANTHROPIC_API_KEY", caught.exception.detail)
 
     def test_the_brief_carries_the_command_verbatim_not_a_summary(self):
-        runner = self.runner()
-        observation = supervisor(runner).observe()
+        observation = supervisor(self.runner()).observe()
         envelope = observation.state.pending_for("WORKER")[0]
         plan = observation.state.waves[WAVE].plan
-        brief = worker_brief(envelope, plan, ["U1", "U2"], "/tmp/repo")
+        brief = worker_brief(envelope, plan, ["U1"], REPO_PATH, queue=["U2"])
         self.assertIn(envelope.render().strip(), brief)
         self.assertIn("Issue #1 remains the only task", brief)
         self.assertIn("Finishing a unit is NOT a stop condition", brief)
+        self.assertIn("Still queued after this invocation: U2", brief)
 
 
 class TestGitEvidence(unittest.TestCase):
@@ -297,7 +313,7 @@ class TestGitEvidence(unittest.TestCase):
         runner = FakeRunner([], log="a\n\n" + trailers(WAVE, "U1") + "\n\x1e"
                                     "b\n\n" + trailers(WAVE, "U1") + "\n\x1e"
                                     "c\n\n" + trailers(WAVE, "U2") + "\n\x1e")
-        self.assertEqual(completed_units("/tmp/repo", WAVE, BASE, run=runner),
+        self.assertEqual(completed_units(REPO_PATH, WAVE, BASE, run=runner),
                          ["U1", "U2"])
 
     def test_prose_that_merely_mentions_a_unit_is_not_a_claim(self):

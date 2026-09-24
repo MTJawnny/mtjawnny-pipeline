@@ -13,10 +13,12 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass
 from typing import Sequence
 
 from agent_bus.machine import Authority, RawComment
 from agent_bus.shell import Completed, Runner
+from agent_bus.trust import Trust
 
 CHECKPOINT_RE = re.compile(r"^\s*schema:\s*mtj-checkpoint/(\d+)\s*$", re.MULTILINE)
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -71,11 +73,45 @@ def _json_stream(text: str) -> list[dict]:
     return out
 
 
-def resolve_authority(comments: Sequence[RawComment], issue: int = 1) -> Authority:
-    """Latest `K` -> active `T`. Anything ambiguous is an error, not a guess."""
-    checkpoints = [c for c in comments if CHECKPOINT_RE.search(c.body)]
+@dataclass(frozen=True)
+class Resolution:
+    """The selection, plus what was refused on the way to it."""
+
+    authority: Authority
+    checkpoint_author: str
+    untrusted_candidates: tuple[tuple[int, str], ...] = ()
+
+    def as_dict(self) -> dict:
+        out = self.authority.as_dict()
+        out["checkpoint_author"] = self.checkpoint_author
+        out["untrusted_checkpoint_candidates"] = [
+            {"comment_id": cid, "author": author}
+            for cid, author in self.untrusted_candidates
+        ]
+        return out
+
+
+def resolve_authority(comments: Sequence[RawComment], issue: int,
+                      trust: Trust) -> Resolution:
+    """Latest TRUSTED `K` -> active `T`. Anything ambiguous is an error, not a guess.
+
+    The repository is public, so "the latest comment that looks like a checkpoint"
+    is a selector anyone can write. Only a checkpoint from a trusted speaker can
+    select anything.
+
+    An untrusted checkpoint-shaped comment is SKIPPED rather than fatal, and it is
+    REPORTED. Halting on it would hand any passer-by a way to stop the Worker by
+    posting one; obeying it would hand them the Worker. Skipping it silently would
+    be the third mistake, so every one that was refused is named in the result.
+    """
+    trust.require()
+    shaped = [c for c in comments if CHECKPOINT_RE.search(c.body)]
+    untrusted = tuple((c.comment_id, c.author) for c in shaped if not trust.trusts(c.author))
+    checkpoints = [c for c in shaped if trust.trusts(c.author)]
     if not checkpoints:
-        raise AuthorityError(f"issue {issue} carries no mtj-checkpoint comment")
+        raise AuthorityError(
+            f"issue {issue} carries no mtj-checkpoint comment from a trusted speaker "
+            f"({len(untrusted)} checkpoint-shaped comments were refused)")
     latest = checkpoints[-1]
 
     head = _scalar(latest.body, "h") or _scalar(latest.body, "accepted_head")
@@ -88,8 +124,12 @@ def resolve_authority(comments: Sequence[RawComment], issue: int = 1) -> Authori
     if not re.fullmatch(r"\d+", active):
         raise AuthorityError(f"checkpoint {latest.comment_id} a={active!r} is not a comment id")
 
-    return Authority(issue=issue, checkpoint=latest.comment_id,
-                     task=int(active), accepted_head=head)
+    return Resolution(
+        authority=Authority(issue=issue, checkpoint=latest.comment_id,
+                            task=int(active), accepted_head=head),
+        checkpoint_author=latest.author,
+        untrusted_candidates=untrusted,
+    )
 
 
 def _repo_slug(run: Runner) -> str:

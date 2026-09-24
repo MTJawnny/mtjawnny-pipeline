@@ -18,6 +18,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from agent_bus import SCHEMA  # noqa: E402
 from agent_bus.machine import Authority, RawComment  # noqa: E402
+from agent_bus.trust import Trust  # noqa: E402
 
 BASE = "a" * 40
 OTHER_SHA = "b" * 40
@@ -26,6 +27,11 @@ TASK = 5805989871
 WAVE = "INFRA.AGENT-BUS-V1.W1"
 
 AUTHORITY = Authority(issue=1, checkpoint=CHECKPOINT, task=TASK, accepted_head=BASE)
+
+# The speaker set every test folds under. It is stated rather than defaulted,
+# because the whole point of the R1 repair is that there is no default.
+TRUSTED = Trust(frozenset({"mtjawnny"}), "test-fixture")
+NOBODY_TRUSTED = Trust(frozenset(), "test-fixture-empty")
 
 
 def unit(uid: str, depends_on=(), mutating=True, allow=("agent_bus/**",),

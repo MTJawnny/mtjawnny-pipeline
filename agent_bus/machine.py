@@ -18,6 +18,7 @@ from typing import Iterable, Mapping, Sequence
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.protocol import Envelope, parse_comment
+from agent_bus.trust import Trust
 from agent_bus.wave import WavePlan, plan_from_command, remaining_after
 
 ACCEPTED = "ACCEPTED"
@@ -122,6 +123,7 @@ class WaveState:
 @dataclass
 class BusState:
     authority: Authority
+    trust: Trust
     records: list[Record] = field(default_factory=list)
     waves: dict[str, WaveState] = field(default_factory=dict)
 
@@ -204,6 +206,7 @@ class BusState:
         return {
             "schema_state": "mtj-agent-bus-state/1",
             "authority": self.authority.as_dict(),
+            "trust": self.trust.as_dict(),
             "accepted_head": self.accepted_head,
             # Inert comments are COUNTED, never listed: an ordinary human comment
             # is not an event, and a state dump that drowns in them hides the
@@ -231,15 +234,20 @@ class BusState:
 
 
 def fold(comments: Sequence[RawComment], authority: Authority,
-         trusted_authors: Iterable[str] = ()) -> BusState:
+         trust: Trust) -> BusState:
     """Classify every comment in order and build the state it implies.
 
     Ordering is the caller's: GitHub comment id order. Nothing here re-sorts by
     a timestamp inside a message, because a self-reported time is exactly the
     kind of field a replayed or forged message controls.
+
+    `trust` is REQUIRED and fails closed. An empty speaker set trusts nobody, so
+    an unconfigured bus classifies every message as untrusted rather than
+    treating "no restriction configured" as "no restriction wanted". The
+    repository is public; that default is the difference between a control plane
+    and an open command line.
     """
-    state = BusState(authority=authority)
-    trusted = {a.lower() for a in trusted_authors}
+    state = BusState(authority=authority, trust=trust)
     seen_ids: dict[str, int] = {}
 
     for comment in comments:
@@ -257,7 +265,7 @@ def fold(comments: Sequence[RawComment], authority: Authority,
                        None, "no bus envelope", None))
             continue
 
-        problem = _correlate(envelope, state, authority, seen_ids, comment, trusted)
+        problem = _correlate(envelope, state, authority, seen_ids, comment, trust)
         if problem is not None:
             state.records.append(
                 Record(comment.source, comment.comment_id, comment.author, REJECTED,
@@ -275,11 +283,14 @@ def fold(comments: Sequence[RawComment], authority: Authority,
 
 def _correlate(envelope: Envelope, state: BusState, authority: Authority,
                seen_ids: Mapping[str, int], comment: RawComment,
-               trusted: set[str]) -> BusError | None:
+               trust: Trust) -> BusError | None:
     """Return the rejection for this envelope, or None if it is live and correlated."""
-    if trusted and comment.author.lower() not in trusted:
+    # Speaker trust is checked FIRST and unconditionally. A message from someone
+    # who may not command is not "a valid message from the wrong person"; it is
+    # not read for meaning at all.
+    if not trust.trusts(comment.author):
         return BusError(E.UNTRUSTED_AUTHOR,
-                        f"{comment.author} is not a trusted bus author")
+                        f"{comment.author} is not a trusted bus speaker")
 
     if envelope.message_id in seen_ids:
         return BusError(E.DUPLICATE_MESSAGE_ID,

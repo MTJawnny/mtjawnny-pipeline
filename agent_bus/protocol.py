@@ -86,7 +86,11 @@ PARENT_REQUIRED_KINDS = frozenset({"WAVE_PROGRESS", "WAVE_RESULT", "WAVE_REVIEW"
 
 _BODY_SPEC: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # kind: (required keys, optional keys)
-    "WAVE_COMMAND": (("branch", "units", "review_boundary"), ("stop_conditions", "note")),
+    # `candidate_base` is how a REPAIR wave says "build on this unaccepted commit"
+    # without weakening `base`, which must stay equal to the accepted head so a
+    # stale command is still detectable. Two different ideas, two different fields.
+    "WAVE_COMMAND": (("branch", "units", "review_boundary"),
+                     ("stop_conditions", "note", "candidate_base")),
     "WAVE_PROGRESS": (("unit", "status"), ("commit", "note")),
     "WAVE_RESULT": (
         ("status", "branch", "head", "units"),
@@ -281,6 +285,7 @@ def _validate_body(kind: str, actor: str, body: Mapping[str, Any]) -> None:
         _require_str(body, "branch", "body")
         _require_str(body, "review_boundary", "body")
         _require_list_of_str(body, "stop_conditions", "body")
+        _optional_sha(body, "candidate_base")
         units = body["units"]
         if not isinstance(units, list):
             raise BusError(E.BAD_TYPE, "body.units must be a list")

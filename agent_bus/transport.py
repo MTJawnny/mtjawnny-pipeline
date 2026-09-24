@@ -57,7 +57,7 @@ class Dispatch:
 
 
 def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
-                 repo: str) -> str:
+                 repo: str, queue: Sequence[str] = ()) -> str:
     """The exact text handed to the Worker session. Deterministic, no chat state.
 
     It carries the command verbatim. It does not summarise the command, because a
@@ -82,7 +82,9 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
         f"authority: issue {envelope.authority['issue']} "
         f"checkpoint {envelope.authority['checkpoint']} task {envelope.authority['task']}\n"
         f"review boundary: {plan.review_boundary}\n\n"
-        f"Remaining pre-authorized units, in order:\n{units}\n\n"
+        f"Units to execute in THIS invocation, in order:\n{units}\n\n"
+        + (f"Still queued after this invocation: {', '.join(queue)}\n\n" if queue else "")
+        +
         "Rules for this wave:\n"
         "  - Finishing a unit is NOT a stop condition; continue to the next one.\n"
         "  - Commit each mutating unit separately and end its commit message with\n"
@@ -117,8 +119,9 @@ class LocalClaudeTransport:
         return tuple(argv)
 
     def dispatch(self, envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
-                 resumed: bool = False, dry_run: bool = True) -> Dispatch:
-        prompt = worker_brief(envelope, plan, remaining, self.repo)
+                 resumed: bool = False, dry_run: bool = True,
+                 queue: Sequence[str] = ()) -> Dispatch:
+        prompt = worker_brief(envelope, plan, remaining, self.repo, queue)
         session = session_id(envelope.wave)
         argv = self.argv(prompt, session, resumed)
         if dry_run:
@@ -144,7 +147,8 @@ class HostedActionTransport:
         self.missing = tuple(missing)
 
     def dispatch(self, envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
-                 resumed: bool = False, dry_run: bool = True) -> Dispatch:
+                 resumed: bool = False, dry_run: bool = True,
+                 queue: Sequence[str] = ()) -> Dispatch:
         raise BusError(
             E.TRANSPORT_FAILED,
             "hosted GitHub Action transport is not armed; missing: "
