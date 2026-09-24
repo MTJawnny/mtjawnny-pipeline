@@ -168,6 +168,33 @@ class TestOperatorSurface(unittest.TestCase):
             cli_main(["definitely-not-a-command"])
 
 
+class TestPopulationAccounting(unittest.TestCase):
+    """The control plane is a NAMED population, not a file hiding in `other`.
+
+    The layout census exists to stop a live population from disappearing into an
+    unnamed bucket. A new top-level package therefore has to be classified, and
+    classified as what it is: control plane, not legacy production, so no
+    delegation or bootstrap count moves because it exists.
+    """
+
+    def setUp(self):
+        from tests.refoundation import layout_census
+        self.census = layout_census
+
+    def test_the_bus_package_is_a_walked_base(self):
+        self.assertIn("agent_bus", self.census.WALK_BASES)
+
+    def test_bus_files_land_in_their_own_named_scope(self):
+        self.assertEqual(self.census.scope_of(Path("agent_bus/protocol.py")),
+                         "agent_bus")
+
+    def test_the_control_plane_is_not_legacy_production(self):
+        self.assertNotIn("agent_bus", self.census.LEGACY_PRODUCTION)
+
+    def test_NC0_an_unnamed_top_level_package_would_still_fall_into_other(self):
+        self.assertEqual(self.census.scope_of(Path("some_new_tool/thing.py")), "other")
+
+
 class TestContractNegativeControls(unittest.TestCase):
     def test_NC1_a_kinds_table_that_drifts_from_the_parser_is_red(self):
         rigged = BUS_DOC.read_text().replace(

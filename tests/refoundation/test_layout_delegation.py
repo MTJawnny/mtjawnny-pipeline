@@ -4161,7 +4161,12 @@ CENSUS_HEAD = {
     # test owners grew (43 -> 54), S14 froze one more AQ4 module (6 -> 7), and
     # the accepted S15 archive slices moved 25 research scripts out of legacy
     # production into `archive/` (0 -> 26 with the pre-existing routing member).
-    "tracked_python": 208,                         # S15.R4: 171 (+37, see above)
+    # AGENT BUS v1 adds seventeen files and one named scope: twelve control-plane
+    # modules under `agent_bus/` and five test owners. No delegation, bootstrap
+    # or local-site row moves -- the new scope is not legacy production, imports
+    # no legacy module, and states no repository layout of its own.
+    "tracked_python": 225,                         # AGENT BUS v1: 208 (+17)
+                                                   # S15.R4: 171 (+37, see above)
                                                    # S9: 168 (+3 new test owners,
                                                    #   12 moved between scopes)
                                                    # S7: 162 (+5 shapes substrate + guard)
@@ -4229,7 +4234,9 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 54},               # S15.R4: 43 (+11 guards/tests)
+                       "tests": 59,                # AGENT BUS v1: 54 (+5 owners)
+                                                   # S15.R4: 43 (+11 guards/tests)
+                       "agent_bus": 12},           # AGENT BUS v1: new scope
                                                    # S9: 28 (+12 moved in, +3 new)
                                                    # S7: 27 (+ test_mtg_shapes_substrate.py)
                                                    # S6: 26 (+ test_mtg_cr_substrate.py)
@@ -4448,7 +4455,10 @@ class TestTheCensusUniverseIsWhatItClaims(unittest.TestCase):
         slice."""
         tracked = layout_census.tracked_python(REPO_ROOT)
         walked = layout_census.walked_python(REPO_ROOT)
-        bases = ("benchmarks", "experiments", "pipeline", "src", "tests")
+        # Read the bases FROM the census rather than restating them: a base the
+        # walk knows and this test does not would make the cross-check pass by
+        # comparing two different universes.
+        bases = layout_census.WALK_BASES
         in_bases = [p for p in tracked if p.parts[0] in bases]
         self.assertEqual(in_bases, walked)
         remainder = [p.as_posix() for p in tracked if p.parts[0] not in bases]
