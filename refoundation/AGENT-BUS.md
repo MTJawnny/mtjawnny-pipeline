@@ -140,6 +140,15 @@ record of what happened.
 - A wave already claimed by a Worker message is not dispatched again unless a
   human explicitly resumes it.
 - A wave may be commanded once. A second command for the same wave is rejected.
+- **An abort cancels; it is never queued.** A `WAVE_ABORT` is applied when it is
+  read: its wave's command stops being pending, permanently. It is not itself
+  Worker work — nothing ever answers an abort, so a queued abort would sit ahead
+  of every later command forever. A redelivered or re-issued command cannot
+  un-abort its wave, and an abort that arrives before its command still cancels it.
+- **Only the newest command is live.** At most one command is pending: the newest
+  accepted under the live checkpoint and task, and only while it is neither
+  answered nor aborted. Every older command is superseded, so aborting the newest
+  one leaves nothing to run rather than reviving the one before it.
 - Malformed, stale, unselected, wrong-actor and unsupported-version messages are
   rejected with stable codes and authorize nothing.
 - One supervisor pass acts on at most ONE message.
@@ -183,7 +192,14 @@ Three things make the installed service honest rather than merely present:
 
 ## 10. Cold start — Manager
 
-The Manager's wake contract is `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`.
+The Manager's wake contract is `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`. The
+automated wake is `.github/workflows/agent-bus-manager-wake.yml`: its first job
+runs the deterministic pre-gate `python3 -m agent_bus.manager_gate`, and no model
+and no model credential is reached unless that gate answers `wake=true`. A
+comment it refuses ends with one stable code (BUS_GATE_WRONG_EVENT,
+BUS_GATE_WRONG_SURFACE, BUS_GATE_NO_ENVELOPE, BUS_GATE_NOT_FOR_MANAGER,
+BUS_GATE_COMMENT_MISMATCH, BUS_GATE_ALREADY_HANDLED, or the ordinary bus code
+for an untrusted, malformed, stale or duplicate message).
 
 1. Read Issue #1 and resolve the latest `K` yourself.
 2. Read the Worker result on the transport surface, then inspect the live branch
@@ -211,4 +227,6 @@ and no session memory to lose:
 - select a successor task (`next` is `NONE` and validation enforces it);
 - merge, or move `main`;
 - change Foundry semantics, codebook content or scoring constants;
-- carry a credential.
+- carry a credential. No message holds one, and the only credential the Manager
+  wake uses — the `OPENAI_API_KEY` repository secret — is handed to the pinned
+  Codex action alone, after the gate, never to a shell step or an output.
