@@ -29,6 +29,8 @@ BUS_DOC = REPO_ROOT / "refoundation" / "AGENT-BUS.md"
 TRIGGER_DOC = REPO_ROOT / "refoundation" / "AGENT-BUS-MANAGER-TRIGGER.md"
 R1_DOC = (REPO_ROOT / "docs" / "architecture"
           / "AGENT-BUS-V1-R1-UNATTENDED-2026-09-24.md")
+R2_DOC = (REPO_ROOT / "docs" / "architecture"
+          / "AGENT-BUS-V1-R2-LAUNCHD-RUNTIME-2026-09-24.md")
 ARCH_DOC = (REPO_ROOT / "docs" / "architecture"
             / "AGENT-BUS-V1-ARCHITECTURE-2026-09-23.md")
 CLAUDE = REPO_ROOT / "CLAUDE.md"
@@ -210,6 +212,24 @@ class TestUnattendedSafetyIsDocumented(unittest.TestCase):
 
     def test_the_contract_says_a_failing_unit_is_not_cleaned_up(self):
         self.assertIn("Nothing is reverted, reset or cleaned", flat(self.doc))
+
+    def test_the_service_runtime_promises_match_the_code(self):
+        from agent_bus import watcher as W
+        flattened = flat(self.doc)
+        self.assertIn("writes a PATH DERIVED from", flattened)
+        self.assertIn("One JSON record per cycle", flattened)
+        for code in (E.EXECUTABLE_NOT_FOUND, E.COMMAND_TIMEOUT, E.GIT_FAILED,
+                     E.AUTHORITY_UNRESOLVED):
+            with self.subTest(code=code):
+                self.assertIn(code, self.doc)
+        # The document says `claude` is required only for an armed service.
+        self.assertEqual(W.required_executables(["watch", "run"]), ("git", "gh"))
+        self.assertIn("claude", W.required_executables(["watch", "run", "--execute"]))
+
+    def test_the_r2_record_says_nothing_was_installed(self):
+        r2 = flat(R2_DOC.read_text(encoding="utf-8"))
+        self.assertIn("Nothing was installed", r2)
+        self.assertIn("remains the Captain's decision", r2)
 
     def test_the_worker_cold_start_names_the_durable_watcher(self):
         self.assertIn("python3 -m agent_bus watch run", self.doc)

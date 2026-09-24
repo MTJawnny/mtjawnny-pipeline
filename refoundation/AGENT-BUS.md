@@ -160,6 +160,27 @@ around it is `watch install|status|start|stop|uninstall`. One instance holds an
 exclusive lock outside the repository; every cycle sleeps, successes included;
 failures back off exponentially and a quota refusal backs off far longer.
 
+Three things make the installed service honest rather than merely present:
+
+- **It is proven able to run before it is installed.** `watch install` resolves
+  every executable the service will need — `git` and `gh` always, `claude` too
+  when the service is armed with `--execute` — and writes a PATH DERIVED from
+  where they actually are on that machine, plus the launchd defaults. A missing
+  one is BUS_EXECUTABLE_NOT_FOUND, raised on the dry run, naming all of them.
+  Nothing is hardcoded: the same call on a machine whose tools live elsewhere
+  produces that machine's directories.
+- **A healthy watcher is visible while it is healthy.** One JSON record per
+  cycle is written and flushed as the cycle completes, carrying the timestamp,
+  the action, and on failure the code and detail. A log that filled up only when
+  the process exited would stay empty for exactly as long as the service worked.
+- **A launch failure is a failure, not a crash.** An executable that cannot be
+  found or run, a command that hangs, a git command that fails, GitHub being
+  unreachable — each becomes a bus failure the loop backs off from
+  (BUS_EXECUTABLE_NOT_FOUND, BUS_COMMAND_TIMEOUT, BUS_GIT_FAILED,
+  BUS_AUTHORITY_UNRESOLVED). Escaping the loop would hand the restart to
+  launchd's KeepAlive, which is a crash loop at full speed with the backoff
+  never reached.
+
 ## 10. Cold start — Manager
 
 The Manager's wake contract is `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`.

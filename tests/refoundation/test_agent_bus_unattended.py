@@ -476,19 +476,41 @@ class Recorder:
 
 
 class Sleeper:
-    def __init__(self):
+    def __init__(self, journal: list | None = None):
         self.slept: list[float] = []
+        self.journal = journal
 
     def __call__(self, seconds: float) -> None:
         self.slept.append(seconds)
+        if self.journal is not None:
+            self.journal.append(("slept", seconds))
+
+
+class Emitter:
+    """Stands in for the log line, so tests can see WHEN it was written."""
+
+    def __init__(self, journal: list | None = None):
+        self.entries: list[dict] = []
+        self.journal = journal
+
+    def __call__(self, entry: dict) -> None:
+        self.entries.append(entry)
+        if self.journal is not None:
+            self.journal.append(("emitted", entry["cycle"]))
+
+
+def watcher(supervisor, **kw):
+    """Every watcher in the tests is silent unless the test asked to hear it."""
+    kw.setdefault("emit", Emitter())
+    kw.setdefault("clock", lambda: "2026-09-24T00:00:00Z")
+    return W.Watcher(supervisor, **kw)
 
 
 class TestWatcher(unittest.TestCase):
     def test_a_quiet_watcher_sleeps_the_full_interval_every_cycle(self):
         sleeper = Sleeper()
-        watcher = W.Watcher(Recorder([{"action": "NONE"}]), interval=120,
-                            sleep=sleeper)
-        log = watcher.run(cycles=3)
+        log = watcher(Recorder([{"action": "NONE"}]), interval=120,
+                      sleep=sleeper).run(cycles=3)
         self.assertEqual([entry["sleep"] for entry in log], [120, 120, 120])
         # The final cycle does not sleep: the loop is leaving, not waiting.
         self.assertEqual(sleeper.slept, [120, 120])
@@ -496,7 +518,7 @@ class TestWatcher(unittest.TestCase):
     def test_NC_repeated_failures_back_off_instead_of_hot_looping(self):
         sleeper = Sleeper()
         failing = Recorder([BusError(E.TRANSPORT_FAILED, "claude exited 1")])
-        log = W.Watcher(failing, interval=120, sleep=sleeper).run(cycles=4)
+        log = watcher(failing, interval=120, sleep=sleeper).run(cycles=4)
         delays = [entry["sleep"] for entry in log]
         self.assertEqual(delays, [60, 120, 240, 480])
         self.assertEqual(delays, sorted(delays))
@@ -505,7 +527,7 @@ class TestWatcher(unittest.TestCase):
     def test_NC_a_quota_refusal_backs_off_on_its_own_longer_schedule(self):
         sleeper = Sleeper()
         quota = Recorder([BusError(E.TRANSPORT_FAILED, "429 rate limit reached")])
-        log = W.Watcher(quota, interval=120, sleep=sleeper).run(cycles=3)
+        log = watcher(quota, interval=120, sleep=sleeper).run(cycles=3)
         self.assertEqual([entry["sleep"] for entry in log], [900, 1800, 3600])
         self.assertTrue(all(entry["quota"] for entry in log))
 
@@ -517,21 +539,21 @@ class TestWatcher(unittest.TestCase):
     def test_a_success_after_failures_resets_the_schedule(self):
         answers = [BusError(E.TRANSPORT_FAILED, "boom"), {"action": "NONE"}]
         recorder = Recorder(answers)
-        log = W.Watcher(recorder, interval=60, sleep=Sleeper()).run(cycles=2)
+        log = watcher(recorder, interval=60, sleep=Sleeper()).run(cycles=2)
         self.assertEqual([entry["sleep"] for entry in log], [60, 60])
         self.assertEqual(log[0]["outcome"], "failed")
         self.assertEqual(log[1]["outcome"], "polled")
 
     def test_NC_an_interval_below_the_floor_is_refused(self):
         with self.assertRaises(BusError) as caught:
-            W.Watcher(Recorder([{}]), interval=1)
+            watcher(Recorder([{}]), interval=1)
         self.assertEqual(caught.exception.code, E.BAD_VALUE)
 
     def test_a_stop_request_ends_the_loop_cleanly(self):
         sleeper = Sleeper()
-        watcher = W.Watcher(Recorder([{"action": "NONE"}]), interval=60, sleep=sleeper)
-        watcher.request_stop()
-        self.assertEqual(watcher.run(cycles=5), [])
+        loop = watcher(Recorder([{"action": "NONE"}]), interval=60, sleep=sleeper)
+        loop.request_stop()
+        self.assertEqual(loop.run(cycles=5), [])
         self.assertEqual(sleeper.slept, [])
 
     def test_NC_a_second_watcher_process_refuses_to_start(self):
@@ -565,9 +587,199 @@ class TestWatcher(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "watcher.lock"
             lock = W.SingleInstance(path)
-            W.Watcher(Recorder([{"action": "NONE"}]), interval=60,
-                      sleep=Sleeper(), lock=lock).run(cycles=1)
+            watcher(Recorder([{"action": "NONE"}]), interval=60,
+                    sleep=Sleeper(), lock=lock).run(cycles=1)
             W.SingleInstance(path).acquire().release()
+
+
+# ---------------------------------------------------------------------------
+# 7. R2 -- the service can actually run, and says so while it does
+# ---------------------------------------------------------------------------
+
+
+def fake_which(table: dict[str, str]):
+    """A `which` that answers from a table, so PATH derivation is testable.
+
+    Derivation must come from MEASUREMENT. A test that only ever sees this
+    machine's Homebrew cannot tell a derived path from a hardcoded one, so every
+    assertion below resolves to directories this machine does not have.
+    """
+    return lambda name: table.get(name)
+
+
+ELSEWHERE = {"git": "/opt/tools/bin/git", "gh": "/opt/tools/bin/gh",
+             "claude": "/home/someone/.local/bin/claude"}
+ARGV_IDLE = ["python3", "-m", "agent_bus", "watch", "run"]
+ARGV_ARMED = ARGV_IDLE + ["--execute"]
+
+
+class TestServiceEnvironmentIsDerived(unittest.TestCase):
+    def test_an_idle_service_needs_git_and_gh_but_not_claude(self):
+        self.assertEqual(W.required_executables(ARGV_IDLE), ("git", "gh"))
+
+    def test_an_armed_service_also_needs_claude(self):
+        self.assertEqual(W.required_executables(ARGV_ARMED), ("git", "gh", "claude"))
+
+    def test_the_path_is_derived_from_where_the_tools_actually_are(self):
+        resolved = W.resolve_executables(("git", "gh", "claude"), fake_which(ELSEWHERE))
+        path = W.service_path(resolved)
+        self.assertEqual(path,
+                         "/opt/tools/bin:/home/someone/.local/bin:"
+                         "/usr/bin:/bin:/usr/sbin:/sbin")
+
+    def test_the_launchd_defaults_are_always_appended_and_never_duplicated(self):
+        resolved = W.resolve_executables(("git",), fake_which({"git": "/usr/bin/git"}))
+        self.assertEqual(W.service_path(resolved), "/usr/bin:/bin:/usr/sbin:/sbin")
+
+    def test_the_installed_plist_carries_that_path(self):
+        plan = W.install(ARGV_ARMED, dry_run=True, which=fake_which(ELSEWHERE))
+        self.assertIn("<key>PATH</key>", plan["document"])
+        self.assertIn("/opt/tools/bin", plan["document"])
+        self.assertEqual(plan["path"], plan["document"].split(
+            "<key>PATH</key>\n      <string>")[1].split("</string>")[0])
+
+    def test_derivation_wins_over_a_caller_supplied_path(self):
+        plan = W.install(ARGV_ARMED, dry_run=True, which=fake_which(ELSEWHERE),
+                         environment={"PATH": "/nowhere", "TZ": "UTC"})
+        self.assertNotIn("/nowhere", plan["document"])
+        self.assertIn("<key>TZ</key>", plan["document"])
+
+    def test_NC_a_missing_gh_refuses_the_installation_by_name(self):
+        with self.assertRaises(BusError) as caught:
+            W.install(ARGV_IDLE, dry_run=True,
+                      which=fake_which({"git": "/usr/bin/git"}))
+        self.assertEqual(caught.exception.code, E.EXECUTABLE_NOT_FOUND)
+        self.assertIn("gh", caught.exception.detail)
+
+    def test_NC_a_missing_claude_refuses_an_ARMED_installation(self):
+        table = {"git": "/usr/bin/git", "gh": "/opt/tools/bin/gh"}
+        with self.assertRaises(BusError) as caught:
+            W.install(ARGV_ARMED, dry_run=True, which=fake_which(table))
+        self.assertEqual(caught.exception.code, E.EXECUTABLE_NOT_FOUND)
+        self.assertIn("claude", caught.exception.detail)
+
+    def test_the_same_machine_can_still_install_an_IDLE_service(self):
+        table = {"git": "/usr/bin/git", "gh": "/opt/tools/bin/gh"}
+        plan = W.install(ARGV_IDLE, dry_run=True, which=fake_which(table))
+        self.assertEqual(plan["path"], "/usr/bin:/opt/tools/bin:/bin:/usr/sbin:/sbin")
+
+    def test_every_missing_executable_is_named_at_once(self):
+        with self.assertRaises(BusError) as caught:
+            W.resolve_executables(("git", "gh", "claude"), fake_which({}))
+        for name in ("git", "gh", "claude"):
+            self.assertIn(name, caught.exception.detail)
+
+    def test_NC_resolution_happens_on_a_DRY_RUN_too(self):
+        # The dry run exists to discover that this machine cannot host the
+        # service BEFORE the service is installed, not after.
+        with self.assertRaises(BusError):
+            W.install(ARGV_ARMED, dry_run=True, which=fake_which({}))
+        self.assertFalse(Path(W.plist_path()).is_file())
+
+    def test_NC_the_launchd_default_path_alone_cannot_find_the_real_tools(self):
+        # The defect this repair exists for, stated as a test: on the PATH launchd
+        # actually gives an agent, `gh` and `claude` are absent on this machine.
+        import shutil
+        default = ":".join(W.LAUNCHD_DEFAULT_PATH)
+        self.assertIsNone(shutil.which("gh", path=default))
+        self.assertIsNotNone(shutil.which("git", path=default))
+
+
+class TestControlledRuntimeFailure(unittest.TestCase):
+    """A launch failure is a failure, not a crash."""
+
+    def test_NC_a_missing_executable_is_a_bus_error_not_a_FileNotFoundError(self):
+        from agent_bus.shell import Runner
+        with self.assertRaises(BusError) as caught:
+            Runner()(["definitely-not-a-real-binary-xyz"])
+        self.assertEqual(caught.exception.code, E.EXECUTABLE_NOT_FOUND)
+
+    def test_NC_a_missing_executable_backs_off_instead_of_killing_the_loop(self):
+        missing = Recorder([BusError(E.EXECUTABLE_NOT_FOUND, "'gh' is not on PATH")])
+        log = watcher(missing, interval=120, sleep=Sleeper()).run(cycles=3)
+        self.assertEqual([e["outcome"] for e in log], ["failed"] * 3)
+        self.assertEqual([e["code"] for e in log], [E.EXECUTABLE_NOT_FOUND] * 3)
+        self.assertEqual([e["sleep"] for e in log], [60, 120, 240])
+
+    def test_NC_github_being_unreachable_backs_off_instead_of_killing_the_loop(self):
+        unreachable = Recorder([AuthorityError("gh api failed reading issue 1")])
+        log = watcher(unreachable, interval=120, sleep=Sleeper()).run(cycles=2)
+        self.assertEqual([e["code"] for e in log], [E.AUTHORITY_UNRESOLVED] * 2)
+        self.assertEqual([e["sleep"] for e in log], [60, 120])
+
+    def test_a_failed_git_command_speaks_the_bus_vocabulary(self):
+        from agent_bus.shell import Completed
+        class Failing:
+            def __call__(self, argv, stdin=None, timeout=None):
+                return Completed(tuple(argv), 128, "", "not a git repository")
+        with self.assertRaises(BusError) as caught:
+            inspect("/tmp/not-a-repo", Failing())
+        self.assertEqual(caught.exception.code, E.GIT_FAILED)
+
+    def test_a_hung_command_becomes_a_timeout_failure(self):
+        import subprocess
+        from agent_bus.shell import Runner
+        with self.assertRaises(BusError) as caught:
+            Runner()([sys_executable(), "-c", "import time; time.sleep(5)"], timeout=1)
+        self.assertEqual(caught.exception.code, E.COMMAND_TIMEOUT)
+
+
+def sys_executable() -> str:
+    import sys
+    return sys.executable
+
+
+class TestPerCycleLogging(unittest.TestCase):
+    """A healthy watcher must be visible while it is healthy."""
+
+    def test_one_record_is_emitted_per_cycle(self):
+        emitter = Emitter()
+        log = watcher(Recorder([{"action": "NONE"}]), interval=60,
+                      sleep=Sleeper(), emit=emitter).run(cycles=3)
+        self.assertEqual(len(emitter.entries), 3)
+        self.assertEqual(emitter.entries, log)
+
+    def test_NC_the_record_is_emitted_BEFORE_the_sleep_not_after_it(self):
+        journal: list = []
+        watcher(Recorder([{"action": "NONE"}]), interval=60,
+                sleep=Sleeper(journal), emit=Emitter(journal)).run(cycles=2)
+        self.assertEqual(journal,
+                         [("emitted", 1), ("slept", 60), ("emitted", 2)])
+
+    def test_a_failing_cycle_is_emitted_too_with_its_code_and_detail(self):
+        emitter = Emitter()
+        watcher(Recorder([BusError(E.TRANSPORT_FAILED, "quota exhausted")]),
+                interval=60, sleep=Sleeper(), emit=emitter).run(cycles=1)
+        entry = emitter.entries[0]
+        self.assertEqual(entry["code"], E.TRANSPORT_FAILED)
+        self.assertEqual(entry["detail"], "quota exhausted")
+        self.assertTrue(entry["quota"])
+
+    def test_each_record_carries_a_timestamp_and_the_cycle_number(self):
+        emitter = Emitter()
+        watcher(Recorder([{"action": "NONE"}]), interval=60,
+                sleep=Sleeper(), emit=emitter).run(cycles=2)
+        self.assertEqual([e["cycle"] for e in emitter.entries], [1, 2])
+        self.assertTrue(all(e["at"].endswith("Z") for e in emitter.entries))
+
+    def test_the_default_emitter_writes_one_flushed_json_line(self):
+        import io, contextlib, json as _json
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            W._stdout_line({"cycle": 1, "outcome": "polled"})
+        line = buffer.getvalue()
+        self.assertTrue(line.endswith("\n"))
+        self.assertEqual(_json.loads(line), {"cycle": 1, "outcome": "polled"})
+
+    def test_NC_a_watcher_that_only_returned_its_log_would_log_nothing_while_running(self):
+        # The returned log is produced when the loop ENDS. For an installed agent
+        # the loop never ends, which is why the emitter exists at all.
+        emitter = Emitter()
+        loop = watcher(Recorder([{"action": "NONE"}]), interval=60,
+                       sleep=Sleeper(), emit=emitter)
+        loop.request_stop()
+        self.assertEqual(loop.run(cycles=3), [])
+        self.assertEqual(emitter.entries, [])
 
 
 class TestServiceSurfaces(unittest.TestCase):
