@@ -69,6 +69,14 @@ UNIT_SCOPE_ESCAPE = "BUS_UNIT_SCOPE_ESCAPE"
 UNIT_UNCOMMITTED = "BUS_UNIT_UNCOMMITTED"
 READONLY_UNIT_MUTATED = "BUS_READONLY_UNIT_MUTATED"
 
+# --- running an external command ----------------------------------------------------------
+# A launch failure is a FAILURE, not a crash. These codes exist so a long-running
+# watcher can back off from one instead of dying and being restarted forever.
+EXECUTABLE_NOT_FOUND = "BUS_EXECUTABLE_NOT_FOUND"
+COMMAND_TIMEOUT = "BUS_COMMAND_TIMEOUT"
+GIT_FAILED = "BUS_GIT_FAILED"
+AUTHORITY_UNRESOLVED = "BUS_AUTHORITY_UNRESOLVED"
+
 # --- watcher ----------------------------------------------------------------------------
 WATCHER_ALREADY_RUNNING = "BUS_WATCHER_ALREADY_RUNNING"
 WATCHER_NOT_INSTALLED = "BUS_WATCHER_NOT_INSTALLED"

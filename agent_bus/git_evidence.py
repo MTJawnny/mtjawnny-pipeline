@@ -15,6 +15,8 @@ from __future__ import annotations
 import re
 from typing import Sequence
 
+from agent_bus import errors as E
+from agent_bus.errors import BusError
 from agent_bus.shell import Runner
 
 WAVE_TRAILER = "Agent-Bus-Wave"
@@ -51,7 +53,7 @@ def completed_units(repo: str, wave: str, base: str, head: str = "HEAD",
     result = run(["git", "-C", repo, "log", "--reverse", f"--format=%B{_SEP}",
                   f"{base}..{head}"])
     if result.returncode != 0:
-        raise RuntimeError(f"git log failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git log failed in {repo}: {result.stderr.strip()}")
     seen: list[str] = []
     for message in result.stdout.split(_SEP):
         for unit in units_in_message(message, wave):
@@ -64,7 +66,7 @@ def head_sha(repo: str, run: Runner | None = None) -> str:
     run = run or Runner()
     result = run(["git", "-C", repo, "rev-parse", "HEAD"])
     if result.returncode != 0:
-        raise RuntimeError(f"git rev-parse failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git rev-parse failed in {repo}: {result.stderr.strip()}")
     return result.stdout.strip()
 
 
@@ -72,7 +74,7 @@ def branch(repo: str, run: Runner | None = None) -> str:
     run = run or Runner()
     result = run(["git", "-C", repo, "rev-parse", "--abbrev-ref", "HEAD"])
     if result.returncode != 0:
-        raise RuntimeError(f"git rev-parse failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git rev-parse failed in {repo}: {result.stderr.strip()}")
     return result.stdout.strip()
 
 
@@ -80,5 +82,5 @@ def dirty(repo: str, run: Runner | None = None) -> Sequence[str]:
     run = run or Runner()
     result = run(["git", "-C", repo, "status", "--short"])
     if result.returncode != 0:
-        raise RuntimeError(f"git status failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git status failed in {repo}: {result.stderr.strip()}")
     return [line for line in result.stdout.splitlines() if line.strip()]

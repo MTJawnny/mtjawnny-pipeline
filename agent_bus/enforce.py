@@ -76,7 +76,7 @@ def commits_between(repo: str, base: str, head: str, run: Runner | None = None) 
     result = run(["git", "-C", repo, "log", "--reverse",
                   f"--format=%H{_FIELD}%B{_REC}", f"{base}..{head}"])
     if result.returncode != 0:
-        raise RuntimeError(f"git log failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git log failed in {repo}: {result.stderr.strip()}")
     out = []
     for chunk in result.stdout.split(_REC):
         if _FIELD not in chunk:
@@ -90,7 +90,7 @@ def changed_paths(repo: str, base: str, head: str, run: Runner | None = None) ->
     run = run or Runner()
     result = run(["git", "-C", repo, "diff", "--name-only", "--no-renames", base, head])
     if result.returncode != 0:
-        raise RuntimeError(f"git diff failed in {repo}: {result.stderr.strip()}")
+        raise BusError(E.GIT_FAILED, f"git diff failed in {repo}: {result.stderr.strip()}")
     return sorted({line for line in result.stdout.splitlines() if line.strip()})
 
 

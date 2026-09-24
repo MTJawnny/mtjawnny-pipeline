@@ -13,6 +13,9 @@ import subprocess
 from dataclasses import dataclass
 from typing import Callable, Sequence
 
+from agent_bus import errors as E
+from agent_bus.errors import BusError
+
 
 @dataclass(frozen=True)
 class Completed:
@@ -23,17 +26,40 @@ class Completed:
 
 
 class Runner:
-    """Runs a command for real."""
+    """Runs a command for real, and turns a LAUNCH failure into a bus failure.
+
+    This matters more than it looks. A watcher started by launchd inherits a
+    minimal PATH; if `gh` is not on it, `subprocess.run` raises FileNotFoundError,
+    which is not a `BusError`, which means the poll loop dies, which means
+    KeepAlive restarts it, which means a crash loop every ThrottleInterval --
+    forever, at full speed, with the backoff schedule never reached because the
+    transport was never reached.
+
+    So a command that cannot be launched, or that hangs, is reported in the same
+    vocabulary as a command that failed: a `BusError` with a stable code, which
+    the loop already knows how to back off from.
+    """
 
     def __call__(self, argv: Sequence[str], stdin: str | None = None,
                  timeout: int | None = 900) -> Completed:
-        proc = subprocess.run(
-            list(argv),
-            input=stdin,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        try:
+            proc = subprocess.run(
+                list(argv),
+                input=stdin,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        except FileNotFoundError as exc:
+            raise BusError(E.EXECUTABLE_NOT_FOUND,
+                           f"{argv[0]!r} is not on PATH for this process "
+                           f"({exc.strerror})")
+        except PermissionError as exc:
+            raise BusError(E.EXECUTABLE_NOT_FOUND,
+                           f"{argv[0]!r} cannot be executed ({exc.strerror})")
+        except subprocess.TimeoutExpired:
+            raise BusError(E.COMMAND_TIMEOUT,
+                           f"{argv[0]!r} did not finish within {timeout}s")
         return Completed(tuple(argv), proc.returncode, proc.stdout, proc.stderr)
 
 

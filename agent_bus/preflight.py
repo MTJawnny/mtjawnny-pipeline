@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from agent_bus import errors as E
+from agent_bus.errors import BusError
 from agent_bus.git_evidence import completed_units
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Runner
@@ -61,13 +62,15 @@ def inspect(repo_path: str, run: Runner | None = None) -> Checkout:
     run = run or Runner()
     top = _git(run, repo_path, "rev-parse", "--show-toplevel")
     if top.returncode != 0:
-        raise RuntimeError(f"{repo_path} is not a git worktree: {top.stderr.strip()}")
+        raise BusError(E.GIT_FAILED,
+                       f"{repo_path} is not a git worktree: {top.stderr.strip()}")
     branch = _git(run, repo_path, "rev-parse", "--abbrev-ref", "HEAD")
     head = _git(run, repo_path, "rev-parse", "HEAD")
     status = _git(run, repo_path, "status", "--porcelain")
     for result in (branch, head, status):
         if result.returncode != 0:
-            raise RuntimeError(f"git failed in {repo_path}: {result.stderr.strip()}")
+            raise BusError(E.GIT_FAILED,
+                           f"git failed in {repo_path}: {result.stderr.strip()}")
     return Checkout(
         root=top.stdout.strip(),
         branch=branch.stdout.strip(),
