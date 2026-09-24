@@ -16,6 +16,8 @@ on:
       - "agent_bus/**"
       - "tests/refoundation/test_agent_bus_*.py"
       - "tests/refoundation/agent_bus_fixtures.py"
+      - "tests/refoundation/agent_bus_repo_fake.py"
+      - "refoundation/AGENT-BUS-MANAGER-TRIGGER.md"
       - "refoundation/AGENT-BUS.md"
       - ".github/workflows/agent-bus-validate.yml"
   workflow_dispatch: {}

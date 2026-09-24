@@ -4165,7 +4165,11 @@ CENSUS_HEAD = {
     # modules under `agent_bus/` and five test owners. No delegation, bootstrap
     # or local-site row moves -- the new scope is not legacy production, imports
     # no legacy module, and states no repository layout of its own.
-    "tracked_python": 225,                         # AGENT BUS v1: 208 (+17)
+    # AGENT BUS R1 adds seven more: five control-plane modules (trust, preflight,
+    # enforce, compose, watcher) and two test owners. Same scope, same absence of
+    # any delegation, bootstrap or local-site movement.
+    "tracked_python": 232,                         # AGENT BUS R1: 225 (+7)
+                                                   # AGENT BUS v1: 208 (+17)
                                                    # S15.R4: 171 (+37, see above)
                                                    # S9: 168 (+3 new test owners,
                                                    #   12 moved between scopes)
@@ -4234,9 +4238,11 @@ CENSUS_HEAD = {
                                                    # PATH E M3: 18 (+ pilot.py,
                                                    # pilot_cli.py, pilot_assets/
                                                    # __init__.py)
-                       "tests": 59,                # AGENT BUS v1: 54 (+5 owners)
+                       "tests": 61,                # AGENT BUS R1: 59 (+2 owners)
+                                                   # AGENT BUS v1: 54 (+5 owners)
                                                    # S15.R4: 43 (+11 guards/tests)
-                       "agent_bus": 12},           # AGENT BUS v1: new scope
+                       "agent_bus": 17},           # AGENT BUS R1: 12 (+5 modules)
+                                                   # AGENT BUS v1: new scope
                                                    # S9: 28 (+12 moved in, +3 new)
                                                    # S7: 27 (+ test_mtg_shapes_substrate.py)
                                                    # S6: 26 (+ test_mtg_cr_substrate.py)

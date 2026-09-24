@@ -20,11 +20,15 @@ from pathlib import Path
 from tests.refoundation.agent_bus_fixtures import REPO_ROOT
 
 from agent_bus import SCHEMA
+from agent_bus import errors as E
 from agent_bus.cli import build_parser, main as cli_main
 from agent_bus.protocol import ACTOR_KIND, FENCE_INFO, KINDS, WAKES, parse
 from agent_bus.git_evidence import UNIT_TRAILER, WAVE_TRAILER
 
 BUS_DOC = REPO_ROOT / "refoundation" / "AGENT-BUS.md"
+TRIGGER_DOC = REPO_ROOT / "refoundation" / "AGENT-BUS-MANAGER-TRIGGER.md"
+R1_DOC = (REPO_ROOT / "docs" / "architecture"
+          / "AGENT-BUS-V1-R1-UNATTENDED-2026-09-24.md")
 ARCH_DOC = (REPO_ROOT / "docs" / "architecture"
             / "AGENT-BUS-V1-ARCHITECTURE-2026-09-23.md")
 CLAUDE = REPO_ROOT / "CLAUDE.md"
@@ -40,6 +44,11 @@ BUILD_DIGEST = "147ddf774f6d5f71cd11363c3ce88e85bb0e081ccd8f625665e227902ffa7800
 
 SELECTOR = "latest `K` -> active `T`"
 ROW_RE = re.compile(r"^\|\s*([A-Z_]+)\s*\|\s*([A-Z, ]+?)\s*\|", re.MULTILINE)
+
+
+def flat(text: str) -> str:
+    """Prose assertions ignore line wrapping; a reflowed paragraph is not a change."""
+    return re.sub(r"\s+", " ", text)
 
 
 def table_rows(text: str) -> dict[str, frozenset[str]]:
@@ -166,6 +175,80 @@ class TestOperatorSurface(unittest.TestCase):
     def test_an_unknown_command_is_refused(self):
         with self.assertRaises(SystemExit):
             cli_main(["definitely-not-a-command"])
+
+
+class TestUnattendedSafetyIsDocumented(unittest.TestCase):
+    """The controls a reviewer is asked to trust must be written down.
+
+    Each assertion below names a control that exists in code. A document that
+    promised one of them without the code, or code without the promise, is the
+    drift this class is here to catch.
+    """
+
+    def setUp(self):
+        self.doc = BUS_DOC.read_text(encoding="utf-8")
+
+    def test_fail_closed_trust_is_stated_as_law(self):
+        for phrase in ("Nothing configured means nobody is trusted",
+                       "operator configuration, not repository data",
+                       "only a checkpoint from a trusted speaker can be the latest"):
+            with self.subTest(phrase=phrase[:40]):
+                self.assertIn(phrase, flat(self.doc))
+
+    def test_the_preflight_and_enforcement_codes_are_documented(self):
+        for code in (E.WRONG_WORKTREE, E.WRONG_BRANCH, E.BASE_NOT_ANCESTOR,
+                     E.UNEXPECTED_DIRT, E.PROGRESS_HEAD_MISMATCH,
+                     E.UNIT_NO_COMMIT, E.UNIT_TRAILER_MISSING, E.UNIT_SCOPE_ESCAPE,
+                     E.UNIT_UNCOMMITTED, E.READONLY_UNIT_MUTATED):
+            with self.subTest(code=code):
+                self.assertIn(code, self.doc)
+
+    def test_every_code_the_contract_names_really_exists(self):
+        named = set(re.findall(r"\bBUS_[A-Z_]+\b", self.doc))
+        self.assertTrue(named)
+        self.assertEqual(sorted(named - E.CODES), [])
+
+    def test_the_contract_says_a_failing_unit_is_not_cleaned_up(self):
+        self.assertIn("Nothing is reverted, reset or cleaned", flat(self.doc))
+
+    def test_the_worker_cold_start_names_the_durable_watcher(self):
+        self.assertIn("python3 -m agent_bus watch run", self.doc)
+        self.assertIn("exclusive lock outside the repository", flat(self.doc))
+
+
+class TestManagerTriggerContract(unittest.TestCase):
+    def setUp(self):
+        self.doc = TRIGGER_DOC.read_text(encoding="utf-8")
+
+    def test_it_exists_and_wakes_only_on_the_transport_pull_request(self):
+        self.assertIn("PR 76", self.doc)
+        self.assertIn("Do not wake on Issue #1 activity", self.doc)
+
+    def test_it_acts_only_on_the_two_worker_kinds(self):
+        self.assertIn("`WAVE_RESULT` or `CAPTAIN_REQUIRED`", self.doc)
+        for ignored in ("WAVE_COMMAND", "WAVE_PROGRESS", "WAVE_REVIEW"):
+            with self.subTest(kind=ignored):
+                self.assertIn(ignored, self.doc)
+
+    def test_it_requires_independent_inspection_before_a_verdict(self):
+        self.assertIn("A result is a claim", flat(self.doc))
+        self.assertIn("A green claim is not a green run", flat(self.doc))
+
+    def test_it_puts_the_verdict_on_the_bus_and_the_truth_in_a_checkpoint(self):
+        self.assertIn("A verdict posted only on PR 76 has changed nothing", flat(self.doc))
+        self.assertIn("accepted head moves here and nowhere else", flat(self.doc))
+
+    def test_it_names_the_external_step_instead_of_implying_the_repo_does_it(self):
+        self.assertIn("Repository code cannot create the Work task", flat(self.doc))
+        self.assertIn("A human must create the ChatGPT Work task", flat(self.doc))
+
+    def test_it_keeps_a_manual_fallback(self):
+        self.assertIn("That fallback is the design", flat(self.doc))
+
+    def test_the_r1_record_says_what_is_still_not_armed(self):
+        r1 = R1_DOC.read_text(encoding="utf-8")
+        self.assertIn("built and not started", flat(r1))
+        self.assertIn("no watcher was left running", flat(r1))
 
 
 class TestPopulationAccounting(unittest.TestCase):

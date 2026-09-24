@@ -79,7 +79,59 @@ its content is JSON. Prose is never parsed. A comment with no such block is
 inert — including an "at-claude" mention, a plus-one, or a checkpoint in the
 older human YAML form.
 
-## 5. Loop prevention
+## 5. Who may speak, and fail closed
+
+The repository is public. Anyone can comment, so "is this message well-formed and
+current?" is not the same question as "may this person command a Worker".
+
+- The trusted speaker set is **operator configuration, not repository data**: a
+  `--trusted` flag, the `MTJ_AGENT_BUS_TRUSTED` variable, or a JSON file outside
+  the working tree. A wave executing inside the checkout can edit files in the
+  checkout, so a trust list kept there would be one scope escape away from
+  rewriting who may command the next wave.
+- **Nothing configured means nobody is trusted.** An unconfigured bus reads
+  nothing and runs nothing; it says how to configure itself and stops.
+- Authority resolution obeys the same rule: only a checkpoint from a trusted
+  speaker can be the latest `K`. A checkpoint-shaped comment from anyone else is
+  skipped and REPORTED — obeying it would hand over the Worker, and halting on it
+  would hand anyone a way to stop the Worker by posting one.
+
+## 6. Nothing runs until the checkout is measured
+
+A brief that says "branch X" is a claim. Before any model invocation the
+supervisor asks git, and every answer must agree:
+
+| check | code when it fails |
+| --- | --- |
+| the working tree is the one configured | BUS_WRONG_WORKTREE |
+| the checked-out branch is the one the wave names | BUS_WRONG_BRANCH |
+| the wave's base is an ancestor of HEAD | BUS_BASE_NOT_ANCESTOR |
+| no uncommitted changes | BUS_UNEXPECTED_DIRT |
+| every unit the bus calls done has a commit here | BUS_PROGRESS_HEAD_MISMATCH |
+
+Problems are collected, not short-circuited, and any one of them stops the
+dispatch. A repair wave that builds on an unaccepted commit says so with
+`candidate_base`; `base` still names the accepted head, so a stale command stays
+detectable.
+
+## 7. Every unit is measured after it runs
+
+Scope and trailers are enforced, not requested. After each unit, and before the
+next one may start:
+
+| check | code when it fails |
+| --- | --- |
+| a mutating unit produced a commit | BUS_UNIT_NO_COMMIT |
+| every commit carries this wave's and unit's trailers | BUS_UNIT_TRAILER_MISSING |
+| nothing changed outside allow_paths, or inside deny_paths | BUS_UNIT_SCOPE_ESCAPE |
+| the tree is clean again | BUS_UNIT_UNCOMMITTED |
+| a read-only unit changed nothing | BUS_READONLY_UNIT_MUTATED |
+
+A failing unit stops the wave where it stands. Nothing is reverted, reset or
+cleaned: a scope escape is evidence, and tidying it away would destroy the only
+record of what happened.
+
+## 8. Loop prevention
 
 - An agent acts only on kinds addressed to it, and only when the speaker is
   somebody else, so no agent can ever wake itself.
@@ -92,16 +144,25 @@ older human YAML form.
   rejected with stable codes and authorize nothing.
 - One supervisor pass acts on at most ONE message.
 
-## 6. Cold start — Worker
+## 9. Cold start — Worker
 
 1. Obey root `CLAUDE.md`. Resolve Issue #1: latest `K` -> active `T`.
-2. `python3 -m agent_bus authority` — the same selection, machine-read.
-3. `python3 -m agent_bus state` — what is on the bus and what is pending.
-4. `python3 -m agent_bus poll` — the dry run: what would be dispatched, and why.
-5. Execute only a wave the live checkpoint selects. Commit per unit with
+2. Declare the trusted speakers. Without them nothing below answers.
+3. `python3 -m agent_bus authority` — the same selection, machine-read.
+4. `python3 -m agent_bus state` — what is on the bus and what is pending.
+5. `python3 -m agent_bus preflight` — what git says about this checkout.
+6. `python3 -m agent_bus poll` — the dry run: what would be dispatched, and why.
+7. Execute only a wave the live checkpoint selects. Commit per unit with
    trailers. Post one `WAVE_RESULT` at the review boundary.
 
-## 7. Cold start — Manager
+The durable Worker is `python3 -m agent_bus watch run`, and the macOS service
+around it is `watch install|status|start|stop|uninstall`. One instance holds an
+exclusive lock outside the repository; every cycle sleeps, successes included;
+failures back off exponentially and a quota refusal backs off far longer.
+
+## 10. Cold start — Manager
+
+The Manager's wake contract is `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`.
 
 1. Read Issue #1 and resolve the latest `K` yourself.
 2. Read the Worker result on the transport surface, then inspect the live branch
@@ -110,7 +171,7 @@ older human YAML form.
 4. Post `V` and `K` on Issue #1. The bus records the verdict; the checkpoint is
    what makes it true.
 
-## 8. Recovery
+## 11. Recovery
 
 Every invocation re-derives state from GitHub plus git. There is no resume mode
 and no session memory to lose:
@@ -122,8 +183,9 @@ and no session memory to lose:
 
 `python3 -m agent_bus resume --wave <id>` prints exactly that arithmetic.
 
-## 9. What the bus may never do
+## 12. What the bus may never do
 
+- run for a speaker nobody declared;
 - move the accepted head;
 - select a successor task (`next` is `NONE` and validation enforces it);
 - merge, or move `main`;

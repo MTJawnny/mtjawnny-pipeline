@@ -175,9 +175,19 @@ python3 -m agent_bus resume --wave <id> # what is left, from durable evidence
 python3 -m agent_bus validate <file>    # strict validation, stable exit codes
 python3 -m agent_bus plan <file>        # deterministic unit order
 python3 -m agent_bus render <file>      # wrap a validated message for posting
+python3 -m agent_bus preflight          # what git says about this checkout
 python3 -m agent_bus poll               # dry run: what would be dispatched
 python3 -m agent_bus poll --execute     # the only line that spends anything
+python3 -m agent_bus watch run          # the durable local Worker
 python3 -m agent_bus selftest           # the bus suite
 ```
 
+Every one of them needs a declared speaker set: `--trusted <login>`, the
+`MTJ_AGENT_BUS_TRUSTED` variable, or the operator config file. An unconfigured
+bus answers `BUS_TRUST_NOT_CONFIGURED` and does nothing. The R1 record below has
+the reasoning.
+
 Exit codes: 0 answered, 2 a bus rejection with its code, 3 authority unresolved.
+
+The unattended-safety repair that followed this bootstrap is recorded in
+`docs/architecture/AGENT-BUS-V1-R1-UNATTENDED-2026-09-24.md`.
