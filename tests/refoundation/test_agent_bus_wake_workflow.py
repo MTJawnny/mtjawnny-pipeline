@@ -180,10 +180,17 @@ class TestTheWorkflowStatically(unittest.TestCase):
         if shown.returncode != 0:
             self.skipTest(f"commit {ref} is not in this clone (shallow checkout)")
         self.assertIn("Decide once; the records are derived", shown.stdout)
-        for module in ("agent_bus/publisher.py", "agent_bus/decision.py"):
+        for module in ("agent_bus/publisher.py", "agent_bus/decision.py", "agent_bus/goal.py"):
             with self.subTest(module=module):
                 self.assertEqual(subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e",
                                                  f"{ref}:{module}"]).returncode, 0)
+        # The workflow runs the bus code AT BUS_REF: it must be this code and contract,
+        # byte for byte, or the reviewed candidate is not what would run.
+        drift = subprocess.run(["git", "-C", str(ROOT), "diff", "--stat", ref, "--",
+                                "agent_bus", "refoundation/AGENT-BUS.md",
+                                "refoundation/AGENT-BUS-MANAGER-TRIGGER.md"],
+                               capture_output=True, text=True)
+        self.assertEqual((drift.returncode, drift.stdout), (0, ""))
 
     def test_the_contract_names_only_real_codes_and_the_real_repair_budget(self):
         doc = TRIGGER_DOC.read_text(encoding="utf-8")
@@ -226,7 +233,7 @@ RIGS = {
     "codex_allows_anyone": ("allow-users: MTJawnny", 'allow-users: "*"'),
     "older_codex_pin": ("86365089eb2b84e0a8fb0717b304f8bdcb13b20e",
                         "0000000000000000000000000000000000000000"),
-    "bus_ref_a_branch": ("BUS_REF: 07ecc4fbd55c055fb9ba3719885f0f11bfc4e7d1",
+    "bus_ref_a_branch": ("BUS_REF: 2ed4be384ed2cbd9ca9cef8264bb4b7cd39d9931",
                          "BUS_REF: infra/agent-bus-v1-bootstrap-2026-09-23"),
     "publisher_gets_the_model_key": ("          GH_TOKEN: ${{ github.token }}\n          MODE:",
                                      "          GH_TOKEN: ${{ github.token }}\n          K: "
@@ -238,6 +245,16 @@ RIGS = {
     "publish_gets_contents_write": ("      contents: read\n      issues: write",
                                     "      contents: write\n      issues: write"),
     "decision_ignored_by_mode": ('if [ "$MODE" = "review" ]', 'if [ "$MODE" = "never" ]'),
+    # AC2: recovery stays model-free, single-level, event-driven and narrow.
+    "model_on_recovery": ("if: github.event_name == 'issue_comment' && needs.gate",
+                          "if: needs.gate"),
+    "recovery_of_recovery": ("      github.event.workflow_run.event == 'issue_comment' &&\n", ""),
+    "polling_trigger": ("  workflow_run:\n", "  schedule:\n    - cron: '*/5 * * * *'\n"
+                                             "  workflow_run:\n"),
+    "recovery_on_another_workflow": ('workflows: ["Agent Bus Manager wake"]',
+                                     'workflows: ["Some other workflow"]'),
+    "checks_not_run": ("python3 -m agent_bus.goal run-checks", "true"),
+    "evidence_not_handed_over": ("args+=(--validation-file", "args+=(--ignored"),
 }
 
 
@@ -274,10 +291,10 @@ def run_workflow(fake: FakeGitHub, comment_id: int = RESULT_COMMENT, model=ACCEP
     `rerun_outputs` replays "Re-run failed jobs": GitHub keeps the outputs of the
     jobs that succeeded and runs only publish again.
 
-    `validation` is `agent_bus.goal run-checks` evidence handed to publish as
-    `--validation-file`. The workflow at this candidate does not run that step
-    yet, so every run that models it as it stands passes None -- and cannot
-    ACCEPT (`test_the_workflow_as_it_stands_cannot_accept`).
+    `validation` is the evidence job's `agent_bus.goal run-checks` output, handed
+    to publish as `--validation-file`. None models a wave no goal plan binds (the
+    runner then writes nothing), which cannot ACCEPT
+    (`test_without_the_checks_evidence_accept_is_refused`).
     """
     run = Run()
     with tempfile.TemporaryDirectory() as tmp:
@@ -418,7 +435,7 @@ class TestThePipeline(unittest.TestCase):
         self.assertEqual(other.report["code"], E.TRANSITION_REFUSED)
         self.assertIn("independently tested head", other.report["detail"])
 
-    def test_the_workflow_as_it_stands_cannot_accept(self):
+    def test_without_the_checks_evidence_accept_is_refused(self):
         # No `--validation-file`: ACCEPT fails closed and nothing is written.
         fake = FakeGitHub()
         run = run_workflow(fake, model=ACCEPT)

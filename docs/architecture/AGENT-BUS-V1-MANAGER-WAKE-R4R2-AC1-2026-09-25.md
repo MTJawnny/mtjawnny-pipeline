@@ -109,11 +109,11 @@ workflow.
 
 ## 6. Open, and needing a decision
 
-- **The workflow does not run the checks yet.** Its evidence job still runs only
-  the bus selftest and passes no `--validation-file`, so an ACCEPT through it is
-  refused (`test_the_workflow_as_it_stands_cannot_accept`). Wiring
-  `agent_bus.goal run-checks` into the evidence job needs the workflow file,
-  which is outside AC1's allowlist.
+- **The workflow did not run the checks at AC1.** At AC1 its evidence job ran
+  only the bus selftest, so an ACCEPT through it was refused. AC2, whose
+  allowlist includes the workflow, wires `agent_bus.goal run-checks` into the
+  evidence job and `--validation-file` into publish
+  (`AGENT-BUS-V1-MANAGER-WAKE-R4R2-AC2-2026-09-25.md`).
 - **No goal plan exists on Issue #1.** Autonomy starts only when the Captain
   posts one and the Manager commands a planned wave bound to it. The C00 edge is
   tested as a fixture only.
