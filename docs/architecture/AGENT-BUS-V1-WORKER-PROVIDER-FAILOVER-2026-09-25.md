@@ -5,9 +5,8 @@ checkpoint 5836695353 → task 5836674938, implementing Captain decision 5828305
 Base (accepted head) `81978221a8119a6faeaf0873d4aecb94bd833d63`.
 
 PF1 adds the provider-neutral execution layer as a library: `agent_bus/providers.py`.
-It does **not** wire that layer into the supervisor, CLI, watcher or launchd
-discovery; that is PF2. Until PF2, a supervisor with no injected transport still
-runs the Claude-only `LocalClaudeTransport`, unchanged.
+PF2 wires it into the supervisor, the CLI, the watcher and launchd executable
+discovery (see "Integration (PF2)" below).
 
 ## The interface
 
@@ -93,11 +92,46 @@ Supported orders: `claude,codex`, `codex,claude`, `claude`, `codex`. Unknown,
 duplicate or empty entries are refused. The resolver's source is statically
 tested to contain no comment reader, envelope, subprocess or model output.
 
+## Integration (PF2)
+
+* **Supervisor.** With no injected transport, the supervisor builds one
+  `ProviderFailoverTransport` from the `ProviderOrder` its caller passes, falling back to
+  the default order when none is passed. It keeps that transport for its own
+  lifetime, so a provider's session stays resumable across watcher cycles. Its
+  authority probe is `live_authority_probe(self.observe)`, the same reader every
+  other decision uses. The supervisor never resolves configuration itself. An
+  injected transport still wins.
+* **Dry run.** `poll` without `--execute` reports `providers` (order and source)
+  and the planned first-provider `dispatch` (argv, provider, session). No provider
+  is invoked, and preflight still runs first.
+* **CLI.** The global `--providers` flag takes precedence over the environment and
+  the file. Order is resolved only by `poll` and `watch run`, where a provider
+  could run; read-only commands (`authority`, `state`, `resume`, `preflight`)
+  never read it, so a malformed provider file cannot stop them.
+* **Watcher / launchd.** `watch install --execute` resolves the order once and
+  writes `--providers <order>` into the service's own arguments. Installation then
+  resolves `git`, `gh` and the CLI of every enabled provider from those arguments,
+  on the dry run too, naming every missing one at once (`BUS_EXECUTABLE_NOT_FOUND`).
+  An armed service argv that names no order is refused
+  (`BUS_PROVIDER_CONFIG_INVALID`). What installation proves is exactly what the
+  service runs; a later edit to the environment or the file cannot drift it. An
+  idle install names no provider and needs none.
+* Post-run unit enforcement, progress and result publication are unchanged and
+  apply to whichever provider ran the unit.
+
 ## Controls
 
-`tests/refoundation/test_agent_bus_provider_failover.py`, 58 tests. Each of the
-32 new guards in `agent_bus/providers.py` was rigged to its failing variant, shown
-red against that module, and restored byte-exact (sha256 checked).
+`tests/refoundation/test_agent_bus_provider_failover.py` holds 70 tests: 58 for
+PF1 and 12 for PF2. `test_agent_bus_unattended.py` gains 6 launchd tests, and
+`test_agent_bus_contract.py` gains 1 test for the documented boundary.
+
+Every guard was rigged to its failing variant, shown red, and restored byte-exact
+(sha256 checked): 32 in `agent_bus/providers.py` (PF1), and 9 across `supervisor.py`,
+`cli.py` and `watcher.py` (PF2).
+
+The existing test `test_agent_bus_unattended.py::test_an_armed_service_also_needs_claude`
+keeps its assertion. Its armed argv now names `--providers claude`, because an
+armed argv must name its order.
 
 ## Known limits
 

@@ -39,6 +39,7 @@ from typing import Callable, Mapping, Sequence
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.issue import AuthorityError
+from agent_bus.providers import DEFAULT_EXECUTABLES, parse_order
 from agent_bus.shell import Runner
 
 LABEL = "com.mtjawnny.agent-bus"
@@ -58,18 +59,37 @@ LAUNCHD_DEFAULT_PATH = ("/usr/bin", "/bin", "/usr/sbin", "/sbin")
 # rather than located here: the directories come from resolving these names on
 # the machine being installed to, so nothing hardcodes one operator's Homebrew.
 BASE_EXECUTABLES = ("git", "gh")        # agent_bus.git_evidence, agent_bus.issue
-EXECUTE_EXECUTABLES = ("claude",)       # agent_bus.transport, only when arming
+
+
+def enabled_providers(program_args: Sequence[str]) -> tuple[str, ...]:
+    """The provider order an ARMED service's own argv names. It must name one.
+
+    Read from the argv rather than from the environment or the provider file, so
+    what installation proves is exactly what the service will run.
+    """
+    args = tuple(program_args)
+    value = None
+    for index, arg in enumerate(args):
+        if arg == "--providers" and index + 1 < len(args):
+            value = args[index + 1]
+        elif arg.startswith("--providers="):
+            value = arg.split("=", 1)[1]
+    if value is None:
+        raise BusError(E.PROVIDER_CONFIG_INVALID,
+                       "an armed service must name its provider order with --providers "
+                       "in its own arguments; `watch install --execute` writes it")
+    return parse_order(value, "--providers").order
 
 
 def required_executables(program_args: Sequence[str]) -> tuple[str, ...]:
-    """`git` and `gh` always; `claude` too when the service may actually run waves.
+    """`git` and `gh` always; every enabled provider too when the service may run waves.
 
     A watcher installed without `--execute` never invokes a model, so demanding
-    `claude` from it would fail an installation that would have worked.
+    a provider CLI from it would fail an installation that would have worked.
     """
     names = list(BASE_EXECUTABLES)
     if "--execute" in tuple(program_args):
-        names += list(EXECUTE_EXECUTABLES)
+        names += [DEFAULT_EXECUTABLES[p] for p in enabled_providers(program_args)]
     return tuple(names)
 
 

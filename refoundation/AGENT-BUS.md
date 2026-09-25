@@ -190,8 +190,9 @@ failures back off exponentially and a quota refusal backs off far longer.
 Three things make the installed service honest rather than merely present:
 
 - **It is proven able to run before it is installed.** `watch install` resolves
-  every executable the service will need — `git` and `gh` always, `claude` too
-  when the service is armed with `--execute` — and writes a PATH DERIVED from
+  every executable the service will need — `git` and `gh` always, and when the
+  service is armed with `--execute`, the CLI of every enabled provider in the
+  provider order it writes into the service's own arguments — and writes a PATH DERIVED from
   where they actually are on that machine, plus the launchd defaults. A missing
   one is BUS_EXECUTABLE_NOT_FOUND, raised on the dry run, naming all of them.
   Nothing is hardcoded: the same call on a machine whose tools live elsewhere
@@ -207,6 +208,23 @@ Three things make the installed service honest rather than merely present:
   BUS_AUTHORITY_UNRESOLVED). Escaping the loop would hand the restart to
   launchd's KeepAlive, which is a crash loop at full speed with the backoff
   never reached.
+
+**Local Worker providers.** A unit runs through the operator's own authenticated
+CLI: Claude (`claude -p`) or Codex (`codex exec`, workspace-write sandbox). No
+repository secret is involved. The order is operator configuration, never bus
+data: `--providers`, then `MTJ_AGENT_BUS_PROVIDERS`, then a provider file outside
+the checkout, then the default `claude,codex`; the supported orders are
+`claude,codex`, `codex,claude`, `claude` and `codex`. The authority, preflight,
+unit enforcement, progress and result rules above do not depend on which provider
+ran. A unit moves to the next provider only after a classified quota or capacity
+failure from a structured stdout/stderr shape, when git proves the attempt left
+no commit and a clean tree on the same branch, and a live re-read proves the
+command is still the selected one. Otherwise it stops: BUS_TRANSPORT_FAILED,
+BUS_FAILOVER_REFUSED, or — each provider having run once — BUS_PROVIDERS_EXHAUSTED.
+A session is resumed only by the provider that opened it
+(BUS_PROVIDER_SESSION_MISMATCH); a malformed order is BUS_PROVIDER_CONFIG_INVALID.
+`poll` without `--execute` reports the order and the planned invocation and runs
+no provider.
 
 ## 10. Cold start — Manager
 

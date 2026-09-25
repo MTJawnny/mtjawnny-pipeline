@@ -222,9 +222,21 @@ class TestUnattendedSafetyIsDocumented(unittest.TestCase):
                      E.AUTHORITY_UNRESOLVED):
             with self.subTest(code=code):
                 self.assertIn(code, self.doc)
-        # The document says `claude` is required only for an armed service.
+        # The document says provider CLIs are required only for an armed service,
+        # and then every enabled one, named by the service's own arguments.
         self.assertEqual(W.required_executables(["watch", "run"]), ("git", "gh"))
-        self.assertIn("claude", W.required_executables(["watch", "run", "--execute"]))
+        armed = ["--providers", "claude,codex", "watch", "run", "--execute"]
+        self.assertEqual(W.required_executables(armed), ("git", "gh", "claude", "codex"))
+        self.assertIn("every enabled provider", flattened)
+
+    def test_the_provider_boundary_is_documented_with_real_codes(self):
+        flattened = flat(self.doc)
+        self.assertIn("never bus data", flattened)
+        self.assertIn("A session is resumed only by the provider that opened it", flattened)
+        for code in (E.FAILOVER_REFUSED, E.PROVIDERS_EXHAUSTED,
+                     E.PROVIDER_SESSION_MISMATCH, E.PROVIDER_CONFIG_INVALID):
+            with self.subTest(code=code):
+                self.assertIn(code, self.doc)
 
     def test_the_r2_record_says_nothing_was_installed(self):
         r2 = flat(R2_DOC.read_text(encoding="utf-8"))

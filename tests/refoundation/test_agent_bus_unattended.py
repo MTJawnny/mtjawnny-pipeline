@@ -610,7 +610,14 @@ def fake_which(table: dict[str, str]):
 ELSEWHERE = {"git": "/opt/tools/bin/git", "gh": "/opt/tools/bin/gh",
              "claude": "/home/someone/.local/bin/claude"}
 ARGV_IDLE = ["python3", "-m", "agent_bus", "watch", "run"]
-ARGV_ARMED = ARGV_IDLE + ["--execute"]
+
+
+def armed_argv(order: str = "claude") -> list[str]:
+    """An armed service argv; `watch install --execute` always writes the order."""
+    return ["python3", "-m", "agent_bus", "--providers", order, "watch", "run", "--execute"]
+
+
+ARGV_ARMED = armed_argv("claude")
 
 
 class TestServiceEnvironmentIsDerived(unittest.TestCase):
@@ -619,6 +626,46 @@ class TestServiceEnvironmentIsDerived(unittest.TestCase):
 
     def test_an_armed_service_also_needs_claude(self):
         self.assertEqual(W.required_executables(ARGV_ARMED), ("git", "gh", "claude"))
+
+    def test_an_armed_service_needs_every_enabled_provider_in_order(self):
+        for order, names in (("claude,codex", ("claude", "codex")),
+                             ("codex,claude", ("codex", "claude")),
+                             ("codex", ("codex",))):
+            with self.subTest(order=order):
+                self.assertEqual(W.required_executables(armed_argv(order)),
+                                 ("git", "gh") + names)
+        self.assertEqual(W.required_executables(
+            ["--providers=codex", "watch", "run", "--execute"]), ("git", "gh", "codex"))
+
+    def test_NC_an_armed_service_that_names_no_provider_order_is_refused(self):
+        with self.assertRaises(BusError) as caught:
+            W.required_executables(ARGV_IDLE + ["--execute"])
+        self.assertEqual(caught.exception.code, E.PROVIDER_CONFIG_INVALID)
+
+    def test_NC_an_armed_service_with_a_malformed_order_is_refused(self):
+        with self.assertRaises(BusError) as caught:
+            W.install(armed_argv("claude,gemini"), dry_run=True, which=fake_which(ELSEWHERE))
+        self.assertEqual(caught.exception.code, E.PROVIDER_CONFIG_INVALID)
+
+    def test_NC_a_missing_codex_refuses_an_armed_failover_installation_by_name(self):
+        with self.assertRaises(BusError) as caught:
+            W.install(armed_argv("claude,codex"), dry_run=True, which=fake_which(ELSEWHERE))
+        self.assertEqual(caught.exception.code, E.EXECUTABLE_NOT_FOUND)
+        self.assertIn("codex", caught.exception.detail)
+        self.assertNotIn("claude", caught.exception.detail)
+
+    def test_NC_every_missing_provider_executable_is_named_at_once(self):
+        table = {"git": "/usr/bin/git", "gh": "/opt/tools/bin/gh"}
+        with self.assertRaises(BusError) as caught:
+            W.install(armed_argv("codex,claude"), dry_run=True, which=fake_which(table))
+        self.assertIn("codex, claude", caught.exception.detail)
+
+    def test_an_armed_failover_service_carries_both_provider_directories(self):
+        table = dict(ELSEWHERE, codex="/opt/codex/bin/codex")
+        plan = W.install(armed_argv("claude,codex"), dry_run=True, which=fake_which(table))
+        self.assertEqual(sorted(plan["executables"]), ["claude", "codex", "gh", "git"])
+        self.assertIn("/opt/codex/bin", plan["path"].split(":"))
+        self.assertIn("<string>claude,codex</string>", plan["document"])
 
     def test_the_path_is_derived_from_where_the_tools_actually_are(self):
         resolved = W.resolve_executables(("git", "gh", "claude"), fake_which(ELSEWHERE))

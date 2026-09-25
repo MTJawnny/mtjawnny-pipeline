@@ -35,7 +35,11 @@ from agent_bus.machine import Authority, BusState, RawComment, fold
 from agent_bus.preflight import Checkout, PreflightReport, build_base_of, inspect, preflight
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Runner
-from agent_bus.transport import Dispatch, LocalClaudeTransport
+from agent_bus.providers import (
+    DEFAULT_ORDER, ProviderFailoverTransport, ProviderOrder, build_providers,
+    live_authority_probe,
+)
+from agent_bus.transport import Dispatch
 from agent_bus.trust import NOBODY, Trust
 from agent_bus.wave import WavePlan
 
@@ -63,6 +67,24 @@ class Supervisor:
     transport: object | None = None
     clock: Callable | None = None
     max_units: int | None = None
+    # Operator configuration, resolved by the caller from outside the repository
+    # (`agent_bus.providers.resolve_order`). The supervisor never reads it itself,
+    # and nothing it observes on the bus can change it.
+    providers: ProviderOrder | None = None
+    _local: ProviderFailoverTransport | None = field(default=None, init=False, repr=False)
+
+    def local_transport(self) -> ProviderFailoverTransport:
+        """The provider-neutral local transport, built once per supervisor.
+
+        Once, so a provider's own session opened for one unit is still resumable
+        by that provider for the next unit, across watcher cycles in one process.
+        """
+        if self._local is None:
+            order = self.providers or ProviderOrder(DEFAULT_ORDER, "default")
+            self._local = ProviderFailoverTransport(
+                self.repo_path, build_providers(order, self.repo_path),
+                authority_probe=live_authority_probe(self.observe), run=self.run)
+        return self._local
 
     # ---------------------------------------------------------------- observe
     def observe(self) -> Observation:
@@ -152,8 +174,12 @@ class Supervisor:
             report["reason"] = E.NOTHING_ACTIONABLE
             return report
 
-        transport = self.transport or LocalClaudeTransport(self.repo_path, run=self.run)
+        transport = self.transport or self.local_transport()
         report["transport"] = getattr(transport, "name", type(transport).__name__)
+        if isinstance(transport, ProviderFailoverTransport):
+            source = (self.providers.source if self.providers else "default") \
+                if transport is self._local else "injected"
+            report["providers"] = ProviderOrder(transport.order, source).as_dict()
         resumed = bool(wave_state.claimed or resume)
 
         if not execute:

@@ -587,5 +587,134 @@ class TestFailoverRefused(unittest.TestCase):
         self.assertEqual(caught.exception.code, E.PROVIDER_CONFIG_INVALID)
 
 
+# ---------------------------------------------------------------------------
+# 5. PF2 -- the supervisor, CLI and watcher run the configured order
+# ---------------------------------------------------------------------------
+
+def plain(fake: ProviderRepo, order=None) -> Supervisor:
+    """A supervisor with NO injected transport: whatever it runs, it built itself."""
+    return Supervisor(repo_path=REPO_PATH, repo_slug=REPO, trust=TRUSTED, run=fake,
+                      clock=lambda: __import__("datetime").datetime(2026, 9, 25, 18, 0, 0),
+                      providers=None if order is None else P.ProviderOrder(order, "operator"))
+
+
+class TestSupervisorIntegration(unittest.TestCase):
+    def test_a_dry_run_reports_each_configured_order_and_invokes_nobody(self):
+        for order in (("claude", "codex"), ("codex", "claude"), ("claude",), ("codex",)):
+            with self.subTest(order=order):
+                fake = repo()
+                report = plain(fake, order).poll_once(execute=False)
+                self.assertEqual(report["action"], "DISPATCH_DRY_RUN")
+                self.assertEqual(report["providers"],
+                                 {"order": list(order), "source": "operator"})
+                self.assertEqual(report["dispatch"]["provider"], order[0])
+                self.assertEqual(report["dispatch"]["argv"][0], order[0])
+                self.assertFalse(report["dispatch"]["executed"])
+                self.assertEqual(fake.provider_calls, [])
+                self.assertEqual(fake.posted, [])
+
+    def test_an_unconfigured_supervisor_reports_the_default_order(self):
+        report = plain(repo()).poll_once(execute=False)
+        self.assertEqual(report["providers"], {"order": ["claude", "codex"], "source": "default"})
+
+    def test_the_built_in_transport_fails_over_with_its_own_live_authority_probe(self):
+        fake = repo(claude_quota(), ok("codex", "U1"), ok("claude", "U2"))
+        report = plain(fake, ("claude", "codex")).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_RAN")
+        self.assertEqual(fake.providers_invoked, ["claude", "codex", "claude"])
+        self.assertEqual(fake.posted_kinds(), ["WAVE_PROGRESS", "WAVE_PROGRESS", "WAVE_RESULT"])
+
+    def test_NC_the_built_in_probe_refuses_a_handover_after_authority_moved(self):
+        fake = repo(claude_quota(then=move_authority), ok("codex"))
+        with self.assertRaises(BusError) as caught:
+            plain(fake, ("claude", "codex")).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.FAILOVER_REFUSED)
+        self.assertEqual(fake.providers_invoked, ["claude"])
+
+    def test_a_claude_only_order_never_reaches_codex(self):
+        fake = repo(claude_quota())
+        with self.assertRaises(BusError) as caught:
+            plain(fake, ("claude",)).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.PROVIDERS_EXHAUSTED)
+        self.assertEqual(fake.providers_invoked, ["claude"])
+
+    def test_the_local_transport_lives_as_long_as_the_supervisor(self):
+        sup = plain(repo(), ("codex",))
+        self.assertIs(sup.local_transport(), sup.local_transport())
+
+    def test_an_injected_transport_still_wins(self):
+        from agent_bus.transport import HostedActionTransport
+        sup = plain(repo(), ("codex",))
+        sup.transport = HostedActionTransport(missing=("x",))
+        with self.assertRaises(BusError) as caught:
+            sup.poll_once()
+        self.assertEqual(caught.exception.code, E.TRANSPORT_FAILED)
+        self.assertIsNone(sup._local)
+
+
+class TestCliIntegration(unittest.TestCase):
+    def args(self, *argv: str):
+        from agent_bus.cli import build_parser
+        return build_parser()[0].parse_args(["--repo-path", REPO_PATH, *argv])
+
+    def test_poll_resolves_the_flag_then_the_environment(self):
+        from unittest import mock
+        from agent_bus.cli import _supervisor
+        with mock.patch.dict("os.environ", {P.PROVIDER_ENV_VAR: "codex,claude"}):
+            self.assertEqual(_supervisor(self.args("poll"), dispatching=True).providers.order,
+                             ("codex", "claude"))
+            flagged = _supervisor(self.args("--providers", "claude", "poll"), dispatching=True)
+            self.assertEqual((flagged.providers.order, flagged.providers.source),
+                             (("claude",), "--providers"))
+
+    def test_NC_a_provider_file_inside_the_checkout_is_refused_by_the_cli(self):
+        from unittest import mock
+        from agent_bus.cli import _supervisor
+        with tempfile.TemporaryDirectory() as tmp:
+            config = Path(tmp) / "providers.json"
+            config.write_text('{"order": ["codex"]}', encoding="utf-8")
+            args = self.args("poll")
+            args.repo_path = tmp
+            with mock.patch.dict("os.environ", {P.PROVIDER_CONFIG_ENV_VAR: str(config)}), \
+                    mock.patch.dict("os.environ", {P.PROVIDER_ENV_VAR: ""}):
+                with self.assertRaises(BusError) as caught:
+                    _supervisor(args, dispatching=True)
+        self.assertEqual(caught.exception.code, E.PROVIDER_CONFIG_INVALID)
+
+    def test_a_read_only_command_never_resolves_provider_order(self):
+        from unittest import mock
+        from agent_bus.cli import _supervisor
+        with mock.patch.dict("os.environ", {P.PROVIDER_ENV_VAR: "gemini"}):
+            self.assertIsNone(_supervisor(self.args("state")).providers)
+            with self.assertRaises(BusError):
+                _supervisor(self.args("poll"), dispatching=True)
+
+    def test_an_armed_install_writes_the_resolved_order_into_the_service_argv(self):
+        from unittest import mock
+        from agent_bus import cli
+        captured = {}
+
+        def fake_install(argv, **kw):
+            captured["argv"] = list(argv)
+            return {"dry_run": kw["dry_run"]}
+        with mock.patch.object(cli.watcher_module, "install", fake_install), \
+                mock.patch.dict("os.environ", {P.PROVIDER_ENV_VAR: "codex,claude"}):
+            cli._watch(self.args("watch", "install", "--execute"))
+        argv = captured["argv"]
+        self.assertEqual(argv[argv.index("--providers") + 1], "codex,claude")
+        self.assertLess(argv.index("--providers"), argv.index("watch"))
+        from agent_bus import watcher as W
+        self.assertEqual(W.required_executables(argv), ("git", "gh", "codex", "claude"))
+
+    def test_an_idle_install_names_no_provider(self):
+        from unittest import mock
+        from agent_bus import cli
+        captured = {}
+        with mock.patch.object(cli.watcher_module, "install",
+                               lambda argv, **kw: captured.setdefault("argv", list(argv))):
+            cli._watch(self.args("watch", "install"))
+        self.assertNotIn("--providers", captured["argv"])
+
+
 if __name__ == "__main__":
     unittest.main()

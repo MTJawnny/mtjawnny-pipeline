@@ -25,6 +25,7 @@ from agent_bus.machine import fold
 from agent_bus.protocol import Envelope, parse, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.supervisor import Supervisor
+from agent_bus import providers as providers_module
 from agent_bus import trust as trust_module
 from agent_bus import watcher as watcher_module
 from agent_bus.wave import plan_from_command
@@ -58,7 +59,14 @@ def _trust(args):
     return trust_module.resolve(args.trusted)
 
 
-def _supervisor(args) -> Supervisor:
+def _providers(args) -> providers_module.ProviderOrder:
+    """Operator provider order: flag, environment, file outside the checkout, default."""
+    return providers_module.resolve_order(args.providers, repo_path=args.repo_path)
+
+
+def _supervisor(args, dispatching: bool = False) -> Supervisor:
+    # Provider order is resolved only where a provider could be invoked, so a
+    # malformed provider file never stops a read-only command.
     return Supervisor(
         repo_path=args.repo_path,
         repo_slug=args.repo,
@@ -68,6 +76,7 @@ def _supervisor(args) -> Supervisor:
         trust=_trust(args),
         run=Runner(),
         max_units=getattr(args, "max_units", None),
+        providers=_providers(args) if dispatching else None,
     )
 
 
@@ -87,7 +96,12 @@ def build_parser() -> tuple[argparse.ArgumentParser, tuple[str, ...]]:
                         help="comma-separated GitHub logins allowed to speak on the bus; "
                              "without it the environment and the operator config file are "
                              "consulted, and an unconfigured bus trusts nobody")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--providers", default=None,
+                        help="local Worker provider order: claude,codex | codex,claude | "
+                             f"claude | codex; without it {providers_module.PROVIDER_ENV_VAR} "
+                             "and the operator provider file outside the checkout are "
+                             "consulted, then the default claude,codex")
+    sub =parser.add_subparsers(dest="command", required=True)
     registered: list[str] = []
 
     def add(name: str, help: str):
@@ -178,12 +192,17 @@ def _watch(args) -> dict:
         argv += ["--pr", str(args.pr)]
     if args.trusted:
         argv += ["--trusted", args.trusted]
+    if args.execute:
+        # The order is resolved HERE and written into the service's own argv, so
+        # the executables proven at install are exactly the ones it will run --
+        # a later edit to the environment or the provider file cannot drift them.
+        argv += ["--providers", ",".join(_providers(args).order)]
     argv += ["watch", "run", "--interval", str(args.interval)]
     if args.execute:
         argv.append("--execute")
 
     if args.mode == "run":
-        supervisor = _supervisor(args)
+        supervisor = _supervisor(args, dispatching=True)
         if args.execute:
             supervisor.trust.require()
         watch = watcher_module.Watcher(
@@ -252,7 +271,8 @@ def _run(args) -> int:
         return 0
 
     if args.command == "poll":
-        _print(_supervisor(args).poll_once(execute=args.execute, resume=args.resume))
+        _print(_supervisor(args, dispatching=True).poll_once(execute=args.execute,
+                                                             resume=args.resume))
         return 0
 
     if args.command == "preflight":
