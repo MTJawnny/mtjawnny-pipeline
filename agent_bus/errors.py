@@ -86,6 +86,16 @@ ALREADY_CLAIMED = "BUS_ALREADY_CLAIMED"
 NOTHING_ACTIONABLE = "BUS_NOTHING_ACTIONABLE"
 TRANSPORT_FAILED = "BUS_TRANSPORT_FAILED"
 
+# --- local Worker providers ---------------------------------------------------------
+# Provider order is operator configuration; a malformed one is refused, not guessed.
+PROVIDER_CONFIG_INVALID = "BUS_PROVIDER_CONFIG_INVALID"
+# A session id was handed to a provider that did not open it.
+PROVIDER_SESSION_MISMATCH = "BUS_PROVIDER_SESSION_MISMATCH"
+# A classified capacity failure, but git or authority could not prove a handover safe.
+FAILOVER_REFUSED = "BUS_FAILOVER_REFUSED"
+# Every enabled provider reported a classified capacity failure, each exactly once.
+PROVIDERS_EXHAUSTED = "BUS_PROVIDERS_EXHAUSTED"
+
 # --- Manager wake pre-gate ------------------------------------------------------------
 # Every one of these ends a GitHub event BEFORE any model is invoked.
 GATE_WRONG_EVENT = "BUS_GATE_WRONG_EVENT"

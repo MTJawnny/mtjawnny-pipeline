@@ -45,6 +45,10 @@ class Dispatch:
     resumed: bool
     executed: bool
     result: Completed | None = None
+    provider: str = "claude"
+    # Every provider tried for this unit before `provider`, with the classified
+    # evidence that let the next one run. Empty when the first provider answered.
+    attempts: tuple[dict, ...] = ()
 
     def as_dict(self) -> dict:
         return {
@@ -53,6 +57,8 @@ class Dispatch:
             "resumed": self.resumed,
             "executed": self.executed,
             "returncode": None if self.result is None else self.result.returncode,
+            "provider": self.provider,
+            "attempts": [dict(a) for a in self.attempts],
         }
 
 
