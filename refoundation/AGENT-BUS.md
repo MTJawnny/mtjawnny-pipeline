@@ -92,9 +92,25 @@ current?" is not the same question as "may this person command a Worker".
 - **Nothing configured means nobody is trusted.** An unconfigured bus reads
   nothing and runs nothing; it says how to configure itself and stops.
 - Authority resolution obeys the same rule: only a checkpoint from a trusted
-  speaker can be the latest `K`. A checkpoint-shaped comment from anyone else is
-  skipped and REPORTED — obeying it would hand over the Worker, and halting on it
-  would hand anyone a way to stop the Worker by posting one.
+  speaker can be the latest `K`, with one exception, the publisher, below.
+  A checkpoint-shaped comment from anyone else is skipped and REPORTED. Obeying
+  it would hand over the Worker, and halting on it would hand anyone a way to
+  stop the Worker by posting one.
+- **A checkpoint is a record that opens its comment.** Only its top-level `h`
+  and `a` are read. Checkpoint text quoted in a verdict, or indented under
+  another key, is a lookalike: it selects nothing and is reported.
+- **The publisher is trusted by role, not as a speaker.** The Manager wake
+  workflow posts as `github-actions[bot]`. That identity may write only four
+  things:
+  - the review of one transaction;
+  - that transaction's `V`;
+  - its `K`;
+  - its REPAIR successor.
+
+  Each must be exactly what `agent_bus.transition` derives. Its `K` counts only
+  as the exact next link after the `K` before it, so two racing publishers
+  cannot both be the latest. It cannot be declared a speaker. The contract is
+  `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`.
 
 ## 6. Nothing runs until the checkout is measured
 
@@ -196,10 +212,19 @@ The Manager's wake contract is `refoundation/AGENT-BUS-MANAGER-TRIGGER.md`. The
 automated wake is `.github/workflows/agent-bus-manager-wake.yml`: its first job
 runs the deterministic pre-gate `python3 -m agent_bus.manager_gate`, and no model
 and no model credential is reached unless that gate answers `wake=true`. A
-comment it refuses ends with one stable code (BUS_GATE_WRONG_EVENT,
-BUS_GATE_WRONG_SURFACE, BUS_GATE_NO_ENVELOPE, BUS_GATE_NOT_FOR_MANAGER,
-BUS_GATE_COMMENT_MISMATCH, BUS_GATE_ALREADY_HANDLED, or the ordinary bus code
-for an untrusted, malformed, stale or duplicate message).
+comment it refuses ends with one stable code:
+- BUS_GATE_WRONG_EVENT, BUS_GATE_WRONG_SURFACE, BUS_GATE_NO_ENVELOPE;
+- BUS_GATE_NOT_FOR_MANAGER, BUS_GATE_COMMENT_MISMATCH, BUS_GATE_ALREADY_HANDLED;
+- BUS_GATE_QUEUED, BUS_WAVE_ABORTED, BUS_WAVE_SUPERSEDED, BUS_TXN_RACE_LOST;
+- or the ordinary bus code for an untrusted, malformed, stale or duplicate
+  message.
+
+The model returns one decision (`ACCEPT`, `REPAIR` or `CAPTAIN`, with short
+bounded text). `python3 -m agent_bus.publisher` builds and posts the
+`WAVE_REVIEW`, `V`, `K` and any REPAIR successor. Before every write it
+revalidates everything live, and a rerun resumes the same transaction.
+
+By hand, the Manager does the same:
 
 1. Read Issue #1 and resolve the latest `K` yourself.
 2. Read the Worker result on the transport surface, then inspect the live branch
@@ -223,8 +248,11 @@ and no session memory to lose:
 ## 12. What the bus may never do
 
 - run for a speaker nobody declared;
-- move the accepted head;
-- select a successor task (`next` is `NONE` and validation enforces it);
+- let a Worker move the accepted head. Only a `K` moves it: a trusted human's,
+  or the publisher's exact ACCEPT transition to an independently tested head;
+- let a Worker select a successor (`next` is `NONE` and validation enforces it).
+  The publisher selects only the one REPAIR successor its transition derives,
+  and never a new task;
 - merge, or move `main`;
 - change Foundry semantics, codebook content or scoring constants;
 - carry a credential. No message holds one, and the only credential the Manager
