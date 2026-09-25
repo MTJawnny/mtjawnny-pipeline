@@ -56,9 +56,14 @@ PINS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",  # v7.0.1
     "openai/codex-action": "86365089eb2b84e0a8fb0717b304f8bdcb13b20e",  # v1.12
 }
-PREFILTER = ("github.event.issue.pull_request && github.event.issue.number == 76 && "
+PREFILTER = ("(github.event.issue.pull_request && github.event.issue.number == 76 && "
              "github.event.comment.user.login == 'MTJawnny' && "
-             "contains(github.event.comment.body, '```mtj-bus')")
+             "contains(github.event.comment.body, '```mtj-bus')) || "
+             "(github.event_name == 'workflow_run' && "
+             "github.event.workflow_run.event == 'issue_comment' && "
+             "github.event.workflow_run.conclusion != 'success')")
+MODEL_IF = ("github.event_name == 'issue_comment' && needs.gate.outputs.wake == 'true' && "
+            "needs.gate.outputs.mode == 'review'")
 
 
 def text() -> str:
@@ -92,8 +97,11 @@ def structural_problems(source: str) -> list[str]:
             out.append(f"gate does not export {key}")
     if "git rev-parse HEAD" not in "".join(runs["evidence"]):
         out.append("the tested head is not measured by git")
-    if manager.get("if") != "needs.gate.outputs.wake == 'true' && needs.gate.outputs.mode == 'review'":
-        out.append("the model can run outside review mode")
+    if "python3 -m agent_bus.goal run-checks" not in "".join(runs["evidence"]) \
+            or "validation" not in evidence.get("outputs", {}):
+        out.append("the goal plan's required checks are not run and exported")
+    if manager.get("if") != MODEL_IF:
+        out.append("the model can run outside a review-mode comment event")
     codex = manager.get("steps", [])[-1] if manager.get("steps") else {}
     if str(codex.get("uses", "")).split("@")[0] != "openai/codex-action":
         out.append("Codex is not the last step of the model job")
@@ -108,7 +116,7 @@ def structural_problems(source: str) -> list[str]:
     cond = str(publish.get("if", ""))
     for needed in ("needs.gate.outputs.wake == 'true'", "!cancelled()",
                    "needs.evidence.result == 'success'",
-                   "(needs.gate.outputs.mode == 'resume' || needs.manager.result == 'success')"):
+                   "(needs.gate.outputs.mode != 'review' || needs.manager.result == 'success')"):
         if needed not in cond:
             out.append(f"publish does not require {needed}")
     if "always()" in cond:
@@ -119,6 +127,8 @@ def structural_problems(source: str) -> list[str]:
     script = "".join(runs["publish"])
     if "python3 -m agent_bus.publisher" not in script or 'if [ "$MODE" = "review" ]' not in script:
         out.append("publish does not run the deterministic publisher by mode")
+    if "--validation-file" not in script:
+        out.append("publish does not hand the checks' evidence to the publisher")
     if "secrets." in json.dumps(publish) or "OPENAI" in json.dumps(publish):
         out.append("the publisher holds a model credential")
     for name, job in jobs.items():
@@ -379,7 +389,6 @@ class TestThePipeline(unittest.TestCase):
             "deleted": (lambda f: f.delete(RESULT_COMMENT), E.GATE_COMMENT_MISMATCH),
             "branch_moved": (lambda f: f.tips.__setitem__(BRANCH, H_OTHER),
                              E.BRANCH_TIP_MISMATCH),
-            "authority_moved": (lambda f: f.add(1, human_k(H0, 111)), E.STALE_AUTHORITY),
         }
         for name, (change, code) in hazards.items():
             with self.subTest(hazard=name):
@@ -387,6 +396,18 @@ class TestThePipeline(unittest.TestCase):
                 run = run_workflow(fake, model=REPAIR, before_publish=change)
                 self.assertEqual((run.publish_exit, run.report["code"]), (P.EXIT_REFUSED, code))
                 self.assertEqual(fake.writes, [])
+
+    def test_authority_moved_before_publish_disposes_instead_of_orphaning(self):
+        # AC2: the message was valid under K0; a human K replaced K0 without
+        # answering it. No review, V or K is written -- only its disposition.
+        fake = FakeGitHub()
+        run = run_workflow(fake, model=REPAIR,
+                           before_publish=lambda f: f.add(1, human_k(H0, 111)))
+        self.assertEqual(run.publish_exit, 0, run.report)
+        self.assertEqual([w["record"] for w in run.report["writes"]], ["DISPOSITION"])
+        d = L.parse_record(fake.issue[-1]["body"]).fields
+        self.assertEqual((d["message_comment"], d["deciding_transaction"]),
+                         (str(RESULT_COMMENT), X.NONE))
 
     def test_a_red_or_different_tested_head_cannot_be_accepted(self):
         red = run_workflow(FakeGitHub(), model=ACCEPT, selftest=1, validation=green())

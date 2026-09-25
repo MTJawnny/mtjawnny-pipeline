@@ -89,8 +89,30 @@ suppress the Manager.
 An admitted message also carries a `mode`:
 - `review` means the model is needed.
 - `resume` means it is not. Either a publisher review already fixed the
-  decision, or the transaction already committed and only its successor is
-  owed.
+  decision, or the transaction already committed and only its dispositions or
+  its successor are owed.
+- `dispose` means it is not. The message was valid under a checkpoint that has
+  since been replaced without answering it; all it gets is its disposition
+  (section 5).
+
+**The Manager queue.** Under one `K` only the head of the queue is admitted for
+review. A Worker `CAPTAIN_REQUIRED` always goes ahead of any `WAVE_RESULT`, oldest
+first within each kind, so a question to the Captain is never displaced by a
+result's checkpoint.
+
+**Recovery.** The workflow also runs on `workflow_run`: when a comment-triggered
+run of this same workflow ends `failure`, `cancelled` or `timed_out`. That run
+reads no comment body as input. `recover` in `agent_bus.manager_gate` sweeps
+durable, role-validated state for the one transaction that still owes a write:
+- a publisher `K` on the chain that still owes a disposition or its successor;
+- or a publisher review, with no `K` yet, for the head of the live queue.
+
+It admits only `mode=resume`, and the model job also requires the event to be
+`issue_comment`, so recovery never reaches the model. A recovery run's own
+failure does not trigger another (BUS_GATE_WRONG_EVENT); nothing owed is
+BUS_GATE_NOTHING_OWED. GitHub starts no workflow for a comment the workflow
+token posts, so a comment cannot be the recovery event: this is the narrowest
+automatic trigger that needs no token, App, schedule or added permission.
 
 There is no second parser. The gate reaches the envelope, the authority and the
 fold through the same code the Worker obeys. The model step runs only when the
@@ -120,7 +142,9 @@ inspect, using a read-only token:
 - the whole repository history;
 - every comment on Issue #1 and PR 76, as read at run time;
 - for a `WAVE_RESULT`, the output of `python3 -m agent_bus selftest` run on the
-  result's `head`, in a separate job that holds no secret.
+  result's `head`, in a separate job that holds no secret;
+- in that same job, the goal plan's required checks run on the same checkout
+  (below), whose exit codes the model sees too.
 
 That run is the independent green run. The Worker's `validation` lines are only
 what the Worker says.
@@ -153,7 +177,15 @@ derived from the checkpoint it cites and its comment id. The writes, in order:
 2. **`V` on Issue #1**: the durable verdict, in the publisher's exact form.
 3. **`K` on Issue #1**: the one commit point. The accepted head moves here and
    nowhere else.
-4. **The successor `WAVE_COMMAND` on PR 76**: only the one the `K` names, and
+4. **A disposition on Issue #1 for every other message the `K` displaced**
+   (`mtj-disposition/0`): each valid Manager-bound message under the replaced
+   checkpoint that the `K` did not answer. It names the message, the link that
+   superseded it and the transaction that decided, and `captain_attention: YES`
+   with `next: CAPTAIN_REQUIRED` for a Worker question. It is derived from the
+   message and the chain alone, so it is written once and checked exactly. A
+   message that arrives citing a checkpoint already replaced gets the same
+   record from its own event (`mode=dispose`).
+5. **The successor `WAVE_COMMAND` on PR 76**: only the one the `K` names, and
    only after the commit — a REPAIR's re-issue, or the goal plan's next wave.
 
 A verdict posted only on PR 76 has changed nothing.
@@ -177,8 +209,8 @@ with no plan there is no budget, successor or check to read. A
 An ACCEPT whose check evidence is missing, is for another plan, wave or head,
 names other checks than the plan's, or has any check red is refused before any
 write (BUS_TRANSITION_REFUSED). The publisher takes the evidence with
-`--validation-file`; the workflow at this candidate does not produce it yet, so
-an ACCEPT through it is refused.
+`--validation-file`; the workflow's evidence job produces it with `python3 -m
+agent_bus.goal run-checks` on the same checkout it runs the selftest on.
 
 **Before every write** the publisher reads everything again. The write happens
 only if all of these still hold:
@@ -246,7 +278,7 @@ by `github-actions[bot]`. Under Captain decision 5821208878 that identity is a
 narrowly trusted Manager speaker. It is trusted **by role**, never as a speaker:
 - on PR 76, only the transaction's `WAVE_REVIEW` and the one successor its `K`
   names;
-- on Issue #1, only a `V` and a `K`.
+- on Issue #1, only a `V`, a `K`, and the dispositions that `K` owes.
 
 Each of those counts only when it is byte-for-byte what `agent_bus.transition`
 derives. A publisher `K` counts only as the exact next link after the `K`
@@ -265,8 +297,11 @@ exact steps):
   acceptance.
 - **`OPENAI_API_KEY`.** A repository secret the Captain creates. No code in this
   repository creates, reads back or prints it.
-- **Recovery is a rerun.** A run that stops or dies part-way is finished by
-  re-running it from the Actions page. Nothing re-triggers it automatically.
+- **Recovery is automatic once, then a rerun.** A comment-triggered run that
+  dies after a durable write is finished by the `workflow_run` recovery run
+  (section 3). If that recovery run also fails, or a run dies before its first
+  write (the model's answer was never made durable), it is finished by
+  re-running it from the Actions page.
 
 The earlier design used ChatGPT Work. Repository code cannot create the Work
 task. A human must create the ChatGPT Work task, and the checkpoint that

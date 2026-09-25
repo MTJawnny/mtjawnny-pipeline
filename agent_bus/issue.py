@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from agent_bus import goal, ledger
 from agent_bus.errors import BusError
@@ -97,6 +97,26 @@ class Resolution:
     # Every checkpoint that was a link, oldest first; the last is `authority`.
     chain: tuple[int, ...] = ()
     lineage: Prior | None = None
+    # Per link, oldest first: (checkpoint, the Prior it establishes or None when a
+    # human K is unreadable, the publisher K's fields or None for a human K).
+    links: tuple[tuple[int, Prior | None, Mapping | None], ...] = ()
+
+    def link(self, checkpoint: int):
+        """(index, Prior, fields) of a chain link, or None."""
+        for index, (cid, prior, fields) in enumerate(self.links):
+            if cid == checkpoint:
+                return index, prior, fields
+        return None
+
+    def authority_at(self, checkpoint: int) -> Authority | None:
+        """The authority as it stood while `checkpoint` was the latest link."""
+        found = self.link(checkpoint)
+        if found is None or found[1] is None:
+            return None
+        _, prior, fields = found
+        return Authority(issue=prior.issue, checkpoint=checkpoint, task=prior.active,
+                         accepted_head=prior.head, publisher=fields,
+                         successor=prior.successor if fields else None)
 
     def as_dict(self) -> dict:
         out = self.authority.as_dict()
@@ -186,6 +206,7 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
     untrusted: list[tuple[int, str]] = []
     refused: list[tuple[int, str, str]] = []
     chain: list[int] = []
+    links: list[tuple[int, Prior | None, Mapping | None]] = []
     current: RawComment | None = None
     lineage: Prior | None = None
     publisher_fields = None
@@ -199,6 +220,10 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
         if trust.trusts(c.author):
             current, lineage, publisher_fields = c, None, None
             chain.append(c.comment_id)
+            try:
+                links.append((c.comment_id, _prior(c, issue), None))
+            except ledger.LedgerError:
+                links.append((c.comment_id, None, None))
             after_latest = []
             continue
         if not trust.is_publisher(c.author):
@@ -228,6 +253,7 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
         current = c
         publisher_fields = dict(ledger.parse_record(c.body).fields)
         chain.append(c.comment_id)
+        links.append((c.comment_id, lineage, publisher_fields))
         after_latest = []
 
     if current is None:
@@ -253,6 +279,7 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
                          if ledger.is_lookalike(c.body)),
         chain=tuple(chain),
         lineage=lineage,
+        links=tuple(links),
     )
 
 

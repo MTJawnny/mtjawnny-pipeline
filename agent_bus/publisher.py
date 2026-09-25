@@ -7,8 +7,16 @@ The model decides; this module writes. Given an admitted Worker message and a
     1  WAVE_REVIEW   transport PR   prefix
     2  V             Issue #1       prefix
     3  K             Issue #1       COMMIT POINT -- authority moves here, once
-    4  WAVE_COMMAND  transport PR   the owed successor, only after the commit:
+    4  DISPOSITION   Issue #1       one per other Manager-bound message the K displaced
+    5  WAVE_COMMAND  transport PR   the owed successor, only after the commit:
                                     a REPAIR's re-issue, or an ACCEPT's planned next wave
+
+**Nothing Manager-bound is orphaned.** A checkpoint answers ONE message. Every
+other valid Manager-bound message under the checkpoint it replaced gets a durable
+`mtj-disposition/0` on Issue #1 saying which link superseded it and whether it
+needs the Captain. It is derived from the message and the chain alone, so it is
+written once and checked exactly, and a message that arrives late for a
+checkpoint already replaced gets the same record from its own event.
 
 **Live revalidation.** Immediately before EVERY write the whole world is read
 again and every check in `PRE_COMMIT` (or `POST_COMMIT`) runs against it: the
@@ -57,8 +65,8 @@ from agent_bus.machine import ACCEPTED, BusState, RawComment, fold
 from agent_bus.protocol import Envelope, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.transition import (
-    NONE, Prior, Subject, Transition, build, command_id, digest, lineage, next_id,
-    resolve_origin, review_id, same_message, txn_id,
+    NONE, RECORDED_BY, Prior, Subject, Transition, build, command_id, digest, lineage,
+    next_id, resolve_origin, review_id, same_message, txn_id,
 )
 from agent_bus.trust import Trust
 
@@ -120,6 +128,7 @@ class Records:
     reviews: list[tuple[RawComment, Envelope]] = field(default_factory=list)
     verdicts: list[RawComment] = field(default_factory=list)
     checkpoints: list[RawComment] = field(default_factory=list)
+    dispositions: list[RawComment] = field(default_factory=list)
     commands: list[tuple[RawComment, Envelope]] = field(default_factory=list)
     human_answers: list[RawComment] = field(default_factory=list)
     ignored: list[dict] = field(default_factory=list)
@@ -128,6 +137,7 @@ class Records:
         return {"reviews": [c.comment_id for c, _ in self.reviews],
                 "verdicts": [c.comment_id for c in self.verdicts],
                 "checkpoints": [c.comment_id for c in self.checkpoints],
+                "dispositions": [c.comment_id for c in self.dispositions],
                 "commands": [c.comment_id for c, _ in self.commands],
                 "human_answers": [c.comment_id for c in self.human_answers],
                 "ignored": self.ignored}
@@ -181,11 +191,15 @@ def find_records(world: World, target: Target, txn: str, message_id: str) -> Rec
         # malformed one is somebody else's text, reported and never a wedge.
         form = {ledger.VERDICT: (ledger.VERDICT_KEYS, ledger.render_verdict, "selecting_checkpoint"),
                 ledger.CHECKPOINT: (ledger.CHECKPOINT_KEYS, ledger.render_checkpoint,
-                                    "prior_checkpoint")}.get(record.schema)
+                                    "prior_checkpoint"),
+                ledger.DISPOSITION: (ledger.DISPOSITION_KEYS, ledger.render_disposition,
+                                     "cited_checkpoint")}.get(record.schema)
         exact = form is not None and tuple(record.fields) == form[0] \
             and _renders(form[1], record.fields, c.body) and record.fields[form[2]] == cited
         if trust.is_publisher(c.author) and exact and record.schema == ledger.VERDICT:
             out.verdicts.append(c)
+        elif trust.is_publisher(c.author) and exact and record.schema == ledger.DISPOSITION:
+            out.dispositions.append(c)
         elif trust.is_publisher(c.author) and exact:
             out.checkpoints.append(c)
         else:
@@ -200,6 +214,84 @@ def _renders(render, fields, body: str) -> bool:
         return render(fields) == body
     except ledger.LedgerError:
         return False
+
+
+# ----------------------------------------------------------------- dispositions
+
+DISPOSED = "SUPERSEDED"
+
+
+@dataclass(frozen=True)
+class Displaced:
+    """A valid Manager-bound message under a replaced checkpoint that was not answered."""
+
+    comment: RawComment
+    envelope: Envelope
+    cited: int
+
+
+def displaced(world: World, target: Target, cited: int) -> list[Displaced]:
+    """Every Manager-bound message link `cited` held that the next link did not answer.
+
+    Folded under the authority AS IT STOOD at `cited`, by the same state machine
+    every reader uses, so "valid" means exactly what it meant then. Empty when
+    `cited` is not a replaced link of the chain.
+    """
+    resolution = world.resolution
+    found = resolution.link(cited)
+    if found is None or found[0] + 1 >= len(resolution.links):
+        return []
+    authority = resolution.authority_at(cited)
+    if authority is None:
+        return []
+    following = resolution.links[found[0] + 1][2]
+    answered = int(following["result_comment"]) if following else None
+    comments = sorted(world.issue_comments + world.pr_comments, key=lambda c: c.comment_id)
+    state = fold(comments, authority, target.trust)
+    by_id = {c.comment_id: c for c in world.pr_comments}
+    out = []
+    for env in state.pending_for("MANAGER"):
+        record = state.record_of(env.message_id)
+        if record.source != f"pr:{target.transport_pr}" or record.comment_id == answered:
+            continue
+        out.append(Displaced(by_id[record.comment_id], env, cited))
+    return out
+
+
+def disposition_body(world: World, item: Displaced) -> str:
+    """The one record for a displaced message, from the message and the chain alone."""
+    resolution = world.resolution
+    index = resolution.link(item.cited)[0]
+    superseded_by, _, following = resolution.links[index + 1]
+    question = item.envelope.kind == "CAPTAIN_REQUIRED"
+    return ledger.render_disposition({
+        "recorded_by": RECORDED_BY,
+        "transaction": txn_id(item.cited, item.comment.comment_id),
+        "message_comment": item.comment.comment_id, "message_id": item.envelope.message_id,
+        "kind": item.envelope.kind, "wave": item.envelope.wave,
+        "cited_checkpoint": item.cited, "superseded_by": superseded_by,
+        "deciding_transaction": following["transaction"] if following else NONE,
+        "disposition": DISPOSED, "captain_attention": "YES" if question else "NO",
+        "next": "CAPTAIN_REQUIRED" if question else NONE,
+    })
+
+
+def disposed(world: World, target: Target, item: Displaced) -> bool:
+    """Only the publisher's exact record counts; a lookalike is somebody else's text."""
+    body = disposition_body(world, item)
+    return any(target.trust.is_publisher(c.author) and c.body == body
+               for c in world.issue_comments)
+
+
+def owed(world: World, target: Target, fields, records: Records) -> list[str]:
+    """What a committed publisher K still owes: its dispositions, then its successor."""
+    out = [f"DISPOSITION:{d.comment.comment_id}"
+           for d in displaced(world, target, int(fields["prior_checkpoint"]))
+           if not disposed(world, target, d)]
+    live = (world.authority.publisher or {}).get("transaction") == fields["transaction"]
+    if fields["successor_command"] != NONE and live and not records.commands:
+        out.append("WAVE_COMMAND")
+    return out
 
 
 # ------------------------------------------------------------ live revalidation
@@ -427,6 +519,9 @@ def _publish(txn: Txn, supplied: Decision | None) -> dict:
     if records.human_answers:
         raise Stop(EXIT_REFUSED, E.GATE_ALREADY_HANDLED,
                    f"a trusted speaker already answered in {records.human_answers[0].comment_id}")
+    cited = env.authority["checkpoint"]
+    if cited != world.authority.checkpoint and cited in world.resolution.chain:
+        return {**out, **_dispose(txn, world, cited)}
 
     prior = world.resolution.lineage
     if prior.checkpoint != env.authority["checkpoint"]:
@@ -486,10 +581,49 @@ def _publish(txn: Txn, supplied: Decision | None) -> dict:
     return {**out, **_after_commit(txn, world, committed[0], records)}
 
 
+def _mine(world: World, target: Target, cited: int, comment_id: int) -> Displaced | None:
+    return next((d for d in displaced(world, target, cited)
+                 if d.comment.comment_id == comment_id), None)
+
+
+def _dispose(txn: Txn, world: World, cited: int) -> dict:
+    """A message whose checkpoint was replaced without answering it: record that, once."""
+    item = _mine(world, txn.target, cited, txn.comment_id)
+    if item is None:
+        raise Stop(EXIT_REFUSED, E.STALE_AUTHORITY,
+                   f"the message cites {cited}, a replaced checkpoint under which it was not "
+                   "a valid, unanswered Manager-bound message")
+    if not disposed(world, txn.target, item):
+        world = observe(txn.target, txn.run)
+        try:
+            check_message_unchanged(world, txn)
+        except BusError as exc:
+            raise Stop(EXIT_REFUSED, exc.code, f"before the disposition write: {exc.detail}")
+        item = _mine(world, txn.target, cited, txn.comment_id)
+        if item is not None and not disposed(world, txn.target, item):
+            _write(txn, txn.target.issue, disposition_body(world, item), "DISPOSITION")
+    return {"state": "COMPLETE", "disposed": txn.comment_id}
+
+
+def _write_dispositions(txn: Txn, world: World, prior_checkpoint: int) -> World:
+    """Each displaced message, once. Not authority, so no liveness is needed: the link
+    that replaced them stays the link that replaced them."""
+    for item in displaced(world, txn.target, prior_checkpoint):
+        if disposed(world, txn.target, item):
+            continue
+        world = observe(txn.target, txn.run)  # a concurrent run may have written it
+        fresh = _mine(world, txn.target, prior_checkpoint, item.comment.comment_id)
+        if fresh is None or disposed(world, txn.target, fresh):
+            continue
+        _write(txn, txn.target.issue, disposition_body(world, fresh), "DISPOSITION")
+    return observe(txn.target, txn.run) if txn.writes else world
+
+
 def _after_commit(txn: Txn, world: World, checkpoint: RawComment, records: Records) -> dict:
-    """The commit happened. Only the successor it names can still be owed."""
+    """The commit happened. Its dispositions and the successor it names may be owed."""
     fields = ledger.parse_record(checkpoint.body).fields
     out = {"committed": checkpoint.comment_id, "verdict": fields["verdict"]}
+    world = _write_dispositions(txn, world, int(fields["prior_checkpoint"]))
     if fields["successor_command"] == NONE:
         return {**out, "state": "COMPLETE"}
     live = world.authority.publisher is not None and \

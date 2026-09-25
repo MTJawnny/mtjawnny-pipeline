@@ -104,7 +104,8 @@ current?" is not the same question as "may this person command a Worker".
   things:
   - the review of one transaction;
   - that transaction's `V`;
-  - its `K`;
+  - its `K`, and the dispositions that `K` owes on Issue #1 (one per other
+    Manager-bound message it displaced);
   - the one successor that `K` names: a REPAIR's re-issue, or the next wave of
     the Captain goal plan the accepted wave is bound to.
 
@@ -223,7 +224,11 @@ comment it refuses ends with one stable code:
 The model returns one decision (`ACCEPT`, `REPAIR` or `CAPTAIN`, with short
 bounded text). `python3 -m agent_bus.publisher` builds and posts the
 `WAVE_REVIEW`, `V`, `K` and the one successor the `K` names. Before every write
-it revalidates everything live, and a rerun resumes the same transaction. An
+it revalidates everything live, and a rerun resumes the same transaction; a run
+that dies after a durable write is finished once, automatically, by the
+workflow's no-model `workflow_run` recovery. A Worker `CAPTAIN_REQUIRED` is always
+reviewed before a `WAVE_RESULT` under the same `K`, and every other message the
+`K` displaces gets a durable disposition rather than going stale unexplained. An
 ACCEPT needs independent evidence (`python3 -m agent_bus.goal run-checks`) that
 every check the wave's Captain goal plan requires passed on the result head.
 

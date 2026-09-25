@@ -31,6 +31,7 @@ from typing import Mapping, Sequence
 
 CHECKPOINT = "mtj-checkpoint"
 VERDICT = "mtj-verdict"
+DISPOSITION = "mtj-disposition"
 
 _FENCE_OPEN = "```yaml"
 _FENCE_CLOSE = "```"
@@ -177,6 +178,14 @@ CHECKPOINT_KEYS = (
 )
 
 
+# One per Manager-bound message a checkpoint displaced without answering it.
+DISPOSITION_KEYS = (
+    "recorded_by", "transaction", "message_comment", "message_id", "kind", "wave",
+    "cited_checkpoint", "superseded_by", "deciding_transaction", "disposition",
+    "captain_attention", "next",
+)
+
+
 def compact_json(value) -> str:
     """One line, sorted, ASCII: a JSON value that is also a YAML flow scalar."""
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -204,3 +213,7 @@ def render_verdict(fields: Mapping[str, object]) -> str:
 
 def render_checkpoint(fields: Mapping[str, object]) -> str:
     return render(CHECKPOINT, 2, CHECKPOINT_KEYS, fields)
+
+
+def render_disposition(fields: Mapping[str, object]) -> str:
+    return render(DISPOSITION, 0, DISPOSITION_KEYS, fields)

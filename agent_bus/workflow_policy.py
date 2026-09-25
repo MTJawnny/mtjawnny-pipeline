@@ -14,7 +14,9 @@ so its shape is checked mechanically rather than by reading it and nodding:
   all read, and its Codex step keeps `drop-sudo` and the read-only profile;
 * every `uses:` is pinned to a 40-hex commit, and every checkout sets
   `persist-credentials: false`;
-* the only trigger is a CREATED `issue_comment`.
+* the triggers are exactly a CREATED `issue_comment` and the COMPLETED
+  `workflow_run` of this same workflow (by its own `name`) -- the no-model
+  recovery path; nothing else, and never a schedule.
 
 `python3 -m agent_bus.workflow_policy <path>` exits 0 when the file obeys, and
 2 with one `BUS_WORKFLOW_POLICY` line per violation otherwise.
@@ -37,6 +39,9 @@ CODEX_ACTION = "openai/codex-action"
 PIN_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[0-9a-f]{40}$")
 SECRET_RE = re.compile(r"\$\{\{\s*secrets\.")
 WRITE_ALLOWED = frozenset({"issues"})
+WORKFLOW_NAME = "Agent Bus Manager wake"
+TRIGGERS = {"issue_comment": {"types": ["created"]},
+            "workflow_run": {"workflows": [WORKFLOW_NAME], "types": ["completed"]}}
 
 
 # ------------------------------------------------------------------ reading
@@ -189,8 +194,11 @@ def violations(workflow) -> list[str]:
     if not isinstance(workflow, dict):
         return ["the workflow is not a mapping"]
     on = workflow.get("on")
-    if on != {"issue_comment": {"types": ["created"]}}:
-        out.append(f"the only trigger must be issue_comment created, got {on!r}")
+    if on != TRIGGERS:
+        out.append(f"the triggers must be exactly {TRIGGERS!r}, got {on!r}")
+    if workflow.get("name") != WORKFLOW_NAME:
+        out.append(f"the workflow must be named {WORKFLOW_NAME!r}: its recovery trigger "
+                   "names itself and nothing else")
     if workflow.get("permissions") != {}:
         out.append("top-level permissions must be {} (nothing by default)")
     if any(SECRET_RE.search(s) for s in _walk_strings(workflow.get("env", {}))):

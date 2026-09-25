@@ -102,9 +102,10 @@ _BODY_SPEC: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # `transaction` and `decision` are how the publisher's review names the one
     # transaction it belongs to and the typed decision it carries, so a rerun
     # can finish that transaction without asking the model again. `validation`
-    # fixes the independent check evidence the same way.
+    # fixes the independent check evidence the same way, and `result_digest` the
+    # exact bytes that were reviewed, so a resume cannot bind to an edited message.
     "WAVE_REVIEW": (("verdict",), ("accepted_head", "note", "transaction", "decision",
-                                   "validation")),
+                                   "validation", "result_digest")),
     "CAPTAIN_REQUIRED": (("question",), ("options", "blocking", "note")),
     "WAVE_ABORT": (("reason",), ()),
 }
@@ -352,6 +353,10 @@ def _validate_body(kind: str, actor: str, body: Mapping[str, Any]) -> None:
             # Shape only. Whether the verdict follows from it (a REPAIR past the
             # repair budget is recorded as CAPTAIN) is transition law.
             decision_from_mapping(body["decision"])
+        if "result_digest" in body:
+            digest_value = _require_str(body, "result_digest", "body")
+            if not re.fullmatch(r"[0-9a-f]{64}", digest_value):
+                raise BusError(E.BAD_VALUE, "body.result_digest must be a sha-256")
         if "validation" in body:
             from agent_bus.goal import evidence_from_mapping  # goal imports this module
             evidence_from_mapping(body["validation"])

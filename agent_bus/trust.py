@@ -46,7 +46,7 @@ PUBLISHER = "github-actions[bot]"
 # write a WORKER or CAPTAIN message, an abort, a task, or a Captain decision.
 PUBLISHER_ROLES = {
     "transport": frozenset({("MANAGER", "WAVE_REVIEW"), ("MANAGER", "WAVE_COMMAND")}),
-    "ledger": frozenset({"mtj-verdict", "mtj-checkpoint"}),
+    "ledger": frozenset({"mtj-verdict", "mtj-checkpoint", "mtj-disposition"}),
 }
 
 ENV_VAR = "MTJ_AGENT_BUS_TRUSTED"

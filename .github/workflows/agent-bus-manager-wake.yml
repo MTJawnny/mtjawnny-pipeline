@@ -8,9 +8,12 @@
 # Four jobs, each holding only what it needs:
 #
 #   gate      no model, no secret, read-only token. The deterministic pre-gate:
-#             wake, mode (review | resume), and the admitted comment's digest.
-#   evidence  no model, no secret, read-only token. Selftest on the result head,
-#             and the head actually checked out, measured by git.
+#             wake, mode (review | resume | dispose), and the admitted comment's
+#             digest. On `workflow_run` it is the recovery sweep instead, and it
+#             never answers `review`.
+#   evidence  no model, no secret, read-only token. Selftest and the goal plan's
+#             required checks on the result head, and the head actually checked
+#             out, measured by git.
 #   manager   the model, in `review` mode only. Read-only token, read-only
 #             filesystem, no network. The OpenAI secret is referenced here and
 #             nowhere else, only as an input of the pinned Codex action. Its
@@ -27,9 +30,17 @@
 
 name: Agent Bus Manager wake
 
+# `workflow_run` is the no-model recovery path: GitHub starts no workflow for a
+# comment the workflow token posts, so a run that dies after a durable write is
+# finished by the failed run's own completion event instead. It names only this
+# workflow, and a recovery run's own failure is refused by the gate, so it runs
+# at most once per comment-triggered run.
 on:
   issue_comment:
     types: [created]
+  workflow_run:
+    workflows: ["Agent Bus Manager wake"]
+    types: [completed]
 
 # Nothing by default. Every job below states its own permissions.
 permissions: {}
@@ -37,7 +48,7 @@ permissions: {}
 # One run per comment at a time: a manual re-run of the same comment waits for
 # the first, then resumes or is refused as already answered.
 concurrency:
-  group: agent-bus-manager-wake-${{ github.event.comment.id }}
+  group: agent-bus-manager-wake-${{ github.event.comment.id || github.event.workflow_run.id }}
   cancel-in-progress: false
 
 env:
@@ -53,10 +64,13 @@ jobs:
     # the gate: every one of these conditions is re-checked, with the rest, by
     # `agent_bus.manager_gate` below.
     if: >-
-      github.event.issue.pull_request &&
+      (github.event.issue.pull_request &&
       github.event.issue.number == 76 &&
       github.event.comment.user.login == 'MTJawnny' &&
-      contains(github.event.comment.body, '```mtj-bus')
+      contains(github.event.comment.body, '```mtj-bus')) ||
+      (github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'issue_comment' &&
+      github.event.workflow_run.conclusion != 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -78,7 +92,9 @@ jobs:
 
       # "Already answered" is decided in here, by role: a trusted speaker's
       # review or the publisher's committed checkpoint. Nobody else's comment
-      # can suppress the Manager; such comments are listed as `ignored`.
+      # can suppress the Manager; such comments are listed as `ignored`. On
+      # `workflow_run` the same module sweeps durable state instead
+      # (`manager_gate.recover`) and admits only `resume`.
       - name: Deterministic pre-gate (no model)
         id: gate
         env:
@@ -109,6 +125,7 @@ jobs:
       measured_head: ${{ steps.measured.outputs.head }}
       selftest_exit: ${{ steps.selftest.outputs.exit }}
       selftest_tail: ${{ steps.selftest.outputs.tail }}
+      validation: ${{ steps.checks.outputs.validation }}
     steps:
       - name: Check out the pinned bus code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -160,11 +177,31 @@ jobs:
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           echo "tail=$(tail -n 60 "$RUNNER_TEMP/selftest.log" | base64 -w0)" >> "$GITHUB_OUTPUT"
 
+      # The wave's OWN required checks, from the Captain goal plan its command is
+      # bound to, run by the pinned bus code on the same checkout. Red checks are
+      # evidence, recorded; no bound plan writes no evidence, and the publisher
+      # then refuses any ACCEPT.
+      - name: Run the goal plan's required checks on the claimed head
+        id: checks
+        if: steps.head.outputs.head != ''
+        working-directory: bus
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ needs.gate.outputs.comment_id }}
+        run: |
+          set -euo pipefail
+          python3 -m agent_bus.goal run-checks --repo "$GITHUB_REPOSITORY" --pr "$TRANSPORT_PR" \
+            --trusted-author "$TRUSTED_AUTHOR" --comment-id "$COMMENT_ID" \
+            --checkout "$GITHUB_WORKSPACE/candidate" --out "$RUNNER_TEMP/validation.json"
+          if [ -f "$RUNNER_TEMP/validation.json" ]; then
+            echo "validation=$(base64 -w0 < "$RUNNER_TEMP/validation.json")" >> "$GITHUB_OUTPUT"
+          fi
+
   manager:
     # Only a fresh transaction needs the model. A resumed one already has its
     # decision durably recorded, and asking again could only contradict it.
     needs: [gate, evidence]
-    if: needs.gate.outputs.wake == 'true' && needs.gate.outputs.mode == 'review'
+    if: github.event_name == 'issue_comment' && needs.gate.outputs.wake == 'true' && needs.gate.outputs.mode == 'review'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -256,7 +293,7 @@ jobs:
       needs.gate.outputs.wake == 'true' &&
       !cancelled() &&
       needs.evidence.result == 'success' &&
-      (needs.gate.outputs.mode == 'resume' || needs.manager.result == 'success')
+      (needs.gate.outputs.mode != 'review' || needs.manager.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     # Every writer in the repository takes turns. Correctness does not rest on
@@ -278,7 +315,8 @@ jobs:
 
       # Exit 0: the transaction is complete. 4: refused before the commit, no
       # authority moved. 5: stopped after the commit. A non-zero exit fails
-      # this job visibly; re-running it resumes the same transaction.
+      # this job visibly, and the failed run's `workflow_run` event resumes the
+      # same transaction once, with no model.
       - name: Publish the transaction (no model)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -288,6 +326,7 @@ jobs:
           FINAL_MESSAGE: ${{ needs.manager.outputs.final_message }}
           MEASURED_HEAD: ${{ needs.evidence.outputs.measured_head }}
           SELFTEST_EXIT: ${{ needs.evidence.outputs.selftest_exit }}
+          VALIDATION: ${{ needs.evidence.outputs.validation }}
         run: |
           set -euo pipefail
           args=(--repo "$GITHUB_REPOSITORY" --pr "$TRANSPORT_PR" --trusted-author "$TRUSTED_AUTHOR"
@@ -298,4 +337,8 @@ jobs:
           fi
           if [ -n "$MEASURED_HEAD" ]; then args+=(--measured-head "$MEASURED_HEAD"); fi
           if [ -n "$SELFTEST_EXIT" ]; then args+=(--selftest-exit "$SELFTEST_EXIT"); fi
+          if [ -n "$VALIDATION" ]; then
+            printf '%s' "$VALIDATION" | base64 -d > "$RUNNER_TEMP/validation.json"
+            args+=(--validation-file "$RUNNER_TEMP/validation.json")
+          fi
           python3 -m agent_bus.publisher "${args[@]}"

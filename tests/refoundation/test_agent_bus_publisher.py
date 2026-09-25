@@ -247,6 +247,9 @@ class FakeGitHub:
             record = L.parse_record(c["body"])
             if record is None:
                 continue
+            if record.schema == L.DISPOSITION:
+                out["D"] = out.get("D", 0) + 1
+                continue
             out["V" if record.schema == L.VERDICT else "K"] += 1
         return out
 
@@ -565,8 +568,12 @@ class TestR3Defects(unittest.TestCase):
         self.assertEqual((report["exit"], report["code"]), (P.EXIT_REFUSED, E.GATE_QUEUED))
         self.assertEqual(fake.writes, [])
         self.assertEqual(publish(fake, ACCEPT)["exit"], P.EXIT_COMPLETE)
-        k = L.parse_record(fake.issue[-1]["body"]).fields
+        k = L.parse_record(publisher_k(fake)[0]["body"]).fields
         self.assertEqual(k["unanswered"], f"[{RESULT_COMMENT + 1}]")
+        # AC2: the displaced one is not left stale; it carries its disposition.
+        d = L.parse_record(fake.issue[-1]["body"]).fields
+        self.assertEqual((d["message_comment"], d["superseded_by"]),
+                         (str(RESULT_COMMENT + 1), str(publisher_k(fake)[0]["id"])))
 
     # R3-D7: indented scalars and embedded checkpoint text are read as authority.
     def test_R3_D7_red_r3_selects_a_quoted_k_and_reads_an_indented_a(self):
@@ -1092,7 +1099,8 @@ class TestRiggedProtections(unittest.TestCase):
             kind="WAVE_REVIEW", actor="MANAGER", message_id=X.review_id(TXN), wave=WAVE,
             parent=RESULT_ID, checkpoint=K0, task=TASK, base=H0,
             body={"verdict": "ACCEPT", "transaction": TXN, "accepted_head": H1,
-                  "decision": ACCEPT.as_dict(), "validation": green().as_dict()}), "drive-by")
+                  "decision": ACCEPT.as_dict(), "validation": green().as_dict(),
+                  "result_digest": X.digest(result())}), "drive-by")
         with mock.patch.object(Trust, "is_publisher", lambda self, login: True):
             self.assertEqual(gate(fake).mode, "resume")  # a stranger's review now binds
             report = publish(fake, REPAIR)

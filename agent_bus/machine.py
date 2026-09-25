@@ -169,8 +169,13 @@ class BusState:
         abort-starvation defect, on the Manager side.
         """
         superseded = set(self.superseded())
-        return [e for e in self.pending_for("MANAGER")
+        live = [e for e in self.pending_for("MANAGER")
                 if not self.waves[e.wave].aborted and e.wave not in superseded]
+        # A Worker's question to the Captain goes first. Behind a result, the
+        # result's checkpoint would displace it; in front, the only lawful answer
+        # stops autonomy and the result is disposed of, named, instead.
+        return [e for e in live if e.kind == "CAPTAIN_REQUIRED"] + \
+            [e for e in live if e.kind != "CAPTAIN_REQUIRED"]
 
     def record_of(self, message_id: str) -> Record | None:
         """The ACCEPTED record that carried this message id, if any."""

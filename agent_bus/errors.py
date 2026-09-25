@@ -117,6 +117,8 @@ TXN_RACE_LOST = "BUS_TXN_RACE_LOST"
 TXN_SUPERSEDED = "BUS_TXN_SUPERSEDED"
 # A resume was asked for, but nothing durable says what was decided.
 TXN_NO_DECISION = "BUS_TXN_NO_DECISION"
+# A recovery run found no durable transaction that still owes a write.
+GATE_NOTHING_OWED = "BUS_GATE_NOTHING_OWED"
 # A Captain goal plan comment does not parse as a plan. It binds nothing.
 GOAL_PLAN_INVALID = "BUS_GOAL_PLAN_INVALID"
 # A workflow file breaks the Manager wake's static permission/secret/pin law.

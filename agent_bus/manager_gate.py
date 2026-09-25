@@ -18,8 +18,14 @@ Anything else that claims to is reported in `ignored` and changes nothing.
 
 `mode` says what the admitted run is for. `review` needs the model. `resume`
 does not: the decision is already durable (a publisher review exists) or the
-transaction already committed and only its successor is owed, so the model is
-not asked again and cannot contradict what is already written.
+transaction already committed and only its dispositions or successor are owed,
+so the model is not asked again and cannot contradict what is already written.
+`dispose` does not either: the message was valid under a checkpoint that has
+since been replaced without answering it, and all it gets is its disposition.
+
+A `workflow_run` event (a failed comment-triggered run of this workflow) goes to
+`recover`, never to the stages: it admits only `resume`, for the one durable
+transaction that still owes a write.
 
 There is no second parser here. Envelope law is `agent_bus.protocol`; authority
 is `agent_bus.issue.resolve_authority`; correlation, duplicates and staleness are
@@ -53,7 +59,7 @@ from agent_bus.issue import AuthorityError
 from agent_bus.ledger import parse_record
 from agent_bus.machine import ACCEPTED
 from agent_bus.protocol import WAKES, Envelope, parse_comment
-from agent_bus.publisher import Target, World, find_records
+from agent_bus.publisher import Target, World, displaced, disposed, find_records, owed
 from agent_bus.shell import Runner
 from agent_bus.supervisor import Observation, Supervisor
 from agent_bus.transition import digest, txn_id
@@ -236,8 +242,7 @@ def check_transaction(ctx: Context) -> None:
     committed = [c for c in records.checkpoints if c.comment_id in world.resolution.chain]
     if committed:
         fields = parse_record(committed[0].body).fields
-        live = (world.authority.publisher or {}).get("transaction") == tid
-        if fields["successor_command"] != "NONE" and not records.commands and live:
+        if owed(world, target, fields, records):
             ctx.mode, ctx.committed = "resume", True
             return
         raise BusError(E.GATE_ALREADY_HANDLED,
@@ -246,6 +251,18 @@ def check_transaction(ctx: Context) -> None:
         raise BusError(E.TXN_RACE_LOST,
                        f"checkpoint(s) {[c.comment_id for c in records.checkpoints]} carry "
                        f"{tid} but are not links of the chain")
+    cited = env.authority["checkpoint"]
+    if cited != world.authority.checkpoint and cited in world.resolution.chain:
+        # Valid when it was sent, displaced since: it gets its disposition, never the model.
+        item = next((d for d in displaced(world, target, cited)
+                     if d.comment.comment_id == ctx.comment["id"]), None)
+        if item is not None:
+            if disposed(world, target, item):
+                raise BusError(E.GATE_ALREADY_HANDLED,
+                               f"{env.message_id} was disposed of: checkpoint {cited} was "
+                               "replaced without answering it")
+            ctx.mode, ctx.committed = "dispose", True
+            return
     if records.reviews:
         ctx.mode = "resume"
 
@@ -374,6 +391,90 @@ def decide(event: Mapping, event_name: str, repo: str, transport_pr: int,
                     digest=digest(ctx.comment["body"]), ignored=tuple(ctx.ignored))
 
 
+# ---------------------------------------------------------------------- recovery
+# GitHub starts no workflow for a comment the workflow token posts, so a run that
+# dies cannot leave itself a comment to be woken by. What it CAN leave is its own
+# failed conclusion: `workflow_run` fires when a comment-triggered run of this
+# workflow fails, with no token, no App and no extra permission. The recovery run
+# never reads a comment body as input, never has `mode=review`, and so never
+# reaches the model. It sweeps durable state for the one transaction that owes a
+# write, and hands it to the same deterministic publisher.
+
+RECOVERY_EVENT = "workflow_run"
+WORKFLOW_PATH = ".github/workflows/agent-bus-manager-wake.yml"
+RECOVERABLE = ("failure", "cancelled", "timed_out")
+
+
+def check_recovery_event(event: Mapping, repo: str) -> None:
+    """Only a completed, failed, comment-triggered run of THIS workflow, here."""
+    if event.get("action") != "completed":
+        raise BusError(E.GATE_WRONG_EVENT, f"workflow_run action {event.get('action')!r}")
+    run_ = _shape(event.get("workflow_run"), dict, "workflow_run")
+    if run_.get("path") != WORKFLOW_PATH:
+        raise BusError(E.GATE_WRONG_EVENT, f"workflow_run of {run_.get('path')!r}")
+    if run_.get("event") != EVENT_NAME:
+        # A recovery run's own failure recovers nothing: one attempt, never a loop.
+        raise BusError(E.GATE_WRONG_EVENT, f"the finished run was a {run_.get('event')!r} run")
+    if run_.get("conclusion") not in RECOVERABLE:
+        raise BusError(E.GATE_NOTHING_OWED, f"the finished run concluded "
+                       f"{run_.get('conclusion')!r}")
+    for where in (event.get("repository"), run_.get("repository")):
+        if not isinstance(where, dict) or where.get("full_name") != repo:
+            raise BusError(E.GATE_WRONG_SURFACE, f"workflow_run is not from {repo}")
+
+
+def sweep(world: World, target: Target) -> tuple[int, str] | None:
+    """(comment id, why) of the one transaction that owes a write, or None.
+
+    Durable, role-validated records only: a publisher K on the chain that still
+    owes a disposition or its successor, else a publisher review that fixed a
+    decision for the head of the live Manager queue.
+    """
+    resolution = world.resolution
+    for checkpoint, _, fields in reversed(resolution.links):
+        if fields is None:
+            continue
+        cid = int(fields["result_comment"])
+        if not any(c.comment_id == cid for c in world.pr_comments):
+            continue
+        records = find_records(world, target, fields["transaction"], fields["result_message"])
+        if owed(world, target, fields, records):
+            return cid, f"checkpoint {checkpoint} still owes {owed(world, target, fields, records)}"
+    queue = world.state.manager_queue()
+    if queue:
+        record = world.state.record_of(queue[0].message_id)
+        tid = txn_id(world.authority.checkpoint, record.comment_id)
+        records = find_records(world, target, tid, queue[0].message_id)
+        if records.reviews and not records.checkpoints:
+            return record.comment_id, f"transaction {tid} has a durable review and no checkpoint"
+    return None
+
+
+def recover(event: Mapping, repo: str, transport_pr: int, trusted_author: str, run: Runner,
+            issue: int = 1) -> Decision:
+    """The no-model recovery decision. `mode` is only ever `resume` or `dispose`."""
+    if not trusted_author:
+        raise BusError(E.TRUST_NOT_CONFIGURED, "the gate needs a trusted author")
+    ctx = Context(event=event, event_name=RECOVERY_EVENT, repo=repo,
+                  transport_pr=transport_pr, trusted_author=trusted_author, issue=issue, run=run)
+    try:
+        check_recovery_event(event, repo)
+        world = _world(ctx)
+        target = Target(repo, issue, transport_pr, ctx.trust)
+        found = sweep(world, target)
+        if found is None:
+            raise BusError(E.GATE_NOTHING_OWED, "no durable transaction owes a write")
+    except BusError as exc:
+        return Decision(False, exc.code, exc.detail, stage="recovery",
+                        authority=ctx.observation.authority.as_dict() if ctx.observation else None)
+    comment_id, why = found
+    live = next(c for c in world.pr_comments if c.comment_id == comment_id)
+    env = parse_comment(live.body)
+    return Decision(True, None, f"recovery: {why}", comment_id, env.message_id, env.kind,
+                    env.wave, world.authority.as_dict(), stage=None, mode="resume",
+                    digest=digest(live.body))
+
+
 def write_outputs(decision: Decision, path: str | None) -> None:
     if not path:
         return
@@ -397,8 +498,12 @@ def main(argv: list[str] | None = None, run: Runner | None = None) -> int:
     if not isinstance(event, dict):
         raise BusError(E.GATE_WRONG_EVENT, "the event payload is not an object")
     try:
-        decision = decide(event, args.event_name, args.repo, args.pr,
-                          args.trusted_author, run or Runner(), args.issue)
+        if args.event_name == RECOVERY_EVENT:
+            decision = recover(event, args.repo, args.pr, args.trusted_author,
+                               run or Runner(), args.issue)
+        else:
+            decision = decide(event, args.event_name, args.repo, args.pr,
+                              args.trusted_author, run or Runner(), args.issue)
         code = 0
     except AuthorityError as exc:
         decision = Decision(False, E.AUTHORITY_UNRESOLVED, str(exc))

@@ -187,7 +187,8 @@ class Transition:
     def review(self, created_at: str) -> Envelope:
         env = self.subject.envelope
         body: dict = {"verdict": WORD[self.letter], "transaction": self.txn,
-                      "decision": self.decision.as_dict()}
+                      "decision": self.decision.as_dict(),
+                      "result_digest": self.subject.digest}
         if self.letter == "A":
             body["accepted_head"] = self.head
         if self.evidence is not None:
