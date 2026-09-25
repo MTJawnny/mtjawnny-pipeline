@@ -1250,11 +1250,9 @@ WEAKENINGS = {
         "    outputs:\n      final_message",
         "    permissions:\n      contents: read\n      issues: write\n      pull-requests: read\n"
         "    outputs:\n      final_message"),
-    "secret_in_a_shell_step": ("          GH_TOKEN: ${{ github.token }}\n          MESSAGE_ID: "
-                               "${{ needs.gate.outputs.message_id }}\n          FINAL_MESSAGE",
+    "secret_in_a_shell_step": ("          GH_TOKEN: ${{ github.token }}\n          MODE:",
                                "          GH_TOKEN: ${{ github.token }}\n          KEY: "
-                               "${{ secrets.OPENAI_API_KEY }}\n          MESSAGE_ID: "
-                               "${{ needs.gate.outputs.message_id }}\n          FINAL_MESSAGE"),
+                               "${{ secrets.OPENAI_API_KEY }}\n          MODE:"),
     "codex_action_unpinned": ("openai/codex-action@86365089eb2b84e0a8fb0717b304f8bdcb13b20e",
                               "openai/codex-action@v1"),
     "checkout_unpinned": ("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",

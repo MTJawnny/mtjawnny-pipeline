@@ -1,4 +1,4 @@
-# Agent Bus Manager wake -- REVIEWABLE CANDIDATE.
+# Agent Bus Manager wake -- REVIEWABLE CANDIDATE (R4).
 #
 # GitHub runs an issue_comment workflow only when the file exists on the DEFAULT
 # branch, so on a task branch this file cannot fire. It reaches `main` only as
@@ -7,14 +7,19 @@
 #
 # Four jobs, each holding only what it needs:
 #
-#   gate      no model, no secret, read-only token. The deterministic pre-gate.
-#   evidence  no model, no secret, read-only token. Selftest on the result head.
-#   manager   the model. Read-only token, read-only filesystem, no network.
-#             The OpenAI secret is referenced here and nowhere else, and only
-#             as an input of the pinned Codex action -- never in a shell step.
+#   gate      no model, no secret, read-only token. The deterministic pre-gate:
+#             wake, mode (review | resume), and the admitted comment's digest.
+#   evidence  no model, no secret, read-only token. Selftest on the result head,
+#             and the head actually checked out, measured by git.
+#   manager   the model, in `review` mode only. Read-only token, read-only
+#             filesystem, no network. The OpenAI secret is referenced here and
+#             nowhere else, only as an input of the pinned Codex action. Its
+#             whole answer is ONE bounded decision (agent_bus.decision).
 #   publish   no model, no secret. The ONLY job allowed to write, and what it
-#             may write is issue/PR comments. No job holds contents: write, so
-#             nothing here can push, move a branch or merge.
+#             may write is issue/PR comments. `agent_bus.publisher` derives
+#             every record from live state, revalidates before every write, and
+#             resumes a transaction a failed run left half-written. No job holds
+#             contents: write, so nothing here can push, move a branch or merge.
 #
 # Untrusted text (comment bodies, the model's output) never appears inside a
 # `run:` script: it reaches shell steps only through `env:`, and the bus code
@@ -29,15 +34,15 @@ on:
 # Nothing by default. Every job below states its own permissions.
 permissions: {}
 
-# One Manager run per comment. A manual re-run of the same comment waits for the
-# first rather than racing it, and then meets the "already answered" checks.
+# One run per comment at a time: a manual re-run of the same comment waits for
+# the first, then resumes or is refused as already answered.
 concurrency:
   group: agent-bus-manager-wake-${{ github.event.comment.id }}
   cancel-in-progress: false
 
 env:
   # The reviewed bus code and contract. Immutable: a commit, not a branch.
-  BUS_REF: 3490e5dd73ef959538dfffaef48b963f8f6f8aa0
+  BUS_REF: 07ecc4fbd55c055fb9ba3719885f0f11bfc4e7d1
   TRANSPORT_PR: "76"
   TRUSTED_AUTHOR: MTJawnny
   PYTHONDONTWRITEBYTECODE: "1"
@@ -59,9 +64,11 @@ jobs:
       issues: read
       pull-requests: read
     outputs:
-      wake: ${{ steps.unanswered.outputs.proceed }}
+      wake: ${{ steps.gate.outputs.wake }}
+      mode: ${{ steps.gate.outputs.mode }}
       comment_id: ${{ steps.gate.outputs.comment_id }}
       message_id: ${{ steps.gate.outputs.message_id }}
+      digest: ${{ steps.gate.outputs.digest }}
     steps:
       - name: Check out the pinned bus code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -69,6 +76,9 @@ jobs:
           ref: ${{ env.BUS_REF }}
           persist-credentials: false
 
+      # "Already answered" is decided in here, by role: a trusted speaker's
+      # review or the publisher's committed checkpoint. Nobody else's comment
+      # can suppress the Manager; such comments are listed as `ignored`.
       - name: Deterministic pre-gate (no model)
         id: gate
         env:
@@ -82,38 +92,6 @@ jobs:
           --trusted-author "$TRUSTED_AUTHOR"
           --github-output "$GITHUB_OUTPUT"
 
-      # The bus trusts only operator-declared speakers, so a review posted by
-      # this workflow's own identity is not visible to the gate's fold. This
-      # step closes that gap for re-runs: ANY existing WAVE_REVIEW answering this
-      # message, whoever posted it, means the Manager has already spoken.
-      - name: Not already answered by any author
-        id: unanswered
-        if: steps.gate.outputs.wake == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MESSAGE_ID: ${{ steps.gate.outputs.message_id }}
-        run: |
-          python3 - <<'PY'
-          import os
-          from agent_bus.errors import BusError
-          from agent_bus.issue import read_comments
-          from agent_bus.protocol import parse_comment
-
-          message_id = os.environ["MESSAGE_ID"]
-          answered = []
-          for c in read_comments(int(os.environ["TRANSPORT_PR"]), os.environ["GITHUB_REPOSITORY"]):
-              try:
-                  env = parse_comment(c.body)
-              except BusError:
-                  continue
-              if env and env.kind == "WAVE_REVIEW" and env.parent == message_id:
-                  answered.append(c.comment_id)
-          proceed = "false" if answered else "true"
-          print(f"answered by comments {answered}" if answered else "not yet answered")
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
-              out.write(f"proceed={proceed}\n")
-          PY
-
   evidence:
     # An independent run of the suite on the head the Worker claims. It runs the
     # candidate's code, so it runs where there is nothing worth stealing: no
@@ -125,8 +103,10 @@ jobs:
     permissions:
       contents: read
       issues: read
+      pull-requests: read
     outputs:
       head: ${{ steps.head.outputs.head }}
+      measured_head: ${{ steps.measured.outputs.head }}
       selftest_exit: ${{ steps.selftest.outputs.exit }}
       selftest_tail: ${{ steps.selftest.outputs.tail }}
     steps:
@@ -144,19 +124,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           COMMENT_ID: ${{ needs.gate.outputs.comment_id }}
         run: |
-          python3 - <<'PY'
-          import json, os, subprocess
-          from agent_bus.protocol import parse_comment
-
-          raw = subprocess.run(
-              ["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/issues/comments/{int(os.environ['COMMENT_ID'])}"],
-              check=True, capture_output=True, text=True).stdout
-          env = parse_comment(json.loads(raw)["body"])
-          # The parser has already required a 40-hex sha; CAPTAIN_REQUIRED has none.
-          head = env.body["head"] if env.kind == "WAVE_RESULT" else ""
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
-              out.write(f"head={head}\n")
-          PY
+          set -euo pipefail
+          head="$(python3 -m agent_bus.publisher --repo "$GITHUB_REPOSITORY" --pr "$TRANSPORT_PR" \
+            --trusted-author "$TRUSTED_AUTHOR" result-head --comment-id "$COMMENT_ID")"
+          echo "head=$head" >> "$GITHUB_OUTPUT"
 
       - name: Check out the claimed head
         if: steps.head.outputs.head != ''
@@ -166,8 +137,17 @@ jobs:
           path: candidate
           persist-credentials: false
 
+      # The tested head is what git says was checked out, not what was asked
+      # for. An ACCEPT may move the accepted head only to this.
+      - name: Measure the head that was checked out
+        id: measured
+        if: steps.head.outputs.head != ''
+        working-directory: candidate
+        run: echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       # A red suite is evidence for the Manager, not a reason to skip review, so
-      # the exit code is recorded rather than propagated.
+      # the exit code is recorded rather than propagated. The publisher refuses
+      # an ACCEPT on anything but exit 0.
       - name: Selftest the claimed head
         id: selftest
         if: steps.head.outputs.head != ''
@@ -181,8 +161,10 @@ jobs:
           echo "tail=$(tail -n 60 "$RUNNER_TEMP/selftest.log" | base64 -w0)" >> "$GITHUB_OUTPUT"
 
   manager:
+    # Only a fresh transaction needs the model. A resumed one already has its
+    # decision durably recorded, and asking again could only contradict it.
     needs: [gate, evidence]
-    if: needs.gate.outputs.wake == 'true'
+    if: needs.gate.outputs.wake == 'true' && needs.gate.outputs.mode == 'review'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -206,7 +188,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           COMMENT_ID: ${{ needs.gate.outputs.comment_id }}
           MESSAGE_ID: ${{ needs.gate.outputs.message_id }}
-          RESULT_HEAD: ${{ needs.evidence.outputs.head }}
+          RESULT_HEAD: ${{ needs.evidence.outputs.measured_head }}
           SELFTEST_EXIT: ${{ needs.evidence.outputs.selftest_exit }}
           SELFTEST_TAIL: ${{ needs.evidence.outputs.selftest_tail }}
         run: |
@@ -225,17 +207,8 @@ jobs:
               echo "The admitted message carries no head; no selftest was run."
             fi
           } > "$ctx/selftest.txt"
-          cat > "$ctx/manager-output.schema.json" <<'JSON'
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["wave_review", "issue_1"],
-            "properties": {
-              "wave_review": {"type": "string"},
-              "issue_1": {"type": "array", "items": {"type": "string"}}
-            }
-          }
-          JSON
+          # The schema comes from the same constants the publisher parses with.
+          python3 -m agent_bus.decision --schema > "$ctx/decision.schema.json"
           {
             echo "You are the Manager for MTJawnny/mtjawnny-pipeline."
             echo
@@ -254,12 +227,12 @@ jobs:
             echo "- $ctx/selftest.txt: an independent selftest run on the result head, if any"
             echo "- the full git history of every branch (origin/*): use git log, show and diff"
             echo
-            echo "Do sections 4 and 5 of the contract. Resolve the latest K yourself from"
-            echo "issue-1.json. You post nothing: your final message must be the JSON object the"
-            echo "output schema requires. wave_review is one complete PR $TRANSPORT_PR comment body"
-            echo "holding exactly one mtj-bus WAVE_REVIEW from MANAGER whose parent is"
-            echo "$MESSAGE_ID, citing the latest K and its accepted head. issue_1 is exactly two"
-            echo "bodies, the V and then the K, in the forms Issue #1 already uses."
+            echo "Do section 4 of the contract. Then answer with ONE decision and nothing else:"
+            echo "a JSON object with exactly verdict (ACCEPT, REPAIR or CAPTAIN), reason, findings"
+            echo "and evidence, as $ctx/decision.schema.json requires. Each text is one short"
+            echo "printable line. Do not write any record, head, checkpoint, task or command:"
+            echo "section 5 of the contract says what reviewed code derives from your verdict,"
+            echo "and record-shaped text in your answer is refused."
           } > "$ctx/prompt.md"
 
       # The last step of this job, as upstream recommends: nothing that runs
@@ -270,17 +243,29 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: .agent-bus-context/prompt.md
-          output-schema-file: .agent-bus-context/manager-output.schema.json
+          output-schema-file: .agent-bus-context/decision.schema.json
           permission-profile: ":read-only"
           safety-strategy: drop-sudo
           allow-users: MTJawnny
 
   publish:
-    # A fresh host with no model and no secret. It posts only what validates.
-    needs: [gate, manager]
-    if: needs.gate.outputs.wake == 'true'
+    # A fresh host with no model and no secret. It writes only what
+    # agent_bus.transition derives, and only after revalidating live state.
+    needs: [gate, evidence, manager]
+    if: >-
+      needs.gate.outputs.wake == 'true' &&
+      !cancelled() &&
+      needs.evidence.result == 'success' &&
+      (needs.gate.outputs.mode == 'resume' || needs.manager.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    # Every writer in the repository takes turns. Correctness does not rest on
+    # this -- two checkpoints from one prior cannot both link, and only the
+    # Manager queue's head is admitted -- but it keeps two runs from racing
+    # into a lost-race stop.
+    concurrency:
+      group: agent-bus-publisher
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write
@@ -291,80 +276,26 @@ jobs:
           ref: ${{ env.BUS_REF }}
           persist-credentials: false
 
-      - name: Validate the Manager's answer, then post it
+      # Exit 0: the transaction is complete. 4: refused before the commit, no
+      # authority moved. 5: stopped after the commit. A non-zero exit fails
+      # this job visibly; re-running it resumes the same transaction.
+      - name: Publish the transaction (no model)
         env:
           GH_TOKEN: ${{ github.token }}
-          MESSAGE_ID: ${{ needs.gate.outputs.message_id }}
+          MODE: ${{ needs.gate.outputs.mode }}
+          COMMENT_ID: ${{ needs.gate.outputs.comment_id }}
+          DIGEST: ${{ needs.gate.outputs.digest }}
           FINAL_MESSAGE: ${{ needs.manager.outputs.final_message }}
+          MEASURED_HEAD: ${{ needs.evidence.outputs.measured_head }}
+          SELFTEST_EXIT: ${{ needs.evidence.outputs.selftest_exit }}
         run: |
-          python3 - <<'PY'
-          import json, os, subprocess, sys, tempfile
-          from agent_bus.errors import BusError
-          from agent_bus.issue import read_comments, resolve_authority
-          from agent_bus.protocol import extract, parse_comment
-          from agent_bus.trust import Trust
-
-          repo = os.environ["GITHUB_REPOSITORY"]
-          pr = int(os.environ["TRANSPORT_PR"])
-          message_id = os.environ["MESSAGE_ID"]
-
-          def refuse(why):
-              print(f"REFUSED, nothing posted: {why}", file=sys.stderr)
-              sys.exit(1)
-
-          try:
-              answer = json.loads(os.environ["FINAL_MESSAGE"])
-          except json.JSONDecodeError as exc:
-              refuse(f"the Manager's final message is not JSON: {exc.msg}")
-          if not isinstance(answer, dict) or set(answer) != {"wave_review", "issue_1"}:
-              refuse("the answer must have exactly wave_review and issue_1")
-          review, ledger = answer["wave_review"], answer["issue_1"]
-          if not isinstance(review, str) or not isinstance(ledger, list) or len(ledger) != 2 \
-                  or not all(isinstance(b, str) for b in ledger):
-              refuse("wave_review must be a string and issue_1 exactly two strings")
-
-          try:
-              env = parse_comment(review)
-          except BusError as exc:
-              refuse(f"wave_review: {exc}")
-          if env is None or env.kind != "WAVE_REVIEW" or env.actor != "MANAGER" \
-                  or env.parent != message_id:
-              refuse(f"wave_review must be one MANAGER WAVE_REVIEW answering {message_id}")
-
-          # The authority must still be the one the review cites. A K that moved
-          # while the model ran makes this answer stale, and stale is not posted.
-          trust = Trust(frozenset({os.environ["TRUSTED_AUTHOR"].lower()}), "publish")
-          authority = resolve_authority(read_comments(1, repo), 1, trust).authority
-          if env.authority["checkpoint"] != authority.checkpoint or env.base != authority.accepted_head:
-              refuse("the review does not cite the latest K and its accepted head")
-
-          verdict, checkpoint = ledger
-          for body, schema in ((verdict, "schema: mtj-verdict/"), (checkpoint, "schema: mtj-checkpoint/")):
-              if schema not in body:
-                  refuse(f"issue_1 bodies must be a V then a K; missing {schema!r}")
-              try:
-                  if extract(body) is not None:
-                      refuse("an Issue #1 body may not carry an mtj-bus block")
-              except BusError as exc:
-                  refuse(f"an Issue #1 body carries bus blocks: {exc}")
-
-          for c in read_comments(pr, repo):
-              try:
-                  prior = parse_comment(c.body)
-              except BusError:
-                  continue
-              if prior and prior.kind == "WAVE_REVIEW" and prior.parent == message_id:
-                  refuse(f"{message_id} is already answered by comment {c.comment_id}")
-
-          def post(number, body):
-              with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
-                  json.dump({"body": body}, handle)
-              subprocess.run(["gh", "api", "--method", "POST",
-                              f"repos/{repo}/issues/{number}/comments", "--input", handle.name],
-                             check=True, stdout=subprocess.DEVNULL)
-
-          post(pr, review)
-          post(1, verdict)
-          post(1, checkpoint)
-          print(f"posted the review of {message_id} to PR {pr}, then V and K to Issue #1")
-          PY
+          set -euo pipefail
+          args=(--repo "$GITHUB_REPOSITORY" --pr "$TRANSPORT_PR" --trusted-author "$TRUSTED_AUTHOR"
+                publish --comment-id "$COMMENT_ID" --digest "$DIGEST")
+          if [ "$MODE" = "review" ]; then
+            printf '%s' "$FINAL_MESSAGE" > "$RUNNER_TEMP/decision.json"
+            args+=(--decision-file "$RUNNER_TEMP/decision.json")
+          fi
+          if [ -n "$MEASURED_HEAD" ]; then args+=(--measured-head "$MEASURED_HEAD"); fi
+          if [ -n "$SELFTEST_EXIT" ]; then args+=(--selftest-exit "$SELFTEST_EXIT"); fi
+          python3 -m agent_bus.publisher "${args[@]}"
