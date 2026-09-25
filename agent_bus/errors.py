@@ -117,6 +117,8 @@ TXN_RACE_LOST = "BUS_TXN_RACE_LOST"
 TXN_SUPERSEDED = "BUS_TXN_SUPERSEDED"
 # A resume was asked for, but nothing durable says what was decided.
 TXN_NO_DECISION = "BUS_TXN_NO_DECISION"
+# A Captain goal plan comment does not parse as a plan. It binds nothing.
+GOAL_PLAN_INVALID = "BUS_GOAL_PLAN_INVALID"
 # A workflow file breaks the Manager wake's static permission/secret/pin law.
 WORKFLOW_POLICY = "BUS_WORKFLOW_POLICY"
 

@@ -125,6 +125,11 @@ inspect, using a read-only token:
 That run is the independent green run. The Worker's `validation` lines are only
 what the Worker says.
 
+The wave's OWN required checks are the ones its goal plan names (section 6).
+`python3 -m agent_bus.goal run-checks` runs them on a checkout of the result head
+and records the head git reports and every exit code. That evidence, not the
+bus selftest alone, is what ACCEPT needs.
+
 ## 5. Decide once; the records are derived
 
 **The model's whole answer is one decision.** Its final message is a JSON object
@@ -148,8 +153,8 @@ derived from the checkpoint it cites and its comment id. The writes, in order:
 2. **`V` on Issue #1**: the durable verdict, in the publisher's exact form.
 3. **`K` on Issue #1**: the one commit point. The accepted head moves here and
    nowhere else.
-4. **The successor `WAVE_COMMAND` on PR 76**: for `REPAIR` only, and only after
-   the commit.
+4. **The successor `WAVE_COMMAND` on PR 76**: only the one the `K` names, and
+   only after the commit — a REPAIR's re-issue, or the goal plan's next wave.
 
 A verdict posted only on PR 76 has changed nothing.
 
@@ -158,13 +163,22 @@ not model output:
 
 | verdict | `h` | `a` | successor |
 | --- | --- | --- | --- |
-| ACCEPT | the result head. The result must be status P, every unit DONE, and that head independently tested green. | 0 | none |
+| ACCEPT | the result head. The result must be status P, every unit DONE, that head independently tested green, and independent evidence that every check the plan requires passed on that same head. | the task of the plan's `next` wave; 0 if this wave is the plan's terminal | the plan's `next` wave, exactly as planned, as `mgr-next-<txn>`; none at the terminal |
 | REPAIR | unchanged | unchanged | exactly the origin command's units, branch and review boundary again, built on the result head, as `<origin wave>.AR<n>` |
 | CAPTAIN | unchanged | 0 | none |
 
-After 3 consecutive autonomous repairs, a REPAIR is recorded as CAPTAIN with
-`override: REPAIR_BUDGET_EXHAUSTED`. A `CAPTAIN_REQUIRED` from the Worker can
-only be answered CAPTAIN by this path.
+After the goal plan's `repair_budget` of consecutive autonomous repairs of one
+planned wave, a REPAIR is recorded as CAPTAIN with `override:
+REPAIR_BUDGET_EXHAUSTED`. When the origin command is bound to no live goal plan,
+an ACCEPT or a REPAIR is recorded as CAPTAIN with `override: GOAL_PLAN_UNBOUND`:
+with no plan there is no budget, successor or check to read. A
+`CAPTAIN_REQUIRED` from the Worker can only be answered CAPTAIN by this path.
+
+An ACCEPT whose check evidence is missing, is for another plan, wave or head,
+names other checks than the plan's, or has any check red is refused before any
+write (BUS_TRANSITION_REFUSED). The publisher takes the evidence with
+`--validation-file`; the workflow at this candidate does not produce it yet, so
+an ACCEPT through it is refused.
 
 **Before every write** the publisher reads everything again. The write happens
 only if all of these still hold:
@@ -180,17 +194,43 @@ commit, 5 after it).
 **A rerun finishes what a run started.** It re-derives the same transaction and
 requires every record already present to be exactly its own
 (BUS_TXN_CONFLICT otherwise). Then it writes only what is missing. Once a
-publisher review exists, the decision is fixed, so a resumed run never asks the
-model again and cannot contradict what is already written.
+publisher review exists, the decision and the check evidence are fixed, so a
+resumed run never asks the model or re-judges the checks, and cannot contradict
+what is already written.
 
-## 6. Authorizing more work
+## 6. Authorizing more work: the Captain goal plan
 
-The publisher selects work in exactly one way: the REPAIR successor above, a
-repetition of the origin command that the task already authorized. It never
-selects a new task, never creates a Captain decision, and never widens scope. A
-`CAPTAIN` verdict selects nothing. Any other successor still needs the live
-authority to permit it: a `K` that selects it, and a Captain decision where the
-work touches any of:
+The publisher selects work in exactly two ways, both already authorized:
+- the REPAIR successor above, a repetition of the origin command;
+- the ACCEPT successor: the next wave of the Captain goal plan the accepted wave
+  is bound to.
+
+**A goal plan** is an Issue #1 comment by a trusted speaker that opens with one
+` ```mtj-goal ` JSON block (`agent_bus.goal`; lint one with `python3 -m
+agent_bus.goal check-plan FILE`). It has exactly `schema` (`mtj-goal/1`),
+`goal`, `captain_decision` (an earlier trusted Issue #1 comment), `repair_budget`,
+`terminal`, and `waves`. Each wave names its `wave` id, its `task` comment, its
+exact `command` (branch, units, review boundary, stop conditions), its required
+`validation` checks (`id` and `argv`), and `next`: the one wave its ACCEPT
+continues to, or null. Exactly the `terminal` wave has a null `next`, and every
+path of `next` edges ends there.
+
+**A command is bound** only when its body names the plan (`goal: {plan,
+digest}`, the digest being the plan comment's sha-256) and it is exactly the
+planned wave: the same wave id, task and command. A plan edited after binding,
+a plan without an earlier trusted Captain decision, or a command that differs in
+anything binds nothing.
+
+**Nothing else creates an edge.** Not the model (it has no field for one), not
+the Worker (`next` must be NONE), not a queued task's prose on Issue #1, and not
+a task id a comment mentions. The planned successor carries the plan reference
+itself, so it binds, and the goal continues without a human `K` until its
+terminal wave is accepted or a Captain boundary is reached.
+
+The publisher never selects a task outside the bound plan, never creates a
+Captain decision, and never widens scope. A `CAPTAIN` verdict selects nothing.
+Any other successor still needs the live authority to permit it: a `K` that
+selects it, and a Captain decision where the work touches any of:
 - semantics, scoring or vocabulary;
 - the codebook or AQ4;
 - production behaviour;
@@ -204,7 +244,8 @@ relay a hash, a status or a pull request number that is already durable.
 **The publisher identity.** Comments posted with the workflow token are authored
 by `github-actions[bot]`. Under Captain decision 5821208878 that identity is a
 narrowly trusted Manager speaker. It is trusted **by role**, never as a speaker:
-- on PR 76, only the transaction's `WAVE_REVIEW` and its REPAIR successor;
+- on PR 76, only the transaction's `WAVE_REVIEW` and the one successor its `K`
+  names;
 - on Issue #1, only a `V` and a `K`.
 
 Each of those counts only when it is byte-for-byte what `agent_bus.transition`

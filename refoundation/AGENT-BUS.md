@@ -105,7 +105,8 @@ current?" is not the same question as "may this person command a Worker".
   - the review of one transaction;
   - that transaction's `V`;
   - its `K`;
-  - its REPAIR successor.
+  - the one successor that `K` names: a REPAIR's re-issue, or the next wave of
+    the Captain goal plan the accepted wave is bound to.
 
   Each must be exactly what `agent_bus.transition` derives. Its `K` counts only
   as the exact next link after the `K` before it, so two racing publishers
@@ -221,8 +222,10 @@ comment it refuses ends with one stable code:
 
 The model returns one decision (`ACCEPT`, `REPAIR` or `CAPTAIN`, with short
 bounded text). `python3 -m agent_bus.publisher` builds and posts the
-`WAVE_REVIEW`, `V`, `K` and any REPAIR successor. Before every write it
-revalidates everything live, and a rerun resumes the same transaction.
+`WAVE_REVIEW`, `V`, `K` and the one successor the `K` names. Before every write
+it revalidates everything live, and a rerun resumes the same transaction. An
+ACCEPT needs independent evidence (`python3 -m agent_bus.goal run-checks`) that
+every check the wave's Captain goal plan requires passed on the result head.
 
 By hand, the Manager does the same:
 
@@ -251,8 +254,10 @@ and no session memory to lose:
 - let a Worker move the accepted head. Only a `K` moves it: a trusted human's,
   or the publisher's exact ACCEPT transition to an independently tested head;
 - let a Worker select a successor (`next` is `NONE` and validation enforces it).
-  The publisher selects only the one REPAIR successor its transition derives,
-  and never a new task;
+  The publisher selects only the one successor its transition derives — a
+  REPAIR's re-issue, or the `next` wave of a Captain goal plan — and never a
+  task outside that plan. No model text, Worker result or task prose creates an
+  edge;
 - merge, or move `main`;
 - change Foundry semantics, codebook content or scoring constants;
 - carry a credential. No message holds one, and the only credential the Manager

@@ -36,7 +36,7 @@ from pathlib import Path
 
 from tests.refoundation.test_agent_bus_publisher import (
     ACCEPT, AUTHOR, BRANCH, CAPTAIN, H0, H1, H_OTHER, K0, PR, REPAIR, REPO, RESULT_COMMENT,
-    TASK, WAVE, Crash, FakeGitHub, abort_of, authority, body_of, human_k, publisher_k,
+    TASK, WAVE, Crash, FakeGitHub, abort_of, authority, body_of, green, human_k, publisher_k,
     result, two_results, worker_view,
 )
 
@@ -178,7 +178,9 @@ class TestTheWorkflowStatically(unittest.TestCase):
     def test_the_contract_names_only_real_codes_and_the_real_repair_budget(self):
         doc = TRIGGER_DOC.read_text(encoding="utf-8")
         self.assertEqual(sorted(set(re.findall(r"\bBUS_[A-Z_]+\b", doc)) - E.CODES), [])
-        self.assertIn(f"After {X.MAX_REPAIR_ROUNDS} consecutive autonomous repairs", doc)
+        # The budget is the Captain goal plan's, not a constant in Worker code.
+        self.assertIn("After the goal plan's `repair_budget` of consecutive autonomous", doc)
+        self.assertFalse(hasattr(X, "MAX_REPAIR_ROUNDS"))
         self.assertIn("python3 -m agent_bus.decision --schema", doc)
 
     def test_the_schema_handed_to_the_model_is_the_parsers(self):
@@ -256,11 +258,16 @@ def _outputs(path: str) -> dict:
 
 def run_workflow(fake: FakeGitHub, comment_id: int = RESULT_COMMENT, model=ACCEPT,
                  selftest: int = 0, before_publish=None, rerun_outputs: Run | None = None,
-                 tested_head: str | None = None) -> Run:
+                 tested_head: str | None = None, validation=None) -> Run:
     """One workflow run, job by job, through the real entry points.
 
     `rerun_outputs` replays "Re-run failed jobs": GitHub keeps the outputs of the
     jobs that succeeded and runs only publish again.
+
+    `validation` is `agent_bus.goal run-checks` evidence handed to publish as
+    `--validation-file`. The workflow at this candidate does not run that step
+    yet, so every run that models it as it stands passes None -- and cannot
+    ACCEPT (`test_the_workflow_as_it_stands_cannot_accept`).
     """
     run = Run()
     with tempfile.TemporaryDirectory() as tmp:
@@ -306,6 +313,11 @@ def run_workflow(fake: FakeGitHub, comment_id: int = RESULT_COMMENT, model=ACCEP
         if run.gate["measured_head"]:
             argv += ["--measured-head", run.gate["measured_head"]]
         argv += ["--selftest-exit", str(selftest)]
+        if validation is not None:
+            evidence = os.path.join(tmp, "validation.json")
+            with open(evidence, "w") as handle:
+                json.dump(validation.as_dict(), handle)
+            argv += ["--validation-file", evidence]
         with contextlib.redirect_stdout(io.StringIO()) as out:
             run.publish_exit = P.main(argv, run=fake)
         run.report = json.loads(out.getvalue())
@@ -329,7 +341,7 @@ class TestThePipeline(unittest.TestCase):
         second = run_workflow(fake, RESULT_COMMENT + 1)  # its event arrives first
         self.assertEqual((second.gate["wake"], second.gate["code"]), ("false", E.GATE_QUEUED))
         self.assertEqual(second.model_calls, 0)
-        first = run_workflow(fake, model=ACCEPT)
+        first = run_workflow(fake, model=REPAIR)
         self.assertEqual(first.publish_exit, 0)
         k = L.parse_record(publisher_k(fake)[0]["body"]).fields
         self.assertEqual(json.loads(k["unanswered"]), [RESULT_COMMENT + 1])
@@ -372,15 +384,32 @@ class TestThePipeline(unittest.TestCase):
         for name, (change, code) in hazards.items():
             with self.subTest(hazard=name):
                 fake = FakeGitHub()
-                run = run_workflow(fake, model=ACCEPT, before_publish=change)
+                run = run_workflow(fake, model=REPAIR, before_publish=change)
                 self.assertEqual((run.publish_exit, run.report["code"]), (P.EXIT_REFUSED, code))
                 self.assertEqual(fake.writes, [])
 
     def test_a_red_or_different_tested_head_cannot_be_accepted(self):
-        red = run_workflow(FakeGitHub(), model=ACCEPT, selftest=1)
+        red = run_workflow(FakeGitHub(), model=ACCEPT, selftest=1, validation=green())
         self.assertEqual(red.report["code"], E.TRANSITION_REFUSED)
-        other = run_workflow(FakeGitHub(), model=ACCEPT, tested_head=H_OTHER)
+        self.assertIn("selftest", red.report["detail"])
+        other = run_workflow(FakeGitHub(), model=ACCEPT, tested_head=H_OTHER,
+                             validation=green())
         self.assertEqual(other.report["code"], E.TRANSITION_REFUSED)
+        self.assertIn("independently tested head", other.report["detail"])
+
+    def test_the_workflow_as_it_stands_cannot_accept(self):
+        # No `--validation-file`: ACCEPT fails closed and nothing is written.
+        fake = FakeGitHub()
+        run = run_workflow(fake, model=ACCEPT)
+        self.assertEqual((run.publish_exit, run.report["code"]),
+                         (P.EXIT_REFUSED, E.TRANSITION_REFUSED))
+        self.assertIn("required checks", run.report["detail"])
+        self.assertEqual(fake.writes, [])
+        # The same run with the checks runner's evidence accepts, through the CLI.
+        fake = FakeGitHub()
+        run = run_workflow(fake, model=ACCEPT, validation=green())
+        self.assertEqual(run.publish_exit, 0, run.report)
+        self.assertEqual(authority(fake).authority.accepted_head, H1)
 
     def test_authority_moving_after_the_commit_stops_the_successor(self):
         fake = FakeGitHub()

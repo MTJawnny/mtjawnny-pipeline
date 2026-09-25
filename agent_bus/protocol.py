@@ -91,8 +91,9 @@ _BODY_SPEC: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # `candidate_base` is how a REPAIR wave says "build on this unaccepted commit"
     # without weakening `base`, which must stay equal to the accepted head so a
     # stale command is still detectable. Two different ideas, two different fields.
+    # `goal` binds the command to a Captain goal plan (`agent_bus.goal`).
     "WAVE_COMMAND": (("branch", "units", "review_boundary"),
-                     ("stop_conditions", "note", "candidate_base")),
+                     ("stop_conditions", "note", "candidate_base", "goal")),
     "WAVE_PROGRESS": (("unit", "status"), ("commit", "note")),
     "WAVE_RESULT": (
         ("status", "branch", "head", "units"),
@@ -100,8 +101,10 @@ _BODY_SPEC: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     ),
     # `transaction` and `decision` are how the publisher's review names the one
     # transaction it belongs to and the typed decision it carries, so a rerun
-    # can finish that transaction without asking the model again.
-    "WAVE_REVIEW": (("verdict",), ("accepted_head", "note", "transaction", "decision")),
+    # can finish that transaction without asking the model again. `validation`
+    # fixes the independent check evidence the same way.
+    "WAVE_REVIEW": (("verdict",), ("accepted_head", "note", "transaction", "decision",
+                                   "validation")),
     "CAPTAIN_REQUIRED": (("question",), ("options", "blocking", "note")),
     "WAVE_ABORT": (("reason",), ()),
 }
@@ -291,6 +294,9 @@ def _validate_body(kind: str, actor: str, body: Mapping[str, Any]) -> None:
         _require_str(body, "review_boundary", "body")
         _require_list_of_str(body, "stop_conditions", "body")
         _optional_sha(body, "candidate_base")
+        if "goal" in body:
+            from agent_bus.goal import validate_ref  # goal imports this module
+            validate_ref(body["goal"])
         units = body["units"]
         if not isinstance(units, list):
             raise BusError(E.BAD_TYPE, "body.units must be a list")
@@ -346,6 +352,9 @@ def _validate_body(kind: str, actor: str, body: Mapping[str, Any]) -> None:
             # Shape only. Whether the verdict follows from it (a REPAIR past the
             # repair budget is recorded as CAPTAIN) is transition law.
             decision_from_mapping(body["decision"])
+        if "validation" in body:
+            from agent_bus.goal import evidence_from_mapping  # goal imports this module
+            evidence_from_mapping(body["validation"])
 
     elif kind == "CAPTAIN_REQUIRED":
         _require_str(body, "question", "body")

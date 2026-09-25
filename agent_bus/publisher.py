@@ -7,7 +7,8 @@ The model decides; this module writes. Given an admitted Worker message and a
     1  WAVE_REVIEW   transport PR   prefix
     2  V             Issue #1       prefix
     3  K             Issue #1       COMMIT POINT -- authority moves here, once
-    4  WAVE_COMMAND  transport PR   REPAIR successor, only after the commit
+    4  WAVE_COMMAND  transport PR   the owed successor, only after the commit:
+                                    a REPAIR's re-issue, or an ACCEPT's planned next wave
 
 **Live revalidation.** Immediately before EVERY write the whole world is read
 again and every check in `PRE_COMMIT` (or `POST_COMMIT`) runs against it: the
@@ -20,10 +21,11 @@ the answer to that read, never on an earlier one.
 transaction id is derived, so a rerun finds its own earlier records; each record
 already present must be EXACTLY what this run would write (else
 `BUS_TXN_CONFLICT`, and nothing more is written); each missing one is written.
-Before the commit, a durable review fixes the decision, so a rerun never needs
-the model again and can never contradict it. After the commit, only the
-successor can be missing, and it is posted only while the committed K is still
-the live authority.
+Before the commit, a durable review fixes the decision and the check evidence,
+so a rerun never needs the model or the checks again and can never contradict
+them. After the commit, only the successor can be missing, and it is posted only
+while the committed K is still the live authority -- exactly as the chain
+derives it.
 
 **Untrusted records are data.** A review, verdict or checkpoint that claims this
 transaction or answers this message, from anyone the role law does not allow,
@@ -41,19 +43,22 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
+import dataclasses
+
 from agent_bus import compose
 from agent_bus import decision as decision_module
 from agent_bus import errors as E
-from agent_bus import ledger
+from agent_bus import goal, ledger
 from agent_bus.decision import Decision
 from agent_bus.errors import BusError
+from agent_bus.goal import Binding, Evidence
 from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
 from agent_bus.machine import ACCEPTED, BusState, RawComment, fold
 from agent_bus.protocol import Envelope, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.transition import (
-    NONE, Prior, Subject, Transition, build, command_id, digest, lineage, review_id,
-    same_message, successor_command, txn_id,
+    NONE, Prior, Subject, Transition, build, command_id, digest, lineage, next_id,
+    resolve_origin, review_id, same_message, txn_id,
 )
 from agent_bus.trust import Trust
 
@@ -151,7 +156,8 @@ def find_records(world: World, target: Target, txn: str, message_id: str) -> Rec
             continue
         answers = env.kind == "WAVE_REVIEW" and (
             env.parent == message_id or env.message_id == review_id(txn))
-        commands = env.kind == "WAVE_COMMAND" and env.message_id == command_id(txn)
+        commands = env.kind == "WAVE_COMMAND" and env.message_id in (command_id(txn),
+                                                                     next_id(txn))
         if not (answers or commands):
             continue
         if trust.is_publisher(c.author) and answers and env.message_id == review_id(txn) \
@@ -209,6 +215,7 @@ class Txn:
     clock: Callable | None = None
     measured_head: str | None = None
     selftest_exit: int | None = None
+    validation: Evidence | None = None
     subject: Subject | None = None
     tid: str | None = None
     transition: Transition | None = None
@@ -335,6 +342,36 @@ def _origin(world: World, target: Target, message_id: str) -> Envelope | None:
     return None
 
 
+def _evidence_of(records: Records, supplied: Evidence | None) -> Evidence | None:
+    """A durable review fixes the evidence too: a rerun never re-judges the checks."""
+    if not records.reviews:
+        return supplied
+    raw = records.reviews[0][1].body.get("validation")
+    return goal.evidence_from_mapping(raw) if raw is not None else None
+
+
+def _binding(world: World, target: Target, prior: Prior,
+             subject: Subject) -> tuple[Envelope | None, Binding | None, str]:
+    """The origin command this message answers, and the goal plan it is bound to."""
+    origin_id, _ = lineage(prior, subject)
+    origin = resolve_origin(prior, origin_id, lambda mid: _origin(world, target, mid))
+    binding, why = goal.bind(origin, world.issue_comments, target.trust)
+    return origin, binding, why
+
+
+def binding_for(target: Target, comment_id: int, run: Runner | None = None):
+    """(binding, why) for a Worker message, read live: what the checks runner runs."""
+    run = run or Runner()
+    world = observe(target, run)
+    live = _subject_comment(world, Txn(target, comment_id, "", run))
+    env = _envelope(live) if live is not None else None
+    if env is None or env.actor != "WORKER" or not target.trust.trusts(live.author):
+        raise BusError(E.GATE_COMMENT_MISMATCH, f"comment {comment_id} is not a Worker message")
+    prior = world.resolution.lineage
+    _, binding, why = _binding(world, target, prior, Subject(comment_id, "", env))
+    return binding, why
+
+
 def _decision_of(records: Records, supplied: Decision | None, txn: Txn) -> Decision:
     """A durable review fixes the decision. Otherwise the supplied one, or nothing."""
     durable = {json.dumps(env.body["decision"], sort_keys=True) for _, env in records.reviews}
@@ -354,9 +391,10 @@ def _decision_of(records: Records, supplied: Decision | None, txn: Txn) -> Decis
 
 def publish(target: Target, comment_id: int, body_digest: str, supplied: Decision | None,
             run: Runner, measured_head: str | None = None, selftest_exit: int | None = None,
-            clock: Callable | None = None) -> dict:
+            clock: Callable | None = None, validation: Evidence | None = None) -> dict:
     """Drive one transaction to completion, or stop at the first unsafe step."""
-    txn = Txn(target, comment_id, body_digest, run, clock, measured_head, selftest_exit)
+    txn = Txn(target, comment_id, body_digest, run, clock, measured_head, selftest_exit,
+              validation)
     report: dict = {"comment_id": comment_id, "writes": txn.writes, "notes": txn.notes}
     try:
         report.update(_publish(txn, supplied))
@@ -397,14 +435,17 @@ def _publish(txn: Txn, supplied: Decision | None) -> dict:
                    f"{env.authority['checkpoint']}")
     decision = _decision_of(records, supplied, txn)
     try:
-        origin_id = _lineage_origin(prior, txn.subject)
+        origin, binding, why = _binding(world, target, prior, txn.subject)
         transition = build(prior, txn.subject, decision, transport_pr=target.transport_pr,
-                           origin=_origin(world, target, origin_id) if origin_id else None,
+                           origin=origin, binding=binding,
+                           evidence=_evidence_of(records, txn.validation),
                            measured_head=txn.measured_head, selftest_exit=txn.selftest_exit)
     except BusError as exc:
         raise Stop(EXIT_REFUSED, exc.code, exc.detail)
     txn.transition = transition
     out["verdict"] = transition.letter
+    if binding is None:
+        txn.notes.append(f"no goal plan binds this wave: {why}")
 
     # Every record already present must be exactly this transaction's.
     review = transition.review(compose.stamp(txn.clock))
@@ -445,16 +486,11 @@ def _publish(txn: Txn, supplied: Decision | None) -> dict:
     return {**out, **_after_commit(txn, world, committed[0], records)}
 
 
-def _lineage_origin(prior: Prior, subject: Subject) -> str | None:
-    origin, _ = lineage(prior, subject)
-    return None if origin == NONE else origin
-
-
 def _after_commit(txn: Txn, world: World, checkpoint: RawComment, records: Records) -> dict:
-    """The commit happened. Only the REPAIR successor can still be owed."""
+    """The commit happened. Only the successor it names can still be owed."""
     fields = ledger.parse_record(checkpoint.body).fields
     out = {"committed": checkpoint.comment_id, "verdict": fields["verdict"]}
-    if fields["verdict"] != "R":
+    if fields["successor_command"] == NONE:
         return {**out, "state": "COMPLETE"}
     live = world.authority.publisher is not None and \
         world.authority.publisher.get("transaction") == txn.tid
@@ -469,13 +505,13 @@ def _after_commit(txn: Txn, world: World, checkpoint: RawComment, records: Recor
                    f"command(s) {[c.comment_id for c, _ in records.commands]} carry this "
                    "transaction's id but are not its successor")
     world = _revalidate(txn, POST_COMMIT, "successor")
-    origin = _origin(world, txn.target, fields["origin_command"])
-    successor = successor_command(
-        origin=origin, issue=txn.target.issue, checkpoint=checkpoint.comment_id,
-        task=int(fields["a"]), head=fields["h"], result_head=fields["result_head"],
-        repair_round=int(fields["repair_round"]),
-        verdict_comment=int(fields["latest_manager_verdict"]), txn=fields["transaction"],
-        created_at=compose.stamp(txn.clock))
+    # Exactly the command the live chain derives -- the same object every reader
+    # will compare the posted one against.
+    derived = world.authority.successor
+    if derived is None or derived.message_id != fields["successor_command"]:
+        raise Stop(EXIT_AFTER_COMMIT, E.TXN_CONFLICT,
+                   f"the live checkpoint does not derive {fields['successor_command']}")
+    successor = dataclasses.replace(derived, created_at=compose.stamp(txn.clock))
     _write(txn, txn.target.transport_pr, successor.render(), "WAVE_COMMAND")
     world = observe(txn.target, txn.run)
     record = world.state.record_of(successor.message_id)
@@ -517,6 +553,8 @@ def main(argv: Sequence[str] | None = None, run: Runner | None = None) -> int:
                        help="the model's decision; omit to resume from durable state")
     p_pub.add_argument("--measured-head", default=None)
     p_pub.add_argument("--selftest-exit", type=int, default=None)
+    p_pub.add_argument("--validation-file", default=None,
+                       help="`agent_bus.goal run-checks` evidence for the result head")
     args = parser.parse_args(argv)
     run = run or Runner()
     target = Target(args.repo, args.issue, args.pr,
@@ -529,9 +567,13 @@ def main(argv: Sequence[str] | None = None, run: Runner | None = None) -> int:
         if args.decision_file:
             with open(args.decision_file, encoding="utf-8") as handle:
                 supplied = decision_module.parse(handle.read())
+        validation = None
+        if args.validation_file:
+            with open(args.validation_file, encoding="utf-8") as handle:
+                validation = goal.evidence_from_mapping(json.load(handle))
         report = publish(target, args.comment_id, args.digest, supplied, run,
                          measured_head=args.measured_head or None,
-                         selftest_exit=args.selftest_exit)
+                         selftest_exit=args.selftest_exit, validation=validation)
     except BusError as exc:
         print(json.dumps({"exit": EXIT_BAD_INPUT, "code": exc.code, "detail": exc.detail},
                          indent=2, sort_keys=True))

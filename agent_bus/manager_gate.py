@@ -237,7 +237,7 @@ def check_transaction(ctx: Context) -> None:
     if committed:
         fields = parse_record(committed[0].body).fields
         live = (world.authority.publisher or {}).get("transaction") == tid
-        if fields["verdict"] == "R" and not records.commands and live:
+        if fields["successor_command"] != "NONE" and not records.commands and live:
             ctx.mode, ctx.committed = "resume", True
             return
         raise BusError(E.GATE_ALREADY_HANDLED,

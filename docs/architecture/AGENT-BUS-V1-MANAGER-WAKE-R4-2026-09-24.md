@@ -32,13 +32,14 @@ AP1 code and the AP2 contract, so a woken model reads the R4 contract, not R3's.
 | identity | Issue #1 | PR 76 |
 | --- | --- | --- |
 | trusted speaker (`MTJawnny`, operator-configured) | any checkpoint is a `K` | any bus message its actor may speak |
-| `github-actions[bot]` (`trust.PUBLISHER`) | `mtj-verdict/0` and `mtj-checkpoint/2`, **only** in the publisher's exact rendered form. A `K` counts only as the exact next link: it names the `K` before it as `prior_checkpoint`, and it is what `transition` derives from that `K`, the Worker message it binds to, and its `V`. | `MANAGER` `WAVE_REVIEW` with id `mgr-review-<txn>`, and `MANAGER` `WAVE_COMMAND` with id `mgr-repair-<txn>`, exactly the successor the live publisher `K` derives. Nothing else (`trust.PUBLISHER_ROLES`). |
+| `github-actions[bot]` (`trust.PUBLISHER`) | `mtj-verdict/0` and `mtj-checkpoint/2`, **only** in the publisher's exact rendered form. A `K` counts only as the exact next link: it names the `K` before it as `prior_checkpoint`, and it is what `transition` derives from that `K`, the Worker message it binds to, and its `V`. | `MANAGER` `WAVE_REVIEW` with id `mgr-review-<txn>`, and `MANAGER` `WAVE_COMMAND` with id `mgr-repair-<txn>` (or, since R4.R2 AC1, `mgr-next-<txn>`), exactly the successor the live publisher `K` derives. Nothing else (`trust.PUBLISHER_ROLES`). |
 | anyone else | reported as an untrusted candidate, never a `K` | reported, never counted as handled |
 
 The bot cannot be declared a speaker (`BUS_TRUST_NOT_CONFIGURED`). Its login is
 compared exactly, never case-folded. It can never:
 - write a WORKER or CAPTAIN message, an abort, a task, or a Captain decision;
-- set `a` to anything but the prior `a` or 0.
+- set `a` to anything but the prior `a`, 0, or (since R4.R2 AC1) the task of the
+  bound Captain goal plan's `next` wave.
 
 ## 3. Transaction states
 
@@ -190,6 +191,11 @@ armed local Worker installed it on this machine.
 - no change to `main`.
 
 ## 7. Decisions this candidate makes that need ratifying
+
+Superseded in part by R4.R2 AC1
+(`docs/architecture/AGENT-BUS-V1-MANAGER-WAKE-R4R2-AC1-2026-09-25.md`): the repair
+budget and the ACCEPT successor now come from the Captain goal plan, and ACCEPT
+needs the plan's checks. The bullets below record R4.R1 as built.
 
 - `MAX_REPAIR_ROUNDS = 3`. After three consecutive autonomous repairs of one
   origin command, REPAIR is recorded as CAPTAIN.

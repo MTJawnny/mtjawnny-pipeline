@@ -18,7 +18,7 @@ from typing import Iterable, Mapping, Sequence
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.protocol import Envelope, parse_comment
-from agent_bus.transition import review_id, same_message, successor_command, txn_id
+from agent_bus.transition import review_id, same_message, txn_id
 from agent_bus.trust import PUBLISHER_ROLES, Trust
 from agent_bus.wave import WavePlan, plan_from_command, remaining_after
 
@@ -38,6 +38,9 @@ class Authority:
     # The K's own fields when the PUBLISHER wrote it (already validated as the
     # exact next link of the chain); None when a trusted human did.
     publisher: Mapping[str, str] | None = field(default=None, compare=False)
+    # The one command that publisher K owes -- a REPAIR's or the goal plan's next
+    # wave -- exactly as the chain derived it. None when nothing is owed.
+    successor: Envelope | None = field(default=None, compare=False)
 
     def as_dict(self) -> dict:
         out = {
@@ -451,7 +454,8 @@ def _publisher_role(envelope: Envelope, comment: RawComment, state: BusState,
     A review is the prefix of the transaction for the message it answers, so its
     id must be that transaction's review id. A command exists only as the ONE
     successor of the publisher checkpoint that is the live authority, and must be
-    exactly the command that checkpoint's transition derives. Anything else the
+    exactly the command that checkpoint's transition derives (`Authority.successor`:
+    a REPAIR's re-issue, or the goal plan's next wave). Anything else the
     identity says -- another kind, actor, surface, id or body -- is refused like
     a stranger's comment.
     """
@@ -475,24 +479,10 @@ def _publisher_role(envelope: Envelope, comment: RawComment, state: BusState,
         return None
     if envelope.kind != "WAVE_COMMAND":
         return None
-    pub = authority.publisher
-    if pub is None or pub["verdict"] != "R" or envelope.message_id != pub["successor_command"]:
+    expected = authority.successor
+    if authority.publisher is None or expected is None \
+            or envelope.message_id != expected.message_id:
         return refused("a command must be the successor the live publisher checkpoint names")
-    origin = next((r.envelope for r in state.records
-                   if r.envelope is not None and trust.trusts(r.author)
-                   and r.envelope.kind == "WAVE_COMMAND"
-                   and r.envelope.message_id == pub["origin_command"]), None)
-    if origin is None:
-        return refused(f"origin command {pub['origin_command']} is not on the bus")
-    try:
-        expected = successor_command(
-            origin=origin, issue=authority.issue, checkpoint=authority.checkpoint,
-            task=authority.task, head=authority.accepted_head,
-            result_head=pub["result_head"], repair_round=int(pub["repair_round"]),
-            verdict_comment=int(pub["latest_manager_verdict"]), txn=pub["transaction"],
-            created_at=envelope.created_at)
-    except BusError as exc:
-        return refused(exc.detail)
     if not same_message(expected, envelope):
         return refused("the command is not the successor the checkpoint derives")
     return None

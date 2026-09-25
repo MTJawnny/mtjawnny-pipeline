@@ -167,7 +167,7 @@ VERDICT_KEYS = (
     "recorded_by", "transaction", "task_comment", "selecting_checkpoint",
     "transport_pr", "result_comment", "result_message", "result_digest", "wave",
     "verdict", "candidate_head", "accepted_head", "next_accepted_head",
-    "next_active_task", "review_message", "override", "decision",
+    "next_active_task", "review_message", "override", "goal_plan", "validation", "decision",
 )
 CHECKPOINT_KEYS = (
     "h", "a", "accepted_head", "active_task", "recorded_by", "transaction",

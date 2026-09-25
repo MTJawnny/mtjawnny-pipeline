@@ -26,7 +26,7 @@ import json
 from dataclasses import dataclass
 from typing import Sequence
 
-from agent_bus import ledger
+from agent_bus import goal, ledger
 from agent_bus.errors import BusError
 from agent_bus.machine import Authority, RawComment
 from agent_bus.protocol import Envelope, parse_comment
@@ -220,7 +220,8 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
         try:
             lineage = validate_publisher_checkpoint(
                 Found(c.comment_id, c.author, c.body), prior, transport_pr=transport_pr,
-                subject_of=lookup.subject, origin_of=lookup.origin, verdict_of=lookup.verdict)
+                subject_of=lookup.subject, origin_of=lookup.origin, verdict_of=lookup.verdict,
+                plan_of=lambda origin: goal.bind(origin, comments, trust)[0])
         except BusError as exc:
             refused.append((c.comment_id, c.author, exc.detail))
             continue
@@ -243,7 +244,8 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
     return Resolution(
         authority=Authority(issue=issue, checkpoint=current.comment_id,
                             task=lineage.active, accepted_head=lineage.head,
-                            publisher=publisher_fields),
+                            publisher=publisher_fields,
+                            successor=lineage.successor if publisher_fields else None),
         checkpoint_author=current.author,
         untrusted_candidates=tuple(untrusted),
         refused_candidates=tuple(refused),

@@ -10,20 +10,29 @@ every rerun of the same transaction names the same records:
     WAVE_REVIEW   PR     `mgr-review-<txn>`       prefix, not authority
     V             issue  `transaction: <txn>`     prefix, not authority
     K             issue  `transaction: <txn>`     THE COMMIT POINT
-    WAVE_COMMAND  PR     `mgr-repair-<txn>`       REPAIR only, after the commit
+    WAVE_COMMAND  PR     `mgr-repair-<txn>`       REPAIR successor, after the commit
+    WAVE_COMMAND  PR     `mgr-next-<txn>`         planned successor, after the commit
 
-**What a verdict may do.** Nothing here reads a head, a task or a successor
-from the model; each is derived from the prior checkpoint and the Worker's
-message:
+**What a verdict may do.** Nothing here reads a head, a task, a budget or a
+successor from the model or the Worker. Each comes from the prior checkpoint, the
+Worker's message, and the Captain goal plan the origin command is bound to
+(`agent_bus.goal`):
 
-    ACCEPT   h -> the result head (status P, every unit DONE, head independently
-             tested), a -> 0. No successor.
+    ACCEPT   h -> the result head. Needs status P, every unit DONE, the head
+             independently tested green, AND independent evidence that every
+             check the plan requires for this wave passed on that same head.
+             a -> the task of the plan's `next` wave, whose exact command is the
+             one successor; or a -> 0 when this wave is the plan's terminal.
     REPAIR   h unchanged, a unchanged, and exactly one successor: the SAME units,
-             branch and review boundary as the Captain-rooted origin command, built
-             on the result head as `<origin wave>.AR<n>`. After
-             `MAX_REPAIR_ROUNDS` consecutive autonomous repairs, a REPAIR is
-             recorded as CAPTAIN with `override: REPAIR_BUDGET_EXHAUSTED`.
+             branch and review boundary as the origin command, built on the result
+             head as `<origin wave>.AR<n>`. Past the plan's `repair_budget`, a
+             REPAIR is recorded as CAPTAIN with `override: REPAIR_BUDGET_EXHAUSTED`.
     CAPTAIN  h unchanged, a -> 0. Autonomy stops; nothing is selected.
+
+**No plan, no autonomy.** When the origin command is not bound to a live
+Captain goal plan, there is no budget, no successor and no required checks to
+read, so an ACCEPT or a REPAIR is recorded as CAPTAIN with `override:
+GOAL_PLAN_UNBOUND`. Missing or malformed policy fails closed to the Captain.
 
 A publisher record is trusted only if it is byte-for-byte what `Transition`
 renders from the same inputs. That is the whole of the machine identity's role:
@@ -40,8 +49,10 @@ from typing import Callable
 
 from agent_bus import SCHEMA
 from agent_bus import errors as E
+from agent_bus import goal
 from agent_bus.decision import Decision, from_mapping
 from agent_bus.errors import BusError
+from agent_bus.goal import Binding, Evidence
 from agent_bus.ledger import (
     CHECKPOINT_KEYS, VERDICT, VERDICT_KEYS, LedgerError, Record, parse_record,
     render_checkpoint, render_verdict,
@@ -49,13 +60,16 @@ from agent_bus.ledger import (
 from agent_bus.protocol import WAVE_RE, Envelope
 
 RECORDED_BY = "agent-bus-publisher"
-MAX_REPAIR_ROUNDS = 3
 LETTER = {"ACCEPT": "A", "REPAIR": "R", "CAPTAIN": "C"}
 WORD = {v: k for k, v in LETTER.items()}
-NEXT = {"A": "NO_ACTIVE_TASK", "R": "WORKER_EXECUTE_REPAIR", "C": "CAPTAIN_REQUIRED"}
+NEXT = {"R": "WORKER_EXECUTE_REPAIR", "C": "CAPTAIN_REQUIRED"}
+NEXT_SUCCESSOR, NEXT_COMPLETE = "WORKER_EXECUTE_SUCCESSOR", "GOAL_COMPLETE"
 NONE = "NONE"
 BUDGET_EXHAUSTED = "REPAIR_BUDGET_EXHAUSTED"
+PLAN_UNBOUND = "GOAL_PLAN_UNBOUND"
 MANAGER_ANSWERS = ("WAVE_RESULT", "CAPTAIN_REQUIRED")
+# A derived successor is compared with `same_message`, which ignores the send time.
+UNSENT = "1970-01-01T00:00:00Z"
 
 
 def txn_id(checkpoint: int, result_comment: int) -> str:
@@ -70,6 +84,10 @@ def command_id(txn: str) -> str:
     return f"mgr-repair-{txn}"
 
 
+def next_id(txn: str) -> str:
+    return f"mgr-next-{txn}"
+
+
 def digest(body: str) -> str:
     return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
@@ -80,15 +98,20 @@ def refuse(detail: str) -> BusError:
 
 @dataclass(frozen=True)
 class Prior:
-    """The checkpoint a transition starts from, and the repair lineage it carries."""
+    """The checkpoint a transition starts from, and the lineage it carries."""
 
     issue: int
     checkpoint: int
     head: str
     active: int
-    origin_command: str | None = None  # set only after a publisher REPAIR
+    origin_command: str | None = None  # set only after a publisher REPAIR or planned ACCEPT
     repair_round: int = 0
     successor_command: str | None = None
+    # The origin and successor commands themselves, as the chain derived them.
+    # A planned successor is a publisher command, so it can be the origin of the
+    # next lineage only as derived here -- never by looking its id up.
+    origin: Envelope | None = None
+    successor: Envelope | None = None
 
 
 @dataclass(frozen=True)
@@ -114,6 +137,16 @@ def lineage(prior: Prior, subject: Subject) -> tuple[str, int]:
     return parent, 0
 
 
+def resolve_origin(prior: Prior, origin_id: str,
+                   lookup: Callable[[str], Envelope | None]) -> Envelope | None:
+    """The origin as the chain derived it, else a trusted speaker's command by id."""
+    if origin_id == NONE:
+        return None
+    if prior.origin is not None and prior.origin.message_id == origin_id:
+        return prior.origin
+    return lookup(origin_id)
+
+
 @dataclass(frozen=True)
 class Transition:
     txn: str
@@ -127,15 +160,28 @@ class Transition:
     origin: str
     repair_round: int
     transport_pr: int
+    origin_env: Envelope | None = None
+    binding: Binding | None = None
+    evidence: Evidence | None = None
 
     @property
     def successor_id(self) -> str:
-        return command_id(self.txn) if self.letter == "R" else NONE
+        if self.letter == "R":
+            return command_id(self.txn)
+        if self.letter == "A" and self.binding is not None and self.binding.successor:
+            return next_id(self.txn)
+        return NONE
 
     @property
     def result_head(self) -> str:
         env = self.subject.envelope
         return env.body["head"] if env.kind == "WAVE_RESULT" else NONE
+
+    @property
+    def next(self) -> str:
+        if self.letter == "A":
+            return NEXT_SUCCESSOR if self.successor_id != NONE else NEXT_COMPLETE
+        return NEXT[self.letter]
 
     # ------------------------------------------------------------- the records
     def review(self, created_at: str) -> Envelope:
@@ -144,6 +190,8 @@ class Transition:
                       "decision": self.decision.as_dict()}
         if self.letter == "A":
             body["accepted_head"] = self.head
+        if self.evidence is not None:
+            body["validation"] = self.evidence.as_dict()
         return Envelope(schema=SCHEMA, message_id=review_id(self.txn), actor="MANAGER",
                         kind="WAVE_REVIEW", wave=env.wave, parent=env.message_id,
                         authority=dict(env.authority), base=self.prior.head,
@@ -159,7 +207,10 @@ class Transition:
             "wave": env.wave, "verdict": self.letter, "candidate_head": self.result_head,
             "accepted_head": self.prior.head, "next_accepted_head": self.head,
             "next_active_task": self.active, "review_message": review_id(self.txn),
-            "override": self.override, "decision": self.decision.as_dict(),
+            "override": self.override,
+            "goal_plan": self.binding.comment_id if self.binding else NONE,
+            "validation": self.evidence.as_dict() if self.evidence else NONE,
+            "decision": self.decision.as_dict(),
         }
 
     def verdict_body(self) -> str:
@@ -176,21 +227,42 @@ class Transition:
             "result_message": env.message_id, "result_head": self.result_head,
             "origin_command": self.origin, "repair_round": self.repair_round,
             "successor_command": self.successor_id, "unanswered": sorted(unanswered),
-            "next": NEXT[self.letter],
+            "next": self.next,
         }
 
     def checkpoint_body(self, verdict_comment: int, unanswered=()) -> str:
         return render_checkpoint(self.checkpoint_fields(verdict_comment, unanswered))
 
-    def successor(self, origin: Envelope, checkpoint: int, verdict_comment: int,
-                  created_at: str) -> Envelope | None:
-        if self.letter != "R":
+    def successor(self, checkpoint: int, verdict_comment: int,
+                  created_at: str = UNSENT) -> Envelope | None:
+        """The one command the checkpoint `checkpoint` owes, or None."""
+        if self.successor_id == NONE:
             return None
-        return successor_command(origin=origin, issue=self.prior.issue, checkpoint=checkpoint,
-                                 task=self.active, head=self.head,
-                                 result_head=self.result_head, repair_round=self.repair_round,
-                                 verdict_comment=verdict_comment, txn=self.txn,
-                                 created_at=created_at)
+        if self.letter == "R":
+            return successor_command(origin=self.origin_env, issue=self.prior.issue,
+                                     checkpoint=checkpoint, task=self.active, head=self.head,
+                                     result_head=self.result_head,
+                                     repair_round=self.repair_round,
+                                     verdict_comment=verdict_comment, txn=self.txn,
+                                     created_at=created_at)
+        return goal.next_command(self.binding, message_id=self.successor_id,
+                                 issue=self.prior.issue, checkpoint=checkpoint,
+                                 head=self.head, created_at=created_at)
+
+    def after(self, checkpoint: int, verdict_comment: int) -> Prior:
+        """The Prior the committed checkpoint `checkpoint` establishes."""
+        successor = self.successor(checkpoint, verdict_comment)
+        if self.letter == "R":
+            return Prior(self.prior.issue, checkpoint, self.head, self.active,
+                         origin_command=self.origin, repair_round=self.repair_round,
+                         successor_command=self.successor_id, origin=self.origin_env,
+                         successor=successor)
+        if successor is not None:  # a planned ACCEPT: the successor starts a lineage
+            return Prior(self.prior.issue, checkpoint, self.head, self.active,
+                         origin_command=successor.message_id, repair_round=0,
+                         successor_command=successor.message_id, origin=successor,
+                         successor=successor)
+        return Prior(self.prior.issue, checkpoint, self.head, self.active)
 
 
 def repair_wave(origin_wave: str, repair_round: int) -> str:
@@ -214,6 +286,8 @@ def successor_command(*, origin: Envelope, issue: int, checkpoint: int, task: in
     }
     if "stop_conditions" in origin.body:
         body["stop_conditions"] = list(origin.body["stop_conditions"])
+    if "goal" in origin.body:
+        body["goal"] = dict(origin.body["goal"])
     return Envelope(schema=SCHEMA, message_id=command_id(txn), actor="MANAGER",
                     kind="WAVE_COMMAND", wave=repair_wave(origin.wave, repair_round),
                     parent=None, authority={"issue": issue, "checkpoint": checkpoint,
@@ -229,13 +303,18 @@ def same_message(a: Envelope, b: Envelope) -> bool:
 
 
 def build(prior: Prior, subject: Subject, decision: Decision, *, transport_pr: int,
-          origin: Envelope | None, measured_head: str | None = None,
+          origin: Envelope | None, binding: Binding | None = None,
+          evidence: Evidence | None = None, measured_head: str | None = None,
           selftest_exit: int | None = None, law_only: bool = False) -> Transition:
     """The only way a decision becomes a transition. Refuses rather than repairs.
 
+    `binding` is `goal.bind(origin, ...)`: the plan the origin command is exactly
+    one wave of, or None. `evidence` is the independent runner's measurement.
+
     `law_only` is for READERS re-deriving a durable record: they cannot re-run
     the independent test, so they skip exactly the two checks that need it and
-    nothing else. The publisher never sets it.
+    nothing else -- the recorded check evidence is still judged. The publisher
+    never sets it.
     """
     env = subject.envelope
     if env.actor != "WORKER" or env.kind not in MANAGER_ANSWERS:
@@ -254,17 +333,28 @@ def build(prior: Prior, subject: Subject, decision: Decision, *, transport_pr: i
                 or origin.actor != "MANAGER" or origin.authority["task"] != prior.active:
             raise refuse(f"origin command {origin_id} is not a Manager command of task "
                          f"{prior.active}")
+    if binding is not None and (origin is None or binding.entry.wave != origin.wave):
+        raise refuse("the goal binding is not the origin command's")
+    if binding is None or env.kind != "WAVE_RESULT":
+        evidence = None  # nothing it could be judged against; recorded as NONE
+    if evidence is not None:
+        goal.check_evidence(binding, evidence, env.body["head"])
 
     letter, override = LETTER[decision.verdict], NONE
     head, active, repair_round = prior.head, prior.active, spent
 
-    if letter == "A":
+    if letter in ("A", "R"):
         if env.kind != "WAVE_RESULT":
-            raise refuse("only a WAVE_RESULT can be accepted")
+            raise refuse("only a WAVE_RESULT can be accepted or repaired; it carries the head")
+        if origin is None:
+            raise refuse("an ACCEPT or REPAIR needs the origin command it answers")
+        if binding is None:
+            letter, override = "C", PLAN_UNBOUND
+
+    if letter == "A":
         if env.body["status"] != "P" or any(u["status"] != "DONE" for u in env.body["units"]):
             raise refuse("ACCEPT needs status P with every unit DONE")
-        if origin is None or {u["id"] for u in env.body["units"]} != \
-                {u["id"] for u in origin.body["units"]}:
+        if {u["id"] for u in env.body["units"]} != {u["id"] for u in origin.body["units"]}:
             raise refuse("ACCEPT needs the result to report exactly the commanded units")
         if not law_only:
             if measured_head != env.body["head"]:
@@ -272,24 +362,27 @@ def build(prior: Prior, subject: Subject, decision: Decision, *, transport_pr: i
                              f"tested head {measured_head}")
             if selftest_exit != 0:
                 raise refuse(f"ACCEPT needs a green independent selftest, got {selftest_exit}")
-        head, active = env.body["head"], 0
+        if evidence is None:
+            raise refuse("ACCEPT needs independent evidence of the plan's required checks "
+                         "on the result head")
+        if evidence.red:
+            raise refuse(f"ACCEPT needs every required check green; red: {evidence.red}")
+        nxt = binding.successor
+        head, active = env.body["head"], nxt.task if nxt is not None else 0
     elif letter == "R":
-        if env.kind != "WAVE_RESULT":
-            raise refuse("a REPAIR must answer a WAVE_RESULT; it builds on the result head")
-        if origin is None:
-            raise refuse("a REPAIR needs the origin command it repeats")
-        if spent + 1 > MAX_REPAIR_ROUNDS:
+        if spent + 1 > binding.plan.repair_budget:
             letter, override, active = "C", BUDGET_EXHAUSTED, 0
         else:
             repair_round = spent + 1
             repair_wave(origin.wave, repair_round)  # refuse now, not after the commit
-    else:
+    if letter == "C":
         active = 0
 
     return Transition(txn=txn_id(prior.checkpoint, subject.comment_id), prior=prior,
                       subject=subject, decision=decision, letter=letter, override=override,
                       head=head, active=active, origin=origin_id, repair_round=repair_round,
-                      transport_pr=transport_pr)
+                      transport_pr=transport_pr, origin_env=origin, binding=binding,
+                      evidence=evidence)
 
 
 # ------------------------------------------------------------------- reading back
@@ -317,11 +410,22 @@ def decision_of_verdict(record: Record) -> Decision:
         raise refuse(f"verdict decision field is not a decision: {exc}")
 
 
+def evidence_of_verdict(record: Record) -> Evidence | None:
+    raw = record.fields.get("validation")
+    if raw == NONE:
+        return None
+    try:
+        return goal.evidence_from_mapping(json.loads(raw or ""))
+    except (json.JSONDecodeError, BusError) as exc:
+        raise refuse(f"verdict validation field is not evidence: {exc}")
+
+
 def validate_publisher_checkpoint(
         comment: Found, prior: Prior, *, transport_pr: int,
         subject_of: Callable[[int], tuple[Subject, str] | None],
         origin_of: Callable[[str], Envelope | None],
-        verdict_of: Callable[[int], Found | None]) -> Prior:
+        verdict_of: Callable[[int], Found | None],
+        plan_of: Callable[[Envelope | None], Binding | None] = lambda origin: None) -> Prior:
     """A publisher K is valid only as the exact next link after `prior`.
 
     Returns the Prior it establishes. Raises TRANSITION_REFUSED naming the first
@@ -369,14 +473,11 @@ def validate_publisher_checkpoint(
     subject = Subject(subject.comment_id, v_record.fields["result_digest"] or "", subject.envelope)
     decision = decision_of_verdict(v_record)
     origin_id, _ = lineage(prior, subject)
-    origin = origin_of(origin_id) if origin_id != NONE else None
+    origin = resolve_origin(prior, origin_id, origin_of)
     transition = build(prior, subject, decision, transport_pr=transport_pr, origin=origin,
+                       binding=plan_of(origin), evidence=evidence_of_verdict(v_record),
                        law_only=True)
     exactly(transition.verdict_body(), verdict.body, f"verdict {verdict_comment}")
     exactly(transition.checkpoint_body(verdict_comment, unanswered), comment.body,
             f"checkpoint {comment.comment_id}")
-    return Prior(issue=prior.issue, checkpoint=comment.comment_id, head=transition.head,
-                 active=transition.active,
-                 origin_command=transition.origin if transition.letter == "R" else None,
-                 repair_round=transition.repair_round,
-                 successor_command=transition.successor_id if transition.letter == "R" else None)
+    return transition.after(comment.comment_id, verdict_comment)

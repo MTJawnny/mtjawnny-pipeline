@@ -31,6 +31,7 @@ from tests.refoundation.agent_bus_fixtures import comment_body, unit
 
 from agent_bus import decision as D
 from agent_bus import errors as E
+from agent_bus import goal as GP
 from agent_bus import issue as I
 from agent_bus import ledger as L
 from agent_bus import machine as M
@@ -87,6 +88,52 @@ LIVE_K_BODY = (
     "checkpoint supersedes only the stopped R4 command's undefined validation shorthand "
     "and selects a corrected retry under verdict 5824273947.\n")
 
+# The Captain goal plan this wave runs under: the decision it executes, then the
+# plan, both trusted Issue #1 comments. The command binds to it by id and digest.
+CAPTAIN_DECISION = 5821208878
+PLAN_COMMENT = 5824270001
+BUDGET = 3
+GOAL = "INFRA.AGENT-BUS-V1.GOAL"
+CHECKS = [{"id": "BUS-SELFTEST", "argv": ["python3", "-m", "agent_bus", "selftest"]},
+          {"id": "TASK-CHECK", "argv": ["python3", "-m", "unittest",
+                                        "tests.refoundation.test_agent_bus_publisher"]}]
+
+
+def template() -> dict:
+    return {"branch": BRANCH, "review_boundary": "after AP1 and AP2",
+            "stop_conditions": ["accepted head moves"],
+            "units": [unit("AP1"), unit("AP2", depends_on=["AP1"])]}
+
+
+def planned(wave=WAVE, task=TASK, nxt=None, command_=None, checks=None) -> dict:
+    return {"wave": wave, "task": task, "command": command_ or template(),
+            "validation": checks or CHECKS, "next": nxt}
+
+
+def plan_body(waves=None, budget=BUDGET, terminal=WAVE, decision=CAPTAIN_DECISION,
+              **overrides) -> str:
+    plan = {"schema": GP.PLAN_SCHEMA, "goal": GOAL, "captain_decision": decision,
+            "repair_budget": budget, "terminal": terminal, "waves": waves or [planned()]}
+    plan.update(overrides)
+    return "```mtj-goal\n" + json.dumps(plan, indent=2, sort_keys=True) + "\n```\n"
+
+
+PLAN_BODY = plan_body()
+DECISION_BODY = "## Captain decision -- finish Agent Bus with existing GitHub automation\n"
+
+
+def ref(body: str = PLAN_BODY, comment_id: int = PLAN_COMMENT) -> dict:
+    return {"plan": comment_id, "digest": GP.digest(body)}
+
+
+def green(head: str = H1, red=(), wave: str = WAVE, body: str = PLAN_BODY,
+          checks=None) -> GP.Evidence:
+    """What the independent checks runner reports: every planned check, on `head`."""
+    ids = [c["id"] for c in (checks or CHECKS)]
+    return GP.Evidence(PLAN_COMMENT, GP.digest(body), wave, head,
+                       tuple((i, 1 if i in red else 0) for i in ids))
+
+
 ACCEPT = Decision("ACCEPT", "every claim reproduced", ("selftest green",), ("run 1",))
 REPAIR = Decision("REPAIR", "one control is missing", ("NC9 has no rerun test",), ())
 CAPTAIN = Decision("CAPTAIN", "this needs a product decision", (), ())
@@ -97,13 +144,13 @@ def human_k(head: str = H0, active: int = TASK) -> str:
     return f"```yaml\nschema: mtj-checkpoint/2\nh: {head}\na: {active}\nnext: GO\n```\n"
 
 
-def command(message_id=CMD_ID, wave=WAVE, checkpoint=K0, task=TASK, base=H0) -> str:
+def command(message_id=CMD_ID, wave=WAVE, checkpoint=K0, task=TASK, base=H0,
+            goal=None, bound=True) -> str:
+    body = {**template(), "candidate_base": "53071e55564bbdd372bd77f80259b9d7a2269d6b"}
+    if bound:
+        body["goal"] = goal or ref()
     return comment_body(kind="WAVE_COMMAND", actor="MANAGER", message_id=message_id,
-                        wave=wave, checkpoint=checkpoint, task=task, base=base,
-                        body={"branch": BRANCH, "candidate_base": "53071e55564bbdd372bd77f80259b9d7a2269d6b",
-                              "review_boundary": "after AP1 and AP2",
-                              "stop_conditions": ["accepted head moves"],
-                              "units": [unit("AP1"), unit("AP2", depends_on=["AP1"])]})
+                        wave=wave, checkpoint=checkpoint, task=task, base=base, body=body)
 
 
 def result(message_id=RESULT_ID, head=H1, status="P", checkpoint=K0, parent=CMD_ID,
@@ -134,9 +181,11 @@ class Crash(Exception):
 class FakeGitHub:
     """Issue #1, PR 76 and one branch -- stateful, recorded, and rigged on demand."""
 
-    def __init__(self, extra_pr=(), tip: str = H1):
-        self.issue = [gh(K0, LIVE_K_BODY)]
-        self.pr = [gh(CMD_COMMENT, command()), gh(RESULT_COMMENT, result())] + list(extra_pr)
+    def __init__(self, extra_pr=(), tip: str = H1, plan: str = PLAN_BODY, cmd: str | None = None):
+        self.issue = [gh(CAPTAIN_DECISION, DECISION_BODY), gh(PLAN_COMMENT, plan),
+                      gh(K0, LIVE_K_BODY)]
+        self.pr = [gh(CMD_COMMENT, cmd or command(goal=ref(plan))),
+                   gh(RESULT_COMMENT, result())] + list(extra_pr)
         self.tips = {BRANCH: tip}
         self.next_id = 5840000000
         self.writes: list[tuple[int, str]] = []
@@ -196,6 +245,8 @@ class FakeGitHub:
             out[env.kind] += 1
         for c in self.by_publisher(self.issue):
             record = L.parse_record(c["body"])
+            if record is None:
+                continue
             out["V" if record.schema == L.VERDICT else "K"] += 1
         return out
 
@@ -209,9 +260,12 @@ def body_of(fake: FakeGitHub, comment_id: int) -> str:
 
 
 def publish(fake: FakeGitHub, decision=ACCEPT, comment_id=RESULT_COMMENT, measured=H1,
-            selftest=0) -> dict:
+            selftest=0, validation="green") -> dict:
+    if validation == "green":
+        validation = green(measured or H1)
     return P.publish(TARGET, comment_id, X.digest(body_of(fake, comment_id)), decision, fake,
-                     measured_head=measured, selftest_exit=selftest, clock=CLOCK)
+                     measured_head=measured, selftest_exit=selftest, clock=CLOCK,
+                     validation=validation)
 
 
 def authority(fake: FakeGitHub) -> I.Resolution:
@@ -355,7 +409,7 @@ class TestTheTransactionCompletes(unittest.TestCase):
     def test_repair_rounds_are_bounded_then_become_captain(self):
         fake = FakeGitHub()
         publish(fake, REPAIR)
-        for round_ in range(2, X.MAX_REPAIR_ROUNDS + 2):
+        for round_ in range(2, BUDGET + 2):
             view = worker_view(fake)
             successor = view.state.pending_for("WORKER")[0]
             cid = fake.add(PR, result(message_id=f"w-result-ar{round_}", parent=successor.message_id,
@@ -368,7 +422,7 @@ class TestTheTransactionCompletes(unittest.TestCase):
         verdicts = [L.parse_record(c["body"]) for c in fake.by_publisher(fake.issue)
                     if L.parse_record(c["body"]).schema == L.VERDICT]
         self.assertEqual(verdicts[-1].fields["override"], X.BUDGET_EXHAUSTED)
-        self.assertEqual(fake.kinds()["WAVE_COMMAND"], X.MAX_REPAIR_ROUNDS)
+        self.assertEqual(fake.kinds()["WAVE_COMMAND"], BUDGET)
 
     def test_a_complete_transaction_rerun_writes_nothing(self):
         fake = FakeGitHub()
@@ -486,7 +540,8 @@ class TestR3Defects(unittest.TestCase):
                 digest = X.digest(body_of(fake, RESULT_COMMENT))
                 change(fake)
                 report = P.publish(TARGET, RESULT_COMMENT, digest, ACCEPT, fake,
-                                   measured_head=H1, selftest_exit=0, clock=CLOCK)
+                                   measured_head=H1, selftest_exit=0, clock=CLOCK,
+                                   validation=green())
                 self.assertEqual((report["exit"], report["code"]), (P.EXIT_REFUSED, code))
                 self.assertEqual(fake.writes, [])
 
@@ -815,7 +870,7 @@ class TestNegativeControls(unittest.TestCase):
         digest = X.digest(body_of(fake, RESULT_COMMENT))
         return P.publish(TARGET, RESULT_COMMENT, digest, decision,
                          _changing_before(fake, write, change), measured_head=H1,
-                         selftest_exit=0, clock=CLOCK)
+                         selftest_exit=0, clock=CLOCK, validation=green())
 
     # NC8: authority movement immediately before each write is detected.
     def test_NC8_red_r3_checks_authority_once_then_writes_three_times(self):
@@ -1037,7 +1092,7 @@ class TestRiggedProtections(unittest.TestCase):
             kind="WAVE_REVIEW", actor="MANAGER", message_id=X.review_id(TXN), wave=WAVE,
             parent=RESULT_ID, checkpoint=K0, task=TASK, base=H0,
             body={"verdict": "ACCEPT", "transaction": TXN, "accepted_head": H1,
-                  "decision": ACCEPT.as_dict()}), "drive-by")
+                  "decision": ACCEPT.as_dict(), "validation": green().as_dict()}), "drive-by")
         with mock.patch.object(Trust, "is_publisher", lambda self, login: True):
             self.assertEqual(gate(fake).mode, "resume")  # a stranger's review now binds
             report = publish(fake, REPAIR)
@@ -1083,7 +1138,7 @@ class TestRiggedProtections(unittest.TestCase):
         weak = tuple(c for c in P.PRE_COMMIT if c[0] != "branch_tip")
         with mock.patch.object(P, "PRE_COMMIT", weak), \
                 mock.patch.object(P, "build", functools.partial(X.build, law_only=True)):
-            report = publish(fake, ACCEPT, measured=H_OTHER, selftest=1)
+            report = publish(fake, ACCEPT, measured=H_OTHER, selftest=1, validation=green())
         self.assertEqual(report["exit"], P.EXIT_COMPLETE)
         self.assertEqual(authority(fake).authority.accepted_head, H1)  # never tested, never tip
 
