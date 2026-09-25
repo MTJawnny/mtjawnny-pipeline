@@ -94,6 +94,31 @@ GATE_NO_ENVELOPE = "BUS_GATE_NO_ENVELOPE"
 GATE_NOT_FOR_MANAGER = "BUS_GATE_NOT_FOR_MANAGER"
 GATE_COMMENT_MISMATCH = "BUS_GATE_COMMENT_MISMATCH"
 GATE_ALREADY_HANDLED = "BUS_GATE_ALREADY_HANDLED"
+# Admitted, valid and pending -- but not the head of the Manager queue under this
+# checkpoint. Not handled: the head's transaction names it as unanswered.
+GATE_QUEUED = "BUS_GATE_QUEUED"
+
+# --- the deterministic publisher --------------------------------------------------------
+# The publisher identity said something outside its exact roles.
+ROLE_REFUSED = "BUS_ROLE_REFUSED"
+# The model's answer is not exactly one bounded decision.
+DECISION_INVALID = "BUS_DECISION_INVALID"
+# The decision cannot become a lawful transition from the live checkpoint.
+TRANSITION_REFUSED = "BUS_TRANSITION_REFUSED"
+# Live revalidation before a write found the world changed under the transaction.
+WAVE_ABORTED = "BUS_WAVE_ABORTED"
+WAVE_SUPERSEDED = "BUS_WAVE_SUPERSEDED"
+BRANCH_TIP_MISMATCH = "BUS_BRANCH_TIP_MISMATCH"
+# A durable record already carries this transaction and is not the one expected.
+TXN_CONFLICT = "BUS_TXN_CONFLICT"
+# The commit write landed, but another checkpoint won the chain.
+TXN_RACE_LOST = "BUS_TXN_RACE_LOST"
+# The transaction committed, then authority moved on before it finished.
+TXN_SUPERSEDED = "BUS_TXN_SUPERSEDED"
+# A resume was asked for, but nothing durable says what was decided.
+TXN_NO_DECISION = "BUS_TXN_NO_DECISION"
+# A workflow file breaks the Manager wake's static permission/secret/pin law.
+WORKFLOW_POLICY = "BUS_WORKFLOW_POLICY"
 
 CODES = frozenset(
     v for k, v in list(globals().items())

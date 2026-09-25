@@ -6,9 +6,20 @@ in the run.
 `wake=true` for exactly one shape: a NEW comment on the transport pull request,
 by the trusted author, carrying exactly one `mtj-bus` envelope that the ordinary
 parser accepts, spoken by the WORKER, of a kind addressed to the Manager, citing
-the latest `K` and its accepted head, and folding into live bus state as an
-ACCEPTED message the Manager has not already answered. Everything else answers
-`wake=false` with one stable code.
+the latest `K` and its accepted head, and folding into live bus state as the
+HEAD of the Manager queue -- not answered, not aborted, not superseded, and not
+waiting behind an older message. Everything else answers `wake=false` with one
+stable code.
+
+"Answered" is decided by the transaction law (`agent_bus.publisher`), never by
+whoever posted something review-shaped: only a trusted speaker's review, or the
+publisher's committed checkpoint for this message's transaction, answers it.
+Anything else that claims to is reported in `ignored` and changes nothing.
+
+`mode` says what the admitted run is for. `review` needs the model. `resume`
+does not: the decision is already durable (a publisher review exists) or the
+transaction already committed and only its successor is owed, so the model is
+not asked again and cannot contradict what is already written.
 
 There is no second parser here. Envelope law is `agent_bus.protocol`; authority
 is `agent_bus.issue.resolve_authority`; correlation, duplicates and staleness are
@@ -39,10 +50,13 @@ from typing import Callable, Mapping, Sequence
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.issue import AuthorityError
+from agent_bus.ledger import parse_record
 from agent_bus.machine import ACCEPTED
 from agent_bus.protocol import WAKES, Envelope, parse_comment
+from agent_bus.publisher import Target, World, find_records
 from agent_bus.shell import Runner
 from agent_bus.supervisor import Observation, Supervisor
+from agent_bus.transition import digest, txn_id
 from agent_bus.trust import Trust
 
 EVENT_NAME = "issue_comment"
@@ -65,6 +79,9 @@ class Context:
     envelope: Envelope | None = None
     observation: Observation | None = None
     notes: dict = field(default_factory=dict)
+    mode: str = "review"
+    committed: bool = False
+    ignored: list = field(default_factory=list)
 
     @property
     def comment(self) -> Mapping:
@@ -86,12 +103,16 @@ class Decision:
     wave: str | None = None
     authority: dict | None = None
     stage: str | None = None  # the stage that refused; None when admitted
+    mode: str | None = None  # review | resume, when admitted
+    digest: str | None = None  # sha256 of the admitted body, when admitted
+    ignored: tuple = ()  # records that claimed to answer, from nobody allowed to
 
     def as_dict(self) -> dict:
         return {"wake": self.wake, "code": self.code, "detail": self.detail,
                 "stage": self.stage, "comment_id": self.comment_id,
                 "message_id": self.message_id, "kind": self.kind, "wave": self.wave,
-                "authority": self.authority}
+                "authority": self.authority, "mode": self.mode, "digest": self.digest,
+                "ignored": list(self.ignored)}
 
     def output_lines(self) -> list[str]:
         """What goes to `$GITHUB_OUTPUT`. Validated tokens only, never free text."""
@@ -99,8 +120,10 @@ class Decision:
         if self.code is not None:
             lines.append(f"code={self.code}")
         if self.wake:
+            lines.append(f"mode={self.mode}")
             lines.append(f"comment_id={self.comment_id}")
             lines.append(f"message_id={self.message_id}")
+            lines.append(f"digest={self.digest}")
         return lines
 
 
@@ -188,8 +211,49 @@ def check_addressee(ctx: Context) -> None:
                        f"only {sorted(WAKES[MANAGER])} do")
 
 
+def _world(ctx: Context) -> World:
+    obs = _observe(ctx)
+    return World([c for c in obs.comments if c.source == f"issue:{ctx.issue}"],
+                 [c for c in obs.comments if c.source == f"pr:{ctx.transport_pr}"],
+                 obs.resolution, obs.state)
+
+
+def check_transaction(ctx: Context) -> None:
+    """Has this message's transaction already committed? Decided by role law only.
+
+    Runs BEFORE the authority stage on purpose: once the transaction commits, the
+    message cites a checkpoint that is no longer the latest, so the authority
+    stage alone would call a finished transaction "stale" -- and would also call
+    a committed transaction whose successor is still owed "stale", leaving it
+    owed forever. Here the first is ALREADY_HANDLED and the second is a resume.
+    """
+    env = _envelope(ctx)
+    world = _world(ctx)
+    tid = txn_id(env.authority["checkpoint"], ctx.comment["id"])
+    target = Target(ctx.repo, ctx.issue, ctx.transport_pr, ctx.trust)
+    records = find_records(world, target, tid, env.message_id)
+    ctx.ignored = records.ignored
+    committed = [c for c in records.checkpoints if c.comment_id in world.resolution.chain]
+    if committed:
+        fields = parse_record(committed[0].body).fields
+        live = (world.authority.publisher or {}).get("transaction") == tid
+        if fields["verdict"] == "R" and not records.commands and live:
+            ctx.mode, ctx.committed = "resume", True
+            return
+        raise BusError(E.GATE_ALREADY_HANDLED,
+                       f"{env.message_id} was answered by checkpoint {committed[0].comment_id}")
+    if records.checkpoints:
+        raise BusError(E.TXN_RACE_LOST,
+                       f"checkpoint(s) {[c.comment_id for c in records.checkpoints]} carry "
+                       f"{tid} but are not links of the chain")
+    if records.reviews:
+        ctx.mode = "resume"
+
+
 def check_authority(ctx: Context) -> None:
     """Read Issue #1 independently. The message must cite the latest K and its head."""
+    if ctx.committed:
+        return  # the transaction moved the authority itself; decided above
     env = _envelope(ctx)
     authority = _observe(ctx).authority
     cited = env.authority
@@ -224,12 +288,15 @@ def check_live_comment(ctx: Context) -> None:
 
 
 def check_state(ctx: Context) -> None:
-    """Fold everything. This comment must be ACCEPTED and still pending for the Manager.
+    """Fold everything. This comment must be ACCEPTED and the head of the Manager queue.
 
     This is where a duplicate message id, an unknown parent, a result for a wave
-    nobody commanded, and a result already reviewed are refused -- by the same
-    state machine the Worker obeys, not by a copy of it.
+    nobody commanded, a result already reviewed, a result for cancelled work and
+    a result queued behind an older one are refused -- by the same state machine
+    the Worker obeys, not by a copy of it.
     """
+    if ctx.committed:
+        return
     env = _envelope(ctx)
     state = _observe(ctx).state
     records = [r for r in state.records
@@ -245,6 +312,15 @@ def check_state(ctx: Context) -> None:
     if env.message_id not in pending:
         raise BusError(E.GATE_ALREADY_HANDLED,
                        f"{env.message_id} is not pending for the Manager")
+    if state.waves[env.wave].aborted is not None:
+        raise BusError(E.WAVE_ABORTED,
+                       f"wave {env.wave} was aborted; cancelled work is never reviewed")
+    if env.wave in state.superseded():
+        raise BusError(E.WAVE_SUPERSEDED, f"wave {env.wave} was superseded by a newer command")
+    queue = [e.message_id for e in state.manager_queue()]
+    if queue[0] != env.message_id:
+        raise BusError(E.GATE_QUEUED, f"{env.message_id} waits behind {queue[0]}; that "
+                       "transaction answers first and names this one as unanswered")
 
 
 Stage = Callable[[Context], None]
@@ -254,6 +330,7 @@ STAGES: tuple[tuple[str, Stage], ...] = (
     ("author", check_author),
     ("envelope", check_envelope),
     ("addressee", check_addressee),
+    ("transaction", check_transaction),
     ("authority", check_authority),
     ("live_comment", check_live_comment),
     ("state", check_state),
@@ -286,14 +363,15 @@ def decide(event: Mapping, event_name: str, repo: str, transport_pr: int,
                         ctx.envelope.kind if ctx.envelope else None,
                         ctx.envelope.wave if ctx.envelope else None,
                         ctx.observation.authority.as_dict() if ctx.observation else None,
-                        stage=name)
+                        stage=name, ignored=tuple(ctx.ignored))
     env = ctx.envelope
     if env is None or ctx.observation is None:
         # Only reachable with stages removed. Fail closed, never admit a blank.
         return Decision(False, E.GATE_NO_ENVELOPE, "no envelope was established",
                         comment_id, stage="decide")
     return Decision(True, None, "admitted", comment_id, env.message_id, env.kind, env.wave,
-                    ctx.observation.authority.as_dict())
+                    ctx.observation.authority.as_dict(), mode=ctx.mode,
+                    digest=digest(ctx.comment["body"]), ignored=tuple(ctx.ignored))
 
 
 def write_outputs(decision: Decision, path: str | None) -> None:

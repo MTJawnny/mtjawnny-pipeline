@@ -19,6 +19,7 @@ from typing import Any, Mapping
 
 from agent_bus import SCHEMA
 from agent_bus import errors as E
+from agent_bus.decision import from_mapping as decision_from_mapping
 from agent_bus.errors import BusError
 
 FENCE_INFO = "mtj-bus"
@@ -79,6 +80,7 @@ WAVE_RE = re.compile(r"^[A-Z0-9][A-Z0-9._-]{2,80}$")
 UNIT_ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9._-]{0,60}$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 TIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+TXN_RE = re.compile(r"^mtx-\d+-\d+$")
 
 # Kinds whose parent is structurally required. A result that cannot name the
 # command it answers is not a result.
@@ -96,7 +98,10 @@ _BODY_SPEC: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
         ("status", "branch", "head", "units"),
         ("validation", "discrepancies", "next", "note"),
     ),
-    "WAVE_REVIEW": (("verdict",), ("accepted_head", "note")),
+    # `transaction` and `decision` are how the publisher's review names the one
+    # transaction it belongs to and the typed decision it carries, so a rerun
+    # can finish that transaction without asking the model again.
+    "WAVE_REVIEW": (("verdict",), ("accepted_head", "note", "transaction", "decision")),
     "CAPTAIN_REQUIRED": (("question",), ("options", "blocking", "note")),
     "WAVE_ABORT": (("reason",), ()),
 }
@@ -334,6 +339,13 @@ def _validate_body(kind: str, actor: str, body: Mapping[str, Any]) -> None:
         if verdict not in VERDICTS:
             raise BusError(E.BAD_VALUE, f"body.verdict {verdict!r} not in {list(VERDICTS)}")
         _optional_sha(body, "accepted_head")
+        if "transaction" in body:
+            if not TXN_RE.match(_require_str(body, "transaction", "body")):
+                raise BusError(E.BAD_VALUE, "body.transaction is not a transaction id")
+        if "decision" in body:
+            # Shape only. Whether the verdict follows from it (a REPAIR past the
+            # repair budget is recorded as CAPTAIN) is transition law.
+            decision_from_mapping(body["decision"])
 
     elif kind == "CAPTAIN_REQUIRED":
         _require_str(body, "question", "body")

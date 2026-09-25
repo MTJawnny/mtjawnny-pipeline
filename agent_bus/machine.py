@@ -18,7 +18,8 @@ from typing import Iterable, Mapping, Sequence
 from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.protocol import Envelope, parse_comment
-from agent_bus.trust import Trust
+from agent_bus.transition import review_id, same_message, successor_command, txn_id
+from agent_bus.trust import PUBLISHER_ROLES, Trust
 from agent_bus.wave import WavePlan, plan_from_command, remaining_after
 
 ACCEPTED = "ACCEPTED"
@@ -34,14 +35,20 @@ class Authority:
     checkpoint: int  # comment id of the latest K
     task: int  # comment id of the active T (`a`)
     accepted_head: str  # `h` from that K
+    # The K's own fields when the PUBLISHER wrote it (already validated as the
+    # exact next link of the chain); None when a trusted human did.
+    publisher: Mapping[str, str] | None = field(default=None, compare=False)
 
     def as_dict(self) -> dict:
-        return {
+        out = {
             "issue": self.issue,
             "checkpoint": self.checkpoint,
             "task": self.task,
             "accepted_head": self.accepted_head,
         }
+        if self.publisher is not None:
+            out["publisher_transaction"] = self.publisher["transaction"]
+        return out
 
 
 @dataclass(frozen=True)
@@ -148,6 +155,27 @@ class BusState:
         """
         commands = [e for e in self.accepted() if e.kind == "WAVE_COMMAND"]
         return commands[-1] if commands else None
+
+    def manager_queue(self) -> list[Envelope]:
+        """What the Manager must answer, oldest first. Only the head is due.
+
+        `pending_for("MANAGER")` minus work that was cancelled or replaced. A
+        message for an aborted or superseded wave is never reviewed -- cancelled
+        work does not resurrect -- and it must not sit at the head of the queue
+        either, or it would starve every message behind it: the Worker side's
+        abort-starvation defect, on the Manager side.
+        """
+        superseded = set(self.superseded())
+        return [e for e in self.pending_for("MANAGER")
+                if not self.waves[e.wave].aborted and e.wave not in superseded]
+
+    def record_of(self, message_id: str) -> Record | None:
+        """The ACCEPTED record that carried this message id, if any."""
+        for record in self.records:
+            if record.status == ACCEPTED and record.envelope is not None \
+                    and record.envelope.message_id == message_id:
+                return record
+        return None
 
     def superseded(self) -> list[str]:
         """Waves whose command a newer accepted command has replaced, in order."""
@@ -305,6 +333,17 @@ def fold(comments: Sequence[RawComment], authority: Authority,
             continue
 
         seen_ids[envelope.message_id] = comment.comment_id
+        if envelope.kind == "WAVE_REVIEW" and trust.is_publisher(comment.author):
+            # The publisher's review is the FIRST write of a transaction whose
+            # commit point is a checkpoint. Until that checkpoint exists nothing
+            # has been answered, so it is recorded and not applied: a review
+            # whose transaction died must leave the result pending, where a
+            # rerun can find and finish it.
+            state.records.append(
+                Record(comment.source, comment.comment_id, comment.author, ACCEPTED,
+                       None, "publisher review: a transaction prefix, not an answer",
+                       envelope))
+            continue
         state.records.append(
             Record(comment.source, comment.comment_id, comment.author, ACCEPTED,
                    None, "", envelope))
@@ -321,8 +360,12 @@ def _correlate(envelope: Envelope, state: BusState, authority: Authority,
     # who may not command is not "a valid message from the wrong person"; it is
     # not read for meaning at all.
     if not trust.trusts(comment.author):
-        return BusError(E.UNTRUSTED_AUTHOR,
-                        f"{comment.author} is not a trusted bus speaker")
+        if not trust.is_publisher(comment.author):
+            return BusError(E.UNTRUSTED_AUTHOR,
+                            f"{comment.author} is not a trusted bus speaker")
+        problem = _publisher_role(envelope, comment, state, authority, trust, seen_ids)
+        if problem is not None:
+            return problem
 
     if envelope.message_id in seen_ids:
         return BusError(E.DUPLICATE_MESSAGE_ID,
@@ -397,6 +440,61 @@ def _correlate(envelope: Envelope, state: BusState, authority: Authority,
             return BusError(E.UNKNOWN_DEPENDENCY,
                             f"result reports unauthorized units: {', '.join(extra)}")
 
+    return None
+
+
+def _publisher_role(envelope: Envelope, comment: RawComment, state: BusState,
+                    authority: Authority, trust: Trust,
+                    seen_ids: Mapping[str, int]) -> BusError | None:
+    """The publisher identity may say exactly two things here, each exactly once.
+
+    A review is the prefix of the transaction for the message it answers, so its
+    id must be that transaction's review id. A command exists only as the ONE
+    successor of the publisher checkpoint that is the live authority, and must be
+    exactly the command that checkpoint's transition derives. Anything else the
+    identity says -- another kind, actor, surface, id or body -- is refused like
+    a stranger's comment.
+    """
+    def refused(why: str) -> BusError:
+        return BusError(E.ROLE_REFUSED, f"{comment.author}: {why}")
+
+    if not comment.source.startswith("pr:"):
+        return refused("publisher bus messages belong on the transport pull request")
+    # The role table is the law of WHAT the identity may say; the two branches
+    # below only correlate each allowed shape to its one transaction.
+    if (envelope.actor, envelope.kind) not in PUBLISHER_ROLES["transport"]:
+        return refused(f"may not speak {envelope.actor} {envelope.kind}")
+    if envelope.kind == "WAVE_REVIEW":
+        parent_comment = seen_ids.get(envelope.parent or "")
+        if parent_comment is None:
+            return refused(f"the review answers unknown {envelope.parent}")
+        txn = txn_id(envelope.authority["checkpoint"], parent_comment)
+        if envelope.message_id != review_id(txn) or envelope.body.get("transaction") != txn \
+                or "decision" not in envelope.body:
+            return refused(f"a review of comment {parent_comment} must be {review_id(txn)}")
+        return None
+    if envelope.kind != "WAVE_COMMAND":
+        return None
+    pub = authority.publisher
+    if pub is None or pub["verdict"] != "R" or envelope.message_id != pub["successor_command"]:
+        return refused("a command must be the successor the live publisher checkpoint names")
+    origin = next((r.envelope for r in state.records
+                   if r.envelope is not None and trust.trusts(r.author)
+                   and r.envelope.kind == "WAVE_COMMAND"
+                   and r.envelope.message_id == pub["origin_command"]), None)
+    if origin is None:
+        return refused(f"origin command {pub['origin_command']} is not on the bus")
+    try:
+        expected = successor_command(
+            origin=origin, issue=authority.issue, checkpoint=authority.checkpoint,
+            task=authority.task, head=authority.accepted_head,
+            result_head=pub["result_head"], repair_round=int(pub["repair_round"]),
+            verdict_comment=int(pub["latest_manager_verdict"]), txn=pub["transaction"],
+            created_at=envelope.created_at)
+    except BusError as exc:
+        return refused(exc.detail)
+    if not same_message(expected, envelope):
+        return refused("the command is not the successor the checkpoint derives")
     return None
 
 

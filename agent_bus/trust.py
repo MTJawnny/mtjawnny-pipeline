@@ -16,6 +16,15 @@ lived there, a single scope escape would rewrite who is allowed to command the
 next one. The supervisor therefore reads it from the command line, the
 environment, or a file outside the working tree -- in that order, first non-empty
 wins, every source explicit.
+
+**The publisher is not a speaker.** The Manager wake workflow posts as the
+repository's own GitHub Actions identity. That identity is NOT added to the
+speaker set, because every workflow in the repository shares it: identity alone
+proves only "some workflow here wrote this". It is instead trusted for exact
+ROLES -- `PUBLISHER_ROLES` below -- and within a role, only for a record that is
+exactly what the deterministic publisher would have written from Captain-rooted
+inputs (`agent_bus.transition`). Anything else it posts is refused and reported,
+the same as a stranger's comment. Configuring it as a speaker is an error.
 """
 
 from __future__ import annotations
@@ -28,6 +37,17 @@ from typing import Iterable
 
 from agent_bus import errors as E
 from agent_bus.errors import BusError
+
+PUBLISHER = "github-actions[bot]"
+
+# The whole of the publisher's authority, as data. A surface maps to the record
+# shapes the publisher may write there: (actor, kind) bus envelopes on the
+# transport pull request, ledger schemas on the authority issue. It may never
+# write a WORKER or CAPTAIN message, an abort, a task, or a Captain decision.
+PUBLISHER_ROLES = {
+    "transport": frozenset({("MANAGER", "WAVE_REVIEW"), ("MANAGER", "WAVE_COMMAND")}),
+    "ledger": frozenset({"mtj-verdict", "mtj-checkpoint"}),
+}
 
 ENV_VAR = "MTJ_AGENT_BUS_TRUSTED"
 CONFIG_ENV_VAR = "MTJ_AGENT_BUS_CONFIG"
@@ -47,9 +67,21 @@ class Trust:
 
     speakers: frozenset[str]
     source: str
+    publisher: str | None = PUBLISHER
+
+    def __post_init__(self) -> None:
+        if self.publisher is not None and self.publisher.lower() in self.speakers:
+            raise BusError(E.TRUST_NOT_CONFIGURED,
+                           f"{self.publisher} is the publisher, trusted for exact roles "
+                           "only; it cannot be declared a speaker")
 
     def trusts(self, login: str) -> bool:
+        """A SPEAKER: may say anything its actor may say. Humans only."""
         return login.lower() in self.speakers
+
+    def is_publisher(self, login: str) -> bool:
+        """The machine identity. Exact login, never case-folded, never a speaker."""
+        return self.publisher is not None and login == self.publisher
 
     @property
     def configured(self) -> bool:

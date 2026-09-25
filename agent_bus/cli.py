@@ -211,7 +211,10 @@ E_NOTHING = "BUS_NOTHING_ACTIONABLE"
 def _run(args) -> int:
     if args.command == "authority":
         comments = read_comments(args.issue, args.repo, Runner())
-        _print(resolve_authority(comments, args.issue, _trust(args)).as_dict())
+        transport = (read_comments(args.pr, args.repo, Runner(), source=f"pr:{args.pr}")
+                     if args.pr else None)
+        _print(resolve_authority(comments, args.issue, _trust(args), transport=transport,
+                                 transport_pr=args.pr).as_dict())
         return 0
 
     if args.command == "state":

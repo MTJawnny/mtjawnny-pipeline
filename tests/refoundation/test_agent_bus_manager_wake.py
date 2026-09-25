@@ -32,10 +32,12 @@ from tests.refoundation.test_agent_bus_supervisor import (
 
 from agent_bus import errors as E
 from agent_bus import manager_gate as G
+from agent_bus.decision import Decision
 from agent_bus.machine import Authority, RawComment, fold
 from agent_bus.protocol import parse_comment
 from agent_bus.shell import Completed
-from agent_bus.trust import Trust
+from agent_bus.transition import Prior, Subject, build, digest
+from agent_bus.trust import PUBLISHER, Trust
 
 # ---------------------------------------------------------------- live values
 ACCEPTED_HEAD = "58c8345c56667f6776e941f85b79de0766cf22ff"
@@ -355,6 +357,34 @@ def run_entry_point(ev: dict, runner) -> tuple[int, list[str]]:
             return code, handle.read().splitlines()
 
 
+def admitted_lines(body: str, mode: str = "review") -> list[str]:
+    """Every token an admitted decision writes: validated values, never the body."""
+    return ["wake=true", f"mode={mode}", f"comment_id={RESULT_COMMENT}",
+            "message_id=w-result-r3-0001", f"digest={digest(body)}"]
+
+
+def committed_world(good: str, verdict: str = "CAPTAIN") -> GhFake:
+    """The world after the publisher committed `good`'s transaction under K_R3.
+
+    Records are built by the transition law itself, so this is exactly what a
+    completed transaction leaves behind -- review, V, and the chaining K.
+    """
+    fake = world(good)
+    env = parse_comment(good)
+    prior = Prior(issue=1, checkpoint=K_R3, head=ACCEPTED_HEAD, active=TASK)
+    subject = Subject(RESULT_COMMENT, digest(good), env)
+    decision = Decision(verdict, "the claim does not hold", ("a finding",), ())
+    origin = parse_comment(R3[1])
+    transition = build(prior, subject, decision, transport_pr=PR, origin=origin,
+                       law_only=True)
+    v_id, k_id = K_R3 + 100_000, K_R3 + 100_001
+    fake.issue += [gh_comment(v_id, transition.verdict_body(), PUBLISHER),
+                   gh_comment(k_id, transition.checkpoint_body(v_id), PUBLISHER)]
+    fake.pr += [gh_comment(RESULT_COMMENT + 7,
+                           transition.review("2026-09-25T00:00:00Z").render(), PUBLISHER)]
+    return fake
+
+
 def manager_invocations(decision) -> int:
     """What the workflow does with a decision: invoke once on wake, never otherwise."""
     return 1 if decision.wake else 0
@@ -421,6 +451,15 @@ def negative_controls() -> dict[str, tuple[dict, object, str, str | None]]:
         E.GATE_COMMENT_MISMATCH)
     orphan = worker_msg(parent="m-nobody-commanded-this")
     add("orphan_result", event(orphan), world(orphan), E.UNKNOWN_PARENT)
+    add("committed_transaction", event(good), committed_world(good), E.GATE_ALREADY_HANDLED)
+    second = worker_msg(message_id="w-result-r3-0002")
+    add("queued_behind_older", event(second, comment_id=RESULT_COMMENT + 1),
+        world(second, RESULT_COMMENT + 1, extra_pr=[gh_comment(RESULT_COMMENT, good)]),
+        E.GATE_QUEUED)
+    add("aborted_wave", event(good),
+        GhFakeAppend(world(good), [gh_comment(RESULT_COMMENT + 3, abort(
+            "m-abort-r3-0001", MW + ".R3", COMMAND_ID, K_R3))]),
+        E.WAVE_ABORTED)
     add("edited_event", event(good, action="edited"), world(good), E.GATE_WRONG_EVENT)
     add("wrong_event_name", event(good), world(good), E.GATE_WRONG_EVENT,
         event_name="pull_request_review_comment")
@@ -462,8 +501,7 @@ class TestManagerGatePositive(unittest.TestCase):
         decision = gate(event(body), world(body))
         self.assertTrue(decision.wake)
         lines = decision.output_lines()
-        self.assertEqual(lines, ["wake=true", f"comment_id={RESULT_COMMENT}",
-                                 "message_id=w-result-r3-0001"])
+        self.assertEqual(lines, admitted_lines(body))
         self.assertNotIn("IGNORE", json.dumps(decision.as_dict()))
 
 
@@ -504,8 +542,7 @@ class TestManagerGateNegative(unittest.TestCase):
         body = worker_msg()
         code, written = run_entry_point(event(body), world(body))
         self.assertEqual(code, 0)
-        self.assertEqual(written, ["wake=true", f"comment_id={RESULT_COMMENT}",
-                                   "message_id=w-result-r3-0001"])
+        self.assertEqual(written, admitted_lines(body))
 
     def test_an_unconfigured_author_refuses_to_decide(self):
         from agent_bus.errors import BusError
@@ -524,9 +561,11 @@ FIRST_LINE = {
     "author": ("untrusted_author", "case_folded_author"),
     "envelope": ("prose", "prose_injection", "malformed_json", "two_fences", "wrong_schema"),
     "addressee": ("actor_manager", "wave_command", "wave_progress", "wave_review"),
+    "transaction": ("committed_transaction",),
     "authority": ("stale_checkpoint", "stale_base"),
     "live_comment": ("edited_since_delivery", "not_on_the_pr"),
-    "state": ("duplicate_message_id", "already_reviewed", "orphan_result"),
+    "state": ("duplicate_message_id", "already_reviewed", "orphan_result",
+              "queued_behind_older", "aborted_wave"),
 }
 
 # Controls with NO later backstop: with their stage removed the gate must ADMIT
@@ -536,7 +575,8 @@ ADMITTED_WHEN_RIGGED = {
     "surface": ("another_repo",),
     "author": ("case_folded_author",),
     "live_comment": ("edited_since_delivery",),
-    "state": ("duplicate_message_id", "already_reviewed", "orphan_result"),
+    "state": ("duplicate_message_id", "already_reviewed", "orphan_result",
+              "queued_behind_older", "aborted_wave"),
 }
 
 

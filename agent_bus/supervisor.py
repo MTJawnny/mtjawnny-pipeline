@@ -67,11 +67,15 @@ class Supervisor:
     # ---------------------------------------------------------------- observe
     def observe(self) -> Observation:
         issue_comments = read_comments(self.issue, self.repo_slug, self.run)
-        resolution = resolve_authority(issue_comments, self.issue, self.trust)
-        comments = list(issue_comments)
+        transport = None
         if self.transport_pr:
-            comments += read_comments(self.transport_pr, self.repo_slug, self.run,
+            transport = read_comments(self.transport_pr, self.repo_slug, self.run,
                                       source=f"pr:{self.transport_pr}")
+        # The transport is handed to the resolver too: a publisher checkpoint is
+        # judged against the Worker message it answers, by every reader alike.
+        resolution = resolve_authority(issue_comments, self.issue, self.trust,
+                                       transport=transport, transport_pr=self.transport_pr)
+        comments = list(issue_comments) + list(transport or ())
         # GitHub comment ids increase monotonically per repository, so id order is
         # arrival order across both surfaces. A self-reported timestamp is not used
         # for ordering: it is a field the sender controls.
