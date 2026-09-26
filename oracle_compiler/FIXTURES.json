@@ -41,12 +41,9 @@
     {
       "id": "delayed-return-same-object",
       "source": "oracle_compiler/V1.md#15",
-      "member": "Cloudshift",
-      "member_status": "REPOSITORY_OBSERVED_P4_CONTROL",
-      "gold": [
-        "reference/object-continuity pressure case",
-        "resolution may remain UNRESOLVED; no guessed antecedent or continuity is permitted"
-      ]
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
+      "gold": []
     },
     {
       "id": "prior-set-complement-reference",
