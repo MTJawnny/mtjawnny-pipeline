@@ -67,10 +67,19 @@ So:
 - Read the latest `K` for *what to do*; read `h` for *what has been accepted*.
   Never infer either from the other.
 
+## Waves
+
+A `T` may authorize a **bounded wave**: several pre-authorized units, each with
+an id, dependencies, allow scope and required validation. Inside an authorized
+wave, finishing a unit is **not** a STOP — continue to the next runnable unit.
+Commit each mutating unit separately, ending the message with `Agent-Bus-Wave:`
+and `Agent-Bus-Unit:` trailers. STOP at the wave's review boundary. Typed
+transport, loop safety, cold start and recovery: `refoundation/AGENT-BUS.md`.
+
 ## Discipline
 
-- **One task.** No self-authorized successor. `next: NONE` unless externally
-  authorized.
+- **One task.** One wave is one task; a unit is not. No self-authorized successor.
+  `next: NONE` unless externally authorized.
 - **STOP** on unexplained drift, on a conflict inside the task, or when a task
   cannot be satisfied within its own scope. Report the exact conflict; do not
   silently adapt the task to the repository or the repository to the task.

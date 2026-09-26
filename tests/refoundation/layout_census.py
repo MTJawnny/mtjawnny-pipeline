@@ -88,10 +88,18 @@ def tracked_python(root: Path) -> list[Path]:
     return sorted(Path(line) for line in out.splitlines() if line)
 
 
+# Every top-level base that holds tracked Python. `agent_bus/` joined the list
+# with the Agent Bus v1 bootstrap: it is control-plane tooling, neither legacy
+# production nor part of the installed Foundry package, and a base the walk did
+# not know about would make the cross-check report a smaller universe than git
+# sees -- which is the exact failure this pair of enumerations exists to catch.
+WALK_BASES = ("agent_bus", "benchmarks", "experiments", "pipeline", "src", "tests")
+
+
 def walked_python(root: Path) -> list[Path]:
     """The same universe derived from the filesystem, for cross-checking."""
     found = []
-    for base in ("benchmarks", "experiments", "pipeline", "src", "tests"):
+    for base in WALK_BASES:
         for path in (root / base).rglob("*.py"):
             if "__pycache__" in path.parts:
                 continue
@@ -110,6 +118,13 @@ def scope_of(rel: Path) -> str:
     posix = rel.as_posix()
     if posix.startswith("benchmarks/aq4/") or "aq4" in rel.name:
         return "aq4_PAUSED"
+    # Control plane, named rather than left in `other`. `other` means archived
+    # material and nothing else, and a live package hiding there would be the
+    # population-hiding the census is built to prevent. It is NOT legacy
+    # production: `LEGACY_PRODUCTION` does not name it, so no delegation,
+    # bootstrap or local-site count moves because this scope exists.
+    if posix.startswith("agent_bus/"):
+        return "agent_bus"
     if posix.startswith("experiments/measure/"):
         return "experiments_measure"
     if posix.startswith("experiments/"):

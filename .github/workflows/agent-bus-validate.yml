@@ -1,0 +1,60 @@
+# Agent Bus protocol validation.
+#
+# This workflow deliberately does NOT wake any agent. Wake-on-comment triggers
+# ("issue_comment", "issues") only ever run from a repository's DEFAULT branch,
+# so a wake workflow added on a feature branch would be inert theatre. This one
+# runs on pull request activity, which DOES execute from the pull request's own
+# branch, so it is exercisable the moment the implementation branch is proposed.
+#
+# It holds no secret and needs none: the bus suite is stdlib-only and never
+# contacts GitHub or Anthropic.
+name: Agent Bus validation
+
+on:
+  pull_request:
+    paths:
+      - "agent_bus/**"
+      - "tests/refoundation/test_agent_bus_*.py"
+      - "tests/refoundation/agent_bus_fixtures.py"
+      - "tests/refoundation/agent_bus_repo_fake.py"
+      - "refoundation/AGENT-BUS-MANAGER-TRIGGER.md"
+      - "refoundation/AGENT-BUS.md"
+      - ".github/workflows/agent-bus-validate.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bus protocol and state machine suite
+        run: python3 -m agent_bus selftest
+
+      - name: Every documented example message validates
+        run: |
+          for f in agent_bus/examples/*.json; do
+            echo "validating $f"
+            python3 -m agent_bus validate "$f" > /dev/null
+          done
+
+      # The negative control. A suite that only ever proves acceptance would not
+      # notice the day rejection stopped working.
+      - name: A malformed message is rejected with the documented exit code
+        run: |
+          printf '{"schema": "mtj-agent-bus/99"}' > "${RUNNER_TEMP}/bad.json"
+          set +e
+          python3 -m agent_bus validate "${RUNNER_TEMP}/bad.json" > /dev/null 2>&1
+          code=$?
+          set -e
+          if [ "$code" -ne 2 ]; then
+            echo "expected exit 2 for an unsupported schema version, got $code"
+            exit 1
+          fi
