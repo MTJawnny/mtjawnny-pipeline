@@ -1,0 +1,117 @@
+{
+  "schema": "oracle-compiler-fixtures/1",
+  "status": "MANAGER_GOLD_CONTRACT",
+  "base": "42a13e5babcb10f090a3ceda83abd7451f4d1863",
+  "authority": {
+    "v1": "oracle_compiler/V1.md",
+    "m01_result_comment": 5844518936,
+    "captain_p0_authorization_comment": 5764505048
+  },
+  "purpose": "Freeze the fixture roles and gold-truth boundary before AQ4 Packet-0 / probe execution. This file does not ratify compiler schema, H-REGION, AQ4 production architecture, keyword-consequence law, or any capability classified as genuinely missing by M01.",
+  "gold_law": {
+    "observed_mechanical_truth_only": true,
+    "unresolved_is_valid": true,
+    "absence_is_not_proof": true,
+    "model_output_is_not_gold_without_governed_review": true,
+    "candidate_output_must_not_influence_fixture_selection": true,
+    "no_oracle_text_copied_into_this_file": true
+  },
+  "fixture_family": [
+    {
+      "id": "simple-one-operation-negative-control",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
+      "gold": []
+    },
+    {
+      "id": "two-sequential-operations",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P2_MEASURED_POPULATION",
+      "gold": []
+    },
+    {
+      "id": "split-destination-selected-set",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
+      "gold": []
+    },
+    {
+      "id": "delayed-return-same-object",
+      "source": "oracle_compiler/V1.md#15",
+      "member": "Cloudshift",
+      "member_status": "REPOSITORY_OBSERVED_P4_CONTROL",
+      "gold": [
+        "reference/object-continuity pressure case",
+        "resolution may remain UNRESOLVED; no guessed antecedent or continuity is permitted"
+      ]
+    },
+    {
+      "id": "prior-set-complement-reference",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P4_MEASURED_POPULATION",
+      "gold": []
+    },
+    {
+      "id": "conditional-second-operation",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P2_P4_MEASURED_EVIDENCE",
+      "gold": []
+    },
+    {
+      "id": "replacement-event-lineage",
+      "source": "oracle_compiler/V1.md#6-R2-A",
+      "members": ["Abundance", "Tomorrow", "Chains of Mephistopheles", "Uba Mask"],
+      "member_status": "V1_NAMED_PRESSURE_SET",
+      "gold": [
+        "stress replacement/modification lineage",
+        "M01 classifies replacement-lineage representation as GENUINELY_MISSING; no lineage schema or expected encoding is gold here"
+      ]
+    },
+    {
+      "id": "modal-regression-control",
+      "source": "oracle_compiler/V1.md#15",
+      "member": "Knight of Autumn",
+      "member_status": "V1_NAMED_REGRESSION_EVIDENCE",
+      "gold": [
+        "modal regression evidence",
+        "not architecture-defining"
+      ]
+    },
+    {
+      "id": "participant-role-choreography",
+      "source": "oracle_compiler/V1.md#15",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P3_MEASURED_POPULATION",
+      "gold": []
+    },
+    {
+      "id": "ability-borrowing-inheritance-pressure",
+      "source": "oracle_compiler/V1.md#6-R2-C",
+      "member": null,
+      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
+      "gold": [
+        "M01 classifies ability-borrowing/inheritance representation as GENUINELY_MISSING; no new primitive or expected encoding is gold here"
+      ]
+    }
+  ],
+  "selection_freeze": {
+    "when": "after C01 PASS, during authorized consumption of existing P1/P2/P3/P4 evidence and before any C03 candidate result exists",
+    "rule": "Fill null member slots only from already-authorized pre-existing production fixtures or the existing AQ4 probe populations named by the role. Record the source population and deterministic selection rule before C03. Do not choose examples because H-REGION succeeds or fails on them.",
+    "no_duplicate_probe": true
+  },
+  "forbidden_gold": [
+    "H-REGION is true",
+    "H-REGION is canonical production identity",
+    "four-coordinate AQ4 occurrence identity is production law",
+    "keyword consequence expansion law is ratified",
+    "replacement-event lineage representation already exists",
+    "player decision-authority representation already exists",
+    "ability-borrowing/inheritance representation already exists",
+    "UNRESOLVED or UNKNOWN means absent"
+  ]
+}
