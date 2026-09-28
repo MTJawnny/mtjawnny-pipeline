@@ -12,8 +12,13 @@ Nothing about operation regions -- none exist yet, and M02 forbids choosing a
 member "because H-REGION succeeds or fails on it". Ties break by
 (oracle_id, stem, occurrence); one card serves one role.
 
-A ROLE NO AQ4 PROBE POPULATION MEASURES STAYS NULL, with the reason. M02 also
-allows pre-existing production fixtures; F0 did not search them. Filling
+A ROLE NO AQ4 PROBE POPULATION MEASURES goes to the second source M02 allows:
+pre-existing production fixtures -- the Gate 2 ground-truth seeds and the
+codebook's human-ratified assertions. There a member comes only from a ratified
+axis whose DEFINITION expresses the role (a pinned, reviewable mapping), taking
+human-asserted members by oracle_id. Text inside an evidence quote never selects
+a member: that would be a new text classifier. A role neither source expresses
+stays null, with the reason. Filling
 it would need a new text classifier, which is a new measurement (V1 P0.2: do
 not duplicate or extend the probes under another name).
 
@@ -169,6 +174,83 @@ UNFILLED = {
 }
 
 
+CODEBOOK_SHA = "6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c"
+GROUND_TRUTH = ROOT / "tests" / "fixtures" / "ground_truth"
+
+# Role -> the ratified codebook axis whose definition expresses it, with that
+# definition's sha256. A judgment about DEFINITIONS, made once, pinned: if the
+# axis is renamed, retired or redefined, the run halts rather than follow it.
+PRODUCTION_AXIS = {
+    "split-destination-selected-set": (
+        "rule:library-dig-to-hand",
+        "9eb55e81224c9011db866caf5977e9495088d7c04e2fe2614a584c8c0bdd93f5",
+        "one selected card to hand, the rest to the library bottom: a selected "
+        "set divided across two destinations"),
+    "prior-set-complement-reference": (
+        "rule:library-dig-to-hand",
+        "9eb55e81224c9011db866caf5977e9495088d7c04e2fe2614a584c8c0bdd93f5",
+        "'the rest' names the complement of the selected card within the set "
+        "looked at before"),
+}
+PRODUCTION_UNFILLED = {
+    "ability-borrowing-inheritance-pressure":
+        "no ground-truth seed axis and no active codebook axis defines ability "
+        "borrowing. One human-ratified quote (Book of Vile Darkness, oracle_id "
+        "fcc666bc-6fea-44e0-94bc-462c742db528, under "
+        "rule:activated-ability-costs-self-sacrifice) contains a granted-abilities "
+        "clause, but that assertion ratifies a different mechanic; selecting on "
+        "quote text would be a new classifier. Recorded as a candidate for review, "
+        "not selected.",
+}
+
+
+def production_pass(cards, used) -> dict:
+    """Fill the roles no probe population measures from production fixtures."""
+    cb_path = fc.FOUNDRY_OUT_DIR / "codebook.json"
+    if _sha(cb_path) != CODEBOOK_SHA:
+        fc.halt(f"codebook is {_sha(cb_path)}, F0 pinned {CODEBOOK_SHA}")
+    axes = json.loads(cb_path.read_text(encoding="utf-8"))["axes"]
+    p.domain(axes, "status", "active")
+    gt_axes = set()
+    for f in sorted(GROUND_TRUTH.glob("*.json")):
+        d = json.loads(f.read_text(encoding="utf-8"))
+        for k in ("moves", "seeds", "adds", "merges"):
+            gt_axes |= {m.get("to") for m in d.get(k) or []}
+        gt_axes |= set(d.get("new_axes") or {})
+        gt_axes |= {v["to"] for v in (d.get("renames") or {}).values()}
+    gt_axes.discard(None)
+    out = {}
+    for role, (slug, def_sha, why) in PRODUCTION_AXIS.items():
+        axis = axes.get(slug)
+        if axis is None or axis.get("status") != "active":
+            fc.halt(f"{role}: {slug} is not an active codebook axis")
+        got = hashlib.sha256(axis["definition"].encode("utf-8")).hexdigest()
+        if got != def_sha:
+            fc.halt(f"{role}: {slug} definition moved ({got}); re-review the mapping")
+        human = sorted(m["oracle_id"] for m in axis["members"]
+                       if any(a.get("class") == "human" for a in m.get("assertions", []))
+                       and m["oracle_id"] in cards)
+        hit = next((o for o in human if o not in used), None)
+        if hit is None:
+            out[role] = {"member": None, "reason": f"{slug} has no unused human member"}
+            continue
+        used.add(hit)
+        out[role] = {"member": cards[hit]["name"], "oracle_id": hit,
+                     "source_population": f"codebook axis {slug} (human-ratified "
+                                          f"assertions; codebook sha256 {CODEBOOK_SHA})",
+                     "selection_rule": f"first unused human-asserted member by oracle_id "
+                                       f"of the ratified axis whose definition expresses "
+                                       f"the role: {why}",
+                     "axis_in_gate2_ground_truth": slug in gt_axes,
+                     "qualifying_rows": len(human)}
+    for role, reason in PRODUCTION_UNFILLED.items():
+        out[role] = {"member": None, "reason": reason}
+    return {"searched": {"gate2_ground_truth_axes": len(gt_axes),
+                         "codebook_active_axes": sum(1 for a in axes.values()
+                                                     if a.get("status") == "active")},
+            "roles": out}
+
+
 # A rule whose EVERY qualifying row was read and found spurious is recorded
 # here with the exact set it covers. If the set moves, the run halts: the
 # judgment was made about these rows and no others. Nothing is dropped by name.
@@ -269,7 +351,9 @@ def select() -> dict:
             "selection_rule": " ".join(rule.__doc__.split()),
             "qualifying_rows": len(qualifying),
         }
+    production = production_pass(cards, used)
     return {"schema": "oracle-compiler-f0-selection/0", "inputs": identities,
+            "production_fixtures": production,
             "reconciled_with_c02": measured | {"heads": {str(k): v for k, v in
                                                          sorted(dist.items())}},
             "negative_controls": negative_controls(),
