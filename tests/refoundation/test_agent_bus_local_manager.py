@@ -105,6 +105,8 @@ class TestAttribution(unittest.TestCase):
                          (evidence_comment("m-other", "codex"),),
                          (evidence_comment("m-command", None),),
                          (evidence_comment("m-command", "gpt"),),
+                         (evidence_comment("m-command", []),),
+                         (evidence_comment("m-command", {}),),
                          (evidence_comment("m-command", "codex", actor="MANAGER"),),
                          (evidence_comment("m-command", "codex"),
                           evidence_comment("m-command", "claude"))):
@@ -350,6 +352,25 @@ class TestWorkspace(unittest.TestCase):
         # Evidence commands run in the candidate clone; the review clone is pristine.
         cwds = {cwd for argv, cwd in run.calls if argv[0] == L.SANDBOX_EXEC}
         self.assertEqual(cwds, {str(self.work / "root" / "candidate")})
+
+    def test_NC_F1_candidate_code_that_moves_its_clone_yields_no_evidence(self):
+        binding = SimpleNamespace(comment_id=7, digest="e" * 64,
+                                  entry=SimpleNamespace(wave="W", checks=(
+                                      SimpleNamespace(id="c1", argv=("python3", "t.py")),)))
+        for moving in ("selftest", "t.py"):
+            inner = fake_gh()
+            def run(argv, stdin=None, timeout=None, cwd=None, inner=inner, moving=moving):
+                if argv[0] == L.SANDBOX_EXEC and argv[-1] == moving:
+                    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q",
+                        "--allow-empty", "-m", "moved", cwd=cwd)
+                return inner(argv, stdin=stdin, timeout=timeout, cwd=cwd)
+            ws_root = self.work / f"root-{moving}"
+            ws_root.mkdir()
+            with mock.patch.object(L.publisher, "binding_for", lambda *a: (binding, None)):
+                with self.assertRaises(BusError) as caught:
+                    self.manager(run).measure(1001, self.head, L.Workspace(ws_root))
+            self.assertEqual(caught.exception.code, E.TRANSITION_REFUSED, moving)
+            self.assertIn("moved", caught.exception.detail)
 
     def test_F1_clones_share_no_object_file_with_the_operator_repository(self):
         ws = self.ws()

@@ -271,8 +271,10 @@ class LocalManager:
             except ValueError:
                 continue
             if isinstance(payload, dict) and payload.get("command") == command_id:
-                names.add(payload.get("provider") if payload.get("actor") == "WORKER"
-                          and payload.get("schema") == "mtj-worker-evidence/1" else None)
+                provider = payload.get("provider")
+                valid = (payload.get("actor") == "WORKER" and isinstance(provider, str)
+                         and payload.get("schema") == "mtj-worker-evidence/1")
+                names.add(provider if valid else None)
         if not names:
             return None, f"no Worker evidence attributes command {command_id} to a provider"
         if len(names) > 1:
@@ -306,6 +308,13 @@ class LocalManager:
     def _head_of(self, checkout: Path) -> str:
         out = self.run(["git", "-C", str(checkout), "rev-parse", "HEAD"])
         return out.stdout.strip() if out.returncode == 0 else ""
+
+    def _still_at(self, checkout: Path, head: str, after: str) -> None:
+        """Candidate code may move its own clone; evidence from a moved clone is refused."""
+        now = self._head_of(checkout)
+        if now != head:
+            raise BusError(E.TRANSITION_REFUSED, f"the candidate clone moved to {now!r} "
+                           f"during {after}; evidence is for {head}")
 
     def _copy_state(self, candidate: Path) -> None:
         """Operator state into the candidate clone, refusing any path the
@@ -360,13 +369,18 @@ class LocalManager:
         ws.scratch.mkdir()
         code, log = self._confined_exit(["python3", "-m", "agent_bus", "selftest"],
                                         str(ws.candidate), ws)
+        self._still_at(ws.candidate, measured, "the selftest")
         binding, why = publisher.binding_for(self.target, comment_id, self.run)
         evidence = None
         if binding is not None:
+            # run_checks measures the candidate clone itself, as it always has.
             evidence = goal.run_checks(
                 binding, str(ws.candidate),
-                execute=lambda argv, cwd: self._confined_exit(argv, cwd, ws)[0],
-                head_of=lambda _: measured)
+                execute=lambda argv, cwd: self._confined_exit(argv, cwd, ws)[0])
+            if evidence.head != measured:
+                raise BusError(E.TRANSITION_REFUSED, f"checks started on {evidence.head}, "
+                               f"not the result head {measured}")
+            self._still_at(ws.candidate, measured, "the goal checks")
         return Measurement(measured, code, "\n".join(log.splitlines()[-60:]), evidence,
                            None if binding is not None else why)
 
