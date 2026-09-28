@@ -53,7 +53,7 @@ concurrency:
 
 env:
   # The reviewed bus code and contract. Immutable: a commit, not a branch.
-  BUS_REF: 1bb85baf180b8fa87eccb3927a5014431f6d9f13
+  BUS_REF: 052b3b270d75f3bb3c5eb85cac73865ba627b24b
   TRANSPORT_PR: "76"
   TRUSTED_AUTHOR: MTJawnny
   PYTHONDONTWRITEBYTECODE: "1"
