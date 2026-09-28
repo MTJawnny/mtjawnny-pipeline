@@ -1,0 +1,127 @@
+"""Bounded final Worker output. Evidence only: never a bus command or acceptance."""
+from __future__ import annotations
+
+import hashlib
+import json
+
+from agent_bus import errors as E
+from agent_bus.errors import BusError
+from agent_bus.shell import Completed
+
+# UTF-8 bytes, including the serialized wrapper. Safely below GitHub's comment
+# limit even with JSON escaping; required evidence is never silently truncated.
+MAX_EVIDENCE_BYTES = 24000
+MAX_COMMENT_BYTES = 60000
+PREFIX = 'Worker evidence/result — non-authoritative; not Manager acceptance.\n\n```json\n'
+SUFFIX = '\n```\n'
+
+
+def _pairs(pairs):
+    obj = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError(f'duplicate JSON key: {key}')
+        obj[key] = value
+    return obj
+
+
+def _json(text):
+    return json.loads(text, object_pairs_hook=_pairs)
+
+
+def _refuse(detail):
+    raise BusError(E.WORKER_EVIDENCE_INVALID, detail)
+
+
+def _bounded(text):
+    if not isinstance(text, str) or not text.strip():
+        _refuse('missing final substantive Worker response')
+    if text.strip().lower() in {'claude done', 'done', 'ok'}:
+        _refuse('final Worker response is only an acknowledgement, not substantive evidence')
+    try:
+        size = len(text.encode('utf-8'))
+    except UnicodeError:
+        _refuse('final Worker response is not valid UTF-8')
+    if size > MAX_EVIDENCE_BYTES:
+        _refuse(f'Worker evidence exceeds {MAX_EVIDENCE_BYTES} UTF-8 bytes; not truncated')
+    return text
+
+
+def extract(provider: str, result: Completed | None) -> str:
+    """Return the exact final text, or refuse. No prose fallback or tool output.
+
+    Claude has one JSON result. Codex has one completed turn with a terminal
+    item.completed agent_message; earlier agent messages are commentary. Explicit
+    final_answer phases, when present, must agree with that terminal message.
+    Duplicate keys, duplicate final ids, multiple turns and error events fail
+    closed rather than guessing which result the supervisor should publish.
+    """
+    if result is None or result.returncode != 0:
+        _refuse('no successful provider result available')
+    try:
+        if provider == 'claude':
+            payload = _json(result.stdout)
+            if (not isinstance(payload, dict) or payload.get('type') != 'result'
+                    or payload.get('subtype') != 'success'
+                    or payload.get('is_error') is not False):
+                _refuse('Claude output is not one successful JSON result')
+            return _bounded(payload.get('result'))
+        if provider != 'codex':
+            _refuse(f'unsupported Worker evidence provider: {provider}')
+        events = [_json(line) for line in result.stdout.splitlines() if line.strip()]
+        if not events or not all(isinstance(e, dict) for e in events):
+            _refuse('Codex output is not JSONL objects')
+        turns = [i for i, e in enumerate(events) if e.get('type') == 'turn.completed']
+        if len(turns) != 1 or turns[0] != len(events) - 1:
+            _refuse('Codex output needs exactly one terminal completed turn')
+        if any(e.get('type') in {'error', 'turn.failed'} for e in events):
+            _refuse('Codex output contains an error event')
+        items = [e.get('item') for e in events if e.get('type') == 'item.completed']
+        if not items or not all(isinstance(item, dict) for item in items):
+            _refuse('Codex output has no unambiguous completed final item')
+        final = items[-1]
+        if final.get('type') != 'agent_message' or final.get('phase') not in (None, 'final_answer'):
+            _refuse('Codex final completed item is not a final agent message')
+        finals = [item for item in items if item.get('phase') == 'final_answer']
+        if finals and (len(finals) != 1 or finals[0] is not final):
+            _refuse('Codex output contains ambiguous final agent messages')
+        ids = [item.get('id') for item in items]
+        if any(not isinstance(i, str) or not i for i in ids) or len(set(ids)) != len(ids):
+            _refuse('Codex completed item ids are missing or ambiguous')
+        return _bounded(final.get('text'))
+    except (ValueError, TypeError) as exc:
+        _refuse(f'{provider} final evidence is malformed JSON: {exc}')
+
+
+def failure_detail(provider: str, result: Completed) -> str:
+    """Diagnostic text only. This is deliberately not capacity classification."""
+    detail = result.stderr.strip()
+    if provider == 'claude':
+        try:
+            payload = _json(result.stdout)
+        except (ValueError, TypeError):
+            payload = None
+        if isinstance(payload, dict) and payload.get('type') == 'result' and payload.get('is_error') is True:
+            fields = {k: payload[k] for k in ('subtype', 'result', 'errors', 'api_error_status')
+                      if k in payload}
+            detail = 'stdout result error: ' + json.dumps(fields, ensure_ascii=True) + ('; stderr: ' + detail if detail else '')
+    return detail[:1000]
+
+
+def render(command, unit: str, head: str, provider: str, text: str) -> str:
+    text = _bounded(text)
+    payload = {
+        'schema': 'mtj-worker-evidence/1', 'actor': 'WORKER',
+        'authority': False, 'manager_acceptance': False,
+        'command': command.message_id, 'wave': command.wave,
+        'selection': dict(command.authority), 'base': command.base,
+        'unit': unit, 'head': head, 'provider': provider,
+        'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+        'response': text,
+    }
+    # Keep response newlines escaped inside a JSON string. Even a quoted K or
+    # mtj-bus fence in model output cannot become a top-level authority/message.
+    body = PREFIX + json.dumps(payload, ensure_ascii=True, sort_keys=True, indent=2) + SUFFIX
+    if len(body.encode('utf-8')) > MAX_COMMENT_BYTES:
+        _refuse(f'encoded Worker evidence exceeds {MAX_COMMENT_BYTES} bytes; not truncated')
+    return body

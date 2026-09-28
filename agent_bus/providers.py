@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 from agent_bus import errors as E
+from agent_bus.worker_evidence import failure_detail
 from agent_bus.errors import BusError
 from agent_bus.issue import AuthorityError
 from agent_bus.preflight import Checkout, inspect
@@ -501,7 +502,7 @@ class ProviderFailoverTransport:
             if verdict.status != CAPACITY:
                 raise BusError(E.TRANSPORT_FAILED,
                                f"{provider.executable} exited {result.returncode}: "
-                               f"{result.stderr.strip()[:400]}")
+                               f"{failure_detail(provider.name, result)}")
             attempts.append({"provider": provider.name, "session": session.label,
                              "returncode": result.returncode,
                              "classified": list(verdict.evidence)})

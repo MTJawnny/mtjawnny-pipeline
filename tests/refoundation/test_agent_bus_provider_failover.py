@@ -26,7 +26,7 @@ from typing import Callable
 from tests.refoundation.agent_bus_fixtures import (
     BASE, CHECKPOINT, TASK, TRUSTED, WAVE, comment_body,
 )
-from tests.refoundation.agent_bus_repo_fake import FakeRepo
+from tests.refoundation.test_agent_bus_worker_evidence import EvidenceRepo as FakeRepo
 
 from agent_bus import errors as E
 from agent_bus import providers as P
@@ -46,8 +46,9 @@ CHECKPOINT_COMMENT = (
 )
 
 CLAUDE_OK = json.dumps({"type": "result", "subtype": "success", "is_error": False,
-                        "result": "done"})
+                        "result": "Worker result: scope and deterministic validation passed; next: NONE"})
 CODEX_OK = ('{"type": "thread.started", "thread_id": "th-codex-1"}\n'
+            '{"type": "item.completed", "item": {"id": "final", "type": "agent_message", "text": "Worker result: scope and deterministic validation passed; next: NONE"}}\n'
             '{"type": "turn.completed", "usage": {}}\n')
 
 

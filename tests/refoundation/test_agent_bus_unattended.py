@@ -19,7 +19,8 @@ from tests.refoundation.agent_bus_fixtures import (
     AUTHORITY, BASE, CHECKPOINT, NOBODY_TRUSTED, OTHER_SHA, TASK, TRUSTED, WAVE,
     comment_body, envelope, raw, unit,
 )
-from tests.refoundation.agent_bus_repo_fake import Effect, FakeRepo
+from tests.refoundation.agent_bus_repo_fake import Effect
+from tests.refoundation.test_agent_bus_worker_evidence import EvidenceRepo as FakeRepo
 
 from agent_bus import errors as E
 from agent_bus.compose import progress, result, slug
@@ -44,6 +45,18 @@ CHECKPOINT_COMMENT = (
     "```yaml\nschema: mtj-checkpoint/2\n"
     f"h: {BASE}\na: {TASK}\nnext: CLAUDE_EXECUTE_SELECTED_ONLY\n```\n"
 )
+
+
+def plist_state(path: Path) -> tuple | None:
+    """Existence, bytes and mtime of a host path, read without mutating it."""
+    path = Path(path)
+    if not path.exists():
+        return None
+    return (path.read_bytes(), path.stat().st_mtime_ns)
+
+
+def refuse_to_run(argv, **kwargs):
+    raise AssertionError(f"a dry run invoked {list(argv)}")
 
 
 def gh(comment_id: int, body: str, author: str = "MTJawnny") -> dict:
@@ -718,10 +731,13 @@ class TestServiceEnvironmentIsDerived(unittest.TestCase):
 
     def test_NC_resolution_happens_on_a_DRY_RUN_too(self):
         # The dry run exists to discover that this machine cannot host the
-        # service BEFORE the service is installed, not after.
+        # service BEFORE the service is installed, not after. The operator's
+        # plist may or may not exist on this host; either way it is untouched.
+        before = plist_state(W.plist_path())
         with self.assertRaises(BusError):
-            W.install(ARGV_ARMED, dry_run=True, which=fake_which({}))
-        self.assertFalse(Path(W.plist_path()).is_file())
+            W.install(ARGV_ARMED, dry_run=True, which=fake_which({}),
+                      run=refuse_to_run)
+        self.assertEqual(plist_state(W.plist_path()), before)
 
     def test_the_derived_path_can_find_every_required_executable_here(self):
         # The invariant, checked against THIS machine whatever it is: whatever the
@@ -852,10 +868,15 @@ class TestPerCycleLogging(unittest.TestCase):
 
 class TestServiceSurfaces(unittest.TestCase):
     def test_install_changes_nothing_without_an_explicit_apply(self):
-        plan = W.install(["python3", "-m", "agent_bus"], dry_run=True)
+        # State-preserving whether or not the operator's plist already exists:
+        # the dry run neither writes it nor invokes launchctl.
+        before = plist_state(W.plist_path())
+        plan = W.install(["python3", "-m", "agent_bus"], dry_run=True,
+                         run=refuse_to_run)
         self.assertTrue(plan["dry_run"])
         self.assertIn("<key>Label</key>", plan["document"])
-        self.assertFalse(Path(plan["plist"]).is_file())
+        self.assertEqual(plan["plist"], str(W.plist_path()))
+        self.assertEqual(plist_state(W.plist_path()), before)
 
     def test_the_agent_restarts_itself_and_throttles_its_restarts(self):
         document = W.plist(["python3", "-m", "agent_bus"])

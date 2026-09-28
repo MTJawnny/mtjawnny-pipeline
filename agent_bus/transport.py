@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from agent_bus import errors as E
+from agent_bus.worker_evidence import failure_detail
 from agent_bus.errors import BusError
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Completed, Runner
@@ -136,7 +137,7 @@ class LocalClaudeTransport:
         if result.returncode != 0:
             raise BusError(E.TRANSPORT_FAILED,
                            f"{self.executable} exited {result.returncode}: "
-                           f"{result.stderr.strip()[:400]}")
+                           f"{failure_detail('claude', result)}")
         return Dispatch(argv, prompt, session, resumed, executed=True, result=result)
 
 

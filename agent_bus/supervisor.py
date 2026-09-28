@@ -22,18 +22,20 @@ code path with different inputs.
 
 from __future__ import annotations
 
+import json
+
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
-from agent_bus import compose
+from agent_bus import compose, worker_evidence
 from agent_bus import errors as E
 from agent_bus.enforce import UnitVerdict, verify_unit
 from agent_bus.errors import BusError
 from agent_bus.git_evidence import completed_units
-from agent_bus.issue import Resolution, post_comment, read_comments, resolve_authority
+from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
 from agent_bus.machine import Authority, BusState, RawComment, fold
 from agent_bus.preflight import Checkout, PreflightReport, build_base_of, inspect, preflight
-from agent_bus.protocol import Envelope
+from agent_bus.protocol import SHA_RE, Envelope
 from agent_bus.shell import Runner
 from agent_bus.providers import (
     DEFAULT_ORDER, ProviderFailoverTransport, ProviderOrder, build_providers,
@@ -169,6 +171,12 @@ class Supervisor:
         runnable: list[str] = list(resume_plan["runnable"])
         if self.max_units is not None:
             runnable = runnable[: self.max_units]
+        if execute:
+            # A commit can recover scope progress, never a lost model response.
+            # Git-completed units need durable evidence before execute/resume may
+            # report anything, BUS_NOTHING_ACTIONABLE included. Dry runs stay inert.
+            report["worker_evidence"] = self._prior_evidence(
+                observation, envelope, resume_plan["completed"])
         if not runnable:
             report["action"] = "NONE"
             report["reason"] = E.NOTHING_ACTIONABLE
@@ -223,6 +231,11 @@ class Supervisor:
             verdict: UnitVerdict = verify_unit(self.repo_path, command.wave, unit,
                                                before, after, dirty, self.run)
             outcomes.append(verdict.as_dict())
+            if verdict.ok:
+                text = worker_evidence.extract(dispatch.provider, dispatch.result)
+                body = worker_evidence.render(command, unit_id, after, dispatch.provider, text)
+                reference = self._post_evidence(body)
+                report.setdefault("worker_evidence", []).append(reference)
             status = "DONE" if verdict.ok else "FAILED"
             commit = verdict.commits[-1] if verdict.commits else None
             posted.append(self._post(compose.progress(
@@ -243,7 +256,8 @@ class Supervisor:
             command, authority,
             status="P" if stopped is None else "F",
             branch=checkout.branch, head=head, units=unit_rows,
-            validation=[f"{o['unit']}: {'ok' if o['ok'] else 'rejected'}" for o in outcomes],
+            validation=[f"{o['unit']}: {'ok' if o['ok'] else 'rejected'}" for o in outcomes]
+                       + [f"Worker evidence (not acceptance): {ref}" for ref in report.get("worker_evidence", [])],
             discrepancies=[] if stopped is None else [f"{stopped[0]} at {stopped[1]}"],
             clock=self.clock)
         posted.append(self._post(result))
@@ -255,6 +269,53 @@ class Supervisor:
         report["dispatches"] = dispatches
         report["posted"] = posted
         return report
+
+    def _post_evidence(self, body: str) -> str:
+        try:
+            receipt = post_comment(body, self.issue, self.repo_slug, self.run, dry_run=False)
+            payload = json.loads(receipt.stdout) if receipt is not None else None
+            comment_id = payload.get("id") if isinstance(payload, dict) else None
+            if type(comment_id) is not int or comment_id <= 0:
+                raise ValueError("GitHub did not return a positive comment id")
+        except (AuthorityError, BusError, ValueError) as exc:
+            raise BusError(E.WORKER_EVIDENCE_POST_FAILED,
+                           f"Worker evidence was not durably acknowledged on Issue #{self.issue}: {exc}") from exc
+        return f"https://github.com/{self.repo_slug}/issues/{self.issue}#issuecomment-{comment_id}"
+
+    def _prior_evidence(self, observation: Observation, command: Envelope,
+                        completed: Sequence[str]) -> list[str]:
+        references = []
+        for unit in completed:
+            candidates = []
+            for comment in observation.comments:
+                if (comment.source != f"issue:{self.issue}" or not self.trust.trusts(comment.author)
+                        or not comment.body.startswith(worker_evidence.PREFIX)
+                        or not comment.body.endswith(worker_evidence.SUFFIX)):
+                    continue
+                try:
+                    payload = json.loads(comment.body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
+                    if (not isinstance(payload, dict) or payload.get("command") != command.message_id
+                            or payload.get("unit") != unit):
+                        continue
+                    expected = worker_evidence.render(command, unit, payload["head"],
+                                                      payload["provider"], payload["response"])
+                    if expected != comment.body:
+                        continue
+                    if not SHA_RE.fullmatch(payload["head"]):
+                        continue
+                    check = self.run(["git", "-C", self.repo_path, "merge-base", "--is-ancestor",
+                                      payload["head"], "HEAD"])
+                    if check.returncode != 0:
+                        continue
+                    candidates.append((comment.comment_id, comment.body))
+                except (ValueError, KeyError, TypeError, BusError):
+                    continue
+            if not candidates or len({body for _, body in candidates}) != 1:
+                raise BusError(E.WORKER_EVIDENCE_INVALID,
+                               f"completed unit {unit} lacks unambiguous durable Worker evidence on Issue #{self.issue}; "
+                               "git trailers alone cannot recover the provider response")
+            references.append(f"https://github.com/{self.repo_slug}/issues/{self.issue}#issuecomment-{candidates[0][0]}")
+        return references
 
     # ----------------------------------------------------------------- git io
     def _head(self) -> str:

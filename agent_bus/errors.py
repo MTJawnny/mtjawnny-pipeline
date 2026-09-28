@@ -86,6 +86,9 @@ ALREADY_CLAIMED = "BUS_ALREADY_CLAIMED"
 NOTHING_ACTIONABLE = "BUS_NOTHING_ACTIONABLE"
 TRANSPORT_FAILED = "BUS_TRANSPORT_FAILED"
 
+WORKER_EVIDENCE_INVALID = "BUS_WORKER_EVIDENCE_INVALID"
+WORKER_EVIDENCE_POST_FAILED = "BUS_WORKER_EVIDENCE_POST_FAILED"
+
 # --- local Worker providers ---------------------------------------------------------
 # Provider order is operator configuration; a malformed one is refused, not guessed.
 PROVIDER_CONFIG_INVALID = "BUS_PROVIDER_CONFIG_INVALID"
