@@ -347,16 +347,28 @@ every check the wave's Captain goal plan requires passed on the result head.
 5864993788) runs the same four stages on the operator's machine with no API key
 and no `main` change: `python3 -m agent_bus ... watch run --manager` makes every
 watcher cycle a Manager pass, then a Worker pass (`agent_bus.local_manager`). The
-gate is `manager_gate.decide` over a synthesized comment event; evidence is the
-selftest and the goal plan's checks in a disposable clone at the claimed head
-(the operator's ignored `data/` and `experiments/out/` copied in read-only when
-`--operator-state` names them); the model is the provider that did NOT produce
-the wave's Worker evidence, run read-only against the decision schema (`codex
-exec --sandbox read-only --output-schema`, or `claude -p --json-schema` with no
-edit tools, no ambient settings and the Bash sandbox); every write is
-`agent_bus.publisher`. A wave whose units two providers ran has no eligible
-reviewer and waits for a human; an out-of-capacity reviewer is a wait, never a
-verdict. Installing it as a persistent service is the operator's own step.
+gate is `manager_gate.decide` over a synthesized comment event. Evidence is the
+selftest and the goal plan's checks on the claimed head, run by candidate code
+under `sandbox-exec`: no network, no credential files, an empty environment, and
+writes confined to a throwaway `--no-hardlinks` clone and a scratch dir (the
+operator's ignored `data/` and `experiments/out/` are copied in when
+`--operator-state` names them, never through a candidate symlink). The goal
+binding, the measured head and the evidence are the host's: held in memory, and
+re-proven after the review or nothing is published. The model is the provider
+that did NOT produce the wave's Worker evidence. It reads a pristine clone taken
+before any candidate code ran, works from a context dir outside it, and is
+governed by `CLAUDE.md` and both bus contracts copied from the watcher's own
+checkout; the candidate's copies are review material only. It runs against the
+decision schema with no write access (`codex exec --sandbox read-only
+--output-schema`, or `claude -p --json-schema` with no edit tools, no ambient
+settings, and the Bash sandbox denying writes to the whole review workspace).
+Every write is `agent_bus.publisher`; nothing is written into the operator
+checkout. Worker evidence that names no provider, an unknown one, or more than
+one (a failover wave), or a provider order with no other provider, is reviewed
+by no model: the host publishes a CAPTAIN decision. An eligible reviewer out of
+capacity is a wait, retried next pass (delegated-Manager policy under decision
+G): capacity recovers, and CAPTAIN would halt the program. Installing it as a
+persistent service is the operator's own step.
 
 By hand, the Manager does the same:
 
