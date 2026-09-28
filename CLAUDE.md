@@ -7,9 +7,10 @@ It is current operating law only. History lives in Git; chronology is not law.
 
 - **Captain** — the user. Final human authority. Ratifies vocabulary, semantics,
   scoring constants, and every merge.
-- **Manager** — ChatGPT. Issues one bounded task (`T`), reviews the result (`V`),
-  and posts the checkpoint (`K`) that selects what runs next.
-- **Worker** — Claude Code. You. Execute exactly one `T` and post one `X`.
+- **Manager** — cross-review (Captain decision E, Issue #1 comment 5864993788):
+  whichever model did a task, the OTHER one (Claude Code or Codex) reviews it
+  (`V`); `T` and `K` follow the reviewed verdict. No model accepts its own work.
+- **Worker** — Claude Code or Codex. Execute exactly one `T` and post one `X`.
 
 ## Authority order
 
@@ -40,20 +41,14 @@ authority. Resolving the conflict is the Manager's call or Captain's, not yours.
 
 ## What `K` is
 
-**`K` is a CHECKPOINT, not an implementation-acceptance token.** It carries two
-independent dimensions: `h` — **accepted_head**, the last commit accepted as
-implementation — and `a` — **active_task**, the comment id of the `T` that is
-live now (or `0`). They move independently: a `K` routinely keeps `h` unchanged
-while `a` selects a repair `T`. That is the normal repair path.
-The acceptance verdict lives in `V` (`A` accept / `R` repair), never in the
-existence of a `K`; a repair `T` is the loop working, not the loop failing.
-
-- **Canonical selector: latest `K` -> active `T`.** That is the only spelling.
-  A `K` is selected because it is the latest, never because it accepted anything.
-- **A `T` is not executable merely because it was posted.** It is yours to run
-  only when the latest `K` selects it as `a`. Execute only that one.
-- Read the latest `K` for *what to do*; read `h` for *what has been accepted*.
-  Never infer either from the other.
+**`K` is a CHECKPOINT, not an implementation-acceptance token.** Its `h` —
+**accepted_head** — is the last commit accepted as implementation; its `a` —
+**active_task** — is the comment id of the `T` live now (or `0`). They move
+independently: a `K` routinely keeps `h` while `a` selects a repair `T`, the
+normal repair path. Acceptance lives in `V` (`A`/`R`), never in a `K` existing.
+A `K` is selected because it is the latest, never because it accepted anything;
+a `T` is yours only when the latest `K` selects it. Read `K` for *what to do*,
+`h` for *what has been accepted*; never infer either from the other.
 
 ## Waves
 
@@ -72,8 +67,11 @@ Details: `refoundation/AGENT-BUS.md`.
 - **One task.** One wave is one task; a unit is not. No self-authorized successor.
   `next: NONE` unless externally authorized.
 - **STOP** on unexplained drift, on a conflict inside the task, or when a task
-  cannot be satisfied within its own scope. Report the exact conflict; do not
-  silently adapt the task to the repository or the repository to the task.
+  cannot be satisfied within its own scope. Under Captain decision F the conflict
+  first goes to the other model for analysis; proceed only with a fix inside the
+  task's scope and record both analyses. Never silently adapt the task to the
+  repository or the repository to the task. Captain-owned decisions are
+  recorded and batched; other runnable work continues.
 - The **allowlist is a STOP, not a judgement call.** A file outside it is not
   edited "because it obviously has to move" — that is the STOP.
 - **Never merge.** Merges are Captain's.

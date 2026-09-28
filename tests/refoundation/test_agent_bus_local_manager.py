@@ -207,3 +207,15 @@ class TestCycle(unittest.TestCase):
         report = L.WorkerAndManager(Worker(), Manager()).poll_once(execute=True)
         self.assertEqual(order, ["manager", "worker"])
         self.assertEqual(report["manager"]["reason"], E.DECISION_INVALID)
+
+
+class TestRootContract(unittest.TestCase):
+    def test_claude_md_states_cross_review_and_the_decision_f_stop(self):
+        root = Path(__file__).resolve().parents[2]
+        text = " ".join((root / "CLAUDE.md").read_text(encoding="utf-8").split())
+        self.assertIn("whichever model did a task, the OTHER one (Claude Code or Codex) "
+                      "reviews it", text)
+        self.assertIn("No model accepts its own work.", text)
+        self.assertIn("the conflict first goes to the other model for analysis", text)
+        self.assertIn("Captain-owned decisions are recorded and batched", text)
+        self.assertNotIn("**Manager** — ChatGPT", text)
