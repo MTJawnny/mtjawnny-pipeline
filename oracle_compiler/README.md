@@ -11,6 +11,7 @@ Cold-start compiler reading order:
 1. `V1.md` — Captain-ratified compiler architecture.
 2. `OWNERSHIP.md` — writable surfaces, read-only dependencies, and STOP boundaries.
 3. `PLAN.md` — dependency/package map only; it does not select work.
+   `PROGRAM.md` — how that map runs to its finish line (Captain decisions C–G).
 4. `INTERFACES.md` — currently frozen compiler interface level.
 5. Issue #1 — resolve the active task before execution.
 
