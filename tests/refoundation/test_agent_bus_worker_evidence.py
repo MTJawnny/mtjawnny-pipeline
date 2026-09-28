@@ -196,6 +196,32 @@ class TestHeadlessEvidenceContract(unittest.TestCase):
         self.assertEqual(dispatch.provider, provider)
         return ' '.join(dispatch.prompt.split())
 
+    def test_no_brief_rule_contradicts_the_headless_contract(self):
+        """Substring checks alone pass a brief that ALSO says the opposite. Every
+        rule bullet that mentions 'Claude done' must negate it, and the only
+        instruction about posting an X/result must be the prohibition."""
+        import re
+        for provider in ('claude', 'codex'):
+            rules = self.brief(provider).split('Rules for this wave:')[1]
+            rules = rules.split('The authorizing command')[0]
+            for bullet in [b.strip() for b in rules.split(' - ') if b.strip()]:
+                with self.subTest(provider=provider, bullet=bullet[:50]):
+                    if 'Claude done' in bullet:
+                        self.assertTrue('does not apply' in bullet or 'is refused' in bullet)
+                        self.assertNotRegex(bullet, re.compile(
+                            r"(end|reply|respond|answer|finish)\w*\s+(\w+\s+){0,3}"
+                            r"(exactly\s+)?'?Claude done", re.I))
+                    for match in re.finditer(r'\bpost\b', bullet, re.I):
+                        before = bullet[max(0, match.start() - 12):match.start()]
+                        self.assertIn('Do not', before, bullet)
+
+    def test_the_root_contract_keeps_headless_providers_from_fetching(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        claude = ' '.join((root / 'CLAUDE.md').read_text(encoding='utf-8').split())
+        self.assertIn('A headless Agent Bus provider never fetches', claude)
+        self.assertIn('ending with the `mtj-evidence` JSON footer', claude)
+
     def test_every_provider_brief_demands_substantive_machine_evidence(self):
         for provider in ('claude', 'codex'):
             with self.subTest(provider=provider):

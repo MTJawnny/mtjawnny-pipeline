@@ -36,7 +36,8 @@ authority. Resolving the conflict is the Manager's call or Captain's, not yours.
 1. Inspect local state before mutating: branch, HEAD, `git status --short`,
    remotes, worktrees. Never clean, stash, checkout, reset or rebase merely to
    make the tree look tidy — pre-existing dirt is evidence.
-2. `git fetch` is allowed when the task does not forbid it. Never pull.
+2. Interactive sessions may `git fetch` unless the task forbids it. A headless
+   Agent Bus provider never fetches: the host refuses the ref move. Never pull.
 3. Read Issue #1: **latest `K` -> active `T`**.
 4. Verify the exact `base` and the allow/deny scope against measured state.
 5. Execute that one task. Read only what it needs.
@@ -44,42 +45,29 @@ authority. Resolving the conflict is the Manager's call or Captain's, not yours.
 ## What `K` is
 
 **`K` is a CHECKPOINT, not an implementation-acceptance token.** It carries two
-independent things, and collapsing them is the failure this section exists to
-prevent:
-
-- `h` — **accepted_head**: the last commit accepted as implementation.
-- `a` — **active_task**: the comment id of the `T` that is live now (or `0`).
-
-**Those two dimensions move independently.** A `K` routinely carries an unchanged
-`h` — implementation *not* accepted — while `a` selects a repair `T`. That is
-not an anomaly; it is the normal repair path. The acceptance verdict lives in
-`V` (`A` accept / `R` repair), never in the existence of a `K`.
-
-So:
+independent dimensions: `h` — **accepted_head**, the last commit accepted as
+implementation — and `a` — **active_task**, the comment id of the `T` that is
+live now (or `0`). They move independently: a `K` routinely keeps `h` unchanged
+while `a` selects a repair `T`. That is the normal repair path.
+The acceptance verdict lives in `V` (`A` accept / `R` repair), never in the
+existence of a `K`; a repair `T` is the loop working, not the loop failing.
 
 - **Canonical selector: latest `K` -> active `T`.** That is the only spelling.
-  A `K` is selected because it is the latest, never because it accepted
-  anything.
-- **A `T` is not executable merely because it was posted.** It becomes yours to
-  run only when the latest `K` selects it as `a`. Execute only that one.
-- A `V` does not have to end in acceptance, and a repair `T` is the loop
-  working, not the loop failing.
+  A `K` is selected because it is the latest, never because it accepted anything.
+- **A `T` is not executable merely because it was posted.** It is yours to run
+  only when the latest `K` selects it as `a`. Execute only that one.
 - Read the latest `K` for *what to do*; read `h` for *what has been accepted*.
   Never infer either from the other.
 
 ## Waves
 
-A `T` may authorize a **bounded wave**: several pre-authorized units, each with
-an id, dependencies, allow scope and required validation. Inside an authorized
-wave, finishing a unit is **not** a STOP — continue to the next runnable unit.
-Each mutating unit becomes exactly one commit ending with `Agent-Bus-Wave:` and
-`Agent-Bus-Unit:` trailers, but **the trusted Agent Bus host makes it, not the
-model**. A Worker provider — any provider — edits and tests files only, and never
-commits, pushes, stages, resets, stashes, cleans, checks out, rebases or
-otherwise mutates Git metadata. The host proves scope, stages exactly the
-authorized changes, commits, and fast-forward pushes the commanded branch. STOP
-at the wave's review boundary. Typed transport, loop safety, cold start and
-recovery: `refoundation/AGENT-BUS.md`.
+A `T` may authorize a **bounded wave** of pre-authorized units (id, dependencies,
+allow scope, validation). Inside it, finishing a unit is **not** a STOP — continue
+to the next runnable unit; STOP at the wave's review boundary. Each mutating unit
+becomes one commit with `Agent-Bus-Wave:` / `Agent-Bus-Unit:` trailers, made by
+the trusted Agent Bus host, not the model: a provider edits and tests files only
+and never commits, pushes, stages, resets, stashes, cleans, checks out, rebases
+or otherwise mutates Git metadata. Details: `refoundation/AGENT-BUS.md`.
 
 ## Discipline
 
@@ -111,8 +99,8 @@ Standing controls: `{AQ4: PAUSED, BRIDGE0: UNUSED, STEP6: NOT_STARTED, MERGE: NO
 - **Measure before you mutate.** A count is not a measurement; re-derive it.
 - **Classify observable, transitive behavior — never file-local syntax alone.**
   A file with no local `try` can still be unable to fail: a caller up the chain
-  may catch it. This is proven, not hypothetical — the C8.5T `SystemExit` case
-  is exactly that, and it is a standing negative control.
+  may catch it. The C8.5T `SystemExit` case proves it and is a standing
+  negative control.
 - **Negative-control every guard where the task contracts one.** A guard never
   shown to fail is not known to be a guard. Rig it, watch it go red, restore
   byte-exact.
@@ -149,30 +137,23 @@ code. Never run its checks individually to save time.
 
 Writing a probe or a one-off measurement? `import foundry_probe as p` and use
 `p.corpus()` / `p.rows()` / `p.domain()` / `p.assert_disjoint()` /
-`p.must_capture()`. Hand-rolling what it already does is the single most
-repeated defect class in this repository's history. The probe is test-owned at
-`tests/guards/probe/foundry_probe.py`; the import stays a bare name, so a
-consumer puts that directory on `sys.path` the way its neighbours already put
-`experiments/` there.
+`p.must_capture()`; hand-rolling them is this repository's most repeated
+defect. It is test-owned at `tests/guards/probe/foundry_probe.py`;
+consumers put that directory on `sys.path` and import the bare name.
 
 ## Result contract
 
-- The detailed terminal result is an `X` comment on **Issue #1**. It is durable
-  there, and it belongs there — not in the human reply.
+- The detailed terminal result is an `X` comment on **Issue #1**, not the
+  human reply.
 - After the `X` is posted, the human-facing final response is **exactly**:
 
   `Claude done`
 
-- Two words, nothing else. This holds regardless of whether `X` status is
-  `P`, `S` or `F`. No completion summary, no restatement of `X`, no next-step
-  offer, unless Captain explicitly asks.
-- That two-word rule governs **direct interactive** sessions only, where the
-  final response is shown to a human. A **headless Agent Bus** invocation
-  (`claude -p`, Codex, any provider) is different: its final response is not
-  human-facing — the supervisor captures it as machine-consumed Worker evidence.
-  There the provider does **not** post the detailed `X`/result itself and does
-  **not** reduce its final response to "Claude done", "done" or "ok"; it returns
-  a concise, bounded, substantive result stating what changed and what
-  validation ran, and the supervisor durably publishes it. An
-  acknowledgement-only final response is refused as evidence and fails the unit.
-  See `refoundation/AGENT-BUS.md` section 7a.
+- Two words, nothing else, whatever the `X` status (`P`, `S` or `F`): no
+  summary, no restatement of `X`, no next-step offer unless Captain asks.
+- That two-word rule governs **direct interactive** sessions only. A **headless
+  Agent Bus** invocation (`claude -p`, Codex, any provider) returns
+  machine-consumed Worker evidence instead: it does **not** post the detailed
+  `X`/result itself; it states what changed and what validation ran, ending
+  with the `mtj-evidence` JSON footer the Worker brief specifies, or the unit
+  fails.
