@@ -343,6 +343,21 @@ reviewed before a `WAVE_RESULT` under the same `K`, and every other message the
 ACCEPT needs independent evidence (`python3 -m agent_bus.goal run-checks`) that
 every check the wave's Captain goal plan requires passed on the result head.
 
+**The local cross-review Manager** (Captain decisions E and G, Issue #1 comment
+5864993788) runs the same four stages on the operator's machine with no API key
+and no `main` change: `python3 -m agent_bus ... watch run --manager` makes every
+watcher cycle a Manager pass, then a Worker pass (`agent_bus.local_manager`). The
+gate is `manager_gate.decide` over a synthesized comment event; evidence is the
+selftest and the goal plan's checks in a disposable clone at the claimed head
+(the operator's ignored `data/` and `experiments/out/` copied in read-only when
+`--operator-state` names them); the model is the provider that did NOT produce
+the wave's Worker evidence, run read-only against the decision schema (`codex
+exec --sandbox read-only --output-schema`, or `claude -p --json-schema` with no
+edit tools, no ambient settings and the Bash sandbox); every write is
+`agent_bus.publisher`. A wave whose units two providers ran has no eligible
+reviewer and waits for a human; an out-of-capacity reviewer is a wait, never a
+verdict. Installing it as a persistent service is the operator's own step.
+
 By hand, the Manager does the same:
 
 1. Read Issue #1 and resolve the latest `K` yourself.

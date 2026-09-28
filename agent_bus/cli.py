@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 from agent_bus import SCHEMA
+from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.issue import AuthorityError, read_comments, resolve_authority
 from agent_bus.machine import fold
@@ -138,6 +139,12 @@ def build_parser() -> tuple[argparse.ArgumentParser, tuple[str, ...]]:
     p_watch.add_argument("--interval", type=float, default=120.0)
     p_watch.add_argument("--cycles", type=int, default=None,
                          help="stop after this many polls; omit to run until signalled")
+    p_watch.add_argument("--manager", action="store_true",
+                         help="also run the local cross-review Manager each cycle "
+                              "(needs --pr; the reviewer is never the Worker's provider)")
+    p_watch.add_argument("--operator-state", default=None,
+                         help="checkout whose ignored data/ and experiments/out/ the "
+                              "Manager's checks may copy (read-only)")
     p_watch.add_argument("--execute", action="store_true",
                          help="let the watcher actually run waves")
     p_watch.add_argument("--apply", action="store_true",
@@ -198,6 +205,10 @@ def _watch(args) -> dict:
         # a later edit to the environment or the provider file cannot drift them.
         argv += ["--providers", ",".join(_providers(args).order)]
     argv += ["watch", "run", "--interval", str(args.interval)]
+    if args.manager:
+        argv.append("--manager")
+    if args.operator_state:
+        argv += ["--operator-state", str(Path(args.operator_state).resolve())]
     if args.execute:
         argv.append("--execute")
 
@@ -205,6 +216,14 @@ def _watch(args) -> dict:
         supervisor = _supervisor(args, dispatching=True)
         if args.execute:
             supervisor.trust.require()
+        if args.manager:
+            if not args.pr or not args.trusted:
+                raise BusError(E.BAD_VALUE, "--manager needs --pr and --trusted")
+            from agent_bus.local_manager import LocalManager, WorkerAndManager
+            supervisor = WorkerAndManager(supervisor, LocalManager(
+                args.repo, str(Path(args.repo_path).resolve()), args.pr,
+                args.trusted.split(",")[0].strip(), issue=args.issue,
+                order=_providers(args).order, operator_state=args.operator_state))
         watch = watcher_module.Watcher(
             supervisor=supervisor,
             interval=args.interval,
