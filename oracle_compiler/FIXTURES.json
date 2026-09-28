@@ -54,11 +54,14 @@
     {
       "id": "split-destination-selected-set",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "F0_NO_QUALIFYING_MEMBER",
+      "member": "A Little Chat",
+      "member_status": "F0_SELECTED_PRODUCTION_FIXTURE",
       "gold": [],
       "selection": {
-        "reason": "no AQ4 probe population carries a selected set divided across destinations; production fixtures not searched in F0"
+        "oracle_id": "1167fe30-32b8-4381-8067-a05cd345977b",
+        "source_population": "codebook axis rule:library-dig-to-hand (human-ratified assertions; codebook sha256 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c)",
+        "rule": "first unused human-asserted member by oracle_id of the ratified axis whose definition expresses the role: one selected card to hand, the rest to the library bottom: a selected set divided across two destinations",
+        "qualifying_rows": 11
       }
     },
     {
@@ -81,11 +84,14 @@
     {
       "id": "prior-set-complement-reference",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "F0_NO_QUALIFYING_MEMBER",
+      "member": "Arcane Investigator",
+      "member_status": "F0_SELECTED_PRODUCTION_FIXTURE",
       "gold": [],
       "selection": {
-        "reason": "the frozen P4 back-reference inventory has no complement form; filling it needs a new measurement; production fixtures not searched in F0"
+        "oracle_id": "19b229c4-1c21-4c7c-a25e-4e8c1cd4ed4b",
+        "source_population": "codebook axis rule:library-dig-to-hand (human-ratified assertions; codebook sha256 6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c)",
+        "rule": "first unused human-asserted member by oracle_id of the ratified axis whose definition expresses the role: 'the rest' names the complement of the selected card within the set looked at before",
+        "qualifying_rows": 11
       }
     },
     {
@@ -144,7 +150,7 @@
         "M01 classifies ability-borrowing/inheritance representation as GENUINELY_MISSING; no new primitive or expected encoding is gold here"
       ],
       "selection": {
-        "reason": "no AQ4 probe population covers ability borrowing (M01: GENUINELY_MISSING); production fixtures not searched in F0"
+        "reason": "no AQ4 probe population, Gate 2 ground-truth axis or active codebook axis defines ability borrowing; one incidental human-ratified candidate is recorded in the F0 report, not selected"
       }
     }
   ],
@@ -156,7 +162,7 @@
       "task": "F0.ORACLE-COMPILER-FIXTURE-SELECTION-FREEZE (Issue #1 comment 5878063506)",
       "script": "experiments/oracle_ingest/f0_select.py",
       "report": "experiments/out/oracle_ingest/f0/selection.json (ignored; x2 byte-identical)",
-      "report_sha256": "e95cd868ff5245c5e15502398115120b562a15e3591480102bf8b0747a935d20",
+      "report_sha256": "aec151caf1bd0543c1ed6621399d450efd469e39d1523c94d7b7c70e76ea3cd6",
       "reconciled_with_c02": {
         "exile_return": 53,
         "heads": {
@@ -170,7 +176,13 @@
         "rows": 2110
       },
       "tie_break": "(oracle_id, stem, occurrence); one card per role, roles in listed order",
-      "c03_result_existed": false
+      "c03_result_existed": false,
+      "production_fixtures_searched": {
+        "codebook_active_axes": 403,
+        "gate2_ground_truth_axes": 150,
+        "codebook_sha256": "6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c",
+        "instruction": "Captain, Issue #1 comment 5878225927"
+      }
     }
   },
   "forbidden_gold": [
