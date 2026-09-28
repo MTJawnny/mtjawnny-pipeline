@@ -407,6 +407,33 @@ class TestProviderBoundary(unittest.TestCase):
         self.assertEqual(argv.count("--sandbox"), 1)
         self.assertEqual(argv[argv.index("--sandbox") + 1], "workspace-write")
 
+    def test_headless_claude_loads_no_ambient_settings_and_is_sandboxed(self):
+        from agent_bus.transport import HEADLESS_CLAUDE_SETTINGS
+        argv = P.ClaudeProvider(REPO_PATH).argv("b", P.SessionRef("claude", "s", False))
+        flag = lambda name: argv[argv.index(name) + 1]
+        self.assertEqual(argv.count("--setting-sources"), 1)
+        self.assertEqual(flag("--setting-sources"), "")
+        self.assertEqual(flag("--permission-prompts"), "none")
+        settings = json.loads(flag("--settings"))
+        self.assertEqual(settings, HEADLESS_CLAUDE_SETTINGS)
+        self.assertIs(settings["sandbox"]["enabled"], True)
+        self.assertIs(settings["sandbox"]["allowUnsandboxedCommands"], False)
+        denied = set(settings["permissions"]["deny"])
+        for verb in ("add", "commit", "push", "stash", "reset", "checkout", "rebase",
+                     "clean", "fetch", "config", "update-ref"):
+            with self.subTest(verb=verb):
+                self.assertIn(f"Bash(git {verb}:*)", denied)
+        for allowed in settings["permissions"]["allow"]:
+            with self.subTest(allowed=allowed):
+                self.assertNotIn(allowed.split("(")[1].split(":")[0].split(" ")[-1],
+                                 {"add", "commit", "push", "config"})
+
+    def test_NC_resuming_claude_keeps_the_same_least_privilege(self):
+        fresh = P.ClaudeProvider(REPO_PATH).argv("b", P.SessionRef("claude", "s", False))
+        resumed = P.ClaudeProvider(REPO_PATH).argv("b", P.SessionRef("claude", "s", True))
+        tail = lambda a: a[a.index("--setting-sources"):a.index("--settings") + 2]
+        self.assertEqual(tail(fresh), tail(resumed))
+
     def test_no_danger_full_access_path_exists_in_the_bus(self):
         for path in sorted(AGENT_BUS.rglob("*.py")):
             text = path.read_text(encoding="utf-8")

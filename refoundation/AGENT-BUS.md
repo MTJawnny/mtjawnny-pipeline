@@ -187,6 +187,24 @@ A read-only unit is never staged or committed. Any failure above stops the wave
 before PASS. Host Git commands run with hooks disabled, so nothing a provider
 wrote into the checkout runs with the host's credentials.
 
+**Host Git never reads config a provider could write.** Every `git` the bus runs
+goes through `agent_bus.shell.Runner` in `host_git_env()`: no system or global
+config file, no ambient `GIT_*`, no prompt, and the keys that execute a program
+or redirect a remote (`core.fsmonitor`, `core.hooksPath`, `commit.gpgsign`,
+`tag.gpgsign`, `protocol.ext.allow`, `credential.helper`) pinned above anything
+the repository says. Credentials come only from `gh auth git-credential`. Step 2
+also compares local config read with `--includes` and the digests of
+`info/attributes`, `info/exclude`, `objects/info/alternates` and
+`config.worktree`; the push and its re-read use one resolved URL.
+
+**Headless Claude runs least-privileged.** `claude -p` loads no user, project or
+local settings file (`--setting-sources ""`), cannot prompt
+(`--permission-prompts none`), and runs with only the bus-owned
+`HEADLESS_CLAUDE_SETTINGS`: the Bash sandbox confines writes to the checkout and
+the temp dir, and Git metadata commands are denied. The operator's interactive
+allowlist never reaches a headless provider. Codex keeps its workspace-write
+sandbox.
+
 **Headless output is evidence, not a human reply.** In a headless Agent Bus
 invocation the provider's final response — Claude's `claude -p` result, Codex's
 terminal agent message, any provider's — is captured by the supervisor as

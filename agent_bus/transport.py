@@ -17,6 +17,8 @@ Every transport supports `dry_run`, and dry run is the default everywhere.
 
 from __future__ import annotations
 
+import json
+
 import uuid
 from dataclasses import dataclass
 from typing import Sequence
@@ -112,6 +114,28 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
     )
 
 
+# Headless Claude runs least-privileged, whatever the operator's own Claude
+# settings allow interactively. No user, project or local settings file is
+# loaded (the operator's global allowlist, and a settings file the provider
+# could plant in the checkout, both stay out); these bus-owned settings are the
+# only ones. The Bash sandbox confines every write to the checkout and the
+# temp dir, so the provider cannot reach the host's git config, credentials or
+# the bus itself; nothing can prompt, so anything needing approval is denied;
+# and Git metadata commands are denied outright (the host owns them).
+HEADLESS_CLAUDE_SETTINGS = {
+    "sandbox": {"enabled": True, "autoAllowBashIfSandboxed": True,
+                "allowUnsandboxedCommands": False},
+    "permissions": {
+        "allow": ["Bash(python3:*)", "Bash(git status:*)", "Bash(git diff:*)",
+                  "Bash(git log:*)", "Bash(git show:*)", "Bash(git rev-parse:*)"],
+        "deny": [f"Bash(git {verb}:*)" for verb in (
+            "add", "commit", "push", "stash", "reset", "checkout", "switch", "restore",
+            "rebase", "merge", "cherry-pick", "revert", "clean", "fetch", "pull",
+            "tag", "branch", "update-ref", "config", "worktree", "rm", "mv")],
+    },
+}
+
+
 class LocalClaudeTransport:
     """The operator's own authenticated Claude Code CLI, run headless."""
 
@@ -129,7 +153,9 @@ class LocalClaudeTransport:
 
     def argv(self, prompt: str, session: str, resumed: bool) -> tuple[str, ...]:
         argv = [self.executable, "-p", prompt, "--output-format", "json",
-                "--permission-mode", self.permission_mode, "--add-dir", self.repo]
+                "--permission-mode", self.permission_mode, "--add-dir", self.repo,
+                "--setting-sources", "", "--permission-prompts", "none",
+                "--settings", json.dumps(HEADLESS_CLAUDE_SETTINGS, sort_keys=True)]
         argv += ["--resume", session] if resumed else ["--session-id", session]
         if self.model:
             argv += ["--model", self.model]
