@@ -144,13 +144,27 @@
     {
       "id": "ability-borrowing-inheritance-pressure",
       "source": "oracle_compiler/V1.md#6-R2-C",
-      "member": null,
-      "member_status": "F0_NO_QUALIFYING_MEMBER",
+      "members": ["The Book of Vile Darkness", "Agatha's Soul Cauldron"],
+      "member_status": "CAPTAIN_NAMED",
       "gold": [
         "M01 classifies ability-borrowing/inheritance representation as GENUINELY_MISSING; no new primitive or expected encoding is gold here"
       ],
       "selection": {
-        "reason": "no AQ4 probe population, Gate 2 ground-truth axis or active codebook axis defines ability borrowing; one incidental human-ratified candidate is recorded in the F0 report, not selected"
+        "captain_ruling": 5878405103,
+        "oracle_ids": [
+          "fcc666bc-6fea-44e0-94bc-462c742db528",
+          "c259e16f-2a44-4552-8678-815f757a02e8"
+        ],
+        "notes": {
+          "Agatha's Soul Cauldron": "activated-ability borrowing from exiled creature cards; V1 R2-C's case",
+          "The Book of Vile Darkness": "triggered-ability inheritance from exiled cards; a variant, not V1 R2-C's activated-ability case"
+        },
+        "fixture_variants": {
+          "Agatha's Soul Cauldron": "activated-ability-borrowing",
+          "The Book of Vile Darkness": "triggered-ability-inheritance"
+        },
+        "variants_are_production_vocabulary": false,
+        "tag_request": "Captain wants differentiating tags within ability borrowing; proposed by A01 R2-C, ratified by the Captain"
       }
     }
   ],
@@ -162,7 +176,7 @@
       "task": "F0.ORACLE-COMPILER-FIXTURE-SELECTION-FREEZE (Issue #1 comment 5878063506)",
       "script": "experiments/oracle_ingest/f0_select.py",
       "report": "experiments/out/oracle_ingest/f0/selection.json (ignored; x2 byte-identical)",
-      "report_sha256": "aec151caf1bd0543c1ed6621399d450efd469e39d1523c94d7b7c70e76ea3cd6",
+      "report_sha256": "cbda774f7074d602b930554dd1842e29758a7a4df1e0b8f5653c7d493a3a931e",
       "reconciled_with_c02": {
         "exile_return": 53,
         "heads": {
