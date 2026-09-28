@@ -97,6 +97,10 @@ TRANSPORT_FAILED = "BUS_TRANSPORT_FAILED"
 
 WORKER_EVIDENCE_INVALID = "BUS_WORKER_EVIDENCE_INVALID"
 WORKER_EVIDENCE_POST_FAILED = "BUS_WORKER_EVIDENCE_POST_FAILED"
+# The evidence footer's `changed` list is not exactly what Git measured.
+WORKER_EVIDENCE_MISMATCH = "BUS_WORKER_EVIDENCE_MISMATCH"
+# The provider's own evidence footer says it stopped: the unit is not done.
+WORKER_STOPPED = "BUS_WORKER_STOPPED"
 
 # --- local Worker providers ---------------------------------------------------------
 # Provider order is operator configuration; a malformed one is refused, not guessed.

@@ -209,7 +209,17 @@ class TestFailsClosed(unittest.TestCase):
         report = armed(fake, max_units=1, **kw).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
         self.assertEqual(report["reason"], code, report["units"])
-        self.assertFalse(any(b.startswith(W.PREFIX) for b in fake.posted))
+        # A failed unit's extractable evidence IS published, marked F with the
+        # stopping code, before the FAILED progress; it never reads as completion.
+        evidence = [i for i, b in enumerate(fake.posted) if b.startswith(W.PREFIX)]
+        for index in evidence:
+            payload = json.loads(fake.posted[index][len(W.PREFIX):-len(W.SUFFIX)])
+            self.assertEqual(payload["outcome"], "F")
+            self.assertEqual(payload["problems"][0][0], code)
+        self.assertLessEqual(len(evidence), 1)
+        if evidence:
+            progress = next(i for i, b in enumerate(fake.posted) if "WAVE_PROGRESS" in b)
+            self.assertLess(evidence[0], progress)
         self.assertEqual(fake.posted_messages()[-1].body["status"], "F")
         self.assertEqual([m.body["status"] for m in fake.posted_messages()
                           if m.kind == "WAVE_PROGRESS"], ["FAILED"])
@@ -307,11 +317,11 @@ class TestFailsClosed(unittest.TestCase):
                                  ("claude", "not json")):
             with self.subTest(provider=provider, stdout=stdout):
                 fake = repo(Step(provider, dirty=("agent_bus/x.py",), stdout=stdout))
-                with self.assertRaises(BusError) as caught:
-                    armed(fake, order=(provider,)).poll_once(execute=True)
-                self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+                self.stopped(fake, E.WORKER_EVIDENCE_INVALID, order=(provider,))
                 self.assert_nothing_staged_or_committed(fake)
-                self.assertEqual(fake.posted, [])
+                # Nothing extractable to publish; the FAILED progress and F result
+                # are the durable claim.
+                self.assertFalse(any(b.startswith(W.PREFIX) for b in fake.posted))
                 self.assertEqual(fake.dirty, ("agent_bus/x.py",))
 
     def test_NC_a_commit_failure_prevents_progress_and_pass(self):

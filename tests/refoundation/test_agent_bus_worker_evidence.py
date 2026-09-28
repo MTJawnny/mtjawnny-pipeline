@@ -24,6 +24,11 @@ def codex(text=TEXT, phase=None):
         dict(type='item.completed', item=item), dict(type='turn.completed', usage={})])
 
 
+def with_footer(text, changed=(), status='DONE',
+                validation=(('python3 -m unittest tests.refoundation', 0),)):
+    return text + '\n\n' + W.footer_block(status, changed, validation)
+
+
 class EvidenceRepo(FakeRepo):
     """Existing git model with a substantive successful Claude response.
 
@@ -54,7 +59,15 @@ class EvidenceRepo(FakeRepo):
         result = super()._claude(argv)
         if result.returncode:
             return result
-        return Completed(result.argv, 0, CLAUDE, '')
+        return Completed(result.argv, 0, self.claude_ok(), '')
+
+    def changed_now(self):
+        return [path for _, path in self.entries()]
+
+    def claude_ok(self):
+        """A substantive response whose footer truthfully lists what the fake did."""
+        return json.dumps(dict(type='result', subtype='success', is_error=False,
+                               result=with_footer(TEXT, self.changed_now())))
 
     def _index(self, sha):
         # git resolves HEAD in `base..HEAD`; the shared model only knows shas.
@@ -222,11 +235,13 @@ class TestHeadlessEvidenceContract(unittest.TestCase):
         self.assertIn('**Headless output is evidence, not a human reply.**', bus)
         self.assertIn('governs only direct interactive sessions and does not apply here', bus)
         self.assertIn('does not post the detailed `X`/result itself', bus)
-        self.assertIn('"Claude done", "done" or "ok" is BUS_WORKER_EVIDENCE_INVALID', bus)
+        self.assertIn('"Claude done", "done", "ok" in any punctuation or formatting included '
+                      '— is BUS_WORKER_EVIDENCE_INVALID', bus)
+        self.assertIn('must end with one fenced `mtj-evidence` JSON footer', bus)
 
 
 class TestSupervisorEvidence(unittest.TestCase):
-    def setup_repo(self, stdout=CLAUDE, provider='claude', **kw):
+    def setup_repo(self, stdout=None, provider='claude', **kw):
         from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed
         step = ok(provider)
         step.stdout = stdout
@@ -234,7 +249,9 @@ class TestSupervisorEvidence(unittest.TestCase):
         return fake, armed(fake, order=(provider,), max_units=1, **kw)
 
     def test_both_providers_publish_exact_evidence_on_issue_before_progress_and_pass(self):
-        for provider, stdout in [('claude', CLAUDE), ('codex', codex())]:
+        response = with_footer(TEXT, ['agent_bus/x.py'])
+        claude = json.dumps(dict(type='result', subtype='success', is_error=False, result=response))
+        for provider, stdout in [('claude', claude), ('codex', codex(response))]:
             with self.subTest(provider=provider):
                 fake, sup = self.setup_repo(stdout, provider, transport_pr=76)
                 report = sup.poll_once(execute=True)
@@ -242,7 +259,8 @@ class TestSupervisorEvidence(unittest.TestCase):
                 self.assertIn('/issues/1/comments', posts[0][2])
                 self.assertIn('/issues/76/comments', posts[1][2])
                 payload = json.loads(fake.posted[0][len(W.PREFIX):-len(W.SUFFIX)])
-                self.assertEqual(payload['response'], TEXT)
+                self.assertNotIn('outcome', payload)
+                self.assertEqual(payload['response'], response)
                 self.assertEqual(payload['provider'], provider)
                 self.assertEqual(payload['head'], fake.head)
                 final = fake.posted_messages()[-1]
@@ -258,10 +276,13 @@ class TestSupervisorEvidence(unittest.TestCase):
         for provider, stdout in cases:
             with self.subTest(provider=provider, stdout=stdout[:40]):
                 fake, sup = self.setup_repo(stdout, provider)
-                with self.assertRaises(BusError) as caught:
-                    sup.poll_once(execute=True)
-                self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
-                self.assertEqual(fake.posted, [])
+                report = sup.poll_once(execute=True)
+                self.assertEqual(report['reason'], E.WORKER_EVIDENCE_INVALID)
+                # No evidence, no PASS: only the FAILED progress and F result.
+                self.assertFalse(any(b.startswith(W.PREFIX) for b in fake.posted))
+                self.assertEqual([m.kind for m in fake.posted_messages()],
+                                 ['WAVE_PROGRESS', 'WAVE_RESULT'])
+                self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
                 self.assertEqual(fake.providers_invoked, [provider])
                 # Evidence comes first: no host commit, nothing staged or pushed,
                 # and the provider's edit stays in the tree for review.
@@ -283,12 +304,16 @@ class TestSupervisorEvidence(unittest.TestCase):
             self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_POST_FAILED)
             self.assertEqual(fake.posted, [])
 
-    def test_scope_failure_does_not_publish_unverified_evidence(self):
+    def test_scope_failure_publishes_evidence_marked_failed_never_as_completion(self):
         from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed
         fake = repo(ok('claude', 'U1', 'pipeline/forbidden.py'))
         report = armed(fake).poll_once(execute=True)
         self.assertEqual(report['action'], 'WAVE_STOPPED')
-        self.assertFalse(any(body.startswith(W.PREFIX) for body in fake.posted))
+        evidence = [b for b in fake.posted if b.startswith(W.PREFIX)]
+        self.assertEqual(len(evidence), 1)
+        payload = json.loads(evidence[0][len(W.PREFIX):-len(W.SUFFIX)])
+        self.assertEqual((payload['outcome'], payload['problems'][0][0]),
+                         ('F', E.UNIT_SCOPE_ESCAPE))
         self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
 
     def test_resume_cannot_turn_lost_evidence_into_pass(self):
@@ -378,3 +403,146 @@ class TestSupervisorEvidence(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# R3 WEH1: the structured footer (Captain decision D), failed-unit evidence,
+# and no second dispatch after refused evidence
+# ---------------------------------------------------------------------------
+
+def claude_says(text):
+    return json.dumps(dict(type='result', subtype='success', is_error=False, result=text))
+
+
+class TestFooter(unittest.TestCase):
+    GOOD = with_footer(TEXT, ['a.py'])
+
+    def test_a_good_footer_parses(self):
+        stated = W.footer(self.GOOD)
+        self.assertEqual((stated.status, stated.changed), ('DONE', ('a.py',)))
+        self.assertEqual(stated.validation, (('python3 -m unittest tests.refoundation', 0),))
+
+    def test_acknowledgements_in_any_dress_are_refused(self):
+        for text in ('Claude done.', 'Claude done!', 'OK.', 'ok!', 'Done — all good',
+                     '**Claude done**', '`Claude done`', 'Claude​done', 'Claude  done',
+                     'done.' + ' ' * 20000, 'Claude done\n\nClaude done',
+                     'All tests pass and the change is complete.'):
+            with self.subTest(text=text[:30]):
+                with self.assertRaises(BusError) as caught:
+                    W.footer(text)
+                self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+
+    def test_malformed_footers_are_refused(self):
+        fence = '```' + W.FOOTER_FENCE + '\n'
+        bad = [
+            self.GOOD + '\ntrailing prose',
+            TEXT + '\n' + fence + '{"status": "DONE"}\n```',
+            TEXT + '\n' + fence + '{"status": "MAYBE", "changed": [], "validation": [{"command": "t", "exit": 0}]}\n```',
+            TEXT + '\n' + fence + '{"status": "DONE", "changed": [], "validation": []}\n```',
+            TEXT + '\n' + fence + '{"status": "DONE", "changed": ["a", "a"], "validation": [{"command": "t", "exit": 0}]}\n```',
+            TEXT + '\n' + fence + '{"status": "DONE", "changed": [], "validation": [{"command": "t", "exit": true}]}\n```',
+            TEXT + '\n' + fence + '{"status": "DONE", "changed": [], "validation": [{"command": "t", "exit": 0, "x": 1}]}\n```',
+            TEXT + '\n' + fence + '{"status": "DONE", "status": "STOP", "changed": [], "validation": [{"command": "t", "exit": 0}]}\n```',
+            TEXT + '\n' + fence + 'not json\n```',
+        ]
+        for text in bad:
+            with self.subTest(text=text[-60:]):
+                with self.assertRaises(BusError):
+                    W.footer(text)
+
+    def test_a_stop_footer_needs_no_validation(self):
+        self.assertEqual(W.footer(with_footer('STOP: conflict', [], 'STOP', ())).status, 'STOP')
+
+    def test_the_brief_states_the_footer_and_the_size_limit_and_its_example_parses(self):
+        from agent_bus.transport import FOOTER_EXAMPLE, worker_brief
+        from agent_bus.wave import plan_from_command
+        from tests.refoundation.agent_bus_fixtures import comment_body
+        from tests.refoundation.test_agent_bus_provider_failover import COMMAND
+        command = parse_comment(comment_body(**COMMAND))
+        plan = plan_from_command(command.wave, command.body)
+        brief = worker_brief(command, plan, [plan.order[0]], '/tmp/repo')
+        self.assertIn(str(W.MAX_EVIDENCE_BYTES), brief)
+        self.assertIn('```' + W.FOOTER_FENCE, brief)
+        self.assertIn(FOOTER_EXAMPLE, brief)
+        self.assertEqual(W.footer('Example.\n\n' + FOOTER_EXAMPLE).status, 'DONE')
+
+
+class TestFooterInTheSupervisor(unittest.TestCase):
+    def run_with(self, stdout, provider='claude', **step):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, armed, repo
+        fake = repo(Step(provider, stdout=stdout, **({'dirty': ('agent_bus/x.py',)} | step)))
+        return fake, armed(fake, order=(provider,), max_units=1).poll_once(execute=True)
+
+    def evidence(self, fake):
+        return [json.loads(b[len(W.PREFIX):-len(W.SUFFIX)]) for b in fake.posted
+                if b.startswith(W.PREFIX)]
+
+    def test_NC_a_dressed_up_acknowledgement_never_reaches_pass(self):
+        for text in ('Claude done.', '**ok**', 'Done — all good'):
+            with self.subTest(text=text):
+                fake, report = self.run_with(claude_says(text))
+                self.assertEqual(report['reason'], E.WORKER_EVIDENCE_INVALID)
+                self.assertEqual((fake.host_commits, fake.pushes), ([], []))
+                self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
+
+    def test_rig_footer_guard_off_an_acknowledgement_would_reach_pass(self):
+        from unittest import mock
+        with mock.patch.object(W, 'footer', lambda text: W.Footer('DONE', ('agent_bus/x.py',),
+                                                                  (('t', 0),))):
+            fake, report = self.run_with(claude_says('Claude done.'))
+        self.assertEqual(fake.posted_messages()[-1].body['status'], 'P')   # RED
+
+    def test_a_stop_is_durable_evidence_and_a_failed_unit(self):
+        stop = with_footer('STOP: the allowlist omits tests/x.py which the unit must edit; '
+                           'no edits made', [], 'STOP', ())
+        fake, report = self.run_with(claude_says(stop), dirty=())
+        self.assertEqual(report['reason'], E.WORKER_STOPPED)
+        [payload] = self.evidence(fake)
+        self.assertEqual(payload['response'], stop)
+        self.assertEqual((payload['outcome'], payload['problems'][0][0]), ('F', E.WORKER_STOPPED))
+        self.assertEqual(fake.host_commits, [])
+        self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
+
+    def test_NC_a_footer_that_misstates_the_change_set_is_refused_before_staging(self):
+        for listed in ([], ['agent_bus/other.py'], ['agent_bus/x.py', 'agent_bus/y.py']):
+            with self.subTest(listed=listed):
+                fake, report = self.run_with(claude_says(with_footer(TEXT, listed)))
+                self.assertEqual(report['reason'], E.WORKER_EVIDENCE_MISMATCH)
+                self.assertEqual((fake.host_commits, fake.pushes, fake.staged), ([], [], ()))
+                self.assertFalse(any('add' in c for c in fake.calls if c[0] == 'git'))
+                self.assertEqual(fake.dirty, ('agent_bus/x.py',))
+                [payload] = self.evidence(fake)
+                self.assertEqual(payload['outcome'], 'F')
+
+    def test_NC_refused_evidence_claims_the_command_so_it_is_not_dispatched_again(self):
+        from tests.refoundation.agent_bus_fixtures import CHECKPOINT
+        from tests.refoundation.test_agent_bus_provider_failover import Step, armed, gh, repo
+        codex_ok_only = '\n'.join(json.dumps(e) for e in (
+            {'type': 'thread.started', 'thread_id': 't'},
+            {'type': 'item.completed', 'item': {'id': 'f', 'type': 'agent_message', 'text': 'ok'}},
+            {'type': 'turn.completed', 'usage': {}}))
+        fake = repo(Step('codex', stdout=codex_ok_only))
+        first = armed(fake, order=('codex',), max_units=1).poll_once(execute=True)
+        self.assertEqual(first['reason'], E.WORKER_EVIDENCE_INVALID)
+        # What GitHub now holds: the FAILED progress and the F result.
+        fake.comments += [gh(CHECKPOINT + 100 + i, body) for i, body in enumerate(fake.posted)]
+        second = armed(fake, order=('codex',), max_units=1).poll_once(execute=True)
+        self.assertEqual(second['rejected'], [])
+        # Resolved by the F result: nothing to run, no second dispatch.
+        self.assertIn(second['reason'], (E.ALREADY_CLAIMED, E.NOTHING_ACTIONABLE))
+        self.assertEqual(fake.providers_invoked, ['codex'])
+
+    def test_failure_evidence_never_satisfies_resume(self):
+        from tests.refoundation.agent_bus_fixtures import comment_body
+        from tests.refoundation.test_agent_bus_provider_failover import (
+            COMMAND, armed, committed, gh, repo)
+        fake = repo()
+        fake._commit(committed('U1'))
+        fake._commit(committed('U2'))
+        command = parse_comment(comment_body(**COMMAND))
+        for unit, cid in (('U1', 900), ('U2', 901)):
+            fake.comments.append(gh(cid, W.render(command, unit, fake.head, 'claude', TEXT,
+                                                  problems=[(E.WORKER_STOPPED, 'x')])))
+        with self.assertRaises(BusError) as caught:
+            armed(fake).poll_once(execute=True, resume=True)
+        self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)

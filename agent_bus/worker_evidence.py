@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 
 from agent_bus import errors as E
 from agent_bus.errors import BusError
@@ -45,6 +46,64 @@ def _bounded(text):
     if size > MAX_EVIDENCE_BYTES:
         _refuse(f'Worker evidence exceeds {MAX_EVIDENCE_BYTES} UTF-8 bytes; not truncated')
     return text
+
+
+# Every headless final response ends with this fenced JSON footer (Captain
+# decision D, Issue #1 comment 5864993788). Prose above it is free; the footer is
+# what the host checks. An acknowledgement, however it is punctuated or dressed
+# up, has no footer and is refused.
+FOOTER_FENCE = 'mtj-evidence'
+FOOTER_STATUSES = ('DONE', 'STOP')
+_FOOTER_KEYS = {'status', 'changed', 'validation'}
+
+
+@dataclass(frozen=True)
+class Footer:
+    status: str
+    changed: tuple[str, ...]
+    validation: tuple[tuple[str, int], ...]
+
+
+def footer_block(status: str, changed=(), validation=()) -> str:
+    """The canonical footer text, for the brief and for tests."""
+    body = {'status': status, 'changed': sorted(changed),
+            'validation': [{'command': c, 'exit': e} for c, e in validation]}
+    return f'```{FOOTER_FENCE}\n' + json.dumps(body, sort_keys=True) + '\n```'
+
+
+def footer(text: str) -> Footer:
+    """Parse the required trailing footer, or refuse. Nothing is guessed."""
+    body = _bounded(text).rstrip()
+    opener = f'```{FOOTER_FENCE}\n'
+    start = body.rfind(opener)
+    if start < 0 or not body.endswith('\n```'):
+        _refuse(f'final Worker response does not end with a ```{FOOTER_FENCE} footer '
+                '(status, changed, validation)')
+    raw = body[start + len(opener):-len('\n```')]
+    try:
+        data = _json(raw)
+    except (ValueError, TypeError) as exc:
+        _refuse(f'evidence footer is not one JSON object: {exc}')
+    if not isinstance(data, dict) or set(data) != _FOOTER_KEYS:
+        _refuse(f'evidence footer must have exactly the keys {sorted(_FOOTER_KEYS)}')
+    status, changed, validation = data['status'], data['changed'], data['validation']
+    if status not in FOOTER_STATUSES:
+        _refuse(f'evidence footer status must be one of {FOOTER_STATUSES}, not {status!r}')
+    if (not isinstance(changed, list) or not all(isinstance(p, str) and p for p in changed)
+            or len(set(changed)) != len(changed)):
+        _refuse('evidence footer `changed` must be a list of distinct non-empty paths')
+    if not isinstance(validation, list):
+        _refuse('evidence footer `validation` must be a list')
+    rows = []
+    for row in validation:
+        if (not isinstance(row, dict) or set(row) != {'command', 'exit'}
+                or not isinstance(row['command'], str) or not row['command'].strip()
+                or type(row['exit']) is not int):
+            _refuse('each evidence footer validation row must be {"command": str, "exit": int}')
+        rows.append((row['command'], row['exit']))
+    if status == 'DONE' and not rows:
+        _refuse('a DONE evidence footer must name the validation that ran')
+    return Footer(status, tuple(sorted(changed)), tuple(rows))
 
 
 def extract(provider: str, result: Completed | None) -> str:
@@ -108,7 +167,10 @@ def failure_detail(provider: str, result: Completed) -> str:
     return detail[:1000]
 
 
-def render(command, unit: str, head: str, provider: str, text: str) -> str:
+def render(command, unit: str, head: str, provider: str, text: str,
+           problems=None) -> str:
+    """The durable evidence comment. `problems` (a failed unit's codes) marks it
+    as the evidence of a unit that did NOT complete; it can never satisfy resume."""
     text = _bounded(text)
     payload = {
         'schema': 'mtj-worker-evidence/1', 'actor': 'WORKER',
@@ -119,6 +181,9 @@ def render(command, unit: str, head: str, provider: str, text: str) -> str:
         'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
         'response': text,
     }
+    if problems is not None:
+        payload['outcome'] = 'F'
+        payload['problems'] = [[code, detail] for code, detail in problems]
     # Keep response newlines escaped inside a JSON string. Even a quoted K or
     # mtj-bus fence in model output cannot become a top-level authority/message.
     body = PREFIX + json.dumps(payload, ensure_ascii=True, sort_keys=True, indent=2) + SUFFIX

@@ -230,22 +230,22 @@ class Supervisor:
                 queue=list(runnable[index + 1:]))
             dispatches.append(dispatch.as_dict())
 
-            # The order is the law: evidence, then provider-Git and scope proof,
-            # then the host's own commit and push, then ordinary verification,
-            # then durable evidence, and only then progress. Evidence that cannot
-            # be extracted raises here, before any commit exists.
-            text = worker_evidence.extract(dispatch.provider, dispatch.result)
-            host = finalize.finalize(self.repo_path, self.remote, plan.branch, command, unit,
-                                     dispatch.provider, before, self.run)
+            # The order is the law: evidence and its footer, then the footer's
+            # paths against Git, then provider-Git and scope proof, then the
+            # host's own commit and push, then ordinary verification, then
+            # durable evidence, and only then progress. Evidence that cannot be
+            # extracted fails the unit before any commit exists -- and the
+            # FAILED progress and F result below still claim the command, so a
+            # redelivery never dispatches it a second time.
+            text, verdict = self._settle(command, unit, plan, dispatch, before)
             after = self._head()
-            if host.ok:
-                verdict: UnitVerdict = verify_unit(self.repo_path, command.wave, unit,
-                                                   before.head, after, self._dirty(), self.run)
-            else:
-                verdict = UnitVerdict(unit.id, False, host.problems, (), host.paths)
             outcomes.append(verdict.as_dict())
-            if verdict.ok:
-                body = worker_evidence.render(command, unit_id, after, dispatch.provider, text)
+            if text is not None:
+                # A failed unit's evidence is published too (marked F with its
+                # problems): the reason a Worker stopped is exactly what the
+                # reviewer needs. It never counts as completion evidence.
+                body = worker_evidence.render(command, unit_id, after, dispatch.provider, text,
+                                              problems=None if verdict.ok else verdict.problems)
                 reference = self._post_evidence(body)
                 report.setdefault("worker_evidence", []).append(reference)
             status = "DONE" if verdict.ok else "FAILED"
@@ -282,6 +282,42 @@ class Supervisor:
         report["posted"] = posted
         return report
 
+    def _settle(self, command: Envelope, unit, plan: WavePlan, dispatch: Dispatch,
+                before) -> tuple[str | None, UnitVerdict]:
+        """(evidence text or None, verdict) for one dispatched unit."""
+        failed = lambda code, detail, paths=(): UnitVerdict(unit.id, False, ((code, detail),),
+                                                            (), tuple(paths))
+        try:
+            text = worker_evidence.extract(dispatch.provider, dispatch.result)
+            stated = worker_evidence.footer(text)
+        except BusError as exc:
+            if exc.code != E.WORKER_EVIDENCE_INVALID:
+                raise
+            return None, failed(exc.code, str(exc).split(": ", 1)[-1])
+        if stated.status == "STOP":
+            return text, failed(E.WORKER_STOPPED,
+                                f"{dispatch.provider} reported STOP for {unit.id}; "
+                                "its reason is in the published Worker evidence")
+        # Metadata first, exactly as finalize orders it: `git status` never runs
+        # over config or refs the provider changed. Finalize repeats the proof.
+        mutated = finalize.git_mutations(before, finalize.snapshot(self.repo_path, self.run), ())
+        if mutated:
+            return text, failed(E.PROVIDER_GIT_MUTATION,
+                                f"{dispatch.provider} mutated Git metadata during {unit.id}; "
+                                "providers edit and test only: " + "; ".join(mutated))
+        measured = tuple(sorted({path for _, path in
+                                 finalize.worktree_changes(self.repo_path, self.run)}))
+        if stated.changed != measured:
+            return text, failed(E.WORKER_EVIDENCE_MISMATCH,
+                                f"footer says changed {list(stated.changed)}, Git measured "
+                                f"{list(measured)} (nothing staged)", measured)
+        host = finalize.finalize(self.repo_path, self.remote, plan.branch, command, unit,
+                                 dispatch.provider, before, self.run)
+        if not host.ok:
+            return text, UnitVerdict(unit.id, False, host.problems, (), host.paths)
+        return text, verify_unit(self.repo_path, command.wave, unit, before.head,
+                                 self._head(), self._dirty(), self.run)
+
     def _post_evidence(self, body: str) -> str:
         try:
             receipt = post_comment(body, self.issue, self.repo_slug, self.run, dry_run=False)
@@ -307,7 +343,7 @@ class Supervisor:
                 try:
                     payload = json.loads(comment.body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
                     if (not isinstance(payload, dict) or payload.get("command") != command.message_id
-                            or payload.get("unit") != unit):
+                            or payload.get("unit") != unit or "outcome" in payload):
                         continue
                     expected = worker_evidence.render(command, unit, payload["head"],
                                                       payload["provider"], payload["response"])

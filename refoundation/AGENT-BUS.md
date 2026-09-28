@@ -161,8 +161,12 @@ changes this law.
 After a successful provider response the trusted Agent Bus host
 (`agent_bus.finalize`), in this order and no other:
 
-1. extracts the provider's bounded Worker evidence — invalid, missing, ambiguous
-   or oversized evidence (BUS_WORKER_EVIDENCE_INVALID) creates no commit;
+1. extracts the provider's bounded Worker evidence and parses its required
+   trailing `mtj-evidence` footer — invalid, missing, ambiguous, oversized or
+   footer-less evidence (BUS_WORKER_EVIDENCE_INVALID) creates no commit; a footer
+   whose `status` is STOP is BUS_WORKER_STOPPED; after the metadata proof of
+   step 2, a footer whose `changed` list is not exactly the measured change set
+   is BUS_WORKER_EVIDENCE_MISMATCH, before anything is staged;
 2. proves HEAD, the branch, every ref, the local Git config and the index are
    exactly what they were before dispatch — a provider commit, ref move, branch
    change, config change or staging is BUS_PROVIDER_GIT_MUTATION;
@@ -184,7 +188,11 @@ After a successful provider response the trusted Agent Bus host
    got here.
 
 A read-only unit is never staged or committed. Any failure above stops the wave
-before PASS. Host Git commands run with hooks disabled, so nothing a provider
+before PASS. A failed unit's extractable evidence is still published on Issue #1
+before its FAILED progress, marked `"outcome": "F"` with its problem codes, so
+the reviewer can read why the Worker stopped; such evidence never satisfies
+resume. When nothing could be extracted, the FAILED progress and `F` result are
+still posted: they claim the command, so a redelivery never dispatches it again. Host Git commands run with hooks disabled, so nothing a provider
 wrote into the checkout runs with the host's credentials.
 
 **Host Git never reads config a provider could write.** Every `git` the bus runs
@@ -213,8 +221,14 @@ The root `CLAUDE.md` two-word "Claude done" convention governs only direct
 interactive sessions and does not apply here. The provider returns a concise,
 bounded, substantive final result stating what changed and what validation ran,
 and does not post the detailed `X`/result itself: the supervisor publishes the
-durable evidence (step 8). A final response that is only "Claude done", "done"
-or "ok" is BUS_WORKER_EVIDENCE_INVALID, exactly like missing evidence. The Worker
+durable evidence (step 8). The response must end with one fenced
+`mtj-evidence` JSON footer and nothing after it: `status` (DONE or STOP),
+`changed` (every added, modified or deleted path; the host checks it against Git)
+and `validation` (each check run, as `{"command", "exit"}`; required for DONE)
+(Captain decision D, Issue #1 comment 5864993788). A response without a valid
+footer — "Claude done", "done", "ok" in any punctuation or formatting included —
+is BUS_WORKER_EVIDENCE_INVALID, exactly like missing evidence. The whole response
+stays under `MAX_EVIDENCE_BYTES`; it is refused, never truncated. The Worker
 brief (`agent_bus.transport.worker_brief`) states this rule to every provider.
 
 A completed unit whose Worker evidence was lost is not recovered from Git: a

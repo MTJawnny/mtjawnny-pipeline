@@ -27,6 +27,7 @@ from tests.refoundation.agent_bus_fixtures import (
     BASE, CHECKPOINT, TASK, TRUSTED, WAVE, comment_body,
 )
 from tests.refoundation.test_agent_bus_worker_evidence import EvidenceRepo as FakeRepo
+from tests.refoundation.test_agent_bus_worker_evidence import with_footer
 
 from agent_bus import errors as E
 from agent_bus import providers as P
@@ -45,6 +46,7 @@ CHECKPOINT_COMMENT = (
     f"h: {BASE}\na: {TASK}\nnext: CLAUDE_EXECUTE_SELECTED_ONLY\n```\n"
 )
 
+OK_TEXT = "Worker result: scope and deterministic validation passed; next: NONE"
 CLAUDE_OK = json.dumps({"type": "result", "subtype": "success", "is_error": False,
                         "result": "Worker result: scope and deterministic validation passed; next: NONE"})
 CODEX_OK = ('{"type": "thread.started", "thread_id": "th-codex-1"}\n'
@@ -133,9 +135,23 @@ class ProviderRepo(FakeRepo):
         self.deleted = tuple(step.deleted)
         if step.then:
             step.then(self)
-        default = CLAUDE_OK if argv[0] == "claude" else CODEX_OK
-        return Completed(argv, step.rc, default if step.stdout is None else step.stdout,
-                         step.stderr)
+        if step.stdout is None:
+            stdout = self.default_ok(argv[0])
+        else:
+            stdout = step.stdout
+        return Completed(argv, step.rc, stdout, step.stderr)
+
+    def default_ok(self, provider: str) -> str:
+        """The scripted success, with a footer that truthfully lists the edits."""
+        text = with_footer(OK_TEXT, self.changed_now())
+        if provider == "claude":
+            return json.dumps({"type": "result", "subtype": "success", "is_error": False,
+                               "result": text})
+        return "\n".join(json.dumps(e) for e in (
+            {"type": "thread.started", "thread_id": "th-codex-1"},
+            {"type": "item.completed", "item": {"id": "final", "type": "agent_message",
+                                                "text": text}},
+            {"type": "turn.completed", "usage": {}})) + "\n"
 
     @property
     def provider_calls(self) -> list[tuple[str, ...]]:

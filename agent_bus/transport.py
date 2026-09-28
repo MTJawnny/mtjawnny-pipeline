@@ -24,7 +24,13 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from agent_bus import errors as E
-from agent_bus.worker_evidence import failure_detail
+from agent_bus.worker_evidence import (
+    FOOTER_FENCE, MAX_EVIDENCE_BYTES, failure_detail, footer_block,
+)
+
+FOOTER_EXAMPLE = footer_block(
+    "DONE", ["agent_bus/example.py"],
+    [("python3 -m unittest tests.refoundation.test_agent_bus_worker_evidence", 0)])
 from agent_bus.errors import BusError
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Completed, Runner
@@ -109,7 +115,16 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
         "    It must be substantive: state concisely what changed and what validation\n"
         "    ran, with its outcome. A final response that is only 'Claude done',\n"
         "    'done' or 'ok' is refused as evidence and the unit fails. Do not post the\n"
-        "    detailed X/result yourself; the supervisor publishes your evidence.\n\n"
+        "    detailed X/result yourself; the supervisor publishes your evidence.\n"
+        f"  - Keep the whole final response under {MAX_EVIDENCE_BYTES} UTF-8 bytes; a\n"
+        "    longer one is refused, never truncated.\n"
+        f"  - End the final response with exactly one ```{FOOTER_FENCE} fenced JSON\n"
+        "    footer and nothing after it. `changed` lists every path you added,\n"
+        "    modified or deleted (the host checks it against Git; [] for a read-only\n"
+        "    unit); `validation` lists each check you ran with its exit code; `status`\n"
+        "    is DONE, or STOP if you could not complete the unit (say why above the\n"
+        "    footer). Example:\n"
+        + FOOTER_EXAMPLE + "\n\n"
         "The authorizing command, verbatim:\n\n" + envelope.render()
     )
 
