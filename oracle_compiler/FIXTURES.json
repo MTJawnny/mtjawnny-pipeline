@@ -20,44 +20,83 @@
     {
       "id": "simple-one-operation-negative-control",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
-      "gold": []
+      "member": "Ogre Arsonist",
+      "member_status": "F0_SELECTED",
+      "gold": [],
+      "selection": {
+        "oracle_id": "00af96af-5eae-4044-a2f7-a08cd0699d1e",
+        "census_key": [
+          "destroy",
+          0
+        ],
+        "source_population": "census rows (P1/P2 population)",
+        "rule": "One legacy head, zero P1 residue, the card's only census row, and no P4 relation candidate anywhere on the card.",
+        "qualifying_rows": 568
+      }
     },
     {
       "id": "two-sequential-operations",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P2_MEASURED_POPULATION",
-      "gold": []
+      "member": "Spread the Sickness",
+      "member_status": "F0_SELECTED",
+      "gold": [],
+      "selection": {
+        "oracle_id": "142af8f1-6d6b-4043-8cc4-6632481972c1",
+        "census_key": [
+          "destroy",
+          0
+        ],
+        "source_population": "P2 multi-head clauses (legacy effect_heads)",
+        "rule": "P2 member with exactly two distinct heads, not the exile + return form (that form is the delayed-return role's pressure and the C03 majority).",
+        "qualifying_rows": 11
+      }
     },
     {
       "id": "split-destination-selected-set",
       "source": "oracle_compiler/V1.md#15",
       "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
-      "gold": []
+      "member_status": "F0_NO_QUALIFYING_MEMBER",
+      "gold": [],
+      "selection": {
+        "reason": "no AQ4 probe population carries a selected set divided across destinations; production fixtures not searched in F0"
+      }
     },
     {
       "id": "delayed-return-same-object",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
-      "gold": []
+      "member": "Vizier of Deferment",
+      "member_status": "F0_SELECTED",
+      "gold": [],
+      "selection": {
+        "oracle_id": "008d5896-6fc9-4aaa-8c6f-a44c2feb98bb",
+        "census_key": [
+          "exile",
+          0
+        ],
+        "source_population": "census exile rows joined to P4 relation candidates",
+        "rule": "An exile census row whose own line carries a P4 coreference candidate, delay-marked and in a LATER sentence, where that sentence has a legacy `return` head: exile now, return the same referent later. Same-clause flicker (\"then return\") is excluded by requiring the later sentence.",
+        "qualifying_rows": 40
+      }
     },
     {
       "id": "prior-set-complement-reference",
       "source": "oracle_compiler/V1.md#15",
       "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P4_MEASURED_POPULATION",
-      "gold": []
+      "member_status": "F0_NO_QUALIFYING_MEMBER",
+      "gold": [],
+      "selection": {
+        "reason": "the frozen P4 back-reference inventory has no complement form; filling it needs a new measurement; production fixtures not searched in F0"
+      }
     },
     {
       "id": "conditional-second-operation",
       "source": "oracle_compiler/V1.md#15",
       "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P2_P4_MEASURED_EVIDENCE",
-      "gold": []
+      "member_status": "F0_REVIEWED_NULL",
+      "gold": [],
+      "selection": {
+        "reason": "the rule's only two qualifying clauses take their second head from a payment condition, not an instruction (detector false-positive class); see the F0 report"
+      }
     },
     {
       "id": "replacement-event-lineage",
@@ -82,24 +121,57 @@
     {
       "id": "participant-role-choreography",
       "source": "oracle_compiler/V1.md#15",
-      "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_P3_MEASURED_POPULATION",
-      "gold": []
+      "member": "Volcanic Offering",
+      "member_status": "F0_SELECTED",
+      "gold": [],
+      "selection": {
+        "oracle_id": "05e0a10d-532a-451c-a54e-27e64969fe0e",
+        "census_key": [
+          "destroy",
+          0
+        ],
+        "source_population": "P3 qualifier-bearing clauses with >=2 restricted participants",
+        "rule": "P3 member: a qualifier-bearing clause with >=2 restricted participants.",
+        "qualifying_rows": 19
+      }
     },
     {
       "id": "ability-borrowing-inheritance-pressure",
       "source": "oracle_compiler/V1.md#6-R2-C",
       "member": null,
-      "member_status": "TO_BE_SELECTED_FROM_PREEXISTING_MEASURED_EVIDENCE",
+      "member_status": "F0_NO_QUALIFYING_MEMBER",
       "gold": [
         "M01 classifies ability-borrowing/inheritance representation as GENUINELY_MISSING; no new primitive or expected encoding is gold here"
-      ]
+      ],
+      "selection": {
+        "reason": "no AQ4 probe population covers ability borrowing (M01: GENUINELY_MISSING); production fixtures not searched in F0"
+      }
     }
   ],
   "selection_freeze": {
     "when": "after C01 PASS, during authorized consumption of existing P1/P2/P3/P4 evidence and before any C03 candidate result exists",
     "rule": "Fill null member slots only from already-authorized pre-existing production fixtures or the existing AQ4 probe populations named by the role. Record the source population and deterministic selection rule before C03. Do not choose examples because H-REGION succeeds or fails on them.",
-    "no_duplicate_probe": true
+    "no_duplicate_probe": true,
+    "executed": {
+      "task": "F0.ORACLE-COMPILER-FIXTURE-SELECTION-FREEZE (Issue #1 comment 5878063506)",
+      "script": "experiments/oracle_ingest/f0_select.py",
+      "report": "experiments/out/oracle_ingest/f0/selection.json (ignored; x2 byte-identical)",
+      "report_sha256": "e95cd868ff5245c5e15502398115120b562a15e3591480102bf8b0747a935d20",
+      "reconciled_with_c02": {
+        "exile_return": 53,
+        "heads": {
+          "1": 2044,
+          "2": 65,
+          "3": 1
+        },
+        "multi": 66,
+        "p3_multi": 19,
+        "p3_qual": 1041,
+        "rows": 2110
+      },
+      "tie_break": "(oracle_id, stem, occurrence); one card per role, roles in listed order",
+      "c03_result_existed": false
+    }
   },
   "forbidden_gold": [
     "H-REGION is true",
