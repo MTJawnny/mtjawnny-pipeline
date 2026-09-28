@@ -132,7 +132,7 @@ class TestHostFinalizesTheUnit(unittest.TestCase):
         fake, _ = self.run_one("codex")
         push = fake.pushes[0]
         self.assertEqual(push[-1], f"{fake.host_commits[0]}:refs/heads/infra/agent-bus-v1")
-        self.assertEqual(push[-2], "origin")
+        self.assertEqual(push[-2], fake.remote_url)
         self.assertFalse(any(a in ("--force", "-f", "--force-with-lease", "--mirror")
                              or a.startswith("+") or a.startswith("--force") for a in push))
         for verb in ("commit", "push"):
@@ -556,6 +556,172 @@ class TestAgainstRealGit(unittest.TestCase):
         result = self.finalize(before)
         self.assertTrue(result.ok, result.problems)
         self.assertFalse(marker.exists())
+
+
+# ---------------------------------------------------------------------------
+# 6b. Real git, hostile config OUTSIDE the checkout
+# ---------------------------------------------------------------------------
+
+class _AmbientRunner:
+    """The pre-R3 host: real git, but with whatever config the environment has.
+    Used only as the RED side of a negative control."""
+
+    def __call__(self, argv, stdin=None, timeout=None):
+        import subprocess
+        from agent_bus.shell import Completed
+        proc = subprocess.run(list(argv), input=stdin, capture_output=True, text=True,
+                              stdin=None if stdin is not None else subprocess.DEVNULL,
+                              timeout=60)
+        return Completed(tuple(argv), proc.returncode, proc.stdout, proc.stderr)
+
+
+class TestHostGitIgnoresConfigOutsideTheCheckout(TestAgainstRealGit):
+    """A provider with broad filesystem rights can write the user's global or the
+    system git config; the host must not obey either. Each hostile file lives in
+    the test's temp dir and reaches git only through GIT_CONFIG_GLOBAL /
+    GIT_CONFIG_SYSTEM on this process, never the real ~/.gitconfig. Each case is
+    shown RED against the ambient-config host and GREEN against `Runner`."""
+
+    def setUp(self):
+        super().setUp()
+        self.tmp_root = self.root.parent
+        self.hostile = self.tmp_root / "hostile.gitconfig"
+        self.hostile.write_text("", encoding="utf-8")
+        self.marker = self.tmp_root / "host-ran-it"
+        self.script = self.tmp_root / "payload.sh"
+        self.script.write_text(f"#!/bin/sh\ntouch {self.marker}\nexit 1\n",
+                               encoding="utf-8")
+        self.script.chmod(0o755)
+        env = {"GIT_CONFIG_GLOBAL": str(self.hostile), "GIT_CONFIG_SYSTEM": str(self.hostile)}
+        patcher = mock.patch.dict("os.environ", env)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def plant(self, text: str) -> None:
+        """What the provider does: write hostile config after the snapshot."""
+        self.hostile.write_text(text, encoding="utf-8")
+
+    def attempt(self, run):
+        before = F.snapshot(self.repo, run)
+        self.edit()
+        return before, F.finalize(self.repo, "origin", self.BRANCH, self.command, self.unit,
+                                  "claude", before, run)
+
+    def reset_checkout(self):
+        self.sh("reset", "-q", "--hard", "HEAD", cwd=self.repo)
+        self.sh("clean", "-qfd", cwd=self.repo)
+
+    def remote_head(self):
+        return self.sh("rev-parse", self.BRANCH, cwd=self.remote).strip()
+
+    # -- fsmonitor: code execution on `git status` ---------------------------
+    def test_NC_global_fsmonitor_runs_in_an_ambient_host_but_not_in_the_bus(self):
+        before = F.snapshot(self.repo, self.run_)
+        self.edit()
+        self.plant(f"[core]\n\tfsmonitor = {self.script}\n")
+        # RED: the host's first post-provider git command runs the planted program.
+        F.worktree_changes(self.repo, _AmbientRunner())
+        self.assertTrue(self.marker.exists(), "RED side did not reproduce the attack")
+        self.marker.unlink()
+        result = F.finalize(self.repo, "origin", self.BRANCH, self.command, self.unit,
+                            "claude", before, self.run_)
+        self.assertTrue(result.ok, result.problems)
+        self.assertFalse(self.marker.exists())
+
+    # -- insteadOf: the push and its proof both go to the attacker -----------
+    def test_NC_global_insteadof_is_a_false_pass_in_an_ambient_host_but_not_in_the_bus(self):
+        attacker = str(self.tmp_root / "attacker.git")
+        self.sh("init", "-q", "--bare", attacker)
+        self.plant(f'[url "{attacker}"]\n\tinsteadOf = {self.remote}\n')
+        base = self.remote_head()
+        _, red = self.attempt(_AmbientRunner())
+        # RED: finalize reports success, yet the real remote never moved.
+        self.assertTrue(red.ok, red.problems)
+        self.assertEqual(self.remote_head(), base)
+        self.assertEqual(self.sh("rev-parse", self.BRANCH, cwd=attacker).strip(), red.commit)
+
+        self.sh("reset", "-q", "--hard", base, cwd=self.repo)
+        _, green = self.attempt(self.run_)
+        self.assertTrue(green.ok, green.problems)
+        self.assertEqual(self.remote_head(), green.commit)
+
+    # -- gpg.program: code execution on the host commit ----------------------
+    def test_NC_global_gpg_program_runs_in_an_ambient_host_but_not_in_the_bus(self):
+        self.sh("config", "--unset", "commit.gpgsign", cwd=self.repo)
+        self.plant(f"[commit]\n\tgpgsign = true\n[gpg]\n\tprogram = {self.script}\n")
+        self.attempt(_AmbientRunner())
+        self.assertTrue(self.marker.exists(), "RED side did not reproduce the attack")
+        self.marker.unlink()
+        self.reset_checkout()
+        _, result = self.attempt(self.run_)
+        self.assertTrue(result.ok, result.problems)
+        self.assertFalse(self.marker.exists())
+
+    # -- include: config that changes without .git/config changing -----------
+    def test_NC_an_included_config_file_change_is_a_git_mutation(self):
+        included = self.tmp_root / "included.gitconfig"
+        included.write_text("[user]\n\tname = host\n", encoding="utf-8")
+        self.sh("config", "include.path", str(included), cwd=self.repo)
+        before = F.snapshot(self.repo, self.run_)
+        plain = self.sh("config", "--local", "--list", cwd=self.repo)
+        included.write_text(f'[url "/elsewhere"]\n\tinsteadOf = {self.remote}\n',
+                            encoding="utf-8")
+        # RED: the pre-R3 snapshot text cannot see the change at all.
+        self.assertEqual(self.sh("config", "--local", "--list", cwd=self.repo), plain)
+        self.edit()
+        result = F.finalize(self.repo, "origin", self.BRANCH, self.command, self.unit,
+                            "claude", before, self.run_)
+        self.assertEqual(result.problems[0][0], E.PROVIDER_GIT_MUTATION)
+
+    # -- metadata files: exclude hides a path from the measured change set ---
+    def test_NC_a_provider_edit_to_info_exclude_is_a_git_mutation(self):
+        before = F.snapshot(self.repo, self.run_)
+        self.edit()
+        exclude = self.root / ".git" / "info" / "exclude"
+        exclude.parent.mkdir(exist_ok=True)
+        exclude.write_text("agent_bus/hidden.py\n", encoding="utf-8")
+        (self.root / "agent_bus" / "hidden.py").write_text("x\n", encoding="utf-8")
+        result = F.finalize(self.repo, "origin", self.BRANCH, self.command, self.unit,
+                            "claude", before, self.run_)
+        self.assertEqual(result.problems[0][0], E.PROVIDER_GIT_MUTATION)
+        self.assertIn("info/exclude", result.problems[0][1])
+        self.assertEqual(self.remote_head(), before.head)
+
+
+class TestHostGitEnvironment(unittest.TestCase):
+    def test_host_git_env_drops_ambient_git_and_pins_the_executing_keys(self):
+        from agent_bus.shell import HOST_GIT_CONFIG, host_git_env
+        env = host_git_env({"PATH": "/bin", "GIT_DIR": "/evil", "GIT_CONFIG_PARAMETERS": "x",
+                            "HOME": "/h"})
+        self.assertNotIn("GIT_DIR", env)
+        self.assertNotIn("GIT_CONFIG_PARAMETERS", env)
+        self.assertEqual((env["PATH"], env["HOME"]), ("/bin", "/h"))
+        self.assertEqual(env["GIT_CONFIG_NOSYSTEM"], "1")
+        self.assertEqual(env["GIT_CONFIG_GLOBAL"], __import__("os").devnull)
+        self.assertEqual(env["GIT_TERMINAL_PROMPT"], "0")
+        pinned = [(env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"])
+                  for i in range(int(env["GIT_CONFIG_COUNT"]))]
+        self.assertEqual(tuple(pinned), HOST_GIT_CONFIG)
+        keys = dict(pinned)
+        for key, value in (("core.fsmonitor", "false"), ("commit.gpgsign", "false"),
+                           ("protocol.ext.allow", "never")):
+            self.assertEqual(keys[key], value)
+        # The ambient credential helper is cleared before the pinned one is set.
+        helpers = [v for k, v in pinned if k == "credential.helper"]
+        self.assertEqual(helpers[0], "")
+        self.assertEqual(len(helpers), 2)
+
+    def test_only_git_gets_the_host_git_environment(self):
+        from agent_bus.shell import Runner
+        seen = []
+        def fake_run(argv, **kw):
+            seen.append((argv[0], kw.get("env")))
+            return mock.Mock(returncode=0, stdout="", stderr="")
+        with mock.patch("subprocess.run", fake_run):
+            Runner()(["git", "status"])
+            Runner()(["gh", "api", "x"])
+        self.assertEqual(seen[0][1]["GIT_CONFIG_NOSYSTEM"], "1")
+        self.assertIsNone(seen[1][1])
 
 
 # ---------------------------------------------------------------------------

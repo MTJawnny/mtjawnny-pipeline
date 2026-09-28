@@ -41,6 +41,7 @@ class EvidenceRepo(FakeRepo):
         self.remote_head = self.base
         self.extra_refs = {}
         self.local_config = 'core.bare=false\n'
+        self.remote_url = 'https://github.com/example/repo.git'
         self.fail_commit = self.fail_push = self.race_sha = None
         self.host_commits, self.pushes = [], []
         self._stdin = None
@@ -75,6 +76,8 @@ class EvidenceRepo(FakeRepo):
             return done(''.join(f'{sha} {ref}\n' for ref, sha in sorted(refs.items())))
         if 'config' in argv:
             return done(self.local_config)
+        if 'get-url' in argv:
+            return done(self.remote_url + '\n')
         if 'status' in argv:
             end = '\0' if '-z' in argv else '\n'
             return done(''.join(f'{code} {path}{end}' for code, path in self.entries()))

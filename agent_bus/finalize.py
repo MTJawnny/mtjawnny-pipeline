@@ -30,7 +30,9 @@ It never repairs, reverts, resets or cleans. A refusal is evidence.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Sequence
 
 from agent_bus import errors as E
@@ -44,7 +46,16 @@ from agent_bus.wave import Unit
 # Host Git commands run with hooks disabled. A provider that could edit files in
 # the checkout must not be able to plant a hook that the HOST then executes with
 # the host's credentials; that would be a sandbox escape through the back door.
+# (`shell.Runner` already pins this and the other executing keys for every git
+# call; the flag stays on commit and push so the intent is visible where it bites.)
 _NO_HOOKS = ("-c", "core.hooksPath=/dev/null")
+
+# Git metadata files outside config and refs that change how the host's git
+# reads the checkout: attributes select filters, exclude hides paths from the
+# measured change set, alternates borrow objects from elsewhere, and a
+# worktree config layers more config on top. A provider must leave them alone.
+_META_FILES = ("info/attributes", "info/exclude", "objects/info/alternates",
+               "config.worktree")
 
 # `git status --porcelain=v1` codes a provider's plain edit can produce, with an
 # untouched index: modified, type-changed, deleted, untracked.
@@ -60,7 +71,11 @@ class Snapshot:
     refs: tuple[str, ...]
     # Local config can make the host's own git execute a command (a planted
     # `core.fsmonitor` runs on `git status`), so it is metadata like any ref.
+    # Read with `--includes`: an included file changes config without changing
+    # a line of `.git/config`.
     config: tuple[str, ...] = ()
+    # (name, sha256 or "absent") for each of _META_FILES.
+    meta: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -93,9 +108,23 @@ def snapshot(repo: str, run: Runner) -> Snapshot:
     head = _checked(run, repo, "rev-parse", "HEAD").strip()
     branch = _checked(run, repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
     refs = _checked(run, repo, "for-each-ref", "--format=%(objectname) %(refname)")
-    config = _checked(run, repo, "config", "--local", "--list")
+    config = _checked(run, repo, "config", "--local", "--includes", "--list")
     lines = lambda text: tuple(sorted(line for line in text.splitlines() if line.strip()))
-    return Snapshot(head, branch, lines(refs), lines(config))
+    return Snapshot(head, branch, lines(refs), lines(config), _meta(repo, run))
+
+
+def _meta(repo: str, run: Runner) -> tuple[tuple[str, str], ...]:
+    digests = []
+    for name in _META_FILES:
+        where = Path(repo) / _checked(run, repo, "rev-parse", "--git-path", name).strip()
+        try:
+            digest = hashlib.sha256(where.read_bytes()).hexdigest()
+        except FileNotFoundError:
+            digest = "absent"
+        except IsADirectoryError:
+            digest = "directory"
+        digests.append((name, digest))
+    return tuple(digests)
 
 
 def worktree_changes(repo: str, run: Runner) -> list[tuple[str, str]]:
@@ -125,6 +154,9 @@ def git_mutations(before: Snapshot, after: Snapshot,
         problems.append("refs changed: " + "; ".join(moved[:5]))
     if after.config != before.config:
         problems.append("local git config changed")
+    if after.meta != before.meta:
+        changed = [name for (name, a), (_, b) in zip(before.meta, after.meta) if a != b]
+        problems.append("git metadata files changed: " + ", ".join(changed or ["(shape)"]))
     staged = [path for code, path in changes if code not in _WORKTREE_ONLY]
     if staged:
         problems.append("index or merge state changed for: " + "; ".join(staged[:5]))
@@ -145,10 +177,13 @@ def finalize(repo: str, remote: str, branch: str, command: Envelope, unit: Unit,
     # Metadata is re-read BEFORE `git status`: status is the first host command
     # a tampered config could turn into code execution.
     after = snapshot(repo, run)
-    if after.config != before.config:
+    if after.config != before.config or after.meta != before.meta:
+        # Only config and metadata-file checks here: status has not run yet.
+        what = git_mutations(Snapshot(after.head, after.branch, after.refs, before.config,
+                                      before.meta), after, ())
         return Finalized(((E.PROVIDER_GIT_MUTATION,
                            f"{provider} mutated Git metadata during {unit.id}; providers edit "
-                           "and test only: local git config changed"),))
+                           "and test only: " + "; ".join(what)),))
     changes = worktree_changes(repo, run)
     mutated = git_mutations(before, after, changes)
     if mutated:
@@ -201,14 +236,24 @@ def finalize(repo: str, remote: str, branch: str, command: Envelope, unit: Unit,
     # Non-force by construction: no `--force`, no `+` refspec. A remote that moved
     # is a rejection, and a rejection is a stop, never a retry or an overwrite.
     target = f"refs/heads/{branch}"
-    pushed = _git(run, repo, *_NO_HOOKS, "push", "--porcelain", "--no-verify", remote,
+    # One resolved URL for the push AND the re-read, so no rewrite can send one
+    # somewhere the other does not look. The config it resolves from is the one
+    # just proven unchanged since before the provider ran.
+    url = _git(run, repo, "remote", "get-url", "--push", remote)
+    if url.returncode != 0 or not url.stdout.strip():
+        return Finalized(((E.HOST_PUSH_FAILED,
+                           f"cannot resolve the push URL of {remote} "
+                           f"(local commit {head} kept as evidence): "
+                           f"{url.stderr.strip()[:300]}"),), paths)
+    remote_url = url.stdout.strip()
+    pushed = _git(run, repo, *_NO_HOOKS, "push", "--porcelain", "--no-verify", remote_url,
                   f"{head}:{target}")
     if pushed.returncode != 0:
         return Finalized(((E.HOST_PUSH_FAILED,
                            f"push of {head} to {remote} {target} was refused or failed "
                            f"(local commit kept as evidence): "
                            f"{(pushed.stderr or pushed.stdout).strip()[:500]}"),), paths)
-    remote_line = _git(run, repo, "ls-remote", remote, target)
+    remote_line = _git(run, repo, "ls-remote", remote_url, target)
     landed = [line.split("\t") for line in remote_line.stdout.splitlines() if line.strip()]
     if remote_line.returncode != 0 or landed != [[head, target]]:
         return Finalized(((E.HOST_PUSH_FAILED,
