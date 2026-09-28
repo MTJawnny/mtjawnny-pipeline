@@ -309,7 +309,7 @@ class GhFake:
         self.issue, self.pr = issue, pr
         self.calls: list[tuple[str, ...]] = []
 
-    def __call__(self, argv, stdin=None, timeout=None):
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None):
         argv = tuple(argv)
         self.calls.append(argv)
         if argv[:3] != ("gh", "api", "--paginate") or len(argv) != 4:

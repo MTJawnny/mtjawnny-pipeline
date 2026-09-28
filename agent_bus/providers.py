@@ -490,7 +490,8 @@ class ProviderFailoverTransport:
             argv = provider.argv(prompt, session)
             # A launch failure or timeout raises here and is NOT a capacity failure:
             # nothing classified it, so nothing fails over.
-            result = self.run(argv, timeout=None)
+            # The sandbox's writable root is the working directory (CLS1).
+            result = self.run(argv, timeout=None, cwd=self.repo)
             verdict = provider.classify(result)
             if verdict.status == OK:
                 opened = provider.opened(session, result)

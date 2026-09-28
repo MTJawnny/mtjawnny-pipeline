@@ -3,10 +3,6 @@
 Canonical, always-loaded operating contract for this repository.
 It is current operating law only. History lives in Git; chronology is not law.
 
-## Task routing
-
-Task state is not mirrored in a repository phase file. Resolve it from GitHub Issue #1: **latest `K` -> active `T`**.
-
 ## Roles
 
 - **Captain** — the user. Final human authority. Ratifies vocabulary, semantics,
@@ -67,7 +63,9 @@ to the next runnable unit; STOP at the wave's review boundary. Each mutating uni
 becomes one commit with `Agent-Bus-Wave:` / `Agent-Bus-Unit:` trailers, made by
 the trusted Agent Bus host, not the model: a provider edits and tests files only
 and never commits, pushes, stages, resets, stashes, cleans, checks out, rebases
-or otherwise mutates Git metadata. Details: `refoundation/AGENT-BUS.md`.
+or otherwise mutates Git metadata. The host proves scope, stages exactly the
+authorized changes, commits, and fast-forward pushes the commanded branch.
+Details: `refoundation/AGENT-BUS.md`.
 
 ## Discipline
 

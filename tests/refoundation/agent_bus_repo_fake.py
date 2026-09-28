@@ -66,7 +66,7 @@ class FakeRepo:
         self.commits.append((sha, effect.message or "", tuple(effect.paths)))
 
     # ------------------------------------------------------------ the boundary
-    def __call__(self, argv, stdin=None, timeout=None) -> Completed:
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None) -> Completed:
         argv = tuple(argv)
         self.calls.append(argv)
         if argv[0] == "gh":

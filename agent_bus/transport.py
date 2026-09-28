@@ -138,8 +138,10 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
 # the bus itself; nothing can prompt, so anything needing approval is denied;
 # and Git metadata commands are denied outright (the host owns them).
 HEADLESS_CLAUDE_SETTINGS = {
-    "sandbox": {"enabled": True, "autoAllowBashIfSandboxed": True,
-                "allowUnsandboxedCommands": False},
+    # failIfUnavailable: without it a missing sandbox is a warning and commands
+    # run unsandboxed; here it is a refusal to start.
+    "sandbox": {"enabled": True, "failIfUnavailable": True,
+                "autoAllowBashIfSandboxed": True, "allowUnsandboxedCommands": False},
     "permissions": {
         "allow": ["Bash(python3:*)", "Bash(git status:*)", "Bash(git diff:*)",
                   "Bash(git log:*)", "Bash(git show:*)", "Bash(git rev-parse:*)"],
@@ -184,7 +186,9 @@ class LocalClaudeTransport:
         argv = self.argv(prompt, session, resumed)
         if dry_run:
             return Dispatch(argv, prompt, session, resumed, executed=False)
-        result = self.run(argv, timeout=None)
+        # The sandbox's writable root is the working directory: pin it to the
+        # checkout, never whatever directory the watcher happened to start in.
+        result = self.run(argv, timeout=None, cwd=self.repo)
         if result.returncode != 0:
             raise BusError(E.TRANSPORT_FAILED,
                            f"{self.executable} exited {result.returncode}: "

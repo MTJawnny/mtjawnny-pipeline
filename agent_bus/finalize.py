@@ -31,6 +31,7 @@ It never repairs, reverts, resets or cleans. A refusal is evidence.
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -71,8 +72,9 @@ class Snapshot:
     refs: tuple[str, ...]
     # Local config can make the host's own git execute a command (a planted
     # `core.fsmonitor` runs on `git status`), so it is metadata like any ref.
-    # Read with `--includes`: an included file changes config without changing
-    # a line of `.git/config`.
+    # Read with `--includes --show-origin`, IN ORDER: an included file changes
+    # config without changing a line of `.git/config`, and for a multi-valued
+    # key the order is the meaning.
     config: tuple[str, ...] = ()
     # (name, sha256 or "absent") for each of _META_FILES.
     meta: tuple[tuple[str, str], ...] = ()
@@ -108,9 +110,49 @@ def snapshot(repo: str, run: Runner) -> Snapshot:
     head = _checked(run, repo, "rev-parse", "HEAD").strip()
     branch = _checked(run, repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
     refs = _checked(run, repo, "for-each-ref", "--format=%(objectname) %(refname)")
-    config = _checked(run, repo, "config", "--local", "--includes", "--list")
+    config = _checked(run, repo, "config", "--local", "--includes", "--show-origin", "-z",
+                      "--list")
     lines = lambda text: tuple(sorted(line for line in text.splitlines() if line.strip()))
-    return Snapshot(head, branch, lines(refs), lines(config), _meta(repo, run))
+    return Snapshot(head, branch, lines(refs), _config_records(config), _meta(repo, run))
+
+
+def _config_records(text: str) -> tuple[str, ...]:
+    """`--show-origin -z` output as ordered "origin NUL key[LF value]" records."""
+    parts = text.split("\0")
+    if parts and parts[-1] == "":
+        parts.pop()
+    if len(parts) % 2:
+        raise BusError(E.GIT_FAILED, "unexpected `git config --show-origin -z` output shape")
+    return tuple(f"{parts[i]}\0{parts[i + 1]}" for i in range(0, len(parts), 2))
+
+
+# Config keys that make git itself run a program. Host git pins the ones it can
+# (shell.HOST_GIT_CONFIG); for the rest -- a filter driver `git add`/`status`
+# would run for any path `.gitattributes` assigns to it, a textconv or merge
+# driver, a transport program -- the only safe state is absence. A provider
+# cannot add one (config is compared), but it can edit `.gitattributes` to
+# route a path to one that already exists, before any scope check runs.
+_EXECUTING_KEY = re.compile(
+    r"^(filter\.[^\n]+\.(clean|smudge|process)"
+    r"|diff\.[^\n]+\.(textconv|command)"
+    r"|merge\.[^\n]+\.driver"
+    r"|core\.(sshcommand|askpass|gitproxy|editor|pager)"
+    r"|sequence\.editor"
+    r"|gpg(\.[^\n]+)?\.program"
+    r"|credential(\.[^\n]+)?\.helper"
+    r"|remote\.[^\n]+\.(receivepack|uploadpack|vcs)"
+    r"|uploadpack\.packobjectshook)$")
+
+
+def unsafe_config(snap: Snapshot) -> list[str]:
+    """Every executing key in the snapshot's config, as `origin: key`."""
+    found = []
+    for record in snap.config:
+        origin, _, pair = record.partition("\0")
+        key = pair.split("\n", 1)[0].lower()
+        if _EXECUTING_KEY.match(key):
+            found.append(f"{origin}: {key}")
+    return found
 
 
 def _meta(repo: str, run: Runner) -> tuple[tuple[str, str], ...]:

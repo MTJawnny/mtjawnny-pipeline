@@ -205,7 +205,7 @@ class TestReadOnlyUnits(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestFailsClosed(unittest.TestCase):
-    def stopped(self, fake, code, **kw):
+    def stopped(self, fake, code, evidence_expected=True, **kw):
         report = armed(fake, max_units=1, **kw).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
         self.assertEqual(report["reason"], code, report["units"])
@@ -216,7 +216,8 @@ class TestFailsClosed(unittest.TestCase):
             payload = json.loads(fake.posted[index][len(W.PREFIX):-len(W.SUFFIX)])
             self.assertEqual(payload["outcome"], "F")
             self.assertEqual(payload["problems"][0][0], code)
-        self.assertLessEqual(len(evidence), 1)
+        # Exactly one F evidence when the response was extractable, none otherwise.
+        self.assertEqual(len(evidence), 1 if evidence_expected else 0)
         if evidence:
             progress = next(i for i, b in enumerate(fake.posted) if "WAVE_PROGRESS" in b)
             self.assertLess(evidence[0], progress)
@@ -317,7 +318,8 @@ class TestFailsClosed(unittest.TestCase):
                                  ("claude", "not json")):
             with self.subTest(provider=provider, stdout=stdout):
                 fake = repo(Step(provider, dirty=("agent_bus/x.py",), stdout=stdout))
-                self.stopped(fake, E.WORKER_EVIDENCE_INVALID, order=(provider,))
+                self.stopped(fake, E.WORKER_EVIDENCE_INVALID, evidence_expected=False,
+                             order=(provider,))
                 self.assert_nothing_staged_or_committed(fake)
                 # Nothing extractable to publish; the FAILED progress and F result
                 # are the durable claim.
@@ -603,7 +605,7 @@ class _AmbientRunner:
     """The pre-R3 host: real git, but with whatever config the environment has.
     Used only as the RED side of a negative control."""
 
-    def __call__(self, argv, stdin=None, timeout=None):
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None):
         import subprocess
         from agent_bus.shell import Completed
         proc = subprocess.run(list(argv), input=stdin, capture_output=True, text=True,

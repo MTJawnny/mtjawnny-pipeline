@@ -51,7 +51,7 @@ class EvidenceRepo(FakeRepo):
         self.host_commits, self.pushes = [], []
         self._stdin = None
 
-    def __call__(self, argv, stdin=None, timeout=None):
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None):
         self._stdin = stdin
         return super().__call__(argv, stdin, timeout)
 
@@ -88,7 +88,10 @@ class EvidenceRepo(FakeRepo):
                     f'refs/remotes/origin/{self.branch}': self.remote_head, **self.extra_refs}
             return done(''.join(f'{sha} {ref}\n' for ref, sha in sorted(refs.items())))
         if 'config' in argv:
-            return done(self.local_config)
+            if '-z' not in argv:
+                return done(self.local_config)
+            records = [line.split('=', 1) for line in self.local_config.splitlines() if line]
+            return done(''.join(f'file:.git/config\0{k}\n{v}\0' for k, v in records))
         if 'get-url' in argv:
             return done(self.remote_url + '\n')
         if 'status' in argv:
@@ -263,7 +266,7 @@ class TestHeadlessEvidenceContract(unittest.TestCase):
         self.assertIn('does not post the detailed `X`/result itself', bus)
         self.assertIn('"Claude done", "done", "ok" in any punctuation or formatting included '
                       '— is BUS_WORKER_EVIDENCE_INVALID', bus)
-        self.assertIn('must end with one fenced `mtj-evidence` JSON footer', bus)
+        self.assertIn('must end with exactly one fenced `mtj-evidence` JSON footer', bus)
 
 
 class TestSupervisorEvidence(unittest.TestCase):
@@ -359,7 +362,7 @@ class TestSupervisorEvidence(unittest.TestCase):
         fake._commit(committed('U2'))
         return fake
 
-    def evidence(self, fake, unit, comment_id, text=TEXT):
+    def evidence(self, fake, unit, comment_id, text=with_footer(TEXT, ['agent_bus/x.py'])):
         from tests.refoundation.agent_bus_fixtures import comment_body
         from tests.refoundation.test_agent_bus_provider_failover import COMMAND, gh
         command = parse_comment(comment_body(**COMMAND))
@@ -383,7 +386,7 @@ class TestSupervisorEvidence(unittest.TestCase):
         fake = self.completed_wave()
         self.evidence(fake, 'U1', 900)
         self.evidence(fake, 'U2', 901)
-        self.evidence(fake, 'U2', 902, TEXT + ' (a different response)')
+        self.evidence(fake, 'U2', 902, with_footer(TEXT + ' (a different response)', ['agent_bus/x.py']))
         with self.assertRaises(BusError) as caught:
             armed(fake).poll_once(execute=True, resume=True)
         self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
@@ -572,3 +575,162 @@ class TestFooterInTheSupervisor(unittest.TestCase):
         with self.assertRaises(BusError) as caught:
             armed(fake).poll_once(execute=True, resume=True)
         self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+
+
+# ---------------------------------------------------------------------------
+# R3.R1: Codex cross-review findings (Issue #1 5876778043)
+# ---------------------------------------------------------------------------
+
+class TestCrossReviewRepairs(unittest.TestCase):
+    def fake(self, *steps):
+        from tests.refoundation.test_agent_bus_provider_failover import repo
+        return repo(*steps)
+
+    # F1 -- order is meaning for a multi-valued key
+    def test_F1_reordered_config_records_are_a_git_mutation(self):
+        from agent_bus import finalize as F
+        a, b = 'file:.git/config\0remote.origin.url\nA', 'file:.git/config\0remote.origin.url\nB'
+        before = F.Snapshot('h', 'br', (), (a, b))
+        after = F.Snapshot('h', 'br', (), (b, a))
+        self.assertEqual(F.git_mutations(before, after, ()), ['local git config changed'])
+
+    def test_F1_real_snapshot_keeps_config_order_and_origin(self):
+        import subprocess, tempfile
+        from agent_bus import finalize as F
+        from agent_bus.shell import Runner
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run(['git', 'init', '-q', d], check=True)
+            subprocess.run(['git', '-C', d, '-c', 'user.name=x', '-c', 'user.email=x@x',
+                            'commit', '-q', '--allow-empty', '-m', 'x'], check=True)
+            for v in ('first', 'second'):
+                subprocess.run(['git', '-C', d, 'config', '--add', 'x.multi', v], check=True)
+            snap = F.snapshot(d, Runner())
+            values = [r.split('\n', 1)[1] for r in snap.config if '\0x.multi\n' in r]
+            self.assertEqual(values, ['first', 'second'])
+            self.assertTrue(all(r.startswith('file:') for r in snap.config))
+
+    # F2 -- an executing driver in effective config stops everything before dispatch
+    def test_F2_an_executing_driver_in_config_refuses_before_any_dispatch(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed, ok
+        for key in ('filter.lfs.clean', 'filter.x.process', 'diff.x.textconv', 'merge.x.driver',
+                    'core.sshCommand', 'gpg.ssh.program', 'credential.https://h.helper'):
+            with self.subTest(key=key):
+                fake = self.fake(ok('claude'))
+                fake.local_config += f'{key}=/tmp/payload\n'
+                with self.assertRaises(BusError) as caught:
+                    armed(fake, order=('claude',), max_units=1).poll_once(execute=True)
+                self.assertEqual(caught.exception.code, E.HOST_GIT_UNSAFE)
+                self.assertEqual(fake.providers_invoked, [])
+                self.assertEqual(fake.posted, [])
+
+    def test_F2_rig_a_real_clean_filter_runs_in_host_git_add(self):
+        # RED side: why absence is the only safe state. Host git (Runner) still
+        # honours a LOCAL filter once .gitattributes routes a path to it.
+        import subprocess, tempfile
+        from pathlib import Path
+        from agent_bus.shell import Runner
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            marker, payload = root / 'ran', root / 'payload.sh'
+            payload.write_text(f'#!/bin/sh\ntouch {marker}\ncat\n')
+            payload.chmod(0o755)
+            subprocess.run(['git', 'init', '-q', d], check=True)
+            subprocess.run(['git', '-C', d, 'config', 'filter.evil.clean', str(payload)], check=True)
+            (root / '.gitattributes').write_text('*.py filter=evil\n')
+            (root / 'a.py').write_text('x\n')
+            Runner()(['git', '-C', d, 'add', '--', 'a.py'])
+            self.assertTrue(marker.exists())          # RED: the filter ran in host git
+            # GREEN: the snapshot the supervisor takes before dispatch names it.
+            from agent_bus import finalize as F
+            subprocess.run(['git', '-C', d, '-c', 'user.name=x', '-c', 'user.email=x@x',
+                            'commit', '-q', '--allow-empty', '-m', 'x'], check=True)
+            self.assertEqual(F.unsafe_config(F.snapshot(d, Runner())),
+                             [f'file:.git/config: filter.evil.clean'])
+
+    # F3 -- every host git call goes through Runner
+    def test_F3_goal_git_head_runs_in_the_host_git_environment(self):
+        from unittest import mock
+        from agent_bus import goal
+        seen = []
+        def fake_run(argv, **kw):
+            seen.append(kw.get('env'))
+            return mock.Mock(returncode=0, stdout='a' * 40 + '\n', stderr='')
+        with mock.patch('subprocess.run', fake_run):
+            self.assertEqual(goal._git_head('/tmp/x'), 'a' * 40)
+        self.assertEqual(seen[0]['GIT_CONFIG_NOSYSTEM'], '1')
+
+    def test_F3_no_agent_bus_module_runs_git_outside_runner(self):
+        import re
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2] / 'agent_bus'
+        for path in sorted(root.glob('*.py')):
+            text = path.read_text(encoding='utf-8')
+            with self.subTest(module=path.name):
+                self.assertIsNone(re.search(r'subprocess\.\w+\(\s*\[\s*["\']git["\']', text))
+
+    # F4 -- the sandbox is mandatory and rooted at the checkout
+    def test_F4_sandbox_must_start_and_the_provider_runs_in_the_checkout(self):
+        from agent_bus import providers as P
+        from agent_bus.transport import HEADLESS_CLAUDE_SETTINGS
+        self.assertIs(HEADLESS_CLAUDE_SETTINGS['sandbox']['failIfUnavailable'], True)
+        from tests.refoundation.test_agent_bus_provider_failover import armed, ok
+        fake = self.fake(ok('claude'))
+        sup = armed(fake, order=('claude',), max_units=1)
+        cwds = []
+        inner = sup.transport.run
+        def recording(argv, **kw):
+            if argv[0] in P.PROVIDERS:
+                cwds.append(kw.get('cwd'))
+            return inner(argv, **kw)
+        sup.transport.run = recording
+        sup.poll_once(execute=True)
+        self.assertEqual(cwds, [sup.transport.repo])
+
+    # F5 -- serialization refusal and post failure are claimed, never redispatched
+    def test_F5_escaping_blowup_is_refused_before_commit_and_claimed(self):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, armed
+        stop = with_footer('STOP ' + '\u0001' * 11000, ['agent_bus/x.py'])
+        fake = self.fake(Step('claude', dirty=('agent_bus/x.py',), stdout=claude_says(stop)))
+        report = armed(fake, order=('claude',), max_units=1).poll_once(execute=True)
+        self.assertEqual(report['reason'], E.WORKER_EVIDENCE_INVALID)
+        self.assertEqual(fake.host_commits, [])
+        self.assertEqual([m.kind for m in fake.posted_messages()], ['WAVE_PROGRESS', 'WAVE_RESULT'])
+
+    def test_F5_an_evidence_post_failure_still_claims_the_command(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed, ok
+        fake = self.fake(ok('claude'))
+        sup = armed(fake, order=('claude',), max_units=1)
+        inner = sup.run
+        def run(argv, **kw):
+            if argv[0] == 'gh' and any(a.startswith('body=' + W.PREFIX[:10]) for a in argv):
+                return Completed(tuple(argv), 1, '', 'evidence post failed')
+            return inner(argv, **kw)
+        sup.run = run
+        with self.assertRaises(BusError) as caught:
+            sup.poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_POST_FAILED)
+        kinds = [m.kind for m in fake.posted_messages()]
+        self.assertEqual(kinds, ['WAVE_PROGRESS', 'WAVE_RESULT'])
+        self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
+
+    # F6 -- one footer, and resume re-proves it
+    def test_F6_a_second_footer_is_refused(self):
+        two = with_footer(with_footer('x', [], 'STOP', ()), ['a.py'])
+        with self.assertRaises(BusError):
+            W.footer(two)
+
+    def test_F6_resume_does_not_accept_footerless_or_stop_evidence(self):
+        from tests.refoundation.agent_bus_fixtures import comment_body
+        from tests.refoundation.test_agent_bus_provider_failover import (
+            COMMAND, armed, committed, gh, repo)
+        command = parse_comment(comment_body(**COMMAND))
+        for text in (TEXT, with_footer('STOP: x', [], 'STOP', ())):
+            with self.subTest(text=text[:20]):
+                fake = repo()
+                fake._commit(committed('U1'))
+                fake._commit(committed('U2'))
+                for unit, cid in (('U1', 900), ('U2', 901)):
+                    fake.comments.append(gh(cid, W.render(command, unit, fake.head, 'claude', text)))
+                with self.assertRaises(BusError) as caught:
+                    armed(fake).poll_once(execute=True, resume=True)
+                self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)

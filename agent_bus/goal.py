@@ -382,8 +382,12 @@ def _execute(argv: Sequence[str], cwd: str) -> int:
 
 
 def _git_head(checkout: str) -> str:
-    out = subprocess.run(["git", "-C", checkout, "rev-parse", "HEAD"],
-                         capture_output=True, text=True)
+    # Through Runner like every host git call: host_git_env(), no ambient config.
+    from agent_bus.shell import Runner
+    try:
+        out = Runner()(["git", "-C", checkout, "rev-parse", "HEAD"])
+    except BusError:
+        return ""
     return out.stdout.strip() if out.returncode == 0 else ""
 
 

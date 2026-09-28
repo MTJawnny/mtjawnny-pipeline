@@ -200,16 +200,21 @@ goes through `agent_bus.shell.Runner` in `host_git_env()`: no system or global
 config file, no ambient `GIT_*`, no prompt, and the keys that execute a program
 or redirect a remote (`core.fsmonitor`, `core.hooksPath`, `commit.gpgsign`,
 `tag.gpgsign`, `protocol.ext.allow`, `credential.helper`) pinned above anything
-the repository says. Credentials come only from `gh auth git-credential`. Step 2
-also compares local config read with `--includes` and the digests of
+the repository says. Credentials come only from `gh auth git-credential`. Before any
+dispatch the host refuses (BUS_HOST_GIT_UNSAFE) a checkout whose effective config
+names any other program git would run — a filter, textconv or merge driver, an
+ssh, askpass, gpg or credential program — because a provider could route a path
+to it through `.gitattributes` before any scope check. Step 2 also compares local
+config read in order with `--includes --show-origin` and the digests of
 `info/attributes`, `info/exclude`, `objects/info/alternates` and
 `config.worktree`; the push and its re-read use one resolved URL.
 
 **Headless Claude runs least-privileged.** `claude -p` loads no user, project or
 local settings file (`--setting-sources ""`), cannot prompt
 (`--permission-prompts none`), and runs with only the bus-owned
-`HEADLESS_CLAUDE_SETTINGS`: the Bash sandbox confines writes to the checkout and
-the temp dir, and Git metadata commands are denied. The operator's interactive
+`HEADLESS_CLAUDE_SETTINGS`: the Bash sandbox must start (`failIfUnavailable`),
+the provider's working directory is pinned to the checkout, writes are confined
+to it and the temp dir, and Git metadata commands are denied. The operator's interactive
 allowlist never reaches a headless provider. Codex keeps its workspace-write
 sandbox.
 
@@ -221,7 +226,7 @@ The root `CLAUDE.md` two-word "Claude done" convention governs only direct
 interactive sessions and does not apply here. The provider returns a concise,
 bounded, substantive final result stating what changed and what validation ran,
 and does not post the detailed `X`/result itself: the supervisor publishes the
-durable evidence (step 8). The response must end with one fenced
+durable evidence (step 8). The response must end with exactly one fenced
 `mtj-evidence` JSON footer and nothing after it: `status` (DONE or STOP),
 `changed` (every added, modified or deleted path; the host checks it against Git)
 and `validation` (each check run, as `{"command", "exit"}`; required for DONE)

@@ -115,7 +115,7 @@ def codex_quota(**kw) -> Step:
 class ProviderRepo(FakeRepo):
     """The git model, plus scripted `claude` and `codex` invocations in strict order."""
 
-    def __call__(self, argv, stdin=None, timeout=None) -> Completed:
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None) -> Completed:
         argv = tuple(argv)
         if argv[0] not in P.PROVIDERS:
             return super().__call__(argv, stdin, timeout)

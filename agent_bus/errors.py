@@ -101,6 +101,9 @@ WORKER_EVIDENCE_POST_FAILED = "BUS_WORKER_EVIDENCE_POST_FAILED"
 WORKER_EVIDENCE_MISMATCH = "BUS_WORKER_EVIDENCE_MISMATCH"
 # The provider's own evidence footer says it stopped: the unit is not done.
 WORKER_STOPPED = "BUS_WORKER_STOPPED"
+# The checkout's effective git config names a program host git could execute
+# (a filter, textconv, merge driver, ssh/askpass/gpg program, credential helper).
+HOST_GIT_UNSAFE = "BUS_HOST_GIT_UNSAFE"
 
 # --- local Worker providers ---------------------------------------------------------
 # Provider order is operator configuration; a malformed one is refused, not guessed.

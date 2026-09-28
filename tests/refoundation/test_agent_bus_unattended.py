@@ -799,7 +799,7 @@ class TestControlledRuntimeFailure(unittest.TestCase):
     def test_a_failed_git_command_speaks_the_bus_vocabulary(self):
         from agent_bus.shell import Completed
         class Failing:
-            def __call__(self, argv, stdin=None, timeout=None):
+            def __call__(self, argv, stdin=None, timeout=None, cwd=None):
                 return Completed(tuple(argv), 128, "", "not a git repository")
         with self.assertRaises(BusError) as caught:
             inspect("/tmp/not-a-repo", Failing())
@@ -908,7 +908,7 @@ class TestServiceSurfaces(unittest.TestCase):
 
     def test_status_reports_what_is_actually_on_the_machine(self):
         class NotLoaded:
-            def __call__(self, argv, stdin=None, timeout=None):
+            def __call__(self, argv, stdin=None, timeout=None, cwd=None):
                 from agent_bus.shell import Completed
                 return Completed(tuple(argv), 1, "", "could not find service")
         report = W.status(REPO_PATH, run=NotLoaded())

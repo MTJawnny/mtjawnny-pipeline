@@ -79,11 +79,12 @@ class Runner:
     """
 
     def __call__(self, argv: Sequence[str], stdin: str | None = None,
-                 timeout: int | None = 900) -> Completed:
+                 timeout: int | None = 900, cwd: str | None = None) -> Completed:
         try:
             proc = subprocess.run(
                 list(argv),
                 input=stdin,
+                cwd=cwd,
                 env=host_git_env() if argv[0] == "git" else None,
                 capture_output=True,
                 text=True,

@@ -209,7 +209,7 @@ class FakeGitHub:
         self.pr = [c for c in self.pr if c["id"] != comment_id]
 
     # --- what the publisher sees
-    def __call__(self, argv, stdin=None, timeout=None):
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None):
         argv = tuple(argv)
         self.calls.append(argv)
         if argv[:3] == ("gh", "api", "--paginate"):

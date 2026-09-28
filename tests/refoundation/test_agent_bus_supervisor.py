@@ -73,7 +73,7 @@ class FakeRunner:
         self.calls: list[tuple[str, ...]] = []
         self.posted: list[str] = []
 
-    def __call__(self, argv, stdin=None, timeout=None) -> Completed:
+    def __call__(self, argv, stdin=None, timeout=None, cwd=None) -> Completed:
         argv = tuple(argv)
         self.calls.append(argv)
         if argv[0] == "gh":
@@ -89,7 +89,7 @@ class FakeRunner:
             if "merge-base" in argv:
                 return Completed(argv, 0 if self.ancestor else 1, "", "")
             if "config" in argv:
-                return Completed(argv, 0, "core.bare=false\n", "")
+                return Completed(argv, 0, "file:.git/config\0core.bare\nfalse\0" if "-z" in argv else "core.bare=false\n", "")
             if "for-each-ref" in argv:
                 return Completed(argv, 0, f"{self.head} refs/heads/{self.branch}\n", "")
             if "--show-toplevel" in argv:

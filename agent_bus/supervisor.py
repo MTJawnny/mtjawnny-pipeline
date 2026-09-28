@@ -225,6 +225,14 @@ class Supervisor:
         for index, unit_id in enumerate(runnable):
             unit = plan.unit(unit_id)
             before = finalize.snapshot(self.repo_path, self.run)
+            unsafe = finalize.unsafe_config(before)
+            if unsafe:
+                # Before any dispatch: nothing ran, nothing to claim. The
+                # operator removes the driver; the bus never guesses around it.
+                raise BusError(E.HOST_GIT_UNSAFE,
+                               "host git would execute programs named in the checkout's "
+                               "config; remove them before any Worker runs: "
+                               + "; ".join(unsafe))
             dispatch: Dispatch = transport.dispatch(
                 command, plan, [unit_id], resumed=resumed or index > 0, dry_run=False,
                 queue=list(runnable[index + 1:]))
@@ -244,9 +252,16 @@ class Supervisor:
                 # A failed unit's evidence is published too (marked F with its
                 # problems): the reason a Worker stopped is exactly what the
                 # reviewer needs. It never counts as completion evidence.
-                body = worker_evidence.render(command, unit_id, after, dispatch.provider, text,
-                                              problems=None if verdict.ok else verdict.problems)
-                reference = self._post_evidence(body)
+                try:
+                    body = worker_evidence.render(
+                        command, unit_id, after, dispatch.provider, text,
+                        problems=None if verdict.ok else verdict.problems)
+                    reference = self._post_evidence(body)
+                except BusError as exc:
+                    # No PASS without durable evidence -- and no unclaimed
+                    # command either: try to claim it as FAILED, then raise.
+                    self._claim_failed(command, authority, unit_id, exc, checkout)
+                    raise
                 report.setdefault("worker_evidence", []).append(reference)
             status = "DONE" if verdict.ok else "FAILED"
             commit = verdict.commits[-1] if verdict.commits else None
@@ -282,6 +297,22 @@ class Supervisor:
         report["posted"] = posted
         return report
 
+    def _claim_failed(self, command: Envelope, authority, unit_id: str, exc: BusError,
+                      checkout: Checkout) -> None:
+        """Best effort: FAILED progress and an F result, so a redelivery of this
+        command is ALREADY_CLAIMED rather than a second dispatch. A post that
+        fails here is swallowed; the original error is what gets raised."""
+        try:
+            self._post(compose.progress(command, authority, unit_id, "FAILED", None,
+                                        note=exc.code, clock=self.clock))
+            self._post(compose.result(
+                command, authority, status="F", branch=checkout.branch, head=self._head(),
+                units=[{"id": unit_id, "status": "FAILED"}],
+                validation=[f"{unit_id}: rejected"],
+                discrepancies=[f"{exc.code} at {unit_id}"], clock=self.clock))
+        except (BusError, AuthorityError, ValueError):
+            pass
+
     def _settle(self, command: Envelope, unit, plan: WavePlan, dispatch: Dispatch,
                 before) -> tuple[str | None, UnitVerdict]:
         """(evidence text or None, verdict) for one dispatched unit."""
@@ -293,6 +324,13 @@ class Supervisor:
         except BusError as exc:
             if exc.code != E.WORKER_EVIDENCE_INVALID:
                 raise
+            return None, failed(exc.code, str(exc).split(": ", 1)[-1])
+        try:
+            # The wrapper must fit BEFORE anything is committed: a response that
+            # passes the raw bound can still escape past the comment limit.
+            worker_evidence.render(command, unit.id, "0" * 40, dispatch.provider, text,
+                                   problems=[(E.WORKER_EVIDENCE_INVALID, "x" * 2000)])
+        except BusError as exc:
             return None, failed(exc.code, str(exc).split(": ", 1)[-1])
         if stated.status == "STOP":
             return text, failed(E.WORKER_STOPPED,
@@ -350,6 +388,9 @@ class Supervisor:
                     if expected != comment.body:
                         continue
                     if not SHA_RE.fullmatch(payload["head"]):
+                        continue
+                    # Completion evidence must itself be well-formed evidence.
+                    if worker_evidence.footer(payload["response"]).status != "DONE":
                         continue
                     check = self.run(["git", "-C", self.repo_path, "merge-base", "--is-ancestor",
                                       payload["head"], "HEAD"])

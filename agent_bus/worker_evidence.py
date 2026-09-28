@@ -76,6 +76,8 @@ def footer(text: str) -> Footer:
     body = _bounded(text).rstrip()
     opener = f'```{FOOTER_FENCE}\n'
     start = body.rfind(opener)
+    if body.count('```' + FOOTER_FENCE) > 1:
+        _refuse(f'final Worker response has more than one ```{FOOTER_FENCE} footer')
     if start < 0 or not body.endswith('\n```'):
         _refuse(f'final Worker response does not end with a ```{FOOTER_FENCE} footer '
                 '(status, changed, validation)')
