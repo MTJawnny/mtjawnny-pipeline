@@ -1,0 +1,90 @@
+{
+  "schema": "oracle-compiler-authority-crosswalk/1",
+  "status": "MANAGER_BOUNDARY_CROSSWALK",
+  "base": "42a13e5babcb10f090a3ceda83abd7451f4d1863",
+  "m01_result_comment": 5844518936,
+  "fixture_contract": "oracle_compiler/FIXTURES.json",
+  "interface": {
+    "current": "oracle-compiler-interface/0",
+    "interface_1_timing": "ONLY_AFTER_WAVE_1_REVIEW",
+    "rule": "C01/C02 do not freeze compiler-specific occurrence, reference, or coverage schema."
+  },
+  "rows": {
+    "operation_structure": {
+      "authority": "CANDIDATE_NOT_RATIFIED",
+      "production_reuse": ["locality", "face/paragraph/clause segmentation"],
+      "benchmark_only": ["four-coordinate AQ4 occurrence evidence", "P2 multi-effect-per-clause pressure"],
+      "compiler_rule": "H-REGION may be falsified experimentally only; it is not gold or production identity."
+    },
+    "references_relations": {
+      "authority": "EXISTS_BUT_NEEDS_ADAPTER",
+      "production_reuse": ["linked-ability handling", "self-reference normalization", "target noun phrases", "object-lattice distinctions"],
+      "missing_adapter_scope": ["antecedent resolution", "set identity", "object continuity", "process/event identity"],
+      "compiler_rule": "Prefer explicit UNRESOLVED to guessed reference identity."
+    },
+    "cardinality_quantity": {
+      "authority": "BENCHMARK_LAW_ONLY",
+      "benchmark_only": ["typed modal selection/cardinality"],
+      "production_reuse": ["narrow target quantifier helpers"],
+      "compiler_rule": "Reuse benchmark machinery only under AQ4 benchmark authorization; do not promote it to production law."
+    },
+    "cost_structural_region": {
+      "authority": "BENCHMARK_LAW_ONLY",
+      "benchmark_only": ["COST structural-region derivation/refusal law"],
+      "compiler_rule": "COST is positional structural evidence, not payability semantics or a new cost ontology."
+    },
+    "choice_groups": {
+      "authority": "BENCHMARK_LAW_ONLY",
+      "benchmark_only": ["choice-group records", "selection min/max", "derivation/refusal law"],
+      "production_reuse": ["modal header/option recognition"],
+      "compiler_rule": "Absence of a derived choice group never proves independence."
+    },
+    "residue_coverage": {
+      "authority": "EXISTS_BUT_NEEDS_ADAPTER",
+      "production_reuse": ["residual invariants", "locality-unaddressed reporting", "coverage checks", "conservation/evidence mechanisms"],
+      "missing_adapter_scope": ["V1 per-source-span coverage ledger"],
+      "compiler_rule": "Extend existing accounting; do not create a competing coverage ontology."
+    },
+    "replacement_lineage": {
+      "authority": "GENUINELY_MISSING",
+      "compiler_rule": "Pressure-test and report the gap; do not mint lineage schema or bespoke Draw Replacement vocabulary without Captain governance."
+    },
+    "decision_authority": {
+      "authority": "GENUINELY_MISSING",
+      "compiler_rule": "Audit CR 723 decision control separately from object/resource control; STOP before schema minting."
+    },
+    "ability_borrowing_inheritance": {
+      "authority": "GENUINELY_MISSING",
+      "compiler_rule": "Do not equate keyword/quoted-ability grants with borrowing activated abilities from a referenced object/card; STOP before primitive minting."
+    },
+    "visibility_information_access": {
+      "authority": "EXISTS_BUT_NEEDS_ADAPTER",
+      "production_reuse": ["zone", "reveal", "face-down primitives"],
+      "missing_adapter_scope": ["observer/access-window attachment"],
+      "compiler_rule": "Reuse primitives; do not claim hidden-information access is already represented."
+    },
+    "keyword_consequences": {
+      "authority": "CANDIDATE_NOT_RATIFIED",
+      "production_reuse": ["CR keyword membership", "classification", "delivery homes", "printed-form machinery"],
+      "missing_adapter_scope": ["mechanical consequence expansion registry"],
+      "compiler_rule": "Compiler may define a future registry interface but may not freeze or populate unratified consequence law."
+    }
+  },
+  "fixture_boundary": {
+    "production_truth": "May be gold when independently observed and repository-authoritative.",
+    "benchmark_law": "May constrain benchmark execution and fixture interpretation under Captain-authorized AQ4 measurement; never silently becomes production truth.",
+    "candidate": "May be a falsification target only; never fixture gold.",
+    "missing": "Fixture may assert the observed pressure/gap only; it may not contain a made-up expected representation."
+  },
+  "sequence": {
+    "C01": "AQ4 Packet-0 preflight only: repo state, Gate 2, contract-vs-law consistency.",
+    "C02": "Only after C01 PASS, consume existing pre-registered P1/P2/P3/P4 probes; do not rewrite equivalent probes.",
+    "wave_1_review": "Only after C02; may propose oracle-compiler-interface/1.",
+    "C03": "H-REGION falsification experiment only, using precommitted fixtures/population; kill condition returns to Captain/AQ4 governance."
+  },
+  "carried_debt": [
+    "M00 Gate-2 validation deferral remains open until C01 actually runs and reports it.",
+    "The four-coordinate occurrence is frozen AQ4 benchmark material, not production authority.",
+    "AQ4 production remains PAUSED and unratified."
+  ]
+}
