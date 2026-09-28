@@ -357,8 +357,9 @@ binding, the measured head and the evidence are the host's: held in memory, and
 re-proven after the review or nothing is published. The model is the provider
 that did NOT produce the wave's Worker evidence. It reads a pristine clone taken
 before any candidate code ran, works from a context dir outside it, and is
-governed by `CLAUDE.md` and both bus contracts copied from the watcher's own
-checkout; the candidate's copies are review material only. It runs against the
+governed by `CLAUDE.md` and both bus contracts as committed at the accepted head
+the latest `K` names (never a working tree: the watcher's checkout is also its
+Worker's); the candidate's copies are review material only. It runs against the
 decision schema with no write access (`codex exec --sandbox read-only
 --output-schema`, or `claude -p --json-schema` with no edit tools, no ambient
 settings, and the Bash sandbox denying writes to the whole review workspace).

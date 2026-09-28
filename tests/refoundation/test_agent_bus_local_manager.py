@@ -382,19 +382,45 @@ class TestWorkspace(unittest.TestCase):
         self.assertFalse(inodes(self.repo) & inodes(ws.candidate))
         self.assertFalse(inodes(self.repo) & inodes(ws.review))
 
-    def test_F4_contracts_come_from_the_watchers_checkout_and_are_outside_the_candidate(self):
-        ws = self.ws()
-        with mock.patch.object(L.publisher, "binding_for", lambda *a: (None, "no plan")):
-            m = self.manager(fake_gh())
-            m.measure(1001, self.head, ws)
-        prompt = m._context(ws, 1001, "w-result", "selftest")
+    def test_NC_F4_contracts_are_the_accepted_heads_never_the_candidates(self):
+        (self.repo / "refoundation").mkdir()
         for rel in L.CONTRACTS:
-            self.assertEqual((ws.context / "contracts" / rel).read_bytes(),
-                             (L.TRUSTED_ROOT / rel).read_bytes())
+            (self.repo / rel).write_text(f"accepted law: {rel}\n")
+        git("add", "-A", cwd=self.repo)
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "law",
+            cwd=self.repo)
+        accepted = git("rev-parse", "HEAD", cwd=self.repo)
+        for rel in L.CONTRACTS:     # the candidate weakens every contract
+            (self.repo / rel).write_text(f"weakened: {rel}\n")
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-am", "weaken",
+            cwd=self.repo)
+        head = git("rev-parse", "HEAD", cwd=self.repo)
+        ws = self.ws()
+        world = SimpleNamespace(authority=SimpleNamespace(accepted_head=accepted))
+        with mock.patch.object(L.publisher, "binding_for", lambda *a: (None, "no plan")), \
+             mock.patch.object(L.publisher, "observe", lambda *a: world):
+            m = self.manager(fake_gh())
+            m.measure(1001, head, ws)
+            prompt = m._context(ws, 1001, "w-result", "selftest")
+        for rel in L.CONTRACTS:
+            self.assertEqual((ws.context / "contracts" / rel).read_text(),
+                             f"accepted law: {rel}\n")
+            self.assertEqual((ws.review / rel).read_text(), f"weakened: {rel}\n")
         self.assertNotIn(ws.context, [ws.candidate, *ws.candidate.parents])
-        self.assertFalse((ws.review / "CLAUDE.md").exists())   # the candidate has its own, or none
+        self.assertIn(f"accepted head {accepted}", prompt)
         self.assertIn("REVIEW\nMATERIAL", prompt)
         self.assertIn(str(ws.review), prompt)
+
+    def test_NC_F4_no_accepted_head_no_review(self):
+        ws = self.ws()
+        world = SimpleNamespace(authority=SimpleNamespace(accepted_head=""))
+        with mock.patch.object(L.publisher, "binding_for", lambda *a: (None, "no plan")), \
+             mock.patch.object(L.publisher, "observe", lambda *a: world):
+            m = self.manager(fake_gh())
+            m.measure(1001, self.head, ws)
+            with self.assertRaises(BusError) as caught:
+                m._context(ws, 1001, "w-result", "selftest")
+        self.assertEqual(caught.exception.code, E.AUTHORITY_UNRESOLVED)
 
     def test_F4_reviewers_work_from_the_context_dir_never_the_candidate(self):
         ws = self.ws()
@@ -419,6 +445,7 @@ class TestWorkspace(unittest.TestCase):
 
     def test_F5_a_headless_review_never_touches_the_operator_checkout(self):
         before = git("status", "--porcelain", "--ignored", cwd=self.repo)
+        self_head = self.head
         prompts = []
         m = self.manager(fake_gh(), invoke=lambda r, prompt, ws: prompts.append(ws) or
                          {"decision": GOOD})
@@ -427,6 +454,8 @@ class TestWorkspace(unittest.TestCase):
              mock.patch.object(L, "parse_comment", lambda body: Env()), \
              mock.patch.object(L.LocalManager, "attribution", lambda self, c: ("codex", None)), \
              mock.patch.object(L.publisher, "result_head", lambda *a: ""), \
+             mock.patch.object(L.LocalManager, "_accepted_contracts",
+                               lambda self, ws, into: self_head), \
              mock.patch.object(L.publisher, "main", lambda args, run=None: 0):
             report = m.poll_once(execute=True)
         self.assertEqual(report["action"], "PUBLISHED")
