@@ -110,8 +110,11 @@ def snapshot(repo: str, run: Runner) -> Snapshot:
     head = _checked(run, repo, "rev-parse", "HEAD").strip()
     branch = _checked(run, repo, "rev-parse", "--abbrev-ref", "HEAD").strip()
     refs = _checked(run, repo, "for-each-ref", "--format=%(objectname) %(refname)")
-    config = _checked(run, repo, "config", "--local", "--includes", "--show-origin", "-z",
-                      "--list")
+    # Every scope host git reads: under host_git_env() that is the repository
+    # config, the worktree config (extensions.worktreeConfig) and their includes,
+    # plus the host's own command-line pins, which are dropped as not the
+    # checkout's. System and global are not read at all.
+    config = _checked(run, repo, "config", "--includes", "--show-origin", "-z", "--list")
     lines = lambda text: tuple(sorted(line for line in text.splitlines() if line.strip()))
     return Snapshot(head, branch, lines(refs), _config_records(config), _meta(repo, run))
 
@@ -123,7 +126,8 @@ def _config_records(text: str) -> tuple[str, ...]:
         parts.pop()
     if len(parts) % 2:
         raise BusError(E.GIT_FAILED, "unexpected `git config --show-origin -z` output shape")
-    return tuple(f"{parts[i]}\0{parts[i + 1]}" for i in range(0, len(parts), 2))
+    return tuple(f"{parts[i]}\0{parts[i + 1]}" for i in range(0, len(parts), 2)
+                 if not parts[i].startswith("command line:"))
 
 
 # Config keys that make git itself run a program. Host git pins the ones it can

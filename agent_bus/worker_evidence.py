@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 
 from agent_bus import errors as E
@@ -76,7 +77,10 @@ def footer(text: str) -> Footer:
     body = _bounded(text).rstrip()
     opener = f'```{FOOTER_FENCE}\n'
     start = body.rfind(opener)
-    if body.count('```' + FOOTER_FENCE) > 1:
+    if start > 0 and body[start - 1] != '\n':
+        start = -1          # a mention inside a line is not a fence
+    # Count footer fences, not mentions: an opening fence is a line of its own.
+    if len(re.findall(r'(?m)^```' + re.escape(FOOTER_FENCE) + r'[ \t]*$', body)) > 1:
         _refuse(f'final Worker response has more than one ```{FOOTER_FENCE} footer')
     if start < 0 or not body.endswith('\n```'):
         _refuse(f'final Worker response does not end with a ```{FOOTER_FENCE} footer '

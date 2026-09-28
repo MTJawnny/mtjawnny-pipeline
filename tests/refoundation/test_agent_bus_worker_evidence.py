@@ -734,3 +734,44 @@ class TestCrossReviewRepairs(unittest.TestCase):
                 with self.assertRaises(BusError) as caught:
                     armed(fake).poll_once(execute=True, resume=True)
                 self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+
+
+class TestCrossReviewRound2(unittest.TestCase):
+    """Codex re-review of R3.R1 (Issue #1): worktree config, footer mentions."""
+
+    def test_worktree_config_filter_is_refused_before_dispatch(self):
+        import subprocess, tempfile
+        from pathlib import Path
+        from agent_bus import finalize as F
+        from agent_bus.shell import Runner
+        with tempfile.TemporaryDirectory() as d:
+            git = lambda *a: subprocess.run(['git', '-C', d, *a], check=True,
+                                            capture_output=True)
+            subprocess.run(['git', 'init', '-q', d], check=True)
+            git('-c', 'user.name=x', '-c', 'user.email=x@x', 'commit', '-q',
+                '--allow-empty', '-m', 'x')
+            git('config', 'extensions.worktreeConfig', 'true')
+            git('config', '--worktree', 'filter.evil.clean', '/tmp/payload')
+            # RED at 38ea3bf: `--local` never read config.worktree.
+            local = subprocess.run(['git', '-C', d, 'config', '--local', '--list'],
+                                   capture_output=True, text=True).stdout
+            self.assertNotIn('filter.evil.clean', local)
+            found = F.unsafe_config(F.snapshot(d, Runner()))
+            self.assertEqual(len(found), 1)
+            self.assertTrue(found[0].endswith('filter.evil.clean'))
+
+    def test_host_pins_are_not_counted_as_checkout_config(self):
+        from agent_bus import finalize as F
+        from agent_bus.shell import Runner
+        snap = F.snapshot('.', Runner())
+        self.assertFalse(any(r.startswith('command line:') for r in snap.config))
+        self.assertEqual(F.unsafe_config(snap), [])
+
+    def test_mentioning_the_fence_in_prose_is_not_a_second_footer(self):
+        text = with_footer('Updated the parser to recognize the literal token ```'
+                           + W.FOOTER_FENCE + ' in responses.', ['a.py'])
+        self.assertEqual(W.footer(text).status, 'DONE')
+
+    def test_two_real_footer_fences_are_still_refused(self):
+        with self.assertRaises(BusError):
+            W.footer(with_footer(with_footer('x', [], 'STOP', ()), ['a.py']))
