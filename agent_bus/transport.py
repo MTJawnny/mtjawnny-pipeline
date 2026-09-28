@@ -100,7 +100,14 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
         "    Agent-Bus-Wave / Agent-Bus-Unit trailers and pushes it after you finish.\n"
         "    Any Git mutation by you fails the unit.\n"
         "  - Do not accept your own work, do not move the accepted head, do not merge.\n"
-        "  - STOP at the wave review boundary, or on any declared STOP condition.\n\n"
+        "  - STOP at the wave review boundary, or on any declared STOP condition.\n"
+        "  - This is a headless Agent Bus invocation. Your final response is\n"
+        "    machine-captured Worker evidence for the supervisor, not a human-facing\n"
+        "    reply, so the direct interactive 'Claude done' convention does not apply.\n"
+        "    It must be substantive: state concisely what changed and what validation\n"
+        "    ran, with its outcome. A final response that is only 'Claude done',\n"
+        "    'done' or 'ok' is refused as evidence and the unit fails. Do not post the\n"
+        "    detailed X/result yourself; the supervisor publishes your evidence.\n\n"
         "The authorizing command, verbatim:\n\n" + envelope.render()
     )
 

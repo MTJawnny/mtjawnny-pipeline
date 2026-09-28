@@ -166,3 +166,13 @@ consumer puts that directory on `sys.path` the way its neighbours already put
 - Two words, nothing else. This holds regardless of whether `X` status is
   `P`, `S` or `F`. No completion summary, no restatement of `X`, no next-step
   offer, unless Captain explicitly asks.
+- That two-word rule governs **direct interactive** sessions only, where the
+  final response is shown to a human. A **headless Agent Bus** invocation
+  (`claude -p`, Codex, any provider) is different: its final response is not
+  human-facing — the supervisor captures it as machine-consumed Worker evidence.
+  There the provider does **not** post the detailed `X`/result itself and does
+  **not** reduce its final response to "Claude done", "done" or "ok"; it returns
+  a concise, bounded, substantive result stating what changed and what
+  validation ran, and the supervisor durably publishes it. An
+  acknowledgement-only final response is refused as evidence and fails the unit.
+  See `refoundation/AGENT-BUS.md` section 7a.

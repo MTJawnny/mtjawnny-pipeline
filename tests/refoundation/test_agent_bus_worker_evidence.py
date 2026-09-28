@@ -141,7 +141,8 @@ class TestExtraction(unittest.TestCase):
                  ('codex', codex().replace('"id": "message-final"', '"id": "commentary"')),
                  ('codex', codex().replace('"text": "Working."', '"text": "Working.", "phase": "final_answer"')),
                  ('codex', 'not json\n' + codex())]
-        for text in ['', '  ', 'Claude done', 'ok', 'é' * (W.MAX_EVIDENCE_BYTES // 2 + 1)]:
+        for text in ['', '  ', 'Claude done', 'done', 'ok', ' DONE\n', 'Claude Done',
+                     'é' * (W.MAX_EVIDENCE_BYTES // 2 + 1)]:
             cases.extend([('claude', json.dumps(dict(valid, result=text))), ('codex', codex(text))])
         for provider, stdout in cases:
             with self.subTest(provider=provider, stdout=stdout[:80]):
@@ -163,6 +164,62 @@ class TestExtraction(unittest.TestCase):
         self.assertFalse(payload['manager_acceptance'])
         with self.assertRaises(BusError):
             W.render(command, 'U1', '1'*40, 'claude', '\x01' * 12000)
+
+
+class TestHeadlessEvidenceContract(unittest.TestCase):
+    """Headless provider output is machine evidence, not the interactive human reply."""
+    ACKS = ('Claude done', 'done', 'ok')
+
+    def brief(self, provider):
+        from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed
+        sup = armed(repo(ok(provider)), order=(provider,))
+        observation = sup.observe()
+        envelope = observation.state.pending_for('WORKER')[0]
+        plan = observation.state.waves[envelope.wave].plan
+        dispatch = sup.transport.dispatch(envelope, plan, ['U1'], dry_run=True)
+        self.assertEqual(dispatch.provider, provider)
+        return ' '.join(dispatch.prompt.split())
+
+    def test_every_provider_brief_demands_substantive_machine_evidence(self):
+        for provider in ('claude', 'codex'):
+            with self.subTest(provider=provider):
+                rules = self.brief(provider).split('Rules for this wave:')[1]
+                rules = rules.split('The authorizing command')[0]
+                self.assertIn('headless Agent Bus invocation', rules)
+                self.assertIn('machine-captured Worker evidence', rules)
+                self.assertIn('not a human-facing reply', rules)
+                self.assertIn("'Claude done' convention does not apply", rules)
+                self.assertIn('must be substantive', rules)
+                self.assertIn('what changed and what validation ran', rules)
+                self.assertIn("only 'Claude done', 'done' or 'ok' is refused", rules)
+                self.assertIn('Do not post the detailed X/result yourself', rules)
+
+    def test_every_acknowledgement_the_brief_forbids_is_refused_as_evidence(self):
+        for ack in self.ACKS:
+            for provider, stdout in [
+                    ('claude', json.dumps(dict(type='result', subtype='success',
+                                               is_error=False, result=ack))),
+                    ('codex', codex(ack))]:
+                with self.subTest(provider=provider, ack=ack):
+                    with self.assertRaises(BusError) as caught:
+                        W.extract(provider, Completed(('provider',), 0, stdout, ''))
+                    self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+                    self.assertIn('only an acknowledgement', caught.exception.detail)
+
+    def test_the_contracts_distinguish_headless_evidence_from_interactive_completion(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        claude = ' '.join((root / 'CLAUDE.md').read_text(encoding='utf-8').split())
+        self.assertIn('the human-facing final response is **exactly**: `Claude done`', claude)
+        self.assertIn('governs **direct interactive** sessions only', claude)
+        self.assertIn('A **headless Agent Bus** invocation', claude)
+        self.assertIn('machine-consumed Worker evidence', claude)
+        self.assertIn('does **not** post the detailed `X`/result itself', claude)
+        bus = ' '.join((root / 'refoundation' / 'AGENT-BUS.md').read_text(encoding='utf-8').split())
+        self.assertIn('**Headless output is evidence, not a human reply.**', bus)
+        self.assertIn('governs only direct interactive sessions and does not apply here', bus)
+        self.assertIn('does not post the detailed `X`/result itself', bus)
+        self.assertIn('"Claude done", "done" or "ok" is BUS_WORKER_EVIDENCE_INVALID', bus)
 
 
 class TestSupervisorEvidence(unittest.TestCase):

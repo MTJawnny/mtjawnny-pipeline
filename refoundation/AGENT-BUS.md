@@ -187,6 +187,18 @@ A read-only unit is never staged or committed. Any failure above stops the wave
 before PASS. Host Git commands run with hooks disabled, so nothing a provider
 wrote into the checkout runs with the host's credentials.
 
+**Headless output is evidence, not a human reply.** In a headless Agent Bus
+invocation the provider's final response — Claude's `claude -p` result, Codex's
+terminal agent message, any provider's — is captured by the supervisor as
+machine-consumed Worker evidence; it is never shown to a human as the reply.
+The root `CLAUDE.md` two-word "Claude done" convention governs only direct
+interactive sessions and does not apply here. The provider returns a concise,
+bounded, substantive final result stating what changed and what validation ran,
+and does not post the detailed `X`/result itself: the supervisor publishes the
+durable evidence (step 8). A final response that is only "Claude done", "done"
+or "ok" is BUS_WORKER_EVIDENCE_INVALID, exactly like missing evidence. The Worker
+brief (`agent_bus.transport.worker_brief`) states this rule to every provider.
+
 A completed unit whose Worker evidence was lost is not recovered from Git: a
 commit proves scope progress, never a model response, so resume and execute
 refuse it (BUS_WORKER_EVIDENCE_INVALID) rather than reconstruct one.
