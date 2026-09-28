@@ -91,6 +91,11 @@ def done(unit_id: str, *paths: str) -> Effect:
     return Effect(message=f"{unit_id}: work\n\n" + trailers(WAVE, unit_id), paths=paths)
 
 
+def edits(*paths: str) -> Effect:
+    """What a provider may do: edit files. The trusted host makes the commit."""
+    return Effect(dirty=paths)
+
+
 # ---------------------------------------------------------------------------
 # 1. Trust, fail closed
 # ---------------------------------------------------------------------------
@@ -395,7 +400,7 @@ class TestWaveExecution(unittest.TestCase):
         return FakeRepo(stream(two_unit_command()), script=list(effects))
 
     def test_a_wave_crosses_unit_boundaries_without_asking_anyone(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         report = supervisor(repo).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_RAN")
         self.assertEqual(len(repo.claude_calls), 2)
@@ -403,7 +408,7 @@ class TestWaveExecution(unittest.TestCase):
         self.assertTrue(all(o["ok"] for o in report["units"]))
 
     def test_the_first_unit_opens_a_session_and_the_second_resumes_it(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         supervisor(repo).poll_once(execute=True)
         first, second = repo.claude_calls
         self.assertIn("--session-id", first)
@@ -412,13 +417,13 @@ class TestWaveExecution(unittest.TestCase):
                          second[second.index("--resume") + 1])
 
     def test_one_progress_message_per_unit_and_exactly_one_result(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         supervisor(repo).poll_once(execute=True)
         self.assertEqual(repo.posted_kinds(),
                          ["WAVE_PROGRESS", "WAVE_PROGRESS", "WAVE_RESULT"])
 
     def test_the_result_names_every_unit_and_selects_no_successor(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         supervisor(repo).poll_once(execute=True)
         final = repo.posted_messages()[-1]
         self.assertEqual([u["id"] for u in final.body["units"]], ["U1", "U2"])
@@ -426,15 +431,15 @@ class TestWaveExecution(unittest.TestCase):
         self.assertEqual(final.body["next"], "NONE")
 
     def test_NC_a_scope_escape_stops_the_wave_before_the_next_unit_runs(self):
-        repo = self.repo(done("U1", "agent_bus/x.py", "pipeline/build_db.py"),
-                         done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py", "pipeline/build_db.py"),
+                         edits("tests/y.py"))
         report = supervisor(repo).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
         self.assertEqual(report["reason"], E.UNIT_SCOPE_ESCAPE)
         self.assertEqual(len(repo.claude_calls), 1)
 
     def test_a_stopped_wave_still_posts_a_durable_failing_result(self):
-        repo = self.repo(done("U1", "agent_bus/x.py", "pipeline/build_db.py"))
+        repo = self.repo(edits("agent_bus/x.py", "pipeline/build_db.py"))
         supervisor(repo).poll_once(execute=True)
         self.assertEqual(repo.posted_kinds(), ["WAVE_PROGRESS", "WAVE_RESULT"])
         final = repo.posted_messages()[-1]
@@ -442,27 +447,27 @@ class TestWaveExecution(unittest.TestCase):
         self.assertTrue(final.body["discrepancies"])
 
     def test_NC_a_unit_that_commits_nothing_stops_the_wave(self):
-        repo = self.repo(Effect(), done("U2", "tests/y.py"))
+        repo = self.repo(Effect(), edits("tests/y.py"))
         report = supervisor(repo).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
         self.assertEqual(report["reason"], E.UNIT_NO_COMMIT)
         self.assertEqual(len(repo.claude_calls), 1)
 
     def test_max_units_bounds_one_invocation(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         report = supervisor(repo, max_units=1).poll_once(execute=True)
         self.assertEqual(len(repo.claude_calls), 1)
         self.assertEqual([o["unit"] for o in report["units"]], ["U1"])
 
     def test_posted_message_ids_are_derived_so_a_repost_is_a_duplicate(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"), done("U2", "tests/y.py"))
+        repo = self.repo(edits("agent_bus/x.py"), edits("tests/y.py"))
         supervisor(repo).poll_once(execute=True)
         ids = [m.message_id for m in repo.posted_messages()]
         self.assertEqual(ids[0], slug("w", WAVE, "U1", "progress", "DONE"))
         self.assertEqual(len(set(ids)), len(ids))
 
     def test_nothing_is_posted_and_nothing_runs_on_a_dry_run(self):
-        repo = self.repo(done("U1", "agent_bus/x.py"))
+        repo = self.repo(edits("agent_bus/x.py"))
         supervisor(repo).poll_once(execute=False)
         self.assertEqual(repo.posted, [])
         self.assertEqual(repo.claude_calls, [])

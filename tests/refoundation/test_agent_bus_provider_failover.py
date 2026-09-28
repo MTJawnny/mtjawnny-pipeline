@@ -81,15 +81,23 @@ class Step:
     rc: int = 0
     stdout: str | None = None
     stderr: str = ""
-    message: str | None = None
+    message: str | None = None          # a PROVIDER commit: forbidden Git mutation
     paths: tuple[str, ...] = ()
-    dirty: tuple[str, ...] = ()
+    dirty: tuple[str, ...] = ()         # edits: modified tracked files
+    untracked: tuple[str, ...] = ()     # edits: added files
+    deleted: tuple[str, ...] = ()       # edits: deleted tracked files
     raises: str | None = None
     then: Callable | None = None
 
 
 def ok(provider: str, unit: str = "U1", *paths: str) -> Step:
-    return Step(provider, message=done_message(unit), paths=paths or ("agent_bus/x.py",))
+    """A successful provider that EDITED files. It commits nothing; the host does."""
+    return Step(provider, dirty=paths or ("agent_bus/x.py",))
+
+
+def committed(unit: str, *paths: str) -> Step:
+    """A unit commit already on the branch, as an earlier host finalization left it."""
+    return Step("claude", message=done_message(unit), paths=paths or ("agent_bus/x.py",))
 
 
 def claude_quota(**kw) -> Step:
@@ -121,6 +129,8 @@ class ProviderRepo(FakeRepo):
         if step.message is not None:
             self._commit(step)
         self.dirty = tuple(step.dirty)
+        self.untracked = tuple(step.untracked)
+        self.deleted = tuple(step.deleted)
         if step.then:
             step.then(self)
         default = CLAUDE_OK if argv[0] == "claude" else CODEX_OK
@@ -395,13 +405,19 @@ class TestFailoverPositive(unittest.TestCase):
         self.assertEqual(fake.posted_kinds(),
                          ["WAVE_PROGRESS", "WAVE_PROGRESS", "WAVE_RESULT"])
 
-    def test_the_codex_unit_still_meets_normal_unit_enforcement(self):
+    def test_the_codex_unit_still_meets_host_git_law_and_unit_enforcement(self):
+        # A provider that commits on its own is refused, whoever it is.
         untrailed = Step("codex", message="U1: no trailers", paths=("agent_bus/x.py",))
         fake = repo(claude_quota(), untrailed)
         report = armed(fake).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
-        self.assertEqual(report["reason"], E.UNIT_TRAILER_MISSING)
+        self.assertEqual(report["reason"], E.PROVIDER_GIT_MUTATION)
         self.assertEqual(fake.providers_invoked, ["claude", "codex"])
+        # And a codex edit outside scope is refused before anything is staged.
+        fake = repo(claude_quota(), ok("codex", "U1", "pipeline/build_db.py"))
+        report = armed(fake).poll_once(execute=True)
+        self.assertEqual(report["reason"], E.UNIT_SCOPE_ESCAPE)
+        self.assertEqual((fake.host_commits, fake.staged), ([], ()))
 
     def test_a_later_unit_resumes_the_same_providers_own_session(self):
         fake = repo(ok("codex", "U1"), ok("codex", "U2"))

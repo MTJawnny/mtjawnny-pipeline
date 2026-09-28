@@ -30,6 +30,8 @@ from tests.refoundation.test_agent_bus_supervisor import (
     REPO, FakeRunner, gh_comment, supervisor,
 )
 
+from tests.refoundation.test_agent_bus_worker_evidence import CLAUDE as CLAUDE_EVIDENCE
+
 from agent_bus import errors as E
 from agent_bus import manager_gate as G
 from agent_bus.decision import Decision
@@ -183,7 +185,7 @@ class TestNewestCommandDispatchesExactlyOnce(unittest.TestCase):
         comments = issue_stream(K_R1) + [gh_comment(cid, body) for cid, body in pr76_bodies()]
         comments += list(extra)
         return FakeRunner(comments, branch=BRANCH, head="c" * 40,
-                          claude=Completed(("claude",), 0, "ok", ""))
+                          claude=Completed(("claude",), 0, CLAUDE_EVIDENCE, ""))
 
     def test_one_execute_pass_dispatches_r2_once_and_a_second_pass_nothing(self):
         first = self.runner()

@@ -94,8 +94,11 @@ def worker_brief(envelope: Envelope, plan: WavePlan, remaining: Sequence[str],
         +
         "Rules for this wave:\n"
         "  - Finishing a unit is NOT a stop condition; continue to the next one.\n"
-        "  - Commit each mutating unit separately and end its commit message with\n"
-        "    the Agent-Bus-Wave / Agent-Bus-Unit trailers.\n"
+        "  - Edit and test files only. Never commit, push, reset, stash, clean,\n"
+        "    checkout, rebase, stage, or otherwise mutate Git metadata. The trusted\n"
+        "    Agent Bus host proves scope, then commits each mutating unit with the\n"
+        "    Agent-Bus-Wave / Agent-Bus-Unit trailers and pushes it after you finish.\n"
+        "    Any Git mutation by you fails the unit.\n"
         "  - Do not accept your own work, do not move the accepted head, do not merge.\n"
         "  - STOP at the wave review boundary, or on any declared STOP condition.\n\n"
         "The authorizing command, verbatim:\n\n" + envelope.render()

@@ -72,9 +72,14 @@ So:
 A `T` may authorize a **bounded wave**: several pre-authorized units, each with
 an id, dependencies, allow scope and required validation. Inside an authorized
 wave, finishing a unit is **not** a STOP — continue to the next runnable unit.
-Commit each mutating unit separately, ending the message with `Agent-Bus-Wave:`
-and `Agent-Bus-Unit:` trailers. STOP at the wave's review boundary. Typed
-transport, loop safety, cold start and recovery: `refoundation/AGENT-BUS.md`.
+Each mutating unit becomes exactly one commit ending with `Agent-Bus-Wave:` and
+`Agent-Bus-Unit:` trailers, but **the trusted Agent Bus host makes it, not the
+model**. A Worker provider — any provider — edits and tests files only, and never
+commits, pushes, stages, resets, stashes, cleans, checks out, rebases or
+otherwise mutates Git metadata. The host proves scope, stages exactly the
+authorized changes, commits, and fast-forward pushes the commanded branch. STOP
+at the wave's review boundary. Typed transport, loop safety, cold start and
+recovery: `refoundation/AGENT-BUS.md`.
 
 ## Discipline
 

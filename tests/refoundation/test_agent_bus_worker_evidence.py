@@ -29,7 +29,26 @@ class EvidenceRepo(FakeRepo):
 
     The shared helper is outside this task's allowlist, so extend it here.
     Evidence comments remain visible in posted; bus helpers return envelopes.
+
+    It also models what the trusted host does with Git: the index, one host
+    commit read from stdin, a non-force push that a moved remote rejects, and
+    `ls-remote`. A provider edit is `dirty` (modified), `untracked` (added) or
+    `deleted`; `staged` holds the index, so a provider that staged is visible.
     """
+    def __post_init__(self):
+        super().__post_init__()
+        self.untracked, self.deleted, self.staged = (), (), ()
+        self.remote_head = self.base
+        self.extra_refs = {}
+        self.local_config = 'core.bare=false\n'
+        self.fail_commit = self.fail_push = self.race_sha = None
+        self.host_commits, self.pushes = [], []
+        self._stdin = None
+
+    def __call__(self, argv, stdin=None, timeout=None):
+        self._stdin = stdin
+        return super().__call__(argv, stdin, timeout)
+
     def _claude(self, argv):
         result = super()._claude(argv)
         if result.returncode:
@@ -39,6 +58,60 @@ class EvidenceRepo(FakeRepo):
     def _index(self, sha):
         # git resolves HEAD in `base..HEAD`; the shared model only knows shas.
         return super()._index(self.head if sha == 'HEAD' else sha)
+
+    def entries(self):
+        staged = set(self.staged)
+        rows = [('M ' if p in staged else ' M', p) for p in self.dirty]
+        rows += [('D ' if p in staged else ' D', p) for p in self.deleted]
+        rows += [('A ' if p in staged else '??', p) for p in self.untracked]
+        return sorted(rows, key=lambda row: row[1])
+
+    def _git(self, argv):
+        done = lambda out='': Completed(argv, 0, out, '')
+        failed = lambda err: Completed(argv, 1, '', err)
+        if 'for-each-ref' in argv:
+            refs = {f'refs/heads/{self.branch}': self.head,
+                    f'refs/remotes/origin/{self.branch}': self.remote_head, **self.extra_refs}
+            return done(''.join(f'{sha} {ref}\n' for ref, sha in sorted(refs.items())))
+        if 'config' in argv:
+            return done(self.local_config)
+        if 'status' in argv:
+            end = '\0' if '-z' in argv else '\n'
+            return done(''.join(f'{code} {path}{end}' for code, path in self.entries()))
+        if 'add' in argv:
+            paths = set(argv[argv.index('--') + 1:])
+            changed = {path for _, path in self.entries()}
+            self.staged = tuple(sorted(set(self.staged) | (paths & changed)))
+            return done()
+        if 'diff' in argv and '--cached' in argv:
+            return done(''.join(f'{path}\0' for path in sorted(self.staged)))
+        if 'commit' in argv:
+            if self.fail_commit:
+                return failed(self.fail_commit)
+            if not self.staged:
+                return failed('nothing to commit')
+            sha = f'{len(self.commits) + 1:040x}'
+            self.commits.append((sha, self._stdin, tuple(self.staged)))
+            gone = set(self.staged)
+            self.dirty = tuple(p for p in self.dirty if p not in gone)
+            self.deleted = tuple(p for p in self.deleted if p not in gone)
+            self.untracked = tuple(p for p in self.untracked if p not in gone)
+            self.staged = ()
+            self.host_commits.append(sha)
+            return done()
+        if 'push' in argv:
+            self.pushes.append(argv)
+            if self.fail_push:
+                return failed(self.fail_push)
+            sha, _ = argv[-1].split(':')
+            if not (self.remote_head == self.base
+                    or 0 <= self._index(self.remote_head) < self._index(sha)):
+                return failed(' ! [rejected] (non-fast-forward)')
+            self.remote_head = sha
+            return done()
+        if 'ls-remote' in argv:
+            return done(f'{self.race_sha or self.remote_head}\t{argv[-1]}\n')
+        return super()._git(argv)
 
     def posted_messages(self):
         return [m for body in self.posted if (m := parse_comment(body)) is not None]
@@ -130,7 +203,12 @@ class TestSupervisorEvidence(unittest.TestCase):
                 self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
                 self.assertEqual(fake.posted, [])
                 self.assertEqual(fake.providers_invoked, [provider])
-                self.assertNotEqual(fake.head, fake.base)  # preserve commit for review
+                # Evidence comes first: no host commit, nothing staged or pushed,
+                # and the provider's edit stays in the tree for review.
+                self.assertEqual(fake.head, fake.base)
+                self.assertEqual((fake.host_commits, fake.pushes, fake.staged), ([], [], ()))
+                self.assertEqual(fake.dirty, ('agent_bus/x.py',))
+                self.assertFalse(any('add' in c or 'commit' in c for c in fake.calls))
 
     def test_post_failure_or_missing_receipt_prevents_pass(self):
         for rc, stdout in [(1, ''), (0, '{}'), (0, 'not-json')]:
@@ -154,9 +232,9 @@ class TestSupervisorEvidence(unittest.TestCase):
         self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
 
     def test_resume_cannot_turn_lost_evidence_into_pass(self):
-        from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed
+        from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed, committed
         fake = repo(ok('claude', 'U2'))
-        fake._commit(ok('claude', 'U1'))
+        fake._commit(committed('U1'))
         with self.assertRaises(BusError) as caught:
             armed(fake).poll_once(execute=True, resume=True)
         self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
@@ -164,10 +242,10 @@ class TestSupervisorEvidence(unittest.TestCase):
         self.assertEqual(fake.posted, [])
 
     def completed_wave(self):
-        from tests.refoundation.test_agent_bus_provider_failover import repo, ok
+        from tests.refoundation.test_agent_bus_provider_failover import repo, committed
         fake = repo()
-        fake._commit(ok('claude', 'U1'))
-        fake._commit(ok('claude', 'U2'))
+        fake._commit(committed('U1'))
+        fake._commit(committed('U2'))
         return fake
 
     def evidence(self, fake, unit, comment_id, text=TEXT):

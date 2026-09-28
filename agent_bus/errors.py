@@ -69,6 +69,15 @@ UNIT_SCOPE_ESCAPE = "BUS_UNIT_SCOPE_ESCAPE"
 UNIT_UNCOMMITTED = "BUS_UNIT_UNCOMMITTED"
 READONLY_UNIT_MUTATED = "BUS_READONLY_UNIT_MUTATED"
 
+# --- trusted-host Git finalization ---------------------------------------------------------
+# A provider edits and tests only. Any commit, ref move, branch change, local config
+# change or staging it made is refused before the host stages anything.
+PROVIDER_GIT_MUTATION = "BUS_PROVIDER_GIT_MUTATION"
+# The host could not stage exactly the measured paths or create the one unit commit.
+HOST_COMMIT_FAILED = "BUS_HOST_COMMIT_FAILED"
+# The non-force push was rejected, failed, or the remote does not name the commit after it.
+HOST_PUSH_FAILED = "BUS_HOST_PUSH_FAILED"
+
 # --- running an external command ----------------------------------------------------------
 # A launch failure is a FAILURE, not a crash. These codes exist so a long-running
 # watcher can back off from one instead of dying and being restarted forever.

@@ -11,6 +11,8 @@ Design constraints this file exists to satisfy:
   itself;
 * it re-measures after EVERY unit and refuses to advance when a unit stepped
   outside the scope it was authorized for;
+* it, not the provider, owns Git: a provider edits and tests, and the host
+  proves scope, commits the unit and pushes it (`agent_bus.finalize`);
 * it crosses unit boundaries by itself and stops at the wave boundary, which is
   the whole point of a bounded wave;
 * it is dry-run by default, and executing is an explicit flag at every layer.
@@ -27,11 +29,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
-from agent_bus import compose, worker_evidence
+from agent_bus import compose, finalize, worker_evidence
 from agent_bus import errors as E
 from agent_bus.enforce import UnitVerdict, verify_unit
 from agent_bus.errors import BusError
-from agent_bus.git_evidence import completed_units
+from agent_bus.git_evidence import completed_units, head_sha
 from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
 from agent_bus.machine import Authority, BusState, RawComment, fold
 from agent_bus.preflight import Checkout, PreflightReport, build_base_of, inspect, preflight
@@ -73,6 +75,8 @@ class Supervisor:
     # (`agent_bus.providers.resolve_order`). The supervisor never reads it itself,
     # and nothing it observes on the bus can change it.
     providers: ProviderOrder | None = None
+    # The remote the host pushes each unit commit to, non-force, on the wave's branch.
+    remote: str = "origin"
     _local: ProviderFailoverTransport | None = field(default=None, init=False, repr=False)
 
     def local_transport(self) -> ProviderFailoverTransport:
@@ -220,19 +224,27 @@ class Supervisor:
 
         for index, unit_id in enumerate(runnable):
             unit = plan.unit(unit_id)
-            before = self._head()
+            before = finalize.snapshot(self.repo_path, self.run)
             dispatch: Dispatch = transport.dispatch(
                 command, plan, [unit_id], resumed=resumed or index > 0, dry_run=False,
                 queue=list(runnable[index + 1:]))
             dispatches.append(dispatch.as_dict())
-            after = self._head()
-            dirty = self._dirty()
 
-            verdict: UnitVerdict = verify_unit(self.repo_path, command.wave, unit,
-                                               before, after, dirty, self.run)
+            # The order is the law: evidence, then provider-Git and scope proof,
+            # then the host's own commit and push, then ordinary verification,
+            # then durable evidence, and only then progress. Evidence that cannot
+            # be extracted raises here, before any commit exists.
+            text = worker_evidence.extract(dispatch.provider, dispatch.result)
+            host = finalize.finalize(self.repo_path, self.remote, plan.branch, command, unit,
+                                     dispatch.provider, before, self.run)
+            after = self._head()
+            if host.ok:
+                verdict: UnitVerdict = verify_unit(self.repo_path, command.wave, unit,
+                                                   before.head, after, self._dirty(), self.run)
+            else:
+                verdict = UnitVerdict(unit.id, False, host.problems, (), host.paths)
             outcomes.append(verdict.as_dict())
             if verdict.ok:
-                text = worker_evidence.extract(dispatch.provider, dispatch.result)
                 body = worker_evidence.render(command, unit_id, after, dispatch.provider, text)
                 reference = self._post_evidence(body)
                 report.setdefault("worker_evidence", []).append(reference)
@@ -319,7 +331,9 @@ class Supervisor:
 
     # ----------------------------------------------------------------- git io
     def _head(self) -> str:
-        return inspect(self.repo_path, self.run).head
+        # `rev-parse` only: after a refused unit the host must not run `git status`
+        # against metadata a provider may have tampered with.
+        return head_sha(self.repo_path, self.run)
 
     def _dirty(self) -> list[str]:
         return list(inspect(self.repo_path, self.run).dirty)

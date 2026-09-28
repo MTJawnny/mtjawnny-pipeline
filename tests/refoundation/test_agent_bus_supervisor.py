@@ -88,6 +88,10 @@ class FakeRunner:
                 return Completed(argv, 0, self.diff, "")
             if "merge-base" in argv:
                 return Completed(argv, 0 if self.ancestor else 1, "", "")
+            if "config" in argv:
+                return Completed(argv, 0, "core.bare=false\n", "")
+            if "for-each-ref" in argv:
+                return Completed(argv, 0, f"{self.head} refs/heads/{self.branch}\n", "")
             if "--show-toplevel" in argv:
                 return Completed(argv, 0, self.toplevel + "\n", "")
             if "--abbrev-ref" in argv:

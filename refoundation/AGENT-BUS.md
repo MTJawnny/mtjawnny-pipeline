@@ -41,6 +41,7 @@ Execution law inside an authorized wave:
   runnable unit without asking.
 - A unit whose dependency failed is BLOCKED, not attempted.
 - Each mutating unit is its own commit, so review and rollback stay per-unit.
+  **The trusted host makes that commit, never the model** (section 7a).
 - Every unit commit ends with the two trailers that make progress durable:
 
   ```text
@@ -139,7 +140,7 @@ next one may start:
 
 | check | code when it fails |
 | --- | --- |
-| a mutating unit produced a commit | BUS_UNIT_NO_COMMIT |
+| a mutating unit changed something the host could commit | BUS_UNIT_NO_COMMIT |
 | every commit carries this wave's and unit's trailers | BUS_UNIT_TRAILER_MISSING |
 | nothing changed outside allow_paths, or inside deny_paths | BUS_UNIT_SCOPE_ESCAPE |
 | the tree is clean again | BUS_UNIT_UNCOMMITTED |
@@ -148,6 +149,47 @@ next one may start:
 A failing unit stops the wave where it stands. Nothing is reverted, reset or
 cleaned: a scope escape is evidence, and tidying it away would destroy the only
 record of what happened.
+
+## 7a. The host owns Git; a provider edits and tests
+
+A Worker provider — Claude, Codex, any provider — **edits and tests files only**.
+It never commits, pushes, stages, resets, stashes, cleans, checks out, rebases or
+otherwise mutates Git metadata. Codex stays in its workspace-write sandbox; no
+provider is given a wider one to make Git writable. Provider identity never
+changes this law.
+
+After a successful provider response the trusted Agent Bus host
+(`agent_bus.finalize`), in this order and no other:
+
+1. extracts the provider's bounded Worker evidence — invalid, missing, ambiguous
+   or oversized evidence (BUS_WORKER_EVIDENCE_INVALID) creates no commit;
+2. proves HEAD, the branch, every ref, the local Git config and the index are
+   exactly what they were before dispatch — a provider commit, ref move, branch
+   change, config change or staging is BUS_PROVIDER_GIT_MUTATION;
+3. measures every added, modified and deleted path and proves each is inside
+   `allow_paths` and outside `deny_paths` BEFORE staging — otherwise
+   BUS_UNIT_SCOPE_ESCAPE, nothing is staged, and the dirty tree stays as evidence;
+4. refuses a commit-boundary mutating unit that changed nothing (BUS_UNIT_NO_COMMIT);
+5. stages exactly the measured paths, additions and deletions included, and
+   creates one commit with a deterministic message ending in the two trailers
+   (BUS_HOST_COMMIT_FAILED otherwise);
+6. pushes that commit to the commanded branch with ordinary non-force
+   fast-forward semantics and re-reads the remote to prove it landed — a
+   rejection, a race or a failure is BUS_HOST_PUSH_FAILED;
+7. runs the ordinary unit verification of section 7 on the resulting commit and
+   requires a clean tree;
+8. publishes the durable Worker evidence on Issue #1 (BUS_WORKER_EVIDENCE_POST_FAILED
+   when GitHub does not acknowledge it);
+9. only then posts `WAVE_PROGRESS`, and a `P` `WAVE_RESULT` only when every unit
+   got here.
+
+A read-only unit is never staged or committed. Any failure above stops the wave
+before PASS. Host Git commands run with hooks disabled, so nothing a provider
+wrote into the checkout runs with the host's credentials.
+
+A completed unit whose Worker evidence was lost is not recovered from Git: a
+commit proves scope progress, never a model response, so resume and execute
+refuse it (BUS_WORKER_EVIDENCE_INVALID) rather than reconstruct one.
 
 ## 8. Loop prevention
 
@@ -179,8 +221,9 @@ record of what happened.
 4. `python3 -m agent_bus state` — what is on the bus and what is pending.
 5. `python3 -m agent_bus preflight` — what git says about this checkout.
 6. `python3 -m agent_bus poll` — the dry run: what would be dispatched, and why.
-7. Execute only a wave the live checkpoint selects. Commit per unit with
-   trailers. Post one `WAVE_RESULT` at the review boundary.
+7. Execute only a wave the live checkpoint selects. The host commits and pushes
+   each unit with trailers (section 7a); the provider only edits and tests. Post
+   one `WAVE_RESULT` at the review boundary.
 
 The durable Worker is `python3 -m agent_bus watch run`, and the macOS service
 around it is `watch install|status|start|stop|uninstall`. One instance holds an
@@ -211,7 +254,8 @@ Three things make the installed service honest rather than merely present:
 
 **Local Worker providers.** A unit runs through the operator's own authenticated
 CLI: Claude (`claude -p`) or Codex (`codex exec`, workspace-write sandbox). No
-repository secret is involved. The order is operator configuration, never bus
+repository secret is involved, and neither provider writes Git: the host
+finalizes every unit (section 7a). The order is operator configuration, never bus
 data: `--providers`, then `MTJ_AGENT_BUS_PROVIDERS`, then a provider file outside
 the checkout, then the default `claude,codex`; the supported orders are
 `claude,codex`, `codex,claude`, `claude` and `codex`. The authority, preflight,
