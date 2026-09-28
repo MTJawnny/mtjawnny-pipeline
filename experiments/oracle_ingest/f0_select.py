@@ -192,15 +192,22 @@ PRODUCTION_AXIS = {
         "'the rest' names the complement of the selected card within the set "
         "looked at before"),
 }
-PRODUCTION_UNFILLED = {
-    "ability-borrowing-inheritance-pressure":
-        "no ground-truth seed axis and no active codebook axis defines ability "
-        "borrowing. One human-ratified quote (Book of Vile Darkness, oracle_id "
-        "fcc666bc-6fea-44e0-94bc-462c742db528, under "
-        "rule:activated-ability-costs-self-sacrifice) contains a granted-abilities "
-        "clause, but that assertion ratifies a different mechanic; selecting on "
-        "quote text would be a new classifier. Recorded as a candidate for review, "
-        "not selected.",
+PRODUCTION_UNFILLED = {}
+
+# Members the Captain NAMED (Issue #1 comment 5878405103). A naming is
+# authority, not a selection rule: it is recorded, and only verified to exist in
+# the pinned corpus under the recorded oracle_id and name.
+CAPTAIN_NAMED = {
+    "ability-borrowing-inheritance-pressure": {
+        "ruling": 5878405103,
+        "members": (("fcc666bc-6fea-44e0-94bc-462c742db528", "The Book of Vile Darkness",
+                     "triggered-ability inheritance from exiled cards; a variant, "
+                     "not V1 R2-C's activated-ability case"),
+                    ("c259e16f-2a44-4552-8678-815f757a02e8", "Agatha's Soul Cauldron",
+                     "activated-ability borrowing from exiled creature cards; V1 R2-C's "
+                     "case")),
+        "variants": ("triggered-ability-inheritance", "activated-ability-borrowing"),
+    },
 }
 
 
@@ -245,6 +252,20 @@ def production_pass(cards, used) -> dict:
                      "qualifying_rows": len(human)}
     for role, reason in PRODUCTION_UNFILLED.items():
         out[role] = {"member": None, "reason": reason}
+    for role, named in CAPTAIN_NAMED.items():
+        for oid, name, _ in named["members"]:
+            if oid not in cards or cards[oid]["name"] != name:
+                fc.halt(f"{role}: Captain-named {name!r} is not {oid} in the pinned corpus")
+        out[role] = {"members": [n for _, n, _ in named["members"]],
+                     "oracle_ids": [o for o, _, _ in named["members"]],
+                     "captain_ruling": named["ruling"],
+                     "notes": {n: why for _, n, why in named["members"]},
+                     # Fixture-local labels (Captain, Issue #1): the role holds two
+                     # distinct shapes. NOT production tags -- A01's R2-C unit
+                     # proposes those, for Captain ratification.
+                     "fixture_variants": {n: v for (_, n, _), v in zip(
+                         named["members"], named["variants"])},
+                     "variants_are_production_vocabulary": False}
     return {"searched": {"gate2_ground_truth_axes": len(gt_axes),
                          "codebook_active_axes": sum(1 for a in axes.values()
                                                      if a.get("status") == "active")},
