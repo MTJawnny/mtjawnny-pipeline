@@ -321,6 +321,15 @@ Three things make the installed service honest rather than merely present:
   launchd's KeepAlive, which is a crash loop at full speed with the backoff
   never reached.
 
+**Codex usage (Captain, 2026-09-29).** Every Codex run, Worker or reviewer, is a
+fresh session with cross-session memories disabled, and budgets its own quota
+with `agent_bus/codex_usage.py`. The host never launches Codex at the handoff
+line: for a Worker that is a classified capacity failure (the next provider, or
+a wait), for a reviewer a WAIT. A Codex that stops cleanly for usage (footer
+STOP, `USAGE HANDOFF:` marker, nothing changed) is capacity too, never a failed
+unit: its notes are kept outside the checkout and seed the next session that
+takes the unit. Any other STOP, or a handoff over a changed tree, still fails.
+
 **Local Worker providers.** A unit runs through the operator's own authenticated
 CLI: Claude (`claude -p`) or Codex (`codex exec`, workspace-write sandbox). No
 repository secret is involved, and neither provider writes Git: the host

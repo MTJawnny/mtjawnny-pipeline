@@ -210,3 +210,95 @@ class TestEveryUnitReprovesExclusivity(unittest.TestCase):
         codes = [p["code"] for p in report["preflight"]["problems"]]
         self.assertIn(E.CHECKOUT_SHARED, codes)
         self.assertEqual(fake.provider_calls, [])
+
+
+# ---------------------------------------------------------------------------
+# CU1 repair (Codex review 5897267559): the Worker side of the usage budget
+# ---------------------------------------------------------------------------
+def codex_says(text: str) -> str:
+    import json
+    return "\n".join(json.dumps(e) for e in (
+        {"type": "thread.started", "thread_id": "th-codex-1"},
+        {"type": "item.completed", "item": {"id": "final", "type": "agent_message",
+                                            "text": text}},
+        {"type": "turn.completed", "usage": {}})) + "\n"
+
+
+HANDOFF_TEXT = ("Stopping for usage before U1.\n\nUSAGE HANDOFF: read the objective; "
+                "nothing edited; next step: write agent_bus/x.py.\n\n"
+                '```mtj-evidence\n{"changed": [], "status": "STOP", "validation": []}\n```')
+
+
+def at_line():
+    return {"status": "HANDOFF", "windows": {"five_hour": {"used_percent": 93.0}}}
+
+
+class TestWorkerUsage(unittest.TestCase):
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(__import__("shutil").rmtree, self.dir, True)
+
+    def armed(self, fake, order, usage=None):
+        from tests.refoundation.test_agent_bus_provider_failover import armed
+        sup = armed(fake, order=order, max_units=1)    # the fixture wave has U1 and U2
+        sup.transport.usage = usage
+        sup.transport.handoff_dir = str(self.dir)
+        return sup
+
+    def test_a_fallback_codex_at_the_handoff_line_is_never_launched(self):
+        from tests.refoundation.test_agent_bus_provider_failover import claude_quota, repo
+        fake = repo(claude_quota())
+        with self.assertRaises(BusError) as caught:
+            self.armed(fake, ("claude", "codex"), at_line).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.PROVIDERS_EXHAUSTED)
+        self.assertEqual(fake.providers_invoked, ["claude"])   # codex never ran
+        self.assertIn("handoff line", caught.exception.detail)
+        self.assertEqual(fake.posted, [])                      # a wait, nothing claimed
+
+    def test_a_gated_first_codex_hands_the_unit_to_claude(self):
+        from tests.refoundation.test_agent_bus_provider_failover import ok, repo
+        fake = repo(ok("claude", "U1"))
+        report = self.armed(fake, ("codex", "claude"), at_line).poll_once(execute=True)
+        self.assertEqual(fake.providers_invoked, ["claude"])
+        self.assertEqual(report["dispatches"][0]["provider"], "claude")
+
+    def test_a_clean_usage_handoff_is_a_wait_and_seeds_the_next_session(self):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, ok, repo
+        fake = repo(Step("codex", stdout=codex_says(HANDOFF_TEXT)))
+        with self.assertRaises(BusError) as caught:
+            self.armed(fake, ("codex",)).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.PROVIDERS_EXHAUSTED)
+        self.assertEqual(fake.posted, [])                      # not a FAILED unit
+        [kept] = list(self.dir.glob("worker-*-U1.md"))
+        self.assertIn("next step: write agent_bus/x.py", kept.read_text())
+        # Next cycle: a fresh session gets the notes, finishes, and the note retires.
+        fake.script.append(ok("codex", "U1"))
+        report = self.armed(fake, ("codex",)).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_RAN")
+        self.assertIn("An earlier session stopped this same unit", fake.provider_calls[-1][-1])
+        self.assertIn("next step: write agent_bus/x.py", fake.provider_calls[-1][-1])
+        self.assertFalse(kept.exists())
+        self.assertTrue((self.dir / "done" / kept.name).exists())
+
+    def test_a_clean_usage_handoff_fails_over_to_claude_with_the_notes(self):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, ok, repo
+        fake = repo(Step("codex", stdout=codex_says(HANDOFF_TEXT)), ok("claude", "U1"))
+        report = self.armed(fake, ("codex", "claude")).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_RAN")
+        self.assertEqual(fake.providers_invoked, ["codex", "claude"])
+
+    def test_NC_a_handoff_over_a_changed_tree_is_still_a_failed_unit(self):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, repo
+        fake = repo(Step("codex", stdout=codex_says(HANDOFF_TEXT), dirty=("agent_bus/x.py",)))
+        report = self.armed(fake, ("codex", "claude")).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_STOPPED")
+        self.assertEqual(fake.providers_invoked, ["codex"])    # never handed on
+        self.assertEqual(list(self.dir.glob("worker-*")), [])
+
+    def test_NC_a_plain_stop_without_the_marker_is_still_a_failed_unit(self):
+        from tests.refoundation.test_agent_bus_provider_failover import Step, repo
+        plain = HANDOFF_TEXT.replace("USAGE HANDOFF:", "Reason:")
+        fake = repo(Step("codex", stdout=codex_says(plain)))
+        report = self.armed(fake, ("codex", "claude")).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_STOPPED")
+        self.assertEqual(report["reason"], E.WORKER_STOPPED)

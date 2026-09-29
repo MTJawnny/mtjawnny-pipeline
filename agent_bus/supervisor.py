@@ -78,6 +78,9 @@ class Supervisor:
     providers: ProviderOrder | None = None
     # The remote the host pushes each unit commit to, non-force, on the wave's branch.
     remote: str = "origin"
+    # Codex usage gate and Worker handoff store (operator configuration).
+    usage: Callable | None = None
+    handoff_dir: str | None = None
     _local: ProviderFailoverTransport | None = field(default=None, init=False, repr=False)
 
     def local_transport(self) -> ProviderFailoverTransport:
@@ -90,7 +93,8 @@ class Supervisor:
             order = self.providers or ProviderOrder(DEFAULT_ORDER, "default")
             self._local = ProviderFailoverTransport(
                 self.repo_path, build_providers(order, self.repo_path),
-                authority_probe=live_authority_probe(self.observe), run=self.run)
+                authority_probe=live_authority_probe(self.observe), run=self.run,
+                usage=self.usage, handoff_dir=self.handoff_dir)
         return self._local
 
     # ---------------------------------------------------------------- observe

@@ -224,9 +224,12 @@ def _watch(args) -> dict:
             require_exclusive(str(Path(args.repo_path).resolve()), Runner())
 
     if args.mode == "run":
+        from agent_bus import codex_usage
         supervisor = _supervisor(args, dispatching=True)
+        supervisor.usage = codex_usage.read
+        supervisor.handoff_dir = str(Path(watcher_module.lock_path_for(args.repo_path)).parent
+                                     / "handoffs")
         if args.manager:
-            from agent_bus import codex_usage
             from agent_bus.local_manager import LocalManager, WorkerAndManager
             supervisor = WorkerAndManager(supervisor, LocalManager(
                 args.repo, str(Path(args.repo_path).resolve()), args.pr,
