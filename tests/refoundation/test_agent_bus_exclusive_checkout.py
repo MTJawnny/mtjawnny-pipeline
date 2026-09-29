@@ -286,6 +286,11 @@ class TestWorkerUsage(unittest.TestCase):
         report = self.armed(fake, ("codex", "claude")).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_RAN")
         self.assertEqual(fake.providers_invoked, ["codex", "claude"])
+        claude = fake.provider_calls[-1]
+        brief = claude[claude.index("-p") + 1]
+        self.assertIn("An earlier session stopped this same unit", brief)
+        self.assertIn("next step: write agent_bus/x.py", brief)
+        self.assertEqual(brief.count("USAGE HANDOFF:"), 1)     # notes once, not stacked
 
     def test_NC_a_handoff_over_a_changed_tree_is_still_a_failed_unit(self):
         from tests.refoundation.test_agent_bus_provider_failover import Step, repo

@@ -526,8 +526,9 @@ class ProviderFailoverTransport:
 
         before = inspect(self.repo, self.run)
         kept = self._handoff_path(envelope, remaining)
+        brief = prompt
         if kept is not None and kept.is_file():
-            prompt = prompt + PRIOR_WORKER_HANDOFF + kept.read_text(encoding="utf-8")
+            prompt = brief + PRIOR_WORKER_HANDOFF + kept.read_text(encoding="utf-8")
         attempts: list[dict] = []
         for index, provider in enumerate(self.providers):
             if attempts:
@@ -566,6 +567,9 @@ class ProviderFailoverTransport:
                     if kept is not None:
                         kept.parent.mkdir(parents=True, exist_ok=True)
                         kept.write_text(notes + "\n", encoding="utf-8")
+                    # The next provider in THIS pass gets the notes too (Codex
+                    # re-review of CU3), not only a later cycle.
+                    prompt = brief + PRIOR_WORKER_HANDOFF + notes + "\n"
                     attempts.append({"provider": provider.name, "session": session.label,
                                      "returncode": result.returncode,
                                      "classified": ["usage handoff"]})
