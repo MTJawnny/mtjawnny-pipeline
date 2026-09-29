@@ -369,7 +369,13 @@ one (a failover wave), or a provider order with no other provider, is reviewed
 by no model: the host publishes a CAPTAIN decision. An eligible reviewer out of
 capacity is a wait, retried next pass (delegated-Manager policy under decision
 G): capacity recovers, and CAPTAIN would halt the program. Installing it as a
-persistent service is the operator's own step.
+persistent service is the operator's own step. The local Manager publishes with
+the operator's token, so a trusted speaker's record in the publisher's exact form
+counts as a publisher record (Captain decision A, Issue #1 comment 5883716054);
+a speaker's publisher-form checkpoint is validated as a chain link, never obeyed
+as written; exact duplicates count once; and the publisher never posts a body
+byte-identical to one already live (incident 5883466222). A stranger's record
+counts for nothing.
 
 By hand, the Manager does the same:
 

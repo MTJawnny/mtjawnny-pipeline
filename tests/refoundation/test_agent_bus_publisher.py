@@ -1217,7 +1217,18 @@ class TestRiggedProtections(unittest.TestCase):
             records = original(*args)
             records.verdicts = []
             return records
+        # Recognition blinded alone: the write-time idempotency guard still refuses
+        # the byte-identical re-post (Issue #1 comment 5883466222).
         with mock.patch.object(P, "find_records", blind):
+            report = publish(fake, None)
+        self.assertEqual((report["exit"], report["code"]), (P.EXIT_REFUSED, E.TXN_CONFLICT))
+        self.assertEqual(fake.kinds()["V"], 1)
+        # Both layers blinded: now, and only now, a duplicate is written.
+        real_read = P.read_comments
+        with mock.patch.object(P, "find_records", blind), \
+             mock.patch.object(P, "read_comments",
+                               lambda n, *a, **k: [] if str(k.get("source", "")).startswith("write:")
+                               else real_read(n, *a, **k)):
             publish(fake, None)
         self.assertEqual(fake.kinds()["V"], 2)  # a duplicate
 

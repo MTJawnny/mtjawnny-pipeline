@@ -215,5 +215,26 @@ def render_checkpoint(fields: Mapping[str, object]) -> str:
     return render(CHECKPOINT, 2, CHECKPOINT_KEYS, fields)
 
 
+# The `recorded_by` value of every record the deterministic publisher writes
+# (`agent_bus.transition.RECORDED_BY`, asserted equal by the tests).
+PUBLISHER_RECORDED_BY = "agent-bus-publisher"
+
+
+def is_publisher_checkpoint(body: str) -> bool:
+    """Is this a checkpoint in the publisher's EXACT derived form? Such a K is a
+    chain link to validate, whoever posted it -- never law as written."""
+    try:
+        record = parse_record(body)
+    except LedgerError:
+        return False
+    if record is None or record.schema != CHECKPOINT or tuple(record.fields) != CHECKPOINT_KEYS \
+            or record.fields.get("recorded_by") != PUBLISHER_RECORDED_BY:
+        return False
+    try:
+        return render_checkpoint(record.fields) == body
+    except LedgerError:
+        return False
+
+
 def render_disposition(fields: Mapping[str, object]) -> str:
     return render(DISPOSITION, 0, DISPOSITION_KEYS, fields)

@@ -177,7 +177,7 @@ class _Transport:
 
     def verdict(self, comment_id: int) -> Found | None:
         for c in self.issue_comments:
-            if c.comment_id == comment_id and self.trust.is_publisher(c.author):
+            if c.comment_id == comment_id and self.trust.may_publish(c.author):
                 return Found(c.comment_id, c.author, c.body)
         return None
 
@@ -217,7 +217,10 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
         if not ledger.is_checkpoint(c.body):
             after_latest.append(c)
             continue
-        if trust.trusts(c.author):
+        # A human checkpoint from a speaker is law as written. A checkpoint in the
+        # publisher's exact form is a chain link whoever posted it (the local
+        # Manager posts with a speaker's token), so it is validated, never obeyed.
+        if trust.trusts(c.author) and not ledger.is_publisher_checkpoint(c.body):
             current, lineage, publisher_fields = c, None, None
             chain.append(c.comment_id)
             try:
@@ -226,7 +229,7 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
                 links.append((c.comment_id, None, None))
             after_latest = []
             continue
-        if not trust.is_publisher(c.author):
+        if not trust.may_publish(c.author):
             untrusted.append((c.comment_id, c.author))
             continue
         if transport is None or transport_pr is None:

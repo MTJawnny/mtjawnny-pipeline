@@ -170,10 +170,10 @@ def find_records(world: World, target: Target, txn: str, message_id: str) -> Rec
                                                                      next_id(txn))
         if not (answers or commands):
             continue
-        if trust.is_publisher(c.author) and answers and env.message_id == review_id(txn) \
+        if trust.may_publish(c.author) and answers and env.message_id == review_id(txn) \
                 and env.parent == message_id:
             out.reviews.append((c, env))
-        elif trust.is_publisher(c.author) and commands:
+        elif trust.may_publish(c.author) and commands:
             out.commands.append((c, env))
         elif trust.trusts(c.author) and answers:
             out.human_answers.append(c)
@@ -196,11 +196,11 @@ def find_records(world: World, target: Target, txn: str, message_id: str) -> Rec
                                      "cited_checkpoint")}.get(record.schema)
         exact = form is not None and tuple(record.fields) == form[0] \
             and _renders(form[1], record.fields, c.body) and record.fields[form[2]] == cited
-        if trust.is_publisher(c.author) and exact and record.schema == ledger.VERDICT:
+        if trust.may_publish(c.author) and exact and record.schema == ledger.VERDICT:
             out.verdicts.append(c)
-        elif trust.is_publisher(c.author) and exact and record.schema == ledger.DISPOSITION:
+        elif trust.may_publish(c.author) and exact and record.schema == ledger.DISPOSITION:
             out.dispositions.append(c)
-        elif trust.is_publisher(c.author) and exact:
+        elif trust.may_publish(c.author) and exact:
             out.checkpoints.append(c)
         else:
             out.ignored.append({"comment_id": c.comment_id, "author": c.author,
@@ -279,7 +279,7 @@ def disposition_body(world: World, item: Displaced) -> str:
 def disposed(world: World, target: Target, item: Displaced) -> bool:
     """Only the publisher's exact record counts; a lookalike is somebody else's text."""
     body = disposition_body(world, item)
-    return any(target.trust.is_publisher(c.author) and c.body == body
+    return any(target.trust.may_publish(c.author) and c.body == body
                for c in world.issue_comments)
 
 
@@ -420,6 +420,15 @@ def _revalidate(txn: Txn, checks, stage: str) -> World:
 
 
 def _write(txn: Txn, number: int, body: str, what: str) -> None:
+    # Idempotency, enforced at the only write: a body already live on the target
+    # from an identity that may publish is never posted again, whatever the
+    # recognition logic upstream concluded. (The 166-post incident, Issue #1
+    # comment 5883466222, was a recognition miss with no such backstop.)
+    live = read_comments(number, txn.target.repo, txn.run, source=f"write:{number}")
+    if any(c.body == body and txn.target.trust.may_publish(c.author) for c in live):
+        raise Stop(EXIT_REFUSED, E.TXN_CONFLICT,
+                   f"refusing to re-post {what}: a byte-identical record is already live "
+                   f"on #{number}")
     post_comment(body, number, txn.target.repo, txn.run, dry_run=False)
     txn.writes.append({"record": what, "target": number})
 

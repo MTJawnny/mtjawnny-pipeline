@@ -25,6 +25,15 @@ ROLES -- `PUBLISHER_ROLES` below -- and within a role, only for a record that is
 exactly what the deterministic publisher would have written from Captain-rooted
 inputs (`agent_bus.transition`). Anything else it posts is refused and reported,
 the same as a stranger's comment. Configuring it as a speaker is an error.
+
+**A trusted speaker may also author publisher records** (Captain decision A,
+Issue #1 comment 5883716054). The local cross-review Manager publishes with the
+operator's own token, so its records carry a speaker's login. A speaker may
+already write any record as law; counting its records in the publisher's EXACT
+derived form as publisher records adds no authority, and lets that Manager see
+what it wrote. It is also the stricter reading for a checkpoint: a speaker's
+publisher-form K is validated as a chain link rather than obeyed as written.
+A stranger may never do either (`may_publish`).
 """
 
 from __future__ import annotations
@@ -82,6 +91,11 @@ class Trust:
     def is_publisher(self, login: str) -> bool:
         """The machine identity. Exact login, never case-folded, never a speaker."""
         return self.publisher is not None and login == self.publisher
+
+    def may_publish(self, login: str) -> bool:
+        """May author a record in the publisher's exact form: the machine identity,
+        or a trusted speaker. Never a stranger."""
+        return self.is_publisher(login) or self.trusts(login)
 
     @property
     def configured(self) -> bool:

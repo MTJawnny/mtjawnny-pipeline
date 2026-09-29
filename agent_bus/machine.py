@@ -12,6 +12,7 @@ merely because it contains newer prose.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping, Sequence
 
@@ -21,6 +22,10 @@ from agent_bus.protocol import Envelope, parse_comment
 from agent_bus.transition import review_id, same_message, txn_id
 from agent_bus.trust import PUBLISHER_ROLES, Trust
 from agent_bus.wave import WavePlan, plan_from_command, remaining_after
+
+# The publisher's review id (`transition.review_id`). From a trusted speaker it is
+# the local Manager's publisher write, a transaction prefix exactly as the bot's.
+_PUBLISHER_REVIEW = re.compile(r"^mgr-review-mtx-\d+-\d+$")
 
 ACCEPTED = "ACCEPTED"
 INERT = "INERT"
@@ -341,7 +346,9 @@ def fold(comments: Sequence[RawComment], authority: Authority,
             continue
 
         seen_ids[envelope.message_id] = comment.comment_id
-        if envelope.kind == "WAVE_REVIEW" and trust.is_publisher(comment.author):
+        if envelope.kind == "WAVE_REVIEW" and (
+                trust.is_publisher(comment.author)
+                or (trust.trusts(comment.author) and _PUBLISHER_REVIEW.match(envelope.message_id))):
             # The publisher's review is the FIRST write of a transaction whose
             # commit point is a checkpoint. Until that checkpoint exists nothing
             # has been answered, so it is recorded and not applied: a review
