@@ -62,33 +62,65 @@ only.
 
 ## I3. H-REGION kill-condition tests (V1 §5 M1), pre-committed
 
-Each test runs on every population clause and every fixture, reports a count
-and the list of clauses where it fires, and runs twice with byte-identical
-output. The consumer questions are AQ4 §20's within-card set that bears on
-operation granularity: ATTACH-1, ATTACH-3 and C2 (the blink test). C03 adds no
-question.
+Each test runs on every population clause and every fixture, and runs twice
+with byte-identical output. The consumer questions are AQ4 §20's within-card set
+that bears on operation granularity: ATTACH-1, ATTACH-3 and C2 (the blink test).
+C03 adds no question.
 
-| V1 kill condition | fires on a clause when |
-|---|---|
-| K1 distinct ownership | two candidate heads of the clause get no two distinct, source-spanned regions inside the clause, or either head gets none |
-| K2 repeated operations | the same head occurs twice and the two regions cannot be told apart by span, where ATTACH-1 or C2 asks which one acts |
-| K3 relation endpoint | a back-reference that links two operations (for example the returned object of an exile-then-return) cannot be assigned to exactly one region |
-| K4 qualifier attachment | a cost, condition, duration or destination span (ATTACH-3) is attachable to more than one region, or to none, by the derivation rule |
-| K5 overlap / nesting | two regions overlap without containment, or nest so that ownership of a span is not unique |
-| K6 stronger identity needed | ATTACH-1, ATTACH-3 or C2 cannot be answered for the clause from its regions plus the existing four-coordinate occurrence |
-| K7 guesses or exceptions | a region boundary is not derived from printed tokens and CR-grounded structure, or any rule is keyed to a card, name or oracle_id |
+**Three outcomes per test per clause, never two.** KILL is reserved for what V1
+§5 names. A failure of extraction or resolution -- a head missed, a span not
+derived, a reference not resolved -- is **UNRESOLVED** (V1 §10 Tier B), reported
+with its count and clause list, and never counted as a kill: V1 kills H-REGION
+on what the representation cannot express, not on what an extractor failed to
+find. Otherwise the test PASSES.
 
-**Decision rule.** Any test firing on a fixture, or on a population clause whose
+**Distinct required operations.** Candidate heads alone never establish them
+(accepted C02: a candidate head does not prove a distinct effect). Two operations
+of a clause are *distinct required operations* only when both heads are found by
+BOTH detector paths (legacy `effect_heads` and corrected `semantic_action_heads`)
+AND ATTACH-1 or C2 asks about them separately for that clause. Heads not shown
+distinct this way are reported as UNRESOLVED distinctness for K1 and K2.
+
+| V1 kill condition | KILL when | UNRESOLVED (not a kill) when |
+|---|---|---|
+| K1 distinct ownership | two distinct required operations get no two distinct, stable, source-spanned regions owned by the clause's occurrence | the heads are not shown to be distinct required operations, or a region is not derived because extraction failed |
+| K2 repeated operations | two distinct required operations with the same head cannot be told apart by span where ATTACH-1 or C2 asks which one acts | as K1 |
+| K3 relation endpoint | an endpoint of a relation the clause states between its operations or their objects -- a back-reference, a CR 607 link, a conditional dependency or a delayed link among P4's frozen candidate structures, or a printed sequencing link between two of its heads -- cannot be NAMED unambiguously: it maps to no region, to several regions, or to several candidate referent spans inside its region. Endpoint identity is tested directly; a unique region assignment alone does not pass K3 | the endpoint is named, but what it refers to is not resolved (reference resolution is C04's work) |
+| K4 qualifier attachment | a cost, condition, duration or destination span (ATTACH-3) is attachable to more than one region, or to none, by the derivation rule | the span itself was not extracted |
+| K5 overlap / nesting | two regions overlap or nest so that identity is irreducibly ambiguous: no deterministic rule from printed structure assigns every token of the overlap to exactly one owning region | an overlap the derivation resolves deterministically is reported (count, list) and is not a kill |
+| K6 stronger identity needed | ATTACH-1, ATTACH-3 or C2 cannot be answered for the clause because of identity granularity: K1-K5 do not fire on it, every needed endpoint is named, and the answer still needs to distinguish things its regions plus the existing four-coordinate occurrence cannot | the question fails because of an extraction or resolution failure |
+| K7 guesses or exceptions | a region boundary is not derived from printed tokens and CR-grounded structure, or any rule is keyed to a card, name or oracle_id | -- (K7 has no UNRESOLVED outcome) |
+
+**Decision rule.** A KILL on any fixture, or on any population clause whose
 consumer question needs the distinction, kills H-REGION for that condition. A
 kill is a STOP to the Captain and the AQ4 reserved finer-effect path (V1 §5),
-never an ad hoc identifier. A condition that never fires is reported with its
-negative control shown to fire on a rigged input (CLAUDE.md: a guard never shown
-to fail is not a guard).
+never an ad hoc identifier. UNRESOLVED counts are reported per test and are a
+finding for M04, not a verdict. Every test's KILL and UNRESOLVED arms are each
+shown to fire on a rigged input (CLAUDE.md: a guard never shown to fail is not a
+guard).
 
 ## I4. C04 pressure set
 
-C04 (V1 P0.4) takes P4's candidate references as recorded in the accepted C02
-output: 1,548 kind-unclear ("this way" 1,088, "the same" 225, "the copy" 208),
-3,774 delayed-marked, 741 CR 607 linkage candidates. They are candidate
-classifications, not established edges. An unresolved reference is valid
-output; a guessed one is not.
+The accepted C02 output holds P4's aggregates, not its individual candidates,
+so C04 reconstructs them and reconciles before any other work:
+
+- **Extraction:** the frozen `relation_candidates` (default kind rules) over
+  every card of `fc.load_corpus_gated()` under the I1 identities, in the frozen
+  `p4` card order (by name).
+- **Exclusions, as `p4` applies them:** reminder text is stripped by the frozen
+  line reader; candidates inside a quoted created ability are excluded and
+  counted.
+- **Reconciliation, all equal to accepted C02 P4 or STOP:** 32,557 cards;
+  16,245 with candidates; 32,603 candidates; by kind coreference 21,672,
+  conditionality 8,642, cr607-linkage 741, kind-unclear 1,548; 3,774
+  delay-marked; 12,400 cross-line; 607 excluded inside created abilities.
+- **Pressure set membership:** a candidate is in the set when its kind is
+  kind-unclear or cr607-linkage, or it is delay-marked. Delay marking is a
+  per-line flag, so the subsets overlap. Each candidate appears once, carrying
+  all its flags, and the pairwise overlap counts are reported.
+- **Candidate identity:** (oracle_id, line, sentence, phrase, kind) plus its
+  ordinal among identical tuples in extraction order. Candidates are never
+  deduplicated beyond that (P4: "every printed occurrence is one candidate").
+
+These are candidate classifications, not established edges. An unresolved
+reference is valid output; a guessed one is not.

@@ -38,7 +38,7 @@ differs between C02's base `3798ccf` and the accepted head `50c9785`.
 | P0 item | status after C01–C02 | evidence / gap |
 |---|---|---|
 | P0.0 AQ4 governance boundary | **DISCHARGED for measurement** | C01: freeze intact, Gate 2 green, no law conflict; C02 ran under Captain authorization 5764505048 with frozen bytes. Nothing ratified AQ4 production; it stays PAUSED. |
-| P0.1 existing-substrate ownership audit | **DISCHARGED before this program** (M01, result 5844518936; M03 crosswalk) | Not re-opened. Four rows are GENUINELY_MISSING or CANDIDATE and stay so: replacement lineage, decision authority, ability borrowing, operation structure (H-REGION is a falsification target only). |
+| P0.1 existing-substrate ownership audit | **DISCHARGED before this program** (M01, result 5844518936; M03 crosswalk) | Not re-opened. Five rows are GENUINELY_MISSING or CANDIDATE_NOT_RATIFIED and stay so: replacement lineage, decision authority, ability borrowing (GENUINELY_MISSING); operation structure (H-REGION is a falsification target only) and keyword consequences (a future registry interface may be defined; unratified consequence law may not be frozen or populated) (CANDIDATE_NOT_RATIFIED). |
 | P0.2 consume §27 probes | **DISCHARGED** | All four probes measured once, deterministically, under the frozen contract. Readings are feasibility/pricing evidence only (C02 corrected readings). |
 | P0.3 H-REGION falsification | **NOT STARTED — two preconditions open** (§4) | Needs the fixture selection freeze and a re-derivable population. |
 | P0.4 reference resolution | NOT STARTED | Pressure set measured (§3, P4). |
@@ -84,14 +84,18 @@ it is not proposed here.
 
 **F2 — the fixture selection freeze has not happened, and it is a C03
 precondition.** M02's `selection_freeze` requires, "after C01 PASS … and before
-any C03 candidate result exists", every null fixture member to be filled from
-pre-existing measured populations by a recorded deterministic rule, "not because
-H-REGION succeeds or fails on them". Six of ten members are null. Also,
+any C03 candidate result exists", every null fixture member to be filled "only
+from already-authorized pre-existing production fixtures or the existing AQ4
+probe populations named by the role", by a recorded deterministic rule, "not because
+H-REGION succeeds or fails on them". Eight of ten roles have null members (only
+the V1-named replacement-lineage set and Knight of Autumn are filled). Also,
 `FIXTURES.json` and the M03 crosswalk live only on the M02/M03 branch; the
 program branch has neither. **Proposed next task (Manager surface):** bring both
-files onto the program branch byte-identical to `1efd2e0`, then fill the six
-null members with deterministic selection rules over the accepted C02 output,
-with no C03 code or result in existence. C03 must not start before that task is
+files onto the program branch byte-identical to `1efd2e0`, then fill the eight
+null members under M02's own source rule: the probe populations each role names
+(re-derived with the frozen functions, since C02's accepted output holds
+aggregates and examples, not complete populations) or authorized pre-existing
+production fixtures, with no C03 code or result in existence. C03 must not start before that task is
 accepted.
 
 **F3 — the C02 artifact holds only examples, so C03 must re-derive its

@@ -28,7 +28,7 @@ finish line, and where it must stop for the Captain.
 | C01 | AQ4 Packet-0 preflight PASS: freeze intact, Gate 2 green, no law conflict |
 | C02 | sec. 27 probes P1–P4 measured under frozen code, deterministic x2 |
 | Wave-1 review | `analysis/WAVE1-REVIEW.md`: C01–C02 against V1; proposes `oracle-compiler-interface/1`, ratified on cross-review acceptance within decision H3's bounds (no production vocabulary/schema, no AQ4 promotion) |
-| F0 | fixture selection freeze (Wave-1 review F2): `FIXTURES.json` and the M03 crosswalk brought byte-identical from `1efd2e0`, null members filled by recorded deterministic rules over accepted C02 output, before any C03 result exists — **C03 does not start before F0 is accepted** |
+| F0 | fixture selection freeze (Wave-1 review F2): `FIXTURES.json` and the M03 crosswalk brought byte-identical from `1efd2e0`, null members filled by recorded deterministic rules under M02's source rule (the probe populations each role names, re-derived with the frozen functions, or authorized pre-existing production fixtures), before any C03 result exists — **C03 does not start before F0 is accepted** |
 | C03 | H-REGION falsification over C02's multi-effect clauses and the COST-region precedent, with every V1 P0.3 output and its kill conditions — **a fired kill condition returns to the Captain** |
 | C03b | trace renderer for C03 output (validation tool only) |
 | M04 | H-REGION semantic review |
