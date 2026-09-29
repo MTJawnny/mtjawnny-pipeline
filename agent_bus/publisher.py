@@ -47,7 +47,11 @@ could not be posted, or the commit lost the chain); 2 bad input.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
+import os
+import re
+import tempfile
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
@@ -498,11 +502,47 @@ def publish(target: Target, comment_id: int, body_digest: str, supplied: Decisio
               validation)
     report: dict = {"comment_id": comment_id, "writes": txn.writes, "notes": txn.notes}
     try:
-        report.update(_publish(txn, supplied))
+        with _exclusive(target):
+            report.update(_publish(txn, supplied))
         report["exit"] = EXIT_COMPLETE
     except Stop as stop:
         report.update({"exit": stop.exit_code, "code": stop.code, "detail": stop.detail})
     return report
+
+
+class _exclusive:
+    """One publisher at a time per repository on this machine.
+
+    `_write`'s idempotency guard reads, then posts; two publishers could both
+    read "absent" and both post. Serializing publishers closes that window. A
+    second publisher does not wait: it stops, and its next pass finds the first
+    one's records and resumes from durable state. (Hosted runs already
+    serialize through the workflow's concurrency group.)
+    """
+
+    def __init__(self, target: Target) -> None:
+        slug = re.sub(r"[^A-Za-z0-9_.-]", "-", target.repo)
+        self.path = os.path.join(tempfile.gettempdir(), f"agent-bus-publisher-{slug}.lock")
+        self.fd: int | None = None
+
+    def __enter__(self):
+        self.fd = os.open(self.path, os.O_CREAT | os.O_RDWR, 0o600)
+        try:
+            fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            os.close(self.fd)
+            self.fd = None
+            raise Stop(EXIT_REFUSED, E.TXN_RACE_LOST,
+                       "another publisher is running on this machine; the next pass resumes "
+                       "from durable state")
+        return self
+
+    def __exit__(self, *exc):
+        if self.fd is not None:
+            fcntl.flock(self.fd, fcntl.LOCK_UN)
+            os.close(self.fd)
+            self.fd = None
+        return False
 
 
 def _publish(txn: Txn, supplied: Decision | None) -> dict:

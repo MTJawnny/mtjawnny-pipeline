@@ -15,9 +15,11 @@ from __future__ import annotations
 import unittest
 from unittest import mock
 
+from tests.refoundation import test_agent_bus_goal as G
 from tests.refoundation import test_agent_bus_publisher as T
 
 from agent_bus import errors as E
+from agent_bus import issue as I
 from agent_bus import ledger as L
 from agent_bus import publisher as P
 from agent_bus import transition as X
@@ -134,11 +136,11 @@ class TestSpeakerCheckpointIsALinkNotLaw(unittest.TestCase):
         with Writer(T.AUTHOR):
             fake = T.FakeGitHub()
             self.assertEqual(T.publish(fake, T.REPAIR)["exit"], P.EXIT_COMPLETE)
-            k = [c for c in fake.issue if L.is_publisher_checkpoint(c["body"])][-1]
+            k = [c for c in fake.issue if I.is_publisher_checkpoint(c["body"])][-1]
             fields = dict(L.parse_record(k["body"]).fields)
             fields["h"] = fields["accepted_head"] = "e" * 40      # a forged head
             forged = L.render_checkpoint(fields)
-            self.assertTrue(L.is_publisher_checkpoint(forged))
+            self.assertTrue(I.is_publisher_checkpoint(forged))
             before = T.authority(fake).authority
             forged_id = fake.add(1, forged, T.AUTHOR)
             after = T.authority(fake)
@@ -147,10 +149,94 @@ class TestSpeakerCheckpointIsALinkNotLaw(unittest.TestCase):
 
     def test_a_human_checkpoint_from_a_speaker_is_still_law(self):
         human = "```yaml\nschema: mtj-checkpoint/2\nh: " + "f" * 40 + "\na: 0\n```\n"
-        self.assertFalse(L.is_publisher_checkpoint(human))
+        self.assertFalse(I.is_publisher_checkpoint(human))
 
     def test_the_ledger_and_the_transition_agree_on_the_publisher_signature(self):
-        self.assertEqual(L.PUBLISHER_RECORDED_BY, X.RECORDED_BY)
+        self.assertEqual(I.PUBLISHER_RECORDED_BY, X.RECORDED_BY)
+
+
+class TestLocalAcceptWithSuccessor(unittest.TestCase):
+    def test_a_local_accept_issues_the_successor_and_reruns_write_nothing(self):
+        with Writer(T.AUTHOR):
+            plan = G.two_wave_body()
+            fake = G.world(plan=plan)
+            report = G.accept(fake, plan=plan)
+            self.assertEqual(report["exit"], P.EXIT_COMPLETE, report)
+            self.assertEqual(written(fake), {"WAVE_REVIEW": 1, "V": 1, "K": 1, "WAVE_COMMAND": 1})
+            first = list(fake.writes)
+            for _ in range(3):
+                self.assertEqual(T.publish(fake, None)["exit"], P.EXIT_COMPLETE)
+            self.assertEqual(fake.writes, first)
+            resolved = T.authority(fake)
+            self.assertEqual(resolved.authority.successor.wave, G.NEXT_WAVE)
+
+
+class TestLocalDispositionLoopEnds(unittest.TestCase):
+    def test_a_displaced_message_is_disposed_once_however_often_the_pass_repeats(self):
+        with Writer(T.AUTHOR):
+            fake = T.two_results()
+            self.assertEqual(T.publish(fake, T.ACCEPT)["exit"], P.EXIT_COMPLETE)
+            self.assertEqual(written(fake).get("D"), 1)
+            first = list(fake.writes)
+            for _ in range(5):                       # the 166-post loop, run five times
+                report = T.publish(fake, None, comment_id=T.RESULT_COMMENT + 1)
+                self.assertEqual(report["exit"], P.EXIT_COMPLETE, report)
+            self.assertEqual(fake.writes, first)
+
+
+class TestEachRecordFromAStrangerCountsForNothing(unittest.TestCase):
+    """Rig: flip ONE record's author to a stranger; the publisher must not count it."""
+
+    def completed(self):
+        fake = T.two_results()
+        self.assertEqual(T.publish(fake, T.ACCEPT)["exit"], P.EXIT_COMPLETE)
+        return fake
+
+    def flip(self, fake, schema):
+        for c in fake.issue:
+            record = L.parse_record(c["body"]) if c["body"].startswith("```yaml") else None
+            if record is not None and record.schema == schema and c["user"]["login"] == T.AUTHOR \
+                    and "agent-bus-publisher" in c["body"]:
+                c["user"]["login"] = STRANGER
+                return c["id"]
+        self.fail(f"no {schema} to flip")
+
+    def test_NC_a_strangers_verdict_does_not_count(self):
+        with Writer(T.AUTHOR):
+            fake = self.completed()
+            self.flip(fake, L.VERDICT)
+            world = P.observe(T.TARGET, fake)
+            tid = X.txn_id(T.K0, T.RESULT_COMMENT)
+            self.assertEqual(P.find_records(world, T.TARGET, tid, T.RESULT_ID).verdicts, [])
+
+    def test_NC_a_strangers_checkpoint_selects_nothing(self):
+        with Writer(T.AUTHOR):
+            fake = self.completed()
+            k = self.flip(fake, L.CHECKPOINT)
+            resolved = T.authority(fake)
+            self.assertNotIn(k, resolved.chain)
+            self.assertIn((k, STRANGER), resolved.untrusted_candidates)
+
+    def test_NC_a_strangers_disposition_is_not_a_disposition(self):
+        with Writer(T.AUTHOR):
+            fake = self.completed()
+            self.flip(fake, L.DISPOSITION)
+            before = written(fake).get("D")
+            report = T.publish(fake, None, comment_id=T.RESULT_COMMENT + 1)
+            self.assertEqual(report["exit"], P.EXIT_COMPLETE, report)
+            self.assertEqual(written(fake).get("D"), before + 1)   # written again, once
+
+
+class TestSameMachineLock(unittest.TestCase):
+    def test_a_second_publisher_on_this_machine_stops_and_one_k_links(self):
+        with Writer(T.AUTHOR):
+            fake = T.FakeGitHub()
+            seen = []
+            fake.before_write[3] = lambda f: seen.append(T.publish(f, None))
+            self.assertEqual(T.publish(fake, T.ACCEPT)["exit"], P.EXIT_COMPLETE)
+            self.assertEqual((seen[0]["exit"], seen[0]["code"]), (P.EXIT_REFUSED, E.TXN_RACE_LOST))
+            self.assertEqual(written(fake)["K"], 1)
+            self.assertEqual(len([c for c in T.authority(fake).chain if c != T.K0]), 1)
 
 
 if __name__ == "__main__":

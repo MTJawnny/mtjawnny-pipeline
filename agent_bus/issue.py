@@ -135,6 +135,28 @@ class Resolution:
         return out
 
 
+# The `recorded_by` value of every record the deterministic publisher writes
+# (`agent_bus.transition.RECORDED_BY`, asserted equal by the tests).
+PUBLISHER_RECORDED_BY = "agent-bus-publisher"
+
+
+def is_publisher_checkpoint(body: str) -> bool:
+    """Is this a checkpoint in the publisher's EXACT derived form? Such a K is a
+    chain link to validate, whoever posted it -- never law as written."""
+    try:
+        record = ledger.parse_record(body)
+    except ledger.LedgerError:
+        return False
+    if record is None or record.schema != ledger.CHECKPOINT \
+            or tuple(record.fields) != ledger.CHECKPOINT_KEYS \
+            or record.fields.get("recorded_by") != PUBLISHER_RECORDED_BY:
+        return False
+    try:
+        return ledger.render_checkpoint(record.fields) == body
+    except ledger.LedgerError:
+        return False
+
+
 def _prior(comment: RawComment, issue: int) -> Prior:
     """A HUMAN checkpoint as the start of a transition. Strict, or LedgerError."""
     checkpoint = ledger.read_checkpoint(comment.body)
@@ -220,7 +242,7 @@ def resolve_authority(comments: Sequence[RawComment], issue: int, trust: Trust,
         # A human checkpoint from a speaker is law as written. A checkpoint in the
         # publisher's exact form is a chain link whoever posted it (the local
         # Manager posts with a speaker's token), so it is validated, never obeyed.
-        if trust.trusts(c.author) and not ledger.is_publisher_checkpoint(c.body):
+        if trust.trusts(c.author) and not is_publisher_checkpoint(c.body):
             current, lineage, publisher_fields = c, None, None
             chain.append(c.comment_id)
             try:

@@ -19,6 +19,7 @@ of the world immediately before any write, or crash the process after one.
 
 from __future__ import annotations
 
+import contextlib
 import functools
 import json
 import re
@@ -168,6 +169,11 @@ def abort_of(wave=WAVE, parent=CMD_ID, checkpoint=K0) -> str:
     return comment_body(kind="WAVE_ABORT", actor="MANAGER", message_id="m-abort-r4-r1",
                         wave=wave, parent=parent, checkpoint=checkpoint, task=TASK, base=H0,
                         body={"reason": "Captain stop"})
+
+
+# A second publisher on ANOTHER machine: the same-machine lock (`P._exclusive`)
+# does not apply, so the chain's own compare-and-swap is what is under test.
+OTHER_MACHINE = mock.patch.object(P, "_exclusive", lambda target: contextlib.nullcontext())
 
 
 def gh(comment_id: int, body: str, author: str = AUTHOR) -> dict:
@@ -955,6 +961,7 @@ class TestNegativeControls(unittest.TestCase):
                                  {"WAVE_REVIEW": 1, "V": 1, "K": 1, "WAVE_COMMAND": 1})
                 self.assertEqual(len(authority(fake).chain), 2)
 
+    @OTHER_MACHINE
     def test_NC10_green_two_concurrent_runs_of_one_transaction_link_one_k(self):
         fake = FakeGitHub()
         fake.before_write[3] = lambda f: self.assertEqual(publish(f, None)["exit"], 0)
@@ -967,6 +974,7 @@ class TestNegativeControls(unittest.TestCase):
         self.assertEqual(fake.kinds()["V"], 1)
 
     # NC11: two admitted messages under one K cannot publish contradictory checkpoints.
+    @OTHER_MACHINE
     def test_NC11_green_even_if_both_pass_every_check_only_one_k_links(self):
         fake = two_results()
         without_queue = tuple(c for c in P.PRE_COMMIT if c[0] != "queue_head")
@@ -1166,6 +1174,7 @@ class TestRiggedProtections(unittest.TestCase):
             TestNegativeControls._publish_changing_before(fake, 3, move)
         self.assertEqual(len(publisher_k(fake)), 1)  # a K written over a moved authority
 
+    @OTHER_MACHINE
     def test_rig_D6_NC11_the_chain_compare_and_swap(self):
         original = X.validate_publisher_checkpoint
 
