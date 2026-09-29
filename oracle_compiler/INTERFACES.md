@@ -75,11 +75,15 @@ on what the representation cannot express, not on what an extractor failed to
 find. Otherwise the test PASSES.
 
 **Distinct required operations.** Candidate heads alone never establish them
-(accepted C02: a candidate head does not prove a distinct effect). Two operations
-of a clause are *distinct required operations* only when both heads are found by
-BOTH detector paths (legacy `effect_heads` and corrected `semantic_action_heads`)
-AND ATTACH-1 or C2 asks about them separately for that clause. Heads not shown
-distinct this way are reported as UNRESOLVED distinctness for K1 and K2.
+(accepted C02: a candidate head does not prove a distinct effect), and no single
+detector is a prerequisite: the legacy detector is deliberately incomplete
+(§27a). Two operations of a clause are *distinct required operations* when
+independent evidence establishes it -- a fixture whose accepted role asserts
+them (`FIXTURES.json`), or a consumer question (ATTACH-1 or C2) that asks about
+them separately for that clause, with the printed operations each carrying its
+own instruction boundary under either detector path. Where no independent
+evidence establishes the distinction, the clause is UNRESOLVED for K1 and K2,
+never PASS and never KILL.
 
 | V1 kill condition | KILL when | UNRESOLVED (not a kill) when |
 |---|---|---|
@@ -87,7 +91,7 @@ distinct this way are reported as UNRESOLVED distinctness for K1 and K2.
 | K2 repeated operations | two distinct required operations with the same head cannot be told apart by span where ATTACH-1 or C2 asks which one acts | as K1 |
 | K3 relation endpoint | an endpoint of a relation the clause states between its operations or their objects -- a back-reference, a CR 607 link, a conditional dependency or a delayed link among P4's frozen candidate structures, or a printed sequencing link between two of its heads -- cannot be NAMED unambiguously: it maps to no region, to several regions, or to several candidate referent spans inside its region. Endpoint identity is tested directly; a unique region assignment alone does not pass K3 | the endpoint is named, but what it refers to is not resolved (reference resolution is C04's work) |
 | K4 qualifier attachment | a cost, condition, duration or destination span (ATTACH-3) is attachable to more than one region, or to none, by the derivation rule | the span itself was not extracted |
-| K5 overlap / nesting | two regions overlap or nest so that identity is irreducibly ambiguous: no deterministic rule from printed structure assigns every token of the overlap to exactly one owning region | an overlap the derivation resolves deterministically is reported (count, list) and is not a kill |
+| K5 overlap / nesting | two regions overlap or nest so that their identities, or the attachments a consumer question needs, cannot be told apart by any deterministic rule from printed structure. Shared tokens alone are not a kill: nested regions may share tokens while keeping unambiguous identities and attachments, and such an overlap PASSES (reported as a count and list) | a region taking part in the overlap was not derived because extraction failed |
 | K6 stronger identity needed | ATTACH-1, ATTACH-3 or C2 cannot be answered for the clause because of identity granularity: K1-K5 do not fire on it, every needed endpoint is named, and the answer still needs to distinguish things its regions plus the existing four-coordinate occurrence cannot | the question fails because of an extraction or resolution failure |
 | K7 guesses or exceptions | a region boundary is not derived from printed tokens and CR-grounded structure, or any rule is keyed to a card, name or oracle_id | -- (K7 has no UNRESOLVED outcome) |
 
@@ -95,7 +99,8 @@ distinct this way are reported as UNRESOLVED distinctness for K1 and K2.
 consumer question needs the distinction, kills H-REGION for that condition. A
 kill is a STOP to the Captain and the AQ4 reserved finer-effect path (V1 §5),
 never an ad hoc identifier. UNRESOLVED counts are reported per test and are a
-finding for M04, not a verdict. Every test's KILL and UNRESOLVED arms are each
+finding for M04, not a verdict. Every APPLICABLE outcome arm of every test --
+KILL and UNRESOLVED for K1-K6, KILL for K7, which has no UNRESOLVED outcome -- is
 shown to fire on a rigged input (CLAUDE.md: a guard never shown to fail is not a
 guard).
 
