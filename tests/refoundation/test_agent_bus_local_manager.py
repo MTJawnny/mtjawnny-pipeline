@@ -432,7 +432,9 @@ class TestWorkspace(unittest.TestCase):
                 return Completed(tuple(argv), 0, json.dumps(
                     {"type": "result", "subtype": "success", "is_error": False,
                      "structured_output": json.loads(GOOD)}), "")
-            Path(argv[argv.index("-o") + 1]).write_text(GOOD, encoding="utf-8")
+            Path(argv[argv.index("-o") + 1]).write_text(json.dumps(
+                {"kind": "DECISION", "decision": json.loads(GOOD), "handoff": None}),
+                encoding="utf-8")
             return Completed(tuple(argv), 0, "", "")
         m = self.manager(run)
         for reviewer in ("codex", "claude"):
@@ -442,6 +444,12 @@ class TestWorkspace(unittest.TestCase):
         self.assertEqual((codex_cwd, claude_cwd), (str(ws.context), str(ws.context)))
         self.assertEqual(codex[codex.index("--cd") + 1], str(ws.context))
         self.assertEqual(codex[codex.index("--sandbox") + 1], "read-only")
+        # A fresh session: never resumed, cross-session memories off, usage budgeted.
+        self.assertNotIn("resume", codex)
+        self.assertEqual(codex[codex.index("--disable") + 1], "memories")
+        self.assertIn("USAGE BUDGET", codex[-1])
+        self.assertIn("codex_usage.py", codex[-1])
+        self.assertNotIn("USAGE BUDGET", claude[claude.index("-p") + 1])
 
     def test_F5_a_headless_review_never_touches_the_operator_checkout(self):
         before = git("status", "--porcelain", "--ignored", cwd=self.repo)
@@ -615,3 +623,153 @@ class TestRootContract(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ---------------------------------------------------------------------------
+# Codex usage budget and handoff (Captain, 2026-09-29)
+# ---------------------------------------------------------------------------
+HANDOFF = {"done": ["read the diff"], "remaining": ["check the kill tests"],
+           "findings_so_far": ["none yet"], "next_step": "run the kill tests",
+           "usage": "five_hour 91%"}
+
+
+def reading(status):
+    windows = {"five_hour": {"used_percent": 91.0 if status == "HANDOFF" else 10.0},
+               "weekly": {"used_percent": 20.0}}
+    return {"status": status, "windows": windows}
+
+
+class TestCodexAnswer(unittest.TestCase):
+    def test_a_decision_is_passed_through_unchanged(self):
+        out = L.codex_answer(json.dumps({"kind": "DECISION", "decision": json.loads(GOOD),
+                                         "handoff": None}))
+        self.assertEqual(json.loads(out["decision"]), json.loads(GOOD))
+
+    def test_a_handoff_becomes_notes_never_a_decision(self):
+        out = L.codex_answer(json.dumps({"kind": "HANDOFF", "decision": None,
+                                         "handoff": HANDOFF}))
+        self.assertNotIn("decision", out)
+        self.assertIn("## remaining\n- check the kill tests", out["handoff"])
+
+    def test_NC_ambiguous_or_bare_answers_are_refused(self):
+        for bad in (GOOD,  # the bare decision shape is not the Codex answer shape
+                    json.dumps({"kind": "HANDOFF", "decision": json.loads(GOOD),
+                                "handoff": HANDOFF}),
+                    json.dumps({"kind": "DECISION", "decision": None, "handoff": HANDOFF}),
+                    json.dumps({"kind": "HANDOFF", "decision": None,
+                                "handoff": {"done": []}}),
+                    "not json"):
+            with self.subTest(bad=bad[:40]), self.assertRaises(BusError) as caught:
+                L.codex_answer(bad)
+            self.assertEqual(caught.exception.code, E.DECISION_INVALID)
+
+    def test_the_schema_offers_exactly_decision_or_handoff(self):
+        schema = L.codex_review_schema()
+        self.assertEqual(schema["properties"]["kind"]["enum"], ["DECISION", "HANDOFF"])
+        self.assertEqual(sorted(schema["required"]), ["decision", "handoff", "kind"])
+
+
+class TestCodexUsagePass(PassHarness):
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(__import__("shutil").rmtree, self.dir, True)
+
+    def test_codex_at_the_handoff_line_is_not_launched_and_nothing_is_measured(self):
+        m = self.manager("claude", lambda *a: self.fail("codex must not be launched"),
+                         usage=lambda: reading("HANDOFF"))
+        with mock.patch.object(L.LocalManager, "measure",
+                               lambda *a: self.fail("nothing is measured on a quota wait")):
+            report = m.poll_once(execute=True)
+        self.assertEqual(report["action"], "WAIT")
+        self.assertIn("codex: codex usage at the handoff line", report["notes"][0])
+        self.assertEqual(self.published, [])
+
+    def test_codex_below_the_line_is_launched(self):
+        calls = []
+        m = self.manager("claude", lambda r, p, ws: calls.append(r) or {"decision": GOOD},
+                         usage=lambda: reading("WRAP_UP"))
+        self.assertEqual(m.poll_once(execute=True)["action"], "PUBLISHED")
+        self.assertEqual(calls, ["codex"])
+
+    def test_the_gate_never_blocks_a_claude_reviewer(self):
+        m = self.manager("codex", lambda *a: {"decision": GOOD},
+                         usage=lambda: reading("HANDOFF"))
+        self.assertEqual(m.poll_once(execute=True)["action"], "PUBLISHED")
+
+    def test_a_handoff_waits_is_kept_and_seeds_the_next_fresh_session(self):
+        prompts = []
+        answers = [{"handoff": "## remaining\n- check the kill tests"}, {"decision": GOOD}]
+        def invoke(reviewer, prompt, ws):
+            prompts.append(prompt)
+            return answers.pop(0)
+        m = self.manager("claude", invoke, handoff_dir=str(self.dir))
+        first = m.poll_once(execute=True)
+        self.assertEqual(first["action"], "WAIT")        # never a verdict
+        self.assertEqual(self.published, [])
+        kept = self.dir / "review-1001.md"
+        self.assertIn("check the kill tests", kept.read_text())
+        second = m.poll_once(execute=True)
+        self.assertEqual(second["action"], "PUBLISHED")
+        self.assertNotIn("previous fresh review session", prompts[0])
+        self.assertIn("previous fresh review session", prompts[1])
+        self.assertIn("check the kill tests", prompts[1])
+        self.assertFalse(kept.exists())                  # retired once decided
+        self.assertTrue((self.dir / "done" / "review-1001.md").exists())
+
+
+class TestCodexUsageProbe(unittest.TestCase):
+    def setUp(self):
+        from agent_bus import codex_usage as U
+        self.U = U
+        self.home = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(__import__("shutil").rmtree, self.home, True)
+
+    def rollout(self, name, *limits, mtime=None):
+        day = self.home / "sessions" / "2026" / "09" / "29"
+        day.mkdir(parents=True, exist_ok=True)
+        path = day / f"rollout-{name}.jsonl"
+        lines = [json.dumps({"type": "session_meta", "payload": {}})]
+        lines += [json.dumps({"type": "event_msg", "payload": {
+            "type": "token_count", "rate_limits": {
+                "primary": {"used_percent": p, "window_minutes": 300, "resets_at": pr},
+                "secondary": {"used_percent": s, "window_minutes": 10080,
+                              "resets_at": sr}}}}) for p, pr, s, sr in limits]
+        path.write_text("\n".join(lines) + "\n")
+        if mtime:
+            os.utime(path, (mtime, mtime))
+        return path
+
+    def test_the_newest_reading_its_band_and_what_the_session_spent(self):
+        self.rollout("old", (99, 2000, 99, 2000), mtime=100)
+        self.rollout("new", (40, 2000, 50, 2000), (78, 2000, 50, 2000), mtime=200)
+        r = self.U.read(self.home, now=1000)
+        self.assertEqual((r["status"], r["session_spent_percent"]), ("WRAP_UP", 38.0))
+        self.assertEqual(r["rollout"], "rollout-new.jsonl")
+
+    def test_a_window_past_its_reset_reads_zero_not_stale(self):
+        self.rollout("new", (95, 500, 20, 5000))
+        r = self.U.read(self.home, now=1000)
+        self.assertEqual(r["status"], "CONTINUE")
+        self.assertTrue(r["windows"]["five_hour"]["reset_since_reading"])
+        self.assertIsNone(self.U.gate(r))
+
+    def test_the_weekly_window_alone_can_force_a_handoff(self):
+        self.rollout("new", (10, 5000, 96, 5000))
+        r = self.U.read(self.home, now=1000)
+        self.assertEqual(r["status"], "HANDOFF")
+        self.assertIn("weekly 96%", self.U.gate(r))
+
+    def test_no_reading_is_unknown_and_does_not_block(self):
+        r = self.U.read(self.home, now=1000)
+        self.assertEqual(r["status"], "UNKNOWN")
+        self.assertIsNone(self.U.gate(r))
+
+    def test_the_script_runs_standalone_outside_the_package(self):
+        future = 4_000_000_000       # the subprocess reads the real clock
+        self.rollout("new", (95, future, 20, future))
+        script = Path(self.U.__file__).resolve()
+        env = {"CODEX_HOME": str(self.home), "PATH": os.environ.get("PATH", "")}
+        out = subprocess.run([sys.executable, str(script), "--gate"], cwd=str(self.home),
+                             env=env, capture_output=True, text=True)
+        self.assertEqual(out.returncode, 3)
+        self.assertEqual(json.loads(out.stdout)["status"], "HANDOFF")

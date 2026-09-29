@@ -40,6 +40,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
+from agent_bus import codex_usage
 from agent_bus import errors as E
 from agent_bus.worker_evidence import failure_detail
 from agent_bus.errors import BusError
@@ -224,6 +225,8 @@ class CodexProvider:
 
     name = "codex"
     sandbox = "workspace-write"
+    # Recorded (so the book knows Codex worked the wave) but never resumed.
+    resumable = False
 
     def __init__(self, repo: str, executable: str = "codex", model: str | None = None) -> None:
         self.repo = repo
@@ -238,10 +241,19 @@ class CodexProvider:
         # resumed. Nothing durable names one, so a new process starts fresh.
         return None
 
+    # Captain, 2026-09-29: every Codex invocation is a fresh session, and it
+    # budgets its own usage (codex_usage) and hands off cleanly when short.
+    USAGE_HANDOFF = (
+        "do not start a unit you cannot finish. If you are inside one, finish it\n"
+        "    or return its files to how the unit found them (file edits only, never\n"
+        "    git), then end with status STOP. Above the footer write 'USAGE HANDOFF:'\n"
+        "    what is done, what remains, and the single next step, for the next\n"
+        "    session. Never leave a half-edited file.")
+
     def argv(self, prompt: str, session: SessionRef) -> tuple[str, ...]:
         _own(self.name, session)
         argv = [self.executable, "exec", "--json", "--sandbox", self.sandbox,
-                "--cd", self.repo]
+                "--disable", "memories", "--cd", self.repo]
         if self.model:
             argv += ["--model", self.model]
         if session.resumed:
@@ -249,7 +261,8 @@ class CodexProvider:
                 raise BusError(E.PROVIDER_SESSION_MISMATCH,
                                "a codex resume needs the thread id codex assigned")
             argv += ["resume", session.id]
-        argv.append(prompt)
+        argv.append(prompt + codex_usage.instruction(Path(codex_usage.__file__).resolve(),
+                                                     self.USAGE_HANDOFF))
         return tuple(argv)
 
     def opened(self, session: SessionRef, result: Completed) -> SessionRef | None:
@@ -456,7 +469,7 @@ class ProviderFailoverTransport:
                  commit: bool = True) -> SessionRef:
         """This provider's own session for the wave -- never another provider's."""
         own = self.book.resumable(provider.name, wave)
-        if own is not None and resumed:
+        if own is not None and resumed and getattr(provider, "resumable", True):
             return own
         if own is None and resumed and first and not self.book.any_opened(wave):
             durable = provider.durable_session(wave)

@@ -219,11 +219,15 @@ def _watch(args) -> dict:
         if args.manager:
             if not args.pr or not args.trusted:
                 raise BusError(E.BAD_VALUE, "--manager needs --pr and --trusted")
+            from agent_bus import codex_usage
             from agent_bus.local_manager import LocalManager, WorkerAndManager
             supervisor = WorkerAndManager(supervisor, LocalManager(
                 args.repo, str(Path(args.repo_path).resolve()), args.pr,
                 args.trusted.split(",")[0].strip(), issue=args.issue,
-                order=_providers(args).order, operator_state=args.operator_state))
+                order=_providers(args).order, operator_state=args.operator_state,
+                usage=codex_usage.read,
+                handoff_dir=str(Path(watcher_module.lock_path_for(args.repo_path)).parent
+                                / "handoffs")))
         watch = watcher_module.Watcher(
             supervisor=supervisor,
             interval=args.interval,

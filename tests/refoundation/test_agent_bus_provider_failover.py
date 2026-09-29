@@ -331,8 +331,11 @@ class TestSessions(unittest.TestCase):
         self.assertEqual(argv[argv.index("--cd") + 1], REPO_PATH)
         self.assertIn("--json", argv)
         self.assertNotIn("resume", argv)
+        self.assertEqual(argv[argv.index("--disable") + 1], "memories")
         self.assertFalse(any("danger" in a or "bypass" in a for a in argv))
-        self.assertEqual(argv[-1], "brief")
+        self.assertTrue(argv[-1].startswith("brief\nUSAGE BUDGET"))
+        self.assertIn("codex_usage.py", argv[-1])
+        self.assertIn("USAGE HANDOFF:", argv[-1])
 
     def test_a_codex_resume_names_the_thread_codex_assigned(self):
         argv = self.codex.argv("brief", P.SessionRef("codex", "th-codex-1", True))
@@ -414,8 +417,9 @@ class TestFailoverPositive(unittest.TestCase):
         codex_argv = fake.provider_calls[1]
         self.assertNotIn("resume", codex_argv)
         self.assertNotIn(session_id(WAVE), codex_argv)
-        # The same brief, for the same single unit, went to both providers.
-        self.assertEqual(fake.provider_calls[0][2], codex_argv[-1])
+        # The same brief, for the same single unit, went to both providers
+        # (Codex's carries its usage clause after it).
+        self.assertTrue(codex_argv[-1].startswith(fake.provider_calls[0][2]))
         self.assertIn("  - U1:", codex_argv[-1])
         self.assertNotIn("  - U2:", codex_argv[-1])
         self.assertEqual(fake.posted_kinds(),
@@ -435,12 +439,22 @@ class TestFailoverPositive(unittest.TestCase):
         self.assertEqual(report["reason"], E.UNIT_SCOPE_ESCAPE)
         self.assertEqual((fake.host_commits, fake.staged), ([], ()))
 
-    def test_a_later_unit_resumes_the_same_providers_own_session(self):
+    def test_a_later_codex_unit_opens_a_fresh_session_never_a_resume(self):
+        # Captain, 2026-09-29: Codex always starts fresh.
         fake = repo(ok("codex", "U1"), ok("codex", "U2"))
         armed(fake, order=("codex", "claude")).poll_once(execute=True)
         first, second = fake.provider_calls
         self.assertNotIn("resume", first)
-        self.assertEqual(second[second.index("resume") + 1], "th-codex-1")
+        self.assertNotIn("resume", second)
+        self.assertNotIn("th-codex-1", second)
+
+    def test_a_later_claude_unit_still_resumes_its_own_session(self):
+        fake = repo(ok("claude", "U1"), ok("claude", "U2"))
+        armed(fake).poll_once(execute=True)
+        first, second = fake.provider_calls
+        self.assertIn("--session-id", first)
+        self.assertEqual(second[second.index("--resume") + 1],
+                         first[first.index("--session-id") + 1])
 
     def test_a_later_failover_opens_codex_fresh_instead_of_resuming_claude(self):
         fake = repo(ok("claude", "U1"), claude_quota(), ok("codex", "U2"))
