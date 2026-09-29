@@ -83,6 +83,9 @@ class EvidenceRepo(FakeRepo):
     def _git(self, argv):
         done = lambda out='': Completed(argv, 0, out, '')
         failed = lambda err: Completed(argv, 1, '', err)
+        if 'worktree' in argv and 'list' in argv:
+            trees = getattr(self, 'worktrees', None) or ['/tmp/repo']
+            return done(''.join(f'worktree {t}\n\n' for t in trees))
         if 'for-each-ref' in argv:
             refs = {f'refs/heads/{self.branch}': self.head,
                     f'refs/remotes/origin/{self.branch}': self.remote_head, **self.extra_refs}

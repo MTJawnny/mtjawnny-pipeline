@@ -91,6 +91,9 @@ class FakeRepo:
         return Completed(argv, 0, '{"subtype": "success"}', "")
 
     def _git(self, argv) -> Completed:
+        if "worktree" in argv and "list" in argv:
+            trees = getattr(self, "worktrees", None) or [self.toplevel]
+            return Completed(argv, 0, "".join(f"worktree {t}\n\n" for t in trees), "")
         if "--show-toplevel" in argv:
             return Completed(argv, 0, str(Path(self.toplevel).resolve()) + "\n", "")
         if "--abbrev-ref" in argv:

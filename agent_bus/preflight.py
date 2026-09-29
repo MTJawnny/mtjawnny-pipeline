@@ -79,6 +79,39 @@ def inspect(repo_path: str, run: Runner | None = None) -> Checkout:
     )
 
 
+def sharing(repo_path: str, run: Runner | None = None) -> list[str]:
+    """Every way this checkout shares its refs with another checkout. Empty = its own.
+
+    The host proves a provider moved no ref by comparing every ref before and
+    after a unit. That proof only means something when nothing else can move
+    those refs: a linked worktree, or a repository with other worktrees, shares
+    one ref store with checkouts the bus does not control (2026-09-29, C03: an
+    operator commit in a sibling worktree was blamed on the Worker).
+    """
+    run = run or Runner()
+    listed = _git(run, repo_path, "worktree", "list", "--porcelain")
+    if listed.returncode != 0:
+        raise BusError(E.GIT_FAILED, f"git worktree list failed in {repo_path}: "
+                       f"{listed.stderr.strip()}")
+    # A linked worktree is always listed beside its main checkout, so one list
+    # answers both questions: is this a linked worktree, and does anything else
+    # share this ref store.
+    trees = [line[len("worktree "):] for line in listed.stdout.splitlines()
+             if line.startswith("worktree ")]
+    if len(trees) <= 1:
+        return []
+    return [f"{len(trees)} worktrees share one ref store: " + "; ".join(trees[:4])]
+
+
+def require_exclusive(repo_path: str, run: Runner | None = None) -> None:
+    problems = sharing(repo_path, run)
+    if problems:
+        raise BusError(E.CHECKOUT_SHARED,
+                       "the Worker checkout must be a standalone clone that no other "
+                       "worktree shares (`git clone`, not `git worktree add`): "
+                       + "; ".join(problems))
+
+
 def is_ancestor(run: Runner, repo: str, ancestor: str, descendant: str) -> bool:
     result = _git(run, repo, "merge-base", "--is-ancestor", ancestor, descendant)
     return result.returncode == 0
@@ -122,6 +155,9 @@ def preflight(envelope: Envelope, plan: WavePlan, expected_repo: str,
         problems.append((E.BASE_NOT_ANCESTOR,
                          f"accepted head {envelope.base} is not an ancestor of "
                          f"candidate base {base}"))
+
+    for shared in sharing(expected_repo, run):
+        problems.append((E.CHECKOUT_SHARED, shared))
 
     if checkout.dirty:
         problems.append((E.UNEXPECTED_DIRT,

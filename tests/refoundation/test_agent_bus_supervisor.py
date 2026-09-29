@@ -90,6 +90,8 @@ class FakeRunner:
                 return Completed(argv, 0 if self.ancestor else 1, "", "")
             if "config" in argv:
                 return Completed(argv, 0, "file:.git/config\0core.bare\nfalse\0" if "-z" in argv else "core.bare=false\n", "")
+            if "worktree" in argv and "list" in argv:
+                return Completed(argv, 0, f"worktree {self.toplevel}\n\n", "")
             if "for-each-ref" in argv:
                 return Completed(argv, 0, f"{self.head} refs/heads/{self.branch}\n", "")
             if "--show-toplevel" in argv:

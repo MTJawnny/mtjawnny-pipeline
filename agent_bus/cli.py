@@ -23,6 +23,7 @@ from agent_bus import errors as E
 from agent_bus.errors import BusError
 from agent_bus.issue import AuthorityError, read_comments, resolve_authority
 from agent_bus.machine import fold
+from agent_bus.preflight import require_exclusive
 from agent_bus.protocol import Envelope, parse, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.supervisor import Supervisor
@@ -212,13 +213,19 @@ def _watch(args) -> dict:
     if args.execute:
         argv.append("--execute")
 
+    if args.mode in ("run", "install"):
+        # The same refusals at install as at run: a service that can only
+        # crash-loop is refused before it is installed, not discovered after.
+        if args.manager and (not args.pr or not args.trusted):
+            raise BusError(E.BAD_VALUE, "--manager needs --pr and --trusted")
+        if args.execute:
+            _trust(args).require()
+            # The ref proof around every unit needs a ref store nothing else shares.
+            require_exclusive(str(Path(args.repo_path).resolve()), Runner())
+
     if args.mode == "run":
         supervisor = _supervisor(args, dispatching=True)
-        if args.execute:
-            supervisor.trust.require()
         if args.manager:
-            if not args.pr or not args.trusted:
-                raise BusError(E.BAD_VALUE, "--manager needs --pr and --trusted")
             from agent_bus import codex_usage
             from agent_bus.local_manager import LocalManager, WorkerAndManager
             supervisor = WorkerAndManager(supervisor, LocalManager(

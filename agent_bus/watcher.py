@@ -30,6 +30,7 @@ import re
 import shutil
 import signal
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
@@ -223,7 +224,9 @@ class Watcher:
     interval: float = 120.0
     backoff: Backoff = field(default_factory=Backoff)
     lock: SingleInstance | None = None
-    sleep: Callable[[float], None] = time.sleep
+    # None: wait on the stop event, so a stop request ends the wait at once
+    # (a plain time.sleep would finish its whole interval first).
+    sleep: Callable[[float], None] | None = None
     floor: float = 15.0
     # One record per cycle, written AS THE CYCLE COMPLETES. The returned log is
     # for callers that end the loop; the emitter is for the ones that never do.
@@ -232,12 +235,18 @@ class Watcher:
 
     def __post_init__(self) -> None:
         self._stop = False
+        self._wake = threading.Event()
+        if self.sleep is None:
+            self.sleep = self._wake.wait
         if self.interval < self.floor:
             raise BusError(E.BAD_VALUE,
                            f"poll interval {self.interval}s is below the {self.floor}s floor")
 
     def request_stop(self, *_) -> None:
+        # A cycle in flight -- a Worker unit, a review -- is never cut short: the
+        # loop exits at the next boundary. Only the idle wait is interrupted.
         self._stop = True
+        self._wake.set()
 
     def install_signal_handlers(self) -> None:
         for sig in (signal.SIGINT, signal.SIGTERM):
@@ -298,6 +307,14 @@ class Watcher:
 # ---------------------------------------------------------------------------
 
 
+# KeepAlive restarts the watcher only when it CRASHES (a non-zero exit). A stop
+# (SIGTERM) ends the loop cleanly with exit 0 and it stays stopped; before
+# 2026-09-29 KeepAlive was unconditional and `watch stop` was undone by launchd.
+# ExitTimeOut: how long launchd waits after SIGTERM before SIGKILL. A unit or a
+# review in flight finishes first; a kill mid-unit would leave a dirty checkout.
+EXIT_TIMEOUT = 7200
+
+
 def plist_path(label: str = LABEL) -> Path:
     return LAUNCH_AGENTS.expanduser() / f"{label}.plist"
 
@@ -328,9 +345,14 @@ def plist(program_args: Sequence[str], label: str = LABEL,
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
-    <true/>
+    <dict>
+      <key>SuccessfulExit</key>
+      <false/>
+    </dict>
     <key>ThrottleInterval</key>
     <integer>60</integer>
+    <key>ExitTimeOut</key>
+    <integer>{EXIT_TIMEOUT}</integer>
     <key>StandardOutPath</key>
     <string>{state}/watcher.out.log</string>
     <key>StandardErrorPath</key>

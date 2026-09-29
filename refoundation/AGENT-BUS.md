@@ -123,13 +123,25 @@ supervisor asks git, and every answer must agree:
 | check | code when it fails |
 | --- | --- |
 | the working tree is the one configured | BUS_WRONG_WORKTREE |
+| no other worktree shares its refs (a standalone clone) | BUS_CHECKOUT_SHARED |
 | the checked-out branch is the one the wave names | BUS_WRONG_BRANCH |
 | the wave's base is an ancestor of HEAD | BUS_BASE_NOT_ANCESTOR |
 | no uncommitted changes | BUS_UNEXPECTED_DIRT |
 | every unit the bus calls done has a commit here | BUS_PROGRESS_HEAD_MISMATCH |
 
 Problems are collected, not short-circuited, and any one of them stops the
-dispatch. A repair wave that builds on an unaccepted commit says so with
+dispatch.
+
+**The Worker checkout owns its ref store.** The host proves a provider moved no
+ref by comparing every ref before and after the unit (section 7a). That proof
+only means something when nothing else can move those refs, so the checkout must
+be a standalone `git clone`, never a `git worktree add` and never a repository
+with worktrees attached. It is proven at `watch install`, at watcher start, in
+this preflight, and again before every unit. If refs move during a unit while
+the store is shared anyway, the failure is BUS_CHECKOUT_SHARED (unattributable),
+never BUS_PROVIDER_GIT_MUTATION; both fail the unit. The operator does side work
+in another clone, never in the Worker's (incident 2026-09-29, C03-REGIONS: a
+sibling worktree's commit was blamed on the Worker). A repair wave that builds on an unaccepted commit says so with
 `candidate_base`; `base` still names the accepted head, so a stale command stays
 detectable.
 
@@ -281,6 +293,14 @@ failures back off exponentially and a quota refusal backs off far longer.
 
 Three things make the installed service honest rather than merely present:
 
+- **It refuses a configuration that could only crash-loop.** `watch install`
+  applies the run's own refusals first: `--manager` without `--pr` and
+  `--trusted`, an armed service with no trusted speaker, or a Worker checkout
+  that shares its refs.
+- **Stop means stop.** KeepAlive restarts the service only after a crash (a
+  non-zero exit). `watch stop` ends the idle wait at once and exits 0 at the
+  next cycle boundary, so it stays stopped; a unit or review in flight is never
+  cut short (launchd waits `ExitTimeOut`, two hours, before a kill).
 - **It is proven able to run before it is installed.** `watch install` resolves
   every executable the service will need — `git` and `gh` always, and when the
   service is armed with `--execute`, the CLI of every enabled provider in the

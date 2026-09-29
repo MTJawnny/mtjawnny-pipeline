@@ -40,6 +40,7 @@ from agent_bus import errors as E
 from agent_bus.enforce import changed_paths, commits_between, scope_violations
 from agent_bus.errors import BusError
 from agent_bus.git_evidence import trailers
+from agent_bus.preflight import sharing
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Runner
 from agent_bus.wave import Unit
@@ -209,6 +210,24 @@ def git_mutations(before: Snapshot, after: Snapshot,
     return problems
 
 
+def mutation_failure(repo: str, provider: str, unit_id: str, what: Sequence[str],
+                     run: Runner) -> tuple[str, str]:
+    """(code, detail) for a Git change seen during a unit, attributed honestly.
+
+    Only a repository nothing else shares proves the provider moved a ref. If the
+    checkout is shared by now, the change is reported as unattributable -- still
+    a failure, never a pass, but not a charge against the provider.
+    """
+    shared = sharing(repo, run)
+    if shared:
+        return (E.CHECKOUT_SHARED,
+                f"Git metadata changed during {unit_id} while the checkout is shared, so "
+                f"it cannot be attributed to {provider}: " + "; ".join([*what, *shared]))
+    return (E.PROVIDER_GIT_MUTATION,
+            f"{provider} mutated Git metadata during {unit_id}; providers edit "
+            "and test only: " + "; ".join(what))
+
+
 def commit_message(command: Envelope, unit: Unit, provider: str) -> str:
     """Deterministic: the same command, unit and provider always give the same bytes."""
     return (f"Agent Bus {unit.id}: host-finalized unit of {command.wave}\n\n"
@@ -227,15 +246,11 @@ def finalize(repo: str, remote: str, branch: str, command: Envelope, unit: Unit,
         # Only config and metadata-file checks here: status has not run yet.
         what = git_mutations(Snapshot(after.head, after.branch, after.refs, before.config,
                                       before.meta), after, ())
-        return Finalized(((E.PROVIDER_GIT_MUTATION,
-                           f"{provider} mutated Git metadata during {unit.id}; providers edit "
-                           "and test only: " + "; ".join(what)),))
+        return Finalized((mutation_failure(repo, provider, unit.id, what, run),))
     changes = worktree_changes(repo, run)
     mutated = git_mutations(before, after, changes)
     if mutated:
-        return Finalized(((E.PROVIDER_GIT_MUTATION,
-                           f"{provider} mutated Git metadata during {unit.id}; providers edit "
-                           "and test only: " + "; ".join(mutated)),))
+        return Finalized((mutation_failure(repo, provider, unit.id, mutated, run),))
 
     paths = tuple(sorted({path for _, path in changes}))
     if not unit.mutating:

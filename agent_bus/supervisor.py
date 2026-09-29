@@ -36,7 +36,8 @@ from agent_bus.errors import BusError
 from agent_bus.git_evidence import completed_units, head_sha
 from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
 from agent_bus.machine import Authority, BusState, RawComment, fold
-from agent_bus.preflight import Checkout, PreflightReport, build_base_of, inspect, preflight
+from agent_bus.preflight import (Checkout, PreflightReport, build_base_of, inspect, preflight,
+                                 require_exclusive)
 from agent_bus.protocol import SHA_RE, Envelope
 from agent_bus.shell import Runner
 from agent_bus.providers import (
@@ -224,6 +225,9 @@ class Supervisor:
 
         for index, unit_id in enumerate(runnable):
             unit = plan.unit(unit_id)
+            # Before every unit, not only the wave: a worktree added mid-wave would
+            # make the ref proof below meaningless. Nothing has run; nothing to claim.
+            require_exclusive(self.repo_path, self.run)
             before = finalize.snapshot(self.repo_path, self.run)
             unsafe = finalize.unsafe_config(before)
             if unsafe:
@@ -340,9 +344,8 @@ class Supervisor:
         # over config or refs the provider changed. Finalize repeats the proof.
         mutated = finalize.git_mutations(before, finalize.snapshot(self.repo_path, self.run), ())
         if mutated:
-            return text, failed(E.PROVIDER_GIT_MUTATION,
-                                f"{dispatch.provider} mutated Git metadata during {unit.id}; "
-                                "providers edit and test only: " + "; ".join(mutated))
+            return text, failed(*finalize.mutation_failure(self.repo_path, dispatch.provider,
+                                                           unit.id, mutated, self.run))
         measured = tuple(sorted({path for _, path in
                                  finalize.worktree_changes(self.repo_path, self.run)}))
         if stated.changed != measured:

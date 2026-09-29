@@ -744,9 +744,12 @@ class TestCliIntegration(unittest.TestCase):
         def fake_install(argv, **kw):
             captured["argv"] = list(argv)
             return {"dry_run": kw["dry_run"]}
+        # An armed install must name its trusted speakers and own its ref store
+        # (2026-09-29); both are proven in their own tests.
         with mock.patch.object(cli.watcher_module, "install", fake_install), \
+                mock.patch.object(cli, "require_exclusive", lambda *a: None), \
                 mock.patch.dict("os.environ", {P.PROVIDER_ENV_VAR: "codex,claude"}):
-            cli._watch(self.args("watch", "install", "--execute"))
+            cli._watch(self.args("--trusted", "MTJawnny", "watch", "install", "--execute"))
         argv = captured["argv"]
         self.assertEqual(argv[argv.index("--providers") + 1], "codex,claude")
         self.assertLess(argv.index("--providers"), argv.index("watch"))

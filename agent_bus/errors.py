@@ -152,6 +152,9 @@ GATE_NOTHING_OWED = "BUS_GATE_NOTHING_OWED"
 GOAL_PLAN_INVALID = "BUS_GOAL_PLAN_INVALID"
 # A workflow file breaks the Manager wake's static permission/secret/pin law.
 WORKFLOW_POLICY = "BUS_WORKFLOW_POLICY"
+# The Worker checkout shares its refs with another worktree, so a ref that moves
+# cannot be attributed to the provider. The Worker needs a repository of its own.
+CHECKOUT_SHARED = "BUS_CHECKOUT_SHARED"
 
 CODES = frozenset(
     v for k, v in list(globals().items())
