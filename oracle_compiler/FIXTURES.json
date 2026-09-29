@@ -171,7 +171,7 @@
       "task": "F0.ORACLE-COMPILER-FIXTURE-SELECTION-FREEZE (Issue #1 comment 5878063506)",
       "script": "experiments/oracle_ingest/f0_select.py",
       "report": "experiments/out/oracle_ingest/f0/selection.json (ignored; x2 byte-identical)",
-      "report_sha256": "394d48a5f52351a1245343900fdca85cad70fefbfddd08fbd6a5a824b1486121",
+      "report_sha256": "e08cdd360e9d8fe902b211aa28cf54631d88b2565d6fdcfe49ce1af0154cca49",
       "reconciled_with_c02": {
         "exile_return": 53,
         "heads": {

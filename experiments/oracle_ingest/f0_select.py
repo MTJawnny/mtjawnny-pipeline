@@ -159,21 +159,6 @@ ROLES = (
      "P3 qualifier-bearing clauses with >=2 restricted participants"),
 )
 
-UNFILLED = {
-    "split-destination-selected-set":
-        "no AQ4 probe population measures a selected set divided across "
-        "destinations; the census lattice, P1-P4 and their marker inventories "
-        "carry no such structure (production fixtures not searched in F0)",
-    "prior-set-complement-reference":
-        "P4's frozen back-reference inventory has no complement form; "
-        "selecting one needs a new text classifier, i.e. a new measurement "
-        "(production fixtures not searched in F0)",
-    "ability-borrowing-inheritance-pressure":
-        "no AQ4 probe population measures ability borrowing; M01 classifies "
-        "it GENUINELY_MISSING (production fixtures not searched in F0)",
-}
-
-
 CODEBOOK_SHA = "6aa6193f8a457ae4c7884e364f519749a9d68b96f7ecedf3fa903bfa4677426c"
 GROUND_TRUTH = ROOT / "tests" / "fixtures" / "ground_truth"
 
@@ -192,7 +177,6 @@ PRODUCTION_AXIS = {
         "'the rest' names the complement of the selected card within the set "
         "looked at before"),
 }
-PRODUCTION_UNFILLED = {}
 
 # Members the Captain NAMED (Issue #1 comments 5878405103, revised 5878640282).
 # A naming is authority, not a selection rule: it is recorded, and only verified
@@ -249,8 +233,6 @@ def production_pass(cards, used) -> dict:
                                        f"the role: {why}",
                      "axis_in_gate2_ground_truth": slug in gt_axes,
                      "qualifying_rows": len(human)}
-    for role, reason in PRODUCTION_UNFILLED.items():
-        out[role] = {"member": None, "reason": reason}
     for role, named in CAPTAIN_NAMED.items():
         for oid, name, _ in named["members"]:
             if oid not in cards or cards[oid]["name"] != name:
@@ -366,13 +348,18 @@ def select() -> dict:
             "qualifying_rows": len(qualifying),
         }
     production = production_pass(cards, used)
+    # Derived from the FINAL disposition of every role, never a static table:
+    # a role is unfilled only if neither source nor a Captain naming filled it.
+    final = {**selected, **production["roles"]}
+    unfilled = {role: d.get("reason", "no member") for role, d in sorted(final.items())
+                if not d.get("member") and not d.get("members")}
     return {"schema": "oracle-compiler-f0-selection/0", "inputs": identities,
             "production_fixtures": production,
             "reconciled_with_c02": measured | {"heads": {str(k): v for k, v in
                                                          sorted(dist.items())}},
             "negative_controls": negative_controls(),
             "tie_break": "(oracle_id, stem, occurrence); one card per role, roles in listed order",
-            "selected": selected, "unfilled": UNFILLED}
+            "selected": selected, "unfilled": unfilled}
 
 
 def main(argv) -> int:
