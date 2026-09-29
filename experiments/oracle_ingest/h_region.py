@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""C03 — H-REGION candidate derivation and measurement (interface/1, V1 §5 M1).
+"""C03 — H-REGION candidate derivation and measurement (interface/2, V1 §5 M1).
 
-Derives deterministic H-REGION CANDIDATES over the C03 population (interface/1
+PINNED TO oracle-compiler-interface/2 (oracle_compiler/INTERFACES.md blob
+4ac4d856b651edde05b15c7065aa593f59561dcf, Captain ratification 5900431196).
+
+Derives deterministic H-REGION CANDIDATES over the C03 population (interface/2
 I2) and the frozen F0 fixtures, and measures them. It decides no kill: the
 seven I3 tests read this output in `h_region_kill.py`. Read-only over the
 corpus; writes one ignored JSON report.
 
-INPUTS (a). The four interface/1 I1 identities are verified first; a differing
-identity HALTS. The I2 population is re-derived with the frozen functions
-(`foundry_qualifier_census.population`, `foundry_aq4_probes.effect_heads`)
-and every I2 figure is reconciled against both interface/1's literals and the
+INPUTS (a). The four I1 identities (unchanged from interface/1) are verified
+first; a differing identity HALTS. The I2 population is re-derived with the
+frozen functions (`foundry_qualifier_census.population`,
+`foundry_aq4_probes.effect_heads`)
+and every I2 figure is reconciled against both the interface's literals and the
 pinned C02 output before any other work; a mismatch HALTS. Fixture members
 come from `oracle_compiler/FIXTURES.json` only -- none added, dropped or
 swapped. `f0_select.py` is reused for its pins, hash and census key.
@@ -30,6 +34,19 @@ is placed by the ratified resolution law (`foundry_locality.resolve`) and must
 sit inside exactly one chain clause; otherwise it HALTS (a population clause
 whose address cannot be resolved is a STOP). Spans are offsets into that
 frozen clause text.
+
+INTERFACE/2 §I3a. R2 `head-not-payment-cast`: a legacy head `cast` whose
+printed tokens are immediately preceded by `spent to` starts no region (the
+frozen detector is not edited; every dropped head is reported per clause), and
+the region cut rule then runs over the heads that do start regions. R1
+`attach-ability-prefix` is narrowed to its three shapes, each starting at the
+start of the chain clause (the `clause-scope` rule): a `cost-colon` span, a
+`condition-trigger` span opening When/Whenever/At, and a `condition-marker`
+span beginning `if` immediately after such a trigger condition's comma. Such a
+span is ONE attachment, to the ability. Any other prefix span keeps its
+interface/1 outcome. R3 `group-back-reference` is a table entry here only; it
+is evaluated by `h_region_kill.py`. Every span whose attachment differs from
+interface/1 records the interface/1 attachment beside it, with the rule.
 
 ROLE MARKS are the ATTACH-3 categories only -- cost, condition, duration,
 destination -- as MEASUREMENT LABELS, each from printed tokens and a CR rule
@@ -73,14 +90,16 @@ SCRIPT = "experiments/oracle_ingest/h_region.py"
 OUT_REL = "experiments/out/oracle_ingest/c03/regions.json"
 OUT = ROOT / OUT_REL
 
-# interface/1 I1 -- f0_select pins three; the accepted C02 output is the fourth.
+# I1 (unchanged from interface/1) -- f0_select pins three; the accepted C02
+# output is the fourth.
 C02_REL = "experiments/out/oracle_ingest/c02/all-run1.json"
 I1 = dict(f0.PINNED)
 I1[C02_REL] = "74e3559d785dc3ac47d14823ac1fec96dd446ae446d82a3ee45b03ef3f818dfd"
 
-# oracle-compiler-interface/1, by git blob id (the wave's STOP condition).
+# oracle-compiler-interface/2, by git blob id (the wave's STOP condition).
+INTERFACE_VERSION = "oracle-compiler-interface/2"
 INTERFACES_REL = "oracle_compiler/INTERFACES.md"
-INTERFACES_BLOB = "3c34cf5a4e8150e43cbce2ec6a92e30272560f6e"
+INTERFACES_BLOB = "4ac4d856b651edde05b15c7065aa593f59561dcf"
 FIXTURES_REL = "oracle_compiler/FIXTURES.json"
 CONTRACT_REL = "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
 
@@ -93,13 +112,13 @@ INPUTS = sorted(set(I1) | {
     "src/mtj_foundry/mtg/shapes/delivery.py",
 })
 
-# interface/1 I2 -- the accepted C02 figures, every one of them.
+# I2 (unchanged from interface/1) -- the accepted C02 figures, every one of them.
 I2 = dict(f0.C02, families={"exile": 60, "destroy": 6, "bounce": 0},
           examples=25)
 I2.pop("p3_multi", None)
 I2.pop("p3_qual", None)
 
-# AQ4 register #27, CITED and not re-measured (interface/1 I2).
+# AQ4 register #27, CITED and not re-measured (I2).
 COST_PRECEDENT = {
     "source": f"{CONTRACT_REL} register #27 (RATIFIED -- CAPTAIN 2026-08-17)",
     "surface": "frozen 782-occurrence open surface",
@@ -134,20 +153,20 @@ def verify_identities(pins: dict) -> dict:
     for rel, want in sorted(pins.items()):
         got = _sha(rel)
         if got != want:
-            fc.halt(f"pinned input {rel} is {got}, interface/1 pins {want}")
+            fc.halt(f"pinned input {rel} is {got}, {INTERFACE_VERSION} I1 pins {want}")
     return dict(sorted(pins.items()))
 
 
 def verify_interface() -> str:
     got = _blob(INTERFACES_REL)
     if got != INTERFACES_BLOB:
-        fc.halt(f"{INTERFACES_REL} is blob {got}, not oracle-compiler-interface/1 "
+        fc.halt(f"{INTERFACES_REL} is blob {got}, not {INTERFACE_VERSION} "
                 f"({INTERFACES_BLOB})")
     return got
 
 
 def reconcile(rows: list, c02: dict, want: dict = None) -> dict:
-    """Every I2 figure, re-derived, against interface/1's literals AND the
+    """Every I2 figure, re-derived, against the interface's literals AND the
     pinned C02 output. Any mismatch halts."""
     want = I2 if want is None else want
     p2 = c02["p2"]
@@ -180,7 +199,7 @@ def reconcile(rows: list, c02: dict, want: dict = None) -> dict:
               "families": {s: d["multi_effect"]
                            for s, d in p2["by_action_family"].items()},
               "examples": len(p2["examples"])}
-    for label, ref in (("interface/1 I2", want), ("accepted C02 output", pinned)):
+    for label, ref in ((f"{INTERFACE_VERSION} I2", want), ("accepted C02 output", pinned)):
         if measured != ref:
             fc.halt(f"re-derived population does not reconcile with {label}: "
                     f"{measured} != {ref}")
@@ -329,6 +348,16 @@ _DESTINATION_RE = re.compile(
     r"(?:\s+(?!from\b)[\w'’]+){0,3}?\s+(?:" + _ZONE_ALT + r")s?\b", re.I)
 _COLON_RE = re.compile(r":")
 
+# interface/2 §I3a, stated there and nowhere else.
+_R1_INTERVENING = re.compile(r"if\b")                    # R1 condition-marker shape
+_R2_PRECEDED = re.compile(r"\bspent to $")               # R2: `spent to` + head `cast`
+_R3_COORDINATOR = re.compile(r", and|,|and")             # R3 gap coordinators
+R3_PLURAL_MARKERS = ("they", "them", "those cards", "those creatures",
+                     "those permanents", "those tokens")
+if not set(R3_PLURAL_MARKERS) <= aq._PRONOUN_MARKERS:
+    fc.halt(f"interface/2 R3 plural markers are not all frozen _PRONOUN_MARKERS: "
+            f"{sorted(set(R3_PLURAL_MARKERS) - aq._PRONOUN_MARKERS)}")
+
 # The rule table. K7 reads it: every boundary is one of these, each carries a
 # CR anchor (or a declared list), and none may be keyed to a card, a name or an
 # oracle_id -- `assert_not_card_keyed` halts otherwise.
@@ -357,8 +386,25 @@ RULES = (
      "pattern": _DESTINATION_RE.pattern},
     {"id": "attach-contained", "kind": "attach", "cr": "CR 608.2c",
      "pattern": "span overlaps exactly the regions it attaches to"},
-    {"id": "attach-ability-prefix", "kind": "attach", "cr": "CR 602.1a / 603.1",
-     "pattern": "a span wholly before the first region governs every region"},
+    # interface/2 §I3a R1 (narrowed): only these three shapes are ability-level.
+    {"id": "attach-ability-prefix", "kind": "attach", "cr": "CR 602.1a / 603.1 / 603.4",
+     "pattern": "a span wholly before the first region, starting at the start of "
+                "the clause scope, that is: cost-colon ending at the colon; or "
+                "condition-trigger opening " + _TRIGGER_RE.pattern + " ending at "
+                "the trigger condition's comma; or condition-marker "
+                + _R1_INTERVENING.pattern + " starting immediately after that "
+                "comma -- governs every region of its ability as one attachment"},
+    # interface/2 §I3a R2: a payment description is not an operation.
+    {"id": "head-not-payment-cast", "kind": "region", "cr": "CR 106.1 / 601.2h",
+     "pattern": _R2_PRECEDED.pattern + " ++ head cast"},
+    # interface/2 §I3a R3: a table entry here; evaluated by h_region_kill.py.
+    {"id": "group-back-reference", "kind": "reference", "cr": "CR 608.2c",
+     "pattern": "plural " + " | ".join(R3_PLURAL_MARKERS) + " ; one earlier region "
+                "with >= 2 candidates ; list marks " + aq._TARGET_TOKEN.pattern
+                + " | " + aq.ol._SECOND_OBJECT.pattern + " ; each gap exactly one "
+                "coordinator " + _R3_COORDINATOR.pattern + " and no "
+                + aq._HEAD_RE.pattern + " , " + aq._BOUNDARY_WORD.pattern
+                + " , [.;:]"},
 )
 _RULE_KEYS = {"id", "kind", "cr", "pattern"}
 _UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
@@ -408,10 +454,20 @@ def head_positions(text: str, corrected: bool = False) -> list:
     return out
 
 
-def derive_regions(text: str, lo: int, hi: int, owner: dict) -> tuple:
-    """One region per legacy head of text[lo:hi]; offsets into `text`."""
+def r2_drops(scope: str, h: dict) -> bool:
+    """interface/2 §I3a R2: a head `cast` whose printed tokens are immediately
+    preceded by `spent to` is a payment description and starts no region."""
+    return h["head"] == "cast" and bool(_R2_PRECEDED.search(scope[:h["start"]]))
+
+
+def derive_regions(text: str, lo: int, hi: int, owner: dict, r2: bool = True) -> tuple:
+    """One region per legacy head of text[lo:hi] that R2 does not drop; offsets
+    into `text`. Returns (regions, legacy heads, R2-dropped heads). `r2=False`
+    is the interface/1 derivation, kept only to report what R2 changed."""
     scope = text[lo:hi]
-    heads = head_positions(scope)
+    legacy = head_positions(scope)
+    dropped = [h for h in legacy if r2 and r2_drops(scope, h)]
+    heads = [h for h in legacy if h not in dropped]
     regions = []
     for i, h in enumerate(heads):
         start = lo + h["start"]
@@ -429,9 +485,10 @@ def derive_regions(text: str, lo: int, hi: int, owner: dict) -> tuple:
                         "owner": owner["id"]})
     for r in regions:
         check_bounds(r, len(text))
-    return regions, [dict(h, start=lo + h["start"], end=lo + h["end"],
-                          connector=None if h["connector"] is None
-                          else lo + h["connector"]) for h in heads]
+    shift = lambda hs: [dict(h, start=lo + h["start"], end=lo + h["end"],
+                             connector=None if h["connector"] is None
+                             else lo + h["connector"]) for h in hs]
+    return regions, shift(legacy), shift(dropped)
 
 
 def check_bounds(region: dict, n: int) -> None:
@@ -500,7 +557,35 @@ def role_spans(text: str) -> tuple:
     return merged, skipped
 
 
-def attach(span: dict, regions: list) -> dict:
+def r1_shape(text: str, span: dict, spans: list):
+    """interface/2 §I3a R1: the ability-level shape of `span`, or None. The
+    clause scope starts at the start of the chain clause (`clause-scope`)."""
+    a, b = span["span"]
+    start = len(text) - len(text.lstrip())
+    if span["role"] == "cost" and "cost-colon" in span["rules"]:
+        colon = next((m.start() for m in _COLON_RE.finditer(text)
+                      if not any(x <= m.start() < y for x, y in fx.quoted_spans(text))),
+                     None)
+        if a == start and b == colon:
+            return "cost-colon"
+    if span["role"] != "condition":
+        return None
+    quoted = fx.quoted_spans(text)
+
+    def trigger(s):
+        x, y = s["span"]
+        return (s["role"] == "condition" and x == start and _TRIGGER_RE.match(text, x)
+                and y == _to_comma(text, x, quoted) and y < len(text)
+                and text[y] == ",")
+    if trigger(span):
+        return "condition-trigger"
+    if any(trigger(s) and text[s["span"][1] + 1:a].strip() == ""
+           and s["span"][1] < a for s in spans) and _R1_INTERVENING.match(text, a):
+        return "condition-marker"
+    return None
+
+
+def attach(span: dict, regions: list, shape=None) -> dict:
     a, b = span["span"]
     if not regions:
         # Not "none": no region was derived because the detector found no head
@@ -515,6 +600,14 @@ def attach(span: dict, regions: list) -> dict:
                 "reason": "" if len(over) == 1 else "span crosses a region boundary"}
     if b <= regions[0]["span"][0]:
         every = [r["ordinal"] for r in regions]
+        if shape:
+            # interface/2 §I3a R1: ONE attachment, to the ability.
+            return {"attached": every, "rule": "attach-ability-prefix",
+                    "outcome": "attached", "attached_to": "ability",
+                    "r1_shape": shape,
+                    "reason": f"R1 {shape}: an ability-level span governs every "
+                              f"region of its ability as one attachment"}
+        # Not an R1 shape: the interface/1 outcome, unchanged.
         return {"attached": every, "rule": "attach-ability-prefix",
                 "outcome": "attached" if len(every) == 1 else "multiple",
                 "reason": "" if len(every) == 1 else
@@ -527,25 +620,38 @@ def clause_record(oid: str, fi: int, pi: int, ci: int, text: str, lo: int, hi: i
                   scope_kind: str) -> dict:
     owner = {"oracle_id": oid, "face": fi, "paragraph": pi, "clause": ci,
              "id": f"{oid}:{fi}:{pi}:{ci}"}
-    regions, legacy = derive_regions(text, lo, hi, owner)
+    regions, legacy, dropped = derive_regions(text, lo, hi, owner)
+    regions_i1, _, _ = derive_regions(text, lo, hi, owner, r2=False)
     corrected = [dict(h, start=lo + h["start"], end=lo + h["end"],
                       connector=None if h["connector"] is None
                       else lo + h["connector"])
                  for h in head_positions(text[lo:hi], corrected=True)]
     spans, skipped = role_spans(text)
-    for s in spans:
-        s.update(attach(s, regions))
+    shapes = [r1_shape(text, s, spans) for s in spans]
+    key = lambda x: (x["attached"], x["outcome"])
+    for s, shape in zip(spans, shapes):
+        i1 = attach(s, regions_i1)
+        by = [rule for rule, alone in (("R1", attach(s, regions_i1, shape)),
+                                       ("R2", attach(s, regions)))
+              if key(alone) != key(i1)]
+        s.update(attach(s, regions, shape))
+        if key(i1) != key(s):
+            # Reported beside the interface/2 attachment (interface/2 I3).
+            s["interface1"] = {"attached": i1["attached"], "outcome": i1["outcome"],
+                               "rule": i1["rule"], "changed_by": by}
     lk = [(h["head"], h["start"]) for h in legacy]
     ck = [(h["head"], h["start"]) for h in corrected]
     counts = {}
-    for h, _ in lk:
-        counts[h] = counts.get(h, 0) + 1
+    for r in regions:
+        counts[r["head"]] = counts.get(r["head"], 0) + 1
     pairs = list(combinations(regions, 2))
     return {
         "address": owner, "clause_text": text,
         "clause_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "scope": [lo, hi], "scope_kind": scope_kind,
         "heads_legacy": legacy, "heads_corrected": corrected,
+        "heads_region": [h for h in legacy if h not in dropped],
+        "r2_dropped_heads": dropped,
         "detector_diff": {"differs": lk != ck,
                           "only_legacy": [list(x) for x in lk if x not in ck],
                           "only_corrected": [list(x) for x in ck if x not in lk]},
@@ -575,7 +681,10 @@ def measure(records: list) -> dict:
             if s["outcome"] == "multiple":
                 a["multiple_ability_prefix" if s["rule"] == "attach-ability-prefix"
                   else "multiple_crossing"] += 1
+            if s.get("r1_shape"):
+                a["attached_r1_ability"] = a.get("attached_r1_ability", 0) + 1
     for v in att.values():
+        v.setdefault("attached_r1_ability", 0)
         v["success"] = v["attached"]
         v["failure"] = v["multiple"] + v["none"]
         v["extraction_failure"] = v["no_region"]
@@ -606,11 +715,37 @@ def measure(records: list) -> dict:
         "attach3_failures": sorted(
             [c["address"]["id"], s["role"], s["outcome"]]
             for c in records for s in c["role_spans"] if s["outcome"] != "attached"),
+        "interface2_rules": {
+            "R1_attach_ability_prefix": {
+                "spans": sum(1 for c in records for s in c["role_spans"]
+                             if s.get("r1_shape")),
+                "by_shape": {k: v for k, v in sorted(_count(
+                    s["r1_shape"] for c in records for s in c["role_spans"]
+                    if s.get("r1_shape")).items())},
+                "clauses": ids(lambda c: any(s.get("r1_shape")
+                                             for s in c["role_spans"])),
+                "prefix_spans_of_no_r1_shape": sorted(
+                    [c["address"]["id"], s["role"], s["outcome"]]
+                    for c in records for s in c["role_spans"]
+                    if s["rule"] == "attach-ability-prefix" and not s.get("r1_shape"))},
+            "R2_head_not_payment_cast": {
+                "clauses": ids(lambda c: c["r2_dropped_heads"]),
+                "dropped_heads": sorted([c["address"]["id"], h["head"], h["start"]]
+                                        for c in records for h in c["r2_dropped_heads"]),
+                "note": "the frozen detector is not edited; these legacy heads start "
+                        "no region (interface/2 §I3a R2)"},
+            "R3_group_back_reference": "a derivation-table entry here; evaluated "
+                                       "by h_region_kill.py (C03-KILL)",
+            "attach3_changed_from_interface1": sorted(
+                [c["address"]["id"], s["role"], s["span"], s["interface1"]["outcome"],
+                 s["outcome"], s["interface1"]["changed_by"]]
+                for c in records for s in c["role_spans"] if "interface1" in s),
+        },
         "legacy_vs_corrected": {
             "clauses_differing": sum(1 for c in records if c["detector_diff"]["differs"]),
             "clauses": ids(lambda c: c["detector_diff"]["differs"]),
             "note": "reported only; regions are derived from the legacy detector "
-                    "and the corrected one is never substituted (interface/1 I2)"},
+                    "and the corrected one is never substituted (I2)"},
     }
 
 
@@ -648,8 +783,34 @@ def portability_violations(data: bytes) -> list:
     return out
 
 
-def negative_controls(rows: list, c02: dict, names: list) -> list:
+def _rigged(text: str) -> dict:
+    return clause_record("rigged", 0, 0, 0, text, 0, len(text), "rigged")
+
+
+def _card_keyed_variants(names: list, oid: str) -> list:
+    """Each §I3a rule with a card name or an oracle_id put in each of its four
+    keys, one at a time."""
+    out = []
+    for r in RULES:
+        if r["id"] not in ("attach-ability-prefix", "head-not-payment-cast",
+                           "group-back-reference"):
+            continue
+        for k in sorted(_RULE_KEYS):
+            for key in (names[0], oid):
+                out.append(dict(r, **{k: f"{r[k]} {key}"}))
+    if len(out) != 3 * len(_RULE_KEYS) * 2:
+        fc.halt("the derivation table is missing an interface/2 §I3a rule")
+    return out
+
+
+def negative_controls(rows: list, c02: dict, names: list, oid: str) -> list:
     """Each guard this script contracts, shown to fire on a rigged input."""
+    standalone = _rigged("If you control an artifact, exile target creature, then "
+                         "return it to the battlefield under its owner's control.")
+    permission = _rigged("Exile target card, then you may cast that card.")
+    payment = _rigged("Destroy target creature if {G} was spent to cast this spell.")
+    trigger = _rigged("When this creature enters, if you control an artifact, exile "
+                      "target creature, then return it to the battlefield.")
     cases = [
         ("a rigged identity hash halts",
          lambda: _halts(lambda: verify_identities(dict(I1, **{C02_REL: "0" * 64})))),
@@ -672,6 +833,27 @@ def negative_controls(rows: list, c02: dict, names: list) -> list:
          "--check-determinism",
          lambda: bool(portability_violations(b'{"p": "' + str(ROOT).encode() + b'"}'))
          and not portability_violations(b'{"p": "experiments/out"}')),
+        ("a rigged card-keyed variant of R1, R2 and R3 (a card name or oracle_id in "
+         "id, kind, cr or pattern) halts",
+         lambda: all(_halts(lambda v=v: assert_not_card_keyed(RULES + (v,), names))
+                     for v in _card_keyed_variants(names, oid))),
+        ("a rigged standalone 'If <condition>, exile <x>, then return it' (no "
+         "trigger word) keeps a multiple attachment under R1",
+         lambda: [(s["role"], s["outcome"], s.get("r1_shape"))
+                  for s in standalone["role_spans"] if s["span"][0] == 0]
+         == [("condition", "multiple", None)] and len(standalone["regions"]) == 2),
+        ("a rigged 'you may cast <x>' is not discounted by R2 and still starts a "
+         "region",
+         lambda: [r["head"] for r in permission["regions"]] == ["exile", "cast"]
+         and not permission["r2_dropped_heads"]
+         # the arm itself fires: `spent to cast` starts no region
+         and [r["head"] for r in payment["regions"]] == ["destroy"]
+         and [h["head"] for h in payment["r2_dropped_heads"]] == ["cast"]),
+        ("a rigged trigger and its intervening 'if' attach once, to the ability, "
+         "under R1",
+         lambda: sorted((s["r1_shape"], s["outcome"]) for s in trigger["role_spans"]
+                        if s.get("r1_shape"))
+         == [("condition-marker", "attached"), ("condition-trigger", "attached")]),
     ]
     out = []
     for name, check in cases:
@@ -762,7 +944,7 @@ def build() -> dict:
     inputs = {rel: _sha(rel) for rel in INPUTS}
     return {
         "schema": "oracle-compiler-c03-regions/0",
-        "interface": {"version": "oracle-compiler-interface/1",
+        "interface": {"version": INTERFACE_VERSION,
                       "blob": blob, "i1_identities": identities},
         "inputs": inputs,
         "script": {"path": SCRIPT, "sha256": _sha(SCRIPT)},
@@ -793,7 +975,8 @@ def build() -> dict:
                               "notes for COST). A census clause crossing a chain "
                               "clause is refused and halts."},
         "cost_region_precedent": COST_PRECEDENT,
-        "negative_controls": negative_controls(rows, c02, names),
+        "negative_controls": negative_controls(rows, c02, names,
+                                               population[0]["oracle_id"]),
         "population_keys": [[r["oracle_id"], r["stem"], r["occurrence"]]
                             for r in population],
         "fixtures": fixture_out,
