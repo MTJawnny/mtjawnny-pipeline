@@ -46,6 +46,18 @@ def session_id(wave: str) -> str:
     return str(uuid.uuid5(SESSION_NAMESPACE, wave))
 
 
+def session_key(envelope: Envelope) -> str:
+    """The session bookkeeping key of one command: its wave AND its message id.
+
+    Keyed by the wave alone, a second command for the same wave (a corrected
+    base, a recovery) run by a fresh watcher process derives the id the first
+    command's session already used, and the provider refuses it ("Session ID
+    ... is already in use", 2026-09-30 C03R r3). A crash-resume of the SAME
+    command still derives the same id.
+    """
+    return f"{envelope.wave}|{envelope.message_id}"
+
+
 @dataclass(frozen=True)
 class Dispatch:
     argv: tuple[str, ...]
@@ -182,7 +194,7 @@ class LocalClaudeTransport:
                  resumed: bool = False, dry_run: bool = True,
                  queue: Sequence[str] = ()) -> Dispatch:
         prompt = worker_brief(envelope, plan, remaining, self.repo, queue)
-        session = session_id(envelope.wave)
+        session = session_id(session_key(envelope))
         argv = self.argv(prompt, session, resumed)
         if dry_run:
             return Dispatch(argv, prompt, session, resumed, executed=False)

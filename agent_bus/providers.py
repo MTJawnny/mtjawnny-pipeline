@@ -49,7 +49,8 @@ from agent_bus.issue import AuthorityError
 from agent_bus.preflight import Checkout, inspect
 from agent_bus.protocol import Envelope
 from agent_bus.shell import Completed, Runner
-from agent_bus.transport import SESSION_NAMESPACE, Dispatch, LocalClaudeTransport, worker_brief
+from agent_bus.transport import (SESSION_NAMESPACE, Dispatch, LocalClaudeTransport, session_key,
+                                 worker_brief)
 from agent_bus.wave import WavePlan
 
 # ------------------------------------------------------------------ classification
@@ -517,7 +518,7 @@ class ProviderFailoverTransport:
                  resumed: bool = False, dry_run: bool = True,
                  queue: Sequence[str] = ()) -> Dispatch:
         prompt = worker_brief(envelope, plan, remaining, self.repo, queue)
-        wave = envelope.wave
+        wave = session_key(envelope)      # session bookkeeping only
         if dry_run:
             provider = self.providers[0]
             session = self._session(provider, wave, resumed, first=True, commit=False)

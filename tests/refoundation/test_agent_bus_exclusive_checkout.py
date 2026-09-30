@@ -307,3 +307,28 @@ class TestWorkerUsage(unittest.TestCase):
         report = self.armed(fake, ("codex", "claude")).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_STOPPED")
         self.assertEqual(report["reason"], E.WORKER_STOPPED)
+
+
+# ---------------------------------------------------------------------------
+# Session ids are per command, not per wave (2026-09-30, C03R r3: a restarted
+# watcher derived the first command's Claude session id and was refused).
+# ---------------------------------------------------------------------------
+class TestSessionPerCommand(unittest.TestCase):
+    def brief_session(self, message_id):
+        from agent_bus import providers as P
+        from agent_bus.protocol import parse_comment
+        from agent_bus.wave import plan_from_command
+        from tests.refoundation.agent_bus_fixtures import comment_body
+        env = parse_comment(comment_body(message_id=message_id))
+        plan = plan_from_command(env.wave, env.body)
+        fresh = P.ProviderFailoverTransport(
+            "/tmp/repo", P.build_providers(P.ProviderOrder(("claude",), "t"), "/tmp/repo"))
+        return fresh.dispatch(env, plan, ["U1"], dry_run=True).session
+
+    def test_a_second_command_for_the_same_wave_gets_its_own_session(self):
+        self.assertNotEqual(self.brief_session("m-command-0001"),
+                            self.brief_session("m-command-0002"))
+
+    def test_the_same_command_in_a_fresh_process_derives_the_same_session(self):
+        self.assertEqual(self.brief_session("m-command-0001"),
+                         self.brief_session("m-command-0001"))
