@@ -332,3 +332,33 @@ class TestSessionPerCommand(unittest.TestCase):
     def test_the_same_command_in_a_fresh_process_derives_the_same_session(self):
         self.assertEqual(self.brief_session("m-command-0001"),
                          self.brief_session("m-command-0001"))
+
+
+# ---------------------------------------------------------------------------
+# A later command's result is not "already answered" by the review of an earlier
+# result that shares its per-wave message id (2026-09-30, C03R r2/r3).
+# ---------------------------------------------------------------------------
+class TestAnswersBelongToTheirTransaction(unittest.TestCase):
+    def records(self, review_message_id, author="MTJawnny"):
+        from types import SimpleNamespace
+        from agent_bus import publisher
+        from agent_bus.trust import Trust
+        from tests.refoundation.agent_bus_fixtures import raw
+        review = raw(900, author=author, source="pr:76", kind="WAVE_REVIEW",
+                     message_id=review_message_id, parent="w-wave-result")
+        world = SimpleNamespace(pr_comments=[review], issue_comments=[])
+        target = publisher.Target("MTJawnny/mtjawnny-pipeline", 1, 76,
+                                  Trust(frozenset({"mtjawnny"}), "t"))
+        return publisher.find_records(world, target, "mtx-222-333", "w-wave-result")
+
+    def test_another_transactions_publisher_review_is_not_an_answer(self):
+        out = self.records("mgr-review-mtx-111-222")
+        self.assertEqual((out.human_answers, out.reviews), ([], []))
+
+    def test_NC_a_human_review_of_the_same_result_still_answers_it(self):
+        out = self.records("captain-review-1")
+        self.assertEqual([c.comment_id for c in out.human_answers], [900])
+
+    def test_NC_this_transactions_own_review_is_still_its_review(self):
+        out = self.records("mgr-review-mtx-222-333")
+        self.assertEqual([c.comment_id for c, _ in out.reviews], [900])

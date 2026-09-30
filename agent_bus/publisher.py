@@ -65,7 +65,7 @@ from agent_bus.decision import Decision
 from agent_bus.errors import BusError
 from agent_bus.goal import Binding, Evidence
 from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
-from agent_bus.machine import ACCEPTED, BusState, RawComment, fold
+from agent_bus.machine import _PUBLISHER_REVIEW, ACCEPTED, BusState, RawComment, fold
 from agent_bus.protocol import Envelope, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.transition import (
@@ -167,6 +167,12 @@ def find_records(world: World, target: Target, txn: str, message_id: str) -> Rec
     for c in world.pr_comments:
         env = _envelope(c)
         if env is None:
+            continue
+        if env.kind == "WAVE_REVIEW" and _PUBLISHER_REVIEW.match(env.message_id) \
+                and env.message_id != review_id(txn):
+            # Another transaction's publisher review. Worker result ids are per
+            # wave, so a later command's result shares its parent id; that review
+            # answered the earlier result, not this one (2026-09-30, C03R r2/r3).
             continue
         answers = env.kind == "WAVE_REVIEW" and (
             env.parent == message_id or env.message_id == review_id(txn))
