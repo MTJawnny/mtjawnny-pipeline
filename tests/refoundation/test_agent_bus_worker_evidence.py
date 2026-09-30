@@ -351,7 +351,8 @@ class TestSupervisorEvidence(unittest.TestCase):
     # --- a superseding command credits evidence from the command that ran the unit
     GOAL = {'plan': 4242, 'digest': 'a' * 64}
 
-    def chain_repo(self, *, old_goal=GOAL, new_goal=GOAL, old_task=None, old_author='MTJawnny'):
+    def chain_repo(self, *, old_goal=GOAL, new_goal=GOAL, old_task=None, old_author='MTJawnny',
+                   old_units=None, old_after=False):
         """An earlier K and command ran U1 (its evidence is on Issue #1); a newer
         K and command for the same wave now select U2 only."""
         from tests.refoundation.agent_bus_fixtures import CHECKPOINT, TASK, BASE, comment_body, default_body
@@ -364,8 +365,11 @@ class TestSupervisorEvidence(unittest.TestCase):
             if goal is not None:
                 b['goal'] = dict(goal)
             return b
+        old_body = body(old_goal)
+        if old_units is not None:
+            old_body['units'] = old_units
         old_cmd = comment_body(message_id='m-command-old', checkpoint=k_old,
-                               task=TASK if old_task is None else old_task, body=body(old_goal))
+                               task=TASK if old_task is None else old_task, body=old_body)
         new_cmd = comment_body(message_id='m-command-new', checkpoint=k_new, body=body(new_goal))
         fake = ProviderRepo([], script=[ok('claude', 'U2')])
         fake._commit(committed('U1'))
@@ -375,6 +379,9 @@ class TestSupervisorEvidence(unittest.TestCase):
         old['user']['login'] = old_author
         fake.comments = [gh(k_old, CHECKPOINT_COMMENT), old, gh(k_old + 2, evidence),
                          gh(k_new, CHECKPOINT_COMMENT), gh(k_new + 1, new_cmd)]
+        if old_after:                     # the "predecessor" printed after the command
+            old['id'] = k_new + 2
+            fake.comments = [c for c in fake.comments if c is not old] + [old]
         return fake
 
     def test_a_superseding_command_credits_evidence_named_by_its_predecessor(self):
@@ -387,13 +394,16 @@ class TestSupervisorEvidence(unittest.TestCase):
 
     def test_NC_predecessor_evidence_is_not_credited_without_the_same_work(self):
         from tests.refoundation.test_agent_bus_provider_failover import armed
-        from tests.refoundation.agent_bus_fixtures import TASK
+        from tests.refoundation.agent_bus_fixtures import TASK, unit
         cases = {
             'different plan digest': dict(old_goal={'plan': 4242, 'digest': 'b' * 64}),
             'different plan': dict(old_goal={'plan': 4343, 'digest': 'a' * 64}),
             'different task': dict(old_task=TASK + 1),
             'no goal plan on the command': dict(old_goal=None, new_goal=None),
             'untrusted predecessor': dict(old_author='stranger'),
+            'same plan reference, different planned work': dict(
+                old_units=[unit('U1', objective='something else'), unit('U2', depends_on=['U1'])]),
+            'printed after the current command': dict(old_after=True),
         }
         for why, kw in cases.items():
             with self.subTest(why=why):

@@ -29,7 +29,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
-from agent_bus import compose, finalize, worker_evidence
+from agent_bus import compose, finalize, goal, worker_evidence
 from agent_bus import errors as E
 from agent_bus.enforce import UnitVerdict, verify_unit
 from agent_bus.errors import BusError
@@ -386,6 +386,8 @@ class Supervisor:
         ref = command.body.get("goal")
         if ref is None:
             return chain
+        work = goal._canon(goal.template_of(command.body))
+        earlier = []
         for comment in observation.comments:
             if not self.trust.trusts(comment.author) or "```mtj-bus" not in comment.body:
                 continue
@@ -393,12 +395,21 @@ class Supervisor:
                 env = parse_comment(comment.body)
             except BusError:
                 continue
-            if (env is not None and env.kind == "WAVE_COMMAND" and env.actor == "MANAGER"
-                    and env.wave == command.wave
+            if env is None or env.kind != "WAVE_COMMAND" or env.actor != "MANAGER":
+                continue
+            if env.message_id == command.message_id:
+                break                 # only commands printed BEFORE the current one
+            if (env.wave == command.wave
                     and env.authority.get("task") == command.authority.get("task")
                     and env.authority.get("issue") == command.authority.get("issue")
-                    and env.body.get("goal") == ref):
-                chain.setdefault(env.message_id, env)
+                    and env.body.get("goal") == ref
+                    # the same planned work, not merely the same plan reference
+                    and goal._canon(goal.template_of(env.body)) == work):
+                earlier.append(env)
+        else:
+            return chain              # the current command is not on the stream
+        for env in earlier:
+            chain.setdefault(env.message_id, env)
         return chain
 
     def _prior_evidence(self, observation: Observation, command: Envelope,
