@@ -394,3 +394,50 @@ class TestAdmissionReadsOnce(unittest.TestCase):
         self.assertEqual(len(refused), 4)
         self.assertEqual(len(reads), 1)
         self.assertEqual(seen, [snapshot] * 4)
+
+
+# ---------------------------------------------------------------------------
+# The reviewer gets the comments its review needs, not the whole thread.
+# ---------------------------------------------------------------------------
+class TestReviewFocus(unittest.TestCase):
+    def test_focus_keeps_the_authority_chain_its_citations_and_recent_comments(self):
+        import json as _json
+        from types import SimpleNamespace
+        from agent_bus import local_manager as L
+        from agent_bus.machine import RawComment
+        from tests.refoundation.agent_bus_fixtures import comment_body, default_body
+        def c(i, body, src="issue:1"):
+            return RawComment(source=src, comment_id=i, author="MTJawnny", body=body)
+        decision_old, decision, plan, task, k = 1000000001, 1000000100, 1000000200, 1000000300, 1000000400
+        plan_json = {"schema": "mtj-goal/1", "goal": "INFRA.GOAL", "captain_decision": decision,
+                     "repair_budget": 1, "terminal": "INFRA.AGENT-BUS-V1.W1",
+                     "waves": [{"wave": "INFRA.AGENT-BUS-V1.W1", "task": task,
+                                "command": {k2: v for k2, v in default_body("WAVE_COMMAND").items()},
+                                "validation": [{"id": "SELFTEST", "argv": ["python3", "-m", "agent_bus", "selftest"]}],
+                                "next": None}]}
+        noise = [c(1000000500 + i, f"old chatter {i}") for i in range(80)]
+        issue = [c(decision_old, "an old Captain ruling"),
+                 c(decision, f"Captain decision; extends {decision_old}"),
+                 c(plan, "```mtj-goal\n" + _json.dumps(plan_json) + "\n```\n"),
+                 c(task, "task text"), c(k, f"checkpoint a: {task}")] + noise
+        body = default_body("WAVE_COMMAND")
+        body["goal"] = {"plan": plan, "digest": "a" * 64}
+        cmd = comment_body(message_id="m-command-0001", checkpoint=k, task=task, body=body)
+        res = comment_body(kind="WAVE_RESULT", actor="WORKER", message_id="w-result-0001",
+                           parent="m-command-0001", checkpoint=k, task=task)
+        other = comment_body(kind="WAVE_RESULT", actor="WORKER", message_id="w-result-0002",
+                             parent="m-command-0009", wave="INFRA.OTHER.W9")
+        pr = [c(2000000001, cmd, "pr:76"), c(2000000002, res, "pr:76"),
+              c(2000000003, other, "pr:76")] + [c(2000000100 + i, "pr chatter", "pr:76")
+                                                 for i in range(40)]
+        out = L.review_focus(issue, pr, "w-result-0001",
+                             SimpleNamespace(checkpoint=k, task=task))
+        kept = {r["id"] for r in out["issue"]}
+        self.assertTrue({decision_old, decision, plan, task, k} <= kept)   # chain + one level
+        self.assertEqual(len(kept - {decision_old, decision, plan, task, k}), L.RECENT_ISSUE)
+        self.assertNotIn(noise[0].comment_id, kept)                        # old chatter dropped
+        self.assertEqual(len(out["index"]), len(issue))                    # whole-thread index
+        pr_ids = {r["id"] for r in out["pr"]}
+        self.assertTrue({2000000001, 2000000002} <= pr_ids)                # this wave's messages
+        self.assertNotIn(2000000003, pr_ids)                               # another wave's
+        self.assertEqual(len(pr_ids), 2 + L.RECENT_PR)
