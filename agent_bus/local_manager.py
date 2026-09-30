@@ -265,18 +265,21 @@ def review_focus(issue_comments, pr_comments, message_id: str, authority) -> dic
     admitted = [e for _, e in envs if e.message_id == message_id]
     if not admitted:
         return full
-    wave = admitted[-1].wave
-    commands = [e for _, e in envs if e.kind == "WAVE_COMMAND" and e.wave == wave
-                and any(e.message_id == a.parent for a in admitted)]
-    if not commands:
+    waves = {a.wave for a in admitted}             # duplicate ids may span waves: all
+    if not any(e.kind == "WAVE_COMMAND" and e.message_id == a.parent
+               for _, e in envs for a in admitted):
         return full
     seeds = {getattr(authority, "checkpoint", None), getattr(authority, "task", None)}
     plans = set()
-    for c, e in envs:
-        if e.wave == wave:
-            seeds |= {e.authority.get("checkpoint"), e.authority.get("task")}
-    for cmd in commands:
-        ref = cmd.body.get("goal") or {}
+    for _, e in envs:
+        if e.wave not in waves:
+            continue
+        seeds |= {e.authority.get("checkpoint"), e.authority.get("task")}
+        if e.kind != "WAVE_COMMAND":
+            continue
+        ref = e.body.get("goal")                   # EVERY command of the wave(s)
+        if ref is None:
+            continue
         plan = by_id.get(ref.get("plan"))
         if plan is None:
             return full
@@ -286,23 +289,22 @@ def review_focus(issue_comments, pr_comments, message_id: str, authority) -> dic
             return full
         plans.add(plan.comment_id)
         seeds |= {plan.comment_id, parsed.captain_decision}
-    seeds = {s for s in seeds if s in by_id}
-    keep, todo = set(), list(seeds)
-    while todo:                                    # full citation closure
+    names = set(waves) | {str(s) for s in seeds if s} | {str(p) for p in plans}
+    for c in issue_comments:                       # added BEFORE the closure
+        head = c.body.lstrip()[:300]
+        if any(n in c.body for n in names) or head.startswith("## Captain decision") \
+                or re.search(r"schema: mtj-captain-", head):
+            seeds.add(c.comment_id)
+    seeds |= {c.comment_id for c in issue_comments[-RECENT_ISSUE:]}
+    keep, todo = set(), [s for s in seeds if s in by_id]
+    while todo:                                    # full citation closure over all of it
         cid = todo.pop()
         if cid in keep:
             continue
         keep.add(cid)
         todo.extend(int(m) for m in _COMMENT_ID.findall(by_id[cid].body)
                     if int(m) in by_id and int(m) not in keep)
-    names = {wave} | {str(s) for s in seeds} | {str(p) for p in plans}
-    for c in issue_comments:
-        head = c.body.lstrip()[:300]
-        if any(n in c.body for n in names) or head.startswith("## Captain decision") \
-                or re.search(r"schema: mtj-captain-", head):
-            keep.add(c.comment_id)
-    keep |= {c.comment_id for c in issue_comments[-RECENT_ISSUE:]}
-    in_wave = {c.comment_id for c, e in envs if e.wave == wave}
+    in_wave = {c.comment_id for c, e in envs if e.wave in waves}
     in_wave |= {c.comment_id for c in pr_comments[-RECENT_PR:]}
     return {"issue": [_row(c) for c in issue_comments if c.comment_id in keep],
             "index": index,

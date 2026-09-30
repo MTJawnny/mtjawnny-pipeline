@@ -416,8 +416,9 @@ class TestReviewFocus(unittest.TestCase):
                                 "validation": [{"id": "SELFTEST", "argv": ["python3", "-m", "agent_bus", "selftest"]}],
                                 "next": None}]}
         noise = [c(1000000500 + i, f"old chatter {i}") for i in range(80)]
-        ruling = c(1000000050, "## Captain decision — an unrelated old ruling")
-        issue = [ruling, c(decision_old, "an old Captain ruling"),
+        ruling = c(1000000050, "## Captain decision — an old ruling; see 1000000060")
+        behind_ruling = c(1000000060, "authority cited only by a ruling")
+        issue = [ruling, behind_ruling, c(decision_old, "an old Captain ruling"),
                  c(decision, f"Captain decision; extends {decision_old}"),
                  c(plan, "```mtj-goal\n" + _json.dumps(plan_json) + "\n```\n"),
                  c(task, "task text"), c(k, f"checkpoint a: {task}")] + noise
@@ -438,6 +439,7 @@ class TestReviewFocus(unittest.TestCase):
         self.assertTrue({decision_old, decision, plan, task, k} <= kept)   # full closure
         self.assertNotIn(noise[0].comment_id, kept)                        # old chatter dropped
         self.assertIn(1000000050, kept)                                    # every Captain decision
+        self.assertIn(1000000060, kept)                                    # and what it cites
         self.assertEqual(len(out["index"]), len(issue))                    # whole-thread index
         pr_ids = {r["id"] for r in out["pr"]}
         self.assertTrue({2000000001, 2000000002} <= pr_ids)                # this wave's messages
