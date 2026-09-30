@@ -233,7 +233,7 @@ RIGS = {
     "codex_allows_anyone": ("allow-users: MTJawnny", 'allow-users: "*"'),
     "older_codex_pin": ("86365089eb2b84e0a8fb0717b304f8bdcb13b20e",
                         "0000000000000000000000000000000000000000"),
-    "bus_ref_a_branch": ("BUS_REF: 01a90207197e4949074cf017eb25e56e3885b0c6",
+    "bus_ref_a_branch": ("BUS_REF: bd7a6924bfd548154dc7cd82f41826d114fa7549",
                          "BUS_REF: infra/agent-bus-v1-bootstrap-2026-09-23"),
     "publisher_gets_the_model_key": ("          GH_TOKEN: ${{ github.token }}\n          MODE:",
                                      "          GH_TOKEN: ${{ github.token }}\n          K: "
