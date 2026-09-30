@@ -306,7 +306,7 @@ class LocalManager:
 
     def admitted(self) -> tuple[manager_gate.Decision | None, dict | None, list[str]]:
         """The first live Worker comment the gate admits, oldest first."""
-        seen = []
+        seen, shared = [], None
         for comment in self._pr_comments():
             if not isinstance(comment.get("body"), str) or "```mtj-bus" not in comment["body"]:
                 continue
@@ -316,9 +316,14 @@ class LocalManager:
                 continue
             if env is None or env.actor != "WORKER":
                 continue
+            if shared is None:
+                # ONE read of Issue #1 and the PR for the whole pass, not one per
+                # Worker message examined (that exhausted the GitHub rate limit).
+                shared = manager_gate.observe(self.repo, self.pr, self.trusted_author,
+                                              self.run, self.issue)
             verdict = manager_gate.decide(_event(comment, self.repo, self.pr), "issue_comment",
                                           self.repo, self.pr, self.trusted_author, self.run,
-                                          self.issue)
+                                          self.issue, observation=shared)
             if verdict.wake:
                 return verdict, comment, seen
             seen.append(f"{comment['id']}: {verdict.code}")

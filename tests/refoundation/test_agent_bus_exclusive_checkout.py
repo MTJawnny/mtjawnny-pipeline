@@ -362,3 +362,35 @@ class TestAnswersBelongToTheirTransaction(unittest.TestCase):
     def test_NC_this_transactions_own_review_is_still_its_review(self):
         out = self.records("mgr-review-mtx-222-333")
         self.assertEqual([c.comment_id for c, _ in out.reviews], [900])
+
+
+# ---------------------------------------------------------------------------
+# One Manager admission pass reads Issue #1 and the PR once (2026-09-30: one read
+# per historic Worker message exhausted the GitHub rate limit).
+# ---------------------------------------------------------------------------
+class TestAdmissionReadsOnce(unittest.TestCase):
+    def test_every_gate_decision_in_a_pass_shares_one_observation(self):
+        from agent_bus import local_manager as L
+        from agent_bus import manager_gate
+        from tests.refoundation.agent_bus_fixtures import comment_body
+        worker = [{"id": 10 + i, "user": {"login": "MTJawnny"},
+                   "body": comment_body(kind="WAVE_RESULT", actor="WORKER",
+                                        message_id=f"w-result-000{i}", parent="m-command-0001")}
+                  for i in range(4)]
+        reads, seen = [], []
+        snapshot = object()
+        def fake_observe(*a, **k):
+            reads.append(1)
+            return snapshot
+        def fake_decide(*a, observation=None, **k):
+            seen.append(observation)
+            return manager_gate.Decision(False, "BUS_GATE_ALREADY_HANDLED", "old", 0)
+        m = L.LocalManager("MTJawnny/mtjawnny-pipeline", "/tmp/repo", 76, "MTJawnny")
+        with mock.patch.object(L.LocalManager, "_pr_comments", lambda self: worker), \
+                mock.patch.object(manager_gate, "observe", fake_observe), \
+                mock.patch.object(manager_gate, "decide", fake_decide):
+            verdict, comment, refused = m.admitted()
+        self.assertIsNone(verdict)
+        self.assertEqual(len(refused), 4)
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(seen, [snapshot] * 4)

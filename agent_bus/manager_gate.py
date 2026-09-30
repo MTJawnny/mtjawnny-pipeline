@@ -146,6 +146,15 @@ def _envelope(ctx: Context) -> Envelope:
     return ctx.envelope
 
 
+def observe(repo: str, transport_pr: int, trusted_author: str, run: Runner,
+            issue: int = 1) -> Observation:
+    """The gate's one read of Issue #1 and the transport PR, through the Worker's
+    own observer."""
+    trust = Trust(frozenset({trusted_author.lower()}), "manager-gate")
+    return Supervisor(repo_path=".", repo_slug=repo, trust=trust, actor=MANAGER,
+                      issue=issue, transport_pr=transport_pr, run=run).observe()
+
+
 def _observe(ctx: Context) -> Observation:
     """Read Issue #1 and the transport PR once, through the Worker's own observer."""
     if ctx.observation is None:
@@ -356,17 +365,22 @@ STAGES: tuple[tuple[str, Stage], ...] = (
 
 def decide(event: Mapping, event_name: str, repo: str, transport_pr: int,
            trusted_author: str, run: Runner, issue: int = 1,
-           stages: Sequence[tuple[str, Stage]] = STAGES) -> Decision:
+           stages: Sequence[tuple[str, Stage]] = STAGES,
+           observation: Observation | None = None) -> Decision:
     """Run every stage in order. The first refusal is the answer.
 
     `stages` is injectable ONLY so tests can remove one stage and prove the gate
     then admits what it refused; the entry point always passes the full tuple.
+    `observation` lets a caller deciding many comments in one pass share ONE
+    read of Issue #1 and the transport PR instead of re-reading both per comment
+    (the local Manager's admission loop exhausted the GitHub rate limit that way,
+    2026-09-30). It must come from the same reader `_observe` uses.
     """
     if not trusted_author:
         raise BusError(E.TRUST_NOT_CONFIGURED, "the gate needs a trusted author")
     ctx = Context(event=event, event_name=event_name, repo=repo,
                   transport_pr=transport_pr, trusted_author=trusted_author,
-                  issue=issue, run=run)
+                  issue=issue, run=run, observation=observation)
     comment = event.get("comment") if isinstance(event.get("comment"), dict) else {}
     cid = comment.get("id")
     comment_id = cid if isinstance(cid, int) and not isinstance(cid, bool) else None
