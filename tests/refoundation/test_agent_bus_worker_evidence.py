@@ -348,6 +348,61 @@ class TestSupervisorEvidence(unittest.TestCase):
                          ('F', E.UNIT_SCOPE_ESCAPE))
         self.assertEqual(fake.posted_messages()[-1].body['status'], 'F')
 
+    # --- a superseding command credits evidence from the command that ran the unit
+    GOAL = {'plan': 4242, 'digest': 'a' * 64}
+
+    def chain_repo(self, *, old_goal=GOAL, new_goal=GOAL, old_task=None, old_author='MTJawnny'):
+        """An earlier K and command ran U1 (its evidence is on Issue #1); a newer
+        K and command for the same wave now select U2 only."""
+        from tests.refoundation.agent_bus_fixtures import CHECKPOINT, TASK, BASE, comment_body, default_body
+        from tests.refoundation.test_agent_bus_provider_failover import (
+            ProviderRepo, ok, committed, gh, CHECKPOINT_COMMENT)
+        from agent_bus.protocol import parse_comment
+        k_old, k_new = CHECKPOINT - 10, CHECKPOINT
+        def body(goal):
+            b = default_body('WAVE_COMMAND')
+            if goal is not None:
+                b['goal'] = dict(goal)
+            return b
+        old_cmd = comment_body(message_id='m-command-old', checkpoint=k_old,
+                               task=TASK if old_task is None else old_task, body=body(old_goal))
+        new_cmd = comment_body(message_id='m-command-new', checkpoint=k_new, body=body(new_goal))
+        fake = ProviderRepo([], script=[ok('claude', 'U2')])
+        fake._commit(committed('U1'))
+        response = with_footer(TEXT, ['agent_bus/x.py'])
+        evidence = W.render(parse_comment(old_cmd), 'U1', fake.head, 'claude', response)
+        old = gh(k_old + 1, old_cmd)
+        old['user']['login'] = old_author
+        fake.comments = [gh(k_old, CHECKPOINT_COMMENT), old, gh(k_old + 2, evidence),
+                         gh(k_new, CHECKPOINT_COMMENT), gh(k_new + 1, new_cmd)]
+        return fake
+
+    def test_a_superseding_command_credits_evidence_named_by_its_predecessor(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed
+        fake = self.chain_repo()
+        report = armed(fake, order=('claude',)).poll_once(execute=True)
+        self.assertEqual(fake.providers_invoked, ['claude'])          # U2 only
+        self.assertEqual([u['unit'] for u in report['units']], ['U2'])
+        self.assertTrue(report['worker_evidence'][0].endswith(f'#issuecomment-{fake.comments[2]["id"]}'))
+
+    def test_NC_predecessor_evidence_is_not_credited_without_the_same_work(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed
+        from tests.refoundation.agent_bus_fixtures import TASK
+        cases = {
+            'different plan digest': dict(old_goal={'plan': 4242, 'digest': 'b' * 64}),
+            'different plan': dict(old_goal={'plan': 4343, 'digest': 'a' * 64}),
+            'different task': dict(old_task=TASK + 1),
+            'no goal plan on the command': dict(old_goal=None, new_goal=None),
+            'untrusted predecessor': dict(old_author='stranger'),
+        }
+        for why, kw in cases.items():
+            with self.subTest(why=why):
+                fake = self.chain_repo(**kw)
+                with self.assertRaises(BusError) as caught:
+                    armed(fake, order=('claude',)).poll_once(execute=True)
+                self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+                self.assertEqual(fake.providers_invoked, [])
+
     def test_resume_cannot_turn_lost_evidence_into_pass(self):
         from tests.refoundation.test_agent_bus_provider_failover import repo, ok, armed, committed
         fake = repo(ok('claude', 'U2'))

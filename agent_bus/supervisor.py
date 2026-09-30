@@ -38,7 +38,7 @@ from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comme
 from agent_bus.machine import Authority, BusState, RawComment, fold
 from agent_bus.preflight import (Checkout, PreflightReport, build_base_of, inspect, preflight,
                                  require_exclusive)
-from agent_bus.protocol import SHA_RE, Envelope
+from agent_bus.protocol import SHA_RE, Envelope, parse_comment
 from agent_bus.shell import Runner
 from agent_bus.providers import (
     DEFAULT_ORDER, ProviderFailoverTransport, ProviderOrder, build_providers,
@@ -375,9 +375,36 @@ class Supervisor:
                            f"Worker evidence was not durably acknowledged on Issue #{self.issue}: {exc}") from exc
         return f"https://github.com/{self.repo_slug}/issues/{self.issue}#issuecomment-{comment_id}"
 
+    def _wave_commands(self, observation: Observation, command: Envelope) -> dict:
+        """`command` plus every earlier trusted command it supersedes for the SAME
+        work: same wave, same task, and bound to the same goal plan and digest --
+        so the same planned units. A superseding command (a corrected base, a
+        recovery) may then credit a unit whose durable evidence names the command
+        that ran it. Evidence is still required, rendered exactly against the
+        command it names; git trailers alone still recover nothing."""
+        chain = {command.message_id: command}
+        ref = command.body.get("goal")
+        if ref is None:
+            return chain
+        for comment in observation.comments:
+            if not self.trust.trusts(comment.author) or "```mtj-bus" not in comment.body:
+                continue
+            try:
+                env = parse_comment(comment.body)
+            except BusError:
+                continue
+            if (env is not None and env.kind == "WAVE_COMMAND" and env.actor == "MANAGER"
+                    and env.wave == command.wave
+                    and env.authority.get("task") == command.authority.get("task")
+                    and env.authority.get("issue") == command.authority.get("issue")
+                    and env.body.get("goal") == ref):
+                chain.setdefault(env.message_id, env)
+        return chain
+
     def _prior_evidence(self, observation: Observation, command: Envelope,
                         completed: Sequence[str]) -> list[str]:
         references = []
+        chain = self._wave_commands(observation, command) if completed else {}
         for unit in completed:
             candidates = []
             for comment in observation.comments:
@@ -387,11 +414,12 @@ class Supervisor:
                     continue
                 try:
                     payload = json.loads(comment.body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
-                    if (not isinstance(payload, dict) or payload.get("command") != command.message_id
+                    if (not isinstance(payload, dict) or payload.get("command") not in chain
                             or payload.get("unit") != unit or "outcome" in payload):
                         continue
-                    expected = worker_evidence.render(command, unit, payload["head"],
-                                                      payload["provider"], payload["response"])
+                    expected = worker_evidence.render(chain[payload["command"]], unit,
+                                                      payload["head"], payload["provider"],
+                                                      payload["response"])
                     if expected != comment.body:
                         continue
                     if not SHA_RE.fullmatch(payload["head"]):

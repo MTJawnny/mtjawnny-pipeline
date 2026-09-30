@@ -250,7 +250,12 @@ brief (`agent_bus.transport.worker_brief`) states this rule to every provider.
 
 A completed unit whose Worker evidence was lost is not recovered from Git: a
 commit proves scope progress, never a model response, so resume and execute
-refuse it (BUS_WORKER_EVIDENCE_INVALID) rather than reconstruct one.
+refuse it (BUS_WORKER_EVIDENCE_INVALID) rather than reconstruct one. A
+superseding command (a corrected base or a recovery for the same work) may credit
+a completed unit whose evidence names the earlier command that ran it, only when
+that command is a trusted Manager command for the same wave and task bound to the
+same goal plan and digest; the evidence must still render exactly against the
+command it names.
 
 ## 8. Loop prevention
 
