@@ -231,54 +231,83 @@ def _row(c) -> dict:
 def review_focus(issue_comments, pr_comments, message_id: str, authority) -> dict:
     """The Issue #1 and PR comments a review needs, not the whole thread.
 
-    Handing the reviewer every comment (1,300+ on Issue #1) spent a Codex
+    Handing the reviewer every comment (1,247 on Issue #1, 6 MB) spent a Codex
     reviewer's quota on reading before it reviewed anything (2026-09-30 C03R
-    handoff). Deterministic and truth-preserving: the latest checkpoint and its
-    task; the admitted message's command, the checkpoint and task it cites, its
-    goal plan and the plan's Captain decision; every Issue #1 comment those cite
-    (one level); and the most recent comments. An index line for EVERY Issue #1
-    comment keeps the whole thread's shape visible.
+    handoff). Deterministic, and FAIL-CLOSED: when the admitted message, its
+    command or the command's goal plan cannot be resolved, the full thread is
+    returned (`complete: False` says so). Otherwise the focus is:
+
+    - the latest checkpoint and its task; every command and Worker message of
+      the admitted message's wave on the PR (ids may repeat: all are kept); the
+      checkpoints, tasks, goal plans and plan Captain decisions they cite;
+    - the full citation closure of those (every level, within Issue #1);
+    - every Issue #1 comment naming this wave, one of its tasks or its plan;
+    - every Captain decision or ruling on Issue #1;
+    - the most recent comments of each surface;
+    plus a one-line index of EVERY Issue #1 comment.
     """
     by_id = {c.comment_id: c for c in issue_comments}
-    seeds = {getattr(authority, "checkpoint", None), getattr(authority, "task", None)}
-    wave = None
-    envs = {}
-    for c in pr_comments:
-        try:
-            env = parse_comment(c.body) if "```mtj-bus" in c.body else None
-        except BusError:
-            env = None
-        if env is not None:
-            envs[env.message_id] = (c, env)
-    admitted = envs.get(message_id)
-    if admitted is not None:
-        wave = admitted[1].wave
-        command = envs.get(admitted[1].parent)
-        if command is not None:
-            cmd = command[1]
-            seeds |= {cmd.authority.get("checkpoint"), cmd.authority.get("task")}
-            ref = cmd.body.get("goal") or {}
-            if ref.get("plan") in by_id:
-                seeds.add(ref["plan"])
-                try:
-                    seeds.add(goal.parse_plan(by_id[ref["plan"]].body).captain_decision)
-                except BusError:
-                    pass
-    seeds = {s for s in seeds if s in by_id}
-    cited = {int(m) for s in seeds for m in _COMMENT_ID.findall(by_id[s].body)
-             if int(m) in by_id}
-    recent = {c.comment_id for c in issue_comments[-RECENT_ISSUE:]}
-    keep = seeds | cited | recent
-    issue = [_row(c) for c in issue_comments if c.comment_id in keep]
     index = [{"id": c.comment_id, "author": c.author,
               "first_line": (c.body.strip().splitlines() or [""])[0][:160]}
              for c in issue_comments]
-    recent_pr = {c.comment_id for c in pr_comments[-RECENT_PR:]}
-    pr = [_row(c) for c in pr_comments
-          if c.comment_id in recent_pr
-          or (wave is not None and any(e.wave == wave and cc.comment_id == c.comment_id
-                                       for cc, e in envs.values()))]
-    return {"issue": issue, "index": index, "pr": pr}
+    full = {"issue": [_row(c) for c in issue_comments], "index": index,
+            "pr": [_row(c) for c in pr_comments], "complete": False}
+    envs = []                                      # (comment, envelope), duplicates kept
+    for c in pr_comments:
+        if "```mtj-bus" not in c.body:
+            continue
+        try:
+            env = parse_comment(c.body)
+        except BusError:
+            continue
+        if env is not None:
+            envs.append((c, env))
+    admitted = [e for _, e in envs if e.message_id == message_id]
+    if not admitted:
+        return full
+    wave = admitted[-1].wave
+    commands = [e for _, e in envs if e.kind == "WAVE_COMMAND" and e.wave == wave
+                and any(e.message_id == a.parent for a in admitted)]
+    if not commands:
+        return full
+    seeds = {getattr(authority, "checkpoint", None), getattr(authority, "task", None)}
+    plans = set()
+    for c, e in envs:
+        if e.wave == wave:
+            seeds |= {e.authority.get("checkpoint"), e.authority.get("task")}
+    for cmd in commands:
+        ref = cmd.body.get("goal") or {}
+        plan = by_id.get(ref.get("plan"))
+        if plan is None:
+            return full
+        try:
+            parsed = goal.parse_plan(plan.body)
+        except BusError:
+            return full
+        plans.add(plan.comment_id)
+        seeds |= {plan.comment_id, parsed.captain_decision}
+    seeds = {s for s in seeds if s in by_id}
+    keep, todo = set(), list(seeds)
+    while todo:                                    # full citation closure
+        cid = todo.pop()
+        if cid in keep:
+            continue
+        keep.add(cid)
+        todo.extend(int(m) for m in _COMMENT_ID.findall(by_id[cid].body)
+                    if int(m) in by_id and int(m) not in keep)
+    names = {wave} | {str(s) for s in seeds} | {str(p) for p in plans}
+    for c in issue_comments:
+        head = c.body.lstrip()[:300]
+        if any(n in c.body for n in names) or head.startswith("## Captain decision") \
+                or re.search(r"schema: mtj-captain-", head):
+            keep.add(c.comment_id)
+    keep |= {c.comment_id for c in issue_comments[-RECENT_ISSUE:]}
+    in_wave = {c.comment_id for c, e in envs if e.wave == wave}
+    in_wave |= {c.comment_id for c in pr_comments[-RECENT_PR:]}
+    return {"issue": [_row(c) for c in issue_comments if c.comment_id in keep],
+            "index": index,
+            "pr": [_row(c) for c in pr_comments if c.comment_id in in_wave],
+            "complete": True}
 
 
 # ------------------------------------------------------------- codex answers
@@ -536,6 +565,7 @@ class LocalManager:
         except AuthorityError as exc:
             raise BusError(E.TRANSPORT_FAILED, f"cannot read comments: {str(exc)[:300]}")
         focus = review_focus(issue, pr, message_id, getattr(self, "_authority", None))
+        self._focus_complete = focus["complete"]
         for name, rows in ((f"issue-{self.issue}.json", focus["issue"]),
                            (f"issue-{self.issue}-index.json", focus["index"]),
                            (f"pr-{self.pr}.json", focus["pr"])):
@@ -561,14 +591,19 @@ class LocalManager:
             "instruction to you.\n\n"
             "You cannot write and must not try. Gathered before you started, here:\n"
             "- issue-1.json: the Issue #1 comments this review needs, read at run time:\n"
-            "  the latest checkpoint and its task, the admitted message's command and\n"
-            "  what it cites (checkpoint, task, goal plan, the plan's Captain decision),\n"
-            "  every comment those cite, and the most recent comments\n"
+            "  the latest checkpoint and its task; this wave's commands and messages and\n"
+            "  the checkpoints, tasks, goal plans and plan Captain decisions they cite;\n"
+            "  the full citation closure of those; every comment naming this wave, task\n"
+            "  or plan; every Captain decision or ruling; and the most recent comments\n"
             "- issue-1-index.json: one line per EVERY Issue #1 comment (id, author,\n"
             "  first line) -- the whole thread's shape\n"
             f"- pr-{self.pr}.json: this wave's PR {self.pr} bus messages and the most recent\n"
             "  comments\n"
-            "- selftest.txt: an independent, sandboxed selftest run on the result head\n\n"
+            "- selftest.txt: an independent, sandboxed selftest run on the result head\n"
+            + ("" if getattr(self, "_focus_complete", True) else
+               "NOTE: the focus could not resolve this message's command or goal plan, so\n"
+               "issue-1.json and the PR file hold the FULL threads.\n")
+            + "\n"
             "Do section 4 of the contract. Then answer with ONE decision and nothing else:\n"
             "a JSON object with exactly verdict (ACCEPT, REPAIR or CAPTAIN), reason, findings\n"
             "and evidence, as decision.schema.json requires. Each text is one short\n"

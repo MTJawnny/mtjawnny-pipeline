@@ -416,7 +416,8 @@ class TestReviewFocus(unittest.TestCase):
                                 "validation": [{"id": "SELFTEST", "argv": ["python3", "-m", "agent_bus", "selftest"]}],
                                 "next": None}]}
         noise = [c(1000000500 + i, f"old chatter {i}") for i in range(80)]
-        issue = [c(decision_old, "an old Captain ruling"),
+        ruling = c(1000000050, "## Captain decision — an unrelated old ruling")
+        issue = [ruling, c(decision_old, "an old Captain ruling"),
                  c(decision, f"Captain decision; extends {decision_old}"),
                  c(plan, "```mtj-goal\n" + _json.dumps(plan_json) + "\n```\n"),
                  c(task, "task text"), c(k, f"checkpoint a: {task}")] + noise
@@ -433,11 +434,31 @@ class TestReviewFocus(unittest.TestCase):
         out = L.review_focus(issue, pr, "w-result-0001",
                              SimpleNamespace(checkpoint=k, task=task))
         kept = {r["id"] for r in out["issue"]}
-        self.assertTrue({decision_old, decision, plan, task, k} <= kept)   # chain + one level
-        self.assertEqual(len(kept - {decision_old, decision, plan, task, k}), L.RECENT_ISSUE)
+        self.assertTrue(out["complete"])
+        self.assertTrue({decision_old, decision, plan, task, k} <= kept)   # full closure
         self.assertNotIn(noise[0].comment_id, kept)                        # old chatter dropped
+        self.assertIn(1000000050, kept)                                    # every Captain decision
         self.assertEqual(len(out["index"]), len(issue))                    # whole-thread index
         pr_ids = {r["id"] for r in out["pr"]}
         self.assertTrue({2000000001, 2000000002} <= pr_ids)                # this wave's messages
         self.assertNotIn(2000000003, pr_ids)                               # another wave's
-        self.assertEqual(len(pr_ids), 2 + L.RECENT_PR)
+        self.issue, self.pr, self.auth = issue, pr, SimpleNamespace(checkpoint=k, task=task)
+
+    def test_NC_an_unresolvable_chain_falls_back_to_the_full_thread(self):
+        from agent_bus import local_manager as L
+        self.test_focus_keeps_the_authority_chain_its_citations_and_recent_comments()
+        for missing in ("w-result-9999",):                       # admitted message absent
+            out = L.review_focus(self.issue, self.pr, missing, self.auth)
+            self.assertFalse(out["complete"])
+            self.assertEqual(len(out["issue"]), len(self.issue))
+            self.assertEqual(len(out["pr"]), len(self.pr))
+        orphan = [c for c in self.pr if c.comment_id != 2000000001]   # its command absent
+        out = L.review_focus(self.issue, orphan, "w-result-0001", self.auth)
+        self.assertFalse(out["complete"])
+
+    def test_a_ruling_reachable_only_through_citation_chains_is_kept(self):
+        self.test_focus_keeps_the_authority_chain_its_citations_and_recent_comments()
+        # decision cites decision_old (two hops from the plan): the closure keeps it.
+        from agent_bus import local_manager as L
+        out = L.review_focus(self.issue, self.pr, "w-result-0001", self.auth)
+        self.assertIn(1000000001, {r["id"] for r in out["issue"]})
