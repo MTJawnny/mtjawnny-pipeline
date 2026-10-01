@@ -17,7 +17,9 @@ HAND-OFF RULE. An existing C03 artifact is never trusted: `h_region.py
 --verify` and `h_region_kill.py --verify` run first and a stale report HALTS.
 A missing artifact is regenerated ONLY by invoking its producer unchanged
 (`h_region.py`, then `h_region_kill.py`); those invocations are this script's
-only effect on c03/. It never edits C03 output.
+only effect on c03/. It never edits C03 output. `--verify` recomputes the
+embedded hashes (regions.json, kill.json, this script) and also requires both
+producers' own `--verify` to pass.
 
     python3 experiments/oracle_ingest/c03_trace.py                      # write
     python3 experiments/oracle_ingest/c03_trace.py --emit               # stdout only
@@ -67,6 +69,17 @@ def _run(args: list) -> subprocess.CompletedProcess:
     return subprocess.run([sys.executable] + args, cwd=str(ROOT), capture_output=True)
 
 
+def stale_producers() -> list:
+    """Every C03 artifact whose unchanged producer's --verify reports stale."""
+    out = []
+    for script, art in PRODUCERS:
+        p = _run([str(ROOT / script), "--verify"])
+        if p.returncode != 0:
+            out.append(f"{art} ({script} --verify): "
+                       f"{p.stderr.decode('utf-8', 'replace').strip()}")
+    return out
+
+
 def ensure_inputs() -> None:
     """Regenerate a missing C03 artifact by its unchanged producer; then run
     every producer's --verify and halt on stale."""
@@ -76,11 +89,9 @@ def ensure_inputs() -> None:
             if p.returncode != 0:
                 sys.stderr.write(p.stderr.decode("utf-8", "replace"))
                 fc.halt(f"{script} could not regenerate the missing {art}")
-    for script, art in PRODUCERS:
-        p = _run([str(ROOT / script), "--verify"])
-        if p.returncode != 0:
-            fc.halt(f"{art} is stale ({script} --verify): "
-                    f"{p.stderr.decode('utf-8', 'replace').strip()}")
+    stale = stale_producers()
+    if stale:
+        fc.halt("stale C03 input: " + "; ".join(stale))
 
 
 # ------------------------------------------------------------------ rendering
@@ -89,7 +100,11 @@ def owning_occurrence(rec: dict) -> dict:
     """The record's four-coordinate owner. Halts if it is missing, incomplete,
     or disagrees with any region's owner."""
     addr = rec.get("address")
-    if not isinstance(addr, dict) or any(addr.get(k) is None for k in COORDS + ("id",)):
+    if (not isinstance(addr, dict)
+            or not isinstance(addr.get("oracle_id"), str) or not addr["oracle_id"]
+            or not isinstance(addr.get("id"), str)
+            or any(not isinstance(addr.get(k), int) or isinstance(addr[k], bool)
+                   or addr[k] < 0 for k in COORDS[1:])):
         fc.halt(f"C03 record {addr!r} has no complete owning occurrence "
                 f"({', '.join(COORDS)})")
     want = ":".join(str(addr[k]) for k in COORDS)
@@ -121,6 +136,8 @@ def trace(rec: dict, row: dict) -> dict:
         fc.halt(f"kill.json row {row.get('id')!r} {row.get('census_key')!r} does not "
                 f"belong to C03 record {key}")
     text = rec["clause_text"]
+    if hashlib.sha256(text.encode("utf-8")).hexdigest() != rec["clause_sha256"]:
+        fc.halt(f"C03 record {key}: clause_text does not hash to its clause_sha256")
     regions = [{"ordinal": r["ordinal"], "head": r["head"], "head_span": r["head_span"],
                 "span": r["span"], "start_rule": r["start_rule"],
                 "end_rule": r["end_rule"], "text": _excerpt(text, r["span"])}
@@ -170,7 +187,12 @@ def render_traces(regions_doc: dict, kill_doc: dict) -> dict:
     recs, rows = regions_doc["clauses"], kill_doc["clauses"]
     if len(recs) != len(rows):
         fc.halt(f"regions.json has {len(recs)} clauses, kill.json {len(rows)}")
-    traces = [trace(rec, row) for rec, row in zip(recs, rows)]
+    traces = []
+    for n, (rec, row) in enumerate(zip(recs, rows)):
+        try:
+            traces.append(trace(rec, row))
+        except (KeyError, TypeError, ValueError, AttributeError) as e:
+            fc.halt(f"C03 record {n} cannot be read: {type(e).__name__} {e}")
     fixtures = []
     for f in regions_doc["fixtures"]:
         members = []
@@ -255,9 +277,10 @@ def completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list:
 
 # ----------------------------------------------------------------- staleness
 
-def stale_inputs(doc: dict, root: Path = ROOT) -> list:
+def stale_inputs(doc: dict, root: Path = None) -> list:
     """Every embedded hash (regions.json, kill.json, this script) that no
-    longer matches the file under `root`."""
+    longer matches the file under `root` (the repository by default)."""
+    root = ROOT if root is None else root
     embedded = dict(doc.get("inputs") or {})
     embedded[SCRIPT] = (doc.get("script") or {}).get("sha256")
     out = [rel for rel, want in sorted(embedded.items())
@@ -304,6 +327,7 @@ def negative_controls() -> list:
     t["outcome"] = hk.KILL if t["outcome"] != hk.KILL else hk.PASS
 
     def stale_kill() -> bool:
+        """verify() itself, on a temporary root: current, then stale on kill.json."""
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             for rel, body in ((REGIONS_REL, b"{}\n"), (KILL_REL, b"{}\n"),
@@ -312,9 +336,15 @@ def negative_controls() -> list:
                 (root / rel).write_bytes(body)
             doc = {"inputs": {r: _sha_at(root, r) for r in (REGIONS_REL, KILL_REL)},
                    "script": {"path": SCRIPT, "sha256": _sha_at(root, SCRIPT)}}
-            fresh = stale_inputs(doc, root)
-            (root / KILL_REL).write_bytes(b'{"rigged": true}\n')
-            return not fresh and stale_inputs(doc, root) == [KILL_REL]
+            (root / OUT_REL).parent.mkdir(parents=True, exist_ok=True)
+            (root / OUT_REL).write_text(json.dumps(doc), encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()) as err:
+                fresh = verify(root)
+                (root / KILL_REL).write_bytes(b'{"rigged": true}\n')
+                rigged = verify(root)
+            return (fresh == 0 and rigged == 1
+                    and err.getvalue().splitlines() == [f"STALE: {KILL_REL}"])
 
     cases = [
         ("a C03 record missing its owning occurrence halts the renderer",
@@ -374,16 +404,25 @@ def render(report: dict) -> bytes:
 
 # ----------------------------------------------------------------------- CLI
 
-def verify() -> int:
-    if not OUT.exists():
+def verify(root: Path = None) -> int:
+    """Recompute trace.json's embedded hashes under `root`. On the repository
+    itself the C03 producers' own --verify must also pass, as kill.json's
+    --verify chains to regions.json's: a byte-identical input can still be
+    stale against its own inputs."""
+    out = OUT if root is None else root / OUT_REL
+    if not out.exists():
         print(f"STALE: {OUT_REL} does not exist", file=sys.stderr)
         return 1
-    stale = stale_inputs(json.loads(OUT.read_text(encoding="utf-8")))
+    stale = stale_inputs(json.loads(out.read_text(encoding="utf-8")), root)
+    if root is None:
+        stale += stale_producers()
     for rel in stale:
         print(f"STALE: {rel}", file=sys.stderr)
     if stale:
         return 1
-    print(f"{OUT_REL}: regions.json, kill.json and this script are current")
+    print(f"{OUT_REL}: regions.json, kill.json, this script and the C03 producers' "
+          f"--verify are current" if root is None else
+          f"{OUT_REL}: regions.json, kill.json and this script are current")
     return 0
 
 
@@ -411,13 +450,15 @@ def check_determinism() -> int:
 
 
 def check_complete() -> int:
+    # Hand-off order: the C03 inputs first (regenerated only if missing, then
+    # their producers' --verify), then this script's own output.
+    ensure_inputs()
     if not OUT.exists():
         rc = main([])
         if rc:
             return rc
     elif verify() != 0:
         fc.halt(f"{OUT_REL} is stale (c03_trace.py --verify)")
-    ensure_inputs()
     doc = json.loads(OUT.read_text(encoding="utf-8"))
     regions_doc = json.loads((ROOT / REGIONS_REL).read_text(encoding="utf-8"))
     kill_doc = json.loads((ROOT / KILL_REL).read_text(encoding="utf-8"))
