@@ -19,6 +19,9 @@ PRECEDENCE. It exits non-zero unless the document
   * lists every C03 fixture exactly once (the `fixture | member status | ...`
     table), with its member and traced-clause counts, and a disposition on
     every fixture that kill.json records as having a member without a clause;
+  * where a disposition is required, it is a real disposition code or text,
+    never a placeholder: null/None, JSON `null`, none, n/a, a dash or em-dash,
+    TBD/TODO or empty, case-insensitively;
   * states, per condition, the per-outcome totals, the relevant count, the
     relevant PASS / UNRESOLVED / KILL counts, the PASS-coverage flag and the
     result, each equal to kill.json's (the `condition | all PASS | ...` table);
@@ -68,6 +71,12 @@ PRODUCERS = ((hr.SCRIPT, REGIONS_REL), (hk.SCRIPT, KILL_REL), (ct.SCRIPT, TRACE_
 CONDITIONS = hk.CONDITIONS
 OUTCOMES = (hk.PASS, hk.UNRESOLVED, hk.KILL)
 NONE = "none"                                 # an absent census key or disposition
+# Never a disposition (lower-cased); a run of dashes is refused separately.
+PLACEHOLDERS = ("null", NONE, "n/a", "tbd", "todo")
+# Each refused placeholder as a document might write it; one negative control
+# per form, on an UNRESOLVED ledger row and on a fixture without a clause.
+PLACEHOLDER_FORMS = ("null", "NULL", "None", "`null`", "none", "NONE", "-", "—", "TBD",
+                     "tbd", "TODO", "todo", "")
 RESULT_LINE = re.compile(r"^\s*(?:[-*]\s*)?\**H-REGION result:\**\s*(.*?)\s*$", re.M)
 
 # Each table the document must carry, by the exact cells of its header row.
@@ -182,7 +191,11 @@ def _int(s: str):
 
 
 def _disposed(s: str) -> bool:
-    return bool(s) and s.lower() not in (NONE, "-", "—", "tbd", "todo")
+    """A real disposition code or text: never empty, and never a placeholder
+    (null/None, JSON `null`, none, n/a, a dash run, TBD, TODO), compared
+    case-insensitively after stripping quoting, emphasis and a trailing period."""
+    t = s.strip().strip("`*_\"' ").rstrip(".").strip().lower()
+    return bool(t) and t not in PLACEHOLDERS and not re.fullmatch(r"[-–—]+", t)
 
 
 # ------------------------------------------------------------------ checking
@@ -480,7 +493,17 @@ def rigs() -> dict:
         f" | {NONE} |\n", " | reviewed |\n").replace(
         f"H-REGION result: {hk.RESULT_KILLED}", f"H-REGION result: {hk.RESULT_NOT_KILLED}")
     bad_sha = dict(shas, **{TRACE_REL: "0" * 64})
-    return {
+    empty = next(l for l in lines if l.startswith("| rig-empty |"))
+    disposed = lambda row, form: row.rsplit("|", 2)[0] + f"| {form} |\n"
+    placeholders = {}
+    for form in PLACEHOLDER_FORMS:
+        placeholders[f"an UNRESOLVED row disposed as {form!r}"] = (
+            doc.replace(first, disposed(first, form)), regions_doc, kill_doc, shas,
+            "rig:0:0:0 census destroy#0: UNRESOLVED on K1")
+        placeholders[f"a fixture without a clause disposed as {form!r}"] = (
+            doc.replace(empty, disposed(empty, form)), regions_doc, kill_doc, shas,
+            "fixture rig-empty: a member without a clause")
+    return placeholders | {
         "a ledger missing one clause": (doc.replace(first, ""), regions_doc, kill_doc,
                                         shas, "the ledger omits C03 clause rig:0:0:0"),
         "a total mismatch": (doc.replace(tot, "|".join(cells)), regions_doc, kill_doc,

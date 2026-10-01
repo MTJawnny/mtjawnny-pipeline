@@ -1,7 +1,9 @@
 """M04-CHECK unit tests: the coverage and consistency checker for the M04
 H-REGION review document, with every contracted negative control -- a ledger
-missing one clause, a total mismatch, an UNRESOLVED row without a disposition,
-a stale trace.json (STOPs), a wrong trace.json hash, 'not killed' stated over a
+missing one clause, a total mismatch, an UNRESOLVED row without a disposition
+(and, per placeholder form -- null/None, JSON null, none, a dash or em-dash,
+TBD/TODO, empty, any case -- an UNRESOLVED row or a fixture without a clause
+"disposed" by that placeholder), a stale trace.json (STOPs), a wrong trace.json hash, 'not killed' stated over a
 relevant KILL, and an omitted PASS-coverage flag -- plus the hand-off rule
 (producers' --verify first, missing artifacts regenerated only by their
 unchanged producers, in order).
@@ -138,11 +140,39 @@ class Ledger(Base):
 
     def test_unresolved_row_without_disposition_fails(self):
         row = line(self.doc, "| `rig:0:0:0`")
-        for empty in (mc.NONE, "", "—", "TBD"):
+        for empty in (mc.NONE, "", "—", "TBD") + mc.PLACEHOLDER_FORMS + (
+                "Null", "`None`", "**null**", "\"null\"", "None.", "n/a", "--", "–",
+                "ToDo", "  "):
             with self.subTest(disposition=empty):
                 rigged = row.rsplit("|", 2)[0] + f"| {empty} |\n"
                 self.assertFails("rig:0:0:0 census destroy#0: UNRESOLVED on K1",
                                  doc=self.doc.replace(row, rigged))
+
+    def test_placeholder_forms_cover_the_contracted_ones(self):
+        lowered = {f.lower() for f in mc.PLACEHOLDER_FORMS}
+        for form in ("null", "none", "`null`", "-", "—", "tbd", "todo", ""):
+            self.assertIn(form, lowered)
+        for word in ("null", "none", "tbd", "todo"):   # case-insensitively
+            self.assertTrue(any(f != word and f.lower() == word
+                                for f in mc.PLACEHOLDER_FORMS), word)
+
+    def test_each_placeholder_form_has_its_own_negative_control(self):
+        rigs = mc.rigs()
+        for form in mc.PLACEHOLDER_FORMS:
+            for name in (f"an UNRESOLVED row disposed as {form!r}",
+                         f"a fixture without a clause disposed as {form!r}"):
+                with self.subTest(control=name):
+                    doc, regions, kill, shas, needle = rigs[name]
+                    self.assertFails(needle, doc=doc, regions=regions, kill=kill,
+                                     shas=shas)
+
+    def test_real_disposition_text_or_code_passes(self):
+        row = line(self.doc, "| `rig:0:0:0`")
+        for real in ("EXTRACTION-GAP", "`D2`", "deferred to the Captain (FS-2)",
+                     "none of K1/K2 apply: a sequence, not a kill", "nullary trigger"):
+            with self.subTest(disposition=real):
+                rigged = row.rsplit("|", 2)[0] + f"| {real} |\n"
+                self.assertEqual(self.failures(doc=self.doc.replace(row, rigged)), [])
 
     def test_row_with_no_unresolved_needs_no_disposition(self):
         row = line(self.doc, "| `rig:0:0:1`")
@@ -177,9 +207,11 @@ class Fixtures(Base):
 
     def test_fixture_without_clause_needs_a_disposition(self):
         row = line(self.doc, "| rig-empty |")
-        rigged = row.rsplit("|", 2)[0] + f"| {mc.NONE} |\n"
-        self.assertFails("fixture rig-empty: a member without a clause",
-                         doc=self.doc.replace(row, rigged))
+        for empty in (mc.NONE,) + mc.PLACEHOLDER_FORMS:
+            with self.subTest(disposition=empty):
+                rigged = row.rsplit("|", 2)[0] + f"| {empty} |\n"
+                self.assertFails("fixture rig-empty: a member without a clause",
+                                 doc=self.doc.replace(row, rigged))
 
 
 class Totals(Base):
