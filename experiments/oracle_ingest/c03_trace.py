@@ -183,6 +183,55 @@ def trace(rec: dict, row: dict) -> dict:
             "regions": regions, "role_marks": marks, "tests": tests, "lines": lines}
 
 
+def _census_ok(ck) -> bool:
+    return (isinstance(ck, list) and len(ck) == 2 and isinstance(ck[0], str)
+            and isinstance(ck[1], int) and not isinstance(ck[1], bool))
+
+
+def _identity(m: dict) -> list:
+    """A fixture member's identity: the card, its census key, and (for an
+    unresolved member) the name as recorded."""
+    return [m.get("oracle_id"), m.get("census_key"), m.get("name_as_recorded")]
+
+
+def expected_fixtures(regions_doc: dict) -> tuple:
+    """(expected, problems): for every C03 fixture, its role and, per member,
+    the member's identity and the exact trace key of each of its clauses,
+    derived from C03 alone. A member clause owns exactly one C03 record that
+    carries the fixture's role, belongs to the member's card, and is keyed by
+    the member's census key or by none."""
+    problems, expected = [], []
+    by_id = {}
+    for c in regions_doc["clauses"]:
+        by_id.setdefault(c["address"]["id"], []).append(c)
+    roles = [f["role"] for f in regions_doc["fixtures"]]
+    for r in sorted(set(roles)):
+        if roles.count(r) != 1:
+            problems.append(f"C03 lists fixture {r} {roles.count(r)} times")
+    for f in regions_doc["fixtures"]:
+        members = []
+        for m in f["members"]:
+            keys = []
+            for cid in m["clauses"]:
+                hit = [c for c in by_id.get(cid, []) if f["role"] in c["fixture_roles"]]
+                if len(hit) != 1:
+                    problems.append(f"fixture {f['role']}: clause {cid} has {len(hit)} "
+                                    f"C03 records carrying the role")
+                    continue
+                c = hit[0]
+                if c["address"]["oracle_id"] != m["oracle_id"]:
+                    problems.append(f"fixture {f['role']}: clause {cid} is not of member "
+                                    f"{m['oracle_id']}")
+                if c.get("census_key") not in (None, m["census_key"]):
+                    problems.append(f"fixture {f['role']}: clause {cid} is keyed "
+                                    f"{c['census_key']}, not by member key "
+                                    f"{m['census_key']}")
+                keys.append(_key(cid, c.get("census_key")))
+            members.append({"identity": _identity(m), "keys": keys})
+        expected.append({"role": f["role"], "members": members})
+    return expected, problems
+
+
 def render_traces(regions_doc: dict, kill_doc: dict) -> dict:
     recs, rows = regions_doc["clauses"], kill_doc["clauses"]
     if len(recs) != len(rows):
@@ -193,20 +242,21 @@ def render_traces(regions_doc: dict, kill_doc: dict) -> dict:
             traces.append(trace(rec, row))
         except (KeyError, TypeError, ValueError, AttributeError) as e:
             fc.halt(f"C03 record {n} cannot be read: {type(e).__name__} {e}")
+        ck = rec.get("census_key")
+        if rec["population"] and not _census_ok(ck):
+            fc.halt(f"C03 population record {rec['address']['id']!r}: census key "
+                    f"{ck!r} is malformed")
+        if ck is not None and not _census_ok(ck):
+            fc.halt(f"C03 record {rec['address']['id']!r}: census key {ck!r} is malformed")
+    expected, problems = expected_fixtures(regions_doc)
+    if problems:
+        fc.halt("C03 fixtures cannot be traced: " + "; ".join(problems))
     fixtures = []
-    for f in regions_doc["fixtures"]:
-        members = []
-        for m in f["members"]:
-            keys = []
-            for cid in m["clauses"]:
-                hit = [t["key"] for t in traces
-                       if t["occurrence"]["id"] == cid and f["role"] in t["fixture_roles"]]
-                if len(hit) != 1:
-                    fc.halt(f"fixture {f['role']}: clause {cid} has {len(hit)} traces")
-                keys.append(hit[0])
-            members.append({"oracle_id": m["oracle_id"], "census_key": m["census_key"],
-                            "name_as_recorded": m.get("name_as_recorded"),
-                            "unresolved": m.get("unresolved"), "traces": keys})
+    for f, ef in zip(regions_doc["fixtures"], expected):
+        members = [{"oracle_id": m["oracle_id"], "census_key": m["census_key"],
+                    "name_as_recorded": m.get("name_as_recorded"),
+                    "unresolved": m.get("unresolved"), "traces": em["keys"]}
+                   for m, em in zip(f["members"], ef["members"])]
         fixtures.append({"role": f["role"], "member_status": f["member_status"],
                          "members": members})
     return {"traces": traces, "fixtures": fixtures,
@@ -229,42 +279,123 @@ def outcome_counts(traces: list) -> dict:
     return out
 
 
+def _trace_key(t) -> tuple:
+    """(json key, problems) of one trace; the key is None when it is malformed
+    (unreadable, or a population trace whose census key is null)."""
+    k = t.get("key") if isinstance(t, dict) else None
+    if (not isinstance(k, list) or len(k) != 2 or not isinstance(k[0], str)
+            or not (k[1] is None or _census_ok(k[1]))):
+        return None, [f"trace {k!r} has a malformed key"]
+    if t.get("population") and k[1] is None:
+        return None, [f"population trace {k[0]!r} is malformed: its census key is null"]
+    occ = t.get("occurrence")
+    if not isinstance(occ, dict) or occ.get("id") != k[0]:
+        return json.dumps(k), [f"trace {json.dumps(k)} is not keyed by its owning "
+                               f"occurrence"]
+    return json.dumps(k), []
+
+
 def completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list:
-    """Exactly one trace per C03 clause and fixture clause, and per-outcome
-    counts recomputed from the traces equal to kill.json's."""
+    """Exactly one trace per C03 clause and fixture clause, exact fixture
+    coverage (each fixture once, each member's identity and its expected trace
+    keys, nothing else), and per-outcome counts recomputed from the traces
+    equal to kill.json's. Never raises on a malformed trace.json: it reports."""
+    try:
+        return _completeness_failures(doc, regions_doc, kill_doc)
+    except (KeyError, TypeError, ValueError, AttributeError, IndexError) as e:
+        return [f"trace.json is malformed: {type(e).__name__} {e}"]
+
+
+def _completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list:
     bad = []
-    keys = [json.dumps(t["key"]) for t in doc["traces"]]
-    want = [json.dumps(_key(c["address"]["id"], c.get("census_key")))
-            for c in regions_doc["clauses"] if c["population"] or c["fixture_roles"]]
+    traces = {}                                    # json key -> trace
+    keys = []
+    for t in doc["traces"]:
+        k, problems = _trace_key(t)
+        bad += problems
+        if k is None:
+            continue
+        keys.append(k)
+        traces[k] = t
+    recs = {json.dumps(_key(c["address"]["id"], c.get("census_key"))): c
+            for c in regions_doc["clauses"] if c["population"] or c["fixture_roles"]}
     for k in sorted(set(keys)):
         if keys.count(k) != 1:
             bad.append(f"{keys.count(k)} traces for {k}")
-    for k in sorted(set(want) - set(keys)):
+    for k in sorted(set(recs) - set(keys)):
         bad.append(f"no trace for C03 clause {k}")
-    for k in sorted(set(keys) - set(want)):
+    for k in sorted(set(keys) - set(recs)):
         bad.append(f"trace {k} is not a C03 clause")
-    pop = [[t["occurrence"]["oracle_id"]] + t["key"][1] for t in doc["traces"]
-           if t["population"]]
+    for k in sorted(set(keys) & set(recs)):
+        t, c = traces[k], recs[k]
+        if bool(t.get("population")) != bool(c["population"]):
+            bad.append(f"trace {k}: population {t.get('population')!r}, C03 "
+                       f"{c['population']!r}")
+        if t.get("fixture_roles") != c["fixture_roles"]:
+            bad.append(f"trace {k}: fixture roles {t.get('fixture_roles')!r}, C03 "
+                       f"{c['fixture_roles']!r}")
+    pop = [[traces[k]["occurrence"]["oracle_id"]] + json.loads(k)[1] for k in keys
+           if traces[k].get("population")]
     for row in regions_doc["population_keys"]:
         if pop.count(row) != 1:
             bad.append(f"{pop.count(row)} population traces for census row {row}")
-    by_role = {f["role"]: f for f in doc["fixtures"]}
-    for f in regions_doc["fixtures"]:
-        got = by_role.get(f["role"])
+
+    expected, problems = expected_fixtures(regions_doc)
+    bad += [f"C03: {p}" for p in problems]
+    got_roles = [f.get("role") for f in doc["fixtures"]]
+    for r in sorted(set(got_roles), key=repr):
+        if got_roles.count(r) != 1:
+            bad.append(f"{got_roles.count(r)} trace entries for fixture {r!r}")
+    want_roles = {ef["role"] for ef in expected}
+    for r in sorted(set(got_roles) - want_roles, key=repr):
+        bad.append(f"trace entry for fixture {r!r} is not a C03 fixture")
+    by_role = {f.get("role"): f for f in doc["fixtures"]}
+    referenced = {}                                # json key -> roles referencing it
+    for ef in expected:
+        role = ef["role"]
+        got = by_role.get(role)
         if got is None:
-            bad.append(f"no trace entry for fixture {f['role']}")
+            bad.append(f"no trace entry for fixture {role}")
             continue
-        for m, gm in zip(f["members"], got["members"]):
-            if len(gm["traces"]) != len(m["clauses"]):
-                bad.append(f"fixture {f['role']}: {len(gm['traces'])} traces for "
-                           f"{len(m['clauses'])} clauses")
-            for key in gm["traces"]:
-                if json.dumps(key) not in keys:
-                    bad.append(f"fixture {f['role']}: trace {key} is missing")
-        if len(got["members"]) != len(f["members"]):
-            bad.append(f"fixture {f['role']}: {len(got['members'])} members traced of "
-                       f"{len(f['members'])}")
-    counts = outcome_counts(doc["traces"])
+        gms = got["members"]
+        if len(gms) != len(ef["members"]):
+            bad.append(f"fixture {role}: {len(gms)} members traced of "
+                       f"{len(ef['members'])}")
+        ids = [json.dumps(_identity(gm)) for gm in gms]
+        for i in sorted(set(ids)):
+            if ids.count(i) != 1:
+                bad.append(f"fixture {role}: member {i} is entered {ids.count(i)} times")
+        for n, (em, gm) in enumerate(zip(ef["members"], gms)):
+            if _identity(gm) != em["identity"]:
+                bad.append(f"fixture {role} member {n}: identity {_identity(gm)}, "
+                           f"C03 {em['identity']}")
+            got_keys = [json.dumps(k) for k in gm["traces"]]
+            want_keys = [json.dumps(k) for k in em["keys"]]
+            for k in sorted(set(got_keys)):
+                if got_keys.count(k) != 1:
+                    bad.append(f"fixture {role} member {n}: trace {k} is entered "
+                               f"{got_keys.count(k)} times")
+            for k in sorted(set(got_keys) - set(want_keys)):
+                bad.append(f"fixture {role} member {n}: trace {k} is not one of the "
+                           f"member's clauses")
+            for k in sorted(set(want_keys) - set(got_keys)):
+                bad.append(f"fixture {role} member {n}: expected trace {k} is absent")
+            if got_keys != want_keys and sorted(got_keys) == sorted(want_keys):
+                bad.append(f"fixture {role} member {n}: traces are out of C03 order")
+        for gm in gms:
+            for k in gm["traces"]:
+                k = json.dumps(k)
+                referenced.setdefault(k, set()).add(role)
+                if k not in traces:
+                    bad.append(f"fixture {role}: trace {k} is missing")
+                elif role not in (traces[k].get("fixture_roles") or []):
+                    bad.append(f"fixture {role}: trace {k} does not carry the role")
+    for k in sorted(traces):
+        for role in traces[k].get("fixture_roles") or []:
+            if role in want_roles and role not in referenced.get(k, set()):
+                bad.append(f"trace {k} carries fixture {role} but no member of it "
+                           f"references the trace")
+    counts = outcome_counts([traces[k] for k in keys])
     for k in hk.CONDITIONS:
         cond = kill_doc["conditions"][k]
         for o in OUTCOMES:
@@ -325,6 +456,28 @@ def negative_controls() -> list:
     mismatch = copy.deepcopy(clean)
     t = mismatch["traces"][0]["tests"]["K1"]
     t["outcome"] = hk.KILL if t["outcome"] != hk.KILL else hk.PASS
+    pop_key = clean["traces"][0]["key"]              # the population trace
+    unrelated = copy.deepcopy(clean)                 # a real trace, wrong member
+    unrelated["fixtures"][0]["members"][0]["traces"] = [pop_key]
+    wrong_id = copy.deepcopy(clean)
+    wrong_id["fixtures"][0]["members"][0]["oracle_id"] = "not-rig"
+    dup_role = copy.deepcopy(clean)
+    dup_role["fixtures"].append(copy.deepcopy(dup_role["fixtures"][0]))
+    dup_member = copy.deepcopy(clean)
+    ms = dup_member["fixtures"][0]["members"]
+    ms.append(copy.deepcopy(ms[0]))
+    dup_key = copy.deepcopy(clean)
+    tk = dup_key["fixtures"][0]["members"][0]["traces"]
+    tk.append(copy.deepcopy(tk[0]))
+    null_ck = copy.deepcopy(clean)
+    null_ck["traces"][0]["key"][1] = None
+    null_rec = copy.deepcopy(regions_doc)
+    null_rec["clauses"][0]["census_key"] = None
+    null_row = copy.deepcopy(kill_doc)               # so only the null key differs
+    null_row["clauses"][0]["census_key"] = None
+
+    def fails(doc, needle) -> bool:
+        return any(needle in b for b in completeness_failures(doc, regions_doc, kill_doc))
 
     def stale_kill() -> bool:
         """verify() itself, on a temporary root: current, then stale on kill.json."""
@@ -356,6 +509,20 @@ def negative_controls() -> list:
          and bool(completeness_failures(dropped, regions_doc, kill_doc))),
         ("--check-complete fails on a rigged outcome mismatch",
          lambda: bool(completeness_failures(mismatch, regions_doc, kill_doc))),
+        ("--check-complete fails on a fixture member pointing at an unrelated trace",
+         lambda: fails(unrelated, "is not one of the member's clauses")),
+        ("--check-complete fails on an incorrect fixture member identity",
+         lambda: fails(wrong_id, "identity")),
+        ("--check-complete fails on a duplicate fixture role",
+         lambda: fails(dup_role, "2 trace entries for fixture 'rig-role'")),
+        ("--check-complete fails on a duplicate fixture member entry",
+         lambda: fails(dup_member, "is entered 2 times")),
+        ("--check-complete fails on a duplicate fixture trace entry",
+         lambda: fails(dup_key, "is entered 2 times")),
+        ("--check-complete reports a null population census key as malformed",
+         lambda: fails(null_ck, "is malformed: its census key is null")),
+        ("a C03 population record with a null census key halts the renderer",
+         lambda: _halts(lambda: render_traces(null_rec, null_row))),
         ("--verify fails on a rigged stale kill.json", stale_kill),
         ("a rigged output containing the absolute repository root fails "
          "--check-determinism",
