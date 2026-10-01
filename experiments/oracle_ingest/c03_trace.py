@@ -131,7 +131,13 @@ def _excerpt(text: str, span: list) -> str:
 def trace(rec: dict, row: dict) -> dict:
     """One trace: the C03 record `rec` and its kill.json row `row`, copied."""
     occ = owning_occurrence(rec)
-    key = _key(occ["id"], rec.get("census_key"))
+    ck = rec.get("census_key")
+    # Validated before any use of it: a malformed key halts with its diagnostic.
+    if ck is not None and not _census_ok(ck):
+        fc.halt(f"C03 record {occ['id']!r}: census key {ck!r} is malformed")
+    if rec.get("population") and ck is None:
+        fc.halt(f"C03 population record {occ['id']!r}: census key {ck!r} is malformed")
+    key = _key(occ["id"], ck)
     if _key(row.get("id"), row.get("census_key")) != key:
         fc.halt(f"kill.json row {row.get('id')!r} {row.get('census_key')!r} does not "
                 f"belong to C03 record {key}")
@@ -154,7 +160,6 @@ def trace(rec: dict, row: dict) -> dict:
             fc.halt(f"kill.json row {key}: {k} has no outcome")
         tests[k] = {"outcome": t["outcome"], "relevant": t["relevant"],
                     "reason": t["reason"]}
-    ck = rec.get("census_key")
     lines = [f"clause {occ['id']}" + (f"  census {ck[0]}#{ck[1]}" if ck else "")
              + ("  [population]" if rec["population"] else "")
              + (f"  [fixtures: {', '.join(rec['fixture_roles'])}]"
@@ -240,14 +245,8 @@ def render_traces(regions_doc: dict, kill_doc: dict) -> dict:
     for n, (rec, row) in enumerate(zip(recs, rows)):
         try:
             traces.append(trace(rec, row))
-        except (KeyError, TypeError, ValueError, AttributeError) as e:
+        except (KeyError, TypeError, ValueError, AttributeError, IndexError) as e:
             fc.halt(f"C03 record {n} cannot be read: {type(e).__name__} {e}")
-        ck = rec.get("census_key")
-        if rec["population"] and not _census_ok(ck):
-            fc.halt(f"C03 population record {rec['address']['id']!r}: census key "
-                    f"{ck!r} is malformed")
-        if ck is not None and not _census_ok(ck):
-            fc.halt(f"C03 record {rec['address']['id']!r}: census key {ck!r} is malformed")
     expected, problems = expected_fixtures(regions_doc)
     if problems:
         fc.halt("C03 fixtures cannot be traced: " + "; ".join(problems))
@@ -423,12 +422,14 @@ def stale_inputs(doc: dict, root: Path = None) -> list:
 
 # ---------------------------------------------------------- negative controls
 
-def _halts(fn) -> bool:
+def _halts(fn, needle: str = "") -> bool:
+    """True if `fn` halts (SystemExit) and its diagnostic contains `needle`."""
+    err = io.StringIO()
     try:
-        with contextlib.redirect_stderr(io.StringIO()):
+        with contextlib.redirect_stderr(err):
             fn()
     except SystemExit:
-        return True
+        return needle in err.getvalue()
     return False
 
 
@@ -475,6 +476,10 @@ def negative_controls() -> list:
     null_rec["clauses"][0]["census_key"] = None
     null_row = copy.deepcopy(kill_doc)               # so only the null key differs
     null_row["clauses"][0]["census_key"] = None
+    short_rec = copy.deepcopy(regions_doc)           # ["exile"]: once an IndexError
+    short_rec["clauses"][0]["census_key"] = ["exile"]
+    short_row = copy.deepcopy(kill_doc)
+    short_row["clauses"][0]["census_key"] = ["exile"]
 
     def fails(doc, needle) -> bool:
         return any(needle in b for b in completeness_failures(doc, regions_doc, kill_doc))
@@ -522,7 +527,13 @@ def negative_controls() -> list:
         ("--check-complete reports a null population census key as malformed",
          lambda: fails(null_ck, "is malformed: its census key is null")),
         ("a C03 population record with a null census key halts the renderer",
-         lambda: _halts(lambda: render_traces(null_rec, null_row))),
+         lambda: _halts(lambda: render_traces(null_rec, null_row), "is malformed")),
+        ("a C03 record with a malformed census key halts the renderer with its "
+         "diagnostic",
+         lambda: _halts(lambda: render_traces(short_rec, short_row),
+                        "census key ['exile'] is malformed")
+         and _halts(lambda: trace(short_rec["clauses"][0], short_row["clauses"][0]),
+                    "census key ['exile'] is malformed")),
         ("--verify fails on a rigged stale kill.json", stale_kill),
         ("a rigged output containing the absolute repository root fails "
          "--check-determinism",
