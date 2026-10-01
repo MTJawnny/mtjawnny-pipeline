@@ -113,7 +113,8 @@ class UnitVerdict:
 
 
 def verify_unit(repo: str, wave: str, unit: Unit, before: str, after: str,
-                dirty: Sequence[str], run: Runner | None = None) -> UnitVerdict:
+                dirty: Sequence[str], run: Runner | None = None,
+                no_change_allowed: bool = False) -> UnitVerdict:
     """Did this unit stay inside what it was authorized to do?
 
     Five questions, each its own code:
@@ -141,7 +142,7 @@ def verify_unit(repo: str, wave: str, unit: Unit, before: str, after: str,
         return UnitVerdict(unit.id, not problems, tuple(problems),
                            tuple(c.sha for c in commits), tuple(paths))
 
-    if unit.commit_boundary and not commits:
+    if unit.commit_boundary and not commits and not no_change_allowed:
         problems.append((E.UNIT_NO_COMMIT,
                          f"{unit.id} declares a commit boundary and produced no commit"))
 

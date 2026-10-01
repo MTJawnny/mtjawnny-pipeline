@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import re
 import unittest
+from types import SimpleNamespace
 from unittest import mock
 
 from tests.refoundation.agent_bus_fixtures import REPO_ROOT, WAVE, comment_body, unit
@@ -291,6 +292,27 @@ class TestFailsClosed(unittest.TestCase):
         self.assertIn("changed nothing for the host to commit",
                       report["units"][0]["problems"][0]["detail"])
         self.assert_nothing_staged_or_committed(fake)
+
+    def candidate_repo(self, *steps):
+        from tests.refoundation.agent_bus_fixtures import default_body
+        body = default_body("WAVE_COMMAND")
+        body["candidate_base"] = "c" * 40
+        return ProviderRepo(stream(comment_body(body=body, **COMMAND)), script=list(steps))
+
+    def test_NR1_a_unit_already_right_on_a_candidate_completes_without_a_commit(self):
+        from tests.refoundation.test_agent_bus_worker_evidence import codex, with_footer
+        fake = self.candidate_repo(Step("codex", stdout=codex(with_footer("nothing to fix", []))))
+        report = armed(fake, order=("codex",), max_units=1).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_RAN", report.get("units"))
+        self.assertEqual(report["units"][0]["ok"], True)
+        self.assertEqual(report["units"][0]["commits"], [])
+        self.assertFalse(any(git_verb(c, "commit") for c in fake.calls))
+        result = fake.posted_messages()[-1]
+        self.assertEqual(result.body["units"][0], {"id": "U1", "status": "DONE"})
+
+    def test_NC_NR1_a_fresh_wave_keeps_its_commit_boundary(self):
+        self.assertFalse(F.builds_on_candidate(SimpleNamespace(body={})))
+        self.assertTrue(F.builds_on_candidate(SimpleNamespace(body={"candidate_base": "c" * 40})))
 
     def test_NC_a_scope_escape_is_refused_before_staging_and_left_as_evidence(self):
         cases = {

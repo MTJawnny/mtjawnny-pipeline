@@ -236,6 +236,14 @@ def commit_message(command: Envelope, unit: Unit, provider: str) -> str:
             + trailers(command.wave, unit.id) + "\n")
 
 
+def builds_on_candidate(command: Envelope) -> bool:
+    """NR1: a command that re-runs a wave on an unaccepted candidate (a REPAIR
+    successor, or a recovery command naming `candidate_base`) may find a unit
+    already right: it then completes DONE with no commit, and the reviewer judges
+    whether nothing needed doing. A fresh wave keeps its commit boundary."""
+    return bool(command.body.get("candidate_base"))
+
+
 def finalize(repo: str, remote: str, branch: str, command: Envelope, unit: Unit,
              provider: str, before: Snapshot, run: Runner) -> Finalized:
     """Prove, stage, commit and push one unit -- or refuse before PASS can exist."""
@@ -264,7 +272,7 @@ def finalize(repo: str, remote: str, branch: str, command: Envelope, unit: Unit,
                            f"{unit.id} changed paths outside its scope (nothing staged): "
                            + ", ".join(escaped)),), paths)
     if not paths:
-        if unit.commit_boundary:
+        if unit.commit_boundary and not builds_on_candidate(command):
             return Finalized(((E.UNIT_NO_COMMIT,
                                f"{unit.id} declares a commit boundary and changed nothing "
                                "for the host to commit"),))

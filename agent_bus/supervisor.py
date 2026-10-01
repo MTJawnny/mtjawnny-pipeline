@@ -369,7 +369,8 @@ class Supervisor:
         if not host.ok:
             return text, UnitVerdict(unit.id, False, host.problems, (), host.paths)
         return text, verify_unit(self.repo_path, command.wave, unit, before.head,
-                                 self._head(), self._dirty(), self.run)
+                                 self._head(), self._dirty(), self.run,
+                                 no_change_allowed=finalize.builds_on_candidate(command))
 
     def _post_evidence(self, body: str) -> str:
         try:
