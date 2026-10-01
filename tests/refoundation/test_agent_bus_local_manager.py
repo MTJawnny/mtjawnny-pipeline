@@ -253,6 +253,30 @@ class TestEvidenceIsTheHosts(PassHarness):
             m.poll_once(execute=True)
         self.assertEqual(seen[0]["checks"], [{"id": "c1", "exit": 0}])
 
+    def test_VE1_the_reviewer_sees_every_measured_goal_check_exit_code(self):
+        from agent_bus import goal
+        self.measured = L.Measurement("a" * 40, 0, "OK", goal.Evidence(
+            7, "e" * 64, "W", "a" * 40, (("c1", 0), ("c2", 3))))
+        seen = []
+        m = self.manager("codex", lambda *a: {"decision": GOOD})
+        with mock.patch.object(L.LocalManager, "_context",
+                               lambda self, *a: seen.append(a) or "prompt"):
+            m.poll_once(execute=True)
+        checks = seen[0][4]
+        self.assertIn(f"run-checks on {'a' * 40}", checks)
+        self.assertIn("c1: exit 0 (GREEN)", checks)
+        self.assertIn("c2: exit 3 (RED)", checks)
+        self.assertIn("red: c2", checks)
+
+    def test_VE1_an_unbound_result_says_no_goal_check_was_run(self):
+        seen = []
+        m = self.manager("codex", lambda *a: {"decision": GOOD})
+        with mock.patch.object(L.LocalManager, "_context",
+                               lambda self, *a: seen.append(a) or "prompt"):
+            m.poll_once(execute=True)
+        self.assertIn("No goal check was run", seen[0][4])
+        self.assertIn("no plan", seen[0][4])
+
     def test_NC_tampered_validation_evidence_publishes_nothing(self):
         self.with_evidence()
         def invoke(reviewer, prompt, ws):
@@ -401,7 +425,9 @@ class TestWorkspace(unittest.TestCase):
              mock.patch.object(L.publisher, "observe", lambda *a: world):
             m = self.manager(fake_gh())
             m.measure(1001, head, ws)
-            prompt = m._context(ws, 1001, "w-result", "selftest")
+            prompt = m._context(ws, 1001, "w-result", "selftest", "c1: exit 0 (GREEN)\n")
+        self.assertEqual((ws.context / "goal-checks.txt").read_text(), "c1: exit 0 (GREEN)\n")
+        self.assertIn("goal-checks.txt", prompt)
         for rel in L.CONTRACTS:
             self.assertEqual((ws.context / "contracts" / rel).read_text(),
                              f"accepted law: {rel}\n")

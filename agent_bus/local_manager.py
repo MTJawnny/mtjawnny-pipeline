@@ -206,6 +206,20 @@ def reviewer_for(worker_provider: str | None, order: Sequence[str]) -> list[str]
     return [p for p in order if p != worker_provider]
 
 
+def goal_checks_text(m: Measurement) -> str:
+    """The reviewer's copy of the host's goal-check evidence. The published copy
+    stays in the host-only evidence directory."""
+    if m.evidence is None:
+        return f"No goal check was run on {m.head}: {m.unbound}\n"
+    ev = m.evidence
+    lines = [f"python3 -m agent_bus.goal run-checks on {ev.head} (sandboxed, by this host)",
+             f"plan comment {ev.plan}, digest {ev.digest}, wave {ev.wave}"]
+    lines += [f"{cid}: exit {code} ({'GREEN' if code == 0 else 'RED'})"
+              for cid, code in ev.checks]
+    lines.append(f"red: {', '.join(ev.red) if ev.red else 'none'}")
+    return "\n".join(lines) + "\n"
+
+
 def host_captain(problem: str) -> decision_module.Decision:
     """The host's own decision when no model may review: CAPTAIN, never a verdict."""
     return decision_module.from_mapping({
@@ -557,7 +571,7 @@ class LocalManager:
 
     # --------------------------------------------------------------- review
     def _context(self, ws: Workspace, comment_id: int, message_id: str,
-                 selftest: str) -> str:
+                 selftest: str, checks: str = "No goal check was run.\n") -> str:
         ctx = ws.context
         (ctx / "contracts" / "refoundation").mkdir(parents=True)
         accepted = self._accepted_contracts(ws, ctx / "contracts")
@@ -573,6 +587,7 @@ class LocalManager:
                            (f"pr-{self.pr}.json", focus["pr"])):
             (ctx / name).write_text(json.dumps(rows, indent=1), encoding="utf-8")
         (ctx / "selftest.txt").write_text(selftest, encoding="utf-8")
+        (ctx / "goal-checks.txt").write_text(checks, encoding="utf-8")
         (ctx / "decision.schema.json").write_text(json.dumps(decision_module.json_schema()),
                                                   encoding="utf-8")
         return (
@@ -602,6 +617,10 @@ class LocalManager:
             f"- pr-{self.pr}.json: this wave's PR {self.pr} bus messages and the most recent\n"
             "  comments\n"
             "- selftest.txt: an independent, sandboxed selftest run on the result head\n"
+            "- goal-checks.txt: the goal plan's required checks, each run independently\n"
+            "  by this host, sandboxed, on the result head, with every exit code. This is\n"
+            "  the independent check evidence; the host publishes exactly these results\n"
+            "  and refuses an ACCEPT if any is missing or red\n"
             + ("" if getattr(self, "_focus_complete", True) else
                "NOTE: the focus could not resolve this message's command or goal plan, so\n"
                "issue-1.json and the PR file hold the FULL threads.\n")
@@ -762,6 +781,7 @@ class LocalManager:
             selftest = (f"python3 -m agent_bus selftest on {m.head} (sandboxed)\n"
                         f"exit code: {m.selftest_exit}\n--- last 60 lines ---\n"
                         f"{m.selftest_log}\n")
+            checks = goal_checks_text(m)
         else:
             base = self._head_of(Path(self.repo_path))
             if not base:
@@ -769,7 +789,8 @@ class LocalManager:
             self._checkout(base, ws.review, self.repo_path)
             head = base
             selftest = "The admitted message carries no head; no selftest was run.\n"
-        prompt = self._context(ws, verdict.comment_id, verdict.message_id, selftest)
+            checks = "The admitted message carries no head; no goal check was run.\n"
+        prompt = self._context(ws, verdict.comment_id, verdict.message_id, selftest, checks)
         prior = self._handoff_path(verdict.comment_id)
         if prior is not None and prior.is_file():
             prompt += PRIOR_HANDOFF + prior.read_text(encoding="utf-8")
