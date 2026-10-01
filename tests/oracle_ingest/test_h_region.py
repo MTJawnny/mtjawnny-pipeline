@@ -1,12 +1,12 @@
 """C03 unit tests: H-REGION derivation, every applicable arm of the seven
-interface/2 I3 kill tests, every R1-R3 arm and non-arm named in interface/2
+interface/3 I3 kill tests, every R1-R4 arm and non-arm named in interface/3
 §I3a, and --check-not-killed / --check-decided.
 
 Inline SYNTHETIC clauses only -- generic templating, no card, no card name, no
-oracle_id and no Oracle text -- except `PromptingClauses`: the clauses that
-prompted R1-R3, named ONLY by four-coordinate address and read from the pinned
-corpus at run time. A missing or differing corpus is a loud failure there,
-never a skip.
+oracle_id and no Oracle text -- except `PromptingClauses` and `R4Regression`:
+the clauses that prompted R1-R4, and one case per R4 class, named ONLY by
+four-coordinate address and read from the pinned corpus at run time. A missing
+or differing corpus is a loud failure there, never a skip.
 
     python3 -m unittest discover -s tests/oracle_ingest -t .
 """
@@ -195,10 +195,12 @@ class Guards(unittest.TestCase):
         self.assertTrue(hr.portability_violations(str(Path.home()).encode()))
         self.assertFalse(hr.portability_violations(b"experiments/out/oracle_ingest"))
 
-    def test_the_interface_pin_is_interface_2(self):
-        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/2")
-        self.assertEqual(hr.INTERFACES_BLOB, "4ac4d856b651edde05b15c7065aa593f59561dcf")
+    def test_the_interface_pin_is_interface_3(self):
+        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/3")
+        self.assertEqual(hr.INTERFACES_BLOB, "119778a68c0e4e8378f0a117b7c22884ec5eda4b")
         self.assertEqual(hr.verify_interface(), hr.INTERFACES_BLOB)
+        self.assertEqual((hk.INTERFACE_VERSION, hk.INTERFACES_BLOB),
+                         (hr.INTERFACE_VERSION, hr.INTERFACES_BLOB))
 
 
 # ------------------------------------------------ interface/2 §I3a: the table
@@ -667,10 +669,304 @@ class Checks(unittest.TestCase):
         self.assertEqual(self.cli(rep, "--check-decided"), 0)
 
     def test_the_scripts_own_negative_controls_all_fire(self):
-        self.assertEqual(len(hk.negative_controls(RULES)), 26)
+        # interface/3 adds three R4 controls to the interface/2 26.
+        self.assertEqual(len(hk.negative_controls(RULES)), 29)
 
 
-# ---------------------------------------------- the clauses that prompted R1-R3
+# ------------------------------------------------- interface/3 §I3a R4 arms
+
+def label_class(text, card_text=None, card_name=None):
+    got = hr.r4_label(text, 0, card_text, card_name)
+    return None if got is None else got["class"]
+
+
+def r4_fields(c):
+    return {k: hr._bare(c[k]) for k in hr.R4_FIELDS}
+
+
+def r4_off(text, **kw):
+    """The same synthetic clause with R4 off (the interface/2 derivation)."""
+    c = rig(text, **kw)
+    off = hr.clause_record("rig", 0, 0, kw.get("ci", 0), text, kw.get("lo") or 0,
+                           len(text.rstrip(" .")) if kw.get("hi") is None else kw["hi"],
+                           "rig", r4=False)
+    return c, off
+
+
+BLINK = (" — Whenever a land you control enters, exile target artifact you control, "
+         "then return it to the battlefield.")
+INTERVENING = (" — When this widget enters, if you control an enchantment, exile target "
+               "artifact, then return it to the battlefield.")
+ANCHOR_TEXT = ("As this widget enters, choose Northward or Southward.\n"
+               "• Northward — Draw a card.")
+
+
+class R4CRRead(unittest.TestCase):
+
+    def test_the_counts_read_from_the_cr_are_the_interfaces(self):
+        crr = hr.r4_cr_read()
+        self.assertEqual(crr["counts"], {"ability_words": 61, "keyword_titles": 264,
+                                         "label_forms": 22})
+        self.assertEqual(hr.r4_check_counts(crr["counts"]), hr.R4_CR_COUNTS)
+
+    def test_a_count_other_than_the_interfaces_stops(self):
+        for k in hr.R4_CR_COUNTS:
+            bad = dict(hr.R4_CR_COUNTS, **{k: hr.R4_CR_COUNTS[k] - 1})
+            self.assertTrue(halts(lambda: hr.r4_check_counts(bad)), k)
+
+    def test_each_completeness_check_stops_on_a_tampered_cr(self):
+        rigs = hr._cr_tamper_rigs()
+        self.assertEqual(len(rigs), 6)
+        for name, txt in rigs:
+            self.assertTrue(halts(lambda: hr.r4_cr_read(txt)), name)
+        self.assertFalse(halts(lambda: hr.r4_cr_read(hr.cr.text())))
+
+    def test_the_cr_inventory_holds_the_required_symbols_and_forms(self):
+        crr = hr.r4_cr_read()
+        self.assertTrue(set(hr.R4_SYMBOLS_REQUIRED) <= set(crr["symbols"]))
+        forms = {f.lower() for _, f, _ in crr["forms"]}
+        self.assertTrue(set(hr.R4_FORMS_REQUIRED) <= forms)
+        self.assertTrue(any("villainous choice" in f for f in forms))
+
+
+class R4Locate(unittest.TestCase):
+
+    def test_a_label_runs_to_the_first_spaced_dash_with_text_after_it(self):
+        self.assertEqual(hr.r4_locate("Quiet Drill — Draw a card.", 0), (0, 11, 14))
+
+    def test_a_mode_label_starts_after_its_bullet(self):
+        self.assertEqual(hr.r4_locate("• Quiet Drill — Draw a card.", 0), (2, 13, 16))
+
+    def test_only_clause_ordinal_zero_opens_a_line(self):
+        self.assertIsNone(hr.r4_locate("Quiet Drill — Draw a card.", 1))
+
+    def test_no_label_shapes(self):
+        for text in ("Choose one —", "Choose one — ", "Choose one —\n• Draw a card.",
+                     "Mr. Drill — Draw a card.", "Plan: B — Draw a card.",
+                     "Plan; B — Draw a card.", "Plan • B — Draw a card.",
+                     'Say "drill" — Draw a card.', "Ward—Pay 3 life — Draw a card.",
+                     "Draw a card.", "Quiet Drill—Draw a card."):
+            self.assertIsNone(hr.r4_locate(text, 0), text)
+            self.assertIsNone(rig(text)["r4_label"], text)
+
+
+class R4Classify(unittest.TestCase):
+
+    def test_ticket_cost(self):
+        self.assertEqual(label_class("{TK}{TK} — Draw a card."), "ticket cost")
+        self.assertEqual(label_class("{TK} — Draw a card."), "ticket cost")
+
+    def test_ability_word(self):
+        self.assertEqual(label_class("Landfall — Draw a card."), "ability word")
+        self.assertEqual(label_class("Council's dilemma — Draw a card."), "ability word")
+
+    def test_keyword_title_list_and_parameter(self):
+        for label in ("Flying", "Flying, vigilance", "Ward 2", "Ward {2}", "∞",
+                      "Exhaust"):
+            self.assertEqual(label_class(f"{label} — Draw a card."), "keyword", label)
+
+    def test_cr_label_form(self):
+        for label in ("To solve", "Each opponent faces a villainous choice"):
+            self.assertEqual(label_class(f"{label} — Draw a card."), "CR label form",
+                             label)
+
+    def test_chapter_number_and_symbol(self):
+        for label, cls in (("II", "chapter symbol"), ("I, II", "chapter symbol"),
+                           ("3", "number"), ("1–9", "number"), ("1 or 2", "number"),
+                           ("2, 3", "number"), ("+ {1}", "symbol-bearing"),
+                           ("Quiet ★ Drill", "symbol-bearing")):
+            self.assertEqual(label_class(f"{label} — Draw a card."), cls, label)
+
+    def test_anchor_word_and_flavor(self):
+        self.assertEqual(label_class("• Northward — Draw a card.", ANCHOR_TEXT),
+                         "anchor word")
+        self.assertEqual(label_class("• Northward — Draw a card.",
+                                     "As this widget enters, draw a card.\n"
+                                     "• Northward — Draw a card."), "flavor label")
+
+    def test_the_cards_own_name_is_a_flavor_label(self):
+        self.assertEqual(label_class("• ~ — Draw a card.",
+                                     "Whenever ~ attacks, draw.\n• ~ — Draw a card."),
+                         "flavor label")
+        self.assertEqual(label_class("• Synthetic Widget — Draw a card.",
+                                     "Whenever Synthetic Widget attacks, draw.\n"
+                                     "• Synthetic Widget — Draw a card.",
+                                     "Synthetic Widget"), "flavor label")
+
+    def test_a_name_anywhere_else_than_its_own_label_is_not_an_anchor(self):
+        # The label itself is outside the search: by default the card text is
+        # the clause, so a label printed only once is never an anchor.
+        self.assertEqual(label_class("Quiet Drill — Draw a card."), "flavor label")
+        self.assertEqual(label_class("Ægir Drill — Draw a card."), "flavor label")
+        self.assertEqual(label_class("Don't Panic! — Draw a card."), "flavor label")
+
+    def test_classification_order_the_earlier_class_decides(self):
+        # ticket cost before symbol-bearing; ability word before anchor word;
+        # keyword before CR label form.
+        self.assertEqual(label_class("{TK}{TK} — Draw a card."), "ticket cost")
+        self.assertEqual(label_class("Landfall — Draw a card.",
+                                     "Landfall — Draw a card.\nLandfall matters."),
+                         "ability word")
+        self.assertEqual(label_class("Exhaust — Draw a card."), "keyword")
+        self.assertIn("Exhaust".lower(), {f.lower() for _, f, _ in hr._r4cr()["forms"]})
+
+    def test_effects(self):
+        for text, eff in (("{TK} — Draw a card.", "ignored"),
+                          ("Landfall — Draw a card.", "ignored"),
+                          ("Quiet Drill — Draw a card.", "ignored"),
+                          ("Flying — Draw a card.", "kept"),
+                          ("II — Draw a card.", "kept")):
+            self.assertEqual(hr.r4_label(text, 0)["effect"], eff, text)
+
+
+class R4ScopeAndHeads(unittest.TestCase):
+
+    def test_an_ignored_label_moves_the_scope_and_drops_its_heads(self):
+        text = "Exile Protocol — Roll a six-sided die."
+        c, off = r4_off(text)
+        self.assertEqual(c["r4_label"]["class"], "flavor label")
+        self.assertEqual(c["scope"][0], text.index("Roll"))
+        self.assertEqual([h["head"] for h in c["r4_dropped_heads"]], ["exile"])
+        self.assertEqual([h["head"] for h in c["r4_label"]["dropped_heads"]], ["exile"])
+        self.assertEqual(c["regions"], [])
+        self.assertEqual([r["head"] for r in off["regions"]], ["exile"])
+        self.assertEqual(c["r4_interface2"]["rule"], "R4")
+        self.assertIn("regions", c["r4_interface2"]["changed"])
+
+    def test_the_ability_text_after_the_label_is_kept_and_derived(self):
+        text = "Exile Protocol — Draw a card, then destroy target artifact."
+        c = rig(text)
+        self.assertEqual([r["head"] for r in c["regions"]], ["destroy"])
+        self.assertEqual(c["regions"][0]["span"][0], text.index("destroy"))
+        self.assertEqual(c["regions"][0]["end_rule"], "region-end-scope")
+        # the detector is frozen: the label's head is still a legacy head.
+        self.assertEqual([h["head"] for h in c["heads_legacy"]], ["exile", "destroy"])
+        self.assertEqual([h["head"] for h in c["r4_dropped_heads"]], ["exile"])
+
+    def test_a_census_scope_past_the_label_does_not_move(self):
+        text = "Landfall — Whenever a land enters, destroy target artifact."
+        c = rig(text, lo=text.index("destroy"))
+        self.assertEqual(c["scope"][0], text.index("destroy"))
+
+
+class R4ReadsR1AfterAnIgnoredLabel(unittest.TestCase):
+
+    def test_a_trigger_after_an_ability_word_or_flavor_label_attaches_once(self):
+        for label in ("Landfall", "Quiet Drill", "{TK}{TK}"):
+            c = pop(label + BLINK)
+            s0 = c["r4_label"]["scope_start"]
+            trig = [s for s in c["role_spans"] if s.get("r1_shape") == "condition-trigger"]
+            self.assertEqual(len(trig), 1, label)
+            self.assertEqual(trig[0]["span"][0], s0, label)
+            self.assertEqual((trig[0]["outcome"], trig[0]["attached_to"]),
+                             ("attached", "ability"), label)
+            self.assertEqual(trig[0]["interface2"], {"span": None, "changed_by": ["R4"]})
+            self.assertEqual(outcome(c, "K4"), PASS, label)
+
+    def test_a_trigger_and_its_intervening_if_change_k4_by_r4(self):
+        c = pop("Quiet Drill" + INTERVENING)
+        off = hk.r4_off_view(c)
+        self.assertEqual(sorted(s["r1_shape"] for s in c["role_spans"]
+                                if s.get("r1_shape")),
+                         ["condition-marker", "condition-trigger"])
+        on_rows, off_rows = run([c])["clauses"], run([off])["clauses"]
+        self.assertEqual(off_rows[0]["tests"]["K4"]["outcome"], KILL)
+        self.assertEqual(on_rows[0]["tests"]["K4"]["outcome"], PASS)
+        rows = hk.r4_changes([c], on_rows, off_rows)
+        self.assertIn(["rig:0:0:0", ["exile", 0], "K4", KILL, PASS, ["R4"], True, True],
+                      rows)
+        self.assertEqual(on_rows[0]["interface2_changes"]["K4"]["changed_by"], ["R4"])
+
+    def test_a_cost_colon_after_an_ignored_label_starts_at_the_scope_start(self):
+        text = "Quiet Drill — {T}: Exile target artifact, then return it."
+        c = pop(text)
+        cost = span_of(c, "cost")
+        self.assertEqual(cost["span"], [text.index("{T}"), text.index(":")])
+        self.assertEqual((cost["r1_shape"], cost["attached_to"]), ("cost-colon", "ability"))
+
+    def test_k4_re_derives_from_the_scope_start_in_the_record(self):
+        c = pop("Quiet Drill" + INTERVENING)
+        got = [{k: v for k, v in s.items() if k not in ("interface1", "interface2")}
+               for s in c["role_spans"]]
+        self.assertEqual(hk.rule_view(c, True, True)["role_spans"], got)
+        k4 = run([c])["clauses"][0]["tests"]["K4"]
+        self.assertTrue(all(i.get("r1_scope_start_after_r4_label")
+                            == c["r4_label"]["scope_start"]
+                            for i in k4["spans"] if i.get("r1_shape")))
+
+
+class R4KeptAndConfined(unittest.TestCase):
+
+    def test_a_kept_label_keeps_its_interface_2_outcome(self):
+        for label in ("Flying", "II", "3", "+ {1}", "To solve"):
+            c, off = r4_off(label + INTERVENING, census=("exile", 0), population=True)
+            self.assertEqual(c["r4_label"]["effect"], "kept", label)
+            self.assertIsNone(c["r4_label"]["scope_start"], label)
+            self.assertEqual(r4_fields(c), r4_fields(off), label)
+            self.assertNotIn("r4_interface2", c, label)
+            self.assertEqual(outcome(c, "K4"), KILL, label)   # its interface/2 KILL
+
+    def test_an_anchor_word_label_keeps_its_interface_2_outcome(self):
+        text = "• Northward" + INTERVENING
+        c = hr.clause_record("rig", 0, 1, 0, text, 0, len(text), "rig",
+                             card_text="choose Northward or Southward.\n" + text)
+        off = hr.clause_record("rig", 0, 1, 0, text, 0, len(text), "rig", r4=False)
+        self.assertEqual(c["r4_label"]["class"], "anchor word")
+        self.assertEqual(r4_fields(c), r4_fields(off))
+
+    def test_an_unlabelled_clause_is_unchanged(self):
+        c, off = r4_off(INTERVENING[3:])
+        self.assertIsNone(c["r4_label"])
+        self.assertEqual(r4_fields(c), r4_fields(off))
+
+    def test_r4_is_confined(self):
+        for text in (INTERVENING[3:], "Flying" + INTERVENING):
+            c, off = r4_off(text)
+            self.assertFalse(halts(lambda: hr.r4_confined(off, c, c["r4_label"])))
+            moved = dict(c, scope=[c["scope"][0] + 1, c["scope"][1]])
+            self.assertTrue(halts(lambda: hr.r4_confined(off, moved, c["r4_label"])),
+                            text)
+            pc = pop(text)
+            po = hk.r4_off_view(pc)
+            on_rows, off_rows = run([pc])["clauses"], run([po])["clauses"]
+            self.assertFalse(halts(lambda: hk.r4_confined([pc], [po], on_rows, off_rows)))
+            flipped = json.loads(json.dumps(on_rows))
+            was = flipped[0]["tests"]["K6"]["outcome"]
+            flipped[0]["tests"]["K6"]["outcome"] = PASS if was != PASS else KILL
+            self.assertTrue(halts(lambda: hk.r4_confined([pc], [po], flipped, off_rows)),
+                            text)
+
+    def test_the_r4_off_view_is_the_interface_2_record(self):
+        c = pop("Quiet Drill" + INTERVENING)
+        off = hk.r4_off_view(c)
+        plain = hr.clause_record("rig", 0, 0, 0, c["clause_text"], 0,
+                                 len(c["clause_text"].rstrip(" .")), "rig", r4=False)
+        self.assertEqual({k: off[k] for k in hr.R4_FIELDS},
+                         {k: plain[k] for k in hr.R4_FIELDS})
+        self.assertIsNone(off["r4_label"])
+
+    def test_r4_is_in_the_table_and_a_card_keyed_r4_entry_halts_and_kills_k7(self):
+        r = next(r for r in RULES if r["id"] == "ability-label")
+        self.assertEqual(set(r), {"id", "kind", "cr", "pattern"})
+        for k in ("id", "kind", "cr", "pattern"):
+            for key in (NAMES[0], "00000000-0000-0000-0000-000000000000"):
+                bad = dict(r, **{k: f"{r[k]} {key}"})
+                self.assertTrue(halts(lambda: hr.assert_not_card_keyed(RULES + [bad],
+                                                                       NAMES)), (k, key))
+        keyed = [dict(x, pattern=f"{x['pattern']} {NAMES[0]}")
+                 if x["id"] == "ability-label" else x for x in RULES]
+        self.assertEqual(outcome(rig(TWO_HEADS), "K7", keyed), KILL)
+
+    def test_r1_r3_records_are_never_read_from_the_r4_on_view(self):
+        c = pop("Quiet Drill" + INTERVENING)
+        self.assertTrue(all("interface1" not in s for s in c["role_spans"]
+                            if "interface2" in s))
+        self.assertTrue(any(s.get("r1_shape") for s in c["role_spans"]))
+        self.assertFalse(any(s.get("r1_shape")
+                             for s in c["r4_interface2"]["role_spans"]))
+
+
+# ---------------------------------------------- the clauses that prompted R1-R4
 
 CORPUS_REL = "data/raw/oracle-cards.jsonl.gz"
 
@@ -746,6 +1042,121 @@ class PromptingClauses(unittest.TestCase):
             self.assertEqual([k for _, _, k in hits[0]["list_marks"]],
                              ["target", "second-object"], key)
             self.assertEqual(outcome(c, "K3"), UNRESOLVED, key)
+
+
+# interface/3 §I3a R4 regression cases, by four-coordinate address only.
+FS2_CASES = {
+    ("0988d2cd-4e1d-47c6-b0db-0ff0335b12e6", 0, 2, 0): "ability word",
+    ("b095526e-94a4-416b-83de-d6271804ccf3", 0, 0, 0): "ability word",
+    ("60a69ddc-3289-4786-944d-27a82c5f0dc8", 0, 0, 0): "ticket cost",
+    ("09ef446c-a13d-49d9-a94c-cd5f5a2d440b", 0, 0, 0): "flavor label",
+    ("9ad12c75-e97d-404a-bfa9-26ff1d0bb506", 0, 0, 0): "flavor label",
+}
+FS1_CASE = ("19b229c4-1c21-4c7c-a25e-4e8c1cd4ed4b", 0, 0, 0)
+TEST_CARD = "867b3923-692c-4444-a071-518a290e43d8"
+KEPT_CASES = {
+    ("40f66e21-5b60-4e42-927d-65397e7ad544", 0, 1, 0): "anchor word",
+    ("7c1eb874-97f3-463f-bf4e-4d82dcc16e69", 0, 1, 0): "CR label form",
+    ("4e0854f8-de38-4574-9fc9-b340c88b2945", 0, 1, 0): "chapter symbol",
+    ("058f74f6-eeed-4ee8-8574-f95fea8d8f14", 0, 1, 0): "number",
+    ("d262f3e1-b5bc-4dab-86c2-cd89c2419e54", 0, 1, 0): "symbol-bearing",
+    ("72101185-4336-480a-b4d7-f8ceb0007a51", 0, 1, 0): "keyword",
+}
+IGNORED_CASES = {("481c3bfe-2293-447d-aa03-3ea6ed9321aa", 0, 0, 0): "ticket cost"}
+
+
+class R4Regression(unittest.TestCase):
+    """The FS-1 / FS-2 clauses, the Captain's R4 test card and one case per
+    class: a class other than the one stated is a finding, never a test to bend."""
+
+    # The same pinned-corpus load (a missing corpus is a loud failure).
+    setUpClass = classmethod(PromptingClauses.setUpClass.__func__)
+
+    def chain(self, oid, fi, pi, ci, r4=True):
+        card = self.cards[oid]
+        seg = next((s for s in hr.chain_clauses(card) if s[:3] == (fi, pi, ci)), None)
+        self.assertIsNotNone(seg, f"no chain clause {oid}:{fi}:{pi}:{ci}")
+        text = seg[3]
+        c = hr.clause_record(oid, fi, pi, ci, text, 0, len(text), "chain-clause",
+                             card_text=hr.card_rules_text(card), card_name=card["name"],
+                             r4=r4)
+        c.update(census_key=None, population=False, fixture_roles=["regression"])
+        return c
+
+    def census(self, oid, fi, pi, ci):
+        card = self.cards[oid]
+        rows = [r for r in self.rows if r["oracle_id"] == oid and r["occurrence"] == 0
+                and len(hr.aq.effect_heads(r["clause"])) > 1]
+        self.assertEqual(len(rows), 1, f"census row of {oid}")
+        row = rows[0]
+        got = hr.resolve_census(card, row["clause"])
+        self.assertEqual(got[:3], (fi, pi, ci), "the address moved")
+        _, _, _, text, off = got
+        c = hr.clause_record(oid, fi, pi, ci, text, off, off + len(row["clause"]),
+                             "census-clause", card_text=hr.card_rules_text(card),
+                             card_name=card["name"])
+        c.update(census_key=[row["stem"], 0], population=True, fixture_roles=[])
+        return c
+
+    def test_fs2_population_clauses(self):
+        for key, cls in FS2_CASES.items():
+            c = self.census(*key)
+            lab = c["r4_label"]
+            self.assertEqual((lab["class"], lab["effect"]), (cls, "ignored"), key)
+            trig = [s for s in c["role_spans"] if s["role"] == "condition"
+                    and s.get("r1_shape") == "condition-trigger"]
+            self.assertEqual(len(trig), 1, key)
+            self.assertEqual(trig[0]["span"][0], lab["scope_start"], key)
+            self.assertEqual((trig[0]["outcome"], trig[0]["attached_to"]),
+                             ("attached", "ability"), key)
+            self.assertEqual(outcome(c, "K4"), PASS, key)
+
+    def test_fs1_fixture_clause(self):
+        c = self.chain(*FS1_CASE)
+        lab = c["r4_label"]
+        self.assertEqual((lab["class"], lab["effect"]), ("flavor label", "ignored"))
+        self.assertIn("search", [h["head"] for h in lab["dropped_heads"]])
+        self.assertIn("search", [h["head"] for h in c["r4_dropped_heads"]])
+        self.assertNotIn("search", [r["head"] for r in c["regions"]])
+        self.assertEqual(c["regions"], [])
+        cost = span_of(c, "cost")
+        text = c["clause_text"]
+        self.assertEqual(cost["span"], [lab["scope_start"], text.index(":")])
+        self.assertEqual(cost["outcome"], "no_region")
+        self.assertEqual(outcome(c, "K4"), UNRESOLVED)
+
+    def test_the_captains_r4_test_card(self):
+        for ci_key in ((0, 1, 0), (0, 2, 0), (0, 3, 0)):
+            c = self.chain(TEST_CARD, *ci_key)
+            lab = c["r4_label"]
+            self.assertEqual((lab["class"], lab["effect"]), ("flavor label", "ignored"),
+                             ci_key)
+            text = c["clause_text"]
+            self.assertEqual(lab["scope_start"], text.index(" — ") + 3, ci_key)
+            self.assertEqual(c["scope"], [lab["scope_start"], len(text)], ci_key)
+            self.assertTrue(text[lab["scope_start"]:].strip(), ci_key)  # effect kept
+            self.assertEqual((c["regions"], c["r4_dropped_heads"]), ([], []), ci_key)
+        self.assertEqual(self.chain(TEST_CARD, 0, 2, 0)["r4_label"]["text"], "~")
+        for ci_key in ((0, 0, 0), (0, 0, 1)):
+            c = self.chain(TEST_CARD, *ci_key)
+            self.assertIsNone(c["r4_label"], ci_key)
+            self.assertEqual(r4_fields(c), r4_fields(self.chain(TEST_CARD, *ci_key,
+                                                                 r4=False)), ci_key)
+
+    def test_one_kept_case_per_kept_class(self):
+        for key, cls in KEPT_CASES.items():
+            c = self.chain(*key)
+            lab = c["r4_label"]
+            self.assertEqual((lab["class"], lab["effect"]), (cls, "kept"), key)
+            self.assertIsNone(lab["scope_start"], key)
+            self.assertEqual(r4_fields(c), r4_fields(self.chain(*key, r4=False)), key)
+
+    def test_a_further_ignored_case(self):
+        for key, cls in IGNORED_CASES.items():
+            c = self.chain(*key)
+            lab = c["r4_label"]
+            self.assertEqual((lab["class"], lab["effect"]), (cls, "ignored"), key)
+            self.assertEqual(c["scope"][0], lab["scope_start"], key)
 
 
 if __name__ == "__main__":
