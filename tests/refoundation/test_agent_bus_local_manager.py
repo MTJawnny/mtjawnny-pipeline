@@ -496,6 +496,9 @@ class TestWorkspace(unittest.TestCase):
             prompt = m._context(ws, 1001, "w-result", "selftest", "c1: exit 0 (GREEN)\n")
         self.assertEqual((ws.context / "goal-checks.txt").read_text(), "c1: exit 0 (GREEN)\n")
         self.assertIn("goal-checks.txt", prompt)
+        self.assertTrue((ws.context / "review-brief.md").is_file())
+        self.assertIn("review-brief.md: START HERE", prompt)
+        self.assertIn("BUDGET", prompt)
         for rel in L.CONTRACTS:
             self.assertEqual((ws.context / "contracts" / rel).read_text(),
                              f"accepted law: {rel}\n")
@@ -867,3 +870,59 @@ class TestCodexUsageProbe(unittest.TestCase):
                              env=env, capture_output=True, text=True)
         self.assertEqual(out.returncode, 3)
         self.assertEqual(json.loads(out.stdout)["status"], "HANDOFF")
+
+
+class TestReviewBrief(unittest.TestCase):
+    """RB1: the brief carries what a review starts by hunting for, and says what
+    it could not build."""
+
+    def setUp(self):
+        from tests.refoundation import agent_bus_fixtures as F
+        self.F = F
+        body = F.default_body("WAVE_COMMAND")
+        body["candidate_base"] = "c" * 40
+        body["note"] = "the findings, verbatim"
+        self.pr = [F.raw(500, source="pr:76", message_id="m-command-0001", body=body),
+                   F.raw(501, source="pr:76", kind="WAVE_RESULT", actor="WORKER",
+                         message_id="w-result-0001", parent="m-command-0001")]
+        self.issue = [SimpleNamespace(comment_id=F.CHECKPOINT, author=WHO, body="THE K"),
+                      SimpleNamespace(comment_id=F.TASK, author=WHO, body="THE TASK")]
+        self.auth = SimpleNamespace(checkpoint=F.CHECKPOINT, task=F.TASK)
+        self.unit_msg = f"unit one\n\nAgent-Bus-Wave: {F.WAVE}\nAgent-Bus-Unit: U1"
+
+    def git(self, log=None, show="PATCH-TEXT\n", fail_show=False):
+        log = log if log is not None else (
+            f"{'1' * 40}\x1f{self.unit_msg}\n\x1e{'2' * 40}\x1fbus fix\n\x1e")
+        def run(argv):
+            if argv[0] == "log":
+                return log
+            if argv[0] == "show":
+                return None if fail_show else f"{argv[-1]}\n{show}"
+            raise AssertionError(argv)
+        return run
+
+    def test_RB1_the_brief_holds_result_command_records_and_unit_diffs(self):
+        brief = L.review_brief(self.issue, self.pr, "w-result-0001", self.auth, self.git())
+        for needle in ("PR comment 501", "PR comment 500", "the findings, verbatim",
+                       "allow_paths: ['agent_bus/**']", "THE K", "THE TASK",
+                       f"{'c' * 40}..{self.F.OTHER_SHA}", "1" * 40 + " unit one", "PATCH-TEXT"):
+            self.assertIn(needle, brief)
+        self.assertNotIn("2" * 40, brief)     # a non-unit (bus) commit is not a unit
+
+    def test_NC_RB1_what_cannot_be_built_is_said(self):
+        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr, "w-missing",
+                                                    self.auth, self.git()))
+        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr[1:], "w-result-0001",
+                                                    self.auth, self.git()))
+        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr, "w-result",
+                                                    self.auth, lambda argv: None))
+        self.assertIn("UNAVAILABLE: git show", L.review_brief(
+            self.issue, self.pr, "w-result-0001", self.auth, self.git(fail_show=True)))
+        self.assertIn("UNAVAILABLE in the thread", L.review_brief(
+            [], self.pr, "w-result-0001", self.auth, self.git()))
+
+    def test_NC_RB1_an_oversized_diff_is_truncated_loudly(self):
+        brief = L.review_brief(self.issue, self.pr, "w-result-0001", self.auth,
+                               self.git(show="x" * (L.BRIEF_DIFF_BYTES + 10)))
+        self.assertIn("TRUNCATED", brief)
+        self.assertLess(len(brief), L.BRIEF_DIFF_BYTES + 20_000)
