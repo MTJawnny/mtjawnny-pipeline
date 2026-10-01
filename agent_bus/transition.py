@@ -245,7 +245,7 @@ class Transition:
                                      result_head=self.result_head,
                                      repair_round=self.repair_round,
                                      verdict_comment=verdict_comment, txn=self.txn,
-                                     created_at=created_at)
+                                     created_at=created_at, decision=self.decision)
         return goal.next_command(self.binding, message_id=self.successor_id,
                                  issue=self.prior.issue, checkpoint=checkpoint,
                                  head=self.head, created_at=created_at)
@@ -275,15 +275,21 @@ def repair_wave(origin_wave: str, repair_round: int) -> str:
 
 def successor_command(*, origin: Envelope, issue: int, checkpoint: int, task: int, head: str,
                       result_head: str, repair_round: int, verdict_comment: int, txn: str,
-                      created_at: str) -> Envelope:
-    """The ONE successor a REPAIR may select: the origin's units, again, on the result."""
+                      created_at: str, decision: Decision | None = None) -> Envelope:
+    """The ONE successor a REPAIR may select: the origin's units, again, on the result.
+
+    RF1: the Worker runs sandboxed with no GitHub access, so the note carries the
+    reviewer's reason and findings verbatim; a pointer to the verdict alone left
+    two repair rounds blind (C03B AR1/AR2, 2026-10-01). The decision is the one
+    the verdict records, so the checkpoint still derives exactly this command."""
     body = {
         "branch": origin.body["branch"],
         "review_boundary": origin.body["review_boundary"],
         "units": copy.deepcopy(origin.body["units"]),
         "candidate_base": result_head,
         "note": (f"autonomous repair round {repair_round} of {origin.message_id}; "
-                 f"the findings are in Issue #{issue} verdict {verdict_comment}"),
+                 f"the findings are in Issue #{issue} verdict {verdict_comment}"
+                 + (repair_brief(decision) if decision is not None else "")),
     }
     if "stop_conditions" in origin.body:
         body["stop_conditions"] = list(origin.body["stop_conditions"])
@@ -294,6 +300,14 @@ def successor_command(*, origin: Envelope, issue: int, checkpoint: int, task: in
                     parent=None, authority={"issue": issue, "checkpoint": checkpoint,
                                             "task": task},
                     base=head, created_at=created_at, body=body)
+
+
+def repair_brief(decision: Decision) -> str:
+    """The reviewer's reason and findings, verbatim and numbered."""
+    findings = " ".join(f"({i}) {f}" for i, f in enumerate(decision.findings, 1))
+    return (f". REPAIR THESE, verbatim from the reviewer -- reason: {decision.reason} "
+            f"Findings: {findings or '(none listed)'} Each unit changes only its own "
+            "allow_paths; work for another unit's paths is done in that unit.")
 
 
 def same_message(a: Envelope, b: Envelope) -> bool:

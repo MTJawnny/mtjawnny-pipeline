@@ -408,6 +408,16 @@ class TestTheTransactionCompletes(unittest.TestCase):
         self.assertEqual(successor.base, H0)
         self.assertEqual(successor.authority["checkpoint"], view.authority.checkpoint)
 
+    def test_RF1_the_repair_command_carries_the_reviewers_reason_and_findings(self):
+        fake = FakeGitHub()
+        self.assertEqual(publish(fake, REPAIR)["exit"], P.EXIT_COMPLETE)
+        [successor] = worker_view(fake).state.pending_for("WORKER")
+        note = successor.body["note"]
+        self.assertIn(REPAIR.reason, note)
+        for i, finding in enumerate(REPAIR.findings, 1):
+            self.assertIn(f"({i}) {finding}", note)
+        self.assertIn("allow_paths", note)
+
     def test_captain_stops_autonomy_without_selecting_anything(self):
         fake = FakeGitHub()
         self.assertEqual(publish(fake, CAPTAIN)["exit"], P.EXIT_COMPLETE)
