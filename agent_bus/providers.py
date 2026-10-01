@@ -205,8 +205,10 @@ class ClaudeProvider:
 
     def fresh_session(self, wave: str, ordinal: int) -> SessionRef:
         # A second fresh session for the same wave gets a new id rather than
-        # colliding with one an earlier (failed) attempt may have created.
-        key = wave if ordinal == 0 else f"{wave}#{ordinal}"
+        # colliding with one an earlier (failed) attempt may have created. Past
+        # the first (the durable, crash-resumable id), the key carries this
+        # process's nonce: another process's attempts can never be re-derived (SK2).
+        key = wave if ordinal == 0 else f"{wave}#{PROCESS_NONCE}#{ordinal}"
         return SessionRef(self.name, str(uuid.uuid5(self.namespace, key)), False)
 
     def durable_session(self, wave: str) -> SessionRef | None:
@@ -468,12 +470,15 @@ def usage_handoff(provider: str, result: Completed) -> str | None:
 
 # ----------------------------------------------------------------------- transport
 SESSION_COLLISION_RETRIES = 16
+PROCESS_NONCE = uuid.uuid4().hex
 
 
-def session_in_use(result: Completed) -> bool:
-    """The provider refused a fresh session id that already exists; nothing ran."""
-    return result.returncode != 0 and "is already in use" in (
-        (result.stderr or "") + (result.stdout or ""))
+def session_in_use(result: Completed, session_id: str) -> bool:
+    """Claude refused THIS fresh session id because it already exists; nothing ran.
+    Only the CLI's own refusal naming the exact id sent counts, never model output."""
+    return result.returncode != 0 and (
+        f"Session ID {session_id} is already in use" in (result.stderr or "")
+        or (result.stdout or "").strip().startswith(f"Error: Session ID {session_id} is already in use"))
 
 
 class ProviderFailoverTransport:
@@ -567,7 +572,8 @@ class ProviderFailoverTransport:
             # refused before the model runs. Take the next fresh id, a bounded
             # number of times; a resumed session is never replaced this way.
             for _ in range(SESSION_COLLISION_RETRIES):
-                if session.resumed or not session_in_use(result):
+                if session.resumed or provider.name != "claude" \
+                        or not session_in_use(result, session.id):
                     break
                 session = provider.fresh_session(wave, self.book.next_fresh(provider.name, wave))
                 argv = provider.argv(prompt, session)

@@ -425,29 +425,68 @@ class TestFailoverPositive(unittest.TestCase):
         self.assertEqual(fake.posted_kinds(),
                          ["WAVE_PROGRESS", "WAVE_PROGRESS", "WAVE_RESULT"])
 
+    def sk2_ids(self, n):
+        from tests.refoundation.agent_bus_fixtures import WAVE as FWAVE
+        key = f"{FWAVE}|{COMMAND['message_id']}"
+        claude = P.ClaudeProvider(REPO_PATH)
+        return [claude.fresh_session(key, k).id for k in range(n)]
+
+    def in_use(self, sid, stream="stderr"):
+        text = f"Error: Session ID {sid} is already in use."
+        return Step("claude", rc=1, **{stream: text})
+
     def test_SK2_a_fresh_session_id_already_in_use_takes_the_next_one(self):
-        def in_use():
-            return Step("claude", rc=1, stderr="Error: Session ID x is already in use.")
-        fake = repo(in_use(), in_use(), ok("claude", "U1"), ok("claude", "U2"))
+        ids = self.sk2_ids(3)
+        fake = repo(self.in_use(ids[0]), self.in_use(ids[1], "stdout"),
+                    ok("claude", "U1"), ok("claude", "U2"))
         report = armed(fake).poll_once(execute=True)
         self.assertEqual(report["action"], "WAVE_RAN")
-        ids = [c[c.index("--session-id") + 1] for c in fake.provider_calls[:3]]
-        self.assertEqual(len(set(ids)), 3)                 # three different fresh ids
+        sent = [c[c.index("--session-id") + 1] for c in fake.provider_calls[:3]]
+        self.assertEqual(sent, ids)                         # three different fresh ids
         self.assertEqual(fake.provider_calls[3][fake.provider_calls[3].index("--resume") + 1],
                          ids[2])                           # U2 resumes the one that ran
 
-    def test_NC_SK2_collisions_are_bounded_and_other_failures_are_not_retried(self):
-        steps = [Step("claude", rc=1, stderr="Session ID x is already in use")
-                 for _ in range(P.SESSION_COLLISION_RETRIES + 1)]
-        fake = repo(*steps)
+    def test_NC_SK2_only_the_exact_refusal_is_retried(self):
+        cases = {
+            "model output naming the phrase": Step(
+                "claude", rc=1, stdout=claude_result("port is already in use")),
+            "another session's id": self.in_use("00000000-0000-0000-0000-000000000000"),
+            "some other failure": Step("claude", rc=1, stderr="some other failure"),
+        }
+        for why, step in cases.items():
+            with self.subTest(why=why):
+                fake = repo(step)
+                with self.assertRaises(BusError):
+                    armed(fake).poll_once(execute=True)
+                self.assertEqual(len(fake.provider_calls), 1)
+
+    def test_NC_SK2_collisions_are_bounded(self):
+        ids = self.sk2_ids(P.SESSION_COLLISION_RETRIES + 1)
+        fake = repo(*[self.in_use(i) for i in ids])
         with self.assertRaises(BusError) as caught:
             armed(fake).poll_once(execute=True)
         self.assertEqual(caught.exception.code, E.TRANSPORT_FAILED)
         self.assertEqual(len(fake.provider_calls), P.SESSION_COLLISION_RETRIES + 1)
-        fake = repo(Step("claude", rc=1, stderr="some other failure"))
-        with self.assertRaises(BusError):
+
+    def test_NC_SK2_a_resumed_session_in_use_is_not_replaced(self):
+        ids = self.sk2_ids(1)
+        fake = repo(ok("claude", "U1"), self.in_use(ids[0]))   # U2 resumes U1's session
+        with self.assertRaises(BusError) as caught:
             armed(fake).poll_once(execute=True)
-        self.assertEqual(len(fake.provider_calls), 1)
+        self.assertEqual(caught.exception.code, E.TRANSPORT_FAILED)
+        self.assertEqual(len(fake.provider_calls), 2)           # no fresh retry for U2
+        self.assertIn("--resume", fake.provider_calls[1])
+
+    def test_SK2_fresh_ids_past_the_first_carry_the_process_nonce(self):
+        claude = P.ClaudeProvider(REPO_PATH)
+        self.assertEqual(claude.fresh_session("W", 0).id, session_id("W"))
+        original = P.PROCESS_NONCE
+        try:
+            first = claude.fresh_session("W", 1).id
+            P.PROCESS_NONCE = "another-process"
+            self.assertNotEqual(claude.fresh_session("W", 1).id, first)
+        finally:
+            P.PROCESS_NONCE = original
 
     def test_the_codex_unit_still_meets_host_git_law_and_unit_enforcement(self):
         # A provider that commits on its own is refused, whoever it is.
