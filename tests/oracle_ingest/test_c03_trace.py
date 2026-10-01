@@ -3,7 +3,8 @@ negative controls (a record missing its owning occurrence halts; a dropped
 trace or an outcome mismatch fails --check-complete) and a stale kill.json;
 exact fixture coverage (unrelated trace keys, incorrect member identities,
 duplicate fixture roles and entries are refused) and a null population census
-key reported as malformed, never a TypeError.
+key reported as malformed, never a TypeError; a malformed C03 census key (e.g.
+['exile']) halts the renderer with its diagnostic, never an IndexError.
 
 Inline SYNTHETIC clauses only -- generic templating, no card, no card name, no
 oracle_id and no Oracle text. Never reads or writes c03/ or c03b/ output.
@@ -658,11 +659,33 @@ class MalformedCensusKey(unittest.TestCase):
                 ct.render_traces(regions, kill)
         self.assertIn("census key None is malformed", str(cm.exception) + err.getvalue())
 
+    def test_malformed_c03_census_key_halts_with_diagnostic(self):
+        """Regression: ['exile'] was indexed before validation (IndexError)."""
+        for i in (0, 3):                              # a population and a fixture record
+            for ck in (["exile"], "exile", [0, "exile"], ["exile", True],
+                       ["exile", 0, 1], {}, ["exile", None]):
+                with self.subTest(record=i, census_key=ck):
+                    regions, kill = copy.deepcopy((self.regions, self.kill))
+                    regions["clauses"][i]["census_key"] = ck
+                    kill["clauses"][i]["census_key"] = ck  # only the key's shape is wrong
+                    for fn in (lambda: ct.render_traces(regions, kill),
+                               lambda: ct.trace(regions["clauses"][i],
+                                                kill["clauses"][i])):
+                        with contextlib.redirect_stderr(io.StringIO()) as err:
+                            with self.assertRaises(SystemExit):
+                                fn()              # never IndexError / TypeError
+                        self.assertIn(f"census key {ck!r} is malformed", err.getvalue())
+
+    def test_well_formed_census_keys_still_render(self):
+        doc = ct.render_traces(self.regions, self.kill)
+        self.assertEqual([t["key"][1] for t in doc["traces"]],
+                         [["exile", 0], ["exile", 1], ["destroy", 0], None])
+
 
 class EmbeddedControls(unittest.TestCase):
     def test_script_negative_controls_all_fire(self):
         names = ct.negative_controls()
-        self.assertEqual(len(names), 12)
+        self.assertEqual(len(names), 13)
         for want in ("a C03 record missing its owning occurrence halts the renderer",
                      "--check-complete fails on a rigged dropped trace",
                      "--check-complete fails on a rigged outcome mismatch",
@@ -674,6 +697,8 @@ class EmbeddedControls(unittest.TestCase):
                      "--check-complete fails on a duplicate fixture trace entry",
                      "--check-complete reports a null population census key as malformed",
                      "a C03 population record with a null census key halts the renderer",
+                     "a C03 record with a malformed census key halts the renderer with "
+                     "its diagnostic",
                      "--verify fails on a rigged stale kill.json"):
             self.assertIn(want, names)
 
