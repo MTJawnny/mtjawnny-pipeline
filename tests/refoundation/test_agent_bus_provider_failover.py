@@ -425,6 +425,30 @@ class TestFailoverPositive(unittest.TestCase):
         self.assertEqual(fake.posted_kinds(),
                          ["WAVE_PROGRESS", "WAVE_PROGRESS", "WAVE_RESULT"])
 
+    def test_SK2_a_fresh_session_id_already_in_use_takes_the_next_one(self):
+        def in_use():
+            return Step("claude", rc=1, stderr="Error: Session ID x is already in use.")
+        fake = repo(in_use(), in_use(), ok("claude", "U1"), ok("claude", "U2"))
+        report = armed(fake).poll_once(execute=True)
+        self.assertEqual(report["action"], "WAVE_RAN")
+        ids = [c[c.index("--session-id") + 1] for c in fake.provider_calls[:3]]
+        self.assertEqual(len(set(ids)), 3)                 # three different fresh ids
+        self.assertEqual(fake.provider_calls[3][fake.provider_calls[3].index("--resume") + 1],
+                         ids[2])                           # U2 resumes the one that ran
+
+    def test_NC_SK2_collisions_are_bounded_and_other_failures_are_not_retried(self):
+        steps = [Step("claude", rc=1, stderr="Session ID x is already in use")
+                 for _ in range(P.SESSION_COLLISION_RETRIES + 1)]
+        fake = repo(*steps)
+        with self.assertRaises(BusError) as caught:
+            armed(fake).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.TRANSPORT_FAILED)
+        self.assertEqual(len(fake.provider_calls), P.SESSION_COLLISION_RETRIES + 1)
+        fake = repo(Step("claude", rc=1, stderr="some other failure"))
+        with self.assertRaises(BusError):
+            armed(fake).poll_once(execute=True)
+        self.assertEqual(len(fake.provider_calls), 1)
+
     def test_the_codex_unit_still_meets_host_git_law_and_unit_enforcement(self):
         # A provider that commits on its own is refused, whoever it is.
         untrailed = Step("codex", message="U1: no trailers", paths=("agent_bus/x.py",))

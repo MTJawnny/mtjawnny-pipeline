@@ -467,6 +467,15 @@ def usage_handoff(provider: str, result: Completed) -> str | None:
 
 
 # ----------------------------------------------------------------------- transport
+SESSION_COLLISION_RETRIES = 16
+
+
+def session_in_use(result: Completed) -> bool:
+    """The provider refused a fresh session id that already exists; nothing ran."""
+    return result.returncode != 0 and "is already in use" in (
+        (result.stderr or "") + (result.stdout or ""))
+
+
 class ProviderFailoverTransport:
     """The provider-neutral local transport. Same `dispatch` as every transport."""
 
@@ -553,6 +562,16 @@ class ProviderFailoverTransport:
             # nothing classified it, so nothing fails over.
             # The sandbox's writable root is the working directory (CLS1).
             result = self.run(argv, timeout=None, cwd=self.repo)
+            # SK2: the session book is per process, so after a restart a FRESH id an
+            # earlier process already opened (e.g. on a quota-failed attempt) is
+            # refused before the model runs. Take the next fresh id, a bounded
+            # number of times; a resumed session is never replaced this way.
+            for _ in range(SESSION_COLLISION_RETRIES):
+                if session.resumed or not session_in_use(result):
+                    break
+                session = provider.fresh_session(wave, self.book.next_fresh(provider.name, wave))
+                argv = provider.argv(prompt, session)
+                result = self.run(argv, timeout=None, cwd=self.repo)
             verdict = provider.classify(result)
             if verdict.status == OK:
                 opened = provider.opened(session, result)
