@@ -86,9 +86,9 @@ class TestReviewerChoice(unittest.TestCase):
         self.assertEqual(L.reviewer_for(None, order, cross_only=False), [])
 
     def test_NC_SR1_a_high_stakes_review_is_still_cross_provider(self):
-        for cross_only in (True,):
-            self.assertEqual(L.reviewer_for("claude", ("claude", "codex"), cross_only), ["codex"])
-            self.assertEqual(L.reviewer_for("codex", ("claude", "codex"), cross_only), ["claude"])
+        self.assertEqual(L.reviewer_for("claude", ("claude", "codex"), True), ["codex"])
+        self.assertEqual(L.reviewer_for("codex", ("claude", "codex"), True), ["claude"])
+        self.assertEqual(L.reviewer_for("claude", ("claude",), True), [])
         self.assertEqual(L.reviewer_for("claude", ("claude", "codex")), ["codex"])  # default
 
     def test_a_failover_wave_has_no_eligible_reviewer(self):
@@ -329,13 +329,26 @@ class TestHighStakes(unittest.TestCase):
         with mock.patch.object(L.publisher, "binding_for", bind):
             return m.high_stakes(1001)
 
-    def binding(self, wave, terminal):
-        return SimpleNamespace(entry=SimpleNamespace(wave=wave),
+    def binding(self, wave, terminal, allow=("experiments/oracle_ingest/x.py",)):
+        units = [{"id": "U1", "allow_paths": list(allow)}]
+        return SimpleNamespace(entry=SimpleNamespace(wave=wave, command={"units": units}),
                                plan=SimpleNamespace(terminal=terminal))
 
-    def test_SR1_only_a_bound_non_terminal_wave_is_ordinary(self):
+    def test_SR1_only_a_bound_non_terminal_unprotected_wave_is_ordinary(self):
         self.assertFalse(self.stakes(self.binding("C03B", "C03-M04")))
         self.assertTrue(self.stakes(self.binding("C03-M04", "C03-M04")))
+
+    def test_NC_SR1_a_wave_that_may_touch_law_or_the_bus_is_high_stakes(self):
+        for allow in ("agent_bus/**", "refoundation/AGENT-BUS.md", "CLAUDE.md", "**",
+                      "oracle_compiler/**", "oracle_compiler/INTERFACES.md", ".github/x.yml",
+                      "tags/**", "recipes/a.json"):
+            with self.subTest(allow=allow):
+                self.assertTrue(self.stakes(self.binding("C03B", "C03-M04", (allow,))))
+        self.assertFalse(self.stakes(self.binding("C03B", "C03-M04",
+                                                  ("oracle_compiler/measurement/R.md",))))
+
+    def test_NC_SR1_a_malformed_terminal_is_high_stakes(self):
+        self.assertTrue(self.stakes(self.binding("C03B", None)))
 
     def test_NC_SR1_unbound_or_unreadable_is_high_stakes(self):
         self.assertTrue(self.stakes(None))
@@ -933,7 +946,7 @@ class TestCodexUsageProbe(unittest.TestCase):
 
 class TestReviewBrief(unittest.TestCase):
     """RB1: the brief carries what a review starts by hunting for, and says what
-    it could not build."""
+    it could not build or cut."""
 
     def setUp(self):
         from tests.refoundation import agent_bus_fixtures as F
@@ -941,9 +954,10 @@ class TestReviewBrief(unittest.TestCase):
         body = F.default_body("WAVE_COMMAND")
         body["candidate_base"] = "c" * 40
         body["note"] = "the findings, verbatim"
-        self.pr = [F.raw(500, source="pr:76", message_id="m-command-0001", body=body),
-                   F.raw(501, source="pr:76", kind="WAVE_RESULT", actor="WORKER",
-                         message_id="w-result-0001", parent="m-command-0001")]
+        self.cmd = F.raw(500, source="pr:76", message_id="m-command-0001", body=body)
+        self.res = F.raw(501, source="pr:76", kind="WAVE_RESULT", actor="WORKER",
+                         message_id="w-result-0001", parent="m-command-0001")
+        self.pr = [self.cmd, self.res]
         self.issue = [SimpleNamespace(comment_id=F.CHECKPOINT, author=WHO, body="THE K"),
                       SimpleNamespace(comment_id=F.TASK, author=WHO, body="THE TASK")]
         self.auth = SimpleNamespace(checkpoint=F.CHECKPOINT, task=F.TASK)
@@ -960,28 +974,54 @@ class TestReviewBrief(unittest.TestCase):
             raise AssertionError(argv)
         return run
 
+    def brief(self, pr=None, issue=None, cid=501, git=None, head=None, trusted=None):
+        return L.review_brief(self.issue if issue is None else issue,
+                              self.pr if pr is None else pr, cid, self.auth,
+                              git or self.git(), head or self.F.OTHER_SHA,
+                              trusted or (lambda who: who == WHO))
+
     def test_RB1_the_brief_holds_result_command_records_and_unit_diffs(self):
-        brief = L.review_brief(self.issue, self.pr, "w-result-0001", self.auth, self.git())
+        brief = self.brief()
         for needle in ("PR comment 501", "PR comment 500", "the findings, verbatim",
                        "allow_paths: ['agent_bus/**']", "THE K", "THE TASK",
-                       f"{'c' * 40}..{self.F.OTHER_SHA}", "1" * 40 + " unit one", "PATCH-TEXT"):
+                       f"{'c' * 40}..{self.F.OTHER_SHA}", f"{'1' * 40} UNIT U1", "PATCH-TEXT"):
             self.assertIn(needle, brief)
-        self.assertNotIn("2" * 40, brief)     # a non-unit (bus) commit is not a unit
+        self.assertIn(f"{'2' * 40} not a unit", brief)   # listed, not hidden
+        self.assertEqual(brief.count("PATCH-TEXT"), 1)    # only the unit is diffed
+        self.assertIn("NO COMMIT on this range claims unit U2", brief)
 
     def test_NC_RB1_what_cannot_be_built_is_said(self):
-        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr, "w-missing",
-                                                    self.auth, self.git()))
-        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr[1:], "w-result-0001",
-                                                    self.auth, self.git()))
-        self.assertIn("UNAVAILABLE", L.review_brief(self.issue, self.pr, "w-result",
-                                                    self.auth, lambda argv: None))
-        self.assertIn("UNAVAILABLE: git show", L.review_brief(
-            self.issue, self.pr, "w-result-0001", self.auth, self.git(fail_show=True)))
-        self.assertIn("UNAVAILABLE in the thread", L.review_brief(
-            [], self.pr, "w-result-0001", self.auth, self.git()))
+        self.assertIn("UNAVAILABLE", self.brief(cid=999))
+        self.assertIn("UNAVAILABLE", self.brief(pr=[self.res]))
+        self.assertIn("UNAVAILABLE", self.brief(git=lambda argv: None))
+        self.assertIn("UNAVAILABLE: git show", self.brief(git=self.git(fail_show=True)))
+        self.assertIn("UNAVAILABLE in the thread", self.brief(issue=[]))
 
-    def test_NC_RB1_an_oversized_diff_is_truncated_loudly(self):
-        brief = L.review_brief(self.issue, self.pr, "w-result-0001", self.auth,
-                               self.git(show="x" * (L.BRIEF_DIFF_BYTES + 10)))
-        self.assertIn("TRUNCATED", brief)
-        self.assertLess(len(brief), L.BRIEF_DIFF_BYTES + 20_000)
+    def test_NC_RB1_an_untrusted_lookalike_command_is_not_shown(self):
+        fake = self.F.raw(502, author="stranger", source="pr:76", message_id="m-command-0001")
+        brief = self.brief(pr=[self.cmd, self.res, fake])
+        self.assertIn("PR comment 500", brief)
+        self.assertNotIn("PR comment 502", brief)
+        self.assertIn("UNAVAILABLE", self.brief(pr=[fake, self.res]))
+
+    def test_NC_RB1_a_lookalike_result_id_is_not_the_admitted_one(self):
+        brief = self.brief(cid=500)        # the gated comment is the command, not a result
+        self.assertIn("PR comment 500 (WAVE_COMMAND", brief)
+
+    def test_NC_RB1_wave_trailers_match_exactly(self):
+        log = f"{'3' * 40}\x1funit\n\nAgent-Bus-Wave: {self.F.WAVE}X\nAgent-Bus-Unit: U1\n\x1e"
+        brief = self.brief(git=self.git(log=log))
+        self.assertIn(f"{'3' * 40} not a unit", brief)
+        self.assertNotIn("PATCH-TEXT", brief)
+
+    def test_NC_RB1_the_measured_head_is_used_and_a_mismatch_said(self):
+        brief = self.brief(head="d" * 40)
+        self.assertIn(f"..{'d' * 40}", brief)
+        self.assertIn("NOTE: the message claims head", brief)
+
+    def test_NC_RB1_every_cut_is_marked(self):
+        self.issue[0].body = "K" * (L.BRIEF_BODY_CHARS + 5)
+        self.assertIn("[TRUNCATED at", self.brief())
+        brief = self.brief(git=self.git(show="x" * (L.BRIEF_DIFF_BYTES + 10)))
+        self.assertIn("TRUNCATED at", brief)
+        self.assertLess(len(brief), L.BRIEF_DIFF_BYTES + 30_000)

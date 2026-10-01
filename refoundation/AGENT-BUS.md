@@ -391,8 +391,9 @@ binding, the measured head and the evidence are the host's: held in memory, and
 re-proven after the review or nothing is published. The model (decision E as
 amended, Issue #1 comment 5923072829) is a fresh, isolated Claude session for an
 ordinary wave, even of Claude's own work, then any other provider that did not do
-the work; for the goal plan's terminal wave, or a result no plan binds (or whose
-binding cannot be read), it is only a provider that did NOT produce the wave's
+the work; for the goal plan's terminal wave, a wave whose units may touch an
+interface, semantic-law, vocabulary or bus-protocol path (`PROTECTED_PATHS`), or a
+result no plan binds (or whose binding cannot be read), it is only a provider that did NOT produce the wave's
 Worker evidence. Every review is told to be adversarial: rig each guard the change
 adds or relies on. It reads a pristine clone taken
 before any candidate code ran, works from a context dir outside it, and is
