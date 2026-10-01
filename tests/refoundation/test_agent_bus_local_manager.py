@@ -223,7 +223,7 @@ class PassHarness(unittest.TestCase):
             mock.patch.object(L.publisher, "result_head", lambda *a: "a" * 40),
             mock.patch.object(L.LocalManager, "measure",
                               lambda _, cid, head, ws: self.fake_measure(cid, head, ws)),
-            mock.patch.object(L.LocalManager, "_context", lambda self, *a: "prompt"),
+            mock.patch.object(L.LocalManager, "_context", lambda self, *a, **k: "prompt"),
             mock.patch.object(L.LocalManager, "_head_of", lambda self, p: "a" * 40),
         ]
         for p in patches:
@@ -354,7 +354,8 @@ class TestHighStakes(unittest.TestCase):
                 self.assertTrue(self.stakes(self.binding("C03B", "C03-M04", allow)))
 
     def test_NC_SR1R2_a_malformed_binding_is_high_stakes(self):
-        for command in (None, {}, {"units": None}, {"units": [None]}, {"units": [{}]}):
+        for command in (None, {}, {"units": None}, {"units": [None]}, {"units": [{}]},
+                        {"units": [{"allow_paths": "zzz"}]}):
             with self.subTest(command=command):
                 b = self.binding("C03B", "C03-M04")
                 b.entry.command = command
@@ -409,7 +410,7 @@ class TestEvidenceIsTheHosts(PassHarness):
         seen = []
         m = self.manager("codex", lambda *a: {"decision": GOOD})
         with mock.patch.object(L.LocalManager, "_context",
-                               lambda self, *a: seen.append(a) or "prompt"):
+                               lambda self, *a, **k: seen.append(a) or "prompt"):
             m.poll_once(execute=True)
         checks = seen[0][4]
         self.assertIn(f"run-checks on {'a' * 40}", checks)
@@ -421,7 +422,7 @@ class TestEvidenceIsTheHosts(PassHarness):
         seen = []
         m = self.manager("codex", lambda *a: {"decision": GOOD})
         with mock.patch.object(L.LocalManager, "_context",
-                               lambda self, *a: seen.append(a) or "prompt"):
+                               lambda self, *a, **k: seen.append(a) or "prompt"):
             m.poll_once(execute=True)
         self.assertIn("No goal check was run", seen[0][4])
         self.assertIn("no plan", seen[0][4])
@@ -583,6 +584,7 @@ class TestWorkspace(unittest.TestCase):
         self.assertIn("REVIEW ADVERSARIALLY", prompt)
         self.assertIn("5923072829", prompt)
         self.assertIn("answer CAPTAIN and say so", prompt)
+        self.assertIn("names provider: UNKNOWN", prompt)
         for rel in L.CONTRACTS:
             self.assertEqual((ws.context / "contracts" / rel).read_text(),
                              f"accepted law: {rel}\n")

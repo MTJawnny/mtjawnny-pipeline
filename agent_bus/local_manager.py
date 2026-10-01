@@ -670,7 +670,8 @@ class LocalManager:
                 return True
             units = binding.entry.command["units"]
             # A unit with no allow_paths is not shown to stay off any surface.
-            return not units or any(not unit["allow_paths"]
+            return not units or any(not isinstance(unit["allow_paths"], list)
+                                    or not unit["allow_paths"]
                                     or any(touches_protected(p) for p in unit["allow_paths"])
                                     for unit in units)
         except (KeyError, TypeError, AttributeError):
@@ -777,7 +778,8 @@ class LocalManager:
 
     # --------------------------------------------------------------- review
     def _context(self, ws: Workspace, comment_id: int, message_id: str,
-                 selftest: str, checks: str = "No goal check was run.\n") -> str:
+                 selftest: str, checks: str = "No goal check was run.\n",
+                 worker: str | None = None) -> str:
         ctx = ws.context
         (ctx / "contracts" / "refoundation").mkdir(parents=True)
         accepted = self._accepted_contracts(ws, ctx / "contracts")
@@ -848,7 +850,9 @@ class LocalManager:
             "isolated session with none of its context; judge only the evidence. That\n"
             "decision keeps interface, semantic-law, vocabulary and bus-protocol changes\n"
             "and the plan's terminal wave for the OTHER model: if this change touches any\n"
-            "of those and you are the model that did the work, answer CAPTAIN and say so.\n\n"
+            "of those and you are the model that did the work, answer CAPTAIN and say so.\n"
+            f"The Worker's evidence names provider: {worker or 'UNKNOWN'}. If that is\n"
+            "UNKNOWN, treat the work as your own model's.\n\n"
             "BUDGET: every command you run re-sends this whole conversation, so cost\n"
             "grows with each one. Read review-brief.md and the contracts first, batch\n"
             "your reads into few commands, and aim to decide within about six. Do not\n"
@@ -1029,7 +1033,8 @@ class LocalManager:
             head = base
             selftest = "The admitted message carries no head; no selftest was run.\n"
             checks = "The admitted message carries no head; no goal check was run.\n"
-        prompt = self._context(ws, verdict.comment_id, verdict.message_id, selftest, checks)
+        prompt = self._context(ws, verdict.comment_id, verdict.message_id, selftest, checks,
+                               worker=report.worker_provider)
         prior = self._handoff_path(verdict.comment_id)
         if prior is not None and prior.is_file():
             prompt += PRIOR_HANDOFF + prior.read_text(encoding="utf-8")
