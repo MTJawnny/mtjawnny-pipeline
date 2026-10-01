@@ -347,6 +347,19 @@ class TestHighStakes(unittest.TestCase):
         self.assertFalse(self.stakes(self.binding("C03B", "C03-M04",
                                                   ("oracle_compiler/measurement/R.md",))))
 
+    def test_NC_SR1R2_unshown_or_non_canonical_paths_are_high_stakes(self):
+        for allow in ((), ("./agent_bus/x.py",), ("/agent_bus/x.py",), ("x/../agent_bus/y",),
+                      ("Agent_Bus/x.py",), ("a\\b",), (None,)):
+            with self.subTest(allow=allow):
+                self.assertTrue(self.stakes(self.binding("C03B", "C03-M04", allow)))
+
+    def test_NC_SR1R2_a_malformed_binding_is_high_stakes(self):
+        for command in (None, {}, {"units": None}, {"units": [None]}, {"units": [{}]}):
+            with self.subTest(command=command):
+                b = self.binding("C03B", "C03-M04")
+                b.entry.command = command
+                self.assertTrue(self.stakes(b))
+
     def test_NC_SR1_a_malformed_terminal_is_high_stakes(self):
         self.assertTrue(self.stakes(self.binding("C03B", None)))
 
@@ -569,6 +582,7 @@ class TestWorkspace(unittest.TestCase):
         self.assertIn("BUDGET", prompt)
         self.assertIn("REVIEW ADVERSARIALLY", prompt)
         self.assertIn("5923072829", prompt)
+        self.assertIn("answer CAPTAIN and say so", prompt)
         for rel in L.CONTRACTS:
             self.assertEqual((ws.context / "contracts" / rel).read_text(),
                              f"accepted law: {rel}\n")
@@ -986,7 +1000,7 @@ class TestReviewBrief(unittest.TestCase):
                        "allow_paths: ['agent_bus/**']", "THE K", "THE TASK",
                        f"{'c' * 40}..{self.F.OTHER_SHA}", f"{'1' * 40} UNIT U1", "PATCH-TEXT"):
             self.assertIn(needle, brief)
-        self.assertIn(f"{'2' * 40} not a unit", brief)   # listed, not hidden
+        self.assertIn(f"{'2' * 40} WARNING: not a unit", brief)   # listed, not hidden
         self.assertEqual(brief.count("PATCH-TEXT"), 1)    # only the unit is diffed
         self.assertIn("NO COMMIT on this range claims unit U2", brief)
 
@@ -1011,13 +1025,17 @@ class TestReviewBrief(unittest.TestCase):
     def test_NC_RB1_wave_trailers_match_exactly(self):
         log = f"{'3' * 40}\x1funit\n\nAgent-Bus-Wave: {self.F.WAVE}X\nAgent-Bus-Unit: U1\n\x1e"
         brief = self.brief(git=self.git(log=log))
-        self.assertIn(f"{'3' * 40} not a unit", brief)
+        self.assertIn(f"{'3' * 40} WARNING: not a unit", brief)
         self.assertNotIn("PATCH-TEXT", brief)
 
     def test_NC_RB1_the_measured_head_is_used_and_a_mismatch_said(self):
         brief = self.brief(head="d" * 40)
         self.assertIn(f"..{'d' * 40}", brief)
         self.assertIn("NOTE: the message claims head", brief)
+
+    def test_NC_RB1R2_a_non_string_note_degrades(self):
+        for value in ({"not": "text"}, None, 7):
+            self.assertIsInstance(L._cut(value), str)
 
     def test_NC_RB1_every_cut_is_marked(self):
         self.issue[0].body = "K" * (L.BRIEF_BODY_CHARS + 5)

@@ -216,8 +216,12 @@ def touches_protected(allow_path: str) -> bool:
     """Could a unit allowed `allow_path` change a protected surface? Compared on
     the literal prefix before the first glob character, both ways, so `**` and
     `oracle_compiler/**` count as touching what they cover."""
-    literal = re.split(r"[*?\[]", allow_path, maxsplit=1)[0]
-    return any(p.startswith(literal) or literal.startswith(p) for p in PROTECTED_PATHS)
+    if (not isinstance(allow_path, str) or allow_path.startswith(("/", "./"))
+            or "\\" in allow_path or ".." in allow_path.split("/")):
+        return True                       # not canonical: never assumed safe
+    literal = re.split(r"[*?\[]", allow_path, maxsplit=1)[0].lower()
+    return any(p.lower().startswith(literal) or literal.startswith(p.lower())
+               for p in PROTECTED_PATHS)
 
 
 def reviewer_for(worker_provider: str | None, order: Sequence[str],
@@ -298,7 +302,8 @@ BRIEF_DIFF_BYTES = 120_000
 BRIEF_BODY_CHARS = 6_000
 
 
-def _cut(text: str, limit: int = BRIEF_BODY_CHARS) -> str:
+def _cut(text, limit: int = BRIEF_BODY_CHARS) -> str:
+    text = text if isinstance(text, str) else repr(text)
     return text if len(text) <= limit else (
         text[:limit] + f"\n[TRUNCATED at {limit} of {len(text)} characters]")
 
@@ -381,7 +386,8 @@ def review_brief(issue_comments, pr_comments, comment_id: int, authority,
             seen.update(claimed)
             out.append(f"- {sha} UNIT {', '.join(claimed)}: {subject}")
         else:
-            out.append(f"- {sha} not a unit of {result.wave} (listed, not diffed): {subject}")
+            out.append(f"- {sha} WARNING: not a unit of {result.wave}; its content is NOT "
+                       f"in this brief (git show {sha} in the review clone): {subject}")
     for unit in body.get("units", []):
         if unit.get("id") not in seen:
             out.append(f"NO COMMIT on this range claims unit {unit.get('id')}.")
@@ -658,11 +664,17 @@ class LocalManager:
             binding, _ = publisher.binding_for(self.target, comment_id, self.run)
         except (BusError, AuthorityError):
             return True
-        if binding is None or not isinstance(binding.plan.terminal, str):
+        try:
+            if binding is None or not isinstance(binding.plan.terminal, str) \
+                    or binding.entry.wave == binding.plan.terminal:
+                return True
+            units = binding.entry.command["units"]
+            # A unit with no allow_paths is not shown to stay off any surface.
+            return not units or any(not unit["allow_paths"]
+                                    or any(touches_protected(p) for p in unit["allow_paths"])
+                                    for unit in units)
+        except (KeyError, TypeError, AttributeError):
             return True
-        units = binding.entry.command.get("units", [])
-        return binding.entry.wave == binding.plan.terminal or any(
-            touches_protected(path) for unit in units for path in unit.get("allow_paths", []))
 
     def worker_provider(self, command_id: str | None) -> str | None:
         return self.attribution(command_id)[0]
@@ -833,9 +845,10 @@ class LocalManager:
             "review clone. A guard you have not seen fail is not a guard. Green goal\n"
             "checks are necessary, not sufficient. You may share a model with the Worker\n"
             "(Captain decision E as amended, Issue #1 comment 5923072829): you are a fresh,\n"
-            "isolated session with none of its context; judge only the evidence. Who\n"
-            "reviews is the host's to apply under that decision: do not refuse a review\n"
-            "because an accepted contract still names the other model.\n\n"
+            "isolated session with none of its context; judge only the evidence. That\n"
+            "decision keeps interface, semantic-law, vocabulary and bus-protocol changes\n"
+            "and the plan's terminal wave for the OTHER model: if this change touches any\n"
+            "of those and you are the model that did the work, answer CAPTAIN and say so.\n\n"
             "BUDGET: every command you run re-sends this whole conversation, so cost\n"
             "grows with each one. Read review-brief.md and the contracts first, batch\n"
             "your reads into few commands, and aim to decide within about six. Do not\n"
