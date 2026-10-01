@@ -1,12 +1,16 @@
 # M04 — H-REGION semantic review of C03 (interface/2)
 
 **Wave:** `C03-M04.ORACLE-COMPILER-H-REGION-SEMANTIC-REVIEW`, unit M04-REVIEW
-(Issue #1 checkpoint 5923449551, task 5900504735).
+(Issue #1 checkpoint 5925109625, task 5900504735; command r2, recovery
+decision 5925109323, superseding the origin under checkpoint 5923449551).
 
 **Base and interface:**
 
 - Base (accepted head): `4ff172061c1699079b91a5577d7d2d376a6dd58f`.
-- Written on top of `3e08bc9` (M04-CHECK).
+- First written on top of `3e08bc9` (M04-CHECK) as `442ef34`. This r2
+  revision is written on top of `4337753` (M04-CHECK r2), whose checker
+  refuses a placeholder disposition (null/None, JSON null, none, a dash or
+  em-dash, TBD/TODO, empty, any case).
 - Interface: `oracle-compiler-interface/2`, `oracle_compiler/INTERFACES.md` blob
   `4ac4d856b651edde05b15c7065aa593f59561dcf` (Captain ratification
   5900431196). It was checked with
@@ -354,7 +358,10 @@ fixture table (§6).
 ## 6. Coverage ledger
 
 Outcomes are kill.json's, unedited. A row's disposition column holds its
-audit code (§3) and, for any UNRESOLVED, its disposition code (§5).
+audit code (§3) and, for any UNRESOLVED, its disposition code (§5). Every
+disposition cell, in this table and in the fixture table, is a §3/§5 code or
+disposition text; none is a placeholder. Each of the 41 rows with an UNRESOLVED
+names the §5 code (D1-D7) for every UNRESOLVED condition it carries.
 
 | clause | census key | population | fixtures | K1 | K2 | K3 | K4 | K5 | K6 | K7 | disposition |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -500,6 +507,8 @@ These do not change the result.
      clauses into the K4 `multiple` shape.
    - The reach report did not see them.
    - Any change to extraction or to R1 needs its own authorized task.
+   - Status: an **open** Captain escalation, batched in decision 5925109323.
+     It is not a KILL.
 2. **FS-1 (CAPTAIN, minor).** A head the frozen detector matches inside a
    label, or inside a purpose phrase ("to activate"), starts a region. The
    question is whether an R2-like discount is wanted. R2 stays literal until
@@ -513,4 +522,4 @@ These do not change the result.
 No real KILL was found. No condition has zero PASS. No finding needs a new
 identity coordinate. Under the review boundary, the review itself does not
 force a CAPTAIN answer. This document requests Captain attention for item 1
-as a batched Captain-owned decision.
+as a batched Captain-owned decision (5925109323), which remains open.
