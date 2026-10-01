@@ -1,21 +1,23 @@
 # Oracle Compiler Interfaces
 
-`oracle-compiler-interface/2`
+`oracle-compiler-interface/3`
 
-**Status: RATIFIED** by Captain decision 5900431196 (Issue #1), after a Codex
-cross-review of the draft (5900323061) and the R1-R3 reach report (§I3a). Its
-rulings come from Captain decision 5899825420 (C03 H-REGION kills, option B).
-It supersedes `oracle-compiler-interface/1` (blob
-`3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/2 changes §I3 (new §I3a, amended K3 and K4 rows, and the
-decision-rule note) and adds one clarifying sentence to §I2. §I1 and §I4 are
-unchanged from interface/1.
+**Status: RATIFIED** by Captain decisions 5925134485 (FS-2 ruled, "go with
+interface/3") and 5925371124 (flavor labels ignored; test card Typhoid Mary,
+Fractured), after Codex cross-reviews of this text and the R4 reach report
+(§I3a), recorded in 5925277948 and its follow-up. It supersedes `oracle-compiler-interface/2` (blob
+`4ac4d856b651edde05b15c7065aa593f59561dcf`, ratified 5900431196 from the
+rulings of 5899825420), which superseded interface/1 (blob
+`3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/3 adds rule R4 to §I3a,
+reads R1's scope start after an R4 label, and names R4 in the K7 row. §I1, §I2
+and §I4 are unchanged from interface/2.
 
 Implementation tasks must pin `interface_version` and `interface_sha` in their
 Issue #1 `T` once a nonzero interface exists.
 
 This file is not task state and does not select work.
 
-## What interface/2 is
+## What interface/3 is
 
 A **measurement interface**. It pins what C03 and C04 read and how C03's
 H-REGION result is decided. It defines no record shape, no occurrence
@@ -24,15 +26,20 @@ ratifies nothing in AQ4 beyond its existing benchmark status and makes nothing
 production truth. C03 and C04 outputs are ignored experimental output under
 `experiments/out/oracle_ingest/`.
 
-interface/2 adds exactly three derivation rules (§I3a), each a Captain ruling
-stated as card-independent structure, and amends K3 and K4 to read them. It
-does not add a ruling registry document, per-line CR or keyword lookup, or any
+interface/2 added three derivation rules (§I3a, R1-R3), each a Captain ruling
+stated as card-independent structure, and amended K3 and K4 to read them.
+interface/3 adds a fourth, R4 (a label printed before an ability or a mode is
+ignored unless the CR gives it rules meaning), from the M04 review's finding FS-2.
+Beyond R4's run-time reads of the CR's ability-word list, keyword titles, quoted
+label forms and rule 107 symbol inventory, used only to classify a label, the
+interface adds no ruling registry document, per-line CR or keyword lookup, and no
 model-facing context: those belong to the V1 §3.2 Keyword Consequence Registry
 interface and V1 Tier B, and are deferred there.
 
 The interface/1 C03 result (`oracle_compiler/measurement/C03-H-REGION-RESULT.md`
 at `5078219`, verdict CAPTAIN 5898473142) stays on record unchanged. It is the
-evidence these rules answer, not something they rewrite.
+evidence these rules answer, not something they rewrite. So do the interface/2
+C03 result (`C03-H-REGION-RESULT-I2.md`) and the M04 review that found FS-2.
 
 ## I1. Pinned inputs
 
@@ -109,7 +116,7 @@ never PASS and never KILL.
 | K4 qualifier attachment | a cost, condition, duration or destination span (ATTACH-3) is attachable to more than one region, or to none, by the derivation rule. Under R1 (§I3a) an ability-level cost or trigger-condition span attached to every region of its ability is ONE attachment (the ability) and passes | the span itself was not extracted |
 | K5 overlap / nesting | two regions overlap or nest so that their identities, or the attachments a consumer question needs, cannot be told apart by any deterministic rule from printed structure. Shared tokens alone are not a kill: nested regions may share tokens while keeping unambiguous identities and attachments, and such an overlap PASSES (reported as a count and list) | a region taking part in the overlap was not derived because extraction failed |
 | K6 stronger identity needed | ATTACH-1, ATTACH-3 or C2 cannot be answered for the clause because of identity granularity: K1-K5 do not fire on it, every needed endpoint is named, and the answer still needs to distinguish things its regions plus the existing four-coordinate occurrence cannot | the question fails because of an extraction or resolution failure |
-| K7 guesses or exceptions | a region boundary is not derived from printed tokens and CR-grounded structure, or any rule -- R1-R3 included -- is keyed to a card, name or oracle_id | -- (K7 has no UNRESOLVED outcome) |
+| K7 guesses or exceptions | a region boundary is not derived from printed tokens and CR-grounded structure, or any rule -- R1-R4 included -- is keyed to a card, name or oracle_id | -- (K7 has no UNRESOLVED outcome) |
 
 **Decision rule.** A KILL on any fixture, or on any population clause whose
 consumer question needs the distinction, kills H-REGION for that condition. A
@@ -119,10 +126,11 @@ finding for M04, not a verdict. Every APPLICABLE outcome arm of every test --
 KILL and UNRESOLVED for K1-K6, KILL for K7, which has no UNRESOLVED outcome -- is
 shown to fire on a rigged input (CLAUDE.md: a guard never shown to fail is not a
 guard). Every outcome that differs from interface/1 only because of R1, R2
-or R3 (a PASS from R1 or R2, an UNRESOLVED from R3) is reported as such, per
-clause, beside the interface/1 outcome it replaces.
+or R3 (a PASS from R1 or R2, an UNRESOLVED from R3), and every outcome that
+differs from interface/2 only because of R4, is reported as such, per clause,
+beside the outcome it replaces.
 
-## I3a. Ratified derivation rules (Captain decision 5899825420)
+## I3a. Ratified derivation rules (R1-R3: 5899825420, 5900431196; R4: 5925134485, 5925371124)
 
 Each rule is an entry in the derivation rule table (`RULES` in
 `experiments/oracle_ingest/h_region.py`) with exactly the four structural keys
@@ -135,7 +143,7 @@ The clauses that prompted the rules are regression cases in the C03 test suite
 (`tests/oracle_ingest/`); they are not additions to the frozen `FIXTURES.json`
 membership, which stays fixed (§I2).
 
-Implementing R1-R3 is the one authorized change to the C03 derivation and kill
+Implementing R1-R4 is the one authorized change to the C03 derivation and kill
 code (`h_region.py`, `h_region_kill.py` and their tests) under this interface.
 Nothing else in the derivation may change to turn a kill green.
 
@@ -143,7 +151,8 @@ Nothing else in the derivation may change to turn a kill green.
 ability.** CR 602.1a (an activated ability's cost is everything before the
 colon), CR 603.1 (a triggered ability is `[When/Whenever/At] [trigger
 condition], [effect]`) and CR 603.4 (an intervening "if" clause directly after
-the trigger condition). A span is ability-level ONLY when it is one of:
+the trigger condition). "The start of the clause's scope" below is read after
+any R4 label. A span is ability-level ONLY when it is one of:
 
 - a `cost-colon` span that starts at the start of the clause's scope and ends
   at the colon of the activated ability whose effect holds the clause's regions
@@ -206,6 +215,90 @@ list, keep their interface/1 outcome. The Captain's reading of the prompting
 clause (decision 5899825420: the whole three-card pile, then the three
 face-down creatures it became) is recorded as the expected C04 resolution for
 that case.
+
+**R4 `ability-label` -- a label printed before an ability or a mode is ignored
+unless the CR gives it rules meaning; the ability itself is never dropped.**
+Captain rulings 5925134485 and 5925371124 ("mark what the CR calls out and ...
+dump/ignore the rest ... be sure not to dump the actual abilities"); test card:
+Typhoid Mary, Fractured. A *label* is the text at the start of an ability's
+line, or of a mode's line after its bullet (`•`, CR 700.2), up to the first
+` — ` (U+2014 with one space on each side) that has text after it on the same
+line, holding no `—`, `:`, `;`, `.`, `•` or `"`. It is classified in this order,
+from the pinned CR read at run time and the card's own rules text, and the first
+match decides:
+
+1. **ticket cost** -- one or more `{TK}` symbols and nothing else. CR 107.17a
+   and 123.3c: a sticker's ticket cost is paid to put it on an object and is not
+   part of the ability the sticker grants (encoding observed, not from the CR:
+   the corpus prints a cost of N tickets as N `{TK}`). IGNORED.
+2. **ability word** -- a phrase of the CR 207.2c list. IGNORED.
+3. **rules-meaningful, KEPT** in the ability, with its interface/2 outcome:
+   - a keyword: a CR 701 or 702 title (a parenthesized alias included, e.g.
+     `∞`, 702.186), or a comma list of them, or a 702 title with a parameter
+     (`Ward 2`, `Toxic 1`, `Ward {2}`);
+   - a CR-defined label form: every quoted `“<form> — [` the CR prints, its
+     `[placeholders]` read as wildcards and `N` as a number (`To solve`, 719.3a;
+     `[A player] faces a villainous choice`, 701.55a; `Visit`, `Boast`, ...);
+   - a chapter symbol (CR 714.2a/c: a well-formed Roman numeral, or a list);
+   - a number, a range or a list of numbers (a die-result row, CR 706);
+   - a label holding a `{...}` symbol or a character outside letters (any
+     script), digits, spaces and `' ’ , ! ? - ~` (a spree cost `+ {1}`, any
+     symbol the CR does not print included: never assumed droppable);
+   - an anchor word (CR 614.12c): a label the card's own rules text names
+     elsewhere, outside every label and outside the card's own name (`Khans`
+     and `Dragons` after "choose Khans or Dragons"). Reading the card's own text
+     this way is structure, not a card key (K7): no card, name or oracle_id
+     appears in any rule.
+4. **flavor label** -- anything else (CR 207.2d: no rules meaning, not listed
+   in the CR), including a label that is the card's own name (`~`). IGNORED.
+
+An IGNORED label is outside the scope: the scope starts at the first token after
+its ` — `, so the ability or mode text after it is always kept and derived, and
+no frozen-detector head inside the label starts a region (the detector is not
+edited; every head a label drops is reported per clause, as R2's are). R1's
+scope start is read after it. Every label is reported per clause with its class
+and CR citation. A `—` at the end of a line (`Choose one —` before its modes)
+has no text after it and is no label. The CR reads are the only lookups R4
+makes, through `experiments/foundry_cr.py`; they classify a label and nothing
+else (this is not the Keyword Consequence Registry). The parse is checked for
+completeness, or the derivation STOPs: the 207.2c sentence is found exactly once,
+has the form `<a>, <b>, ..., and <z>.`, re-joins exactly to its source text, and
+every raw item is a lowercase phrase (optionally with a number), with no
+duplicate; the 701 and 702 headings each form a complete 1..N sequence with a
+title on every heading, and every 701.N or 702.N rule has its heading; the CR
+107 symbol inventory holds at least `{TK}`, `{W}`, `{U}`, `{B}`, `{R}`, `{G}`,
+`{C}`, `{X}`, `{S}`, `{T}`, `{Q}` and `{E}`; and the CR label forms include
+`to solve`, `solved`, `visit`, `forecast` and a villainous-choice form. Each
+check is rigged to STOP on a tampered CR.
+
+**R4 reach report (measured 2026-10-01 over the pinned corpus with the C03
+derivation's own `chain_clauses`).** 32,557 cards, 74,106 clauses, 0 halts; 61
+ability words, 264 keyword titles and 22 CR label forms read from the CR.
+3,105 clauses open with a label:
+
+| class | clauses | effect |
+|---|---|---|
+| ability word | 1,356 | ignored |
+| ticket cost | 192 | ignored |
+| flavor label | 625 | ignored |
+| keyword (title, list or parameter) | 221 | kept |
+| chapter symbol | 576 | kept |
+| symbol-bearing | 66 | kept |
+| anchor word (`Khans`, `Dragons`, the clans, ...) | 29 | kept |
+| CR label form (`To solve` 15, villainous choice 10) | 25 | kept |
+| number / die-result row | 15 | kept |
+
+Labels are ignored on 2,173 clauses (1,892 cards) and kept on 932. No flavor
+label contains a rules word (`each`, `target`, `player`, `opponent`, `you`,
+`choice`, ...): every flavor label is a name. The Captain's test card resolves as ruled:
+on Typhoid Mary, Fractured the mode labels `Mary`, `Typhoid Mary` (printed as the
+card's name, `~`) and `Bloody Mary` are flavor labels and are ignored, while each
+mode's effect and "Whenever ~ attacks" are kept. On C03's sets R4 reaches the 5
+FS-2 population clauses (`Flurry`, `Converge` ability words; `{TK}{TK}` ticket
+cost; `Avoidance`, `Protection Fighting Style` flavor labels: the scope moves
+and R1 applies) and the FS-1 fixture (`Search the Room`, flavor: its `search`
+no longer starts a region). The C03 re-run under interface/3 records the same
+counts and every outcome R4 changes, per clause.
 
 **Reach report (precondition of ratification, met: decision 5900431196).**
 Before the Captain ratifies interface/2, each rule's trigger is run deterministically over every clause of
