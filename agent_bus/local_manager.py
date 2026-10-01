@@ -220,6 +220,27 @@ def goal_checks_text(m: Measurement) -> str:
     return "\n".join(lines) + "\n"
 
 
+EVIDENCE_CITE = "Worker evidence (not acceptance): "
+
+
+def cited_evidence(result, repo: str, issue: int) -> tuple[set[int], str | None]:
+    """The Issue comment ids a result's validation cites as Worker evidence.
+    A citation that is not exactly a link to an Issue comment is a problem."""
+    if result is None or result.kind != "WAVE_RESULT":
+        return set(), None
+    link = re.compile(rf"https://github\.com/{re.escape(repo)}/issues/{issue}"
+                      r"#issuecomment-([1-9][0-9]*)")
+    cited = set()
+    for line in result.body.get("validation", []):
+        if not line.startswith(EVIDENCE_CITE):
+            continue
+        match = link.fullmatch(line[len(EVIDENCE_CITE):])
+        if match is None:
+            return set(), f"the result cites Worker evidence it does not link: {line[:200]!r}"
+        cited.add(int(match.group(1)))
+    return cited, None
+
+
 def host_captain(problem: str) -> decision_module.Decision:
     """The host's own decision when no model may review: CAPTAIN, never a verdict."""
     return decision_module.from_mapping({
@@ -438,13 +459,21 @@ class LocalManager:
         return None, None, seen
 
     # ---------------------------------------------------------- attribution
-    def attribution(self, command_id: str | None) -> tuple[str | None, str | None]:
-        """(provider, None) when trusted Worker evidence for this command names
-        exactly one known provider; otherwise (None, why no model may review)."""
+    def attribution(self, command_id: str | None,
+                    result=None) -> tuple[str | None, str | None]:
+        """(provider, None) when trusted Worker evidence for this command -- and
+        every Worker evidence comment the result cites (RR1: units done under an
+        earlier command of the wave) -- names exactly one known provider;
+        otherwise (None, why no model may review)."""
         if not command_id:
             return None, "the Worker message names no command, so no provider did the work"
+        cited, problem = cited_evidence(result, self.repo, self.issue)
+        if problem:
+            return None, problem
+        units = {u.get("id") for u in result.body.get("units", [])} if cited else set()
         world = publisher.observe(self.target, self.run)
         names = set()
+        found = set()
         for comment in world.issue_comments:
             body = comment.body
             if (not self.target.trust.trusts(comment.author)
@@ -455,11 +484,24 @@ class LocalManager:
                 payload = json.loads(body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
             except ValueError:
                 continue
-            if isinstance(payload, dict) and payload.get("command") == command_id:
-                provider = payload.get("provider")
-                valid = (payload.get("actor") == "WORKER" and isinstance(provider, str)
-                         and payload.get("schema") == "mtj-worker-evidence/1")
+            if not isinstance(payload, dict):
+                continue
+            provider = payload.get("provider")
+            valid = (payload.get("actor") == "WORKER" and isinstance(provider, str)
+                     and payload.get("schema") == "mtj-worker-evidence/1")
+            if payload.get("command") == command_id:
                 names.add(provider if valid else None)
+            if comment.comment_id in cited:
+                if not (valid and payload.get("wave") == result.wave
+                        and payload.get("unit") in units and "outcome" not in payload):
+                    return None, (f"cited comment {comment.comment_id} is not completion "
+                                  f"evidence for a unit of {result.wave}")
+                names.add(provider)
+                found.add(comment.comment_id)
+        missing = sorted(cited - found)
+        if missing:
+            return None, ("cited Worker evidence is not trusted evidence on Issue "
+                          f"#{self.issue}: {', '.join(map(str, missing))}")
         if not names:
             return None, f"no Worker evidence attributes command {command_id} to a provider"
         if len(names) > 1:
@@ -732,7 +774,7 @@ class LocalManager:
         candidates: list[str] = []
         if verdict.mode == "review":
             env = parse_comment(comment["body"])
-            report.worker_provider, problem = self.attribution(env.parent)
+            report.worker_provider, problem = self.attribution(env.parent, env)
             candidates = reviewer_for(report.worker_provider, self.order)
             if problem is None and not candidates:
                 problem = f"no provider other than {report.worker_provider} is configured"

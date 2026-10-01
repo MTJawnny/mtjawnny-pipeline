@@ -70,7 +70,7 @@ def evidence_comment(command, provider, actor="WORKER"):
     payload = {"schema": "mtj-worker-evidence/1", "actor": actor, "command": command,
                "provider": provider}
     body = worker_evidence.PREFIX + json.dumps(payload) + worker_evidence.SUFFIX
-    return SimpleNamespace(author=WHO, body=body)
+    return SimpleNamespace(author=WHO, body=body, comment_id=0)
 
 
 class TestReviewerChoice(unittest.TestCase):
@@ -119,6 +119,63 @@ class TestAttribution(unittest.TestCase):
         c.author = "someone-else"
         self.assertIsNone(self.attribute(c)[0])
 
+    # RR1.R1: a result whose units were done under an earlier command of the wave
+    def cited(self, cid, command="m-old", provider="claude", unit="U1", wave="W", **kw):
+        c = evidence_comment(command, provider, **kw)
+        payload = json.loads(c.body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
+        payload.update(wave=wave, unit=unit)
+        c.body = worker_evidence.PREFIX + json.dumps(payload) + worker_evidence.SUFFIX
+        c.comment_id = cid
+        return c
+
+    def result(self, *cids, extra=()):
+        link = f"https://github.com/{REPO}/issues/1#issuecomment-"
+        return SimpleNamespace(kind="WAVE_RESULT", wave="W", body={
+            "units": [{"id": "U1", "status": "DONE"}, {"id": "U2", "status": "DONE"}],
+            "validation": ["U1: ok", *(f"Worker evidence (not acceptance): {link}{c}"
+                                       for c in cids), *extra]})
+
+    def attribute_result(self, result, *comments, command="m-command"):
+        m = L.LocalManager(REPO, "/nonexistent", PR, WHO)
+        world = SimpleNamespace(issue_comments=list(comments))
+        with mock.patch.object(L.publisher, "observe", lambda *a: world):
+            return m.attribution(command, result)
+
+    def test_RR1R1_cited_earlier_evidence_attributes_a_result(self):
+        self.assertEqual(self.attribute_result(
+            self.result(901, 902), self.cited(901), self.cited(902, unit="U2")),
+            ("claude", None))
+
+    def test_RR1R1_cited_and_current_evidence_must_agree(self):
+        provider, problem = self.attribute_result(
+            self.result(901), self.cited(901), evidence_comment("m-command", "codex"))
+        self.assertIsNone(provider)
+        self.assertIn("more than one provider", problem)
+
+    def test_NC_RR1R1_bad_citations_do_not_attribute(self):
+        cases = {
+            "missing comment": (self.result(901, 999), [self.cited(901)]),
+            "other wave": (self.result(901), [self.cited(901, wave="X")]),
+            "not a unit of the result": (self.result(901), [self.cited(901, unit="U9")]),
+            "failed-unit evidence": (self.result(901), [self.cited(901)]),
+            "manager actor": (self.result(901), [self.cited(901, actor="MANAGER")]),
+            "untrusted author": (self.result(901), [self.cited(901)]),
+            "unlinked citation": (self.result(901, extra=["Worker evidence (not acceptance): 901"]),
+                                  [self.cited(901)]),
+        }
+        for why, (result, comments) in cases.items():
+            with self.subTest(why=why):
+                if why == "failed-unit evidence":
+                    c = comments[0]
+                    payload = json.loads(c.body[len(worker_evidence.PREFIX):-len(worker_evidence.SUFFIX)])
+                    payload["outcome"] = "F"
+                    c.body = worker_evidence.PREFIX + json.dumps(payload) + worker_evidence.SUFFIX
+                if why == "untrusted author":
+                    comments[0].author = "someone-else"
+                provider, problem = self.attribute_result(result, *comments)
+                self.assertIsNone(provider)
+                self.assertTrue(problem)
+
     def test_no_command_is_unattributed(self):
         self.assertIsNone(self.attribute(evidence_comment("m-command", "codex"),
                                          command=None)[0])
@@ -145,7 +202,7 @@ class PassHarness(unittest.TestCase):
         patches = [
             mock.patch.object(L.LocalManager, "admitted", lambda self: (admitted(), COMMENT, [])),
             mock.patch.object(L, "parse_comment", lambda body: Env()),
-            mock.patch.object(L.LocalManager, "attribution", lambda self, c: attribution),
+            mock.patch.object(L.LocalManager, "attribution", lambda self, c, *a: attribution),
             mock.patch.object(L.publisher, "result_head", lambda *a: "a" * 40),
             mock.patch.object(L.LocalManager, "measure",
                               lambda _, cid, head, ws: self.fake_measure(cid, head, ws)),
@@ -234,6 +291,17 @@ class TestPass(PassHarness):
         self.assertEqual(self.published, [])
 
 
+class TestAttributionGetsTheResult(PassHarness):
+    def test_RR1R1_the_review_attributes_with_the_admitted_result_itself(self):
+        seen = []
+        m = self.manager("codex", lambda *a: {"decision": GOOD})
+        with mock.patch.object(L.LocalManager, "attribution",
+                               lambda self, c, *a: seen.append((c, *a)) or ("codex", None)):
+            m.poll_once(execute=False)
+        self.assertEqual(seen[0][0], "m-command")
+        self.assertIsInstance(seen[0][1], Env)
+
+
 class TestEvidenceIsTheHosts(PassHarness):
     """F2: a reviewer that writes anyway changes nothing that is published."""
 
@@ -307,7 +375,7 @@ class TestNonReviewModes(unittest.TestCase):
         with mock.patch.object(L.LocalManager, "admitted",
                                lambda self: (admitted("dispose"), COMMENT, [])), \
              mock.patch.object(L.LocalManager, "attribution",
-                               lambda self, c: self.fail("no attribution outside review")), \
+                               lambda self, c, *a: self.fail("no attribution outside review")), \
              mock.patch.object(L.publisher, "main",
                                lambda args, run=None: published.append(args) or 0):
             report = m.poll_once(execute=True)
@@ -486,7 +554,7 @@ class TestWorkspace(unittest.TestCase):
         with mock.patch.object(L.LocalManager, "admitted",
                                lambda self: (admitted(), COMMENT, [])), \
              mock.patch.object(L, "parse_comment", lambda body: Env()), \
-             mock.patch.object(L.LocalManager, "attribution", lambda self, c: ("codex", None)), \
+             mock.patch.object(L.LocalManager, "attribution", lambda self, c, *a: ("codex", None)), \
              mock.patch.object(L.publisher, "result_head", lambda *a: ""), \
              mock.patch.object(L.LocalManager, "_accepted_contracts",
                                lambda self, ws, into: self_head), \
