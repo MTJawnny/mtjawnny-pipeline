@@ -1,16 +1,19 @@
 # M04 — H-REGION semantic review of C03 (interface/2)
 
 **Wave:** `C03-M04.ORACLE-COMPILER-H-REGION-SEMANTIC-REVIEW`, unit M04-REVIEW
-(Issue #1 checkpoint 5925109625, task 5900504735; command r2, recovery
-decision 5925109323, superseding the origin under checkpoint 5923449551).
+(Issue #1 checkpoint 5925319741, task 5900504735; command r3, recovery
+decision 5925319588, superseding r2 under checkpoint 5925109625 and the
+origin under checkpoint 5923449551).
 
 **Base and interface:**
 
 - Base (accepted head): `4ff172061c1699079b91a5577d7d2d376a6dd58f`.
-- First written on top of `3e08bc9` (M04-CHECK) as `442ef34`. This r2
-  revision is written on top of `4337753` (M04-CHECK r2), whose checker
+- First written on top of `3e08bc9` (M04-CHECK) as `442ef34`. The r2
+  revision was written on top of `4337753` (M04-CHECK r2), whose checker
   refuses a placeholder disposition (null/None, JSON null, none, a dash or
-  em-dash, TBD/TODO, empty, any case).
+  em-dash, TBD/TODO, empty, any case). This r3 revision builds on candidate
+  `f7310e7` and answers review verdict 5925247519: it records FS-2 as ruled
+  (Captain decision 5925134485) and changes no measurement.
 - Interface: `oracle-compiler-interface/2`, `oracle_compiler/INTERFACES.md` blob
   `4ac4d856b651edde05b15c7065aa593f59561dcf` (Captain ratification
   5900431196). It was checked with
@@ -162,7 +165,8 @@ row classes an unextracted span as UNRESOLVED ("the span itself was not
 extracted"), so the audited outcome is UNRESOLVED. On `b095526e…`, ATTACH-3 is
 not even asked, because its only ATTACH-3 span is the missing one.
 
-**Latent exposure (the reason this class is escalated).** Suppose the trigger
+**Latent exposure under the literal interface/2 R1 text (the reason this class
+was escalated; now ruled, see below).** Suppose the trigger
 condition were extracted in the four two-region clauses:
 
 - It would not start "at the start of the clause's scope", the literal R1
@@ -185,8 +189,17 @@ R1 reach review never saw these clauses.
   ability, and H-REGION can express "one attachment, to the ability".
 
 Whether R1's "start of the clause's scope" reads past such a label is a
-semantic-law question (a STOP-class PROGRAM BOUNDARY for any unit), so it goes
-to the Captain. **CAPTAIN escalation requested** (batched; see §8).
+semantic-law question (a STOP-class PROGRAM BOUNDARY for any unit), so it went
+to the Captain. **FS-2 is RULED** by Captain decision 5925134485: a label
+printed before an ability is outside its scope. A trigger that follows such a
+label therefore starts the clause's scope, which is an R1 shape with one
+attachment to the ability, so the latent `multiple` exposure above does not
+arise under the ruling. The ruling is implemented by
+`oracle-compiler-interface/3`, ratified for it in record 5925277948, which
+lands after this wave. This wave stays on interface/2 (blob `4ac4d856…`), so
+the measured outcomes and the audited reading in this section and in §4 and §6
+are interface/2 measurements and are kept as measured. Re-measuring these five
+clauses under interface/3 is the follow-up (§8).
 
 ### FS-3 — operations inside a quoted created ability (1 population clause)
 
@@ -233,8 +246,10 @@ is defensible, and K4's PASS is credited.
 
 If a future detector made the choice a head, this standalone `if` (not an R1
 shape) would attach to two regions. This is recorded as a latent exposure of
-lower weight than FS-2. It is not escalated on its own: it comes from the same
-R1 question as FS-2.
+lower weight than FS-2. It is not escalated: it is an R1-reach exposure of the
+same kind as FS-2, but it needs a detector change C03 does not have, and the
+FS-2 ruling (5925134485) concerns labels, not this shape. It stays a recorded
+latent exposure only.
 
 ### FS-6 — K3's PASSes and their reach
 
@@ -311,8 +326,10 @@ under either count.
 **K4.**
 
 - R1 attaches every scope-start cost-colon and trigger once, to the ability.
-- The audit's limit is FS-2: the R1 question for label-prefixed triggers is
-  open.
+- The audit's limit is FS-2: under interface/2 the label-prefixed triggers
+  are unmarked (audited UNRESOLVED). The R1 question for them is ruled
+  (5925134485); its implementation is interface/3 (5925277948), after this
+  wave.
 
 **K5.**
 
@@ -496,19 +513,21 @@ three object-lattice actions). No condition is flagged "PASS coverage
 insufficient". UNRESOLVED counts are findings for M04 and are disposed of
 above; they are not verdicts.
 
-## 8. Escalations and open questions (batched for the Captain)
+## 8. Escalations, rulings and open questions
 
 These do not change the result.
 
-1. **FS-2 (CAPTAIN).** Does R1's "starts at the start of the clause's scope"
-   read past a label with no rules meaning (CR 207.2c/207.2d) before a
-   trigger? This is a semantic-law ruling.
-   - If it does not, extracting those triggers would put four population
-     clauses into the K4 `multiple` shape.
-   - The reach report did not see them.
-   - Any change to extraction or to R1 needs its own authorized task.
-   - Status: an **open** Captain escalation, batched in decision 5925109323.
-     It is not a KILL.
+1. **FS-2 (RULED).** The question was whether R1's "starts at the start of the
+   clause's scope" reads past a label with no rules meaning (CR 207.2c/207.2d)
+   before a trigger.
+   - Ruling: Captain decision 5925134485, a label printed before an ability
+     is outside its scope. The question is closed; it is not a KILL.
+   - Implementation: `oracle-compiler-interface/3`, ratified for this ruling
+     in record 5925277948, lands after this wave. Extraction and R1 change
+     only there, under its own authorized task.
+   - This wave's interface/2 measurements, ledger rows and verdicts for the
+     five FS-2 clauses stay as measured. Re-measuring them under interface/3
+     is the follow-up; nothing here is pending a decision.
 2. **FS-1 (CAPTAIN, minor).** A head the frozen detector matches inside a
    label, or inside a purpose phrase ("to activate"), starts a region. The
    question is whether an R2-like discount is wanted. R2 stays literal until
@@ -521,5 +540,6 @@ These do not change the result.
 
 No real KILL was found. No condition has zero PASS. No finding needs a new
 identity coordinate. Under the review boundary, the review itself does not
-force a CAPTAIN answer. This document requests Captain attention for item 1
-as a batched Captain-owned decision (5925109323), which remains open.
+force a CAPTAIN answer. Item 1 is already ruled (5925134485), with its
+interface/3 implementation (5925277948) as the follow-up after this wave; it
+requests no further decision.
