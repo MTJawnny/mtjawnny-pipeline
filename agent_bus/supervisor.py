@@ -31,9 +31,9 @@ from typing import Callable, Sequence
 
 from agent_bus import compose, finalize, goal, worker_evidence
 from agent_bus import errors as E
-from agent_bus.enforce import UnitVerdict, verify_unit
+from agent_bus.enforce import UnitVerdict, commits_between, verify_unit
 from agent_bus.errors import BusError
-from agent_bus.git_evidence import completed_units, head_sha
+from agent_bus.git_evidence import completed_units, head_sha, units_in_message
 from agent_bus.issue import AuthorityError, Resolution, post_comment, read_comments, resolve_authority
 from agent_bus.machine import Authority, BusState, RawComment, fold
 from agent_bus.preflight import (Checkout, PreflightReport, build_base_of, inspect, preflight,
@@ -186,6 +186,14 @@ class Supervisor:
             # report anything, BUS_NOTHING_ACTIONABLE included. Dry runs stay inert.
             report["worker_evidence"] = self._prior_evidence(
                 observation, envelope, resume_plan["completed"])
+        if not runnable and all_done_unclaimed(resume_plan, plan, wave_state):
+            # RR1: every planned unit is already done, and this command has no
+            # Worker message yet. Its answer is a result at the current head.
+            if not execute:
+                report["action"] = "RESULT_DRY_RUN"
+                return report
+            return self._result_of_done_units(report, observation, envelope, plan,
+                                              check.checkout)
         if not runnable:
             report["action"] = "NONE"
             report["reason"] = E.NOTHING_ACTIONABLE
@@ -452,6 +460,38 @@ class Supervisor:
             references.append(f"https://github.com/{self.repo_slug}/issues/{self.issue}#issuecomment-{candidates[0][0]}")
         return references
 
+    def _result_of_done_units(self, report: dict, observation: Observation,
+                              command: Envelope, plan: WavePlan,
+                              checkout: Checkout) -> dict:
+        """RR1: a command whose every planned unit is already committed on its
+        candidate range, each with durable Worker evidence (checked above, and
+        fatal if missing), is answered by a P result at the current head. Nothing
+        is dispatched and no unit runs again; every unit is listed DONE with the
+        commit that carries its trailer, so ACCEPT still sees each one."""
+        require_exclusive(self.repo_path, self.run)
+        commits = unit_commits(self.repo_path, command.wave, build_base_of(command), self.run)
+        missing = [u for u in plan.order if u not in commits]
+        if missing:
+            raise BusError(E.WORKER_EVIDENCE_INVALID,
+                           f"no commit on the candidate range claims {', '.join(missing)}")
+        evidence = report.get("worker_evidence") or []
+        if len(evidence) != len(plan.order):
+            raise BusError(E.WORKER_EVIDENCE_INVALID,
+                           f"{len(evidence)} durable evidence references for "
+                           f"{len(plan.order)} done units")
+        result = compose.result(
+            command, observation.authority, status="P", branch=checkout.branch,
+            head=self._head(),
+            units=[{"id": u, "status": "DONE", "commit": commits[u]} for u in plan.order],
+            validation=[f"{u}: done before this command; not re-run" for u in plan.order]
+                       + [f"Worker evidence (not acceptance): {ref}" for ref in evidence],
+            note="every planned unit was already done; nothing was dispatched",
+            clock=self.clock)
+        report["posted"] = [self._post(result)]
+        report["action"] = "RESULT_OF_DONE_UNITS"
+        report["reason"] = None
+        return report
+
     # ----------------------------------------------------------------- git io
     def _head(self) -> str:
         # `rev-parse` only: after a refused unit the host must not run `git status`
@@ -466,6 +506,23 @@ class Supervisor:
         post_comment(envelope.render(), target, self.repo_slug, self.run, dry_run=False)
         return {"message_id": envelope.message_id, "kind": envelope.kind,
                 "target": f"{'pr' if self.transport_pr else 'issue'}:{target}"}
+
+
+def unit_commits(repo: str, wave: str, base: str, run: Runner) -> dict[str, str]:
+    """Each unit committed on `base..HEAD` -> the LAST commit that claims it."""
+    commits: dict[str, str] = {}
+    for commit in commits_between(repo, base, "HEAD", run):
+        for unit in units_in_message(commit.message, wave):
+            commits[unit] = commit.sha
+    return commits
+
+
+def all_done_unclaimed(resume_plan: dict, plan: WavePlan, wave_state) -> bool:
+    """Every planned unit done, none failed or blocked, and no Worker message
+    (progress or result) answers this command yet."""
+    return (not wave_state.claimed and not resume_plan["failed"]
+            and not resume_plan["blocked"]
+            and set(resume_plan["completed"]) == set(plan.order))
 
 
 def wake_check(envelope: Envelope, actor: str) -> bool:

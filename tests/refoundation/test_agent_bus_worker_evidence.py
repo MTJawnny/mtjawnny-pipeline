@@ -1,6 +1,7 @@
 """Deterministic preservation, refusal, and inertness of final Worker evidence."""
 import json
 import unittest
+from unittest import mock
 
 from agent_bus import errors as E
 from agent_bus import worker_evidence as W
@@ -459,21 +460,68 @@ class TestSupervisorEvidence(unittest.TestCase):
             armed(fake).poll_once(execute=True, resume=True)
         self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
 
-    def test_git_completed_wave_with_durable_evidence_is_nothing_actionable(self):
+    def test_RR1_git_completed_wave_with_durable_evidence_is_answered_by_a_result(self):
         from tests.refoundation.test_agent_bus_provider_failover import armed
+        for resume in (False, True):
+            with self.subTest(resume=resume):
+                fake = self.completed_wave()
+                self.evidence(fake, 'U1', 900)
+                self.evidence(fake, 'U2', 901)
+                report = armed(fake).poll_once(execute=True, resume=resume)
+                self.assertEqual(report['action'], 'RESULT_OF_DONE_UNITS')
+                self.assertEqual(fake.providers_invoked, [])
+                self.assertEqual(len(report['worker_evidence']), 2)
+                [result] = fake.posted_messages()
+                self.assertEqual(result.kind, 'WAVE_RESULT')
+                self.assertEqual(result.body['status'], 'P')
+                self.assertEqual(result.body['head'], fake.head)
+                self.assertEqual([(u['id'], u['status']) for u in result.body['units']],
+                                 [('U1', 'DONE'), ('U2', 'DONE')])
+                self.assertTrue(all(len(u['commit']) == 40 for u in result.body['units']))
+                self.assertEqual(sum('Worker evidence' in v for v in result.body['validation']), 2)
+
+    def test_NC_RR1_a_claimed_command_gets_no_second_result(self):
+        from types import SimpleNamespace
+        from agent_bus.supervisor import all_done_unclaimed
+        plan = SimpleNamespace(order=('U1', 'U2'))
+        done = {'completed': ['U1', 'U2'], 'failed': [], 'blocked': {}}
+        self.assertTrue(all_done_unclaimed(done, plan, SimpleNamespace(claimed=False)))
+        self.assertFalse(all_done_unclaimed(done, plan, SimpleNamespace(claimed=True)))
+        self.assertFalse(all_done_unclaimed(dict(done, completed=['U1']), plan,
+                                            SimpleNamespace(claimed=False)))
+        self.assertFalse(all_done_unclaimed(dict(done, failed=['U2']), plan,
+                                            SimpleNamespace(claimed=False)))
+        self.assertFalse(all_done_unclaimed(dict(done, blocked={'U2': ['U1']}), plan,
+                                            SimpleNamespace(claimed=False)))
+
+    def test_NC_RR1_a_unit_with_no_claiming_commit_publishes_nothing(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed
+        import agent_bus.supervisor as S
         fake = self.completed_wave()
         self.evidence(fake, 'U1', 900)
         self.evidence(fake, 'U2', 901)
-        report = armed(fake).poll_once(execute=True, resume=True)
-        self.assertEqual(report['reason'], E.NOTHING_ACTIONABLE)
-        self.assertEqual(len(report['worker_evidence']), 2)
+        with mock.patch.object(S, 'unit_commits', lambda *a, **k: {'U1': 'a' * 40}):
+            with self.assertRaises(BusError) as caught:
+                armed(fake).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
+        self.assertEqual(fake.posted, [])
+
+    def test_NC_RR1_missing_evidence_references_publish_nothing(self):
+        from tests.refoundation.test_agent_bus_provider_failover import armed
+        import agent_bus.supervisor as S
+        fake = self.completed_wave()
+        with mock.patch.object(S.Supervisor, '_prior_evidence', lambda *a: ['only-one']):
+            with self.assertRaises(BusError) as caught:
+                armed(fake).poll_once(execute=True)
+        self.assertEqual(caught.exception.code, E.WORKER_EVIDENCE_INVALID)
         self.assertEqual(fake.posted, [])
 
     def test_dry_run_of_a_git_completed_wave_stays_inert(self):
         from tests.refoundation.test_agent_bus_provider_failover import armed
         fake = self.completed_wave()
         report = armed(fake).poll_once(execute=False)
-        self.assertEqual(report['reason'], E.NOTHING_ACTIONABLE)
+        self.assertEqual(report['action'], 'RESULT_DRY_RUN')
+        self.assertEqual(fake.posted, [])
         self.assertNotIn('worker_evidence', report)
         # Preflight's own ancestry check stays; the evidence lookup does not run.
         self.assertFalse(any('merge-base' in c and c[-1] == 'HEAD' and fake.head in c
