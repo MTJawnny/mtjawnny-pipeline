@@ -41,8 +41,11 @@ Issue #1 comment 5877392306):
 * **Nothing touches the operator checkout.** Every review mode works in one
   disposable root, removed afterwards.
 
-**No self-review.** The reviewer is never the provider named by the wave's
-Worker evidence. Evidence that names no provider, an unknown one, or more than
+**No Worker session reviews itself** (decision E as amended, 5923072829). An
+ordinary wave's reviewer is a fresh, isolated Claude session (no resume, no
+ambient settings, a read-only sandbox, the host-built context only), even of
+Claude's work. A high-stakes review -- the plan's terminal wave, or a result no
+plan binds -- is never the provider named by the wave's Worker evidence. Evidence that names no provider, an unknown one, or more than
 one (a failover wave), or an order with no other provider, is not reviewed by
 any model: the host publishes a CAPTAIN decision. An eligible reviewer out of
 capacity is a WAIT, retried next pass (delegated-Manager policy, decision G):
@@ -177,6 +180,7 @@ class Pass:
     message_id: str | None = None
     mode: str | None = None
     worker_provider: str | None = None
+    high_stakes: bool | None = None
     reviewer: str | None = None
     measured_head: str | None = None
     selftest_exit: int | None = None
@@ -198,12 +202,24 @@ def _event(comment: dict, repo: str, pr: int) -> dict:
             "repository": {"full_name": repo}}
 
 
-def reviewer_for(worker_provider: str | None, order: Sequence[str]) -> list[str]:
-    """Every provider that may review, in order: never the one that did the work,
-    and nobody at all when the work is not attributed to exactly one provider."""
+ISOLATED_REVIEWER = "claude"
+
+
+def reviewer_for(worker_provider: str | None, order: Sequence[str],
+                 cross_only: bool = True) -> list[str]:
+    """Every provider that may review, in order; nobody at all when the work is
+    not attributed to exactly one provider.
+
+    cross_only (a high-stakes review: the plan's terminal wave, or no plan):
+    never the provider that did the work. Otherwise (decision E as amended,
+    5923072829): a fresh, isolated Claude session first, even of Claude's own
+    work, then any other configured provider that did not do the work."""
     if worker_provider not in PROVIDERS:
         return []
-    return [p for p in order if p != worker_provider]
+    if cross_only:
+        return [p for p in order if p != worker_provider]
+    rest = [p for p in order if p not in (ISOLATED_REVIEWER, worker_provider)]
+    return [ISOLATED_REVIEWER, *rest] if ISOLATED_REVIEWER in order else rest
 
 
 def goal_checks_text(m: Measurement) -> str:
@@ -600,6 +616,16 @@ class LocalManager:
             return None, f"Worker evidence for {command_id} names no known provider: {name!r}"
         return name, None
 
+    def high_stakes(self, comment_id: int) -> bool:
+        """Cross-provider review only (decision E as amended): the result of the
+        goal plan's terminal wave, or one no plan binds. Fails closed: anything
+        that cannot be read is high stakes."""
+        try:
+            binding, _ = publisher.binding_for(self.target, comment_id, self.run)
+        except (BusError, AuthorityError):
+            return True
+        return binding is None or binding.entry.wave == binding.plan.terminal
+
     def worker_provider(self, command_id: str | None) -> str | None:
         return self.attribution(command_id)[0]
 
@@ -761,6 +787,15 @@ class LocalManager:
                "NOTE: the focus could not resolve this message's command or goal plan, so\n"
                "issue-1.json and the PR file hold the FULL threads.\n")
             + "\n"
+            "REVIEW ADVERSARIALLY. Assume the work is wrong until you have shown otherwise.\n"
+            "For every guard, check or validation the change adds or relies on, construct\n"
+            "the inputs it must reject (duplicates, wrong or unrelated references, null,\n"
+            "malformed, empty, stale) and probe them read-only with python3 against the\n"
+            "review clone. A guard you have not seen fail is not a guard. Green goal\n"
+            "checks are necessary, not sufficient. You may share a model with the Worker\n"
+            "(Captain decision E as amended, Issue #1 comment 5923072829): you are a fresh,\n"
+            "isolated session with none of its context; judge only the evidence. Where an\n"
+            "accepted contract says the other model reviews, that amendment governs.\n\n"
             "BUDGET: every command you run re-sends this whole conversation, so cost\n"
             "grows with each one. Read review-brief.md and the contracts first, batch\n"
             "your reads into few commands, and aim to decide within about six. Do not\n"
@@ -882,7 +917,9 @@ class LocalManager:
         if verdict.mode == "review":
             env = parse_comment(comment["body"])
             report.worker_provider, problem = self.attribution(env.parent, env)
-            candidates = reviewer_for(report.worker_provider, self.order)
+            report.high_stakes = self.high_stakes(verdict.comment_id)
+            candidates = reviewer_for(report.worker_provider, self.order,
+                                      cross_only=report.high_stakes)
             if problem is None and not candidates:
                 problem = f"no provider other than {report.worker_provider} is configured"
             report.reason = problem

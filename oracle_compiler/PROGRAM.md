@@ -9,9 +9,11 @@ finish line, and where it must stop for the Captain.
 
 ## How a package runs
 
-- One package is one `T`. Its Worker is Claude Code or Codex; its reviewer is
-  the **other** model (decision E). The reviewer's verdict is the `V`; no model
-  accepts its own work.
+- One package is one `T`. Its Worker is Claude Code or Codex. Its reviewer is a
+  fresh, isolated Claude session; for the plan's terminal wave, an unbound result,
+  or an interface, semantic-law or bus-protocol change, it is the **other** model
+  (decision E as amended, 5923072829). The reviewer's verdict is the `V`; no
+  Worker session accepts its own work.
 - A task-internal conflict is first sent to the other model; the Worker then
   proceeds only within the task's scope and records both analyses (decision F).
 - Unattended continuation uses the Agent Bus: a Captain-rooted goal plan

@@ -78,6 +78,19 @@ class TestReviewerChoice(unittest.TestCase):
         self.assertEqual(L.reviewer_for("claude", ("claude", "codex")), ["codex"])
         self.assertEqual(L.reviewer_for("codex", ("claude", "codex")), ["claude"])
 
+    def test_SR1_an_ordinary_wave_is_reviewed_by_an_isolated_claude_session_first(self):
+        order = ("claude", "codex")
+        self.assertEqual(L.reviewer_for("claude", order, cross_only=False), ["claude", "codex"])
+        self.assertEqual(L.reviewer_for("codex", order, cross_only=False), ["claude"])
+        self.assertEqual(L.reviewer_for("codex", ("codex",), cross_only=False), [])
+        self.assertEqual(L.reviewer_for(None, order, cross_only=False), [])
+
+    def test_NC_SR1_a_high_stakes_review_is_still_cross_provider(self):
+        for cross_only in (True,):
+            self.assertEqual(L.reviewer_for("claude", ("claude", "codex"), cross_only), ["codex"])
+            self.assertEqual(L.reviewer_for("codex", ("claude", "codex"), cross_only), ["claude"])
+        self.assertEqual(L.reviewer_for("claude", ("claude", "codex")), ["codex"])  # default
+
     def test_a_failover_wave_has_no_eligible_reviewer(self):
         self.assertEqual(L.reviewer_for("claude|codex", ("claude", "codex")), [])
 
@@ -196,13 +209,17 @@ class PassHarness(unittest.TestCase):
 
     measured = None
 
+    high_stakes = True
+
     def manager(self, worker, invoke, problem=None, **kw):
+        self_ = self
         m = L.LocalManager(REPO, "/tmp/repo", PR, WHO, invoke=invoke, workdir=None, **kw)
         attribution = (None, problem) if problem else (worker, None)
         patches = [
             mock.patch.object(L.LocalManager, "admitted", lambda self: (admitted(), COMMENT, [])),
             mock.patch.object(L, "parse_comment", lambda body: Env()),
             mock.patch.object(L.LocalManager, "attribution", lambda self, c, *a: attribution),
+            mock.patch.object(L.LocalManager, "high_stakes", lambda self, c: self_.high_stakes),
             mock.patch.object(L.publisher, "result_head", lambda *a: "a" * 40),
             mock.patch.object(L.LocalManager, "measure",
                               lambda _, cid, head, ws: self.fake_measure(cid, head, ws)),
@@ -300,6 +317,44 @@ class TestAttributionGetsTheResult(PassHarness):
             m.poll_once(execute=False)
         self.assertEqual(seen[0][0], "m-command")
         self.assertIsInstance(seen[0][1], Env)
+
+
+class TestHighStakes(unittest.TestCase):
+    def stakes(self, binding=None, raises=None):
+        m = L.LocalManager(REPO, "/nonexistent", PR, WHO)
+        def bind(*a):
+            if raises:
+                raise raises
+            return binding, "why"
+        with mock.patch.object(L.publisher, "binding_for", bind):
+            return m.high_stakes(1001)
+
+    def binding(self, wave, terminal):
+        return SimpleNamespace(entry=SimpleNamespace(wave=wave),
+                               plan=SimpleNamespace(terminal=terminal))
+
+    def test_SR1_only_a_bound_non_terminal_wave_is_ordinary(self):
+        self.assertFalse(self.stakes(self.binding("C03B", "C03-M04")))
+        self.assertTrue(self.stakes(self.binding("C03-M04", "C03-M04")))
+
+    def test_NC_SR1_unbound_or_unreadable_is_high_stakes(self):
+        self.assertTrue(self.stakes(None))
+        self.assertTrue(self.stakes(raises=BusError(E.BAD_VALUE, "x")))
+        from agent_bus.issue import AuthorityError
+        self.assertTrue(self.stakes(raises=AuthorityError("x")))
+
+
+class TestReviewerPolicyInThePass(PassHarness):
+    def test_SR1_an_ordinary_claude_wave_goes_to_claude(self):
+        self.high_stakes = False
+        report = self.manager("claude", lambda *a: {"decision": GOOD}).poll_once(execute=False)
+        self.assertEqual(report["reviewer"], "claude")
+        self.assertFalse(report["high_stakes"])
+
+    def test_NC_SR1_a_high_stakes_claude_wave_goes_to_codex(self):
+        self.high_stakes = True
+        report = self.manager("claude", lambda *a: {"decision": GOOD}).poll_once(execute=False)
+        self.assertEqual(report["reviewer"], "codex")
 
 
 class TestEvidenceIsTheHosts(PassHarness):
@@ -499,6 +554,8 @@ class TestWorkspace(unittest.TestCase):
         self.assertTrue((ws.context / "review-brief.md").is_file())
         self.assertIn("review-brief.md: START HERE", prompt)
         self.assertIn("BUDGET", prompt)
+        self.assertIn("REVIEW ADVERSARIALLY", prompt)
+        self.assertIn("5923072829", prompt)
         for rel in L.CONTRACTS:
             self.assertEqual((ws.context / "contracts" / rel).read_text(),
                              f"accepted law: {rel}\n")
@@ -702,9 +759,11 @@ class TestCycle(unittest.TestCase):
 class TestRootContract(unittest.TestCase):
     def test_claude_md_states_cross_review_and_the_decision_f_stop(self):
         text = " ".join((ROOT / "CLAUDE.md").read_text(encoding="utf-8").split())
-        self.assertIn("whichever model did a task, the OTHER one (Claude Code or Codex) "
-                      "reviews it", text)
-        self.assertIn("No model accepts its own work.", text)
+        # Decision E as amended (Issue #1 comment 5923072829).
+        self.assertIn("an ordinary wave is reviewed by a fresh, isolated Claude session", text)
+        self.assertIn("go to the OTHER model", text)
+        self.assertIn("5923072829", text)
+        self.assertIn("No Worker session accepts its own work.", text)
         self.assertIn("the conflict first goes to the other model for analysis", text)
         self.assertIn("Captain-owned decisions are recorded and batched", text)
         self.assertNotIn("**Manager** — ChatGPT", text)

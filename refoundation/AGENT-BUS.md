@@ -388,8 +388,13 @@ writes confined to a throwaway `--no-hardlinks` clone and a scratch dir (the
 operator's ignored `data/` and `experiments/out/` are copied in when
 `--operator-state` names them, never through a candidate symlink). The goal
 binding, the measured head and the evidence are the host's: held in memory, and
-re-proven after the review or nothing is published. The model is the provider
-that did NOT produce the wave's Worker evidence. It reads a pristine clone taken
+re-proven after the review or nothing is published. The model (decision E as
+amended, Issue #1 comment 5923072829) is a fresh, isolated Claude session for an
+ordinary wave, even of Claude's own work, then any other provider that did not do
+the work; for the goal plan's terminal wave, or a result no plan binds (or whose
+binding cannot be read), it is only a provider that did NOT produce the wave's
+Worker evidence. Every review is told to be adversarial: rig each guard the change
+adds or relies on. It reads a pristine clone taken
 before any candidate code ran, works from a context dir outside it, and is
 governed by `CLAUDE.md` and both bus contracts as committed at the accepted head
 the latest `K` names (never a working tree: the watcher's checkout is also its

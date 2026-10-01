@@ -7,9 +7,12 @@ It is current operating law only. History lives in Git; chronology is not law.
 
 - **Captain** — the user. Final human authority. Ratifies vocabulary, semantics,
   scoring constants, and every merge.
-- **Manager** — cross-review (Captain decision E, Issue #1 comment 5864993788):
-  whichever model did a task, the OTHER one (Claude Code or Codex) reviews it
-  (`V`); `T` and `K` follow the reviewed verdict. No model accepts its own work.
+- **Manager** — independent review (Captain decision E, Issue #1 comment
+  5864993788, as amended in 5923072829): an ordinary wave is reviewed by a fresh,
+  isolated Claude session, even of Claude's own work; the goal plan's terminal
+  wave, an unbound result, and interface, semantic-law or bus-protocol changes go
+  to the OTHER model. Every review is adversarial. The verdict is the `V`; `T`
+  and `K` follow it. No Worker session accepts its own work.
 - **Worker** — Claude Code or Codex. Execute exactly one `T` and post one `X`.
 
 ## Authority order
