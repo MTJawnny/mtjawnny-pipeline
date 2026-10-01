@@ -6,7 +6,10 @@ TBD/TODO, empty, any case -- an UNRESOLVED row or a fixture without a clause
 "disposed" by that placeholder), a stale trace.json (STOPs), a wrong trace.json hash, 'not killed' stated over a
 relevant KILL, and an omitted PASS-coverage flag -- plus the hand-off rule
 (producers' --verify first, missing artifacts regenerated only by their
-unchanged producers, in order).
+unchanged producers, in order). interface/3 §I3a R4: an R4 section missing
+one R4-changed clause or row, misstating one interface/2 value, or carrying a
+row for a clause outside R4 reach fails; a kill.json R4-off outcome that
+differs from the interface/2 review's section 6 ledger row fails.
 
 Inline SYNTHETIC clauses only -- generic templating, no card, no card name, no
 oracle_id and no Oracle text. Never reads or writes c03/ or c03b/ output: the
@@ -48,13 +51,14 @@ def line(doc, prefix):
 
 class Base(unittest.TestCase):
     def setUp(self):
-        self.regions, self.kill, self.shas, self.doc = mc.synthetic()
+        self.regions, self.kill, self.shas, self.doc, self.i2 = mc.synthetic()
 
-    def failures(self, doc=None, kill=None, shas=None, regions=None):
+    def failures(self, doc=None, kill=None, shas=None, regions=None, i2=None):
         return mc.document_failures(self.doc if doc is None else doc,
                                     self.regions if regions is None else regions,
                                     self.kill if kill is None else kill,
-                                    self.shas if shas is None else shas)
+                                    self.shas if shas is None else shas,
+                                    self.i2 if i2 is None else i2)
 
     def assertFails(self, needle, **kw):
         bad = self.failures(**kw)
@@ -162,9 +166,9 @@ class Ledger(Base):
             for name in (f"an UNRESOLVED row disposed as {form!r}",
                          f"a fixture without a clause disposed as {form!r}"):
                 with self.subTest(control=name):
-                    doc, regions, kill, shas, needle = rigs[name]
+                    doc, regions, kill, shas, i2, needle = rigs[name]
                     self.assertFails(needle, doc=doc, regions=regions, kill=kill,
-                                     shas=shas)
+                                     shas=shas, i2=i2)
 
     def test_real_disposition_text_or_code_passes(self):
         row = line(self.doc, "| `rig:0:0:0`")
@@ -233,15 +237,19 @@ class Totals(Base):
     def test_insufficient_coverage_must_be_flagged(self):
         kill = copy.deepcopy(self.kill)
         for r in kill["clauses"]:
-            if r["tests"]["K1"]["outcome"] == PASS:
-                r["tests"]["K1"]["outcome"] = UNRESOLVED
+            self.assertNotIn("K1", r.get("interface2_changes") or {})
+            for view in (r["tests"], r["r4_off_tests"]):   # R4 left K1 alone
+                if view["K1"]["outcome"] == PASS:
+                    view["K1"]["outcome"] = UNRESOLVED
         kill["conditions"] = hk.summarize(kill["clauses"])
         self.assertEqual(kill["conditions"]["K1"]["pass_coverage"], hk.COVERAGE_FLAG)
         doc = mc.skeleton(self.regions, kill, self.shas).replace(
             f" | {mc.NONE} |\n", " | reviewed |\n")
-        self.assertEqual(self.failures(doc=doc, kill=kill), [])
+        i2 = mc.i2_ledger(kill)
+        self.assertEqual(self.failures(doc=doc, kill=kill, i2=i2), [])
         omitted = doc.replace(f"| {hk.COVERAGE_FLAG} |", "| sufficient |")
-        self.assertFails("K1 PASS coverage: stated 'sufficient'", doc=omitted, kill=kill)
+        self.assertFails("K1 PASS coverage: stated 'sufficient'", doc=omitted, kill=kill,
+                         i2=i2)
         # A coverage flag never changes the result.
         self.assertIn(f"H-REGION result: {hk.RESULT_NOT_KILLED}", doc)
 
@@ -261,13 +269,14 @@ class Totals(Base):
 
 class Result(Base):
     def test_not_killed_over_a_relevant_kill_fails(self):
-        doc, regions, kill, shas, needle = mc.rigs()[
+        doc, regions, kill, shas, i2, needle = mc.rigs()[
             "a document stating 'not killed' over a relevant KILL"]
         self.assertEqual(kill["conditions"]["K4"]["result"], hk.RESULT_KILLED)
-        self.assertFails(needle, doc=doc, kill=kill)
+        i2 = mc.i2_ledger(kill)       # the rigged KILL is R4-off too (no label)
+        self.assertFails(needle, doc=doc, kill=kill, i2=i2)
         fixed = doc.replace(f"H-REGION result: {hk.RESULT_NOT_KILLED}",
                             f"H-REGION result: {hk.RESULT_KILLED}")
-        self.assertEqual(self.failures(doc=fixed, kill=kill), [])
+        self.assertEqual(self.failures(doc=fixed, kill=kill, i2=i2), [])
 
     def test_killed_over_no_kill_fails(self):
         self.assertFails("RESULT PRECEDENCE gives 'not killed on the P2 population'",
@@ -301,6 +310,160 @@ class Citations(Base):
         self.assertFails("is not a C03/C03b artifact",
                          doc=self.doc.replace(row, row + row.replace("trace.json",
                                                                      "other.json")))
+
+
+def r4_rows(doc):
+    """The synthetic document's R4-table rows (the ledger row shares the prefix)."""
+    return [l for l in doc.splitlines(keepends=True)
+            if l.startswith(f"| `{mc.R4_CLAUSE}` |") and l.endswith(" | R4 |\n")]
+
+
+class R4Table(Base):
+    """interface/3 §I3a R4: one row per (clause, item) R4 changed, each value
+    the artifacts', and no row outside R4 reach."""
+
+    def test_skeleton_prints_the_r4_header_and_every_row(self):
+        sk = mc.skeleton(self.regions, self.kill, self.shas)
+        self.assertIn("| clause | item | interface/2 | interface/3 | rule |\n|---|---|---|---|---|\n",
+                      sk)
+        want = mc.r4_expected(self.regions, self.kill)
+        self.assertEqual(len(r4_rows(sk)), len(want))
+        items = [r[1] for r in want]
+        self.assertIn("scope", items)
+        self.assertTrue(any(i.startswith("mark ") for i in items))
+        self.assertTrue(any(i in mc.CONDITIONS for i in items))
+        self.assertEqual({r[0] for r in want}, {mc.R4_CLAUSE})
+
+    def test_r4_values_are_the_renderers(self):
+        for clause, item, was, now, rule in mc.r4_expected(self.regions, self.kill):
+            line_ = next(l for l in r4_rows(self.doc) if f"| {item} |" in l)
+            self.assertIn(f"| `{was}` | `{now}` | {rule} |", line_)
+            self.assertEqual(rule, "R4")
+
+    def test_each_missing_row_fails(self):
+        for row in r4_rows(self.doc):
+            with self.subTest(row=row):
+                self.assertFails(f"the R4 table omits clause {mc.R4_CLAUSE} item",
+                                 doc=self.doc.replace(row, ""))
+
+    def test_missing_clause_fails(self):
+        doc = "".join(l for l in self.doc.splitlines(keepends=True)
+                      if l not in r4_rows(self.doc))
+        self.assertFails(f"the R4 table omits clause {mc.R4_CLAUSE}", doc=doc)
+
+    def test_duplicate_row_fails(self):
+        row = r4_rows(self.doc)[0]
+        self.assertFails("2 times; exactly once", doc=self.doc.replace(row, row + row))
+
+    def test_each_misstated_value_fails(self):
+        for row in r4_rows(self.doc):
+            for col, name in ((3, "interface/2"), (4, "interface/3"), (5, "rule")):
+                with self.subTest(row=row, column=name):
+                    cells = row.split("|")
+                    cells[col] = " `misstated` "
+                    self.assertFails(f"{name} 'misstated', artifacts",
+                                     doc=self.doc.replace(row, "|".join(cells)))
+
+    def test_row_r4_did_not_change_fails(self):
+        row = r4_rows(self.doc)[0]
+        extra = f"| `{mc.R4_CLAUSE}` | K7 | `{PASS}` | `{PASS}` | R4 |\n"
+        self.assertFails(f"clause {mc.R4_CLAUSE} item K7, which R4 did not change",
+                         doc=self.doc.replace(row, row + extra))
+
+    def test_row_outside_r4_reach_fails(self):
+        doc, regions, kill, shas, i2, needle = mc.rigs()[
+            "an R4-table row for a clause outside R4 reach"]
+        self.assertFails(needle, doc=doc)
+        self.assertNotIn("rig:0:0:0", mc._ignored_clauses(self.regions))
+
+    def test_kept_label_is_outside_r4_reach(self):
+        regions = copy.deepcopy(self.regions)
+        rec = next(c for c in regions["clauses"] if c["address"]["id"] == mc.R4_CLAUSE)
+        rec["r4_label"]["effect"] = "kept"
+        self.assertNotIn(mc.R4_CLAUSE, mc._ignored_clauses(regions))
+
+    def test_missing_r4_table_fails(self):
+        head = mc._row(mc.R4_HEAD)
+        self.assertFails("0 tables headed | clause | item |",
+                         doc=self.doc.replace(head, head.replace("item", "change")))
+
+    def test_contracted_r4_rigs_fail(self):
+        for name in ("a document whose R4 section misses one R4-changed clause",
+                     "a document misstating one interface/2 value in its R4 section",
+                     "an R4-off outcome that differs from the interface/2 review's "
+                     "ledger row",
+                     "an R4-table row for a clause outside R4 reach"):
+            with self.subTest(rig=name):
+                doc, regions, kill, shas, i2, needle = mc.rigs()[name]
+                self.assertFails(needle, doc=doc, regions=regions, kill=kill, shas=shas,
+                                 i2=i2)
+
+
+class R4OffLedger(Base):
+    """kill.json's R4-off K1-K7 outcomes equal the interface/2 review's
+    section 6 ledger row, per clause."""
+
+    def i2_row(self, clause="rig:0:0:0"):
+        return line(self.i2, f"| `{clause}` |")
+
+    def test_clean_r4_off_matches(self):
+        self.assertEqual(mc.r4_off_failures(self.i2, self.kill), [])
+
+    def test_rigged_kill_r4_off_outcome_fails(self):
+        kill = mc._r4_off_rigged(self.kill)
+        self.assertFails(f"R4-off K1 of clause {mc.R4_CLAUSE} census exile#1: kill.json",
+                         kill=kill)
+
+    def test_each_rigged_ledger_cell_fails(self):
+        for clause in ("rig:0:0:0", "rig:0:0:1", mc.R4_CLAUSE):
+            for k in mc.CONDITIONS:
+                with self.subTest(clause=clause, condition=k):
+                    row = self.i2_row(clause)
+                    cells = row.split("|")
+                    col = 5 + mc.CONDITIONS.index(k)
+                    cells[col] = f" {KILL if cells[col].strip() != KILL else PASS} "
+                    self.assertFails(f"R4-off {k} of clause {clause}",
+                                     i2=self.i2.replace(row, "|".join(cells)))
+
+    def test_ledger_missing_a_clause_fails(self):
+        self.assertFails("the interface/2 ledger has 0 rows for clause rig:0:0:1",
+                         i2=self.i2.replace(self.i2_row("rig:0:0:1"), ""))
+
+    def test_ledger_foreign_row_fails(self):
+        row = self.i2_row()
+        self.assertFails("the interface/2 ledger lists rig:0:0:9",
+                         i2=self.i2.replace(row, row + row.replace("rig:0:0:0",
+                                                                   "rig:0:0:9")))
+
+    def test_ledger_outside_section_6_is_not_read(self):
+        moved = self.i2.replace("## 6. Coverage ledger", "## 5. Something else")
+        self.assertFails("has 0 section 6", i2=moved)
+        empty = self.i2.replace("## 7. Totals", "## 7. Totals\n\n" + "\n".join(
+            l for l in self.i2.splitlines() if l.startswith("|")))
+        sec6 = empty.split("## 7.")[0].replace(self.i2_row(), "")
+        self.assertFails("0 rows for clause rig:0:0:0",
+                         i2=sec6 + "## 7." + empty.split("## 7.")[1])
+
+    def test_kill_row_without_r4_off_outcomes_fails(self):
+        kill = copy.deepcopy(self.kill)
+        del kill["clauses"][1]["r4_off_tests"]
+        self.assertTrue(any("carries no R4-off outcomes" in b
+                            for b in mc.r4_off_failures(self.i2, kill)))
+
+    def test_interface2_review_read_only_at_its_blob(self):
+        self.assertEqual(mc.git_blob(b""), "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391")
+        self.assertIn("## 6. Coverage ledger", mc.read_i2_review())
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / mc.I2_REVIEW_REL).parent.mkdir(parents=True)
+            (root / mc.I2_REVIEW_REL).write_bytes(
+                (mc.ROOT / mc.I2_REVIEW_REL).read_bytes() + b"\nrigged\n")
+            self.assertTrue(halts(lambda: mc.read_i2_review(root),
+                                  "not the interface/2 review on record"))
+
+    def test_default_document_is_the_interface3_review(self):
+        self.assertEqual(mc.DOC_REL, "oracle_compiler/analysis/M04-H-REGION-REVIEW-I3.md")
+        self.assertNotEqual(mc.DOC_REL, mc.I2_REVIEW_REL)
 
 
 class HandOff(unittest.TestCase):

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """M04 — coverage and consistency checker for the H-REGION semantic review.
 
-PINNED TO oracle-compiler-interface/2 (oracle_compiler/INTERFACES.md blob
-4ac4d856b651edde05b15c7065aa593f59561dcf, Captain ratification 5900431196).
+PINNED TO oracle-compiler-interface/3 (oracle_compiler/INTERFACES.md blob
+119778a68c0e4e8378f0a117b7c22884ec5eda4b, Captain ratification 5925134485 +
+5925371124). The code follows h_region.py's pin (`hr.INTERFACE_VERSION`,
+`hr.verify_interface()`).
 
-Checks `oracle_compiler/analysis/M04-H-REGION-REVIEW.md` against the verified
-C03 / C03b artifacts. It decides nothing about H-REGION: every figure it
+Checks `oracle_compiler/analysis/M04-H-REGION-REVIEW-I3.md` (by default)
+against the verified interface/3 C03 / C03b artifacts. The interface/2 review
+`M04-H-REGION-REVIEW.md` stays on record untouched; it is checkable at its own
+commit by that commit's checker. It decides nothing about H-REGION: every figure it
 compares is kill.json's, and the result words are C03-KILL's RESULT
 PRECEDENCE. It exits non-zero unless the document
 
@@ -27,7 +31,17 @@ PRECEDENCE. It exits non-zero unless the document
     result, each equal to kill.json's (the `condition | all PASS | ...` table);
   * states its H-REGION result (`H-REGION result: <words>`) as the RESULT
     PRECEDENCE gives it: 'killed' if any condition has a KILL on a fixture or a
-    relevant population clause, otherwise 'not killed on the P2 population'.
+    relevant population clause, otherwise 'not killed on the P2 population';
+  * INTERFACE/3 §I3a R4: has an R4 table (`clause | item | interface/2 |
+    interface/3 | rule`) with ONE ROW PER (clause, item) R4 changed -- scope or
+    head field, region, role mark with its attachment, K1-K7 outcome -- every
+    such pair exactly once, each value equal to regions.json's and kill.json's
+    (written as c03_trace.py renders it), rule R4, and no row for a clause
+    without an IGNORED label (outside R4 reach);
+  * and, per clause, kill.json's R4-off K1-K7 outcomes (`r4_off_tests`, the
+    interface/2 derivation) equal that clause's row in the section 6 coverage
+    ledger of the interface/2 review M04-H-REGION-REVIEW.md, read only at its
+    git blob on record (I2_REVIEW_BLOB).
 
 HAND-OFF RULE. An existing C03/C03b artifact is never trusted. In hand-off
 order (h_region.py, h_region_kill.py, c03_trace.py): a missing artifact is
@@ -63,7 +77,12 @@ import c03_trace as ct                       # noqa: E402
 import foundry_common as fc                  # noqa: E402
 
 SCRIPT = "experiments/oracle_ingest/m04_check.py"
-DOC_REL = "oracle_compiler/analysis/M04-H-REGION-REVIEW.md"
+DOC_REL = "oracle_compiler/analysis/M04-H-REGION-REVIEW-I3.md"
+# The interface/2 review, on record and untouched: its section 6 ledger is read
+# only when the file is this git blob.
+I2_REVIEW_REL = "oracle_compiler/analysis/M04-H-REGION-REVIEW.md"
+I2_REVIEW_BLOB = "52630e924ae730af0cd696dab06daa5ef3f94e42"
+I2_LEDGER_SECTION = re.compile(r"^## 6\.[^\n]*\n(.*?)(?=^## |\Z)", re.M | re.S)
 REGIONS_REL, KILL_REL, TRACE_REL = hr.OUT_REL, hk.OUT_REL, ct.OUT_REL
 ARTIFACTS = (REGIONS_REL, KILL_REL, TRACE_REL)
 # Producers in hand-off order: (script, artifact).
@@ -86,6 +105,7 @@ LEDGER_HEAD = (["clause", "census key", "population", "fixtures"] + list(CONDITI
 FIXTURE_HEAD = ["fixture", "member status", "members", "clauses", "disposition"]
 TOTALS_HEAD = (["condition"] + [f"all {o}" for o in OUTCOMES] + ["relevant"]
                + [f"relevant {o}" for o in OUTCOMES] + ["PASS coverage", "result"])
+R4_HEAD = ["clause", "item", "interface/2", "interface/3", "rule"]
 
 
 # ------------------------------------------------------------- hand-off rule
@@ -383,12 +403,132 @@ def result_failures(text: str, kill_doc: dict) -> list:
     return []
 
 
-def document_failures(text: str, regions_doc: dict, kill_doc: dict, shas: dict) -> list:
-    """Every way the document disagrees with the verified artifacts."""
+# ------------------------------------------------------ interface/3 §I3a R4
+
+def _ignored_clauses(regions_doc: dict) -> set:
+    """The clauses within R4 reach: those with an IGNORED label."""
+    return {c["address"]["id"] for c in regions_doc["clauses"]
+            if (c.get("r4_label") or {}).get("effect") == "ignored"}
+
+
+def r4_expected(regions_doc: dict, kill_doc: dict) -> list:
+    """[(clause, item, interface/2, interface/3, rule)], in C03 order: one per
+    (clause, item) R4 changed, each value as c03_trace.py renders it from
+    regions.json and kill.json. Two records of one clause that disagree on a
+    pair HALT (the pair would not be one row)."""
+    rows = {(r["id"], json.dumps(r.get("census_key"))): r for r in kill_doc["clauses"]}
+    out, seen = [], {}
+    for c in regions_doc["clauses"]:
+        cid = c["address"]["id"]
+        row = rows.get((cid, json.dumps(c.get("census_key"))))
+        if row is None:
+            fc.halt(f"kill.json has no row for C03 record {cid} {c.get('census_key')!r}")
+        _, changed = ct.r4_record(c, row, [cid, c.get("census_key")])
+        for i in changed:
+            r = (cid, i["item"], ct._fmt(i["interface2"]), ct._fmt(i["interface3"]),
+                 i["rule"])
+            if (cid, i["item"]) in seen:
+                if seen[(cid, i["item"])] != r:
+                    fc.halt(f"two C03 records of {cid} disagree on R4 item {i['item']}")
+                continue
+            seen[(cid, i["item"])] = r
+            out.append(r)
+    return out
+
+
+def r4_table_failures(text: str, regions_doc: dict, kill_doc: dict) -> list:
+    bad = []
+    rows = table(text, R4_HEAD, bad)
+    if rows is None:
+        return bad
+    want = {(r[0], r[1]): r for r in r4_expected(regions_doc, kill_doc)}
+    reach = _ignored_clauses(regions_doc)
+    keys = [(row[0], row[1]) for row in rows]
+    for k in sorted(set(keys)):
+        if keys.count(k) != 1:
+            bad.append(f"the R4 table lists clause {k[0]} item {k[1]} {keys.count(k)} "
+                       f"times; exactly once is required")
+    for k in sorted(set(want) - set(keys)):
+        bad.append(f"the R4 table omits clause {k[0]} item {k[1]} (R4 changed it)")
+    for cid in sorted({k[0] for k in keys} - reach):
+        bad.append(f"the R4 table has a row for clause {cid}, which is outside R4 reach "
+                   f"(no IGNORED label)")
+    for k in sorted(set(keys) - set(want)):
+        if k[0] in reach:
+            bad.append(f"the R4 table lists clause {k[0]} item {k[1]}, which R4 did not "
+                       f"change")
+    for row in rows:
+        w = want.get((row[0], row[1]))
+        if w is None:
+            continue
+        for name, got, exp in zip(R4_HEAD[2:], row[2:], w[2:]):
+            if got != exp:
+                bad.append(f"R4 table {row[0]} {row[1]}: {name} {got!r}, artifacts "
+                           f"{exp!r}")
+    return bad
+
+
+def git_blob(data: bytes) -> str:
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def read_i2_review(root: Path = None) -> str:
+    """The interface/2 review's text, only as the git blob on record."""
+    data = ((ROOT if root is None else root) / I2_REVIEW_REL).read_bytes()
+    if git_blob(data) != I2_REVIEW_BLOB:
+        fc.halt(f"{I2_REVIEW_REL} is blob {git_blob(data)}, not the interface/2 review "
+                f"on record ({I2_REVIEW_BLOB})")
+    return data.decode("utf-8")
+
+
+def r4_off_failures(i2_text: str, kill_doc: dict) -> list:
+    """Per clause: kill.json's R4-off K1-K7 outcomes equal the clause's row in
+    the interface/2 review's section 6 coverage ledger."""
+    sec = I2_LEDGER_SECTION.findall(i2_text)
+    if len(sec) != 1:
+        return [f"the interface/2 review has {len(sec)} section 6 (coverage ledger); "
+                f"exactly one is required"]
+    bad = []
+    rows = table(sec[0], LEDGER_HEAD, bad)
+    bad = [f"interface/2 review section 6: {b}" for b in bad]
+    if rows is None:
+        return bad
+    ledger = {}
+    for row in rows:
+        ledger.setdefault((row[0], row[1]), []).append(row)
+    want = {(r["id"], census_text(r["census_key"])): r for r in kill_doc["clauses"]
+            if r["population"] or r["fixture_roles"]}
+    for k in sorted(want):
+        got = ledger.get(k, [])
+        if len(got) != 1:
+            bad.append(f"the interface/2 ledger has {len(got)} rows for clause {k[0]} "
+                       f"census {k[1]}; exactly one is required")
+            continue
+        r = want[k]
+        if "r4_off_tests" not in r:
+            bad.append(f"kill.json clause {k[0]} census {k[1]} carries no R4-off outcomes")
+            continue
+        for c, cell in zip(CONDITIONS, got[0][4:4 + len(CONDITIONS)]):
+            if cell != r["r4_off_tests"][c]["outcome"]:
+                bad.append(f"R4-off {c} of clause {k[0]} census {k[1]}: kill.json "
+                           f"{r['r4_off_tests'][c]['outcome']}, interface/2 ledger "
+                           f"{cell!r}")
+    for k in sorted(set(ledger) - set(want)):
+        bad.append(f"the interface/2 ledger lists {k[0]} census {k[1]}, which is not a "
+                   f"C03 clause")
+    return bad
+
+
+def document_failures(text: str, regions_doc: dict, kill_doc: dict, shas: dict,
+                      i2_text: str) -> list:
+    """Every way the document (and the interface/2 ledger `i2_text` it carries
+    forward) disagrees with the verified artifacts."""
     return (kill_doc_failures(kill_doc) + cite_failures(text, shas)
             + ledger_failures(text, regions_doc, kill_doc)
             + fixture_failures(text, regions_doc, kill_doc)
-            + totals_failures(text, kill_doc) + result_failures(text, kill_doc))
+            + totals_failures(text, kill_doc) + result_failures(text, kill_doc)
+            + r4_table_failures(text, regions_doc, kill_doc)
+            + r4_off_failures(i2_text, kill_doc))
 
 
 # ------------------------------------------------------------------ skeleton
@@ -425,8 +565,25 @@ def skeleton(regions_doc: dict, kill_doc: dict, shas: dict) -> str:
                         + [c["relevant"]["count"]]
                         + [c["relevant"][o]["count"] for o in OUTCOMES]
                         + [c["pass_coverage"], condition_result(c)]))
+    out += ["", _row(R4_HEAD), _sep(len(R4_HEAD))]
+    out += [_row([f"`{r[0]}`", r[1], f"`{r[2]}`", f"`{r[3]}`", r[4]])
+            for r in r4_expected(regions_doc, kill_doc)]
     out += ["", f"H-REGION result: {expected_result(kill_doc)}"]
     return "\n".join(out) + "\n"
+
+
+def i2_ledger(kill_doc: dict) -> str:
+    """A synthetic interface/2 review: its section 6 ledger holds each
+    clause's R4-off outcomes. For the negative controls only."""
+    out = ["## 6. Coverage ledger", "", _row(LEDGER_HEAD), _sep(len(LEDGER_HEAD))]
+    for r in kill_doc["clauses"]:
+        if r["population"] or r["fixture_roles"]:
+            out.append(_row([f"`{r['id']}`", census_text(r["census_key"]),
+                             "yes" if r["population"] else "no",
+                             roles_text(r["fixture_roles"])]
+                            + [r["r4_off_tests"][k]["outcome"] for k in CONDITIONS]
+                            + ["interface/2"]))
+    return "\n".join(out + ["", "## 7. Totals", ""]) + "\n"
 
 
 # ---------------------------------------------------------- negative controls
@@ -441,29 +598,34 @@ def _halts(fn, needle: str = "") -> bool:
     return False
 
 
+R4_CLAUSE = "rig:0:1:0"                         # the synthetic clause behind a label
+
+
 def synthetic() -> tuple:
-    """(regions_doc, kill_doc, shas, document) over inline synthetic clauses:
-    one population clause whose K1/K2 are UNRESOLVED, one fixture clause and
-    one fixture without a clause. The document is the skeleton with every
-    disposition filled."""
+    """(regions_doc, kill_doc, shas, document, interface/2 review) over inline
+    synthetic clauses: one population clause whose K1/K2 are UNRESOLVED, one
+    fixture clause, one fixture without a clause, and one population clause
+    behind an IGNORED R4 label that changes its scope, role marks and outcomes.
+    The document is the skeleton with every disposition filled; the
+    interface/2 review's ledger holds the R4-off outcomes."""
     a = hk._rig("Destroy target artifact, then proliferate.", census=("destroy", 0),
                 population=True)
     b = hk._rig("Exile target artifact you control, then return that card to the "
                 "battlefield.", census=("exile", 0), roles=["rig-role"], ci=1)
-    regions_doc = {"clauses": [a, b], "population_keys": [["rig", "destroy", 0]],
-                   "fixtures": [{"role": "rig-role", "member_status": "rig",
-                                 "members": [{"oracle_id": "rig", "census_key": ["exile", 0],
-                                              "clauses": [b["address"]["id"]]}]},
-                                {"role": "rig-empty", "member_status": "rig",
-                                 "members": []}]}
-    kill_doc = hk.evaluate([a, b], list(hr.RULES), ["Rig Widget"])
+    c = ct.rig_paragraph(ct.RIG_R4, 1, census=("exile", 1), population=True)
+    regions_doc, kill_doc = ct.rig_docs(
+        [a, b, c], [["rig", "destroy", 0], ["rig", "exile", 1]],
+        [{"role": "rig-role", "member_status": "rig",
+          "members": [{"oracle_id": "rig", "census_key": ["exile", 0],
+                       "clauses": [b["address"]["id"]]}]},
+         {"role": "rig-empty", "member_status": "rig", "members": []}], ["Rig Widget"])
     kill_doc["fixtures_without_clauses"] = [{"role": "rig-empty", "member": None,
                                              "member_status": "rig",
                                              "reason": "no member"}]
     shas = {rel: hashlib.sha256(rel.encode()).hexdigest() for rel in ARTIFACTS}
     doc = skeleton(regions_doc, kill_doc, shas).replace(
         f" | {NONE} |\n", " | reviewed: an extraction gap, not a kill |\n")
-    return regions_doc, kill_doc, shas, doc
+    return regions_doc, kill_doc, shas, doc, i2_ledger(kill_doc)
 
 
 def _relevant_kill(kill_doc: dict) -> dict:
@@ -471,14 +633,67 @@ def _relevant_kill(kill_doc: dict) -> dict:
     k = copy.deepcopy(kill_doc)
     t = k["clauses"][0]["tests"]["K4"]
     t.update(outcome=hk.KILL, relevant=True)
+    # An unlabelled clause: its R4-off outcome is its outcome (R4 IS CONFINED).
+    k["clauses"][0]["r4_off_tests"]["K4"].update(outcome=hk.KILL, relevant=True)
     k["conditions"] = hk.summarize(k["clauses"])
     return k
 
 
+def _r4_off_rigged(kill_doc: dict) -> dict:
+    """kill.json with the R4 clause's R4-off K1 outcome rigged (and its R4
+    record kept consistent), so it differs from the interface/2 ledger row."""
+    k = copy.deepcopy(kill_doc)
+    row = next(r for r in k["clauses"] if r["id"] == R4_CLAUSE)
+    was = row["r4_off_tests"]["K1"]
+    now = row["tests"]["K1"]
+    was["outcome"] = next(o for o in OUTCOMES if o not in (was["outcome"], now["outcome"]))
+    row.setdefault("interface2_changes", {})["K1"] = {
+        "interface2": was["outcome"], "interface2_relevant": was["relevant"],
+        "interface3": now["outcome"], "interface3_relevant": now["relevant"],
+        "changed_by": ["R4"]}
+    return k
+
+
 def rigs() -> dict:
-    """name -> (document, regions_doc, kill_doc, shas, needle): each rig must
-    fail with a diagnostic containing `needle`."""
-    regions_doc, kill_doc, shas, doc = synthetic()
+    """name -> (document, regions_doc, kill_doc, shas, interface/2 review,
+    needle): each rig must fail with a diagnostic containing `needle`."""
+    rigs5 = _rigs()
+    regions_doc, kill_doc, shas, doc, i2 = synthetic()
+    out = {name: (d, rd, kd, sh, i2, needle)
+           for name, (d, rd, kd, sh, needle) in rigs5.items()}
+    lines = doc.splitlines(keepends=True)
+    r4_rows = [l for l in lines if l.startswith(f"| `{R4_CLAUSE}` |")
+               and l.endswith(" | R4 |\n")]
+    misstated = r4_rows[0].split("|")
+    misstated[3] = " `misstated` "
+    outside = f"| `rig:0:0:0` | K1 | `{hk.UNRESOLVED}` | `{hk.PASS}` | R4 |\n"
+    i2_row = next(l for l in i2.splitlines(keepends=True)
+                  if l.startswith(f"| `{R4_CLAUSE}` |"))
+    i2_cells = i2_row.split("|")
+    i2_cells[5] = f" {next(o for o in OUTCOMES if o != i2_cells[5].strip())} "
+    return out | {
+        "a document whose R4 section misses one R4-changed clause": (
+            "".join(l for l in lines if l not in r4_rows), regions_doc, kill_doc, shas,
+            i2, f"the R4 table omits clause {R4_CLAUSE}"),
+        "a document misstating one interface/2 value in its R4 section": (
+            doc.replace(r4_rows[0], "|".join(misstated)), regions_doc, kill_doc, shas,
+            i2, "interface/2 'misstated', artifacts"),
+        "an R4-off outcome that differs from the interface/2 review's ledger row": (
+            doc, regions_doc, _r4_off_rigged(kill_doc), shas, i2,
+            f"R4-off K1 of clause {R4_CLAUSE}"),
+        "an interface/2 ledger row that differs from kill.json's R4-off outcome": (
+            doc, regions_doc, kill_doc, shas, i2.replace(i2_row, "|".join(i2_cells)),
+            f"R4-off K1 of clause {R4_CLAUSE}"),
+        "an R4-table row for a clause outside R4 reach": (
+            doc.replace(r4_rows[-1], r4_rows[-1] + outside), regions_doc, kill_doc,
+            shas, i2, "rig:0:0:0, which is outside R4 reach"),
+    }
+
+
+def _rigs() -> dict:
+    """The interface/2-era rigs: name -> (document, regions_doc, kill_doc, shas,
+    needle)."""
+    regions_doc, kill_doc, shas, doc, _i2 = synthetic()
     lines = doc.splitlines(keepends=True)
     first = next(l for l in lines if l.startswith("| `rig:0:0:0`"))
     unres = first.rsplit("|", 2)[0] + f"| {NONE} |\n"
@@ -549,13 +764,13 @@ def stale_trace_stops() -> bool:
 
 
 def negative_controls() -> list:
-    regions_doc, kill_doc, shas, doc = synthetic()
+    regions_doc, kill_doc, shas, doc, i2 = synthetic()
     cases = [("the unrigged synthetic document passes",
-              lambda: document_failures(doc, regions_doc, kill_doc, shas) == [])]
-    for name, (d, rd, kd, sh, needle) in rigs().items():
+              lambda: document_failures(doc, regions_doc, kill_doc, shas, i2) == [])]
+    for name, (d, rd, kd, sh, i2t, needle) in rigs().items():
         cases.append((f"a rigged {name} fails",
-                      lambda d=d, rd=rd, kd=kd, sh=sh, needle=needle: any(
-                          needle in b for b in document_failures(d, rd, kd, sh))))
+                      lambda d=d, rd=rd, kd=kd, sh=sh, i2t=i2t, needle=needle: any(
+                          needle in b for b in document_failures(d, rd, kd, sh, i2t))))
     cases.append(("a rigged stale trace.json STOPs the checker", stale_trace_stops))
     out = []
     for name, check in cases:
@@ -582,7 +797,8 @@ def main(argv=None) -> int:
     if not path.exists():
         print(f"FAIL: {a.doc} does not exist", file=sys.stderr)
         return 1
-    bad = document_failures(path.read_text(encoding="utf-8"), regions_doc, kill_doc, shas)
+    bad = document_failures(path.read_text(encoding="utf-8"), regions_doc, kill_doc, shas,
+                            read_i2_review())
     for b in bad:
         print(f"FAIL: {b}", file=sys.stderr)
     if bad:
@@ -590,9 +806,11 @@ def main(argv=None) -> int:
     flags = [k for k in CONDITIONS if kill_doc["conditions"][k]["pass_coverage"]
              != "sufficient"]
     print(f"{a.doc}: coverage ledger, fixtures, totals, PASS-coverage flags, the "
-          f"H-REGION result ({expected_result(kill_doc)}) and the three artifact "
-          f"hashes agree with the verified C03/C03b artifacts; {len(controls)} negative "
-          f"controls hold" + (f"; {hk.COVERAGE_FLAG}: {', '.join(flags)}" if flags else ""))
+          f"H-REGION result ({expected_result(kill_doc)}), the three artifact hashes "
+          f"and the R4 table ({len(r4_expected(regions_doc, kill_doc))} rows) agree with "
+          f"the verified C03/C03b artifacts; every clause's R4-off outcomes equal the "
+          f"interface/2 ledger ({I2_REVIEW_REL}); {len(controls)} negative controls hold"
+          + (f"; {hk.COVERAGE_FLAG}: {', '.join(flags)}" if flags else ""))
     return 0
 
 
