@@ -5,6 +5,9 @@ exact fixture coverage (unrelated trace keys, incorrect member identities,
 duplicate fixture roles and entries are refused) and a null population census
 key reported as malformed, never a TypeError; a malformed C03 census key (e.g.
 ['exile']) halts the renderer with its diagnostic, never an IndexError.
+interface/3 §I3a R4: every R4 label and every value R4 changed is rendered
+beside its interface/2 value, and --check-complete fails on a trace that drops
+one R4 label or one R4-changed outcome (or misstates or duplicates one).
 
 Inline SYNTHETIC clauses only -- generic templating, no card, no card name, no
 oracle_id and no Oracle text. Never reads or writes c03/ or c03b/ output.
@@ -45,14 +48,11 @@ def docs():
     c = hk._rig(TWO_HEADS, census=("destroy", 0), population=True, ci=2)
     d = hk._rig(NO_HEAD, roles=["synthetic-role"], ci=3)
     recs = [a, b, c, d]
-    regions_doc = {
-        "clauses": recs,
-        "population_keys": [["rig", "exile", 0], ["rig", "exile", 1],
-                            ["rig", "destroy", 0]],
-        "fixtures": [{"role": "synthetic-role", "member_status": "synthetic",
-                      "members": [{"oracle_id": "rig", "census_key": None,
-                                   "clauses": [d["address"]["id"]]}]}]}
-    return regions_doc, hk.evaluate(recs, list(hr.RULES), NAMES)
+    return ct.rig_docs(
+        recs, [["rig", "exile", 0], ["rig", "exile", 1], ["rig", "destroy", 0]],
+        [{"role": "synthetic-role", "member_status": "synthetic",
+          "members": [{"oracle_id": "rig", "census_key": None,
+                       "clauses": [d["address"]["id"]]}]}], NAMES)
 
 
 def halts(fn):
@@ -408,18 +408,14 @@ def fixture_docs():
     d = hk._rig(NO_HEAD, roles=["synthetic-role"], ci=3)
     e = hk._rig(TWO, roles=["synthetic-role"], ci=4)
     recs = [a, b, c, d, e]
-    regions_doc = {
-        "clauses": recs,
-        "population_keys": [["rig", "exile", 0], ["rig", "exile", 1],
-                            ["rig", "destroy", 0]],
-        "fixtures": [
-            {"role": "synthetic-role", "member_status": "synthetic",
-             "members": [{"oracle_id": "rig", "census_key": None,
-                          "clauses": [d["address"]["id"], e["address"]["id"]]}]},
-            {"role": "keyed-role", "member_status": "synthetic",
-             "members": [{"oracle_id": "rig", "census_key": ["destroy", 0],
-                          "clauses": [c["address"]["id"]]}]}]}
-    return regions_doc, hk.evaluate(recs, list(hr.RULES), NAMES)
+    return ct.rig_docs(
+        recs, [["rig", "exile", 0], ["rig", "exile", 1], ["rig", "destroy", 0]],
+        [{"role": "synthetic-role", "member_status": "synthetic",
+          "members": [{"oracle_id": "rig", "census_key": None,
+                       "clauses": [d["address"]["id"], e["address"]["id"]]}]},
+         {"role": "keyed-role", "member_status": "synthetic",
+          "members": [{"oracle_id": "rig", "census_key": ["destroy", 0],
+                       "clauses": [c["address"]["id"]]}]}], NAMES)
 
 
 class FixtureCoverage(unittest.TestCase):
@@ -682,10 +678,233 @@ class MalformedCensusKey(unittest.TestCase):
                          [["exile", 0], ["exile", 1], ["destroy", 0], None])
 
 
+# interface/3 §I3a R4: synthetic labels (a flavor label, one holding a head
+# word, and a keyword label R4 keeps), each opening its own paragraph.
+DRILL = ("Synthetic Drill — When this widget enters, if you control an artifact, exile "
+         "target artifact, then return it to the battlefield.")
+RETURN_DRILL = ("Return Drill — Exile target artifact you control, then return that "
+                "card to the battlefield.")
+KEPT = ("Flying — When this widget enters, exile target artifact, then return it to "
+        "the battlefield.")
+
+
+def r4_docs():
+    """(regions_doc, kill_doc): three labelled population clauses and one
+    unlabelled fixture clause."""
+    a = ct.rig_paragraph(DRILL, 0, census=("exile", 0), population=True)
+    b = ct.rig_paragraph(RETURN_DRILL, 1, census=("exile", 1), population=True)
+    c = ct.rig_paragraph(KEPT, 2, census=("exile", 2), population=True)
+    d = hk._rig(TWO, roles=["synthetic-role"], ci=1)
+    return ct.rig_docs(
+        [a, b, c, d], [["rig", "exile", 0], ["rig", "exile", 1], ["rig", "exile", 2]],
+        [{"role": "synthetic-role", "member_status": "synthetic",
+          "members": [{"oracle_id": "rig", "census_key": None,
+                       "clauses": [d["address"]["id"]]}]}], NAMES)
+
+
+class R4Trace(unittest.TestCase):
+    """Every R4 label and every value R4 changed is rendered in its clause's
+    trace beside its interface/2 value, copied from C03."""
+
+    def setUp(self):
+        self.regions, self.kill = r4_docs()
+        self.doc = ct.render_traces(self.regions, self.kill)
+        self.drill, self.ret, self.kept, self.plain = self.doc["traces"]
+
+    def items(self, t, kind):
+        return [i for i in t["r4_changed"] if i["kind"] == kind]
+
+    def test_every_label_rendered_with_offsets_class_cr_effect_and_heads(self):
+        for t, rec in zip(self.doc["traces"][:3], self.regions["clauses"]):
+            lab = rec["r4_label"]
+            with self.subTest(clause=t["key"]):
+                for k in ("span", "text", "class", "cr", "effect", "scope_start"):
+                    self.assertEqual(t["r4_label"][k], lab[k])
+                self.assertEqual(t["r4_label"]["dropped_heads"],
+                                 [[h["head"], h["start"]] for h in lab["dropped_heads"]])
+                line = next(x for x in t["lines"] if x.startswith("  R4 label"))
+                self.assertIn(f"[{lab['span'][0]}, {lab['span'][1]})", line)
+                self.assertIn(f"{lab['class']} ({lab['cr']}) {lab['effect'].upper()}", line)
+
+    def test_ignored_and_kept_labels(self):
+        self.assertEqual(self.drill["r4_label"]["effect"], "ignored")
+        self.assertEqual(self.ret["r4_label"]["dropped_heads"], [["return", 0]])
+        self.assertIn("heads dropped: return@0", next(
+            x for x in self.ret["lines"] if x.startswith("  R4 label")))
+        self.assertEqual((self.kept["r4_label"]["effect"], self.kept["r4_changed"]),
+                         ("kept", []))
+        self.assertFalse(any(x.startswith("  R4 changed") for x in self.kept["lines"]))
+
+    def test_unlabelled_clause_has_no_r4_record(self):
+        self.assertEqual((self.plain["r4_label"], self.plain["r4_changed"]), (None, []))
+        self.assertFalse(any(x.startswith("  R4") for x in self.plain["lines"]))
+
+    def test_changed_mark_beside_its_interface2_value(self):
+        rec = self.regions["clauses"][0]
+        want = [s for s in rec["role_spans"] if "interface2" in s]
+        got = self.items(self.drill, "mark")
+        self.assertTrue(want)
+        self.assertEqual([(i["interface3"]["span"], i["interface2"]) for i in got],
+                         [(s["span"], s["interface2"]["span"]) for s in want])
+        self.assertTrue(all(i["rule"] == "R4" for i in self.drill["r4_changed"]))
+
+    def test_changed_outcome_beside_its_interface2_value(self):
+        k4 = next(i for i in self.items(self.drill, "outcome") if i["item"] == "K4")
+        row = self.kill["clauses"][0]
+        self.assertEqual(k4["interface2"]["outcome"], row["r4_off_tests"]["K4"]["outcome"])
+        self.assertEqual(k4["interface3"]["outcome"], row["tests"]["K4"]["outcome"])
+        self.assertNotEqual(k4["interface2"], k4["interface3"])
+        self.assertIn(f"  R4 changed K4: interface/2 {k4['interface2']['outcome']}  |  "
+                      f"interface/3 {k4['interface3']['outcome']}", self.drill["lines"])
+
+    def test_changed_regions_and_fields(self):
+        rec = self.regions["clauses"][1]
+        self.assertEqual([i["item"] for i in self.items(self.ret, "field")],
+                         [f for f in ct.R4_FIELD_ITEMS
+                          if f in rec["r4_interface2"]["changed"]])
+        scope = next(i for i in self.ret["r4_changed"] if i["item"] == "scope")
+        self.assertEqual((scope["interface2"], scope["interface3"]),
+                         (rec["r4_interface2"]["scope"], rec["scope"]))
+        regions = self.items(self.ret, "region")
+        self.assertIn(None, [i["interface3"] for i in regions])     # the dropped region
+        self.assertTrue(any(i["interface2"] and i["interface3"] for i in regions))
+
+    def test_clean_is_complete(self):
+        self.assertEqual(ct.completeness_failures(self.doc, self.regions, self.kill), [])
+
+
+class R4CheckComplete(unittest.TestCase):
+    """Negative controls: --check-complete fails on a trace that drops one R4
+    label, drops an R4-changed outcome, or misstates or duplicates one."""
+
+    def setUp(self):
+        self.regions, self.kill = r4_docs()
+        self.doc = ct.render_traces(self.regions, self.kill)
+
+    def failures(self, doc, regions=None, kill=None):
+        return ct.completeness_failures(doc, regions or self.regions, kill or self.kill)
+
+    def test_each_dropped_label_fails(self):
+        for n in range(3):
+            with self.subTest(trace=n):
+                doc = copy.deepcopy(self.doc)
+                doc["traces"][n]["r4_label"] = None
+                bad = self.failures(doc)
+                self.assertTrue(any("R4 label" in b and "regions.json" in b for b in bad))
+                self.assertTrue(any("R4 label" in b and "kill.json" in b for b in bad))
+
+    def test_dropped_changed_outcome_fails(self):
+        doc = copy.deepcopy(self.doc)
+        ch = doc["traces"][0]["r4_changed"]
+        ch.remove(next(i for i in ch if i["kind"] == "outcome"))
+        self.assertTrue(any("R4 changed outcome" in b and "appears in 0 trace(s)" in b
+                            for b in self.failures(doc)))
+
+    def test_each_dropped_changed_value_fails(self):
+        for n in range(2):
+            for j in range(len(self.doc["traces"][n]["r4_changed"])):
+                with self.subTest(trace=n, item=j):
+                    doc = copy.deepcopy(self.doc)
+                    gone = doc["traces"][n]["r4_changed"].pop(j)
+                    bad = self.failures(doc)
+                    self.assertTrue(any("appears in 0 trace(s)" in b for b in bad),
+                                    (gone["item"], bad))
+
+    def test_misstated_interface2_value_fails(self):
+        for n in range(2):
+            for j, i in enumerate(self.doc["traces"][n]["r4_changed"]):
+                with self.subTest(trace=n, item=i["item"]):
+                    doc = copy.deepcopy(self.doc)
+                    doc["traces"][n]["r4_changed"][j]["interface2"] = "misstated"
+                    self.assertTrue(self.failures(doc))
+
+    def test_value_in_two_traces_fails(self):
+        doc = copy.deepcopy(self.doc)
+        doc["traces"][2]["r4_label"] = copy.deepcopy(doc["traces"][0]["r4_label"])
+        doc["traces"][2]["key"] = doc["traces"][0]["key"]
+        doc["traces"][2]["occurrence"] = doc["traces"][0]["occurrence"]
+        bad = self.failures(doc)
+        self.assertTrue(any("R4 label" in b and "appears in 2 trace(s)" in b for b in bad))
+
+    def test_trace_without_r4_fields_fails(self):
+        for f in ("r4_label", "r4_changed"):
+            doc = copy.deepcopy(self.doc)
+            doc["traces"][0].pop(f)
+            self.assertIn(f'trace ["rig:0:0:0", ["exile", 0]] carries no {f}',
+                          self.failures(doc))
+
+    def test_label_regions_json_records_but_no_trace_carries_fails(self):
+        regions = copy.deepcopy(self.regions)
+        s = regions["measurements"]["all"]["interface3_rules"]["R4_ability_label"]
+        s["labels"].append(dict(s["labels"][0], clause="rig:0:9:0"))
+        self.assertTrue(any("is recorded 1 time(s) in regions.json but appears in 0"
+                            in b for b in self.failures(self.doc, regions=regions)))
+
+    def test_outcome_kill_json_records_but_no_trace_carries_fails(self):
+        kill = copy.deepcopy(self.kill)
+        rows = kill["changed_from_interface2"]["rows"]
+        rows.append(["rig:0:2:0", ["exile", 2]] + rows[0][2:])
+        self.assertTrue(any("R4 changed outcome" in b and "appears in 0" in b
+                            for b in self.failures(self.doc, kill=kill)))
+
+    def test_c03_without_r4_measurement_fails(self):
+        regions = copy.deepcopy(self.regions)
+        del regions["measurements"]
+        self.assertTrue(any("C03 carries no interface/3 R4 record" in b
+                            for b in self.failures(self.doc, regions=regions)))
+
+
+class R4Renderer(unittest.TestCase):
+    """An R4 record the renderer cannot account for halts it."""
+
+    def rigged(self, edit):
+        regions, kill = r4_docs()
+        edit(regions, kill)
+        return halts(lambda: ct.render_traces(regions, kill))
+
+    def test_unrigged_does_not_halt(self):
+        self.assertFalse(self.rigged(lambda r, k: None))
+
+    def test_kill_row_without_r4_record_halts(self):
+        for f in ("r4_label", "r4_off_tests"):
+            with self.subTest(field=f):
+                self.assertTrue(self.rigged(lambda r, k, f=f: k["clauses"][0].pop(f)))
+
+    def test_kill_label_disagreeing_with_regions_halts(self):
+        self.assertTrue(self.rigged(
+            lambda r, k: k["clauses"][0]["r4_label"].update({"class": "ability word"})))
+        self.assertTrue(self.rigged(
+            lambda r, k: k["clauses"][3].update(r4_label=k["clauses"][0]["r4_label"])))
+
+    def test_unrecorded_outcome_change_halts(self):
+        self.assertTrue(self.rigged(lambda r, k: k["clauses"][0].pop("interface2_changes")))
+
+    def test_changed_region_without_interface2_value_halts(self):
+        def edit(r, k):
+            for x in r["clauses"][1]["regions"]:
+                x.pop("interface2", None)
+        self.assertTrue(self.rigged(edit))
+
+    def test_changed_mark_without_interface2_value_halts(self):
+        def edit(r, k):
+            for s in r["clauses"][0]["role_spans"]:
+                s.pop("interface2", None)
+        self.assertTrue(self.rigged(edit))
+
+    def test_interface2_value_on_a_kept_label_halts(self):
+        def edit(r, k):
+            r["clauses"][2]["r4_interface2"] = copy.deepcopy(r["clauses"][0]["r4_interface2"])
+        self.assertTrue(self.rigged(edit))
+
+    def test_changed_list_disagreeing_halts(self):
+        self.assertTrue(self.rigged(
+            lambda r, k: r["clauses"][1]["r4_interface2"]["changed"].remove("scope")))
+
+
 class EmbeddedControls(unittest.TestCase):
     def test_script_negative_controls_all_fire(self):
         names = ct.negative_controls()
-        self.assertEqual(len(names), 13)
+        self.assertEqual(len(names), 15)
         for want in ("a C03 record missing its owning occurrence halts the renderer",
                      "--check-complete fails on a rigged dropped trace",
                      "--check-complete fails on a rigged outcome mismatch",
@@ -699,7 +918,10 @@ class EmbeddedControls(unittest.TestCase):
                      "a C03 population record with a null census key halts the renderer",
                      "a C03 record with a malformed census key halts the renderer with "
                      "its diagnostic",
-                     "--verify fails on a rigged stale kill.json"):
+                     "--verify fails on a rigged stale kill.json",
+                     "--check-complete fails on a rigged trace that drops one R4 label",
+                     "--check-complete fails on a rigged trace that drops an R4-changed "
+                     "outcome"):
             self.assertIn(want, names)
 
 

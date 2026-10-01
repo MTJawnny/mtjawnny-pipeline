@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """C03b — minimal H-REGION trace renderer (V1 §5 M4). A VALIDATION TOOL ONLY.
 
-PINNED TO oracle-compiler-interface/2 (oracle_compiler/INTERFACES.md blob
-4ac4d856b651edde05b15c7065aa593f59561dcf, Captain ratification 5900431196).
+PINNED TO oracle-compiler-interface/3 (oracle_compiler/INTERFACES.md blob
+119778a68c0e4e8378f0a117b7c22884ec5eda4b, Captain ratification 5925134485 +
+5925371124). The code follows h_region.py's pin (`hr.INTERFACE_VERSION`,
+`hr.verify_interface()`).
 
 Reads `c03/regions.json` and `c03/kill.json` and renders one human-readable
 trace per C03 clause record (every population clause and every fixture
@@ -12,6 +14,16 @@ offsets into the frozen chain clause; the Oracle text excerpts beside them
 appear only in this ignored output, never in git. The renderer decides
 nothing and is never a source of truth: every figure is copied from C03, and a
 C03 record it cannot read (e.g. one missing its owning occurrence) HALTS.
+
+INTERFACE/3 §I3a R4. Each trace also carries the clause's R4 `ability-label`
+label as C03 records it (offsets, class, CR citation, IGNORED or KEPT, scope
+start, heads dropped) and every value R4 changed -- scope or head field,
+region, role mark (with its attachment), K1-K7 outcome -- beside its
+interface/2 value, copied from regions.json (`r4_label`, `r4_interface2`,
+`interface2`) and kill.json (`r4_label`, `r4_off_tests`,
+`interface2_changes`). An R4 record the renderer cannot account for HALTS.
+`--check-complete` also asserts that every R4 label and every R4-changed value
+recorded in regions.json and kill.json appears in exactly one trace.
 
 HAND-OFF RULE. An existing C03 artifact is never trusted: `h_region.py
 --verify` and `h_region_kill.py --verify` run first and a stale report HALTS.
@@ -182,10 +194,171 @@ def trace(rec: dict, row: dict) -> dict:
     for k, t in tests.items():
         lines.append(f"  {k} {t['outcome']}{'' if t['relevant'] else ' (not relevant)'}"
                      f": {t['reason']}")
+    label, changed = r4_record(rec, row, key)
+    if label is not None:
+        lines.append(f"  R4 label [{label['span'][0]}, {label['span'][1]})  "
+                     f"{label['class']} ({label['cr']}) {label['effect'].upper()}"
+                     + (f"  scope from {label['scope_start']}"
+                        if label["scope_start"] is not None else "")
+                     + "  heads dropped: "
+                     + (", ".join(f"{h}@{s}" for h, s in label["dropped_heads"]) or "none")
+                     + "  R4 changed: " + (", ".join(label["r4_changed"]) or "nothing")
+                     + f": {label['text']}")
+    for c in changed:
+        lines.append(f"  R4 changed {c['item']}: interface/2 {_fmt(c['interface2'])}"
+                     f"  |  interface/3 {_fmt(c['interface3'])}")
     return {"key": key, "occurrence": occ, "population": rec["population"],
             "fixture_roles": list(rec["fixture_roles"]), "scope": rec["scope"],
             "scope_kind": rec["scope_kind"], "clause_sha256": rec["clause_sha256"],
-            "regions": regions, "role_marks": marks, "tests": tests, "lines": lines}
+            "regions": regions, "role_marks": marks, "tests": tests,
+            "r4_label": label, "r4_changed": changed, "lines": lines}
+
+
+# ------------------------------------------------------ interface/3 §I3a R4
+
+R4_LABEL_KEYS = ("span", "text", "class", "cr", "effect", "scope_start")
+# R4-changeable record fields rendered whole; regions and role marks are
+# rendered one by one.
+R4_FIELD_ITEMS = tuple(f for f in hr.R4_FIELDS if f not in ("regions", "role_spans"))
+R4_KINDS = ("field", "region", "mark", "outcome")
+
+
+def _span_label(kind: str, name: str, span: list) -> str:
+    return f"{kind} {name} [{span[0]}, {span[1]})"
+
+
+def _item(item: str, kind: str, was, now) -> dict:
+    return {"item": item, "kind": kind, "interface2": was, "interface3": now,
+            "rule": "R4"}
+
+
+def _overlap(x: dict, y: dict) -> bool:
+    return x["span"][0] < y["span"][1] and y["span"][0] < x["span"][1]
+
+
+def r4_record(rec: dict, row: dict, key) -> tuple:
+    """(label, changed) of one C03 record: its R4 label and every value R4
+    changed beside its interface/2 value, copied from regions.json and
+    kill.json. HALTS on an R4 record it cannot account for."""
+    where = f"C03 record {key}"
+    if "r4_label" not in rec or "r4_label" not in row or "r4_off_tests" not in row:
+        fc.halt(f"{where} carries no interface/3 R4 record (r4_label, r4_off_tests)")
+    bare = hr._bare
+    lab, i2 = rec["r4_label"], rec.get("r4_interface2")
+    label = None
+    if lab is None:
+        if row["r4_label"] is not None:
+            fc.halt(f"{where}: kill.json records an R4 label regions.json does not")
+    else:
+        if row["r4_label"] != {k: lab[k] for k in R4_LABEL_KEYS}:
+            fc.halt(f"{where}: kill.json's R4 label {row['r4_label']!r} is not "
+                    f"regions.json's")
+        if lab["effect"] not in ("ignored", "kept"):
+            fc.halt(f"{where}: R4 label effect {lab['effect']!r} is neither ignored "
+                    f"nor kept")
+        if _excerpt(rec["clause_text"], lab["span"]) != lab["text"]:
+            fc.halt(f"{where}: R4 label text is not its span of the clause")
+        heads = [[h["head"], h["start"]] for h in lab["dropped_heads"]]
+        if heads != [[h["head"], h["start"]] for h in rec["r4_dropped_heads"]]:
+            fc.halt(f"{where}: R4 label's dropped heads are not the record's")
+        label = dict({k: lab[k] for k in R4_LABEL_KEYS}, dropped_heads=heads,
+                     r4_changed=list(i2["changed"]) if i2 else [])
+    if i2 is not None and (lab is None or lab["effect"] != "ignored"):
+        fc.halt(f"{where}: an interface/2 value beside a clause with no IGNORED R4 "
+                f"label (R4 IS CONFINED)")
+    changed = []
+    if i2 is not None:
+        if i2.get("rule") != "R4":
+            fc.halt(f"{where}: r4_interface2 rule is {i2.get('rule')!r}, not R4")
+        for f in R4_FIELD_ITEMS:
+            if (f in i2["changed"]) != (bare(i2[f]) != bare(rec[f])):
+                fc.halt(f"{where}: R4's changed list disagrees with {f}")
+            if f in i2["changed"]:
+                changed.append(_item(f, "field", bare(i2[f]), bare(rec[f])))
+        changed += _r4_regions(rec, i2, where) + _r4_marks(rec, i2, where)
+        for f, kind in (("regions", "region"), ("role_spans", "mark")):
+            if (f in i2["changed"]) != any(c["kind"] == kind for c in changed):
+                fc.halt(f"{where}: R4's changed list disagrees with its {f} records")
+    for k in hk.CONDITIONS:
+        now, was = row["tests"][k], row["r4_off_tests"][k]
+        ch = (row.get("interface2_changes") or {}).get(k)
+        moved = (now["outcome"], now["relevant"]) != (was["outcome"], was["relevant"])
+        want = {"interface2": was["outcome"], "interface2_relevant": was["relevant"],
+                "interface3": now["outcome"], "interface3_relevant": now["relevant"],
+                "changed_by": ["R4"]}
+        if moved != (ch is not None) or (ch is not None and ch != want):
+            fc.halt(f"{where}: kill.json's {k} R4 record disagrees with its R4-off "
+                    f"outcome")
+        if ch is not None:
+            if label is None or label["effect"] != "ignored":
+                fc.halt(f"{where}: R4 changed {k} on a clause with no IGNORED label "
+                        f"(R4 IS CONFINED)")
+            changed.append(_item(k, "outcome",
+                                 {"outcome": was["outcome"], "relevant": was["relevant"]},
+                                 {"outcome": now["outcome"], "relevant": now["relevant"]}))
+    return label, changed
+
+
+def _r4_regions(rec: dict, i2: dict, where: str) -> list:
+    bare, off, out = hr._bare, i2["regions"], []
+    for r in rec["regions"]:
+        if "interface2" in r:
+            if r["interface2"].get("changed_by") != ["R4"]:
+                fc.halt(f"{where}: region {r['ordinal']} interface/2 value is not R4's")
+            was = r["interface2"]["region"]
+            out.append(_item(_span_label("region", r["head"], r["head_span"]), "region",
+                             None if was is None else bare(was), bare(r)))
+        elif not any(bare(x) == bare(r) for x in off):
+            fc.halt(f"{where}: region {r['ordinal']} differs from interface/2 but "
+                    f"carries no interface/2 value")
+    for x in off:
+        if all(x["head_span"] != r["head_span"] for r in rec["regions"]):
+            out.append(_item(_span_label("region", x["head"], x["head_span"]), "region",
+                             bare(x), None))
+    return out
+
+
+def _r4_marks(rec: dict, i2: dict, where: str) -> list:
+    bare, off, on, out, was_of = hr._bare, i2["role_spans"], rec["role_spans"], [], []
+    for s in on:
+        if "interface2" in s:
+            if s["interface2"].get("changed_by") != ["R4"]:
+                fc.halt(f"{where}: role mark {s['role']} {s['span']} interface/2 value "
+                        f"is not R4's")
+            was = s["interface2"]["span"]
+            if was is not None:
+                was_of.append(bare(was))
+            out.append(_item(_span_label("mark", s["role"], s["span"]), "mark",
+                             None if was is None else bare(was), bare(s)))
+        elif not any(bare(x) == bare(s) for x in off):
+            fc.halt(f"{where}: role mark {s['role']} {s['span']} differs from "
+                    f"interface/2 but carries no interface/2 value")
+    for x in off:
+        if any(bare(x) == bare(s) for s in on) or bare(x) in was_of:
+            continue
+        if any(x["role"] == s["role"] and _overlap(x, s) for s in on):
+            fc.halt(f"{where}: interface/2 role mark {x['role']} {x['span']} changed "
+                    f"under R4 but no interface/3 mark records it")
+        out.append(_item(_span_label("mark", x["role"], x["span"]), "mark", bare(x), None))
+    return out
+
+
+def _fmt(v) -> str:
+    """One R4 value, as a trace line shows it."""
+    if v is None:
+        return "none"
+    if isinstance(v, dict) and "head_span" in v:
+        return (f"region {v['ordinal']} {v['head']}  head [{v['head_span'][0]}, "
+                f"{v['head_span'][1]})  span [{v['span'][0]}, {v['span'][1]})  "
+                f"{v['start_rule']} .. {v['end_rule']}")
+    if isinstance(v, dict) and "role" in v:
+        return (f"{v['role']} [{v['span'][0]}, {v['span'][1]})  "
+                f"{'/'.join(v.get('rules') or [])} -> {v['outcome']} {v['attached']}"
+                + (f" ({v['rule']})" if v.get("rule") else "")
+                + (f" (R1 {v['r1_shape']}, to the ability)" if v.get("r1_shape") else ""))
+    if isinstance(v, dict) and "outcome" in v:
+        return v["outcome"] + ("" if v["relevant"] else " (not relevant)")
+    return json.dumps(v, sort_keys=True, ensure_ascii=True)
 
 
 def _census_ok(ck) -> bool:
@@ -309,6 +482,7 @@ def _completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list
     bad = []
     traces = {}                                    # json key -> trace
     keys = []
+    listed = []                                    # (json key, trace), duplicates kept
     for t in doc["traces"]:
         k, problems = _trace_key(t)
         bad += problems
@@ -316,6 +490,7 @@ def _completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list
             continue
         keys.append(k)
         traces[k] = t
+        listed.append((k, t))
     recs = {json.dumps(_key(c["address"]["id"], c.get("census_key"))): c
             for c in regions_doc["clauses"] if c["population"] or c["fixture_roles"]}
     for k in sorted(set(keys)):
@@ -402,6 +577,113 @@ def _completeness_failures(doc: dict, regions_doc: dict, kill_doc: dict) -> list
                 if counts[k][view][o] != cond[view][o]["count"]:
                     bad.append(f"{k} {view} {o}: traces count {counts[k][view][o]}, "
                                f"kill.json {cond[view][o]['count']}")
+    return bad + r4_failures(listed, regions_doc, kill_doc)
+
+
+def _tally(sigs) -> dict:
+    out = {}
+    for s in sigs:
+        s = json.dumps(s, sort_keys=True, ensure_ascii=True)
+        out[s] = out.get(s, 0) + 1
+    return out
+
+
+def _exactly_once(what: str, src: str, recorded: list, traced: list) -> list:
+    """Every R4 entry recorded in `src` appears in exactly one trace (as often
+    as `src` records it), and no trace carries one `src` does not record."""
+    want, got = _tally(recorded), _tally(traced)
+    return [f"R4 {what} {s} is recorded {want.get(s, 0)} time(s) in {src} but appears "
+            f"in {got.get(s, 0)} trace(s)"
+            for s in sorted(set(want) | set(got)) if want.get(s, 0) != got.get(s, 0)]
+
+
+def r4_failures(listed: list, regions_doc: dict, kill_doc: dict) -> list:
+    """interface/3 §I3a R4: every R4 label and every R4-changed value recorded
+    in regions.json (its records and its R4 measurement) and in kill.json (its
+    rows and its changed_from_interface2 rows) appears in exactly one trace,
+    and each trace's R4 label and changed values are its C03 record's."""
+    bad = []
+    try:
+        summary = regions_doc["measurements"]["all"]["interface3_rules"][
+            "R4_ability_label"]
+        s_labels, s_changed = summary["labels"], summary["changed_from_interface2"]
+        k_rows = kill_doc["changed_from_interface2"]["rows"]
+    except (KeyError, TypeError):
+        return ["C03 carries no interface/3 R4 record (regions.json measurements.all."
+                "interface3_rules.R4_ability_label, kill.json changed_from_interface2)"]
+    for k, t in listed:
+        for f in ("r4_label", "r4_changed"):
+            if f not in t:
+                bad.append(f"trace {k} carries no {f}")
+    listed = [(k, t) for k, t in listed if "r4_label" in t and "r4_changed" in t]
+
+    # Per trace: its R4 label and changed values are exactly its record's.
+    rows = {json.dumps(_key(r["id"], r.get("census_key"))): r for r in kill_doc["clauses"]}
+    recs = {json.dumps(_key(c["address"]["id"], c.get("census_key"))): c
+            for c in regions_doc["clauses"]}
+    for k, t in listed:
+        if k in recs and k in rows:
+            label, changed = r4_record(recs[k], rows[k], json.loads(k))
+            if t["r4_label"] != label:
+                bad.append(f"trace {k}: R4 label {t['r4_label']!r}, C03 {label!r}")
+            if t["r4_changed"] != changed:
+                bad.append(f"trace {k}: R4 changed values differ from C03's")
+
+    # Exactly one trace per recorded label (regions.json by clause, kill.json by key).
+    lab_keys = ("span", "text", "class", "cr", "effect", "scope_start", "dropped_heads",
+                "r4_changed")
+    bad += _exactly_once(
+        "label", "regions.json",
+        [[e["clause"]] + [e[x] for x in lab_keys] for e in s_labels],
+        [[json.loads(k)[0]] + [t["r4_label"][x] for x in lab_keys]
+         for k, t in listed if t["r4_label"] is not None])
+    bad += _exactly_once(
+        "label", "kill.json",
+        [[json.loads(k), r["r4_label"]] for k, r in rows.items()
+         if r.get("r4_label") is not None],
+        [[json.loads(k), {x: t["r4_label"][x] for x in R4_LABEL_KEYS}]
+         for k, t in listed if t["r4_label"] is not None])
+
+    # Exactly one trace per R4-changed value regions.json records.
+    want, got = [], []
+    for e in s_changed:
+        c = e["clause"]
+        want += [[c, "field", f] for f in e["changed"] if f in R4_FIELD_ITEMS]
+        want += [[c, "region", r["head"], r["span"], r["interface2"]] for r in e["regions"]]
+        want += [[c, "region gone", r["head"], r["span"]]
+                 for r in e["interface2_regions_dropped"]]
+        want += [[c, "mark", s["role"], s["span"], s["outcome"], s["r1_shape"],
+                  s["interface2"]] for s in e["role_spans"]]
+        want += [[c, "mark gone", s["role"], s["span"], s["outcome"]]
+                 for s in e["interface2_role_spans_gone"]]
+    for k, t in listed:
+        c = json.loads(k)[0]
+        for i in t["r4_changed"]:
+            was, now = i.get("interface2"), i.get("interface3")
+            if i.get("kind") == "field":
+                got.append([c, "field", i["item"]])
+            elif i.get("kind") == "region":
+                got.append([c, "region", now["head"], now["span"],
+                            {"region": was, "changed_by": ["R4"]}] if now is not None
+                           else [c, "region gone", was["head"], was["span"]])
+            elif i.get("kind") == "mark":
+                got.append([c, "mark", now["role"], now["span"], now["outcome"],
+                            now.get("r1_shape"), {"span": was, "changed_by": ["R4"]}]
+                           if now is not None
+                           else [c, "mark gone", was["role"], was["span"], was["outcome"]])
+            elif i.get("kind") != "outcome":
+                bad.append(f"trace {k}: R4 changed item {i.get('item')!r} has no kind "
+                           f"of {R4_KINDS}")
+    bad += _exactly_once("changed value", "regions.json", want, got)
+
+    # Exactly one trace per R4-changed outcome kill.json records.
+    bad += _exactly_once(
+        "changed outcome", "kill.json",
+        [[[r[0], r[1]], r[2], r[3], r[4], r[6], r[7]] for r in k_rows],
+        [[json.loads(k), i["item"], i["interface2"]["outcome"],
+          i["interface3"]["outcome"], i["interface2"]["relevant"],
+          i["interface3"]["relevant"]]
+         for k, t in listed for i in t["r4_changed"] if i.get("kind") == "outcome"])
     return bad
 
 
@@ -433,21 +715,59 @@ def _halts(fn, needle: str = "") -> bool:
     return False
 
 
+def rig_docs(records: list, population_keys: list, fixtures: list, names: list) -> tuple:
+    """(regions_doc, kill_doc) over inline synthetic records, with the R4
+    records the producers write: regions.json's R4 measurement, and kill.json's
+    R4-off outcomes, R4 labels and interface/2 changes."""
+    regions_doc = {"clauses": records, "population_keys": population_keys,
+                   "fixtures": fixtures,
+                   "measurements": {"all": {"interface3_rules": {
+                       "R4_ability_label": hr.r4_measure(records)}}}}
+    kill_doc = hk.evaluate(records, list(hr.RULES), names)
+    off = hk.evaluate([hk.r4_off_view(c) for c in records], list(hr.RULES), names)
+    kill_doc["changed_from_interface2"] = {
+        "rows": hk.r4_changes(records, kill_doc["clauses"], off["clauses"])}
+    return regions_doc, kill_doc
+
+
+# Synthetic R4 clause: an IGNORED flavor label before a trigger whose
+# intervening 'if' R1 attaches to the ability once R4 moves the scope start.
+RIG_R4 = ("Rig Drill — When this widget enters, if you control an artifact, exile "
+          "target artifact, then return it to the battlefield.")
+
+
+def rig_paragraph(text: str, pi: int, census=None, population=False, roles=()) -> dict:
+    """hk._rig's synthetic record, opening paragraph `pi` (chain clause 0: the
+    only clause R4 locates a label in)."""
+    c = hr.clause_record("rig", 0, pi, 0, text, 0, len(text.rstrip(" .")), "rig")
+    c.update(census_key=list(census) if census else None, population=population,
+             fixture_roles=sorted(roles))
+    return c
+
+
 def synthetic() -> tuple:
-    """(regions_doc, kill_doc) over two inline synthetic clauses."""
+    """(regions_doc, kill_doc) over three inline synthetic clauses, one of them
+    behind an IGNORED R4 label that changes a role mark and a K4 outcome."""
     a = hk._rig("Exile target artifact you control, then return that card to the "
                 "battlefield.", census=("exile", 0), population=True)
     b = hk._rig("Destroy target artifact, then proliferate.", roles=["rig-role"], ci=1)
-    regions_doc = {"clauses": [a, b], "population_keys": [["rig", "exile", 0]],
-                   "fixtures": [{"role": "rig-role", "member_status": "rig",
-                                 "members": [{"oracle_id": "rig", "census_key": None,
-                                              "clauses": [b["address"]["id"]]}]}]}
-    return regions_doc, hk.evaluate([a, b], list(hr.RULES), ["Rig Widget"])
+    c = rig_paragraph(RIG_R4, 1, census=("exile", 1), population=True)
+    return rig_docs([a, b, c], [["rig", "exile", 0], ["rig", "exile", 1]],
+                    [{"role": "rig-role", "member_status": "rig",
+                      "members": [{"oracle_id": "rig", "census_key": None,
+                                   "clauses": [b["address"]["id"]]}]}], ["Rig Widget"])
 
 
 def negative_controls() -> list:
     regions_doc, kill_doc = synthetic()
     clean = render_traces(regions_doc, kill_doc)
+    r4_trace = next(t for t in clean["traces"] if t["r4_label"] is not None)
+    r4_i = clean["traces"].index(r4_trace)
+    no_label = copy.deepcopy(clean)
+    no_label["traces"][r4_i]["r4_label"] = None
+    no_outcome = copy.deepcopy(clean)
+    ch = no_outcome["traces"][r4_i]["r4_changed"]
+    ch.remove(next(i for i in ch if i["kind"] == "outcome"))
     no_addr = copy.deepcopy(regions_doc)
     del no_addr["clauses"][0]["address"]
     no_coord = copy.deepcopy(regions_doc)
@@ -535,6 +855,12 @@ def negative_controls() -> list:
          and _halts(lambda: trace(short_rec["clauses"][0], short_row["clauses"][0]),
                     "census key ['exile'] is malformed")),
         ("--verify fails on a rigged stale kill.json", stale_kill),
+        ("--check-complete fails on a rigged trace that drops one R4 label",
+         lambda: r4_trace["r4_label"]["effect"] == "ignored"
+         and fails(no_label, "R4 label")),
+        ("--check-complete fails on a rigged trace that drops an R4-changed outcome",
+         lambda: any(i["kind"] == "outcome" for i in r4_trace["r4_changed"])
+         and fails(no_outcome, "R4 changed outcome")),
         ("a rigged output containing the absolute repository root fails "
          "--check-determinism",
          lambda: bool(hr.portability_violations(b'"' + str(ROOT).encode() + b'"'))),
@@ -646,7 +972,10 @@ def check_complete() -> int:
     if bad:
         return 1
     print(f"{OUT_REL}: {len(doc['traces'])} traces, one per C03 clause; "
-          f"{len(doc['fixtures'])} fixtures; per-outcome counts equal kill.json's")
+          f"{len(doc['fixtures'])} fixtures; per-outcome counts equal kill.json's; "
+          f"{sum(t['r4_label'] is not None for t in doc['traces'])} R4 labels and "
+          f"{sum(len(t['r4_changed']) for t in doc['traces'])} R4-changed values, "
+          f"each in exactly one trace")
     return 0
 
 
