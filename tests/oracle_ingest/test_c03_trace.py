@@ -136,6 +136,20 @@ class OwningOccurrence(unittest.TestCase):
             with self.subTest(coordinate=k):
                 self.assertTrue(self.rigged(lambda c, k=k: c["address"].pop(k)))
 
+    def test_malformed_coordinate_halts(self):
+        for k, v in (("face", True), ("face", "0"), ("paragraph", -1),
+                     ("clause", 1.0), ("oracle_id", ""), ("oracle_id", 0), ("id", 0)):
+            with self.subTest(coordinate=k, value=v):
+                self.assertTrue(self.rigged(lambda c, k=k, v=v: c["address"].update({k: v})))
+
+    def test_clause_text_not_its_hash_halts(self):
+        self.assertTrue(self.rigged(lambda c: c.update(clause_text=c["clause_text"] + " ")))
+
+    def test_unreadable_record_halts_not_crashes(self):
+        for field in ("regions", "role_spans", "clause_text", "scope"):
+            with self.subTest(field=field):
+                self.assertTrue(self.rigged(lambda c, f=field: c.pop(f)))
+
     def test_id_not_its_coordinates_halts(self):
         self.assertTrue(self.rigged(lambda c: c["address"].update(id="rig:0:0:9")))
 
@@ -238,6 +252,50 @@ class CheckComplete(unittest.TestCase):
                         contextlib.redirect_stderr(io.StringIO()):
                     self.assertEqual(ct.check_complete(), want)
 
+    def _order(self, out_exists, ensure=None):
+        """check_complete's hand-off calls, in order, with every effect stubbed."""
+        calls = []
+        ensure = ensure or (lambda: calls.append("ensure_inputs"))
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for rel, body in ((ct.REGIONS_REL, self.regions), (ct.KILL_REL, self.kill)):
+                (root / rel).parent.mkdir(parents=True, exist_ok=True)
+                (root / rel).write_text(json.dumps(body))
+            out = root / ct.OUT_REL
+            out.parent.mkdir(parents=True, exist_ok=True)
+            if out_exists:
+                out.write_text(json.dumps(self.doc))
+
+            def regenerate(argv):
+                calls.append("regenerate")
+                out.write_text(json.dumps(self.doc))
+                return 0
+            with mock.patch.object(ct, "ROOT", root), \
+                    mock.patch.object(ct, "OUT", out), \
+                    mock.patch.object(ct, "ensure_inputs", side_effect=ensure), \
+                    mock.patch.object(ct, "verify",
+                                      side_effect=lambda: calls.append("verify") or 0), \
+                    mock.patch.object(ct, "main", side_effect=regenerate), \
+                    contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                try:
+                    rc = ct.check_complete()
+                except SystemExit:
+                    rc = "halt"
+        return calls, rc
+
+    def test_inputs_checked_before_existing_trace_is_verified(self):
+        self.assertEqual(self._order(True), (["ensure_inputs", "verify"], 0))
+
+    def test_inputs_checked_before_missing_trace_is_regenerated(self):
+        self.assertEqual(self._order(False), (["ensure_inputs", "regenerate"], 0))
+
+    def test_stale_input_stops_before_the_trace_is_touched(self):
+        def stale():
+            raise SystemExit("stale C03 input")
+        calls, rc = self._order(True, ensure=stale)
+        self.assertEqual((calls, rc), ([], "halt"))
+
 
 class Verify(unittest.TestCase):
     """--verify recomputes regions.json, kill.json and script hashes."""
@@ -279,19 +337,60 @@ class Verify(unittest.TestCase):
         self.assertEqual(ct.stale_inputs(self.doc, self.root),
                          [f"{ct.KILL_REL} is not embedded"])
 
+    def write_trace(self, doc=None):
+        out = self.root / ct.OUT_REL
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(doc or self.doc))
+        return out
+
+    def run_verify(self, *args, producers=()):
+        with mock.patch.object(ct, "stale_producers", return_value=list(producers)), \
+                contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()) as err:
+            rc = ct.verify(*args)
+        return rc, err.getvalue().splitlines()
+
     def test_cli_exits_nonzero_on_stale_kill_hash(self):
         out = self.root / "trace.json"
         doc = dict(self.doc, inputs=dict(self.doc["inputs"], **{ct.KILL_REL: "0" * 64}))
         out.write_text(json.dumps(doc))
-        with mock.patch.object(ct, "OUT", out), \
-                contextlib.redirect_stderr(io.StringIO()) as err:
-            self.assertEqual(ct.verify(), 1)
-        self.assertIn(f"STALE: {ct.KILL_REL}", err.getvalue())
+        with mock.patch.object(ct, "OUT", out):
+            rc, err = self.run_verify()
+        self.assertEqual(rc, 1)
+        self.assertIn(f"STALE: {ct.KILL_REL}", err)
 
     def test_cli_exits_nonzero_when_trace_missing(self):
-        with mock.patch.object(ct, "OUT", self.root / "absent.json"), \
-                contextlib.redirect_stderr(io.StringIO()):
-            self.assertEqual(ct.verify(), 1)
+        with mock.patch.object(ct, "OUT", self.root / "absent.json"):
+            self.assertEqual(self.run_verify()[0], 1)
+
+    def test_verify_on_a_root_rigged_stale_kill_json(self):
+        """Negative control through verify() itself: current, then stale."""
+        self.write_trace()
+        self.assertEqual(self.run_verify(self.root), (0, []))
+        (self.root / ct.KILL_REL).write_bytes(b'{"rigged": true}\n')
+        self.assertEqual(self.run_verify(self.root), (1, [f"STALE: {ct.KILL_REL}"]))
+
+    def test_default_root_is_resolved_when_called(self):
+        out = self.write_trace()
+        with mock.patch.object(ct, "ROOT", self.root), mock.patch.object(ct, "OUT", out):
+            self.assertEqual(ct.stale_inputs(self.doc), [])
+            self.assertEqual(self.run_verify(), (0, []))
+            (self.root / ct.KILL_REL).write_bytes(b'{"rigged": true}\n')
+            self.assertEqual(ct.stale_inputs(self.doc), [ct.KILL_REL])
+            self.assertEqual(self.run_verify()[0], 1)
+
+    def test_verify_fails_when_a_producer_reports_stale(self):
+        out = self.write_trace()
+        with mock.patch.object(ct, "ROOT", self.root), mock.patch.object(ct, "OUT", out):
+            rc, err = self.run_verify(producers=[f"{ct.KILL_REL} (rigged)"])
+        self.assertEqual((rc, err), (1, [f"STALE: {ct.KILL_REL} (rigged)"]))
+
+    def test_rigged_root_never_runs_the_real_producers(self):
+        self.write_trace()
+        with mock.patch.object(ct, "stale_producers") as sp, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ct.verify(self.root), 0)
+        sp.assert_not_called()
 
 
 class EmbeddedControls(unittest.TestCase):
