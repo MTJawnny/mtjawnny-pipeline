@@ -1,6 +1,9 @@
 """C03b unit tests: the trace renderer, --verify and --check-complete, with both
 negative controls (a record missing its owning occurrence halts; a dropped
-trace or an outcome mismatch fails --check-complete) and a stale kill.json.
+trace or an outcome mismatch fails --check-complete) and a stale kill.json;
+exact fixture coverage (unrelated trace keys, incorrect member identities,
+duplicate fixture roles and entries are refused) and a null population census
+key reported as malformed, never a TypeError.
 
 Inline SYNTHETIC clauses only -- generic templating, no card, no card name, no
 oracle_id and no Oracle text. Never reads or writes c03/ or c03b/ output.
@@ -393,12 +396,286 @@ class Verify(unittest.TestCase):
         sp.assert_not_called()
 
 
+def fixture_docs():
+    """(regions_doc, kill_doc) with two fixtures: `synthetic-role` has one
+    member of two chain clauses (d, e); `keyed-role` has one census-keyed
+    member whose clause is also a population clause (c)."""
+    a = hk._rig(TWO, census=("exile", 0), population=True)
+    b = hk._rig(TRIGGER, census=("exile", 1), population=True, ci=1)
+    c = hk._rig(TWO_HEADS, census=("destroy", 0), population=True, roles=["keyed-role"],
+                ci=2)
+    d = hk._rig(NO_HEAD, roles=["synthetic-role"], ci=3)
+    e = hk._rig(TWO, roles=["synthetic-role"], ci=4)
+    recs = [a, b, c, d, e]
+    regions_doc = {
+        "clauses": recs,
+        "population_keys": [["rig", "exile", 0], ["rig", "exile", 1],
+                            ["rig", "destroy", 0]],
+        "fixtures": [
+            {"role": "synthetic-role", "member_status": "synthetic",
+             "members": [{"oracle_id": "rig", "census_key": None,
+                          "clauses": [d["address"]["id"], e["address"]["id"]]}]},
+            {"role": "keyed-role", "member_status": "synthetic",
+             "members": [{"oracle_id": "rig", "census_key": ["destroy", 0],
+                          "clauses": [c["address"]["id"]]}]}]}
+    return regions_doc, hk.evaluate(recs, list(hr.RULES), NAMES)
+
+
+class FixtureCoverage(unittest.TestCase):
+    """--check-complete validates EXACT fixture coverage: each fixture once,
+    each member's identity, and exactly its expected trace keys."""
+
+    def setUp(self):
+        self.regions, self.kill = fixture_docs()
+        self.doc = ct.render_traces(self.regions, self.kill)
+
+    def failures(self, doc):
+        return ct.completeness_failures(doc, self.regions, self.kill)
+
+    def rigged(self, edit):
+        doc = copy.deepcopy(self.doc)
+        edit(doc)
+        return self.failures(doc)
+
+    def member(self, doc, role="synthetic-role"):
+        return next(f for f in doc["fixtures"] if f["role"] == role)["members"][0]
+
+    def test_clean_is_complete(self):
+        self.assertEqual(self.failures(self.doc), [])
+
+    def test_expected_keys_derived_from_c03(self):
+        self.assertEqual(self.member(self.doc)["traces"],
+                         [["rig:0:0:3", None], ["rig:0:0:4", None]])
+        self.assertEqual(self.member(self.doc, "keyed-role")["traces"],
+                         [["rig:0:0:2", ["destroy", 0]]])
+
+    # ------------------------------------------------- unrelated trace keys
+    def test_unrelated_existing_trace_key_fails(self):
+        """A real trace of the same card, but not the member's clause."""
+        bad = self.rigged(lambda d: self.member(d)["traces"].__setitem__(
+            0, ["rig:0:0:0", ["exile", 0]]))
+        self.assertIn('fixture synthetic-role member 0: trace ["rig:0:0:0", ["exile", 0]] '
+                      "is not one of the member's clauses", bad)
+        self.assertIn('fixture synthetic-role member 0: expected trace ["rig:0:0:3", null] '
+                      "is absent", bad)
+
+    def test_extra_unrelated_trace_key_fails(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].append(
+            ["rig:0:0:1", ["exile", 1]]))
+        self.assertIn('fixture synthetic-role member 0: trace ["rig:0:0:1", ["exile", 1]] '
+                      "is not one of the member's clauses", bad)
+
+    def test_right_clause_wrong_census_key_fails(self):
+        bad = self.rigged(lambda d: self.member(d, "keyed-role")["traces"].__setitem__(
+            0, ["rig:0:0:2", None]))
+        self.assertTrue(any("is not one of the member's clauses" in b for b in bad), bad)
+        self.assertTrue(any('expected trace ["rig:0:0:2", ["destroy", 0]] is absent' in b
+                            for b in bad), bad)
+
+    def test_nonexistent_trace_key_fails(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].__setitem__(
+            1, ["rig:0:0:9", None]))
+        self.assertIn('fixture synthetic-role: trace ["rig:0:0:9", null] is missing', bad)
+
+    def test_traces_swapped_between_fixtures_fail(self):
+        def edit(d):
+            a, b = self.member(d), self.member(d, "keyed-role")
+            a["traces"], b["traces"] = b["traces"], a["traces"]
+        bad = self.rigged(edit)
+        self.assertTrue(any("does not carry the role" in b for b in bad), bad)
+        self.assertTrue(any("no member of it references the trace" in b for b in bad), bad)
+
+    def test_dropped_member_trace_fails(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].pop())
+        self.assertIn('fixture synthetic-role member 0: expected trace ["rig:0:0:4", null] '
+                      "is absent", bad)
+        self.assertIn('trace ["rig:0:0:4", null] carries fixture synthetic-role but no '
+                      "member of it references the trace", bad)
+
+    def test_reordered_member_traces_fail(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].reverse())
+        self.assertEqual(bad, ["fixture synthetic-role member 0: traces are out of C03 "
+                               "order"])
+
+    # ------------------------------------------------ member identity
+    def test_incorrect_member_identity_fails(self):
+        for field, value in (("oracle_id", "not-rig"), ("census_key", ["exile", 0]),
+                             ("name_as_recorded", "Synthetic Gadget")):
+            with self.subTest(field=field):
+                bad = self.rigged(lambda d, f=field, v=value: self.member(d).update({f: v}))
+                self.assertTrue(any(b.startswith("fixture synthetic-role member 0: "
+                                                 "identity") for b in bad), bad)
+
+    def test_keyed_member_without_its_census_key_fails(self):
+        bad = self.rigged(lambda d: self.member(d, "keyed-role").update(census_key=None))
+        self.assertTrue(any(b.startswith("fixture keyed-role member 0: identity")
+                            for b in bad), bad)
+
+    # ------------------------------------------- duplicate roles / entries
+    def test_duplicate_fixture_role_fails(self):
+        bad = self.rigged(lambda d: d["fixtures"].append(copy.deepcopy(d["fixtures"][0])))
+        self.assertIn("2 trace entries for fixture 'synthetic-role'", bad)
+
+    def test_duplicate_role_with_altered_copy_fails(self):
+        """A second entry under the same role cannot shadow the first."""
+        def edit(d):
+            dup = copy.deepcopy(d["fixtures"][0])
+            dup["members"][0]["traces"] = [["rig:0:0:0", ["exile", 0]]]
+            d["fixtures"].insert(0, dup)
+        bad = self.rigged(edit)
+        self.assertIn("2 trace entries for fixture 'synthetic-role'", bad)
+
+    def test_unknown_fixture_role_fails(self):
+        def edit(d):
+            extra = copy.deepcopy(d["fixtures"][0])
+            extra["role"] = "invented-role"
+            d["fixtures"].append(extra)
+        self.assertIn("trace entry for fixture 'invented-role' is not a C03 fixture",
+                      self.rigged(edit))
+
+    def test_renamed_fixture_role_fails(self):
+        bad = self.rigged(lambda d: d["fixtures"][0].update(role="invented-role"))
+        self.assertIn("no trace entry for fixture synthetic-role", bad)
+        self.assertIn("trace entry for fixture 'invented-role' is not a C03 fixture", bad)
+
+    def test_duplicate_member_entry_fails(self):
+        def edit(d):
+            ms = d["fixtures"][0]["members"]
+            ms.append(copy.deepcopy(ms[0]))
+        bad = self.rigged(edit)
+        self.assertIn("fixture synthetic-role: 2 members traced of 1", bad)
+        self.assertTrue(any("is entered 2 times" in b and "member [" in b for b in bad), bad)
+
+    def test_duplicate_trace_entry_fails(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].append(["rig:0:0:3", None]))
+        self.assertIn('fixture synthetic-role member 0: trace ["rig:0:0:3", null] is '
+                      "entered 2 times", bad)
+
+    def test_duplicate_trace_entry_replacing_another_fails(self):
+        bad = self.rigged(lambda d: self.member(d)["traces"].__setitem__(
+            1, ["rig:0:0:3", None]))
+        self.assertTrue(any("is entered 2 times" in b for b in bad), bad)
+        self.assertTrue(any('expected trace ["rig:0:0:4", null] is absent' in b
+                            for b in bad), bad)
+
+    def test_trace_roles_disagreeing_with_c03_fail(self):
+        def edit(d):
+            d["traces"][0]["fixture_roles"] = ["synthetic-role"]
+        bad = self.rigged(edit)
+        self.assertTrue(any(b.startswith('trace ["rig:0:0:0", ["exile", 0]]: fixture roles')
+                            for b in bad), bad)
+
+    def test_trace_population_flag_disagreeing_with_c03_fails(self):
+        bad = self.rigged(lambda d: d["traces"][0].update(population=False))
+        self.assertIn('trace ["rig:0:0:0", ["exile", 0]]: population False, C03 True', bad)
+        self.assertIn("0 population traces for census row ['rig', 'exile', 0]", bad)
+
+    # ------------------------------------------ C03 fixtures the renderer refuses
+    def test_duplicate_c03_fixture_role_is_refused(self):
+        regions = copy.deepcopy(self.regions)
+        regions["fixtures"].append(copy.deepcopy(regions["fixtures"][0]))
+        self.assertTrue(halts(lambda: ct.render_traces(regions, self.kill)))
+        self.assertIn("C03: C03 lists fixture synthetic-role 2 times",
+                      ct.completeness_failures(self.doc, regions, self.kill))
+
+    def test_c03_member_of_another_card_is_refused(self):
+        regions = copy.deepcopy(self.regions)
+        regions["fixtures"][0]["members"][0]["oracle_id"] = "other"
+        self.assertTrue(halts(lambda: ct.render_traces(regions, self.kill)))
+
+    def test_c03_member_clause_without_the_role_is_refused(self):
+        regions = copy.deepcopy(self.regions)
+        regions["fixtures"][0]["members"][0]["clauses"].append("rig:0:0:0")
+        self.assertTrue(halts(lambda: ct.render_traces(regions, self.kill)))
+
+
+class MalformedCensusKey(unittest.TestCase):
+    """A population trace with a null census key is reported as malformed,
+    never a TypeError; a C03 population record with one halts the renderer."""
+
+    def setUp(self):
+        self.regions, self.kill = docs()
+        self.doc = ct.render_traces(self.regions, self.kill)
+
+    def failures(self, doc):
+        return ct.completeness_failures(doc, self.regions, self.kill)
+
+    def test_null_population_census_key_is_reported(self):
+        for i, t in enumerate(self.doc["traces"]):
+            if not t["population"]:
+                continue
+            with self.subTest(trace=i):
+                doc = copy.deepcopy(self.doc)
+                doc["traces"][i]["key"][1] = None
+                bad = self.failures(doc)          # must not raise TypeError
+                self.assertIn(f"population trace {t['key'][0]!r} is malformed: its "
+                              f"census key is null", bad)
+
+    def test_malformed_census_key_shapes_are_reported(self):
+        for ck in ("exile", ["exile"], [0, "exile"], ["exile", True], ["exile", 0, 1], {}):
+            with self.subTest(census_key=ck):
+                doc = copy.deepcopy(self.doc)
+                doc["traces"][0]["key"][1] = ck
+                bad = self.failures(doc)
+                self.assertTrue(any("has a malformed key" in b for b in bad), bad)
+
+    def test_unreadable_trace_is_reported_not_raised(self):
+        for edit in (lambda d: d["traces"].__setitem__(0, None),
+                     lambda d: d["traces"][0].pop("key"),
+                     lambda d: d["fixtures"][0]["members"][0].pop("traces"),
+                     lambda d: d.pop("fixtures")):
+            doc = copy.deepcopy(self.doc)
+            edit(doc)
+            self.assertTrue(self.failures(doc))
+
+    def test_cli_exits_1_on_null_census_key(self):
+        doc = copy.deepcopy(self.doc)
+        doc["traces"][0]["key"][1] = None
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for rel, body in ((ct.REGIONS_REL, self.regions), (ct.KILL_REL, self.kill)):
+                (root / rel).parent.mkdir(parents=True, exist_ok=True)
+                (root / rel).write_text(json.dumps(body))
+            out = root / ct.OUT_REL
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(doc))
+            with mock.patch.object(ct, "ROOT", root), \
+                    mock.patch.object(ct, "OUT", out), \
+                    mock.patch.object(ct, "verify", return_value=0), \
+                    mock.patch.object(ct, "ensure_inputs"), \
+                    contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(ct.check_complete(), 1)
+        self.assertIn("INCOMPLETE: population trace 'rig:0:0:0' is malformed: its census "
+                      "key is null", err.getvalue().splitlines())
+
+    def test_null_population_record_halts_renderer(self):
+        regions, kill = copy.deepcopy((self.regions, self.kill))
+        regions["clauses"][0]["census_key"] = None
+        kill["clauses"][0]["census_key"] = None       # only the null key is wrong
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            with self.assertRaises(SystemExit) as cm:
+                ct.render_traces(regions, kill)
+        self.assertIn("census key None is malformed", str(cm.exception) + err.getvalue())
+
+
 class EmbeddedControls(unittest.TestCase):
     def test_script_negative_controls_all_fire(self):
         names = ct.negative_controls()
-        self.assertEqual(len(names), 5)
-        self.assertIn("a C03 record missing its owning occurrence halts the renderer",
-                      names)
+        self.assertEqual(len(names), 12)
+        for want in ("a C03 record missing its owning occurrence halts the renderer",
+                     "--check-complete fails on a rigged dropped trace",
+                     "--check-complete fails on a rigged outcome mismatch",
+                     "--check-complete fails on a fixture member pointing at an unrelated "
+                     "trace",
+                     "--check-complete fails on an incorrect fixture member identity",
+                     "--check-complete fails on a duplicate fixture role",
+                     "--check-complete fails on a duplicate fixture member entry",
+                     "--check-complete fails on a duplicate fixture trace entry",
+                     "--check-complete reports a null population census key as malformed",
+                     "a C03 population record with a null census key halts the renderer",
+                     "--verify fails on a rigged stale kill.json"):
+            self.assertIn(want, names)
 
 
 if __name__ == "__main__":
