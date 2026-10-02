@@ -554,6 +554,9 @@ OVERRIDE_FENCE = "```mtj-review-override"
 OVERRIDE_SCHEMA = "mtj-review-override/1"
 OVERRIDE_KEYS = ("schema", "result_comment", "reviewer", "sessions")
 OVERRIDE_SESSIONS = (2, 3)
+# A block counts only as its own top-level fenced block: fence at a line start,
+# body, closing fence at a line start, and not inside another open fence.
+_OVERRIDE_RE = re.compile(r"^```mtj-review-override[ \t]*\n(.*?)\n```[ \t]*$", re.M | re.S)
 SEVERITY = {"ACCEPT": 0, "REPAIR": 1, "CAPTAIN": 2}
 OVERRIDE_FOCI = (
     "FOCUS -- CHECKS AND GUARDS: for every checker, --verify/--check-* flag, guard and\n"
@@ -583,18 +586,19 @@ def override_brief(comment: int, index: int, sessions: int) -> str:
         + OVERRIDE_FOCI[index % len(OVERRIDE_FOCI)])
 
 
-def combine_decisions(decisions: Sequence[decision_module.Decision],
-                      comment: int) -> decision_module.Decision:
-    """The most severe of several session decisions (the first on a tie), its
-    reason prefixed with every session's verdict; findings and evidence from all
-    sessions, tagged, within the schema's limits."""
-    worst = max(decisions, key=lambda d: SEVERITY[d.verdict])
-    tags = ", ".join(f"s{i + 1} {d.verdict}" for i, d in enumerate(decisions))
-    head = f"CR1 override {comment}: {len(decisions)} isolated sessions ({tags}); "
-    findings, evidence = [], []
-    for i, d in enumerate(decisions):
-        findings += [f"s{i + 1}: {f}" for f in d.findings]
-        evidence += [f"s{i + 1}: {e}" for e in d.evidence]
+def combine_decisions(decided: Sequence[tuple[int, decision_module.Decision]],
+                      comment: int, sessions: int) -> decision_module.Decision:
+    """The most severe of the session decisions reached (the earliest on a tie).
+    Its reason is kept whole after a short tag line; its findings and evidence
+    come first, then the other sessions', each tagged, within the schema."""
+    worst_i, worst = max(decided, key=lambda x: (SEVERITY[x[1].verdict], -x[0]))
+    tags = ", ".join(f"s{i + 1} {d.verdict}" for i, d in decided)
+    head = f"CR1 override {comment}: {len(decided)} of {sessions} sessions ({tags}); "
+    room = decision_module.MAX_REASON - len(worst.reason)
+    head = head if len(head) <= room else head[:max(room, 0)]
+    ordered = [(worst_i, worst)] + [x for x in decided if x[0] != worst_i]
+    findings = [f"s{i + 1}: {f}" for i, d in ordered for f in d.findings]
+    evidence = [f"s{i + 1}: {e}" for i, d in ordered for e in d.evidence]
     cut = lambda items: [x[:decision_module.MAX_ITEM] for x in items][:decision_module.MAX_ITEMS]
     return decision_module.parse(json.dumps({
         "verdict": worst.verdict,
@@ -738,30 +742,44 @@ class LocalManager:
 
     def review_override(self, comment_id: int) -> dict | None:
         """CR1: the ONE trusted Captain override naming this result, or None.
-        Fails closed: malformed blocks, untrusted authors, blocks posted before
-        the result, unknown or unconfigured reviewers, and several matches all
-        authorize nothing."""
+        Read from Issue #1 only. Fails closed: untrusted authors, blocks posted
+        before the result, blocks that are not exactly one top-level fenced
+        block in their comment, duplicate keys, wrong types, unknown or
+        unconfigured reviewers and several matches all authorize nothing; an
+        invalid block that names this result cancels any valid one."""
         try:
             comments = read_comments(self.issue, self.repo, self.run,
                                      source=f"issue:{self.issue}")
         except AuthorityError:
             return None
-        found = []
+        found, mention = [], str(comment_id)
         for c in comments:
             body = c.body if isinstance(c.body, str) else ""
             if OVERRIDE_FENCE not in body or not self.target.trust.trusts(c.author):
                 continue
-            block = body.split(OVERRIDE_FENCE, 1)[1].split("```", 1)[0]
+            blocks = list(_OVERRIDE_RE.finditer(body))
+            nested = any(len(re.findall(r"^```", body[:m.start()], re.M)) % 2
+                         for m in blocks)
+            if len(blocks) != 1 or body.count(OVERRIDE_FENCE) != 1 or nested:
+                if mention in body:
+                    return None          # an unusable block names this result: cancel
+                continue
             try:
-                raw = json.loads(block)
-            except ValueError:
+                raw = json.loads(blocks[0].group(1),
+                                 object_pairs_hook=decision_module._no_duplicates)
+            except (ValueError, BusError):
+                if mention in body:
+                    return None
                 continue
             if (not isinstance(raw, dict) or set(raw) != set(OVERRIDE_KEYS)
                     or raw["schema"] != OVERRIDE_SCHEMA
                     or type(raw["result_comment"]) is not int
                     or raw["result_comment"] != comment_id):
+                if mention in body:
+                    return None
                 continue
-            if (raw["reviewer"] not in PROVIDERS or raw["reviewer"] not in self.order
+            if (type(raw["reviewer"]) is not str or raw["reviewer"] not in PROVIDERS
+                    or raw["reviewer"] not in self.order
                     or type(raw["sessions"]) is not int
                     or raw["sessions"] not in OVERRIDE_SESSIONS
                     or c.comment_id <= comment_id):
@@ -1064,18 +1082,18 @@ class LocalManager:
                       mode=verdict.mode)
         problem = None
         candidates: list[str] = []
+        override = None
         if verdict.mode == "review":
             env = parse_comment(comment["body"])
             report.worker_provider, problem = self.attribution(env.parent, env)
             report.high_stakes = self.high_stakes(verdict.comment_id)
             candidates = reviewer_for(report.worker_provider, self.order,
                                       cross_only=report.high_stakes)
-            self._override = None
             if report.high_stakes and problem is None and report.worker_provider:
-                self._override = self.review_override(verdict.comment_id)
-                if self._override is not None:
-                    report.override = self._override["comment"]
-                    candidates = [self._override["reviewer"]]
+                override = self.review_override(verdict.comment_id)
+                if override is not None:
+                    report.override = override["comment"]
+                    candidates = [override["reviewer"]]
             if problem is None and not candidates:
                 problem = f"no provider other than {report.worker_provider} is configured"
             report.reason = problem
@@ -1093,11 +1111,12 @@ class LocalManager:
                 return self._publish(verdict, ws, report)
             if problem:
                 return self._publish(verdict, ws, report, host_captain(problem))
-            return self._reviewed(verdict, ws, report, candidates)
+            return self._reviewed(verdict, ws, report, candidates, override)
         finally:
             shutil.rmtree(ws.root, ignore_errors=True)
 
-    def _reviewed(self, verdict, ws: Workspace, report: Pass, candidates: list[str]) -> dict:
+    def _reviewed(self, verdict, ws: Workspace, report: Pass, candidates: list[str],
+                  override: dict | None = None) -> dict:
         blocked = self._usage_block(candidates)
         if blocked:
             # Nothing is measured and no model is launched: a quota WAIT is cheap.
@@ -1135,26 +1154,33 @@ class LocalManager:
         prompt = self._context(ws, verdict.comment_id, verdict.message_id, selftest, checks,
                                worker=report.worker_provider)
         prior = self._handoff_path(verdict.comment_id)
-        if prior is not None and prior.is_file():
+        if prior is not None and prior.is_file() and override is None:
             prompt += PRIOR_HANDOFF + prior.read_text(encoding="utf-8")
             report.notes.append(f"resumed from handoff {prior.name}")
         call = self.invoke or self._review
-        override = getattr(self, "_override", None)
         if override is not None:
-            decisions = []
+            done = self._override_progress(verdict.comment_id, override)
             for i in range(override["sessions"]):
+                if i in done:
+                    continue
+                if any(d.verdict == "CAPTAIN" for d in done.values()):
+                    break                # nothing can be more severe
                 answer = call(override["reviewer"],
                               prompt + override_brief(override["comment"], i,
                                                       override["sessions"]), ws)
                 if answer.get("capacity") or answer.get("handoff") is not None:
-                    report.notes.append(f"{override['reviewer']} session {i + 1}: capacity")
+                    report.notes.append(f"{override['reviewer']} session {i + 1}: capacity; "
+                                        f"{len(done)} session(s) decided and kept")
                     report.action = "WAIT"
                     report.reason = "an override review session is out of capacity"
                     return report.as_dict()
-                decisions.append(decision_module.parse(answer["decision"]))
-            report.reviewer = f"{override['reviewer']} x{override['sessions']} (CR1 override)"
-            answer = {"decision": json.dumps(
-                combine_decisions(decisions, override["comment"]).as_dict())}
+                done[i] = decision_module.parse(answer["decision"])
+                self._override_save(verdict.comment_id, override, done)
+            decided = sorted(done.items())
+            report.reviewer = (f"{override['reviewer']} x{len(decided)} of "
+                               f"{override['sessions']} (CR1 override)")
+            answer = {"decision": json.dumps(combine_decisions(
+                decided, override["comment"], override["sessions"]).as_dict())}
             candidates = []
         else:
             answer = None
@@ -1180,6 +1206,11 @@ class LocalManager:
         if self._head_of(ws.review) != head:
             raise BusError(E.TRANSITION_REFUSED, "the review clone moved during review")
         published = self._publish(verdict, ws, report, parsed, extra)
+        if override is not None and report.action == "PUBLISHED":
+            kept = self._override_file(verdict.comment_id, override)
+            if kept is not None and kept.is_file():
+                (kept.parent / "done").mkdir(exist_ok=True)
+                kept.replace(kept.parent / "done" / kept.name)
         if prior is not None and prior.is_file() and report.action == "PUBLISHED":
             (prior.parent / "done").mkdir(exist_ok=True)
             prior.replace(prior.parent / "done" / prior.name)
@@ -1197,6 +1228,29 @@ class LocalManager:
                 return []
             why.append(f"{reviewer}: {blocked}")
         return why
+
+    def _override_file(self, comment_id: int, override: dict) -> Path | None:
+        if not self.handoff_dir:
+            return None
+        return Path(self.handoff_dir) / f"override-{comment_id}-{override['comment']}.json"
+
+    def _override_progress(self, comment_id: int, override: dict) -> dict:
+        """Session decisions an earlier pass already reached for this result and
+        override, re-validated; a decided session is never run again."""
+        path = self._override_file(comment_id, override)
+        if path is None or not path.is_file():
+            return {}
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        return {int(k): decision_module.parse(json.dumps(v)) for k, v in raw.items()
+                if int(k) < override["sessions"]}
+
+    def _override_save(self, comment_id: int, override: dict, done: dict) -> None:
+        path = self._override_file(comment_id, override)
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({str(k): v.as_dict() for k, v in sorted(done.items())},
+                                   sort_keys=True), encoding="utf-8")
 
     def _handoff_path(self, comment_id: int) -> Path | None:
         return Path(self.handoff_dir) / f"review-{comment_id}.md" if self.handoff_dir else None

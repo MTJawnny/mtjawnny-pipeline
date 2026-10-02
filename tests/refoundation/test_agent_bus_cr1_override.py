@@ -11,6 +11,7 @@ the cross-provider rule of decision E (as amended, 5923072829) then stands.
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -40,7 +41,12 @@ def comment(body, cid=2000, author=WHO):
 class CR1Harness(PassHarness):
     def run_pass(self, issue_comments, answers, worker="claude", **kw):
         """One executed pass; `answers` is consumed one per model call."""
-        rc = mock.patch.object(L, "read_comments", lambda *a, **k: list(issue_comments))
+        self.reads = []
+
+        def read(number, *a, **k):
+            self.reads.append((number, k.get("source")))
+            return list(issue_comments)
+        rc = mock.patch.object(L, "read_comments", read)
         rc.start()
         self.addCleanup(rc.stop)
         self.calls = []
@@ -64,11 +70,11 @@ class TestOverrideReview(CR1Harness):
         self.assertEqual(len({p.split("FOCUS --")[1][:20] for p in prompts}), 3)
         self.assertEqual(report["action"], "PUBLISHED")
         self.assertEqual(report["override"], 2000)
-        self.assertEqual(report["reviewer"], "claude x3 (CR1 override)")
+        self.assertEqual(report["reviewer"], "claude x3 of 3 (CR1 override)")
         [decision] = self.decisions
         self.assertEqual(decision["verdict"], "ACCEPT")
         self.assertTrue(decision["reason"].startswith(
-            "CR1 override 2000: 3 isolated sessions (s1 ACCEPT, s2 ACCEPT, s3 ACCEPT); "))
+            "CR1 override 2000: 3 of 3 sessions (s1 ACCEPT, s2 ACCEPT, s3 ACCEPT); "))
 
     def test_CR1_one_dissenting_session_decides(self):
         self.run_pass([comment(block())], [{"decision": GOOD}, {"decision": REPAIR}])
@@ -90,11 +96,77 @@ class TestOverrideReview(CR1Harness):
         many = json.dumps({"verdict": "REPAIR", "reason": "r" * D.MAX_REASON,
                            "findings": ["f" * D.MAX_ITEM] * D.MAX_ITEMS,
                            "evidence": ["e" * D.MAX_ITEM] * D.MAX_ITEMS})
-        out = L.combine_decisions([D.parse(many), D.parse(many)], 2000)
+        out = L.combine_decisions([(0, D.parse(many)), (1, D.parse(many))], 2000, 2)
         self.assertEqual(out.verdict, "REPAIR")
         self.assertLessEqual(len(out.reason), D.MAX_REASON)
         self.assertLessEqual(len(out.findings), D.MAX_ITEMS)
         self.assertTrue(all(len(f) <= D.MAX_ITEM for f in out.findings + out.evidence))
+
+
+class TestOverrideR1(CR1Harness):
+    """CR1.R1: the isolated review's findings, each pinned."""
+
+    def test_R1_overrides_are_read_from_issue_1_only(self):
+        self.run_pass([comment(block())], [{"decision": GOOD}] * 2)
+        self.assertTrue(self.reads)
+        self.assertTrue(all(r == (1, "issue:1") for r in self.reads))
+
+    def test_NC_R1_a_dissent_survives_a_capacity_stop_and_is_never_rerun(self):
+        with tempfile.TemporaryDirectory() as d:
+            report = self.run_pass([comment(block(sessions=3))],
+                                   [{"decision": REPAIR}, {"capacity": True}],
+                                   handoff_dir=d)
+            self.assertEqual(report["action"], "WAIT")
+            self.assertEqual(self.published, [])
+            self.assertEqual(len(self.calls), 2)
+            # next pass: session 1 is not run again; sessions 2 and 3 accept
+            report = self.run_pass([comment(block(sessions=3))],
+                                   [{"decision": GOOD}, {"decision": GOOD}], handoff_dir=d)
+            self.assertEqual([p.count("session 1 of 3") for _, p in self.calls], [0, 0])
+            self.assertEqual(self.decisions[-1]["verdict"], "REPAIR")
+            self.assertIn("s1 REPAIR, s2 ACCEPT, s3 ACCEPT", self.decisions[-1]["reason"])
+            self.assertTrue((Path(d) / "done" / "override-1001-2000.json").is_file())
+
+    def test_R1_a_captain_publishes_at_once(self):
+        report = self.run_pass([comment(block(sessions=3))], [{"decision": CAPTAIN}])
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(report["action"], "PUBLISHED")
+        self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+        self.assertIn("1 of 3 sessions (s1 CAPTAIN)", self.decisions[-1]["reason"])
+
+    def test_R1_the_worst_sessions_findings_and_reason_come_first(self):
+        twelve = json.dumps({"verdict": "ACCEPT", "reason": "fine",
+                             "findings": [f"note {i}" for i in range(12)],
+                             "evidence": [f"ev {i}" for i in range(12)]})
+        long_captain = json.dumps({"verdict": "CAPTAIN", "reason": "k" * D.MAX_REASON,
+                                   "findings": ["the real kill"], "evidence": ["kill.json"]})
+        out = L.combine_decisions([(0, D.parse(twelve)), (1, D.parse(long_captain))], 2000, 2)
+        self.assertEqual(out.verdict, "CAPTAIN")
+        self.assertEqual(out.findings[0], "s2: the real kill")
+        self.assertEqual(out.evidence[0], "s2: kill.json")
+        self.assertTrue(out.reason.endswith("k" * D.MAX_REASON))
+
+    def test_R1_dry_run_reports_the_override_and_runs_no_model(self):
+        rc = mock.patch.object(L, "read_comments", lambda *a, **k: [comment(block())])
+        rc.start()
+        self.addCleanup(rc.stop)
+        report = self.manager("claude", lambda *a: self.fail("no model")).poll_once(execute=False)
+        self.assertEqual((report["override"], report["reviewer"], report["action"]),
+                         (2000, "claude", "REVIEW_DRY_RUN"))
+
+    def test_NC_R1_one_manager_two_results_in_a_row(self):
+        self.run_pass([comment(block())], [{"decision": GOOD}] * 2)
+        self.assertEqual(self.decisions[-1]["verdict"], "ACCEPT")
+        # the same instance, a result no override names: cross-provider again
+        report = self.run_pass([comment(block(result=RESULT + 5))], [{"decision": GOOD}])
+        self.assertEqual([r for r, _ in self.calls], ["codex"])
+        self.assertIsNone(report["override"])
+
+    def test_NC_R1_override_sessions_get_no_prior_handoff_notes(self):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "review-1001.md").write_text("OLD CODEX NOTES")
+            self.run_pass([comment(block())], [{"decision": GOOD}] * 2, handoff_dir=d)
+            self.assertTrue(all("OLD CODEX NOTES" not in p for _, p in self.calls))
 
 
 class TestOverrideFailsClosed(CR1Harness):
@@ -129,6 +201,15 @@ class TestOverrideFailsClosed(CR1Harness):
             block(reviewer="gpt"),
             block(result=str(RESULT)),
             block().replace("mtj-review-override/1", "mtj-review-override/2"),
+            block(reviewer=["claude"]), block(reviewer={"x": 1}),
+            # duplicate keys: the last one would name this result
+            block(result=999).replace('"result_comment": 999',
+                                      '"result_comment": 999, "result_comment": 1001'),
+            # a second block in the same comment conflicts
+            block() + block(sessions=3),
+            # shown inside an outer fence, or quoted
+            "Format:\n```\n" + block() + "```\n",
+            "\n".join("> " + line for line in block().splitlines()),
         ]
         for rig in rigs:
             with self.subTest(rig=rig[:60]):
