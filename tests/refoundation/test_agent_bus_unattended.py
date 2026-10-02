@@ -525,6 +525,22 @@ def watcher(supervisor, **kw):
 
 
 class TestWatcher(unittest.TestCase):
+    def test_OB1_the_manager_outcome_is_logged_with_the_cycle(self):
+        report = {"action": "NONE", "reason": "BUS_NOTHING_ACTIONABLE",
+                  "manager": {"action": "FAILED", "reason": "BUS_DECISION_INVALID",
+                              "detail": "x" * 2000, "notes": [f"n{i}" for i in range(9)],
+                              "decision": {"verdict": "ACCEPT"}, "mode": "review"}}
+        [entry] = watcher(Recorder([report])).run(cycles=1)
+        self.assertEqual(entry["manager"]["action"], "FAILED")
+        self.assertEqual(entry["manager"]["reason"], "BUS_DECISION_INVALID")
+        self.assertEqual(len(entry["manager"]["detail"]), 600)
+        self.assertEqual(entry["manager"]["notes"], ["n4", "n5", "n6", "n7", "n8"])
+        self.assertNotIn("decision", entry["manager"])
+
+    def test_OB1_no_manager_no_key(self):
+        [entry] = watcher(Recorder([{"action": "NONE"}])).run(cycles=1)
+        self.assertNotIn("manager", entry)
+
     def test_a_quiet_watcher_sleeps_the_full_interval_every_cycle(self):
         sleeper = Sleeper()
         log = watcher(Recorder([{"action": "NONE"}]), interval=120,

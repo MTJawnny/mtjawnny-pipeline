@@ -216,6 +216,11 @@ def lock_path_for(repo_path: str) -> Path:
     return STATE_DIR.expanduser() / f"{slug}.lock"
 
 
+# OB1: the Manager outcome fields one log line keeps (bounded: notes are cut).
+MANAGER_LOG_KEYS = ("action", "reason", "code", "detail", "comment_id", "reviewer",
+                    "override", "publisher_exit", "notes")
+
+
 @dataclass
 class Watcher:
     """The loop. It owns no policy beyond when to look again."""
@@ -272,6 +277,18 @@ class Watcher:
                     entry["action"] = report.get("action")
                     entry["reason"] = report.get("reason")
                     entry["selected"] = report.get("selected")
+                    # OB1: the Manager pass's own outcome. Without it a failed or
+                    # waiting review leaves no trace in the log (2026-10-02: a
+                    # CR1 pass ended between sessions and nothing recorded why).
+                    manager = report.get("manager")
+                    if isinstance(manager, dict):
+                        entry["manager"] = {k: manager[k] for k in MANAGER_LOG_KEYS
+                                            if manager.get(k) not in (None, [], "")}
+                        if "notes" in entry["manager"]:
+                            entry["manager"]["notes"] = [str(n)[:300] for n in
+                                                         entry["manager"]["notes"][-5:]]
+                        if "detail" in entry["manager"]:
+                            entry["manager"]["detail"] = str(entry["manager"]["detail"])[:600]
                     failures = 0
                     delay = max(self.interval, self.floor)
                     entry["outcome"] = "polled"
