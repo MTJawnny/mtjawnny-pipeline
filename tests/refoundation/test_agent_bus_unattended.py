@@ -537,7 +537,7 @@ class TestWatcher(unittest.TestCase):
         self.assertEqual(entry["manager"]["notes"], ["n4", "n5", "n6", "n7", "n8"])
         self.assertNotIn("decision", entry["manager"])
 
-    def test_OB1_a_real_pass_report_serializes_through_the_emitter(self):
+    def test_OB1_a_real_pass_report_is_json_safe(self):
         from agent_bus import local_manager as LM
         p = LM.Pass("PUBLISHED", reason=None, comment_id=7, reviewer="claude x3 of 3 (CR1 override)",
                     override=9, publisher_exit=0, notes=["s1 ok"]).as_dict()

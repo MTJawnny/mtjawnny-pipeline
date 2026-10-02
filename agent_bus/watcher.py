@@ -236,7 +236,7 @@ def manager_entry(manager) -> dict:
             elif isinstance(v, bool) or not isinstance(v, int):
                 out[k] = str(v)[:600 if k == "detail" else 300]
             else:
-                out[k] = v
+                out[k] = v if abs(v) < 2 ** 63 else str(v)[:300]
         return out
     except Exception as exc:                      # noqa: BLE001 -- never kill the loop
         return {"unloggable": type(exc).__name__}

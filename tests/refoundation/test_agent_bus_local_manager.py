@@ -784,6 +784,20 @@ class TestCycle(unittest.TestCase):
         self.assertEqual(order, ["manager", "worker"])
         self.assertEqual(report["manager"]["reason"], E.DECISION_INVALID)
 
+    def test_OB1_a_worker_failure_carries_the_manager_outcome(self):
+        boom = BusError(E.TRANSPORT_FAILED, "claude exited 1")
+        class Worker:
+            trust = None
+            def poll_once(self, execute=False):
+                raise boom
+        class Manager:
+            def poll_once(self, execute=False):
+                return {"action": "WAIT", "reason": "out of capacity"}
+        with self.assertRaises(BusError) as caught:
+            L.WorkerAndManager(Worker(), Manager()).poll_once(execute=True)
+        self.assertIs(caught.exception, boom)
+        self.assertEqual(caught.exception.manager, {"action": "WAIT", "reason": "out of capacity"})
+
 
 class TestRootContract(unittest.TestCase):
     def test_claude_md_states_cross_review_and_the_decision_f_stop(self):
