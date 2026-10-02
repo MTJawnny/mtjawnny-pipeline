@@ -1171,6 +1171,12 @@ class LocalManager:
             answer = None
         else:
             done, handoffs, problem = self._override_progress(verdict, head, override)
+            earlier = self._leftover_dissent(verdict.comment_id,
+                                             self._override_file(verdict.comment_id, override))
+            if problem is None and earlier:
+                problem = ("an earlier CR1 override of this result left a dissent or unreadable "
+                           "progress; a replacement override does not discard it: "
+                           + " | ".join(earlier))[:decision_module.MAX_ITEM]
             if problem is not None:
                 report.notes.append(problem)
                 return self._publish(verdict, ws, report, host_captain(problem), extra)
@@ -1309,13 +1315,16 @@ class LocalManager:
             sort_keys=True), encoding="utf-8")
         os.replace(tmp, path)
 
-    def _leftover_dissent(self, comment_id: int) -> list[str]:
-        """Dissents an earlier CR1 override reached for this result, now that no
-        override applies: shown to the reviewer, never dropped silently."""
+    def _leftover_dissent(self, comment_id: int, current: Path | None = None) -> list[str]:
+        """Dissents an earlier CR1 override (any other override comment) reached
+        for this result: never dropped silently. `current` is the live
+        override's own progress file, which is read by _override_progress."""
         if not self.handoff_dir:
             return []
         out = []
         for path in sorted(Path(self.handoff_dir).glob(f"override-{comment_id}-*.json")):
+            if current is not None and path == current:
+                continue
             try:
                 raw = json.loads(path.read_text(encoding="utf-8"))
                 for k, v in sorted(raw["decided"].items()):

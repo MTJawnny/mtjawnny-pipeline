@@ -245,6 +245,8 @@ class TestOverrideR2(CR1Harness):
             self.run_pass([comment(block())], [], handoff_dir=d)
             self.assertEqual(self.calls, [])
             self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+            self.assertTrue(self.decisions[-1]["reason"].startswith(
+                "CR1 override 2000: 1 of 2 sessions (s1 CAPTAIN); "))
 
     def test_R2_a_session_handoff_goes_to_that_session_only(self):
         with tempfile.TemporaryDirectory() as d:
@@ -266,8 +268,32 @@ class TestOverrideR2(CR1Harness):
 
     def test_R2_progress_is_written_atomically(self):
         with tempfile.TemporaryDirectory() as d:
-            self.run_pass([comment(block())], [{"decision": GOOD}, {"capacity": True}], handoff_dir=d)
-            self.assertEqual(sorted(p.name for p in Path(d).iterdir()), ["override-1001-2000.json"])
+            self.progress(d, {0: GOOD}, sessions=3)
+            seeded = (Path(d) / "override-1001-2000.json").read_text()
+
+            def fail(*a):
+                raise OSError("disk full")
+            with mock.patch.object(L.os, "replace", fail), self.assertRaises(OSError):
+                self.run_pass([comment(block(sessions=3))], [{"decision": GOOD}], handoff_dir=d)
+            self.assertEqual((Path(d) / "override-1001-2000.json").read_text(), seeded)
+            self.assertEqual(sorted(p.name for p in Path(d).iterdir()),
+                             ["override-1001-2000.json", "override-1001-2000.tmp"])
+
+    def test_NC_R3_a_replacement_override_never_hides_an_earlier_dissent(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.progress(d, {0: REPAIR})                     # saved under override 2000
+            report = self.run_pass([comment(block(), cid=3000)], [], handoff_dir=d)
+            self.assertEqual(self.calls, [])
+            self.assertEqual(report["override"], 3000)
+            self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+            self.assertIn("earlier CR1 override", self.decisions[-1]["findings"][0])
+
+    def test_NC_R3_a_tilde_or_indented_outer_fence_alone_authorizes_nothing(self):
+        for bad in ("Format:\n~~~\n" + block() + "~~~\n", "Format:\n  ```\n" + block() + "  ```\n"):
+            with self.subTest(bad=bad[:20]):
+                report = self.run_pass([comment(bad)], [{"decision": GOOD}])
+                self.assertIsNone(report["override"])
+                self.assertEqual([r for r, _ in self.calls], ["codex"])
 
 
 class TestOverrideFailsClosed(CR1Harness):
