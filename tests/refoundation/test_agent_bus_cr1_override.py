@@ -144,7 +144,9 @@ class TestOverrideR1(CR1Harness):
         self.assertEqual(out.verdict, "CAPTAIN")
         self.assertEqual(out.findings[0], "s2: the real kill")
         self.assertEqual(out.evidence[0], "s2: kill.json")
-        self.assertTrue(out.reason.endswith("k" * D.MAX_REASON))
+        self.assertTrue(out.reason.startswith("CR1 override 2000: 2 of 2 sessions (s1 ACCEPT, s2 CAPTAIN); "))
+        self.assertIn("k" * (D.MAX_REASON - L.OVERRIDE_HEAD_MAX), out.reason)
+        self.assertLessEqual(len(out.reason), D.MAX_REASON)
 
     def test_R1_dry_run_reports_the_override_and_runs_no_model(self):
         rc = mock.patch.object(L, "read_comments", lambda *a, **k: [comment(block())])
@@ -167,6 +169,105 @@ class TestOverrideR1(CR1Harness):
             (Path(d) / "review-1001.md").write_text("OLD CODEX NOTES")
             self.run_pass([comment(block())], [{"decision": GOOD}] * 2, handoff_dir=d)
             self.assertTrue(all("OLD CODEX NOTES" not in p for _, p in self.calls))
+
+
+BAD_BLOCKS = [
+    "```mtj-review-override\n{not json naming 1001\n```",
+    block(extra="x"), block(sessions="2"), block(reviewer=["claude"]),
+    block(result=999).replace('"result_comment": 999', '"result_comment": 999, "result_comment": 1001'),
+    block() + block(sessions=3),
+    "Format:\n~~~\n" + block() + "~~~\n",
+    "Format:\n  ```\n" + block() + "  ```\n",
+]
+
+
+class TestOverrideR2(CR1Harness):
+    """CR1.R2: the round-2 findings, each pinned."""
+
+    def progress(self, d, decided, digest="d" * 64, sessions=2, reviewer="claude", handoffs=None):
+        raw = {"binding": {"digest": digest, "head": "a" * 40, "reviewer": reviewer,
+                           "sessions": sessions},
+               "decided": {str(k): json.loads(v) for k, v in decided.items()},
+               "handoffs": {str(k): v for k, v in (handoffs or {}).items()}}
+        (Path(d) / "override-1001-2000.json").write_text(json.dumps(raw))
+
+    def test_NC_R2_each_unusable_block_cancels_a_valid_override_beside_it(self):
+        for bad in BAD_BLOCKS:
+            with self.subTest(bad=bad[:50]):
+                report = self.run_pass([comment(block(), cid=2000), comment(bad, cid=2001)],
+                                       [{"decision": GOOD}])
+                self.assertEqual([r for r, _ in self.calls], ["codex"])
+                self.assertIsNone(report["override"])
+
+    def test_NC_R2_an_unrelated_number_containing_the_id_does_not_cancel(self):
+        report = self.run_pass([comment(block(), cid=2000),
+                                comment("```mtj-review-override\nbroken 100155\n```", cid=2001)],
+                               [{"decision": GOOD}] * 2)
+        self.assertEqual(report["override"], 2000)
+
+    def test_R2_a_web_ui_crlf_block_authorizes(self):
+        report = self.run_pass([comment(block().replace("\n", "\r\n"))], [{"decision": GOOD}] * 2)
+        self.assertEqual(report["override"], 2000)
+        self.assertEqual([r for r, _ in self.calls], ["claude", "claude"])
+
+    def test_NC_R2_a_corrupt_progress_file_is_a_host_captain_never_a_crash(self):
+        rigs = ["{not json", "[1, 2]", json.dumps({"binding": {}, "decided": {"x": 1}, "handoffs": {}}),
+                json.dumps({"binding": {}, "decided": {"0": {"verdict": "MAYBE"}}, "handoffs": {}}),
+                json.dumps({"binding": {}, "decided": {"-1": json.loads(GOOD)}, "handoffs": {}})]
+        for rig in rigs:
+            with self.subTest(rig=rig[:40]), tempfile.TemporaryDirectory() as d:
+                (Path(d) / "override-1001-2000.json").write_text(rig)
+                report = self.run_pass([comment(block())], [], handoff_dir=d)
+                self.assertEqual(self.calls, [])
+                self.assertEqual(report["action"], "PUBLISHED")
+                self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+                self.assertIn("unreadable", self.decisions[-1]["findings"][0])
+
+    def test_NC_R2_a_saved_dissent_bound_to_other_content_is_never_dropped(self):
+        for kw in ({"digest": "e" * 64}, {"sessions": 3}, {"reviewer": "codex"}):
+            with self.subTest(**kw), tempfile.TemporaryDirectory() as d:
+                self.progress(d, {0: REPAIR}, **kw)
+                self.run_pass([comment(block())], [], handoff_dir=d)
+                self.assertEqual(self.calls, [])
+                self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+                self.assertIn("saved REPAIR", self.decisions[-1]["findings"][0])
+
+    def test_R2_saved_accepts_bound_to_other_content_are_discarded_and_rerun(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.progress(d, {0: GOOD}, digest="e" * 64)
+            self.run_pass([comment(block())], [{"decision": GOOD}] * 2, handoff_dir=d)
+            self.assertEqual(len(self.calls), 2)
+            self.assertTrue((Path(d) / "done" / "override-1001-2000-stale.json").is_file())
+
+    def test_R2_a_saved_captain_publishes_with_no_model_call(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.progress(d, {0: CAPTAIN})
+            self.run_pass([comment(block())], [], handoff_dir=d)
+            self.assertEqual(self.calls, [])
+            self.assertEqual(self.decisions[-1]["verdict"], "CAPTAIN")
+
+    def test_R2_a_session_handoff_goes_to_that_session_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.run_pass([comment(block(sessions=3))],
+                          [{"decision": GOOD}, {"handoff": "S2 NOTES"}], handoff_dir=d)
+            self.run_pass([comment(block(sessions=3))], [{"decision": GOOD}] * 2, handoff_dir=d)
+            s2, s3 = [p for _, p in self.calls]
+            self.assertIn("S2 NOTES", s2)
+            self.assertNotIn("S2 NOTES", s3)
+
+    def test_R2_a_leftover_dissent_reaches_the_cross_provider_reviewer(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.progress(d, {0: REPAIR})
+            report = self.run_pass([], [{"decision": GOOD}], handoff_dir=d)
+            [(reviewer, prompt)] = self.calls
+            self.assertEqual(reviewer, "codex")
+            self.assertIn("AN EARLIER CR1 OVERRIDE REVIEW", prompt)
+            self.assertIn("m04_check accepts an empty R4 table", prompt)
+
+    def test_R2_progress_is_written_atomically(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.run_pass([comment(block())], [{"decision": GOOD}, {"capacity": True}], handoff_dir=d)
+            self.assertEqual(sorted(p.name for p in Path(d).iterdir()), ["override-1001-2000.json"])
 
 
 class TestOverrideFailsClosed(CR1Harness):
