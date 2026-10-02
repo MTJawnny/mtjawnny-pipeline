@@ -1373,6 +1373,10 @@ class WorkerAndManager:
         except (BusError, AuthorityError) as exc:
             managed = {"action": "FAILED", "reason": getattr(exc, "code", None),
                        "detail": getattr(exc, "detail", str(exc))}
-        report = self.worker.poll_once(execute=execute)
+        try:
+            report = self.worker.poll_once(execute=execute)
+        except (BusError, AuthorityError) as exc:
+            exc.manager = managed       # OB1: the watcher logs it even when the Worker fails
+            raise
         report["manager"] = managed
         return report

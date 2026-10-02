@@ -537,6 +537,28 @@ class TestWatcher(unittest.TestCase):
         self.assertEqual(entry["manager"]["notes"], ["n4", "n5", "n6", "n7", "n8"])
         self.assertNotIn("decision", entry["manager"])
 
+    def test_OB1_a_real_pass_report_serializes_through_the_emitter(self):
+        from agent_bus import local_manager as LM
+        p = LM.Pass("PUBLISHED", reason=None, comment_id=7, reviewer="claude x3 of 3 (CR1 override)",
+                    override=9, publisher_exit=0, notes=["s1 ok"]).as_dict()
+        [entry] = watcher(Recorder([{"action": "NONE", "manager": p}])).run(cycles=1)
+        self.assertEqual(entry["manager"]["publisher_exit"], 0)
+        self.assertEqual(entry["manager"]["override"], 9)
+        json.dumps(entry, sort_keys=True)          # the emitter's own encoding
+
+    def test_NC_OB1_a_malformed_manager_never_kills_the_loop(self):
+        bad = {"action": {1, 2}, "notes": 5, "reviewer": object(), "detail": b"x"}
+        [entry] = watcher(Recorder([{"action": "NONE", "manager": bad}])).run(cycles=1)
+        self.assertEqual(entry["outcome"], "polled")
+        json.dumps(entry, sort_keys=True)
+
+    def test_OB1_the_manager_outcome_survives_a_worker_failure(self):
+        err = BusError(E.TRANSPORT_FAILED, "claude exited 1")
+        err.manager = {"action": "WAIT", "reason": "an override review session is out of capacity"}
+        [entry] = watcher(Recorder([err])).run(cycles=1)
+        self.assertEqual(entry["outcome"], "failed")
+        self.assertEqual(entry["manager"]["action"], "WAIT")
+
     def test_OB1_no_manager_no_key(self):
         [entry] = watcher(Recorder([{"action": "NONE"}])).run(cycles=1)
         self.assertNotIn("manager", entry)

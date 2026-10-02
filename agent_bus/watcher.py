@@ -217,8 +217,29 @@ def lock_path_for(repo_path: str) -> Path:
 
 
 # OB1: the Manager outcome fields one log line keeps (bounded: notes are cut).
-MANAGER_LOG_KEYS = ("action", "reason", "code", "detail", "comment_id", "reviewer",
+MANAGER_LOG_KEYS = ("action", "reason", "detail", "comment_id", "reviewer",
                     "override", "publisher_exit", "notes")
+
+
+def manager_entry(manager) -> dict:
+    """The Manager outcome as one bounded, JSON-safe log field. Never raises:
+    logging must not be able to kill the loop."""
+    try:
+        out = {}
+        for k in MANAGER_LOG_KEYS:
+            v = manager.get(k)
+            if v in (None, [], ""):
+                continue
+            if k == "notes":
+                notes = v if isinstance(v, list) else [v]
+                out[k] = [str(n)[:300] for n in notes[-5:]]
+            elif isinstance(v, bool) or not isinstance(v, int):
+                out[k] = str(v)[:600 if k == "detail" else 300]
+            else:
+                out[k] = v
+        return out
+    except Exception as exc:                      # noqa: BLE001 -- never kill the loop
+        return {"unloggable": type(exc).__name__}
 
 
 @dataclass
@@ -280,15 +301,8 @@ class Watcher:
                     # OB1: the Manager pass's own outcome. Without it a failed or
                     # waiting review leaves no trace in the log (2026-10-02: a
                     # CR1 pass ended between sessions and nothing recorded why).
-                    manager = report.get("manager")
-                    if isinstance(manager, dict):
-                        entry["manager"] = {k: manager[k] for k in MANAGER_LOG_KEYS
-                                            if manager.get(k) not in (None, [], "")}
-                        if "notes" in entry["manager"]:
-                            entry["manager"]["notes"] = [str(n)[:300] for n in
-                                                         entry["manager"]["notes"][-5:]]
-                        if "detail" in entry["manager"]:
-                            entry["manager"]["detail"] = str(entry["manager"]["detail"])[:600]
+                    if isinstance(report.get("manager"), dict):
+                        entry["manager"] = manager_entry(report["manager"])
                     failures = 0
                     delay = max(self.interval, self.floor)
                     entry["outcome"] = "polled"
@@ -305,6 +319,8 @@ class Watcher:
                     delay = self.backoff.delay(failures, quota)
                     entry.update({"outcome": "failed", "code": code, "detail": detail,
                                   "quota": quota, "failures": failures})
+                    if isinstance(getattr(exc, "manager", None), dict):
+                        entry["manager"] = manager_entry(exc.manager)
                 entry["sleep"] = delay
                 log.append(entry)
                 # Emitted BEFORE the sleep. A record that appears only after the
