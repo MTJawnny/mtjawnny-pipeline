@@ -408,7 +408,7 @@ checkout. Worker evidence that names no provider, an unknown one, or more than
 one (a failover wave), or a provider order with no other provider, is reviewed
 by no model: the host publishes a CAPTAIN decision. An eligible reviewer out of
 capacity is a wait, retried next pass (delegated-Manager policy under decision
-G): capacity recovers, and CAPTAIN would halt the program. Installing it as a
+G): capacity recovers, and CAPTAIN would halt the program. A trusted Captain decision on Issue #1 may carry one fenced `mtj-review-override` block (`{schema: mtj-review-override/1, result_comment, reviewer, sessions}`, CR1) naming ONE high-stakes result posted before it: that result is then reviewed by the named provider, even the Worker's own, in 2 or 3 isolated sessions with distinct adversarial focuses, and the host publishes the most severe verdict any session reached. A malformed, untrusted, earlier or duplicate block authorizes nothing. Installing it as a
 persistent service is the operator's own step. The local Manager publishes with
 the operator's token, so a trusted speaker's record in the publisher's exact form
 counts as a publisher record (Captain decision A, Issue #1 comment 5883716054);
