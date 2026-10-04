@@ -517,6 +517,32 @@ class DocumentStructure(Base):
                                         "<!--\n## Captain questions\n-->")
         self.assertFails("R2-B", "0 sections headed '## Captain questions'", doc=doc)
 
+    def test_closed_comment_holding_html_does_not_hide_the_rest(self):
+        # Regression: a closed comment containing '<pre>' (or another HTML
+        # block opener) once opened that block and erased the valid audit after it.
+        for seam in ac.DOCS:
+            for block in ("<!--\n<pre>\n-->\n", "<!-- <pre> -->\n", "<!--\n<script>\n-->\n",
+                          "<!--\n<div>\n## Verdict\n-->\n", "x <!--\n<pre>\n-->\n",
+                          "<!-->\n", "<!--\n```\n-->\n"):
+                doc = block + "\n" + self.docs[seam]
+                self.assertEqual(self.failures(seam, doc=doc), [], (seam, block))
+
+    def test_comment_inside_a_fence_or_pre_is_not_a_comment(self):
+        self.assertEqual(ac.structure("```\n<!--\n```\n## H"), "\n\n\n## H")
+        self.assertEqual(ac.structure("<pre>\n<!--\n</pre>\n## H"), "\n\n\n## H")
+
+    def test_inline_comment_is_blanked_to_its_close(self):
+        self.assertEqual(ac.structure("a <!-- b --> c"), "a  c")
+        self.assertEqual(ac.structure("a <!--\n## H\n--> c\n## I"), "a \n\n c\n## I")
+        doc = self.docs["R2-B"].replace("## Captain questions",
+                                        "text <!--\n## Captain questions\n-->")
+        self.assertFails("R2-B", "0 sections headed '## Captain questions'", doc=doc)
+
+    def test_unclosed_comment_hides_the_rest(self):
+        doc = self.docs["R2-C"].replace("## Verdict", "<!--\n## Verdict")
+        self.assertFails("R2-C", "0 sections headed '## Verdict'", doc=doc)
+        self.assertFails("R2-C", "0 sections headed '## Captain questions'", doc=doc)
+
     def test_indented_code_block_is_not_a_table(self):
         d = self.docs["R2-C"]
         start = d.index("| clause |")

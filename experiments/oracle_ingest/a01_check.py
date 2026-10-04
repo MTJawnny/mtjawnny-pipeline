@@ -129,7 +129,8 @@ FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 # CommonMark HTML blocks (spec 4.6): their lines are raw HTML, not Markdown
 # structure. Kinds 1, 3, 4 and 5 end at the line holding their terminator;
 # kinds 6 and 7 at the next blank line; kind 7 cannot interrupt a paragraph.
-# Kind 2 (comments) is blanked by the comment pass in structure().
+# Kind 2 (comments) is a block when '<!--' opens the line; a comment opening
+# mid-line is inline and blanked to its '-->' by the same scan (structure()).
 HTML_RAW = ("pre", "script", "style", "textarea")
 HTML_BLOCK_TAGS = (
     "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|"
@@ -139,6 +140,7 @@ HTML_BLOCK_TAGS = (
     "tbody|td|tfoot|th|thead|title|tr|track|ul")
 _ATTR = r"""(?:\s+[A-Za-z_:][\w.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?)"""
 HTML_STARTS = (
+    (re.compile(r"^ {0,3}<!--"), re.compile(r"-->")),
     (re.compile(rf"^ {{0,3}}<(?:{'|'.join(HTML_RAW)})(?:\s|>|$)", re.I),
      re.compile(rf"</(?:{'|'.join(HTML_RAW)})>", re.I)),
     (re.compile(r"^ {0,3}<\?"), re.compile(r"\?>")),
@@ -211,7 +213,14 @@ def structure(text: str) -> str:
     not part of the document."""
     out, fence, code, prev_blank, para = [], None, False, True, False
     html = None                 # None, or the end pattern (False: a blank line)
+    comment = False             # inside an inline comment opened on an earlier line
     for line in text.split("\n"):
+        if comment:
+            end = line.find("-->")
+            if end < 0:
+                out.append("")
+                continue
+            comment, line = False, line[end + 3:]
         blank = not line.strip()
         if fence is not None:
             if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
@@ -240,8 +249,9 @@ def structure(text: str) -> str:
         if not code and not blank:
             for start, end in HTML_STARTS:
                 if start.match(line):
-                    html = False if end is None else (None if end.search(
-                        line[start.match(line).end():]) else end)
+                    # a comment's '-->' may share its opener's dashes ('<!-->')
+                    at = start.match(line).end() - (2 if end and end.pattern == "-->" else 0)
+                    html = False if end is None else (None if end.search(line, at) else end)
                     break
             else:
                 if not para and HTML_KIND7.match(line):
@@ -250,11 +260,14 @@ def structure(text: str) -> str:
                 out.append("")
                 prev_blank, para = False, False
                 continue
+        if not code:
+            line = re.sub(r"<!--.*?-->", "", line)
+            if "<!--" in line:
+                line, comment = line[:line.index("<!--")], True
         out.append("" if code else line)
         prev_blank = blank
         para = not blank and not code and NOT_PARAGRAPH.match(line) is None
-    return re.sub(r"<!--.*?(?:-->|\Z)", lambda m: "\n" * m.group(0).count("\n"),
-                  "\n".join(out), flags=re.S)
+    return "\n".join(out)
 
 
 def table(text: str, head: list, bad: list, where: str = "the document") -> list:
