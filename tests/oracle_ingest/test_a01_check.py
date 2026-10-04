@@ -11,7 +11,9 @@ a NOT-MEMBER pronoun row with a truth word, a wrong seams.json hash, a stale
 seams.json (STOPs), and a document without '## Captain questions' -- and the
 repair-round controls: a split part with no READ POSITION whose first member
 (seams.json order) is not read, a hash attributed only to another
-'*seams.json', and an audit whose structure sits inside a code fence.
+'*seams.json' (including 'unrelated+seams.json' and 'unrelated@seams.json'),
+and an audit whose structure sits inside a code fence or an HTML block such
+as <pre>...</pre>.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -105,10 +107,15 @@ class Hash(Base):
                          sha="0" * 64)
 
     def test_hash_attributed_only_to_an_unrelated_seams_json_fails(self):
-        for other in ("unrelated-seams.json", "other/seams.json", "a01/seams.json.bak"):
-            doc = self.docs["R2-C"].replace("seams.json sha256", f"{other} sha256")
-            self.assertFails("R2-C", "does not cite the verified seams.json sha256",
-                             doc=doc)
+        for other in ("unrelated-seams.json", "other/seams.json", "a01/seams.json.bak",
+                      "unrelated+seams.json", "unrelated@seams.json", "x~seams.json",
+                      "unrelated=seams.json", "u#seams.json", "a01\\seams.json",
+                      "_seams.json", "*seams.json", "[seams.json](other/seams.json)",
+                      f"[seams.json]({ac.SEAMS_REL})x", "seams.json+x", "seams.json@x"):
+            with self.subTest(other):
+                doc = self.docs["R2-C"].replace("seams.json sha256", f"{other} sha256")
+                self.assertFails("R2-C", "does not cite the verified seams.json sha256",
+                                 doc=doc)
 
     def test_hash_on_a_line_also_naming_an_unrelated_seams_json_fails(self):
         doc = self.docs["R2-C"].replace("seams.json sha256",
@@ -116,9 +123,13 @@ class Hash(Base):
         self.assertFails("R2-C", "does not cite the verified seams.json sha256", doc=doc)
 
     def test_exact_artifact_references_pass(self):
-        for ref in (ac.SEAMS_REL, f"`{ac.SEAMS_REL}`", "a01/seams.json", f"./{ac.SEAMS_REL}"):
-            doc = self.docs["R2-C"].replace("seams.json sha256", f"{ref} sha256")
-            self.assertEqual(self.failures("R2-C", doc=doc), [], ref)
+        for ref in (ac.SEAMS_REL, f"`{ac.SEAMS_REL}`", "a01/seams.json", f"./{ac.SEAMS_REL}",
+                    "seams.json's", "`seams.json`'s", "(seams.json),", "**seams.json**:",
+                    "_seams.json_", f"[seams.json]({ac.SEAMS_REL})",
+                    f"([`seams.json`]({ac.SEAMS_REL})).", "“seams.json”"):
+            with self.subTest(ref):
+                doc = self.docs["R2-C"].replace("seams.json sha256", f"{ref} sha256")
+                self.assertEqual(self.failures("R2-C", doc=doc), [], ref)
 
     def test_hash_inside_a_code_fence_is_not_a_citation(self):
         cite = f"seams.json sha256 `{SHA}`"
@@ -448,6 +459,46 @@ class DocumentStructure(Base):
                                "0 sections headed '## Verdict'", "0 tables headed",
                                "does not cite the verified seams.json sha256"):
                     self.assertTrue(any(needle in b for b in bad), (seam, fence, needle, bad))
+
+    def test_audit_entirely_inside_an_html_block_fails(self):
+        wraps = (("<pre>\n", "</pre>\n"), ("<PRE class=\"x\">\n", "</PRE>\n"),
+                 ("<script type=\"text/markdown\">\n", "</script>\n"),
+                 ("<textarea>\n", "</textarea>\n"), ("<style>\n", "</style>\n"),
+                 ("<pre>", "</pre>\n"), ("<?x\n", "?>\n"), ("<!X\n", ">\n"),
+                 ("<![CDATA[\n", "]]>\n"))
+        for seam in ac.DOCS:
+            for open_, close in wraps:
+                doc = open_ + self.docs[seam] + close
+                bad = self.failures(seam, doc=doc)
+                for needle in ("0 sections headed '## Captain questions'",
+                               "0 sections headed '## Verdict'", "0 tables headed",
+                               "does not cite the verified seams.json sha256"):
+                    self.assertTrue(any(needle in b for b in bad),
+                                    (seam, open_, needle, bad))
+
+    def test_unclosed_pre_hides_the_rest(self):
+        doc = self.docs["R2-C"].replace("## Verdict", "<pre>\n## Verdict")
+        self.assertFails("R2-C", "0 sections headed '## Verdict'", doc=doc)
+        self.assertFails("R2-C", "0 sections headed '## Captain questions'", doc=doc)
+
+    def test_block_html_runs_to_the_next_blank_line(self):
+        for tag in ("<div>", "<table>", "</div>", "<details open>", "<span>", "<x-y a=\"1\">"):
+            with self.subTest(tag):
+                doc = self.docs["R2-B"].replace("## Captain questions",
+                                                f"{tag}\n## Captain questions")
+                self.assertFails("R2-B", "0 sections headed '## Captain questions'", doc=doc)
+
+    def test_html_block_closes_and_the_rest_counts(self):
+        for seam in ac.DOCS:
+            for block in ("<pre>\n## Verdict\n</pre>\n", "<div>\n## Verdict\n</div>\n\n",
+                          "<pre>x</pre>\n"):
+                doc = block + "\n" + self.docs[seam]
+                self.assertEqual(self.failures(seam, doc=doc), [], (seam, block))
+
+    def test_inline_html_in_a_paragraph_is_not_a_block(self):
+        text = "para\n<span>\n## H\n"
+        self.assertEqual(ac.structure(text), text)
+        self.assertEqual(ac.structure("\n<span>\n## H\n"), "\n\n\n")
 
     def test_unclosed_fence_hides_the_rest(self):
         doc = self.docs["R2-C"].replace("## Verdict", "```\n## Verdict")

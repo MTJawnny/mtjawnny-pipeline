@@ -51,8 +51,10 @@ Per document it exits non-zero unless ALL hold:
   (e) a section headed exactly '## Captain questions'.
 
 Only document structure counts: fenced code blocks (``` or ~~~), indented code
-blocks and HTML comments are blanked before any of (a)-(e) is checked, so a
-heading, table, list or citation inside one does not exist.
+blocks, HTML blocks (CommonMark 4.6, e.g. an audit wrapped in <pre>...</pre>)
+and HTML comments are blanked before any of (a)-(e) is checked, so a heading,
+table, list or citation inside one does not exist. A seams.json reference is
+the whole whitespace-delimited word holding 'seams.json'.
 
 HAND-OFF RULE. An existing seams.json is never trusted: it is first checked by
 `a01_seams.py --verify`, and a stale report STOPs this checker. A missing one is
@@ -117,8 +119,37 @@ PART = re.compile(r"^(.+)/part-(\d+)$")
 ADDR_LINE = re.compile(r"^\s*(?:[-*]\s+)?`?([^\s`:]+:\d+:\d+:\d+)`?\s*$")
 QUOTED = re.compile(r'"[^"\n]+"|“[^”\n]+”')
 SHA = re.compile(r"\b[0-9a-f]{64}\b")
-SEAMS_TOKEN = re.compile(r"[\w./-]*seams\.json[\w./-]*")
+# A reference to seams.json is the whole whitespace-delimited word holding it,
+# so 'unrelated+seams.json' or 'unrelated@seams.json' is one foreign reference,
+# never 'seams.json' with a prefix ignored.
+SEAMS_TOKEN = re.compile(r"\S*seams\.json\S*")
+WRAP_OPEN, WRAP_CLOSE = "`\"'([{<“‘", "`\"')]}>”’.,:;!?"
+MD_LINK = re.compile(r"([^\[]*)\[([^\[\]\s]+)\]\(([^()\s]+)\)(.*)")
 FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+# CommonMark HTML blocks (spec 4.6): their lines are raw HTML, not Markdown
+# structure. Kinds 1, 3, 4 and 5 end at the line holding their terminator;
+# kinds 6 and 7 at the next blank line; kind 7 cannot interrupt a paragraph.
+# Kind 2 (comments) is blanked by the comment pass in structure().
+HTML_RAW = ("pre", "script", "style", "textarea")
+HTML_BLOCK_TAGS = (
+    "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|"
+    "dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|"
+    "frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|li|link|main|menu|"
+    "menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|"
+    "tbody|td|tfoot|th|thead|title|tr|track|ul")
+_ATTR = r"""(?:\s+[A-Za-z_:][\w.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?)"""
+HTML_STARTS = (
+    (re.compile(rf"^ {{0,3}}<(?:{'|'.join(HTML_RAW)})(?:\s|>|$)", re.I),
+     re.compile(rf"</(?:{'|'.join(HTML_RAW)})>", re.I)),
+    (re.compile(r"^ {0,3}<\?"), re.compile(r"\?>")),
+    (re.compile(r"^ {0,3}<![A-Za-z]"), re.compile(r">")),
+    (re.compile(r"^ {0,3}<!\[CDATA\["), re.compile(r"\]\]>")),
+    (re.compile(rf"^ {{0,3}}</?(?:{HTML_BLOCK_TAGS})(?:\s|/?>|$)", re.I), None),
+)
+HTML_KIND7 = re.compile(
+    rf"^ {{0,3}}(?:<(?!(?:{'|'.join(HTML_RAW)})\b)[A-Za-z][A-Za-z0-9-]*{_ATTR}*\s*/?>"
+    rf"|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$", re.I)
+NOT_PARAGRAPH = re.compile(r"^ {0,3}(?:#{1,6}(?:\s|$)|\||(?:[-*_]\s*){3,}$)")
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
 VERDICT_LINE = re.compile(
     r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS) + r"\)(.*)$")
@@ -174,27 +205,54 @@ def structure(text: str) -> str:
     """The document with every line that is not Markdown document structure
     blanked (line count kept): fenced code blocks, delimiters included (an
     unclosed fence runs to the end), indented code blocks (a run of lines
-    indented four or more columns that opens after a blank line) and HTML
+    indented four or more columns that opens after a blank line), HTML blocks
+    (CommonMark 4.6: '<pre>', '<div>', ... to their end condition) and HTML
     comments. A heading, table, address list or citation inside one of them is
     not part of the document."""
-    out, fence, code, prev_blank = [], None, False, True
+    out, fence, code, prev_blank, para = [], None, False, True, False
+    html = None                 # None, or the end pattern (False: a blank line)
     for line in text.split("\n"):
+        blank = not line.strip()
         if fence is not None:
             if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
                 fence = None
             out.append("")
             continue
+        if html is not None:
+            if html is False and blank:
+                html = None                 # the blank line closes it, and stays
+                out.append(line)
+                prev_blank, para = True, False
+                continue
+            if html is not False and html.search(line):
+                html = None
+            out.append("")
+            prev_blank, para = False, False
+            continue
         m = FENCE_OPEN.match(line)
         if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
             fence = m.group(1)
             out.append("")
-            prev_blank = False
+            prev_blank, para, code = False, False, False
             continue
-        blank = not line.strip()
         indented = re.match(r"^(?: {4}|\t| {0,3}\t)", line) is not None
         code = (not blank and indented and (prev_blank or code)) or (code and blank)
+        if not code and not blank:
+            for start, end in HTML_STARTS:
+                if start.match(line):
+                    html = False if end is None else (None if end.search(
+                        line[start.match(line).end():]) else end)
+                    break
+            else:
+                if not para and HTML_KIND7.match(line):
+                    html = False
+            if html is not None or any(s.match(line) for s, _ in HTML_STARTS):
+                out.append("")
+                prev_blank, para = False, False
+                continue
         out.append("" if code else line)
         prev_blank = blank
+        para = not blank and not code and NOT_PARAGRAPH.match(line) is None
     return re.sub(r"<!--.*?(?:-->|\Z)", lambda m: "\n" * m.group(0).count("\n"),
                   "\n".join(out), flags=re.S)
 
@@ -348,15 +406,42 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
 def exact_reference(token: str) -> bool:
     """True for 'seams.json' or a path suffix of SEAMS_REL (whole path
     components only); never for 'unrelated-seams.json', 'other/seams.json' or
-    'seams.json.bak'."""
-    t = token.rstrip(".")                   # a sentence's full stop
+    'seams.json.bak', 'unrelated+seams.json' or 'unrelated@seams.json'. The
+    token is the whole whitespace-delimited word: only wrapping punctuation
+    (backticks, quotes, emphasis, brackets, a sentence's full stop or comma), a
+    possessive "'s" and a Markdown link '[ref](ref)' with both sides exact are
+    set aside."""
+    link = MD_LINK.fullmatch(token)
+    if link:
+        return (_unwrap(link.group(1) + link.group(4)) == ""
+                and all(exact_reference(p) for p in link.group(2, 3)))
+    t = _unwrap(token)
     t = t[2:] if t.startswith("./") else t
     return t == SEAMS_REL or SEAMS_REL.endswith("/" + t)
 
 
+def _unwrap(t: str) -> str:
+    """`t` without its wrapping punctuation: leading WRAP_OPEN and trailing
+    WRAP_CLOSE characters, a trailing possessive "'s", and Markdown emphasis
+    ('*' or '_') only as a matched pair around the rest."""
+    while t:
+        if t.endswith(("'s", "’s")):
+            t = t[:-2]
+        elif t[0] in WRAP_OPEN:
+            t = t[1:]
+        elif t[-1] in WRAP_CLOSE:
+            t = t[:-1]
+        elif len(t) > 1 and t[0] == t[-1] and t[0] in "*_":
+            t = t[1:-1]
+        else:
+            break
+    return t
+
+
 def cite_failures(text: str, sha: str) -> list:
     """A sha256 is attributed to the artifact only on a line that names it
-    by an exact reference and names no other '*seams.json'."""
+    by an exact reference and names no other '*seams.json' (every
+    whitespace-delimited word holding 'seams.json' is an exact reference)."""
     lines = [l for l in text.splitlines()
              if SEAMS_TOKEN.search(l) and all(exact_reference(t) for t in SEAMS_TOKEN.findall(l))]
     cited = [s for l in lines for s in SHA.findall(l)]
@@ -822,8 +907,17 @@ def rigs() -> dict:
         "a hash attributed only to an unrelated seams.json": (
             "R2-C", docs["R2-C"].replace("seams.json sha256", "unrelated-seams.json sha256"),
             seams, SYN_SHA, "does not cite the verified seams.json sha256"),
+        "a hash attributed only to unrelated+seams.json": (
+            "R2-C", docs["R2-C"].replace("seams.json sha256", "unrelated+seams.json sha256"),
+            seams, SYN_SHA, "does not cite the verified seams.json sha256"),
+        "a hash attributed only to unrelated@seams.json": (
+            "R2-C", docs["R2-C"].replace("seams.json sha256", "unrelated@seams.json sha256"),
+            seams, SYN_SHA, "does not cite the verified seams.json sha256"),
         "an audit entirely inside a code fence": (
             "R2-B", "```markdown\n" + b + "```\n", seams, SYN_SHA,
+            "0 sections headed '## Captain questions'"),
+        "an audit entirely inside <pre>...</pre>": (
+            "R2-B", "<pre>\n" + b + "</pre>\n", seams, SYN_SHA,
             "0 sections headed '## Captain questions'"),
         "a wrong seams.json hash": (
             "R2-C", docs["R2-C"], seams, "0" * 64,
