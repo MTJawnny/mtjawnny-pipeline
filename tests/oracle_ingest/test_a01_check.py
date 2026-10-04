@@ -13,7 +13,8 @@ repair-round controls: a split part with no READ POSITION whose first member
 (seams.json order) is not read, a hash attributed only to another
 '*seams.json' (including 'unrelated+seams.json' and 'unrelated@seams.json'),
 and an audit whose structure sits inside a code fence or an HTML block such
-as <pre>...</pre>.
+as <pre>...</pre>, a '<!--' inside a code span hiding a duplicate heading, and
+text after an inline comment's '-->' read as a heading.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -522,10 +523,16 @@ class DocumentStructure(Base):
         # block opener) once opened that block and erased the valid audit after it.
         for seam in ac.DOCS:
             for block in ("<!--\n<pre>\n-->\n", "<!-- <pre> -->\n", "<!--\n<script>\n-->\n",
-                          "<!--\n<div>\n## Verdict\n-->\n", "x <!--\n<pre>\n-->\n",
+                          "<!--\n<div>\n## Verdict\n-->\n", "x <!-- <pre> -->\n",
                           "<!-->\n", "<!--\n```\n-->\n"):
                 doc = block + "\n" + self.docs[seam]
                 self.assertEqual(self.failures(seam, doc=doc), [], (seam, block))
+
+    def test_block_opener_ends_a_paragraph_holding_an_open_comment(self):
+        # Blocks precede inlines (CommonMark 3): '<pre>' on its own line opens an
+        # HTML block even after 'x <!--', and that unclosed block hides the rest.
+        doc = "x <!--\n<pre>\n-->\n\n" + self.docs["R2-C"]
+        self.assertFails("R2-C", "0 sections headed '## Captain questions'", doc=doc)
 
     def test_comment_inside_a_fence_or_pre_is_not_a_comment(self):
         self.assertEqual(ac.structure("```\n<!--\n```\n## H"), "\n\n\n## H")
@@ -533,10 +540,64 @@ class DocumentStructure(Base):
 
     def test_inline_comment_is_blanked_to_its_close(self):
         self.assertEqual(ac.structure("a <!-- b --> c"), "a  c")
-        self.assertEqual(ac.structure("a <!--\n## H\n--> c\n## I"), "a \n\n c\n## I")
+        self.assertEqual(ac.structure("a <!--\nb\n--> c\n## I"), "a  c\n\n\n## I")
+        self.assertEqual(ac.structure("## V <!-- x -->\n| a <!-- b --> |"), "## V \n| a  |")
+
+    def test_inline_comment_never_crosses_a_block_boundary(self):
+        # A heading (or table row, list item, block quote) ends the paragraph,
+        # so a '<!--' left open before it is literal text and the heading shows.
+        for opener in ("## H", "| a |", "- b", "1. c", "> d", "---"):
+            with self.subTest(opener):
+                text = f"a <!--\n{opener}\n--> e"
+                self.assertEqual(ac.structure(text), text)
+        self.assertEqual(ac.structure("## V <!--\nx\n-->"), "## V <!--\nx\n-->")
         doc = self.docs["R2-B"].replace("## Captain questions",
                                         "text <!--\n## Captain questions\n-->")
-        self.assertFails("R2-B", "0 sections headed '## Captain questions'", doc=doc)
+        self.assertEqual(self.failures("R2-B", doc=doc), [])
+        dup = self.docs["R2-B"] + "\ntext <!--\n## Captain questions\n-->\n"
+        self.assertFails("R2-B", "2 sections headed '## Captain questions'", doc=dup)
+
+    def test_text_after_a_comment_close_is_not_block_structure(self):
+        # Regression: 'text <!--' then '-->## Captain questions' is one paragraph
+        # ('text ## Captain questions'), never a heading.
+        self.assertEqual(ac.structure("text <!--\n-->## H"), "text ## H\n")
+        for seam in ac.DOCS:
+            for title in ("Captain questions", "Verdict"):
+                with self.subTest((seam, title)):
+                    doc = self.docs[seam].replace(f"## {title}", f"text <!--\n-->## {title}")
+                    self.assertFails(seam, f"0 sections headed '## {title}'", doc=doc)
+        doc = self.docs["R2-C"].replace("| clause |", "text <!--\n-->| clause |", 1)
+        self.assertFails("R2-C", "0 tables headed | clause | C1", doc=doc)
+        row = line(self.docs["R2-B"], "- B1:")
+        doc = self.docs["R2-B"].replace(row, "text <!--\n-->" + row)
+        self.assertFails("R2-B", "B1", doc=doc)
+
+    def test_comment_opener_inside_a_code_span_is_code(self):
+        # Regression: '<!--' inside inline code once opened a comment and hid a
+        # visible duplicate '## Captain questions' heading.
+        for span in ("`<!--`", "``a `<!--` b``", "` <!-- `"):
+            with self.subTest(span):
+                text = f"see {span} here\n## H\n-->"
+                self.assertEqual(ac.structure(text), text)
+                dup = self.docs["R2-B"] + f"\nsee {span}\n## Captain questions\n-->\n"
+                self.assertFails("R2-B", "2 sections headed '## Captain questions'", doc=dup)
+        para = "see `<!--` and\nmore `x` text\n-->"
+        self.assertEqual(ac.structure(para), para)
+
+    def test_code_span_opener_inside_a_comment_is_comment(self):
+        self.assertEqual(ac.structure("a <!-- ` --> b `c`"), "a  b `c`")
+        self.assertEqual(ac.structure("a <!--\n` -->x"), "a x\n")
+
+    def test_unmatched_backticks_and_escapes_are_literal(self):
+        self.assertEqual(ac.structure("a ` <!-- b --> c"), "a `  c")
+        self.assertEqual(ac.structure("a \\<!-- b\n## H"), "a \\<!-- b\n## H")
+        self.assertEqual(ac.structure("a \\`<!-- b --> c`"), "a \\` c`")
+
+    def test_raw_html_and_autolinks_hold_their_own_text(self):
+        self.assertEqual(ac.structure('a <span title="<!--">b</span>\nc'),
+                         'a <span title="<!--">b</span>\nc')
+        self.assertEqual(ac.structure("a <http://x/`y> <!-- z --> `w`"),
+                         "a <http://x/`y>  `w`")
 
     def test_unclosed_comment_hides_the_rest(self):
         doc = self.docs["R2-C"].replace("## Verdict", "<!--\n## Verdict")

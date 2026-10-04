@@ -53,7 +53,10 @@ Per document it exits non-zero unless ALL hold:
 Only document structure counts: fenced code blocks (``` or ~~~), indented code
 blocks, HTML blocks (CommonMark 4.6, e.g. an audit wrapped in <pre>...</pre>)
 and HTML comments are blanked before any of (a)-(e) is checked, so a heading,
-table, list or citation inside one does not exist. A seams.json reference is
+table, list or citation inside one does not exist. Block boundaries are fixed
+before inline comments are read (CommonMark 3), so a comment never hides a
+heading that ends its paragraph nor promotes the text after its '-->' to block
+structure, and '<!--' inside a code span is code. A seams.json reference is
 the whole whitespace-delimited word holding 'seams.json'.
 
 HAND-OFF RULE. An existing seams.json is never trusted: it is first checked by
@@ -130,7 +133,8 @@ FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 # structure. Kinds 1, 3, 4 and 5 end at the line holding their terminator;
 # kinds 6 and 7 at the next blank line; kind 7 cannot interrupt a paragraph.
 # Kind 2 (comments) is a block when '<!--' opens the line; a comment opening
-# mid-line is inline and blanked to its '-->' by the same scan (structure()).
+# mid-line is inline (raw HTML, spec 6.6) and is blanked by the inline pass of
+# structure(), which runs only after block boundaries are fixed.
 HTML_RAW = ("pre", "script", "style", "textarea")
 HTML_BLOCK_TAGS = (
     "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|"
@@ -152,6 +156,23 @@ HTML_KIND7 = re.compile(
     rf"^ {{0,3}}(?:<(?!(?:{'|'.join(HTML_RAW)})\b)[A-Za-z][A-Za-z0-9-]*{_ATTR}*\s*/?>"
     rf"|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$", re.I)
 NOT_PARAGRAPH = re.compile(r"^ {0,3}(?:#{1,6}(?:\s|$)|\||(?:[-*_]\s*){3,}$)")
+# Lines that end the paragraph before them (CommonMark 3: block structure
+# precedes inline structure, so an inline comment or code span never spans
+# one). ONE_LINE blocks hold only their own line's inline content (ATX heading,
+# table row, thematic break, setext underline); STARTS open a block whose
+# paragraph may continue (a bullet or '1.' item with content, a block quote).
+ONE_LINE = re.compile(r"^ {0,3}(?:#{1,6}(?:[ \t]|$)|=+[ \t]*$|(?:-[ \t]*){3,}$|"
+                      r"(?:\*[ \t]*){3,}$|(?:_[ \t]*){3,}$)|^\s*\|")
+STARTS = re.compile(r"^ {0,3}(?:(?:[-+*]|1[.)])[ \t]+\S|>)")
+# Inline constructs that can hold '<!--' or a backtick without either being one
+# (spec 6.5, 6.6): autolinks and raw HTML other than comments, matched at '<'.
+INLINE_OPAQUE = re.compile(
+    r"<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>]*>"
+    r"|<[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+    r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*>"
+    rf"|<[A-Za-z][A-Za-z0-9-]*{_ATTR}*\s*/?>|</[A-Za-z][A-Za-z0-9-]*\s*>"
+    r"|<\?.*?\?>|<![A-Za-z][^>]*>|<!\[CDATA\[.*?\]\]>", re.S)
+ASCII_PUNCT = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
 VERDICT_LINE = re.compile(
     r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS) + r"\)(.*)$")
@@ -210,38 +231,100 @@ def structure(text: str) -> str:
     indented four or more columns that opens after a blank line), HTML blocks
     (CommonMark 4.6: '<pre>', '<div>', ... to their end condition) and HTML
     comments. A heading, table, address list or citation inside one of them is
-    not part of the document."""
-    out, fence, code, prev_blank, para = [], None, False, True, False
+    not part of the document.
+
+    Two passes, as CommonMark parses: blocks first (_blocks), then the inline
+    comments of each paragraph (_inline). An inline comment never crosses a
+    block boundary, so a heading after 'text <!--' is a heading; text after a
+    comment's '-->' stays inline content of the line the comment opened on, so
+    'text <!--' then '-->## H' is a paragraph, never a heading; and '<!--'
+    inside a code span is code, not a comment opener."""
+    lines, kept = _blocks(text)
+    out, group = [], []
+    for line, keep in zip(lines + [""], kept + [False]):
+        if group and (not keep or not line.strip() or ONE_LINE.match(line)
+                      or STARTS.match(line) or ONE_LINE.match(group[0])):
+            out += _inline(group)
+            group = []
+        if keep and line.strip():
+            group.append(line)
+        else:
+            out.append(line if keep else "")
+    return "\n".join(out[:len(lines)])
+
+
+def _inline(group: list) -> list:
+    """The lines of one block's inline content (a paragraph, or one heading or
+    table row) with its HTML comments blanked, scanned left to right so that
+    whichever of a backslash escape, code span, autolink, raw HTML tag or
+    comment starts first wins (spec 6). An unclosed '<!--' or backtick run is
+    literal text. A comment spanning k line breaks leaves k blank lines after
+    the line it opened on, which keeps the text after its '-->'."""
+    text, out, cur, pending, i = "\n".join(group), [], [], 0, 0
+
+    def emit(s):
+        nonlocal pending
+        parts = s.split("\n")
+        cur.append(parts[0])
+        for p in parts[1:]:
+            out.append("".join(cur))
+            out.extend([""] * pending)
+            cur[:], pending = [p], 0
+
+    while i < len(text):
+        c = text[i]
+        if c == "\\" and text[i + 1:i + 2] in ASCII_PUNCT:
+            emit(text[i:i + 2])
+            i += 2
+        elif c == "`":
+            run = len(re.match(r"`+", text[i:]).group())
+            close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(text, i + run)
+            j = close.end() if close else i + run
+            emit(text[i:j])
+            i = j
+        elif text.startswith("<!--", i) and text.find("-->", i + 2) >= 0:
+            j = text.find("-->", i + 2) + 3
+            pending += text.count("\n", i, j)
+            i = j
+        elif c == "<" and INLINE_OPAQUE.match(text, i):
+            j = INLINE_OPAQUE.match(text, i).end()
+            emit(text[i:j])
+            i = j
+        else:
+            emit(c)
+            i += 1
+    out.append("".join(cur))
+    out.extend([""] * pending)
+    return out
+
+
+def _blocks(text: str) -> tuple:
+    """(lines, kept): every line, and whether it is outside every fenced code
+    block, indented code block and HTML block (the first pass of structure())."""
+    lines, kept, fence, code, prev_blank, para = text.split("\n"), [], None, False, True, False
     html = None                 # None, or the end pattern (False: a blank line)
-    comment = False             # inside an inline comment opened on an earlier line
-    for line in text.split("\n"):
-        if comment:
-            end = line.find("-->")
-            if end < 0:
-                out.append("")
-                continue
-            comment, line = False, line[end + 3:]
+    for line in lines:
         blank = not line.strip()
         if fence is not None:
             if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
                 fence = None
-            out.append("")
+            kept.append(False)
             continue
         if html is not None:
             if html is False and blank:
                 html = None                 # the blank line closes it, and stays
-                out.append(line)
+                kept.append(True)
                 prev_blank, para = True, False
                 continue
             if html is not False and html.search(line):
                 html = None
-            out.append("")
+            kept.append(False)
             prev_blank, para = False, False
             continue
         m = FENCE_OPEN.match(line)
         if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
             fence = m.group(1)
-            out.append("")
+            kept.append(False)
             prev_blank, para, code = False, False, False
             continue
         indented = re.match(r"^(?: {4}|\t| {0,3}\t)", line) is not None
@@ -257,17 +340,13 @@ def structure(text: str) -> str:
                 if not para and HTML_KIND7.match(line):
                     html = False
             if html is not None or any(s.match(line) for s, _ in HTML_STARTS):
-                out.append("")
+                kept.append(False)
                 prev_blank, para = False, False
                 continue
-        if not code:
-            line = re.sub(r"<!--.*?-->", "", line)
-            if "<!--" in line:
-                line, comment = line[:line.index("<!--")], True
-        out.append("" if code else line)
+        kept.append(not code)
         prev_blank = blank
         para = not blank and not code and NOT_PARAGRAPH.match(line) is None
-    return "\n".join(out)
+    return lines, kept
 
 
 def table(text: str, head: list, bad: list, where: str = "the document") -> list:
