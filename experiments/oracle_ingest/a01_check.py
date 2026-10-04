@@ -14,8 +14,10 @@ it from the document's own ledger.
 
 Per document it exits non-zero unless ALL hold:
 
-  (a) it cites seams.json's sha256 (on a line naming seams.json), equal to the
-      verified artifact, and no other sha256 on such a line;
+  (a) it cites seams.json's sha256 (on a line whose every '*seams.json' token is
+      an exact reference to the artifact: 'seams.json', or a path suffix of
+      experiments/out/oracle_ingest/a01/seams.json), equal to the verified
+      artifact, and no other sha256 on such a line;
   (b) its ledgers, each a table whose header row is exactly as given, cover the
       population exactly once and nothing else:
         R2-A `| class | members | read | A1 | A2 | A3 | A4 | A5 | note |`, one
@@ -25,7 +27,8 @@ Per document it exits non-zero unless ALL hold:
           the others and whose union is exactly the class; 'members' is the row
           size; '## Reads' lists, under '### <row>', the addresses read (each a
           member of the row, every READ POSITION of the class in the row
-          included, their count equal to 'read', read >= 1); and the recall
+          included -- or, for a part holding none, its first member in
+          seams.json order -- their count equal to 'read', read >= 1); and the recall
           table `| clause | class | A1 | A2 | A3 | A4 | A5 | note |`, one row
           per recall control clause;
         R2-B `| clause | B1 | B2 | B3 | B4 | note |`, one row per member, and
@@ -46,6 +49,10 @@ Per document it exits non-zero unless ALL hold:
       a status phrase, and the CANDIDATE phrase whenever it cites AQ4 §9 rungs
       2-5, §12, §13 or §16;
   (e) a section headed exactly '## Captain questions'.
+
+Only document structure counts: fenced code blocks (``` or ~~~), indented code
+blocks and HTML comments are blanked before any of (a)-(e) is checked, so a
+heading, table, list or citation inside one does not exist.
 
 HAND-OFF RULE. An existing seams.json is never trusted: it is first checked by
 `a01_seams.py --verify`, and a stale report STOPs this checker. A missing one is
@@ -110,6 +117,8 @@ PART = re.compile(r"^(.+)/part-(\d+)$")
 ADDR_LINE = re.compile(r"^\s*(?:[-*]\s+)?`?([^\s`:]+:\d+:\d+:\d+)`?\s*$")
 QUOTED = re.compile(r'"[^"\n]+"|“[^”\n]+”')
 SHA = re.compile(r"\b[0-9a-f]{64}\b")
+SEAMS_TOKEN = re.compile(r"[\w./-]*seams\.json[\w./-]*")
+FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
 VERDICT_LINE = re.compile(
     r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS) + r"\)(.*)$")
@@ -160,6 +169,35 @@ def load() -> tuple:
 
 
 # ---------------------------------------------------------- document parsing
+
+def structure(text: str) -> str:
+    """The document with every line that is not Markdown document structure
+    blanked (line count kept): fenced code blocks, delimiters included (an
+    unclosed fence runs to the end), indented code blocks (a run of lines
+    indented four or more columns that opens after a blank line) and HTML
+    comments. A heading, table, address list or citation inside one of them is
+    not part of the document."""
+    out, fence, code, prev_blank = [], None, False, True
+    for line in text.split("\n"):
+        if fence is not None:
+            if re.fullmatch(rf" {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*", line):
+                fence = None
+            out.append("")
+            continue
+        m = FENCE_OPEN.match(line)
+        if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+            fence = m.group(1)
+            out.append("")
+            prev_blank = False
+            continue
+        blank = not line.strip()
+        indented = re.match(r"^(?: {4}|\t| {0,3}\t)", line) is not None
+        code = (not blank and indented and (prev_blank or code)) or (code and blank)
+        out.append("" if code else line)
+        prev_blank = blank
+    return re.sub(r"<!--.*?(?:-->|\Z)", lambda m: "\n" * m.group(0).count("\n"),
+                  "\n".join(out), flags=re.S)
+
 
 def table(text: str, head: list, bad: list, where: str = "the document") -> list:
     """The rows of the one table whose header is `head` (wrong-width rows
@@ -307,8 +345,20 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
 
 # --------------------------------------------------------------- checking
 
+def exact_reference(token: str) -> bool:
+    """True for 'seams.json' or a path suffix of SEAMS_REL (whole path
+    components only); never for 'unrelated-seams.json', 'other/seams.json' or
+    'seams.json.bak'."""
+    t = token.rstrip(".")                   # a sentence's full stop
+    t = t[2:] if t.startswith("./") else t
+    return t == SEAMS_REL or SEAMS_REL.endswith("/" + t)
+
+
 def cite_failures(text: str, sha: str) -> list:
-    lines = [l for l in text.splitlines() if "seams.json" in l]
+    """A sha256 is attributed to the artifact only on a line that names it
+    by an exact reference and names no other '*seams.json'."""
+    lines = [l for l in text.splitlines()
+             if SEAMS_TOKEN.search(l) and all(exact_reference(t) for t in SEAMS_TOKEN.findall(l))]
     cited = [s for l in lines for s in SHA.findall(l)]
     bad = [f"the document cites seams.json sha256 {s}, the verified artifact is {sha}"
            for s in sorted(set(cited)) if s != sha]
@@ -417,9 +467,14 @@ def r2a_failures(text: str, seam: dict) -> tuple:
         if read != len(got):
             bad.append(f"{label}: read {row[2]!r}, but '## Reads' lists {len(got)} "
                        f"address(es)")
-        for a in classes[cls]["read"]:
-            if a in mem and a not in got:
+        held = [a for a in classes[cls]["read"] if a in mem]
+        for a in held:
+            if a not in got:
                 bad.append(f"{label}: READ POSITION {a} is not listed under '## Reads'")
+        first = next((a for a in classes[cls]["members"] if a in mem), None)
+        if not held and first is not None and first not in got:
+            bad.append(f"{label}: the row holds no READ POSITION, and its first member "
+                       f"in seams.json order, {first}, is not listed under '## Reads'")
         if read is not None and read < 1:
             bad.append(f"{label}: read {read}; every class or part reads at least one "
                        f"member")
@@ -514,7 +569,9 @@ LEDGERS = {"R2-A": r2a_failures, "R2-B": r2b_failures, "R2-C": r2c_failures}
 
 
 def document_failures(seam_id: str, text: str, seams_doc: dict, sha: str) -> list:
-    """Every way the `seam_id` audit document disagrees with (a)-(e)."""
+    """Every way the `seam_id` audit document disagrees with (a)-(e), over
+    its document structure only."""
+    text = structure(text)
     bad, columns = LEDGERS[seam_id](text, seams_doc["seams"][seam_id])
     return common_failures(text, sha) + bad + verdict_failures(text, seam_id, columns)
 
@@ -692,6 +749,8 @@ def rigs() -> dict:
     swapped = reads_draw.replace(f"- `{pos[3]}`\n", f"- `{unread}`\n")
     extra = reads_draw.replace(f"- `{pos[3]}`\n", f"- `{pos[3]}`\n- `{unread}`\n")
     part2_reads = f"### deal/part-2\n\n- `{DEAL_PART2[0]}`\n"
+    head, tail = a.split("## Reads\n")
+    in_reads = lambda new: head + "## Reads\n" + tail.replace(part2_reads, new)
     pron = _line(b, "| `rig-b2:0:0:0` |")
     notm = _line(b, "| `rig-b3:0:0:1` |")
     a3 = v(a, "A3")
@@ -732,7 +791,7 @@ def rigs() -> dict:
             "R2-A", a.replace(reads_draw, extra), seams, SYN_SHA,
             "R2-A row draw: read '10', but '## Reads' lists 11"),
         "a split part with read 0": (
-            "R2-A", a.replace(part2_reads, "### deal/part-2\n").replace(
+            "R2-A", in_reads("### deal/part-2\n").replace(
                 p2, _cells(p2, 3, "0").replace("1 of 3", "0 of 3")), seams, SYN_SHA,
             "R2-A row deal/part-2: read 0; every class or part reads at least one"),
         "a split whose parts overlap": (
@@ -756,6 +815,16 @@ def rigs() -> dict:
         "a NOT-MEMBER pronoun row with a truth word": (
             "R2-B", b.replace(notm, _cells(notm, 3, UNRESOLVED)), seams, SYN_SHA,
             f"pronoun row rig-b3:0:0:1: NOT-MEMBER carries '{UNRESOLVED}' in B1"),
+        "a split part with no READ POSITION that skips its first member": (
+            "R2-A", in_reads(f"### deal/part-2\n\n- `{DEAL_PART2[1]}`\n"),
+            seams, SYN_SHA, f"its first member in seams.json order, {DEAL_PART2[0]}, is "
+                            f"not listed"),
+        "a hash attributed only to an unrelated seams.json": (
+            "R2-C", docs["R2-C"].replace("seams.json sha256", "unrelated-seams.json sha256"),
+            seams, SYN_SHA, "does not cite the verified seams.json sha256"),
+        "an audit entirely inside a code fence": (
+            "R2-B", "```markdown\n" + b + "```\n", seams, SYN_SHA,
+            "0 sections headed '## Captain questions'"),
         "a wrong seams.json hash": (
             "R2-C", docs["R2-C"], seams, "0" * 64,
             "does not cite the verified seams.json sha256"),

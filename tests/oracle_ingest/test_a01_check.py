@@ -8,7 +8,10 @@ split part with read 0, a pronoun note without a double-quoted antecedent, a
 split whose parts do not partition the class, EXPRESSED A4 with read <
 members, EXPRESSED A2 with read < members and one member's supports_A2 false,
 a NOT-MEMBER pronoun row with a truth word, a wrong seams.json hash, a stale
-seams.json (STOPs), and a document without '## Captain questions'.
+seams.json (STOPs), and a document without '## Captain questions' -- and the
+repair-round controls: a split part with no READ POSITION whose first member
+(seams.json order) is not read, a hash attributed only to another
+'*seams.json', and an audit whose structure sits inside a code fence.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -100,6 +103,27 @@ class Hash(Base):
     def test_wrong_hash_fails(self):
         self.assertFails("R2-A", "does not cite the verified seams.json sha256",
                          sha="0" * 64)
+
+    def test_hash_attributed_only_to_an_unrelated_seams_json_fails(self):
+        for other in ("unrelated-seams.json", "other/seams.json", "a01/seams.json.bak"):
+            doc = self.docs["R2-C"].replace("seams.json sha256", f"{other} sha256")
+            self.assertFails("R2-C", "does not cite the verified seams.json sha256",
+                             doc=doc)
+
+    def test_hash_on_a_line_also_naming_an_unrelated_seams_json_fails(self):
+        doc = self.docs["R2-C"].replace("seams.json sha256",
+                                        "seams.json (not unrelated-seams.json) sha256")
+        self.assertFails("R2-C", "does not cite the verified seams.json sha256", doc=doc)
+
+    def test_exact_artifact_references_pass(self):
+        for ref in (ac.SEAMS_REL, f"`{ac.SEAMS_REL}`", "a01/seams.json", f"./{ac.SEAMS_REL}"):
+            doc = self.docs["R2-C"].replace("seams.json sha256", f"{ref} sha256")
+            self.assertEqual(self.failures("R2-C", doc=doc), [], ref)
+
+    def test_hash_inside_a_code_fence_is_not_a_citation(self):
+        cite = f"seams.json sha256 `{SHA}`"
+        doc = self.docs["R2-C"].replace(cite, f"```\n{cite}\n```")
+        self.assertFails("R2-C", "does not cite the verified seams.json sha256", doc=doc)
 
     def test_second_differing_hash_fails(self):
         doc = self.docs["R2-C"].replace(f"`{SHA}`", f"`{SHA}` (was seams.json "
@@ -219,6 +243,30 @@ class ReadRule(Base):
         doc = self.a.replace("### deal/part-2\n\n- `rig-e02:0:0:0`\n", "### deal/part-2\n")
         doc = doc.replace(p2, cells(p2, 3, "0").replace("1 of 3", "0 of 3"))
         self.assertFails("R2-A", "R2-A row deal/part-2: read 0", doc=doc)
+
+    def test_part_without_read_position_must_read_its_first_member(self):
+        head, reads = self.a.split("## Reads\n")
+        doc = head + "## Reads\n" + reads.replace("### deal/part-2\n\n- `rig-e02:0:0:0`",
+                                                  "### deal/part-2\n\n- `rig-e06:0:0:0`")
+        self.assertFails("R2-A", "R2-A row deal/part-2: the row holds no READ POSITION, and "
+                                 "its first member in seams.json order, rig-e02:0:0:0, is "
+                                 "not listed", doc=doc)
+
+    def test_first_member_is_by_seams_json_order_not_split_list_order(self):
+        doc = self.a.replace("### deal/part-2\n\n- `rig-e02:0:0:0`\n- `rig-e06:0:0:0`\n"
+                             "- `rig-e10:0:0:0`\n", "### deal/part-2\n\n- `rig-e10:0:0:0`\n"
+                             "- `rig-e06:0:0:0`\n- `rig-e02:0:0:0`\n", 1)
+        self.assertNotEqual(doc, self.a)
+        self.assertEqual(self.failures("R2-A", doc=doc), [])
+
+    def test_part_without_read_position_extra_reads_beyond_first_pass(self):
+        p2 = line(self.a, "| `deal/part-2` |")
+        head, reads = self.a.split("## Reads\n")
+        doc = head + "## Reads\n" + reads.replace(
+            "### deal/part-2\n\n- `rig-e02:0:0:0`\n",
+            "### deal/part-2\n\n- `rig-e02:0:0:0`\n- `rig-e10:0:0:0`\n")
+        doc = doc.replace(p2, cells(p2, 3, "2").replace("1 of 3", "2 of 3"))
+        self.assertEqual(self.failures("R2-A", doc=doc), [])
 
     def test_reads_section_required(self):
         self.assertFails("R2-A", "0 sections headed '## Reads'",
@@ -387,6 +435,54 @@ class Verdicts(Base):
         self.assertEqual(ac.verdict_word(dict(z, EXPRESSED=3, PARTIAL=1)), ac.MISSING)
         self.assertEqual(ac.verdict_word(dict(z, **{"OUT-OF-CONTRACT": 2})),
                          ac.UNDETERMINED)
+
+
+class DocumentStructure(Base):
+    def test_audit_entirely_inside_a_code_fence_fails(self):
+        for seam in ac.DOCS:
+            for fence in ("```", "~~~", "````markdown"):
+                close = fence.rstrip("markdown")
+                doc = f"{fence}\n{self.docs[seam]}{close}\n"
+                bad = self.failures(seam, doc=doc)
+                for needle in ("0 sections headed '## Captain questions'",
+                               "0 sections headed '## Verdict'", "0 tables headed",
+                               "does not cite the verified seams.json sha256"):
+                    self.assertTrue(any(needle in b for b in bad), (seam, fence, needle, bad))
+
+    def test_unclosed_fence_hides_the_rest(self):
+        doc = self.docs["R2-C"].replace("## Verdict", "```\n## Verdict")
+        self.assertFails("R2-C", "0 sections headed '## Verdict'", doc=doc)
+        self.assertFails("R2-C", "0 sections headed '## Captain questions'", doc=doc)
+
+    def test_ledger_inside_a_fence_fails(self):
+        d = self.docs["R2-C"]
+        start = d.index("| clause |")
+        end = d.index("\n\n", start)
+        doc = d[:start] + "```\n" + d[start:end] + "\n```" + d[end:]
+        self.assertFails("R2-C", "0 tables headed | clause | C1", doc=doc)
+
+    def test_section_inside_an_html_comment_fails(self):
+        doc = self.docs["R2-B"].replace("## Captain questions",
+                                        "<!--\n## Captain questions\n-->")
+        self.assertFails("R2-B", "0 sections headed '## Captain questions'", doc=doc)
+
+    def test_indented_code_block_is_not_a_table(self):
+        d = self.docs["R2-C"]
+        start = d.index("| clause |")
+        end = d.index("\n\n", start)
+        block = "\n".join("    " + l for l in d[start:end].splitlines())
+        self.assertFails("R2-C", "0 tables headed | clause | C1",
+                         doc=d[:start] + block + d[end:])
+
+    def test_fence_outside_the_structure_is_harmless(self):
+        for seam in ac.DOCS:
+            doc = self.docs[seam] + "\n```\n## Verdict\n| x |\n```\n"
+            self.assertEqual(self.failures(seam, doc=doc), [], seam)
+
+    def test_structure_keeps_line_count(self):
+        text = "a\n```\nb\n```\n<!-- c\nd -->\n\n    e\nf"
+        self.assertEqual(ac.structure(text).count("\n"), text.count("\n"))
+        self.assertEqual([l for l in ac.structure(text).split("\n") if l], ["a", "f"])
 
 
 class CaptainQuestions(Base):
