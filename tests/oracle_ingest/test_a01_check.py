@@ -16,7 +16,9 @@ an audit whose structure sits inside a code fence; and (Captain decision
 5987664829) every HTML or comment marker -- '<!--', '-->', '<' followed by an
 ASCII letter, '/' or '!' -- failing on any line, code spans and fences
 included, with every bypass of the retired HTML/comment handling as a
-regression case.
+regression case; and (repair verdict 5988024375) a contradictory duplicate
+verdict line in any non-canonical form (indented 1-3 spaces, quoted, another
+list marker, an emphasised id) failing instead of being skipped.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -437,6 +439,32 @@ class Verdicts(Base):
                          doc=self.docs["R2-C"].replace(c1, c1 + c1.replace("C1", "A1")))
         self.assertFails("R2-C", "verdict C1: '- C1: UNDETERMINED' is not",
                          doc=self.docs["R2-C"].replace(c1, "- C1: UNDETERMINED\n"))
+
+    def test_noncanonical_duplicate_verdict_fails(self):
+        # repair verdict 5988024375: a contradictory duplicate C2 SUFFICES line
+        # (two NOT-EXPRESSED cells) indented 1-3 spaces, or in any other
+        # non-canonical verdict-like form, is rejected, never skipped.
+        c = self.docs["R2-C"]
+        c2 = self.v(c, "C2")
+        dup = c2.replace("GENUINELY_MISSING", "SUFFICES").rstrip("\n") + f"; {ac.I3A_LINE}"
+        body = dup[len("- C2:"):]
+        forms = [" " * k + dup for k in (1, 2, 3)] + [
+            "\t" + dup, "> " + dup, "* C2:" + body, "+ C2:" + body, "1. C2:" + body,
+            "- **C2**:" + body, "- `C2`:" + body, "- C2 :" + body, "-  C2:" + body,
+            "C2:" + body, "| C2 | SUFFICES (EXPRESSED 0, PARTIAL 0, NOT-EXPRESSED 2, "
+            "UNRESOLVED 0, OUT-OF-CONTRACT 0) |"]
+        for form in forms:
+            for at in (c2 + form + "\n", form + "\n" + c2):
+                bad = self.failures("R2-C", doc=c.replace(c2, at))
+                self.assertTrue(any("reads as a verdict but is not in the form" in b
+                                    for b in bad), (form, bad))
+
+    def test_verdict_prose_naming_a_verdict_word_passes(self):
+        c = self.docs["R2-C"]
+        prose = ("M03's classification (GENUINELY_MISSING) still holds for C2; C2 is "
+                 "forced by both members.\n")
+        doc = c.replace("## Captain questions", prose + "\n## Captain questions")
+        self.assertEqual(self.failures("R2-C", doc=doc), [])
 
     def test_verdict_section_required(self):
         self.assertFails("R2-C", "0 sections headed '## Verdict'",

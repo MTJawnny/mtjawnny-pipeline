@@ -136,6 +136,14 @@ FORBIDDEN = re.compile(r"<!--|-->|<[A-Za-z/!]")
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
 VERDICT_LINE = re.compile(
     r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS) + r"\)(.*)$")
+# A line that reads as a verdict but is not in the canonical column-zero form:
+# indented, quoted, another list marker, an emphasised or code-spanned id, a
+# space before the colon -- or any line stating a verdict word with its counts.
+# Such a line is rejected, never skipped (repair verdict 5988024375).
+VERDICT_LIKE = re.compile(
+    r"^[\s>]*(?:(?:[-*+]|\d+[.)])\s*)?[*_`]*\s*[A-Za-z]\d+\s*[*_`]*\s*:"
+    r"|\b(?:" + "|".join(re.escape(w) for w in ("SUFFICES", "GENUINELY_MISSING",
+                                                 "UNDETERMINED")) + r")\W*\(\s*EXPRESSED\b")
 CANDIDATE_CITE = re.compile(r"§\s*1[236]\b")
 RUNG_CITE = re.compile(r"\brungs?\s+(\d+(?:\s*(?:-|–|,|and|to)\s*\d+)*)", re.I)
 
@@ -333,6 +341,12 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
     body = section(text, "Verdict", bad)
     if body is None:
         return bad
+    for l in body.splitlines():
+        if not VERDICT_ITEM.match(l) and VERDICT_LIKE.search(l):
+            bad.append(f"'## Verdict': line {l.strip()!r} reads as a verdict but is not "
+                       f"in the form '- ID: WORD (counts)' starting in column zero; "
+                       f"every verdict-like line is checked, so write it in that form "
+                       f"or reword it as prose")
     lines = [l.rstrip() for l in body.splitlines() if VERDICT_ITEM.match(l)]
     ids = [VERDICT_ITEM.match(l).group(1) for l in lines]
     _once(ids, "'## Verdict' states", bad)
@@ -905,6 +919,11 @@ def rigs() -> dict:
         "a document without '## Captain questions'": (
             "R2-B", b.replace("## Captain questions", "## Questions"), seams, SYN_SHA,
             "0 sections headed '## Captain questions'"),
+        "an indented duplicate SUFFICES verdict over NOT-EXPRESSED cells": (
+            "R2-C", docs["R2-C"].replace(
+                v(docs["R2-C"], "C2"), v(docs["R2-C"], "C2") + "  " + v(docs["R2-C"], "C2")
+                .replace(MISSING, SUFFICES).rstrip("\n") + f"; {I3A_LINE}\n"),
+            seams, SYN_SHA, "'## Verdict': line '- C2: SUFFICES"),
         "a verdict count that differs from the ledger": (
             "R2-C", docs["R2-C"].replace("UNRESOLVED 2", "UNRESOLVED 3", 1), seams,
             SYN_SHA, "verdict C1: UNRESOLVED 3, the ledger has 2"),
