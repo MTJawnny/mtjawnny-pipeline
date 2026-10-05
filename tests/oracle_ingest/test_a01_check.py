@@ -26,7 +26,9 @@ out of item order, duplicated, outside '## Verdict' or off the exact text
 format failing, and a truth id followed within six non-alphanumeric characters
 by a contradictory verdict word anywhere -- prose, fence, heading, a verdict
 tail, across line breaks, behind every earlier bypass wrapping -- failing with
-its line named.
+its line named; and (repair verdict 6002419116) a fenced duplicate canonical
+line inside '## Verdict' and a linked truth id followed by a contradictory
+verdict on the next line failing.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -646,6 +648,82 @@ class CanonicalVerdicts(Base):
                          doc=b + "\nB2 UNDETERMINED\n")
         self.assertEqual(self.failures("R2-A", doc=a + "\nA2 SUFFICES, A3 GENUINELY_MISSING\n"),
                          [])
+
+
+class RawVerdictLines(Base):
+    """Repair verdict 6002419116 (Captain decision 6002030055, A2): uniqueness
+    and counts are enforced across raw verdict lines, code blocks included, and
+    link targets are normalized before the contradiction scan crosses lines."""
+
+    def setUp(self):
+        super().setUp()
+        self.c = self.docs["R2-C"]
+        self.c2 = line(self.c, "- C2:")
+
+    def test_fenced_duplicate_canonical_line_inside_verdict_fails(self):
+        dup = self.c2.replace("NOT-EXPRESSED 2", "NOT-EXPRESSED 999")
+        for wrap in ("```\n{}```\n", "~~~\n{}~~~\n", "```text\n{}```\n", "\n    {}\n",
+                     "```\n{}"):
+            with self.subTest(wrap):
+                doc = self.c.replace(self.c2, self.c2 + wrap.format(dup))
+                bad = self.failures("R2-C", doc=doc)
+                self.assertTrue(any("truth item C2 has 2 raw verdict lines" in b for b in bad),
+                                bad)
+                self.assertTrue(any("C2 NOT-EXPRESSED 999, the ledger has 2" in b
+                                    for b in bad), bad)
+
+    def test_fenced_identical_duplicate_inside_verdict_fails(self):
+        doc = self.c.replace(self.c2, self.c2 + "```\n" + self.c2 + "```\n")
+        self.assertFails("R2-C", "truth item C2 has 2 raw verdict lines", doc=doc)
+        self.assertFails("R2-C", "is a verdict line for C2 inside a code block in "
+                                 "'## Verdict'", doc=doc)
+
+    def test_fenced_duplicate_in_another_form_fails(self):
+        for form in ("C2: GENUINELY_MISSING (EXPRESSED 0, PARTIAL 0, NOT-EXPRESSED 999, "
+                     "UNRESOLVED 0, OUT-OF-CONTRACT 0)",
+                     "**[C2](#c2)**: GENUINELY_MISSING (NOT-EXPRESSED 999)",
+                     "> - C2: NOT-EXPRESSED 999"):
+            with self.subTest(form):
+                doc = self.c.replace(self.c2, self.c2 + "```\n" + form + "\n```\n")
+                self.assertFails("R2-C", "truth item C2 has 2 raw verdict lines", doc=doc)
+                self.assertFails("R2-C", "C2 NOT-EXPRESSED 999, the ledger has 2", doc=doc)
+
+    def test_fenced_count_continuation_inside_verdict_fails(self):
+        doc = self.c.replace(self.c2, self.c2 + "```\n  NOT-EXPRESSED 999)\n```\n")
+        self.assertFails("R2-C", "reads as a verdict inside a code block in '## Verdict'",
+                         doc=doc)
+
+    def test_wrong_count_on_any_raw_line_naming_one_item_fails(self):
+        for where in ("```\nC2 has NOT-EXPRESSED 999\n```\n", "C2 has NOT-EXPRESSED 7\n"):
+            with self.subTest(where):
+                doc = self.c.replace("## Captain questions\n",
+                                     "## Captain questions\n\n" + where)
+                self.assertFails("R2-C", "the ledger has 2", doc=doc)
+
+    def test_counts_naming_several_items_fail(self):
+        doc = self.c + "\nC1 and C2: NOT-EXPRESSED 2\n"
+        self.assertFails("R2-C", "names C1, C2; one truth item per counted line", doc=doc)
+
+    def test_linked_id_then_contradiction_on_next_line_fails(self):
+        for form in ("see [C2](#c2)\nSUFFICES", "[C2](#c2):\n  *suffices*",
+                     "- [C2](#c2)\n- SUFFICES", "[C2][ref]\n\nUNDETERMINED",
+                     "[C2](#c2 \"t\")\n> SUFFICES", "**[C2](#c2)**\n**SUFFICES**",
+                     "[C2](\n#c2)\nSUFFICES"):
+            for wrap in ("{}\n", "```\n{}\n```\n"):
+                with self.subTest((form, wrap)):
+                    doc = self.c + "\n" + wrap.format(form)
+                    n = doc.count("\n", 0, doc.rindex(form)) + 1
+                    self.assertFails("R2-C", f"line {n}: C2 is followed by "
+                                             f"{re_word(form)!r}", doc=doc)
+
+    def test_linked_id_then_consistent_word_passes(self):
+        doc = self.c + "\nsee [C2](#c2)\nGENUINELY_MISSING, as the ledger says\n"
+        self.assertEqual(self.failures("R2-C", doc=doc), [])
+
+    def test_normalized_keeps_line_count(self):
+        raw = "a [C2](\n#c2)\n- **x**\n> _y_"
+        self.assertEqual(ac.normalized(raw).count("\n"), raw.count("\n"))
+        self.assertEqual(ac.normalized(raw).split("\n")[0], "a C2")
 
 
 def re_word(form):

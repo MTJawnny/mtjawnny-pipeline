@@ -53,7 +53,11 @@ Per document it exits non-zero unless ALL hold:
       '; '), and no '- ID:' line for a truth item anywhere outside '## Verdict';
       and anywhere in the document (raw lines, fences included, across line
       breaks) a truth id followed within six non-alphanumeric characters by a
-      verdict word other than VERDICT RULE's fails, naming the line;
+      verdict word other than VERDICT RULE's fails, naming the line. Repair
+      verdict 6002419116: uniqueness and counts hold across raw verdict lines
+      (code blocks included -- a fenced duplicate under '## Verdict' fails, and
+      any raw line naming one truth id states its counts as the ledger has
+      them), and link targets are normalized before scanning across lines;
   (e) a section headed exactly '## Captain questions'.
 
 NO HTML, NO COMMENTS (Captain decision 5987664829). A document fails if any
@@ -394,13 +398,86 @@ def stray_verdict_failures(raw: str, text: str, seam_id: str) -> list:
     return bad
 
 
+def normalized(raw: str) -> str:
+    """`raw` with every Markdown link target ('](#a1)', '][x]') set aside --
+    across line breaks too -- then link, emphasis and code markup and each
+    line's leading list or quote markers removed; line count kept, so a line
+    number in it is the raw line's."""
+    t = LINK_TARGET.sub(lambda m: "]" + "\n" * m.group().count("\n"), raw)
+    return "\n".join(LEAD_MARKERS.sub("", MARKUP_OUTSIDE_WORDS.sub("", l))
+                     for l in t.split("\n"))
+
+
+# MARKUP, but an underscore inside a word ('GENUINELY_MISSING') is kept.
+MARKUP_OUTSIDE_WORDS = re.compile(r"[\[\]*`~\\]|(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])")
+
+
+COUNT_NUMBER = re.compile(
+    r"(?<![\w-])(" + "|".join(re.escape(w) for w in WORDS) + r")\s*[:=]?\s*(\d+)")
+
+
+def raw_verdict_failures(raw: str, text: str, seam_id: str, columns: dict) -> list:
+    """Repair verdict 6002419116 (Captain decision 6002030055, A2), over every
+    raw line, code spans and fences included: (1) each truth item has exactly
+    one raw verdict line -- a '- <id>:' line, or a line that, once links, markup
+    and leading markers are set aside, starts '<id>:' and states a cell-word
+    count -- and it is the canonical line under
+    '## Verdict', outside any code block; (2) a verdict-like line hidden in a
+    code block under '## Verdict' fails; (3) a raw line naming exactly one truth
+    id states each cell-word count as the ledger has it, and a raw line naming
+    several truth ids states no count."""
+    span, bad = _verdict_span(text), []
+    raws, kept, norm = raw.split("\n"), text.split("\n"), normalized(raw).split("\n")
+    ids = [i for i in ITEMS[seam_id] if i in columns]
+    seen = {i: [] for i in ids}
+    for n, (line, bare) in enumerate(zip(raws, norm)):
+        inside = bool(span and span[0] <= n <= span[1])
+        hidden = kept[n] != line
+        m = ID_COLON.match(bare)
+        i = m.group().rstrip(":： \t").upper() if m else None
+        if i and not (VERDICT_ITEM.match(line) or COUNT_NUMBER.search(bare)):
+            i = None
+        if i in seen:
+            seen[i].append(n + 1)
+            if hidden or not inside:
+                bad.append(f"line {n + 1}: {line.strip()!r} is a verdict line for {i} "
+                           f"{'inside a code block' if hidden else 'outside'} "
+                           f"{'in ' if hidden else ''}'## Verdict'; exactly one canonical "
+                           f"verdict line per truth item, under '## Verdict' and outside "
+                           f"any code block, is allowed")
+        elif inside and hidden and verdict_like(line):
+            bad.append(f"line {n + 1}: {line.strip()!r} reads as a verdict inside a code "
+                       f"block in '## Verdict'; every raw line is checked")
+        named = [i] if i in seen else [
+            j for j in ids if re.search(rf"(?<![A-Za-z0-9]){re.escape(j)}(?![0-9])", bare, re.I)]
+        counts = COUNT_NUMBER.findall(bare)
+        if counts and len(named) > 1:
+            bad.append(f"line {n + 1}: {line.strip()!r} states cell-word counts and names "
+                       f"{', '.join(named)}; one truth item per counted line")
+        elif counts and named:
+            j = named[0]
+            for w, k in counts:
+                if int(k) != columns[j].count(w):
+                    bad.append(f"line {n + 1}: {j} {w} {k}, the ledger has "
+                               f"{columns[j].count(w)} ({line.strip()!r}); every raw line "
+                               f"is checked, code blocks included")
+    for i, at in seen.items():
+        if len(at) > 1:
+            bad.append(f"truth item {i} has {len(at)} raw verdict lines (lines "
+                       f"{', '.join(map(str, at))}); exactly one is allowed, code blocks "
+                       f"included")
+    return bad
+
+
 def contradiction_failures(raw: str, seam_id: str, columns: dict) -> list:
     """Repair verdict 6002198078 (Captain decision 6002030055, A2): anywhere in
     the document -- every raw line, code spans and fences included, across line
     breaks -- one of the seam's truth ids followed within six non-alphanumeric
     characters by a verdict word other than the one VERDICT RULE gives over the
-    ledger fails, naming the offending line. Markdown link targets
-    ('[A1](#a1): ...') are also set aside, line by line."""
+    ledger fails, naming the offending line. Repair verdict 6002419116: the scan
+    also runs over the normalized document (link targets, markup and leading
+    markers set aside before scanning across lines), so '[A1](#a1)' followed by
+    a verdict on the next line is read as 'A1' followed by it."""
     rule = {i: verdict_word({w: columns[i].count(w) for w in WORDS})
             for i in ITEMS[seam_id] if i in columns}
     ids = "|".join(re.escape(i) for i in rule)
@@ -408,9 +485,10 @@ def contradiction_failures(raw: str, seam_id: str, columns: dict) -> list:
         return []
     pat = re.compile(rf"(?<![A-Za-z0-9])({ids})[^A-Za-z0-9]{{0,6}}({VERDICT_WORD})", re.I)
     hits = {}
-    for m in pat.finditer(raw):
-        hits.setdefault((raw.count("\n", 0, m.start()) + 1, m.group(1).upper(),
-                         m.group(2)), None)
+    for t in (raw, normalized(raw)):
+        for m in pat.finditer(t):
+            hits.setdefault((t.count("\n", 0, m.start()) + 1, m.group(1).upper(),
+                             m.group(2)), None)
     for n, line in enumerate(raw.split("\n"), 1):
         for m in pat.finditer(LINK_TARGET.sub("]", line)):
             hits.setdefault((n, m.group(1).upper(), m.group(2)), None)
@@ -744,6 +822,7 @@ def document_failures(seam_id: str, text: str, seams_doc: dict, sha: str) -> lis
     bad, columns = LEDGERS[seam_id](text, seams_doc["seams"][seam_id])
     return (markup + common_failures(text, sha) + bad + verdict_failures(text, seam_id, columns)
             + stray_verdict_failures(raw, text, seam_id)
+            + raw_verdict_failures(raw, text, seam_id, columns)
             + contradiction_failures(raw, seam_id, columns))
 
 
@@ -1050,6 +1129,13 @@ def rigs() -> dict:
             "C2 is followed by 'UNDETERMINED'"),
         "a contradictory verdict word after a link-wrapped truth id": (
             "R2-C", docs["R2-C"] + "\nsee [C2](#c2): SUFFICES\n", seams, SYN_SHA,
+            "C2 is followed by 'SUFFICES'"),
+        "a fenced duplicate canonical verdict line inside '## Verdict'": (
+            "R2-C", docs["R2-C"].replace(c2, c2 + "```\n" + c2.replace(
+                "NOT-EXPRESSED 2", "NOT-EXPRESSED 999") + "```\n"), seams, SYN_SHA,
+            "truth item C2 has 2 raw verdict lines"),
+        "a linked truth id followed by a contradictory verdict on the next line": (
+            "R2-C", docs["R2-C"] + "\nsee [C2](#c2)\nSUFFICES\n", seams, SYN_SHA,
             "C2 is followed by 'SUFFICES'"),
     }
 
