@@ -47,7 +47,13 @@ Per document it exits non-zero unless ALL hold:
       equal to the ledger's (R2-A: class/part rows; R2-B: members plus MEMBER
       pronoun rows) and WORD as VERDICT RULE gives it; a SUFFICES line carries
       a status phrase, and the CANDIDATE phrase whenever it cites AQ4 §9 rungs
-      2-5, §12, §13 or §16;
+      2-5, §12, §13 or §16. Captain decision 6002030055 (A2), repair verdict
+      6002198078: exactly one canonical verdict line per truth item, in item
+      order, in exactly that form (single spaces; any further text only after
+      '; '), and no '- ID:' line for a truth item anywhere outside '## Verdict';
+      and anywhere in the document (raw lines, fences included, across line
+      breaks) a truth id followed within six non-alphanumeric characters by a
+      verdict word other than VERDICT RULE's fails, naming the line;
   (e) a section headed exactly '## Captain questions'.
 
 NO HTML, NO COMMENTS (Captain decision 5987664829). A document fails if any
@@ -134,8 +140,14 @@ FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 # audit document, code spans and fences included; nothing is parsed as HTML.
 FORBIDDEN = re.compile(r"<!--|-->|<[A-Za-z/!]")
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
+# Captain decision 6002030055 (A2), repair verdict 6002198078: the canonical
+# line is exactly '- ID: WORD (five counts)', optionally followed by '; text'.
 VERDICT_LINE = re.compile(
-    r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS) + r"\)(.*)$")
+    r"^- ([A-Za-z]\d+): (\S+) \(" + ", ".join(rf"{w} (\d+)" for w in WORDS)
+    + r"\)(?:; (\S.*))?$")
+# A verdict word, as a reader would take it: any case, 'GENUINELY MISSING' or
+# 'GENUINELY-MISSING' as well as the canonical underscore form.
+VERDICT_WORD = r"SUFFICES|GENUINELY[^A-Za-z0-9]{0,3}MISSING|UNDETERMINED"
 # A line that reads as a verdict but is not in the canonical column-zero form:
 # indented, quoted, another list marker, an emphasised or code-spanned id, a
 # space before the colon -- or any line stating a verdict word with its counts.
@@ -356,6 +368,64 @@ def cites_candidate(line: str) -> bool:
     return False
 
 
+def _verdict_span(text: str):
+    """(first, last) 0-based line indices of the one '## Verdict' section's
+    body in the structure text, else None."""
+    lines = text.split("\n")
+    heads = [n for n, l in enumerate(lines) if re.fullmatch(r"## Verdict[ \t]*", l)]
+    if len(heads) != 1:
+        return None
+    end = next((n for n in range(heads[0] + 1, len(lines)) if lines[n].startswith("## ")),
+               len(lines))
+    return heads[0] + 1, end - 1
+
+
+def stray_verdict_failures(raw: str, text: str, seam_id: str) -> list:
+    """Exactly one canonical verdict line per truth item: a '- ID:' line for one
+    of the seam's truth items anywhere outside '## Verdict' -- prose, another
+    section, a code fence -- is a second verdict line and fails by number."""
+    span, bad = _verdict_span(text), []
+    for n, line in enumerate(raw.split("\n")):
+        m = VERDICT_ITEM.match(line)
+        if m and m.group(1) in ITEMS[seam_id] and not (span and span[0] <= n <= span[1]):
+            bad.append(f"line {n + 1}: {line.strip()!r} is a verdict line for "
+                       f"{m.group(1)} outside '## Verdict'; exactly one canonical verdict "
+                       f"line per truth item, under '## Verdict', is allowed")
+    return bad
+
+
+def contradiction_failures(raw: str, seam_id: str, columns: dict) -> list:
+    """Repair verdict 6002198078 (Captain decision 6002030055, A2): anywhere in
+    the document -- every raw line, code spans and fences included, across line
+    breaks -- one of the seam's truth ids followed within six non-alphanumeric
+    characters by a verdict word other than the one VERDICT RULE gives over the
+    ledger fails, naming the offending line. Markdown link targets
+    ('[A1](#a1): ...') are also set aside, line by line."""
+    rule = {i: verdict_word({w: columns[i].count(w) for w in WORDS})
+            for i in ITEMS[seam_id] if i in columns}
+    ids = "|".join(re.escape(i) for i in rule)
+    if not ids:
+        return []
+    pat = re.compile(rf"(?<![A-Za-z0-9])({ids})[^A-Za-z0-9]{{0,6}}({VERDICT_WORD})", re.I)
+    hits = {}
+    for m in pat.finditer(raw):
+        hits.setdefault((raw.count("\n", 0, m.start()) + 1, m.group(1).upper(),
+                         m.group(2)), None)
+    for n, line in enumerate(raw.split("\n"), 1):
+        for m in pat.finditer(LINK_TARGET.sub("]", line)):
+            hits.setdefault((n, m.group(1).upper(), m.group(2)), None)
+    bad = []
+    lines = raw.split("\n")
+    for n, i, said in sorted(hits):
+        word = re.sub(r"[^A-Za-z0-9]+", "_", said.upper())
+        if word != rule[i]:
+            bad.append(f"line {n}: {i} is followed by {said!r}, but VERDICT RULE over the "
+                       f"ledger gives {rule[i]} ({lines[n - 1].strip()!r}); a truth id "
+                       f"followed within six non-alphanumeric characters by a verdict "
+                       f"word must not contradict its verdict anywhere in the document")
+    return bad
+
+
 def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
     """'## Verdict' against the ledger columns (item -> [cell words])."""
     bad = []
@@ -376,6 +446,9 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
             bad.append(f"'## Verdict' has no line for truth item {i}")
     for i in sorted(set(ids) - set(ITEMS[seam_id])):
         bad.append(f"'## Verdict' states {i}, which is not a {seam_id} truth item")
+    if ids != list(ITEMS[seam_id]):
+        bad.append(f"'## Verdict' states {', '.join(ids) or 'no item'}; exactly one line per "
+                   f"truth item, in the order {', '.join(ITEMS[seam_id])}, is required")
     for line in lines:
         m = VERDICT_LINE.match(line)
         i = VERDICT_ITEM.match(line).group(1)
@@ -383,9 +456,10 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
             continue
         if not m:
             bad.append(f"verdict {i}: {line!r} is not '- {i}: SUFFICES|GENUINELY_MISSING|"
-                       f"UNDETERMINED (" + ", ".join(f"{w} n" for w in WORDS) + ")'")
+                       f"UNDETERMINED (" + ", ".join(f"{w} n" for w in WORDS) + ")', "
+                       f"optionally followed by '; text', with single spaces")
             continue
-        tail = m.group(8)
+        tail = m.group(8) or ""
         if COUNT_STATEMENT.search(tail) or VERDICT_LIKE.search(tail):
             bad.append(f"verdict {i}: the line's text after its counts states another "
                        f"verdict or count ({tail.strip()!r}); one verdict per line")
@@ -665,10 +739,12 @@ LEDGERS = {"R2-A": r2a_failures, "R2-B": r2b_failures, "R2-C": r2c_failures}
 def document_failures(seam_id: str, text: str, seams_doc: dict, sha: str) -> list:
     """Every way the `seam_id` audit document disagrees with (a)-(e), over
     its document structure only, after markup_failures over every raw line."""
-    markup = markup_failures(text)
+    raw, markup = text, markup_failures(text)
     text = structure(text)
     bad, columns = LEDGERS[seam_id](text, seams_doc["seams"][seam_id])
-    return markup + common_failures(text, sha) + bad + verdict_failures(text, seam_id, columns)
+    return (markup + common_failures(text, sha) + bad + verdict_failures(text, seam_id, columns)
+            + stray_verdict_failures(raw, text, seam_id)
+            + contradiction_failures(raw, seam_id, columns))
 
 
 # ------------------------------------------------------------------ skeleton
@@ -849,6 +925,7 @@ def rigs() -> dict:
     pron = _line(b, "| `rig-b2:0:0:0` |")
     notm = _line(b, "| `rig-b3:0:0:1` |")
     a3 = v(a, "A3")
+    c1, c2, c3 = (v(docs["R2-C"], i) for i in ("C1", "C2", "C3"))
     return {
         "a ledger missing one class": (
             "R2-A", a.replace(_line(a, "| `no-would:if` |"), ""), seams, SYN_SHA,
@@ -952,6 +1029,28 @@ def rigs() -> dict:
         "a verdict count that differs from the ledger": (
             "R2-C", docs["R2-C"].replace("UNRESOLVED 2", "UNRESOLVED 3", 1), seams,
             SYN_SHA, "verdict C1: UNRESOLVED 3, the ledger has 2"),
+        "a verdict section whose lines are out of item order": (
+            "R2-C", docs["R2-C"].replace(c1 + c2, c2 + c1), seams, SYN_SHA,
+            "'## Verdict' states C2, C1, C3, C4; exactly one line per truth item, in the "
+            "order C1, C2, C3, C4"),
+        "a second canonical verdict line outside '## Verdict'": (
+            "R2-C", docs["R2-C"] + c3, seams, SYN_SHA,
+            "is a verdict line for C3 outside '## Verdict'"),
+        "a canonical verdict line with text not after '; '": (
+            "R2-C", docs["R2-C"].replace(c1, c1.rstrip("\n") + " because\n"), seams, SYN_SHA,
+            "optionally followed by '; text'"),
+        "a contradictory verdict word after a truth id in prose": (
+            "R2-C", docs["R2-C"] + "\nIn short, C2 -- SUFFICES.\n", seams, SYN_SHA,
+            f"C2 is followed by 'SUFFICES', but VERDICT RULE over the ledger gives {MISSING}"),
+        "a contradictory verdict word wrapped onto the next line": (
+            "R2-C", docs["R2-C"] + "\nso C2:\n  *suffices*\n", seams, SYN_SHA,
+            "C2 is followed by 'suffices'"),
+        "a contradictory verdict word inside a code fence": (
+            "R2-C", docs["R2-C"] + "\n```\nC2: UNDETERMINED\n```\n", seams, SYN_SHA,
+            "C2 is followed by 'UNDETERMINED'"),
+        "a contradictory verdict word after a link-wrapped truth id": (
+            "R2-C", docs["R2-C"] + "\nsee [C2](#c2): SUFFICES\n", seams, SYN_SHA,
+            "C2 is followed by 'SUFFICES'"),
     }
 
 

@@ -20,7 +20,13 @@ regression case; and (repair verdict 5988024375) a contradictory duplicate
 verdict line in any non-canonical form (indented 1-3 spaces, quoted, another
 list marker, an emphasised id) failing instead of being skipped; and (repair
 verdict 5988156977) a link-wrapped id, nested list markers, counts wrapped
-onto the next line, or a second verdict in a canonical line's tail failing.
+onto the next line, or a second verdict in a canonical line's tail failing;
+and (Captain decision 6002030055 A2, repair verdict 6002198078) verdict lines
+out of item order, duplicated, outside '## Verdict' or off the exact text
+format failing, and a truth id followed within six non-alphanumeric characters
+by a contradictory verdict word anywhere -- prose, fence, heading, a verdict
+tail, across line breaks, behind every earlier bypass wrapping -- failing with
+its line named.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -517,6 +523,135 @@ class Verdicts(Base):
         self.assertEqual(ac.verdict_word(dict(z, EXPRESSED=3, PARTIAL=1)), ac.MISSING)
         self.assertEqual(ac.verdict_word(dict(z, **{"OUT-OF-CONTRACT": 2})),
                          ac.UNDETERMINED)
+
+
+class CanonicalVerdicts(Base):
+    """Captain decision 6002030055 (A2), repair verdict 6002198078: exactly one
+    canonical verdict line per truth item, in order, in the exact form; and no
+    truth id followed within six non-alphanumeric characters by a contradictory
+    verdict word anywhere in the document, the offending line named."""
+
+    def setUp(self):
+        super().setUp()
+        self.c = self.docs["R2-C"]
+        self.v = {i: line(self.c, f"- {i}:") for i in ac.ITEMS["R2-C"]}
+
+    def lineno(self, doc, text):
+        return doc.count("\n", 0, doc.index(text)) + 1
+
+    def test_lines_out_of_order_fail(self):
+        v = self.v
+        for order in (("C2", "C1", "C3", "C4"), ("C1", "C2", "C4", "C3"),
+                      ("C4", "C3", "C2", "C1")):
+            with self.subTest(order):
+                doc = self.c.replace("".join(v.values()), "".join(v[i] for i in order))
+                self.assertFails("R2-C", f"'## Verdict' states {', '.join(order)}; exactly "
+                                         f"one line per truth item, in the order C1, C2, C3, "
+                                         f"C4, is required", doc=doc)
+
+    def test_identical_duplicate_line_fails(self):
+        doc = self.c.replace(self.v["C2"], self.v["C2"] * 2)
+        self.assertFails("R2-C", "'## Verdict' states C2 2 times", doc=doc)
+        self.assertFails("R2-C", "in the order C1, C2, C3, C4", doc=doc)
+
+    def test_canonical_line_outside_the_verdict_section_fails(self):
+        for where in ("## Captain questions\n", "# A01 R2-C (synthetic)\n"):
+            for wrap in ("{}", "```\n{}```\n"):
+                with self.subTest((where, wrap)):
+                    doc = self.c.replace(where, where + wrap.format(self.v["C3"]), 1)
+                    n = self.lineno(doc, where) + 1 + wrap.startswith("```")
+                    self.assertFails("R2-C", f"line {n}: '{self.v['C3'].strip()}' is a "
+                                             f"verdict line for C3 outside '## Verdict'",
+                                     doc=doc)
+
+    def test_non_canonical_text_format_fails(self):
+        c1 = self.v["C1"].rstrip("\n")
+        for bad in (c1 + " because", c1 + ";", c1 + ";text", c1 + " ; text",
+                    c1.replace(": ", ":  "), c1.replace(" (", "("),
+                    c1.replace(", PARTIAL", ",PARTIAL"), c1.replace("- C1", "-  C1")):
+            with self.subTest(bad):
+                bad_doc = self.c.replace(c1 + "\n", bad + "\n")
+                self.assertTrue(self.failures("R2-C", doc=bad_doc), bad)
+
+    def test_canonical_tail_after_semicolon_passes(self):
+        c1 = self.v["C1"].rstrip("\n")
+        doc = self.c.replace(c1 + "\n", c1 + "; carried only by absence (register #37)\n")
+        self.assertEqual(self.failures("R2-C", doc=doc), [])
+
+    def test_contradictory_word_after_a_truth_id_anywhere_fails(self):
+        # C2 rests on NOT-EXPRESSED cells: VERDICT RULE gives GENUINELY_MISSING.
+        forms = ("C2: SUFFICES", "C2 SUFFICES", "C2 — SUFFICES", "C2 -- UNDETERMINED",
+                 "**C2**: SUFFICES", "`C2`: SUFFICES", "(C2) SUFFICES", "C2 = UNDETERMINED",
+                 "c2: suffices", "C2 Undetermined", "C2SUFFICES", "C2:\nSUFFICES",
+                 "C2 \n\n SUFFICES", "| C2 | SUFFICES |", "- [C2](#c2): SUFFICES",
+                 "[C2][x]: SUFFICES", "  - - C2: SUFFICES", "> C2: SUFFICES",
+                 "> > - C2: SUFFICES", "C2 SUFFICES (EXPRESSED 0, PARTIAL 0, NOT-EXPRESSED 2, "
+                 "UNRESOLVED 0, OUT-OF-CONTRACT 0)")
+        for where in ("prose", "fence", "verdict tail", "header"):
+            for form in forms:
+                with self.subTest((where, form)):
+                    if where == "prose":
+                        doc = self.c + "\n" + form + "\n"
+                    elif where == "fence":
+                        doc = self.c + "\n```\n" + form + "\n```\n"
+                    elif where == "verdict tail":
+                        if "\n" in form or form.startswith(("|", " ", ">", "-")):
+                            continue
+                        doc = self.c.replace(self.v["C1"], self.v["C1"].rstrip("\n")
+                                             + f"; {form}\n")
+                    else:
+                        doc = self.c.replace("# A01 R2-C (synthetic)\n",
+                                             f"# A01 R2-C (synthetic)\n\n{form}\n")
+                    first = form.split("\n")[0]
+                    if where == "verdict tail":
+                        n = self.lineno(doc, "- C1:")
+                    elif where == "header":
+                        n = self.lineno(doc, first)
+                    else:
+                        n = doc.count("\n", 0, doc.rindex(first)) + 1
+                    word = re_word(form)
+                    self.assertFails("R2-C", f"line {n}: C2 is followed by {word!r}, but "
+                                             f"VERDICT RULE over the ledger gives "
+                                             f"GENUINELY_MISSING", doc=doc)
+
+    def test_each_contradiction_names_its_own_line(self):
+        doc = self.c + "\nC2: SUFFICES\nfine\nC4 -- GENUINELY_MISSING\n"
+        bad = [b for b in self.failures("R2-C", doc=doc) if "is followed by" in b]
+        n = self.lineno(doc, "C2: SUFFICES")
+        self.assertEqual([b.split(":")[0] for b in bad], [f"line {n}", f"line {n + 2}"], bad)
+        self.assertIn("'C2: SUFFICES'", bad[0])
+        self.assertIn("gives UNDETERMINED ('C4 -- GENUINELY_MISSING')", bad[1])
+
+    def test_consistent_mentions_pass(self):
+        for form in ("C2 GENUINELY_MISSING", "C2: genuinely missing", "C2 -- GENUINELY-MISSING",
+                     "(C2 GENUINELY_MISSING; C1 UNDETERMINED)", "C3: UNDETERMINED",
+                     "C2's SUFFICES would need a carrier", "C12 SUFFICES", "XC2: SUFFICES"):
+            with self.subTest(form):
+                doc = self.c.replace("## Captain questions\n",
+                                     f"## Captain questions\n\n{form}\n")
+                self.assertEqual(self.failures("R2-C", doc=doc), [], form)
+
+    def test_contradiction_rests_on_the_ledger_not_the_stated_verdict(self):
+        # A wrong canonical verdict word is itself a contradiction of the ledger.
+        c2 = self.v["C2"]
+        doc = self.c.replace(c2, c2.replace("GENUINELY_MISSING", "UNDETERMINED"))
+        n = self.lineno(doc, "- C2:")
+        self.assertFails("R2-C", f"line {n}: C2 is followed by 'UNDETERMINED'", doc=doc)
+        self.assertFails("R2-C", "verdict C2: UNDETERMINED, but VERDICT RULE", doc=doc)
+
+    def test_every_seam_is_scanned(self):
+        a, b = self.docs["R2-A"], self.docs["R2-B"]
+        self.assertFails("R2-A", "A3 is followed by 'SUFFICES'", doc=a + "\nA3: SUFFICES\n")
+        self.assertFails("R2-B", "B2 is followed by 'UNDETERMINED'",
+                         doc=b + "\nB2 UNDETERMINED\n")
+        self.assertEqual(self.failures("R2-A", doc=a + "\nA2 SUFFICES, A3 GENUINELY_MISSING\n"),
+                         [])
+
+
+def re_word(form):
+    import re
+    return re.search(r"(?i)SUFFICES|GENUINELY[^A-Za-z0-9]{0,3}MISSING|UNDETERMINED",
+                     form).group()
 
 
 MARKUP = "HTML tags and HTML comments are not allowed anywhere in an audit document"
