@@ -45,7 +45,7 @@ The truth items are the five the command defines verbatim (A1-A5). Reader
 classifications used below:
 
 - **would-class member** — the 'instead' replaces the would-be event named by
-  'would <verb>' (CR 614.1a, 614.6: "If an event is replaced, it never happens").
+  'would' followed by a verb (CR 614.1a, 614.6: "If an event is replaced, it never happens").
 - **N1 (printed-modification) member** — a member, no-would or not, whose
   'instead' modifies an instruction printed earlier on the card (kicker, gift,
   ability-word, Opus, modal "choose both", "countered this way" forms). The
