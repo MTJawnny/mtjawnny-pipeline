@@ -144,6 +144,27 @@ VERDICT_LIKE = re.compile(
     r"^[\s>]*(?:(?:[-*+]|\d+[.)])\s*)?[*_`]*\s*[A-Za-z]\d+\s*[*_`]*\s*:"
     r"|\b(?:" + "|".join(re.escape(w) for w in ("SUFFICES", "GENUINELY_MISSING",
                                                  "UNDETERMINED")) + r")\W*\(\s*EXPRESSED\b")
+# Repair verdict 5988156977: an id wrapped in a Markdown link ('[C2](#c2):'),
+# behind nested list markers ('- - C2:', '  * > C2:'), and a count statement
+# ('NOT-EXPRESSED 2') anywhere outside a canonical line's own counts -- so a
+# verdict whose counts are wrapped onto the next line -- are verdict-like too.
+LINK_TARGET = re.compile(r"\]\s*(?:\([^)]*\)|\[[^\]]*\])")
+MARKUP = re.compile(r"[\[\]*_`~\\]")
+LEAD_MARKERS = re.compile(r"^(?:\s|>|(?:[-+]|\d+[.)])(?=\s|$))*")
+ID_COLON = re.compile(r"^[A-Za-z]\d+\s*[:：]")
+COUNT_STATEMENT = re.compile(
+    r"(?<![\w-])(?:" + "|".join(re.escape(w) for w in WORDS) + r")\s*[:=]?\s*\d")
+
+
+def verdict_like(line: str) -> bool:
+    """True for a line that states, or carries part of, a verdict: any
+    VERDICT_LIKE form, an id followed by a colon once Markdown link, emphasis
+    and code markup and any number of leading list or quote markers are set
+    aside, or a count statement of a cell word."""
+    if VERDICT_LIKE.search(line) or COUNT_STATEMENT.search(line):
+        return True
+    bare = LEAD_MARKERS.sub("", MARKUP.sub("", LINK_TARGET.sub("]", line)))
+    return bool(ID_COLON.match(bare))
 CANDIDATE_CITE = re.compile(r"§\s*1[236]\b")
 RUNG_CITE = re.compile(r"\brungs?\s+(\d+(?:\s*(?:-|–|,|and|to)\s*\d+)*)", re.I)
 
@@ -342,7 +363,7 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
     if body is None:
         return bad
     for l in body.splitlines():
-        if not VERDICT_ITEM.match(l) and VERDICT_LIKE.search(l):
+        if not VERDICT_ITEM.match(l) and verdict_like(l):
             bad.append(f"'## Verdict': line {l.strip()!r} reads as a verdict but is not "
                        f"in the form '- ID: WORD (counts)' starting in column zero; "
                        f"every verdict-like line is checked, so write it in that form "
@@ -364,6 +385,10 @@ def verdict_failures(text: str, seam_id: str, columns: dict) -> list:
             bad.append(f"verdict {i}: {line!r} is not '- {i}: SUFFICES|GENUINELY_MISSING|"
                        f"UNDETERMINED (" + ", ".join(f"{w} n" for w in WORDS) + ")'")
             continue
+        tail = m.group(8)
+        if COUNT_STATEMENT.search(tail) or VERDICT_LIKE.search(tail):
+            bad.append(f"verdict {i}: the line's text after its counts states another "
+                       f"verdict or count ({tail.strip()!r}); one verdict per line")
         word, got = m.group(2), dict(zip(WORDS, (int(n) for n in m.groups()[2:7])))
         want = {w: columns[i].count(w) for w in WORDS}
         for w in WORDS:

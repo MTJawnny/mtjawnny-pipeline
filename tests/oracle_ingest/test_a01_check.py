@@ -18,7 +18,9 @@ ASCII letter, '/' or '!' -- failing on any line, code spans and fences
 included, with every bypass of the retired HTML/comment handling as a
 regression case; and (repair verdict 5988024375) a contradictory duplicate
 verdict line in any non-canonical form (indented 1-3 spaces, quoted, another
-list marker, an emphasised id) failing instead of being skipped.
+list marker, an emphasised id) failing instead of being skipped; and (repair
+verdict 5988156977) a link-wrapped id, nested list markers, counts wrapped
+onto the next line, or a second verdict in a canonical line's tail failing.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -458,6 +460,44 @@ class Verdicts(Base):
                 bad = self.failures("R2-C", doc=c.replace(c2, at))
                 self.assertTrue(any("reads as a verdict but is not in the form" in b
                                     for b in bad), (form, bad))
+
+    def test_wrapped_or_linked_duplicate_verdict_fails(self):
+        # repair verdict 5988156977: a duplicate '- [C2](#c2): SUFFICES' whose
+        # counts continue on the next line, nested list markers with wrapped
+        # counts, and other link or marker wrappings are rejected.
+        c = self.docs["R2-C"]
+        c2 = self.v(c, "C2")
+        counts = ("(EXPRESSED 0, PARTIAL 0, NOT-EXPRESSED 2, UNRESOLVED 0, "
+                  "OUT-OF-CONTRACT 0); " + ac.I3A_LINE)
+        heads = ["- [C2](#c2): SUFFICES", "- [C2][c2]: SUFFICES", "- [**C2**](#c2): SUFFICES",
+                 "- - C2: SUFFICES", "  - - C2: SUFFICES", "  * > C2: SUFFICES",
+                 "- 1. C2: SUFFICES", "> > - C2: SUFFICES", "- C2 — SUFFICES",
+                 "C2 SUFFICES", "- C2: SUFFICES"]
+        for head in heads:
+            for sep in ("\n", "\n  ", "\n    ", "\n> "):
+                form = head + sep + counts
+                for at in (c2 + form + "\n", form + "\n" + c2):
+                    bad = self.failures("R2-C", doc=c.replace(c2, at))
+                    self.assertTrue(bad, (form, bad))
+                    if head != "- C2: SUFFICES":
+                        self.assertTrue(any("reads as a verdict but is not in the form" in b
+                                            for b in bad), (form, bad))
+
+    def test_linked_id_without_counts_fails(self):
+        c = self.docs["R2-C"]
+        c2 = self.v(c, "C2")
+        for form in ("- [C2](#c2): SUFFICES", "- - C2: SUFFICES", "- [C2][x]：SUFFICES"):
+            bad = self.failures("R2-C", doc=c.replace(c2, c2 + form + "\n"))
+            self.assertTrue(any("reads as a verdict but is not in the form" in b
+                                for b in bad), (form, bad))
+
+    def test_second_verdict_in_a_canonical_line_tail_fails(self):
+        c = self.docs["R2-C"]
+        c1 = self.v(c, "C1")
+        for tail in ("; C2: SUFFICES (EXPRESSED 1, PARTIAL 0, NOT-EXPRESSED 0, "
+                     "UNRESOLVED 0, OUT-OF-CONTRACT 0)", "; also NOT-EXPRESSED 2"):
+            doc = c.replace(c1, c1.rstrip("\n") + tail + "\n")
+            self.assertFails("R2-C", "states another verdict or count", doc=doc)
 
     def test_verdict_prose_naming_a_verdict_word_passes(self):
         c = self.docs["R2-C"]
