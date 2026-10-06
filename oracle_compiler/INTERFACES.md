@@ -1,26 +1,41 @@
 # Oracle Compiler Interfaces
 
-`oracle-compiler-interface/3`
+`oracle-compiler-interface/4`
 
-**Status: RATIFIED** by Captain decisions 5925134485 (FS-2 ruled, "go with
-interface/3") and 5925371124 (flavor labels ignored; test card Typhoid Mary,
-Fractured), after Codex cross-reviews of this text and the R4 reach report
-(§I3a), recorded in 5925277948 and its follow-up. It supersedes `oracle-compiler-interface/2` (blob
-`4ac4d856b651edde05b15c7065aa593f59561dcf`, ratified 5900431196 from the
-rulings of 5899825420), which superseded interface/1 (blob
-`3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/3 adds rule R4 to §I3a,
-reads R1's scope start after an R4 label, and names R4 in the K7 row. §I1, §I2
-and §I4 are unchanged from interface/2.
+**Status: RATIFIED** by Captain decision 5971927071 (2026-10-03: every recommendation
+of the §I5 draft accepted), with 5966663066 (isolated Claude review of this text
+and a Claude M05 reader) and the Captain's acceptance of the §I5.7 report and of
+the r13 repair from the Captain-directed adversarial card hunt (Captain, 2026-10-03:
+"Give to a session that is adversarial  to C04. Have it I find tricky cards.
+Once we have a pattern of failure. Let's fix it.";
+recorded with this landing). The §I5 text was reviewed in eleven isolated
+adversarial Claude rounds recorded in its draft, and a twelfth that confirmed the
+r13 repair (ACCEPT; its verdict is quoted in this landing's Issue #1 record). It supersedes `oracle-compiler-interface/3` (blob
+`119778a68c0e4e8378f0a117b7c22884ec5eda4b`), whose status was:
+
+> **Status: RATIFIED** by Captain decisions 5925134485 (FS-2 ruled, "go with
+> interface/3") and 5925371124 (flavor labels ignored; test card Typhoid Mary,
+> Fractured), after Codex cross-reviews of this text and the R4 reach report
+> (§I3a), recorded in 5925277948 and its follow-up. It supersedes `oracle-compiler-interface/2` (blob
+> `4ac4d856b651edde05b15c7065aa593f59561dcf`, ratified 5900431196 from the
+> rulings of 5899825420), which superseded interface/1 (blob
+> `3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/3 adds rule R4 to §I3a,
+> reads R1's scope start after an R4 label, and names R4 in the K7 row. §I1, §I2
+> and §I4 are unchanged from interface/2.
+
+interface/4 adds §I5 (the C04 reference-resolution measurement) and applies the
+R4 errata (a)-(c) of the C03R3 host check (5939152309) to §I3a. §I1, §I2, §I3
+and §I4 are unchanged from interface/3.
 
 Implementation tasks must pin `interface_version` and `interface_sha` in their
 Issue #1 `T` once a nonzero interface exists.
 
 This file is not task state and does not select work.
 
-## What interface/3 is
+## What interface/4 is
 
-A **measurement interface**. It pins what C03 and C04 read and how C03's
-H-REGION result is decided. It defines no record shape, no occurrence
+A **measurement interface**. It pins what C03 and C04 read, how C03's
+H-REGION result is decided, and when C04 counts a reference as resolved (§I5). It defines no record shape, no occurrence
 coordinate, no region identity, no reference type and no vocabulary. It
 ratifies nothing in AQ4 beyond its existing benchmark status and makes nothing
 production truth. C03 and C04 outputs are ignored experimental output under
@@ -238,7 +253,14 @@ match decides:
      (`Ward 2`, `Toxic 1`, `Ward {2}`);
    - a CR-defined label form: every quoted `“<form> — [` the CR prints, its
      `[placeholders]` read as wildcards and `N` as a number (`To solve`, 719.3a;
-     `[A player] faces a villainous choice`, 701.55a; `Visit`, `Boast`, ...);
+     `[A player] faces a villainous choice`, 701.55a; `Visit`, `Boast`, ...),
+     and `Prize` (CR 702.159b gives "Prize —" rules meaning but does not quote
+     it in that form; errata b). The forms read are exactly: Awaken N, Boast,
+     Companion, Exhaust, Forecast, Impending N, Max speed, Partner, Power-up,
+     Reinforce N, Solved, Suspend N, To solve, Visit, [A player] faces a
+     villainous choice, [Cost]: Level N, {rN}, {rN1}, {rN2}, the list form
+     "{rN1}, {rN2}", ∞, [Anchor word] and Prize: 23. "Creature —" (from the
+     CR glossary's Summon entry) is not a label form (errata c);
    - a chapter symbol (CR 714.2a/c: a well-formed Roman numeral, or a list);
    - a number, a range or a list of numbers (a die-result row, CR 706);
    - a label holding a `{...}` symbol or a character outside letters (any
@@ -271,24 +293,31 @@ title on every heading, and every 701.N or 702.N rule has its heading; the CR
 `to solve`, `solved`, `visit`, `forecast` and a villainous-choice form. Each
 check is rigged to STOP on a tampered CR.
 
-**R4 reach report (measured 2026-10-01 over the pinned corpus with the C03
-derivation's own `chain_clauses`).** 32,557 cards, 74,106 clauses, 0 halts; 61
-ability words, 264 keyword titles and 22 CR label forms read from the CR.
-3,105 clauses open with a label:
+**R4 reach report (interface/4, errata a-c).** Labels are counted only at a line
+start (chain clause ordinal 0), as the text above and the implementation locate
+them; interface/3's table counted every chain-clause start. Measured with the
+implementation's own classifier on the pinned corpus (C03R3 host check,
+5939152309; 61 ability words and 264 keyword titles read from the CR), with
+errata b applied by construction (one clause, `Prize`, moves from flavor label to
+CR label form).
+3,099 clauses open with a label:
 
 | class | clauses | effect |
 |---|---|---|
 | ability word | 1,356 | ignored |
 | ticket cost | 192 | ignored |
-| flavor label | 625 | ignored |
+| flavor label | 624 | ignored |
 | keyword (title, list or parameter) | 221 | kept |
 | chapter symbol | 576 | kept |
 | symbol-bearing | 66 | kept |
-| anchor word (`Khans`, `Dragons`, the clans, ...) | 29 | kept |
-| CR label form (`To solve` 15, villainous choice 10) | 25 | kept |
+| anchor word (`Khans`, `Dragons`, the clans, ...) | 28 | kept |
+| CR label form (`To solve`, villainous choice, `Prize`, ...) | 21 | kept |
 | number / die-result row | 15 | kept |
 
-Labels are ignored on 2,173 clauses (1,892 cards) and kept on 932. No flavor
+Labels are ignored on 2,172 clauses and kept on 927. Against interface/3's
+table: the 5 mid-line villainous-choice forms are gone (kept either way);
+"Catch" (`7d038055…:0:1:1`) is no label, because its line holds "…"; "Prize"
+(`43ce339e…:0:1:0`) is a CR label form. No flavor
 label contains a rules word (`each`, `target`, `player`, `opponent`, `you`,
 `choice`, ...): every flavor label is a name. The Captain's test card resolves as ruled:
 on Typhoid Mary, Fractured the mode labels `Mary`, `Typhoid Mary` (printed as the
@@ -333,3 +362,213 @@ so C04 reconstructs them and reconciles before any other work:
 
 These are candidate classifications, not established edges. An unresolved
 reference is valid output; a guessed one is not.
+
+## I5. C04 reference resolution (interface/4)
+
+**Vocabulary (measurement labels only, never production vocabulary).**
+- 4 outcomes.
+- 5 endpoint kinds.
+- 10 reason codes.
+- Every word, list and numeric window that I5.3 prints. They decide RESOLVED vs UNRESOLVED, so ratifying I5.3 ratifies them (Captain question 9).
+
+### Why §I5 must exist before C04 runs
+
+§I4 says WHAT C04 reads. It does not say WHEN a reference counts as resolved. V1 M2: "An unresolved reference is valid output. A guessed reference is not." The rules decide false success, so they are ratified text, as C03's were.
+
+### I5.1 Unit and address
+
+- **Unit.** A §I4 pressure-set candidate (created-ability candidates excluded).
+- **Address.** P4 line k is the k-th `foundry_locality.units` paragraph. The line must equal that paragraph's chain clauses joined by one space (measured equal on every corpus paragraph, 61,383 of them). The P4 sentence index is the clause ordinal.
+- **Offset.** The n-th whole-word occurrence of the phrase in the clause, where n is the candidate's rank among the P4 candidates with that phrase in that clause.
+- **Overlap.** A candidate whose span lies inside a longer P4 candidate's span in the same clause ("the chosen creatures" inside "the chosen creatures get"), or whose phrase is printed fewer times as a whole word than P4 counts (P4 matched it inside a longer form, such as "the exiled card" in "the exiled cards"), is UNRESOLVED (overlap). Only the longer one is resolved.
+- **Regions.** Interface/3 H-REGION regions, from `h_region.py`.
+
+### I5.2 Outcomes, endpoints, reasons
+
+| outcome | meaning |
+|---|---|
+| RESOLVED | exactly one endpoint, named by the rule |
+| UNRESOLVED | a reason code (below), never counted against the representation |
+| NOT-COREFERENCE | a printed comparison "the same … as" |
+| OUT-OF-SCOPE | conditionality that is in the set only through its delay flag |
+
+**Endpoint kinds:**
+- EVENT: an earlier region's operation (V1 M2 #6).
+- LINKED: a clause in another ability on the face (M2 #7, CR 607).
+- COREFERENT: an earlier clause of the same ability, "Exile … the exiled card" (M2 #2/#3).
+- PRODUCT: a copy instruction's clause (M2 #5/#6).
+- OBJECT: a printed target mark (M2 #2/#3).
+
+**Reason codes:**
+- no-candidate
+- ambiguous
+- detector-reach
+- continuity (CR 400.7)
+- competing-antecedent
+- plural-r3
+- overlap
+- no-rule
+- expletive ("it" naming the game state: "if it's night", "if it's your turn")
+- other-chooser (a "chosen" reference after a choice another player made)
+
+### I5.3 Resolution rules
+
+The rules are a table with `id`, `kind`, `cr` and `pattern`, checked by `assert_not_card_keyed`. The guard is live: in the prototype it halted the draft table itself, because "Exile" and "Delay" are card names. The table therefore names frozen sets by reference.
+
+CR 400.7, 607.2a/b/d, 608.2c and 707.10 are read at run time, and the run STOPs unless each one prints its operative phrase.
+
+**IRREG** (19 genuinely irregular participles, with their frozen head or none): dealt, put, drawn→draw, chosen, paid, lost, won, made, dug, spent, found, kept, left, held, sold, taken, given, seen, shown.
+
+- **E1 `event-this-way`** (P4 "this way"; CR 608.2c).
+  - **Governing verb.** Scan back from the offset, inside the clause. The governing verb is the first word that is:
+    - a participle of a single-word frozen head (-ed, -d, -ied→y, doubled consonant + -ed, or IRREG; never the bare word); or
+    - a bare single-word frozen head not preceded by a word in PREPS (into, in, from, to, of, the, a, an, with, on, onto, by). For example, "if you search … this way" counts, but "to cast this way" does not.
+  - **Adjectives.** A non-IRREG participle directly after a word in DETS (the, a, an, each, any, those, all, other, another, this, these) is an adjective ("the revealed card", "an exiled card"). It is skipped: it is never the governing verb and never stops the scan. "that" is deliberately not in DETS ("a creature that died this way" stops at "died").
+  - **Coordinated verbs.** If the governing verb directly follows "or" or "and" ("sacrifice a permanent or discard a card this way", "destroyed or exiled this way"), the result is UNRESOLVED (ambiguous).
+  - **Stop.** Any other -ed word or IRREG word stops the scan: detector-reach.
+  - **Endpoint.** The unique region with that head, among:
+    - the earlier clauses of the paragraph, and
+    - the regions of the same clause that start before the offset, **excluding the region that contains the governing verb itself**;
+
+    and, in both, never a region whose head word directly follows a word in PREPS, separated only by whitespace ("to cast it" is not an event; in "attached to ~, create" the "~," stands between, so "create" is).
+
+    That is an EVENT. No region with that head is no-candidate, and so is a scan that reaches the start of the clause without finding a verb. Several regions is ambiguous.
+- **E2 `cr607-linked`** (P4 cr607-linkage; CR 607.2a/b/d).
+  - **Only "exiled" and "chosen" forms are E2.** Any other P4 cr607 phrase ("as ~ entered", "put onto the battlefield with ~") is UNRESOLVED (no-rule).
+  - **"exiled" forms.** A clause holding a frozen-exile-head region, on the same face, in a paragraph that is any of:
+    - activated (a colon in its first sentence);
+    - triggered (When, Whenever or At, after any label);
+    - replacement ("instead", or "As ~/this … enters").
+  - **"chosen <noun>".** A clause, earlier in the same ability or in another ability on the face, printing "choose" (not "can't", "don't" or "cannot choose"), with an object noun phrase of at most 4 words ending in that noun, chosen by "you" (the verb opens its sentence or a comma-separated part, or follows "you", "you may", "then" or "and"). If the same ability holds any "chooses" or "chose" before the reference (this includes "you chose"), or the face holds a choice of that noun by anyone other than "you", the result is UNRESOLVED (other-chooser). This errs toward UNRESOLVED. Another player's choice is never guessed (Captain question 10).
+  - **Scope.** These count: the ability's own clause when an exile region of it starts before the reference (its cost, or an earlier instruction); the earlier clauses of the same ability that hold an exile region (any kind of ability, spells included: this is coreference, not CR 607); and clauses of other abilities on the face that meet the activated, triggered or replacement test above (CR 607.2a/b).
+  - **One ability.** For this rule, one ability is: a paragraph; its bullet modes (paragraphs starting "•" join the paragraph that opened them); and, on a face whose own type line (the card's type line for a single-faced card) is instant or sorcery, the paragraph "As an additional cost to cast this spell, …" (Captain question 5).
+  - **Outcome.** Exactly one candidate in total: COREFERENT if it is in the same ability, LINKED if in another. Candidates in both places: ambiguous (Storm Elemental, Captain question 11). No ordering check, because CR 607 abilities may be printed in either order.
+- **E3 `copy-product`** (P4 "the copy"; CR 707.10). The endpoint is the unique printed copy instruction ("copy" followed by it, that, this, target, the, each, those, them, a or an) in an earlier clause of the paragraph or earlier in the same clause. It must not sit inside a When, Whenever, If, As long as or Unless condition, unless that condition has closed with a comma and the copy follows directly, or after "then" or "you may" ("If you do, copy …"). Anything else is UNRESOLVED, which errs toward UNRESOLVED. Endpoint: PRODUCT, at clause level.
+- **E4 `singular-back-reference`** (P4 coreference carrying P4's delay flag). **What the flag is.** P4's flag is a per-line text match (`_DELAYED` in `foundry_aq4_probes.py`: "at the beginning of the next", "when … next", "at the end of this/the next turn", "this turn,", "until end of turn"). Most E4 candidates carry it only because their line says "until end of turn". E4 therefore measures singular back-references in general, not CR 603.7 delayed triggers as such; the delayed-trigger subset is reported separately in I5.5 (Captain question 14). An "it" followed by "'s" or "is", then optionally "not", then night, day, your turn, their turn, an opponent's turn or the <word> turn, is UNRESOLVED (expletive). Possessives are no-rule: "that spell's", "its", "their", "that player". Plural markers (PLURAL: they, them, those cards, those creatures, those permanents, those tokens) are plural-r3, the R3 rule of interface/2: a list is named only when exactly one earlier region holds one coordinated P3 list, and the reference is never resolved. For the singular markers in SINGULAR (it, that artifact, that card, that creature, that enchantment, that land, that object, that permanent, that planeswalker, that spell, that token):
+  1. **Marks.** Count the P3 `target` marks before the reference in the paragraph. "the target of" is not a mark. 0 is no-candidate; 2 or more is ambiguous.
+  2. **Single object mark.** The mark must name one object: its noun, within three words, is in OBJ_NOUNS (creature, card, permanent, spell, token, artifact, enchantment, land, planeswalker, object, ability). It must not be "player" or "opponent", and it must not be plural ("two", "three", "four", "X" or "any number of" target, or "up to" two or more). Otherwise: no-candidate.
+  3. **Agreement.** A noun-bearing marker ("that spell") must agree with the mark's noun. "permanent" and "object" agree with any object noun. Otherwise: no-candidate.
+  **Between.** "Between the mark and the reference" is the text from the end of the mark to the reference. When the reference is in a later clause than the mark, the reference's own governing region (the region containing the reference) is left out of that text for steps 4 and 5's head checks and step 4's zone-text check, provided the left-out text holds exactly one frozen head: the act the reference undergoes ("Sacrifice it", "Destroy that creature") is not an event between the mark and the reference. This is E1's own-verb exclusion applied to E4.
+  4. **Continuity (CR 400.7).** The result is continuity when any of these holds:
+     - the mark's region head is in ZONE (exile, return, destroy, sacrifice, discard, mill, counter, shuffle, cast), or a ZONE word stands directly before the mark ("— Exile target …", where the frozen detector has no region);
+     - such a head appears between the mark and the reference;
+     - the text between, or the mark's own noun phrase with up to 80 characters before it, prints "onto the battlefield", "cast/play … from" or "put … into";
+     - the mark's noun phrase is "card" or "cards" followed, before any "." "," or ";", by "in" or "from" and then, within two words, graveyard, library, hand or exile ("target creature card in your graveyard"). Archmage's Newt is UNRESOLVED by this, a conservative miss.
+  5. **Competing antecedent.** It is competing-antecedent when any of these holds:
+     - the mark's region head is in CREATE (create, populate, amass, incubate, manifest, explore, discover, reveal, search, draw, investigate);
+     - any other frozen head appears between the mark and the reference;
+     - "copy", "token" or "create" is printed between them (own region included), or in up to 60 characters before the mark;
+     - a mass noun (mana, damage, life, energy, loyalty, poison) is printed between them, own region included (Grell Philosopher's "blue mana … it");
+     - for "it" only: "~" or "this <OBJ_NOUNS word>", not possessive, is printed between them, own region included (Cyclical Evolution's "Exile ~ with three time counters on it");
+     - the paragraph before the reference, outside the mark's own noun phrase (by position: from the mark to its noun), prints an indefinite object noun phrase (a, an, another, each or any, then at most two words, then an OBJ_NOUNS word: "a nontoken creature"), or "choose" or "chosen".
+  6. **Otherwise:** OBJECT, that mark.
+- **E5 `comparison`.** NOT-COREFERENCE only when the clause prints "the same … as". It names no endpoint. Otherwise no-rule.
+- **E6.** P4 conditionality with a delay flag: OUT-OF-SCOPE.
+- **Residue.** "the last" (14), "the exiled" (11) and "the returned" (2): no-rule. In the pressure set, "that way", "such a" and "such an" are 0.
+
+### I5.4 Pre-committed audit (M05): a complete read, not a sample
+
+- **Pattern classes, defined now (for ruling 4, I5.8).** E1: one class per frozen head. E2: "exiled" and "chosen". E3: one class. E4: one class per marker. E5: one class.
+- **Rules frozen first.** C04's rules and lists are frozen (this text plus the implementation at the C04 accepted head) before M05 reads anything. A repair after reading starts a new C04/M05 round. It is never applied to rows already read.
+- **Every positive claim is read.** M05 reads every RESOLVED and every NOT-COREFERENCE candidate. On the pinned corpus: E1 529, E2 496, E3 196, E4 485, E5 119, which is 1,825. Each rule is one unit. This is complete by construction, with no sample. The reader is a fresh isolated session, not the C04 Worker and not the author of the rules.
+- **C04 acceptance condition.** C04's output (ignored experimental output) carries, per candidate, the reference clause text, the endpoint clause text and the endpoint position, as the prototype does: region span for E1, mark span for E4, clause for E2/E3.
+- **Record and verdict.** M05 writes three verdicts per row: endpoint correct, endpoint kind correct, not a duplicate. For E5, "endpoint correct" means the clause is a comparison. Each verdict is yes, no, or cannot judge with the reason. A "cannot judge" is listed and counted, never folded into yes. If more than 5% of a rule's rows are "cannot judge", that rule's audit is INCONCLUSIVE and goes to the Captain.
+- **UNRESOLVED.** Never read for false success, because it cannot be one (V1 M2). It is reported as findings, by reason.
+- **Fixtures.** Every FIXTURES.json member with a pressure-set candidate (roles delayed-return-same-object, prior-set-complement-reference, replacement-event-lineage, ability-borrowing-inheritance-pressure, two-sequential-operations) gets every candidate read, whatever its outcome.
+- **A wrong RESOLVED** is a false success. It goes to the Captain (Captain question 4).
+
+### I5.5 Reach (prototype r9 `proto11.py`, 2026-10-04, pinned corpus)
+
+| rule | candidates | RESOLVED | UNRESOLVED | NOT-COREFERENCE | OUT-OF-SCOPE |
+|---|---|---|---|---|---|
+| E1 event-this-way | 1,088 | 529 | 559 | 0 | 0 |
+| E2 cr607-linked (LINKED / COREFERENT) | 676 | 496 | 180 | 0 | 0 |
+| E3 copy-product | 208 | 196 | 12 | 0 | 0 |
+| E4 singular-back-reference | 2,844 | 485 | 2,359 | 0 | 0 |
+| E5 comparison | 225 | 0 | 106 | 119 | 0 |
+| E6 conditionality (flagged) | 723 | 0 | 0 | 0 | 723 |
+| residue / overlap | 92 | 0 | 92 | 0 | 0 |
+| **total** | **5,856** | **1,706** | **3,308** | **119** | **723** |
+
+| rule | reason | candidates |
+|---|---|---|
+| E4 | no-candidate | 1,184 |
+| E4 | no-rule | 488 |
+| E1 | detector-reach | 335 |
+| E4 | plural-r3 | 302 |
+| E4 | competing-antecedent | 185 |
+| E1 | no-candidate | 211 |
+| E4 | continuity | 180 |
+| E2 | no-candidate | 140 |
+| E5 | no-rule | 106 |
+| residue | overlap | 65 |
+| E2 | other-chooser | 28 |
+| residue | no-rule | 27 |
+| E4 | ambiguous | 14 |
+| E1 | ambiguous | 13 |
+| E3 | no-candidate | 12 |
+| E2 | ambiguous | 10 |
+| E4 | expletive | 6 |
+| E2 | no-rule | 2 |
+
+E2 RESOLVED by endpoint kind: LINKED 322, COREFERENT 174.
+
+E4 delayed-trigger subset (reference clause prints "at the beginning of the next"): 450 candidates, 22 RESOLVED (Slave of Bolas, Angrath, Puffer Extract, Stone Giant …); the rest are no-candidate 195 (no target mark: tokens, the source itself), no-rule 108, plural-r3 55, continuity 42, competing-antecedent 26, ambiguous 2.
+
+The pressure set reconciles with §I4 (1,548 / 741 / 3,774, with overlaps counted once). The E2 row has 676 candidates rather than 741, because 65 CR 607 candidates are overlap duplicates, counted in the residue/overlap row (65 overlaps in all).
+
+### I5.6 Development cards (used to build the rules, not an audit)
+
+| card | reference | r3 outcome |
+|---|---|---|
+| Necromancer's Covenant; Kaya, Geist Hunter; Multani's Decree; Hermit Druid | "… exiled/destroyed/revealed this way" | E1 EVENT, the right region |
+| Visions of Dominance; Nahiri, Forged in Fury | "costs {X} less to cast this way" / "cast Equipment spells this way" | E1 UNRESOLVED. r2 had used the reference's own region as the endpoint |
+| Devout Invocation | "creature tapped this way" | E1 UNRESOLVED detector-reach |
+| Order of the Stars; Wormfang Behemoth | "the chosen color" / "the exiled cards" | E2 LINKED |
+| Pyromancer Ascension | "the copy" / "the same name as" | E3 PRODUCT / E5 NOT-COREFERENCE |
+| Turn Against; Soul Sear; Soilshaper; Spider-Man, Peter Parker | "It" / "That permanent" after one single-object target | E4 OBJECT |
+| Kiki-Jiki; Feldon; Molten Duplication; Gaze of Pain; Phyrexian Splicer | "it" with a token, copy, other creature or chosen ability in play | E4 UNRESOLVED competing-antecedent / continuity |
+| Flickerwisp; Gruesome Encore; Macabre Mockery; Sins of the Past; Ogre Battlecaster | after exile, return, or put/cast from a zone | E4 UNRESOLVED (CR 400.7) |
+| Autumn Willow; Livaan; Skyfire Kirin; Triton Tactics | player mark / noun disagreement / plural mark | E4 UNRESOLVED |
+| Koth of the Hammer | "Untap target Mountain. It …" | E4 UNRESOLVED. "Mountain" is a subtype, not an OBJ_NOUNS word. A conservative miss, not a false success |
+
+### I5.7 Coverage and discovery report (findings only; Captain 5971927071 card test)
+
+V1 P0.4 lists "reference discovery" among what C04 tests. C04 therefore also writes a report that resolves nothing, claims nothing and is not read by M05. Every figure in it is a count. No row in it is a RESOLVED or NOT-COREFERENCE claim.
+
+- **Coverage.** Every P4 candidate of the I4 extraction (created-ability candidates excluded, as I5.1) is counted by kind, split in vs. out of the pressure set (21,672 coreference, of which 2,844 are in the set; 8,642 conditionality, 723 in; 741 cr607-linkage and 1,548 kind-unclear, all in). The out-of-set coreference candidates are counted by P4 phrase. C04 applies no I5.3 rule to them.
+- **Discovery.** For each corpus line, C04 counts every whole-word, case-insensitive occurrence of these back-reference forms: "the rest", "that much", "the other", "the sacrificed", "the discarded", "the revealed", "the milled", "the destroyed", "the returned", "the countered", "the targeted", "the enchanted", "the blocking", "the attacking", "the card", "the cards", "the token", "the tokens", "the spell", "the creature", "the creatures", "the permanent", "the permanents", "he", "him", "his", "she", "her". An occurrence is **covered** when a P4 candidate on the same line (I5.1 line; created-ability candidates excluded) has a lowercased phrase that begins, as a plain string prefix, with the form; it is **uncovered** otherwise. C04 reports covered and uncovered counts per form, with the card names of the first three uncovered occurrences in card-name order (code point), then line, then position in the line; repeated names count as separate occurrences. The list is declared and over-counts (for example, "the creature type" is not a reference). Its counts are a finding about P4's reach, never a defect count. P4 is frozen and is not edited (Captain question 16).
+- **Card test.** The report reprints this table. C04 measures only the in/out-of-set status, the I5.3 outcome and endpoint kind of in-set rows, and covered/uncovered; the words in parentheses are explanatory notes, not C04 output:
+
+| card | reference | C04 outcome |
+|---|---|---|
+| Act of Treason | "Untap that creature. It gains haste" | in set, RESOLVED (OBJECT) |
+| Oblivion Ring | "return the exiled card" | in set, RESOLVED (LINKED) |
+| Swords to Plowshares | "Its controller …" | out of set (possessive) |
+| Rancor | "return it to its owner's hand" | out of set (the card itself) |
+| Demonic Tutor | "put that card into your hand" | out of set (found card) |
+| Fling | "the sacrificed creature's power" | uncovered (P4 has no candidate) |
+| Zuko, Conflicted | "return him" | uncovered (P4 has no candidate) |
+
+Drafting note, not part of C04's report: on 2026-10-03 the r8 prototype, run over the out-of-set coreference candidates as an experiment, resolved 348 of 18,828. Those rows are unaudited and claimed for nothing. The uncovered discovery forms total 1,670 occurrences (covered: 2, both "the returned").
+
+### I5.8 Rulings (Captain 5971927071; 5966663066; Q16 accepted 2026-10-03)
+
+1. E6: the 723 delay-flagged conditionality candidates are OUT-OF-SCOPE. They are conditionality markers, not references; they enter the set only through P4's per-line delay flag.
+2. E5: "the same … as" is a comparison, recorded as NOT-COREFERENCE with no endpoint.
+3. No reach floor for C04 (V1 M2: an unresolved reference is valid output).
+4. A false RESOLVED found by M05 withdraws only the failing pattern class (the I5.4 classes as written); the rule is repaired, C04 re-run and every row of that rule re-read in a new M05 round.
+5. Endpoint kinds and "one ability" (I5.3 E2) are measurement only. Same-ability "the exiled card" is COREFERENT, not CR 607 LINKED.
+6. Replacement-lineage endpoints (V1 P0.4): C04 does not resolve them until A01 R2-A has reported; C04 then takes R2-A's result as its rule, or records them UNRESOLVED (no-rule) with that result cited.
+7. Self-references, expletive "it" and subtype-named marks stay UNRESOLVED under their own reason codes.
+8. "deal" and "put" in E1 stay detector-reach: the frozen detector is not edited (§I3a).
+9. Every word, list and numeric window I5.3 prints is ratified with it. The implementation uses no word, list or window I5.3 does not print; any change is an interface change.
+10. A "chosen" reference after another player's choice is UNRESOLVED (other-chooser).
+11. When a reference's own ability and another ability both hold a candidate exile, the result is ambiguous. M05 cannot revisit rules; a change is a new C04 round.
+12. (Withdrawn in drafting: no COMPARAND endpoint.)
+13. A governing verb directly after "or"/"and" is UNRESOLVED (ambiguous), with no window.
+14. C04 reports the delayed-trigger subset ("at the beginning of the next …") separately, as its delayed-link measurement. The CR 603.7 trigger-to-creator link stays UNRESOLVED (no-rule), named as a finding.
+15. This text is reviewed by isolated adversarial Claude sessions, and the M05 reader is a fresh isolated Claude session (5966663066).
+16. The I5.7 coverage and discovery report is a report only. New rule families ("the card itself", "its/their", the triggering object, a found card) follow one at a time, each as its own interface change after M05. P4 discovery stays frozen.
+
+Implementation note: the prototype measures plural references as plural-r3 without naming R3's list, since they are never RESOLVED either way. C04 names the list, and checks R3's precondition, using `h_region_kill.py`'s R3 code.
