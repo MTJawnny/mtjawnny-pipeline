@@ -66,7 +66,16 @@ holds '<!--', '-->', or '<' immediately followed by an ASCII letter, '/' or
 '!'; each such line is reported by number in plain English. Nothing is
 interpreted as HTML or as a comment: Markdown is classified on the unmodified
 lines, and only fenced code blocks (``` or ~~~) and indented code blocks are
-set aside, so a heading, table, list or citation inside one does not exist. A
+set aside, so a heading, table, list or citation inside one does not exist.
+
+NO LINKS, ENTITIES OR ESCAPES (Captain decision 6007151819, A3; repair verdict
+6007338625). A document also fails if any raw line, anywhere, holds a Markdown
+link target '](', a link reference ']:', an HTML entity marker '&' or a
+backslash; each such line is reported by number in plain English. The A and A2
+checks above still run beside it, and link targets -- nested parentheses
+included -- are still normalized before the contradiction scan. The threat
+model is accidental malformation and raw-text concealment of a verdict;
+Markdown-rendering concealment beyond these markers is outside it. A
 seams.json reference is the whole whitespace-delimited word holding
 'seams.json'.
 
@@ -143,6 +152,15 @@ FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 # Captain decision 5987664829: these markers are forbidden on every line of an
 # audit document, code spans and fences included; nothing is parsed as HTML.
 FORBIDDEN = re.compile(r"<!--|-->|<[A-Za-z/!]")
+# Captain decision 6007151819 (A3): a Markdown link target '](', a link
+# reference definition or reference link ']:', an HTML entity or character
+# reference '&', and a backslash escape are forbidden anywhere in the raw audit
+# text, code spans and fences included; none of them is ever interpreted.
+FORBIDDEN_RAW = re.compile(r"\]\(|\]:|&|\\")
+FORBIDDEN_RAW_NAMES = {"](": "a Markdown link target ']('",
+                       "]:": "a link reference ']:'",
+                       "&": "an HTML entity marker '&'",
+                       "\\": "a backslash '\\'"}
 VERDICT_ITEM = re.compile(r"^- ([A-Za-z]\d+):")
 # Captain decision 6002030055 (A2), repair verdict 6002198078: the canonical
 # line is exactly '- ID: WORD (five counts)', optionally followed by '; text'.
@@ -164,7 +182,8 @@ VERDICT_LIKE = re.compile(
 # behind nested list markers ('- - C2:', '  * > C2:'), and a count statement
 # ('NOT-EXPRESSED 2') anywhere outside a canonical line's own counts -- so a
 # verdict whose counts are wrapped onto the next line -- are verdict-like too.
-LINK_TARGET = re.compile(r"\]\s*(?:\([^)]*\)|\[[^\]]*\])")
+LINK_TARGET = re.compile(
+    r"\]\s*(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)|\[[^\]]*\])")
 MARKUP = re.compile(r"[\[\]*_`~\\]")
 LEAD_MARKERS = re.compile(r"^(?:\s|>|(?:[-+]|\d+[.)])(?=\s|$))*")
 ID_COLON = re.compile(r"^[A-Za-z]\d+\s*[:：]")
@@ -242,6 +261,23 @@ def markup_failures(text: str) -> list:
                        f"not even inside code spans or code fences; rewrite the line "
                        f"without them (for a placeholder write e.g. 'VERB' or '[verb]', "
                        f"not '<verb>')")
+    return bad
+
+
+def raw_marker_failures(text: str) -> list:
+    """Captain decision 6007151819 (A3): one plain-English failure per raw line
+    holding '](', ']:', '&' or a backslash, wherever it sits: prose, table,
+    heading, code span or code fence alike."""
+    bad = []
+    for n, line in enumerate(text.split("\n"), 1):
+        hits = list(dict.fromkeys(m.group() for m in FORBIDDEN_RAW.finditer(line)))
+        if hits:
+            what = " and ".join(FORBIDDEN_RAW_NAMES[h] for h in hits)
+            bad.append(f"line {n} contains {what}: Markdown links, link references, HTML "
+                       f"entities and backslash escapes are not allowed anywhere in an "
+                       f"audit document, not even inside code spans or code fences; "
+                       f"rewrite the line in plain text (name a section in words, write "
+                       f"'and' for '&', and drop the backslash)")
     return bad
 
 
@@ -817,7 +853,7 @@ LEDGERS = {"R2-A": r2a_failures, "R2-B": r2b_failures, "R2-C": r2c_failures}
 def document_failures(seam_id: str, text: str, seams_doc: dict, sha: str) -> list:
     """Every way the `seam_id` audit document disagrees with (a)-(e), over
     its document structure only, after markup_failures over every raw line."""
-    raw, markup = text, markup_failures(text)
+    raw, markup = text, markup_failures(text) + raw_marker_failures(text)
     text = structure(text)
     bad, columns = LEDGERS[seam_id](text, seams_doc["seams"][seam_id])
     return (markup + common_failures(text, sha) + bad + verdict_failures(text, seam_id, columns)
@@ -1137,6 +1173,21 @@ def rigs() -> dict:
         "a linked truth id followed by a contradictory verdict on the next line": (
             "R2-C", docs["R2-C"] + "\nsee [C2](#c2)\nSUFFICES\n", seams, SYN_SHA,
             "C2 is followed by 'SUFFICES'"),
+        "a Markdown link target '](' anywhere": (
+            "R2-C", docs["R2-C"] + "\nsee ](x)\n", seams, SYN_SHA,
+            "contains a Markdown link target '](':"),
+        "a link reference ']:' anywhere": (
+            "R2-C", docs["R2-C"] + "\n[x]: y\n", seams, SYN_SHA,
+            "contains a link reference ']:':"),
+        "an HTML entity marker '&' anywhere": (
+            "R2-C", docs["R2-C"] + "\n```\nC2&#58; SUFFICES\n```\n", seams, SYN_SHA,
+            "contains an HTML entity marker '&':"),
+        "a backslash anywhere": (
+            "R2-C", docs["R2-C"] + "\n`C2\\: x`\n", seams, SYN_SHA,
+            "contains a backslash '\\':"),
+        "a nested-parenthesis link target hiding a contradictory verdict": (
+            "R2-C", docs["R2-C"] + "\n[C2](foo(bar)baz) SUFFICES\n", seams, SYN_SHA,
+            f"C2 is followed by 'SUFFICES', but VERDICT RULE over the ledger gives {MISSING}"),
     }
 
 

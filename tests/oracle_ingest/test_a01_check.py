@@ -28,7 +28,11 @@ by a contradictory verdict word anywhere -- prose, fence, heading, a verdict
 tail, across line breaks, behind every earlier bypass wrapping -- failing with
 its line named; and (repair verdict 6002419116) a fenced duplicate canonical
 line inside '## Verdict' and a linked truth id followed by a contradictory
-verdict on the next line failing.
+verdict on the next line failing; and (Captain decision 6007151819, A3; repair
+verdict 6007338625) '](', ']:', '&' and a backslash failing anywhere in the raw
+text with the offending line named, every bypass of lineages r5, r7 and r8 --
+nested-parenthesis link targets included -- as a regression case, options A
+and A2 still enforced.
 
 Inline SYNTHETIC documents and a synthetic seams.json only -- generic
 addresses, no card, no card name, no oracle_id and no Oracle text. Never reads
@@ -140,11 +144,20 @@ class Hash(Base):
     def test_exact_artifact_references_pass(self):
         for ref in (ac.SEAMS_REL, f"`{ac.SEAMS_REL}`", "a01/seams.json", f"./{ac.SEAMS_REL}",
                     "seams.json's", "`seams.json`'s", "(seams.json),", "**seams.json**:",
-                    "_seams.json_", f"[seams.json]({ac.SEAMS_REL})",
-                    f"([`seams.json`]({ac.SEAMS_REL})).", "“seams.json”"):
+                    "_seams.json_", "“seams.json”"):
             with self.subTest(ref):
                 doc = self.docs["R2-C"].replace("seams.json sha256", f"{ref} sha256")
                 self.assertEqual(self.failures("R2-C", doc=doc), [], ref)
+
+    def test_linked_artifact_reference_fails_only_on_the_link_marker(self):
+        # Captain decision 6007151819 (A3): a link is never written, so an
+        # exactly linked reference fails on its '](' alone, not on the citation.
+        for ref in (f"[seams.json]({ac.SEAMS_REL})", f"([`seams.json`]({ac.SEAMS_REL}))."):
+            with self.subTest(ref):
+                doc = self.docs["R2-C"].replace("seams.json sha256", f"{ref} sha256")
+                bad = self.failures("R2-C", doc=doc)
+                self.assertEqual(len(bad), 1, bad)
+                self.assertIn("contains a Markdown link target '](':", bad[0])
 
     def test_hash_inside_a_code_fence_is_not_a_citation(self):
         cite = f"seams.json sha256 `{SHA}`"
@@ -716,9 +729,11 @@ class RawVerdictLines(Base):
                     self.assertFails("R2-C", f"line {n}: C2 is followed by "
                                              f"{re_word(form)!r}", doc=doc)
 
-    def test_linked_id_then_consistent_word_passes(self):
+    def test_linked_id_then_consistent_word_fails_only_on_the_link_marker(self):
         doc = self.c + "\nsee [C2](#c2)\nGENUINELY_MISSING, as the ledger says\n"
-        self.assertEqual(self.failures("R2-C", doc=doc), [])
+        bad = self.failures("R2-C", doc=doc)
+        self.assertEqual(len(bad), 1, bad)
+        self.assertIn("contains a Markdown link target '](':", bad[0])
 
     def test_normalized_keeps_line_count(self):
         raw = "a [C2](\n#c2)\n- **x**\n> _y_"
@@ -907,6 +922,116 @@ class HandOff(unittest.TestCase):
             self.assertTrue(ac._halts(lambda: ac.obtain(root, run), "could not regenerate"))
             ok = lambda args: subprocess.CompletedProcess(args, 0, b"", b"")
             self.assertTrue(ac._halts(lambda: ac.obtain(root, ok), "did not write"))
+
+
+RAW = ("Markdown links, link references, HTML entities and backslash escapes are not "
+       "allowed anywhere in an audit document")
+BS = "\\"
+
+
+class ForbiddenRawMarkers(Base):
+    """Captain decision 6007151819 (A3), repair verdict 6007338625: '](', ']:',
+    '&' and a backslash fail anywhere in the raw audit text -- prose, table,
+    heading, code span, fence or indented code -- the offending line named in
+    plain English; A (no HTML, no comments) and A2 (one canonical verdict per
+    truth item, in order; no contradictory id/verdict pair within six
+    non-alphanumeric characters) still hold beside it."""
+
+    def setUp(self):
+        super().setUp()
+        self.c = self.docs["R2-C"]
+
+    def assertRaw(self, seam, doc, lineno, what):
+        bad = self.failures(seam, doc=doc)
+        want = f"line {lineno} contains {what}"
+        self.assertTrue(any(b.startswith(want) and RAW in b for b in bad),
+                        f"{want!r} not in {bad}")
+        return bad
+
+    def test_each_marker_appended_to_a_valid_audit_fails(self):
+        # Finding (1): each marker appended to a valid synthetic audit, wherever.
+        cases = (("](", "a Markdown link target ']('"), ("]:", "a link reference ']:'"),
+                 ("&", "an HTML entity marker '&'"), (BS, f"a backslash '{BS}'"))
+        for seam in ac.DOCS:
+            for marker, what in cases:
+                for text in (marker, f"prose {marker} prose", f"`{marker}`",
+                             f"```\n{marker}\n```", f"\n    {marker}", f"| {marker} |",
+                             f"## Note {marker}"):
+                    with self.subTest((seam, text)):
+                        doc = self.docs[seam] + "\n" + text + "\n"
+                        n = doc.count("\n", 0, doc.rindex(marker)) + 1
+                        self.assertRaw(seam, doc, n, what)
+
+    def test_nested_parenthesis_link_with_contradictory_verdict_fails(self):
+        # Finding (2): '[C2](foo(bar)baz) SUFFICES' while C2 is GENUINELY_MISSING
+        # fails on its marker (A3) and, normalized, as a contradiction (A2).
+        for form in ("[C2](foo(bar)baz) SUFFICES", "[C2](a(b(c)d)e) SUFFICES",
+                     "see [C2](foo(bar)baz)\nSUFFICES", "- [C2](x(y)z): UNDETERMINED"):
+            for wrap in ("{}\n", "```\n{}\n```\n"):
+                with self.subTest((form, wrap)):
+                    doc = self.c + "\n" + wrap.format(form)
+                    n = doc.count("\n", 0, doc.rindex(form)) + 1
+                    bad = self.assertRaw("R2-C", doc, n, "a Markdown link target '](':")
+                    self.assertTrue(any(b.startswith(f"line {n}: C2 is followed by "
+                                                     f"{re_word(form)!r}") for b in bad), bad)
+
+    def test_lineage_bypasses_fail(self):
+        # Finding (5): the bypasses of lineages r5, r7 and r8 -- link targets
+        # (inline, nested, multi-line, titled), reference definitions, entity-
+        # and backslash-escaped ids, verdict words and markers -- each fail.
+        forms = ("[C2](#c2): SUFFICES", "[C2](foo(bar)baz) SUFFICES", "[C2](\n#c2)\nSUFFICES",
+                 "[C2](#c2 \"t\")\n> SUFFICES", "**[C2](#c2)**\n**SUFFICES**",
+                 "[c2]: #x\nC2 SUFFICES", "[C2][c2]\n\n[c2]: SUFFICES",
+                 "C&#50;: SUFFICES", "C2&#58; SUFFICES", "C2: &#83;UFFICES", "C2 &amp; SUFFICES",
+                 "C2&nbsp;SUFFICES", f"C{BS}2: SUFFICES", f"C2{BS}: SUFFICES",
+                 f"{BS}- C2: SUFFICES", f"{BS}<!-- x", f"C2: S{BS}UFFICES",
+                 f"a {BS}\n## Captain questions")
+        for form in forms:
+            for wrap in ("{}\n", "```\n{}\n```\n", "`{}`\n"):
+                with self.subTest((form, wrap)):
+                    doc = self.c + "\n" + wrap.format(form)
+                    bad = self.failures("R2-C", doc=doc)
+                    self.assertTrue(any(RAW in b for b in bad), (form, bad))
+
+    def test_each_offending_line_is_reported_once_by_number(self):
+        doc = f"a & b ](\nfine\nx {BS} y ]: z\n" + self.c
+        bad = [b for b in self.failures("R2-C", doc=doc) if RAW in b]
+        self.assertEqual([b.split(" contains")[0] for b in bad], ["line 1", "line 3"], bad)
+        self.assertTrue(bad[0].startswith("line 1 contains an HTML entity marker '&' and a "
+                                          "Markdown link target ']('"), bad)
+        self.assertTrue(bad[1].startswith(f"line 3 contains a backslash '{BS}' and a link "
+                                          f"reference ']:'"), bad)
+
+    def test_a_and_a2_still_hold_beside_a3(self):
+        # Option A: HTML and comments still fail; option A2: an out-of-order or
+        # contradictory verdict still fails with no A3 marker anywhere.
+        self.assertTrue(any(MARKUP in b for b in self.failures(
+            "R2-C", doc=self.c + "\n<!-- x -->\n")))
+        v = {i: line(self.c, f"- {i}:") for i in ac.ITEMS["R2-C"]}
+        bad = self.failures("R2-C", doc=self.c.replace(v["C1"] + v["C2"], v["C2"] + v["C1"]))
+        self.assertTrue(any("in the order C1, C2, C3, C4" in b for b in bad), bad)
+        self.assertFalse(any(RAW in b for b in bad), bad)
+        bad = self.failures("R2-C", doc=self.c + "\nC2 -- SUFFICES\n")
+        self.assertTrue(any("C2 is followed by 'SUFFICES'" in b for b in bad), bad)
+        self.assertFalse(any(RAW in b for b in bad), bad)
+
+    def test_harmless_brackets_and_text_pass(self):
+        for text in ("[verb]", "a [b] c", "x ] y", "( ] )", "] (", "]  :", "a and b",
+                     "[C2] GENUINELY_MISSING", "a / b", "50%"):
+            with self.subTest(text):
+                doc = self.c + "\n" + text + "\n"
+                self.assertEqual(self.failures("R2-C", doc=doc), [], text)
+
+    def test_raw_marker_check_reads_raw_lines(self):
+        self.assertEqual(ac.raw_marker_failures("a\n```\n&\n```"), [
+            f"line 3 contains an HTML entity marker '&': {RAW}, not even inside code spans "
+            f"or code fences; rewrite the line in plain text (name a section in words, "
+            f"write 'and' for '&', and drop the backslash)"])
+        self.assertEqual(ac.raw_marker_failures("a [b] c\nd ] (e)"), [])
+
+    def test_normalized_strips_nested_link_targets(self):
+        self.assertEqual(ac.normalized("[C2](foo(bar)baz) SUFFICES"), "C2 SUFFICES")
+        self.assertEqual(ac.normalized("[C2](a(b(c)d)e) x"), "C2 x")
 
 
 if __name__ == "__main__":
