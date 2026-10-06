@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """C03 — H-REGION candidate derivation and measurement (interface/3, V1 §5 M1).
 
-PINNED TO oracle-compiler-interface/3 (oracle_compiler/INTERFACES.md blob
-119778a68c0e4e8378f0a117b7c22884ec5eda4b, ratified by Captain decisions
-5925134485 and 5925371124; landing record 5925482946).
+PINNED TO oracle-compiler-interface/4 (oracle_compiler/INTERFACES.md blob
+290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1, landing 0bf0097, record 6007516021),
+whose §I3a is interface/3's (ratified by Captain decisions 5925134485 and
+5925371124; landing record 5925482946) with the R4 errata (a)-(c) applied.
 
 Derives deterministic H-REGION CANDIDATES over the C03 population (interface/3
 I2, unchanged) and the frozen F0 fixtures, and measures them. It decides no kill: the
@@ -117,10 +118,10 @@ C02_REL = "experiments/out/oracle_ingest/c02/all-run1.json"
 I1 = dict(f0.PINNED)
 I1[C02_REL] = "74e3559d785dc3ac47d14823ac1fec96dd446ae446d82a3ee45b03ef3f818dfd"
 
-# oracle-compiler-interface/3, by git blob id (the wave's STOP condition).
-INTERFACE_VERSION = "oracle-compiler-interface/3"
+# oracle-compiler-interface/4, by git blob id (the wave's STOP condition).
+INTERFACE_VERSION = "oracle-compiler-interface/4"
 INTERFACES_REL = "oracle_compiler/INTERFACES.md"
-INTERFACES_BLOB = "119778a68c0e4e8378f0a117b7c22884ec5eda4b"
+INTERFACES_BLOB = "290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1"
 FIXTURES_REL = "oracle_compiler/FIXTURES.json"
 CONTRACT_REL = "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
 
@@ -395,8 +396,11 @@ R4_SYMBOLS_REQUIRED = ("{TK}", "{W}", "{U}", "{B}", "{R}", "{G}", "{C}", "{X}",
                        "{S}", "{T}", "{Q}", "{E}")
 R4_FORMS_REQUIRED = ("to solve", "solved", "visit", "forecast")
 R4_FORM_VILLAINOUS = "villainous choice"
+# interface/4 §I3a errata b: CR 702.159b gives "Prize —" rules meaning without
+# quoting it as a form; read there at run time, its absence a STOP.
+R4_FORM_PRIZE = ("702.159b", "Prize")
 # The counts §I3a states were read from the CR; a different read is a STOP.
-R4_CR_COUNTS = {"ability_words": 61, "keyword_titles": 264, "label_forms": 22}
+R4_CR_COUNTS = {"ability_words": 61, "keyword_titles": 264, "label_forms": 23}
 _ROMAN = r"M{0,3}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})"
 _R4_CHAPTER = re.compile(rf"(?=[MDCLXVI])({_ROMAN})(?:, (?=[MDCLXVI]){_ROMAN})*")
 _R4_NUMBER_ITEM = r"\d+(?: ?[-–] ?\d+)?"
@@ -487,6 +491,12 @@ def r4_cr_read(txt: str = None) -> R4CR:
     lost = [f for f in R4_FORMS_REQUIRED if f not in forms]
     if lost or not any(R4_FORM_VILLAINOUS in f for f in forms):
         fc.halt(f"R4: the CR label forms lack {lost or [R4_FORM_VILLAINOUS]}")
+    prize_rule, prize = R4_FORM_PRIZE
+    prize_at = [l for l in lines if l.startswith(prize_rule + " ")]
+    if len(prize_at) != 1 or f"“{prize}”" not in prize_at[0]:
+        fc.halt(f"R4: CR {prize_rule} does not give '{prize}' rules meaning "
+                f"(interface/4 §I3a errata b): a STOP to the Captain")
+    forms.setdefault(_apos(prize), (prize, []))[1].append(prize_rule)
     form_rx, anchor_forms = [], []
     for key, (f, at) in sorted(forms.items()):
         if re.fullmatch(r"\[[^\]]*\]", f):
@@ -525,9 +535,9 @@ def r4_cr_report(crr: R4CR) -> dict:
 
 
 def r4_check_counts(counts: dict) -> dict:
-    """§I3a: 61 ability words, 264 keyword titles, 22 CR label forms."""
+    """§I3a: 61 ability words, 264 keyword titles, 23 CR label forms."""
     if counts != R4_CR_COUNTS:
-        fc.halt(f"R4: the CR read gives {counts}, interface/3 §I3a states "
+        fc.halt(f"R4: the CR read gives {counts}, interface/4 §I3a states "
                 f"{R4_CR_COUNTS}: a STOP to the Captain")
     return dict(counts)
 
@@ -1325,6 +1335,8 @@ def _cr_tamper_rigs() -> list:
         ("a gap in the 702 heading sequence", _tampered(h702 + "\n", "")),
         ("a CR 107 symbol inventory missing {TK}", tk),
         ("the CR label forms missing 'to solve'", _tampered("“To solve — [", "“To solve [")),
+        ("CR 702.159b without 'Prize'",
+         _tampered("the word “Prize” and a long dash", "a long dash")),
     ]
 
 
@@ -1356,7 +1368,7 @@ def _r4_controls() -> list:
         ("a rigged tampered CR STOPs the derivation for each R4 completeness check: "
          "the 207.2c sentence missing or not re-joining its source; a gap in the 701 "
          "or 702 heading sequence; a CR 107 symbol inventory missing {TK}; the CR "
-         "label forms missing 'to solve'",
+         "label forms missing 'to solve'; CR 702.159b without 'Prize'",
          lambda: all(_halts(lambda t=t: r4_cr_read(t)) for _, t in _cr_tamper_rigs())
          and not _halts(lambda: r4_cr_read(cr.text()))),
         ("a rigged flavor label (synthetic label text only) holding a frozen effect "
@@ -1407,7 +1419,7 @@ def _r4_controls() -> list:
          and _halts(lambda: r4_confined(kw, moved(kw), kept_label))
          and not _halts(lambda: r4_confined(unl, unl, None))),
         ("a rigged CR read whose ability-word, keyword-title or label-form count "
-         "differs from §I3a's 61 / 264 / 22 STOPs",
+         "differs from §I3a's 61 / 264 / 23 STOPs",
          lambda: all(_halts(lambda c=c: r4_check_counts(c)) for c in counts_off)
          and not _halts(lambda: r4_check_counts(dict(R4_CR_COUNTS)))),
     ]

@@ -195,12 +195,17 @@ class Guards(unittest.TestCase):
         self.assertTrue(hr.portability_violations(str(Path.home()).encode()))
         self.assertFalse(hr.portability_violations(b"experiments/out/oracle_ingest"))
 
-    def test_the_interface_pin_is_interface_3(self):
-        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/3")
-        self.assertEqual(hr.INTERFACES_BLOB, "119778a68c0e4e8378f0a117b7c22884ec5eda4b")
+    def test_the_interface_pin_is_interface_4(self):
+        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/4")
+        self.assertEqual(hr.INTERFACES_BLOB, "290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1")
         self.assertEqual(hr.verify_interface(), hr.INTERFACES_BLOB)
         self.assertEqual((hk.INTERFACE_VERSION, hk.INTERFACES_BLOB),
                          (hr.INTERFACE_VERSION, hr.INTERFACES_BLOB))
+
+    def test_the_interface_pin_fails_against_the_interface_3_blob(self):
+        with mock.patch.object(hr, "_blob",
+                               return_value="119778a68c0e4e8378f0a117b7c22884ec5eda4b"):
+            self.assertTrue(halts(hr.verify_interface))
 
 
 # ------------------------------------------------ interface/2 §I3a: the table
@@ -706,8 +711,34 @@ class R4CRRead(unittest.TestCase):
     def test_the_counts_read_from_the_cr_are_the_interfaces(self):
         crr = hr.r4_cr_read()
         self.assertEqual(crr["counts"], {"ability_words": 61, "keyword_titles": 264,
-                                         "label_forms": 22})
+                                         "label_forms": 23})
         self.assertEqual(hr.r4_check_counts(crr["counts"]), hr.R4_CR_COUNTS)
+
+    def test_the_label_forms_are_exactly_the_23_interface_4_lists(self):
+        crr = hr.r4_cr_read()
+        got = sorted([f for _, f, _ in crr["forms"]] + [f for f, _ in crr["anchor_forms"]])
+        self.assertEqual(got, sorted([
+            "Awaken N", "Boast", "Companion", "Exhaust", "Forecast", "Impending N",
+            "Max speed", "Partner", "Power-up", "Reinforce N", "Solved", "Suspend N",
+            "To solve", "Visit", "[A player] faces a villainous choice",
+            "[Cost]: Level N", "{rN}", "{rN1}", "{rN2}", "{rN1}, {rN2}", "∞",
+            "[Anchor word]", "Prize"]))
+
+    def test_prize_is_a_cr_label_form_read_from_702_159b(self):
+        self.assertEqual(hr.R4_CR_COUNTS["label_forms"], 23)
+        self.assertEqual(label_class("Prize — Draw a card."), "CR label form")
+        self.assertEqual(hr.r4_label("Prize — Draw a card.")["cr"], "CR 702.159b")
+
+    def test_a_cr_without_702_159b_prize_stops(self):
+        txt = hr.cr.text().replace("the word “Prize” and a long dash", "a long dash", 1)
+        self.assertNotEqual(txt, hr.cr.text())
+        self.assertTrue(halts(lambda: hr.r4_cr_read(txt)))
+        self.assertFalse(halts(lambda: hr.r4_cr_read(hr.cr.text())))
+
+    def test_a_label_form_count_other_than_23_stops(self):
+        for n in (22, 24):
+            bad = dict(hr.R4_CR_COUNTS, label_forms=n)
+            self.assertTrue(halts(lambda: hr.r4_check_counts(bad)), n)
 
     def test_a_count_other_than_the_interfaces_stops(self):
         for k in hr.R4_CR_COUNTS:
@@ -716,7 +747,7 @@ class R4CRRead(unittest.TestCase):
 
     def test_each_completeness_check_stops_on_a_tampered_cr(self):
         rigs = hr._cr_tamper_rigs()
-        self.assertEqual(len(rigs), 6)
+        self.assertEqual(len(rigs), 7)
         for name, txt in rigs:
             self.assertTrue(halts(lambda: hr.r4_cr_read(txt)), name)
         self.assertFalse(halts(lambda: hr.r4_cr_read(hr.cr.text())))
