@@ -195,12 +195,17 @@ class Guards(unittest.TestCase):
         self.assertTrue(hr.portability_violations(str(Path.home()).encode()))
         self.assertFalse(hr.portability_violations(b"experiments/out/oracle_ingest"))
 
-    def test_the_interface_pin_is_interface_4(self):
-        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/4")
-        self.assertEqual(hr.INTERFACES_BLOB, "290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1")
+    def test_the_interface_pin_is_interface_5(self):
+        self.assertEqual(hr.INTERFACE_VERSION, "oracle-compiler-interface/5")
+        self.assertEqual(hr.INTERFACES_BLOB, "282c295c03f2a4b43e723d01710baaf479aa716c")
         self.assertEqual(hr.verify_interface(), hr.INTERFACES_BLOB)
         self.assertEqual((hk.INTERFACE_VERSION, hk.INTERFACES_BLOB),
                          (hr.INTERFACE_VERSION, hr.INTERFACES_BLOB))
+
+    def test_the_interface_pin_fails_against_the_interface_4_blob(self):
+        with mock.patch.object(hr, "_blob",
+                               return_value="290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1"):
+            self.assertTrue(halts(hr.verify_interface))
 
     def test_the_interface_pin_fails_against_the_interface_3_blob(self):
         with mock.patch.object(hr, "_blob",

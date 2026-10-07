@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """C03 — H-REGION candidate derivation and measurement (interface/3, V1 §5 M1).
 
-PINNED TO oracle-compiler-interface/4 (oracle_compiler/INTERFACES.md blob
-290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1, landing 0bf0097, record 6007516021),
+PINNED TO oracle-compiler-interface/5 (oracle_compiler/INTERFACES.md blob
+282c295c03f2a4b43e723d01710baaf479aa716c, landing 0390385, record 6031691630),
 whose §I3a is interface/3's (ratified by Captain decisions 5925134485 and
 5925371124; landing record 5925482946) with the R4 errata (a)-(c) applied.
 
@@ -118,10 +118,10 @@ C02_REL = "experiments/out/oracle_ingest/c02/all-run1.json"
 I1 = dict(f0.PINNED)
 I1[C02_REL] = "74e3559d785dc3ac47d14823ac1fec96dd446ae446d82a3ee45b03ef3f818dfd"
 
-# oracle-compiler-interface/4, by git blob id (the wave's STOP condition).
-INTERFACE_VERSION = "oracle-compiler-interface/4"
+# oracle-compiler-interface/5, by git blob id (the wave's STOP condition).
+INTERFACE_VERSION = "oracle-compiler-interface/5"
 INTERFACES_REL = "oracle_compiler/INTERFACES.md"
-INTERFACES_BLOB = "290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1"
+INTERFACES_BLOB = "282c295c03f2a4b43e723d01710baaf479aa716c"
 FIXTURES_REL = "oracle_compiler/FIXTURES.json"
 CONTRACT_REL = "benchmarks/aq4/docs/AQ4-SEMANTIC-ARCHITECTURE-IMPLEMENTATION-CONTRACT.md"
 

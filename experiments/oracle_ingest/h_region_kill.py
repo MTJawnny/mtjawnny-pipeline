@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """C03 — the seven interface/3 I3 H-REGION kill-condition tests (K1-K7).
 
-PINNED TO oracle-compiler-interface/4 (oracle_compiler/INTERFACES.md blob
-290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1, landing 0bf0097, record 6007516021),
+PINNED TO oracle-compiler-interface/5 (oracle_compiler/INTERFACES.md blob
+282c295c03f2a4b43e723d01710baaf479aa716c, landing 0390385, record 6031691630),
 whose §I3/§I3a are interface/3's (ratified by Captain decisions 5925134485 and
 5925371124; landing record 5925482946) with the R4 errata (a)-(c) applied.
 
@@ -97,9 +97,9 @@ REGIONS = hr.OUT
 OUT_REL = "experiments/out/oracle_ingest/c03/kill.json"
 OUT = ROOT / OUT_REL
 
-# oracle-compiler-interface/4, by git blob id; must equal h_region.py's pin.
-INTERFACE_VERSION = "oracle-compiler-interface/4"
-INTERFACES_BLOB = "290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1"
+# oracle-compiler-interface/5, by git blob id; must equal h_region.py's pin.
+INTERFACE_VERSION = "oracle-compiler-interface/5"
+INTERFACES_BLOB = "282c295c03f2a4b43e723d01710baaf479aa716c"
 if (hr.INTERFACE_VERSION, hr.INTERFACES_BLOB) != (INTERFACE_VERSION, INTERFACES_BLOB):
     fc.halt(f"h_region.py is pinned to {hr.INTERFACE_VERSION} ({hr.INTERFACES_BLOB}), "
             f"not {INTERFACE_VERSION} ({INTERFACES_BLOB})")
