@@ -1,38 +1,51 @@
 # Oracle Compiler Interfaces
 
-`oracle-compiler-interface/4`
+`oracle-compiler-interface/5`
 
-**Status: RATIFIED** by Captain decision 5971927071 (2026-10-03: every recommendation
-of the §I5 draft accepted), with 5966663066 (isolated Claude review of this text
-and a Claude M05 reader) and the Captain's acceptance of the §I5.7 report and of
-the r13 repair from the Captain-directed adversarial card hunt (Captain, 2026-10-03:
-"Give to a session that is adversarial  to C04. Have it I find tricky cards.
-Once we have a pattern of failure. Let's fix it.";
-recorded with this landing). The §I5 text was reviewed in eleven isolated
-adversarial Claude rounds recorded in its draft, and a twelfth that confirmed the
-r13 repair (ACCEPT; its verdict is quoted in this landing's Issue #1 record). It supersedes `oracle-compiler-interface/3` (blob
-`119778a68c0e4e8378f0a117b7c22884ec5eda4b`), whose status was:
+**Status: RATIFIED** by Captain decision 6031676826 (2026-10-07, the Captain: "Proceed with
+recommended"), taken under standing approval 5918781674 and reversible by the Captain.
+It fixes the readings of the §I5.3 sentences that the C04 Worker (evidence 6011004249)
+and an independent fresh-session review found to admit more than one reading, and
+replaces the §I5.4 and §I5.5 figures with the figures those readings measure. Every
+row whose outcome depends on one of these readings was read on the card. It supersedes
+`oracle-compiler-interface/4` (blob `290a713a39bfabc8f9bd8810c96a5ffdab7ba1b1`),
+whose status was:
 
-> **Status: RATIFIED** by Captain decisions 5925134485 (FS-2 ruled, "go with
-> interface/3") and 5925371124 (flavor labels ignored; test card Typhoid Mary,
-> Fractured), after Codex cross-reviews of this text and the R4 reach report
-> (§I3a), recorded in 5925277948 and its follow-up. It supersedes `oracle-compiler-interface/2` (blob
-> `4ac4d856b651edde05b15c7065aa593f59561dcf`, ratified 5900431196 from the
-> rulings of 5899825420), which superseded interface/1 (blob
-> `3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/3 adds rule R4 to §I3a,
-> reads R1's scope start after an R4 label, and names R4 in the K7 row. §I1, §I2
-> and §I4 are unchanged from interface/2.
+> **Status: RATIFIED** by Captain decision 5971927071 (2026-10-03: every recommendation
+> of the §I5 draft accepted), with 5966663066 (isolated Claude review of this text
+> and a Claude M05 reader) and the Captain's acceptance of the §I5.7 report and of
+> the r13 repair from the Captain-directed adversarial card hunt (Captain, 2026-10-03:
+> "Give to a session that is adversarial  to C04. Have it I find tricky cards.
+> Once we have a pattern of failure. Let's fix it.";
+> recorded with this landing). The §I5 text was reviewed in eleven isolated
+> adversarial Claude rounds recorded in its draft, and a twelfth that confirmed the
+> r13 repair (ACCEPT; its verdict is quoted in this landing's Issue #1 record). It supersedes `oracle-compiler-interface/3` (blob
+> `119778a68c0e4e8378f0a117b7c22884ec5eda4b`), whose status was:
+>
+> > **Status: RATIFIED** by Captain decisions 5925134485 (FS-2 ruled, "go with
+> > interface/3") and 5925371124 (flavor labels ignored; test card Typhoid Mary,
+> > Fractured), after Codex cross-reviews of this text and the R4 reach report
+> > (§I3a), recorded in 5925277948 and its follow-up. It supersedes `oracle-compiler-interface/2` (blob
+> > `4ac4d856b651edde05b15c7065aa593f59561dcf`, ratified 5900431196 from the
+> > rulings of 5899825420), which superseded interface/1 (blob
+> > `3c34cf5a4e8150e43cbce2ec6a92e30272560f6e`). interface/3 adds rule R4 to §I3a,
+> > reads R1's scope start after an R4 label, and names R4 in the K7 row. §I1, §I2
+> > and §I4 are unchanged from interface/2.
+>
+> interface/4 adds §I5 (the C04 reference-resolution measurement) and applies the
+> R4 errata (a)-(c) of the C03R3 host check (5939152309) to §I3a. §I1, §I2, §I3
+> and §I4 are unchanged from interface/3.
 
-interface/4 adds §I5 (the C04 reference-resolution measurement) and applies the
-R4 errata (a)-(c) of the C03R3 host check (5939152309) to §I3a. §I1, §I2, §I3
-and §I4 are unchanged from interface/3.
+interface/5 changes only §I5.3 (the readings), §I5.4 and §I5.5 (the figures), §I5.8
+(ruling 17), and the headings that name the version. §I1, §I2, §I3, §I3a, §I4 and §I5.1, §I5.2,
+§I5.6 and §I5.7 are unchanged from interface/4.
 
 Implementation tasks must pin `interface_version` and `interface_sha` in their
 Issue #1 `T` once a nonzero interface exists.
 
 This file is not task state and does not select work.
 
-## What interface/4 is
+## What interface/5 is
 
 A **measurement interface**. It pins what C03 and C04 read, how C03's
 H-REGION result is decided, and when C04 counts a reference as resolved (§I5). It defines no record shape, no occurrence
@@ -363,7 +376,7 @@ so C04 reconstructs them and reconciles before any other work:
 These are candidate classifications, not established edges. An unresolved
 reference is valid output; a guessed one is not.
 
-## I5. C04 reference resolution (interface/4)
+## I5. C04 reference resolution (interface/5)
 
 **Vocabulary (measurement labels only, never production vocabulary).**
 - 4 outcomes.
@@ -439,28 +452,32 @@ CR 400.7, 607.2a/b/d, 608.2c and 707.10 are read at run time, and the run STOPs 
     - activated (a colon in its first sentence);
     - triggered (When, Whenever or At, after any label);
     - replacement ("instead", or "As ~/this … enters").
-  - **"chosen <noun>".** A clause, earlier in the same ability or in another ability on the face, printing "choose" (not "can't", "don't" or "cannot choose"), with an object noun phrase of at most 4 words ending in that noun, chosen by "you" (the verb opens its sentence or a comma-separated part, or follows "you", "you may", "then" or "and"). If the same ability holds any "chooses" or "chose" before the reference (this includes "you chose"), or the face holds a choice of that noun by anyone other than "you", the result is UNRESOLVED (other-chooser). This errs toward UNRESOLVED. Another player's choice is never guessed (Captain question 10).
+  - **"chosen <noun>".** The noun is the word after "chosen" in the P4 phrase. A phrase that holds both "chosen" and "exiled" ("the chosen color exiled") is a "chosen" form. The candidates are the clauses earlier in the same ability, the reference's own clause when the choice is printed before the reference, and the clauses of other abilities on the face, that print "choose" (not "can't", "don't" or "cannot choose") with the noun as a whole word after it, chosen by "you".
+    - **The noun phrase.** At most 4 words stand between "choose" and the noun ("choose a nonbasic land card name"); a word here is a run of letters, apostrophes, hyphens or "~". Words after the noun do not matter: "choose a creature type" is a choice of "creature", and "choose a card name" of "card". The noun may carry a plural "s": "choose one of those creatures" is a choice of "creature".
+    - **Chosen by "you".** The verb opens its sentence or a comma-separated part, or follows "you", "you may", "then" or "and". A sentence opens at its first word, after a leading "•" (CR 700.2: the bullet only marks a mode), after an ability label (§I3a R4), and directly after a colon ("{T}: Choose a color", "+1: Choose a nonland card name": CR 602.1a, the activation cost is everything before the colon).
+    - **Another chooser.** Every other "choose" of the noun ("instead choose target creature", "secretly choose a number"; the negated forms above excepted) counts as a choice by someone other than "you". If the same ability holds any "chooses" or "chose" before the reference (this includes "you chose", and the reference's own clause before the reference), or the face holds a choice of that noun by anyone other than "you", the result is UNRESOLVED (other-chooser). This errs toward UNRESOLVED. Another player's choice is never guessed (Captain question 10).
   - **Scope.** These count: the ability's own clause when an exile region of it starts before the reference (its cost, or an earlier instruction); the earlier clauses of the same ability that hold an exile region (any kind of ability, spells included: this is coreference, not CR 607); and clauses of other abilities on the face that meet the activated, triggered or replacement test above (CR 607.2a/b).
   - **One ability.** For this rule, one ability is: a paragraph; its bullet modes (paragraphs starting "•" join the paragraph that opened them); and, on a face whose own type line (the card's type line for a single-faced card) is instant or sorcery, the paragraph "As an additional cost to cast this spell, …" (Captain question 5).
   - **Outcome.** Exactly one candidate in total: COREFERENT if it is in the same ability, LINKED if in another. Candidates in both places: ambiguous (Storm Elemental, Captain question 11). No ordering check, because CR 607 abilities may be printed in either order.
 - **E3 `copy-product`** (P4 "the copy"; CR 707.10). The endpoint is the unique printed copy instruction ("copy" followed by it, that, this, target, the, each, those, them, a or an) in an earlier clause of the paragraph or earlier in the same clause. It must not sit inside a When, Whenever, If, As long as or Unless condition, unless that condition has closed with a comma and the copy follows directly, or after "then" or "you may" ("If you do, copy …"). Anything else is UNRESOLVED, which errs toward UNRESOLVED. Endpoint: PRODUCT, at clause level.
 - **E4 `singular-back-reference`** (P4 coreference carrying P4's delay flag). **What the flag is.** P4's flag is a per-line text match (`_DELAYED` in `foundry_aq4_probes.py`: "at the beginning of the next", "when … next", "at the end of this/the next turn", "this turn,", "until end of turn"). Most E4 candidates carry it only because their line says "until end of turn". E4 therefore measures singular back-references in general, not CR 603.7 delayed triggers as such; the delayed-trigger subset is reported separately in I5.5 (Captain question 14). An "it" followed by "'s" or "is", then optionally "not", then night, day, your turn, their turn, an opponent's turn or the <word> turn, is UNRESOLVED (expletive). Possessives are no-rule: "that spell's", "its", "their", "that player". Plural markers (PLURAL: they, them, those cards, those creatures, those permanents, those tokens) are plural-r3, the R3 rule of interface/2: a list is named only when exactly one earlier region holds one coordinated P3 list, and the reference is never resolved. For the singular markers in SINGULAR (it, that artifact, that card, that creature, that enchantment, that land, that object, that permanent, that planeswalker, that spell, that token):
   1. **Marks.** Count the P3 `target` marks before the reference in the paragraph. "the target of" is not a mark. 0 is no-candidate; 2 or more is ambiguous.
-  2. **Single object mark.** The mark must name one object: its noun, within three words, is in OBJ_NOUNS (creature, card, permanent, spell, token, artifact, enchantment, land, planeswalker, object, ability). It must not be "player" or "opponent", and it must not be plural ("two", "three", "four", "X" or "any number of" target, or "up to" two or more). Otherwise: no-candidate.
-  3. **Agreement.** A noun-bearing marker ("that spell") must agree with the mark's noun. "permanent" and "object" agree with any object noun. Otherwise: no-candidate.
+  2. **Single object mark.** The mark is the word "target" together with a directly preceding "another", "each", "all" or "up to <word>" (the object lattice's target head: "another target creature" is one mark, and its "another" is part of the mark). The mark must name one object: its noun is the first word after it, with at most three words between ("target attacking or blocking creature", "target instant or sorcery card"), that is in OBJ_NOUNS (creature, card, permanent, spell, token, artifact, enchantment, land, planeswalker, object, ability), "player" or "opponent". A word is a run of letters, apostrophes and hyphens that starts with a letter; numbers and symbols are not words. A plural "s" and a possessive "'s" are read off ("target creature's power" names a creature). A ".", ";", ":", "!", "?", straight quotation mark ("), parenthesis or "—" ends the search ("any target. If a creature" has no noun). The noun must not be "player" or "opponent", and the mark must not be plural ("two", "three", "four", "X" or "any number of" target, or "up to" two or more). Otherwise: no-candidate.
+  3. **Agreement.** A noun-bearing marker ("that spell") must agree with the mark's noun. "permanent" and "object" agree with any object noun, on either side ("that card" after "target permanent" agrees). Otherwise: no-candidate.
+  **Frozen head.** In steps 4 and 5 a frozen head is a head the frozen detector reports, never a head word read off the text. Between the mark and the reference it is the head of an H-REGION region (§I3a, R2 and R4 applied) whose head word starts in that text. In the left-out text below it is a head `effect_heads` reports there (predicate position). A head word with no region is not a frozen head: the noun "counter" in "a +1/+1 counter on it" is not CR 701.6's counter (CR 122.1: a counter is a marker), and neither is "double" in "double strike" or "cast" in "if you cast this spell".
   **Between.** "Between the mark and the reference" is the text from the end of the mark to the reference. When the reference is in a later clause than the mark, the reference's own governing region (the region containing the reference) is left out of that text for steps 4 and 5's head checks and step 4's zone-text check, provided the left-out text holds exactly one frozen head: the act the reference undergoes ("Sacrifice it", "Destroy that creature") is not an event between the mark and the reference. This is E1's own-verb exclusion applied to E4.
   4. **Continuity (CR 400.7).** The result is continuity when any of these holds:
      - the mark's region head is in ZONE (exile, return, destroy, sacrifice, discard, mill, counter, shuffle, cast), or a ZONE word stands directly before the mark ("— Exile target …", where the frozen detector has no region);
      - such a head appears between the mark and the reference;
      - the text between, or the mark's own noun phrase with up to 80 characters before it, prints "onto the battlefield", "cast/play … from" or "put … into";
-     - the mark's noun phrase is "card" or "cards" followed, before any "." "," or ";", by "in" or "from" and then, within two words, graveyard, library, hand or exile ("target creature card in your graveyard"). Archmage's Newt is UNRESOLVED by this, a conservative miss.
+     - the mark's noun phrase holds "card" or "cards", with at most three words between the mark and it (here a word is any run of letters, digits, commas, apostrophes or hyphens), followed, before any "." "," or ";", by "in" or "from" and then, with at most two words (no commas) between, graveyard(s), library or libraries, hand(s) or exile ("target creature card in your graveyard"; "target instant or sorcery card in your graveyard"). Archmage's Newt is UNRESOLVED by this, a conservative miss.
   5. **Competing antecedent.** It is competing-antecedent when any of these holds:
      - the mark's region head is in CREATE (create, populate, amass, incubate, manifest, explore, discover, reveal, search, draw, investigate);
-     - any other frozen head appears between the mark and the reference;
+     - any frozen head appears between the mark and the reference, whatever its word (the head of the mark's own region included, when it starts there);
      - "copy", "token" or "create" is printed between them (own region included), or in up to 60 characters before the mark;
      - a mass noun (mana, damage, life, energy, loyalty, poison) is printed between them, own region included (Grell Philosopher's "blue mana … it");
      - for "it" only: "~" or "this <OBJ_NOUNS word>", not possessive, is printed between them, own region included (Cyclical Evolution's "Exile ~ with three time counters on it");
-     - the paragraph before the reference, outside the mark's own noun phrase (by position: from the mark to its noun), prints an indefinite object noun phrase (a, an, another, each or any, then at most two words, then an OBJ_NOUNS word: "a nontoken creature"), or "choose" or "chosen".
+     - the paragraph before the reference, outside the mark's own noun phrase (by position: from the mark's first word, "another" in "another target creature", to its noun), prints an indefinite object noun phrase (a, an, another, each or any, then at most two words, then an OBJ_NOUNS word: "a nontoken creature"), or "choose" or "chosen".
   6. **Otherwise:** OBJECT, that mark.
 - **E5 `comparison`.** NOT-COREFERENCE only when the clause prints "the same … as". It names no endpoint. Otherwise no-rule.
 - **E6.** P4 conditionality with a delay flag: OUT-OF-SCOPE.
@@ -470,39 +487,41 @@ CR 400.7, 607.2a/b/d, 608.2c and 707.10 are read at run time, and the run STOPs 
 
 - **Pattern classes, defined now (for ruling 4, I5.8).** E1: one class per frozen head. E2: "exiled" and "chosen". E3: one class. E4: one class per marker. E5: one class.
 - **Rules frozen first.** C04's rules and lists are frozen (this text plus the implementation at the C04 accepted head) before M05 reads anything. A repair after reading starts a new C04/M05 round. It is never applied to rows already read.
-- **Every positive claim is read.** M05 reads every RESOLVED and every NOT-COREFERENCE candidate. On the pinned corpus: E1 529, E2 496, E3 196, E4 485, E5 119, which is 1,825. Each rule is one unit. This is complete by construction, with no sample. The reader is a fresh isolated session, not the C04 Worker and not the author of the rules.
+- **Every positive claim is read.** M05 reads every RESOLVED and every NOT-COREFERENCE candidate. On the pinned corpus: E1 529, E2 498, E3 196, E4 561, E5 119, which is 1,903. Each rule is one unit. This is complete by construction, with no sample. The reader is a fresh isolated session, not the C04 Worker and not the author of the rules.
 - **C04 acceptance condition.** C04's output (ignored experimental output) carries, per candidate, the reference clause text, the endpoint clause text and the endpoint position, as the prototype does: region span for E1, mark span for E4, clause for E2/E3.
 - **Record and verdict.** M05 writes three verdicts per row: endpoint correct, endpoint kind correct, not a duplicate. For E5, "endpoint correct" means the clause is a comparison. Each verdict is yes, no, or cannot judge with the reason. A "cannot judge" is listed and counted, never folded into yes. If more than 5% of a rule's rows are "cannot judge", that rule's audit is INCONCLUSIVE and goes to the Captain.
 - **UNRESOLVED.** Never read for false success, because it cannot be one (V1 M2). It is reported as findings, by reason.
 - **Fixtures.** Every FIXTURES.json member with a pressure-set candidate (roles delayed-return-same-object, prior-set-complement-reference, replacement-event-lineage, ability-borrowing-inheritance-pressure, two-sequential-operations) gets every candidate read, whatever its outcome.
 - **A wrong RESOLVED** is a false success. It goes to the Captain (Captain question 4).
 
-### I5.5 Reach (prototype r9 `proto11.py`, 2026-10-04, pinned corpus)
+### I5.5 Reach (interface/5 readings, measured 2026-10-07, pinned corpus)
+
+Measured with the C04 Worker's implementation (evidence 6011004249) with only the readings ruling 17 names changed; two builds byte-identical.
 
 | rule | candidates | RESOLVED | UNRESOLVED | NOT-COREFERENCE | OUT-OF-SCOPE |
 |---|---|---|---|---|---|
 | E1 event-this-way | 1,088 | 529 | 559 | 0 | 0 |
-| E2 cr607-linked (LINKED / COREFERENT) | 676 | 496 | 180 | 0 | 0 |
+| E2 cr607-linked (LINKED / COREFERENT) | 676 | 498 | 178 | 0 | 0 |
 | E3 copy-product | 208 | 196 | 12 | 0 | 0 |
-| E4 singular-back-reference | 2,844 | 485 | 2,359 | 0 | 0 |
+| E4 singular-back-reference | 2,844 | 561 | 2,283 | 0 | 0 |
 | E5 comparison | 225 | 0 | 106 | 119 | 0 |
 | E6 conditionality (flagged) | 723 | 0 | 0 | 0 | 723 |
 | residue / overlap | 92 | 0 | 92 | 0 | 0 |
-| **total** | **5,856** | **1,706** | **3,308** | **119** | **723** |
+| **total** | **5,856** | **1,784** | **3,230** | **119** | **723** |
 
 | rule | reason | candidates |
 |---|---|---|
-| E4 | no-candidate | 1,184 |
+| E4 | no-candidate | 1,174 |
 | E4 | no-rule | 488 |
 | E1 | detector-reach | 335 |
 | E4 | plural-r3 | 302 |
-| E4 | competing-antecedent | 185 |
 | E1 | no-candidate | 211 |
-| E4 | continuity | 180 |
-| E2 | no-candidate | 140 |
+| E4 | competing-antecedent | 179 |
+| E2 | no-candidate | 135 |
+| E4 | continuity | 120 |
 | E5 | no-rule | 106 |
 | residue | overlap | 65 |
-| E2 | other-chooser | 28 |
+| E2 | other-chooser | 31 |
 | residue | no-rule | 27 |
 | E4 | ambiguous | 14 |
 | E1 | ambiguous | 13 |
@@ -511,9 +530,11 @@ CR 400.7, 607.2a/b/d, 608.2c and 707.10 are read at run time, and the run STOPs 
 | E4 | expletive | 6 |
 | E2 | no-rule | 2 |
 
-E2 RESOLVED by endpoint kind: LINKED 322, COREFERENT 174.
+E2 RESOLVED by endpoint kind: LINKED 322, COREFERENT 176.
 
-E4 delayed-trigger subset (reference clause prints "at the beginning of the next"): 450 candidates, 22 RESOLVED (Slave of Bolas, Angrath, Puffer Extract, Stone Giant …); the rest are no-candidate 195 (no target mark: tokens, the source itself), no-rule 108, plural-r3 55, continuity 42, competing-antecedent 26, ambiguous 2.
+E4 delayed-trigger subset (reference clause prints "at the beginning of the next"): 450 candidates, 25 RESOLVED (Slave of Bolas, Angrath, Puffer Extract, Stone Giant …); the rest are no-candidate 186 (no target mark: tokens, the source itself), no-rule 108, plural-r3 55, continuity 48, competing-antecedent 26, ambiguous 2.
+
+Against the interface/4 figures (prototype r9 `proto11.py`), these readings resolve 78 more rows and none fewer: E4 76 (60 need the frozen-head reading and 17 the mark's own "another"; Arwen, Mortal Queen needs both) and E2 2 (Academic Probation's bulleted choice, Zevlor's own-clause choice). Each was read on the card and found correct. No endpoint of a row RESOLVED under both moves.
 
 The pressure set reconciles with §I4 (1,548 / 741 / 3,774, with overlaps counted once). The E2 row has 676 candidates rather than 741, because 65 CR 607 candidates are overlap duplicates, counted in the residue/overlap row (65 overlaps in all).
 
@@ -570,5 +591,6 @@ Drafting note, not part of C04's report: on 2026-10-03 the r8 prototype, run ove
 14. C04 reports the delayed-trigger subset ("at the beginning of the next …") separately, as its delayed-link measurement. The CR 603.7 trigger-to-creator link stays UNRESOLVED (no-rule), named as a finding.
 15. This text is reviewed by isolated adversarial Claude sessions, and the M05 reader is a fresh isolated Claude session (5966663066).
 16. The I5.7 coverage and discovery report is a report only. New rule families ("the card itself", "its/their", the triggering object, a found card) follow one at a time, each as its own interface change after M05. P4 discovery stays frozen.
+17. **interface/5 readings (Captain 6031676826, standing approval 5918781674).** The readings §I5.3 prints for E2 ("chosen <noun>": the noun, the noun phrase, chosen by "you", another chooser) and E4 (the mark, the noun search, agreement, frozen head, the card noun phrase, the mark's own noun phrase) are ratified with it, and ruling 9 applies to them. They were found by comparing the C04 Worker's implementation with the prototype row by row, and by checking each §I5.3 term against the CR. Five readings change no outcome on the pinned corpus and are printed so that the text decides them: agreement on either side, the punctuation that ends the noun search, the plural mark noun, the card noun phrase, and "you chose" in the reference's own clause. A second reading of any other §I5.3 sentence that changes an outcome is a STOP to the Captain, as before.
 
 Implementation note: the prototype measures plural references as plural-r3 without naming R3's list, since they are never RESOLVED either way. C04 names the list, and checks R3's precondition, using `h_region_kill.py`'s R3 code.
