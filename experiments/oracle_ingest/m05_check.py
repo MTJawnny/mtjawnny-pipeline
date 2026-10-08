@@ -247,7 +247,12 @@ def _cell(s: str) -> str:
 
 
 def _split(line: str) -> list:
-    return [_cell(c) for c in line.strip().strip("|").split("|")]
+    """The cells of a pipe line. Exactly one boundary pipe is removed at each
+    end, so an empty cell is kept: '|| a |' has two cells, the first empty."""
+    s = line.strip()
+    s = s[1:] if s.startswith("|") else s
+    s = s[:-1] if s.endswith("|") else s
+    return [_cell(c) for c in s.split("|")]
 
 
 def _fenced(lines: list) -> list:
@@ -273,7 +278,8 @@ def tables(lines: list, fenced: list) -> tuple:
     table is (header line no, raw header line, header cells, [(line no,
     cells)]); an orphan is (line no, raw line) for every pipe line of a block
     that is no table (no header and separator row: e.g. a row detached from
-    its table by a blank line)."""
+    its table by a blank line). The separator row has exactly as many cells
+    as the header, or the block is no table."""
     out, orphans, block = [], [], []
     for n, (line, f) in enumerate(list(zip(lines, fenced)) + [("", False)], 1):
         if not f and line.strip().startswith("|"):
@@ -281,7 +287,8 @@ def tables(lines: list, fenced: list) -> tuple:
             continue
         if block:
             sep = _split(block[1][1]) if len(block) >= 2 else []
-            if sep and all(re.fullmatch(r":?-{3,}:?", c) for c in sep):
+            if (sep and len(sep) == len(_split(block[0][1]))
+                    and all(re.fullmatch(r":?-{3,}:?", c) for c in sep)):
                 out.append((block[0][0], block[0][1], _split(block[0][1]),
                             [(m, _split(l)) for m, l in block[2:]]))
             else:
@@ -395,6 +402,13 @@ def ledger(lines: list, fenced: list, rows: list) -> tuple:
     if len(hit) != 1:
         bad.append(f"the document has {len(hit)} tables headed {LEDGER_LINE}; exactly one "
                    f"is required")
+        raw = dict(orphans)
+        for n, line in orphans:
+            if _ledger_like(_split(line)) and n + 1 in raw:
+                sep = _split(raw[n + 1])
+                if all(re.fullmatch(r":?-{3,}:?", c) for c in sep):
+                    bad.append(f"line {n + 1}: the separator row under the ledger header "
+                               f"has {len(sep)} cells, not {len(LEDGER_HEAD)}")
         return bad, None, {}
     hn, hraw, _, body = hit[0]
     if hraw != LEDGER_LINE:

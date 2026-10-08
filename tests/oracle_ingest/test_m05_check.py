@@ -255,6 +255,41 @@ class Document(unittest.TestCase):
         self.bad(doc(LABEL, ROWS, extra="| `row` | class | endpoint | kind | duplicate | note |"
                                         "\n|---|---|---|---|---|---|\n"), "2 tables headed")
 
+    # -- strict table shape (repair round 2, verdict 6051464818)
+    def test_extra_empty_boundary_cells(self):
+        rid = ROWS[0]["row_id"]
+        line = next(l for l in doc(LABEL, ROWS).split("\n") if l.startswith(f"| {rid} |"))
+        for other in ("|" + line, line + "|", "||" + line[1:], line[:-1] + "||",
+                      "| " + line, line + " |"):
+            self.bad(doc(LABEL, ROWS).replace(line, other), "7 cells, not 6")
+        head = "| row | class | endpoint | kind | duplicate | note |"
+        for other in ("|" + head, head + "|", head + " |"):
+            self.bad(doc(LABEL, ROWS).replace(head, other), "0 tables headed")
+
+    def test_empty_cells_are_kept(self):
+        self.assertEqual(m._split("|| a |"), ["", "a"])
+        self.assertEqual(m._split("| a || b |"), ["a", "", "b"])
+        self.assertEqual(m._split("| a | b |"), ["a", "b"])
+        self.assertEqual(m._split("|a|b|"), ["a", "b"])
+        self.assertEqual(m._split("| a |  |"), ["a", ""])
+
+    def test_separator_width_equals_the_header(self):
+        sep = "|---|---|---|---|---|---|"
+        for other in ("|---|", "|---|---|---|---|---|", "|---|---|---|---|---|---|---|",
+                      "|---||---|---|---|---|---|"):
+            got = self.bad(doc(LABEL, ROWS).replace(sep, other), "0 tables headed")
+            if "||" not in other:
+                n = other.count("|") - 1
+                self.assertTrue(any(f"separator row under the ledger header has {n} cells"
+                                    in b for b in got), got)
+        found, orphans = m.tables(["| a | b |", "|---|", "| c | d |"], [False] * 3)
+        self.assertEqual(found, [])
+        self.assertEqual([n for n, _ in orphans], [1, 2, 3])
+        found, _ = m.tables(["| a | b |", "|---|:---:|", "| c | d |"], [False] * 3)
+        self.assertEqual(len(found), 1)
+        self.bad(doc(LABEL, ROWS, extra="| question | answer |\n|---|\n| why | because |\n"),
+                 "belongs to no table")
+
     # -- rows
     def test_missing_row(self):
         text = "\n".join(l for l in doc(LABEL, ROWS).split("\n")
