@@ -190,10 +190,70 @@ class Document(unittest.TestCase):
         self.bad(doc("FIXTURES", rows).replace("- FIXTURES:", "- E4/P1:"), "FIXTURES",
                  rows=rows, label="FIXTURES")
 
-    def test_backticked_cells_and_class_lists_are_accepted(self):
-        text = doc(LABEL, ROWS).replace(f"| {ROWS[0]['row_id']} |", f"| `{ROWS[0]['row_id']}` |")
-        self.ok(text)
+    def test_class_lists_are_accepted(self):
         self.ok(doc(LABEL, ROWS, extra="- E4:it is the only class here.\n"))
+        self.ok(doc(LABEL, ROWS, extra=f"Row {ROWS[0]['row_id']} was read twice.\n"))
+        self.ok(doc(LABEL, ROWS, extra="| question | answer |\n|---|---|\n| why | because |\n"))
+
+    # -- the literal ledger (repair round 1, verdict 6051200664)
+    def test_ledger_header_is_literal(self):
+        head = "| row | class | endpoint | kind | duplicate | note |"
+        for other in ("| `row` | class | endpoint | kind | duplicate | note |",
+                      "| row | `class` | endpoint | kind | duplicate | note |",
+                      "| **row** | class | endpoint | kind | duplicate | note |",
+                      "| Row | class | endpoint | kind | duplicate | note |",
+                      "|row|class|endpoint|kind|duplicate|note|",
+                      "| row | class | endpoint | kind | duplicate | note | ",
+                      " " + head):
+            self.bad(doc(LABEL, ROWS).replace(head, other), "ledger header")
+
+    def test_row_class_and_verdict_cells_are_literal(self):
+        rid = ROWS[0]["row_id"]
+        self.bad(doc(LABEL, ROWS).replace(f"| {rid} |", f"| `{rid}` |"), "markup", "omits row")
+        self.bad(doc(LABEL, ROWS).replace(f"| {rid} |", f"| **{rid}** |"), "markup")
+        self.bad(doc(LABEL, ROWS).replace(f"{rid} | E4:it |", f"{rid} | `E4:it` |"), "class")
+        for w in ("`yes`", "`no`", "`cannot-judge`", "**yes**", "_yes_"):
+            self.bad(doc(LABEL, ROWS, cells=[(w, "yes", "yes")] + [("yes",) * 3] * 3),
+                     "not exactly yes, no or cannot-judge")
+            self.bad(doc(LABEL, ROWS, cells=[("yes", "yes", w)] + [("yes",) * 3] * 3),
+                     "not exactly yes, no or cannot-judge")
+        rows = [row(1, cls=None)] + ROWS[1:]
+        self.bad(doc(LABEL, rows).replace("| none |", "| `none` |"), "written none", rows=rows)
+
+    def test_detached_duplicate_row_after_a_blank_line(self):
+        # The reviewer's case: an endpoint-no duplicate after a blank line beside
+        # a canonical PASS verdict.
+        rid = ROWS[1]["row_id"]
+        dup = f'| {rid} | E4:it | no | yes | yes | "target artifact" is wrong, says the reader |'
+        lines = doc(LABEL, ROWS).split("\n")
+        i = next(k for k, l in enumerate(lines) if l.startswith(f"| {ROWS[-1]['row_id']}"))
+        for gap in ([""], ["", "Some prose."], ["", "## Notes", ""]):
+            text = "\n".join(lines[:i + 1] + gap + [dup] + lines[i + 1:])
+            n = text.split("\n").index(dup) + 1
+            self.bad(text, f"line {n}: a ledger row outside the ledger table")
+
+    def test_row_shaped_lines_elsewhere(self):
+        rid = ROWS[0]["row_id"]
+        addr = rid.split("@")[0]
+        for extra in (f"| {rid} | E4:it | no | yes | yes | x |\n",
+                      f"| question | answer |\n|---|---|\n| {rid} | no |\n",
+                      f"```\n| {rid} | E4:it | no | yes | yes | x |\n```\n",
+                      f"> | {rid} | E4:it | no | yes | yes | x |\n",
+                      f"{rid} | E4:it | no | yes | yes | x\n",
+                      f"| `{addr}@0:it` | no |\n"):
+            self.bad(doc(LABEL, ROWS, extra=extra), "outside the ledger table")
+
+    def test_orphan_table_lines(self):
+        for extra in ("| stray | cells |\n", "| a | b |\n| c | d |\n", "|---|---|\n"):
+            self.bad(doc(LABEL, ROWS, extra=extra), "belongs to no table")
+
+    def test_second_ledger_table(self):
+        lines = doc(LABEL, ROWS).split("\n")
+        i = lines.index("| row | class | endpoint | kind | duplicate | note |")
+        self.bad(doc(LABEL, ROWS, extra="\n".join(lines[i:i + 2 + len(ROWS)]) + "\n"),
+                 "2 tables headed")
+        self.bad(doc(LABEL, ROWS, extra="| `row` | class | endpoint | kind | duplicate | note |"
+                                        "\n|---|---|---|---|---|---|\n"), "2 tables headed")
 
     # -- rows
     def test_missing_row(self):

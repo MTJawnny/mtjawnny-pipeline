@@ -19,10 +19,14 @@ both sorts a null class sorts as the empty string.
 
 A READ DOCUMENT (--doc) fails unless: (a) it holds exactly one line
 `refs.json sha256: <64 hex>` and it cites the verified refs.json; (b) exactly
-one ledger table `| row | class | endpoint | kind | duplicate | note |` holds
-exactly the document's rows, each once, in skeleton order, with no foreign
-row, the class equal to refs.json's (`none` when null), each verdict cell
-exactly yes, no or cannot-judge, and each note holding a double-quoted phrase
+one ledger table, its header line exactly
+`| row | class | endpoint | kind | duplicate | note |`, holds exactly the
+document's rows, each once, in skeleton order, with no foreign row and no
+row-shaped pipe line anywhere outside it (a row detached by a blank line, in
+another table or in a fence) nor any pipe line belonging to no table, the row
+and class cells literal (no code or emphasis markup; the class equal to
+refs.json's, `none` when null), each verdict cell exactly yes, no or
+cannot-judge, and each note holding a double-quoted phrase
 of at most 12 words that occurs verbatim in the row's paragraph_text,
 endpoint_text or face_text -- and, when a cell is no or cannot-judge, at
 least two further words outside the quotes giving the reason; (c) exactly one
@@ -117,6 +121,7 @@ YES, NO, CANNOT = "yes", "no", "cannot-judge"
 CELLS = (YES, NO, CANNOT)
 NONE = "none"
 LEDGER_HEAD = ["row", "class", "endpoint", "kind", "duplicate", "note"]
+LEDGER_LINE = "| " + " | ".join(LEDGER_HEAD) + " |"
 COUNTS = ("rows", "endpoint-no", "kind-no", "duplicate-no", "cannot-judge")
 QUOTE_WORDS = 12
 REASON_WORDS = 2
@@ -236,10 +241,13 @@ def verdict_of(counts: dict) -> str:
 # ------------------------------------------------------------- parsing
 
 def _cell(s: str) -> str:
-    s = s.strip()
-    if len(s) >= 2 and s[0] == s[-1] == "`":
-        s = s[1:-1].strip()
-    return s
+    """A table cell as written: only the padding whitespace is removed, never
+    code or emphasis markup -- the row, class and verdict cells are literal."""
+    return s.strip()
+
+
+def _split(line: str) -> list:
+    return [_cell(c) for c in line.strip().strip("|").split("|")]
 
 
 def _fenced(lines: list) -> list:
@@ -260,20 +268,39 @@ def _fenced(lines: list) -> list:
     return out
 
 
-def tables(lines: list, fenced: list) -> list:
-    """Every pipe table outside code fences: (header, [(line no, cells)])."""
-    out, block = [], []
+def tables(lines: list, fenced: list) -> tuple:
+    """Every pipe block outside code fences. Returns (tables, orphans): each
+    table is (header line no, raw header line, header cells, [(line no,
+    cells)]); an orphan is (line no, raw line) for every pipe line of a block
+    that is no table (no header and separator row: e.g. a row detached from
+    its table by a blank line)."""
+    out, orphans, block = [], [], []
     for n, (line, f) in enumerate(list(zip(lines, fenced)) + [("", False)], 1):
         if not f and line.strip().startswith("|"):
-            block.append((n, line.strip()))
+            block.append((n, line))
             continue
-        if len(block) >= 2:
-            split = lambda l: [_cell(c) for c in l.strip("|").split("|")]
-            head, sep = split(block[0][1]), split(block[1][1])
-            if all(re.fullmatch(r":?-{3,}:?", c) for c in sep):
-                out.append((head, [(m, split(l)) for m, l in block[2:]]))
+        if block:
+            sep = _split(block[1][1]) if len(block) >= 2 else []
+            if sep and all(re.fullmatch(r":?-{3,}:?", c) for c in sep):
+                out.append((block[0][0], block[0][1], _split(block[0][1]),
+                            [(m, _split(l)) for m, l in block[2:]]))
+            else:
+                orphans += block
         block = []
-    return out
+    return out, orphans
+
+
+def _ledger_like(head: list) -> bool:
+    """A header that names the ledger's columns, whatever its markup or case."""
+    return [re.sub(r"[`*_\s]", "", c).lower() for c in head] == LEDGER_HEAD
+
+
+def _row_shaped(line: str, row_ids: set) -> bool:
+    """A pipe line whose first cell names a row (a row_id or a row address)."""
+    if "|" not in line:
+        return False
+    first = re.sub(r"^[\s>]*\|?", "", line).split("|")[0].strip().strip("`*_ ")
+    return first in row_ids or re.match(ADDRESS, first) is not None
 
 
 def sections(lines: list, fenced: list, title: str) -> list:
@@ -362,14 +389,33 @@ def ledger(lines: list, fenced: list, rows: list) -> tuple:
     """Check the ledger against the document's rows. Returns (failures,
     counts, {row_id: (cells)})."""
     bad = []
-    hit = [t for t in tables(lines, fenced) if t[0] == LEDGER_HEAD]
-    if len(hit) != 1:
-        bad.append(f"the document has {len(hit)} tables headed | {' | '.join(LEDGER_HEAD)} "
-                   f"|; exactly one is required")
-        return bad, None, {}
+    found, orphans = tables(lines, fenced)
     want = {r["row_id"]: r for r in rows}
+    hit = [t for t in found if _ledger_like(t[2])]
+    if len(hit) != 1:
+        bad.append(f"the document has {len(hit)} tables headed {LEDGER_LINE}; exactly one "
+                   f"is required")
+        return bad, None, {}
+    hn, hraw, _, body = hit[0]
+    if hraw != LEDGER_LINE:
+        bad.append(f"line {hn}: the ledger header {hraw!r} is not exactly {LEDGER_LINE!r} "
+                   f"(no code or emphasis markup, no other spacing)")
+    # Every row is judged in the ledger only: a row-shaped pipe line anywhere
+    # else (detached by a blank line, in another table, in a fence) fails, as
+    # does any pipe line that belongs to no table.
+    inside = {hn, hn + 1} | {n for n, _ in body}
+    for n, line in enumerate(lines, 1):
+        if n not in inside and _row_shaped(line, set(want)):
+            bad.append(f"line {n}: a ledger row outside the ledger table (detached from it by "
+                       f"a blank line, or in another table or a code block); every row is "
+                       f"judged once, in the one ledger table")
+    shaped = {n for n, line in enumerate(lines, 1) if _row_shaped(line, set(want))}
+    for n, _ in orphans:
+        if n not in shaped:
+            bad.append(f"line {n}: a table row that belongs to no table (no header and "
+                       f"separator row above it)")
     seen, order, cells_of = {}, [], {}
-    for n, cells in hit[0][1]:
+    for n, cells in body:
         if len(cells) != len(LEDGER_HEAD):
             bad.append(f"line {n}: a ledger row has {len(cells)} cells, not "
                        f"{len(LEDGER_HEAD)}")
@@ -377,7 +423,10 @@ def ledger(lines: list, fenced: list, rows: list) -> tuple:
         rid, cls, ep, kd, dup, note = cells
         seen[rid] = seen.get(rid, 0) + 1
         if rid not in want:
-            bad.append(f"line {n}: row {rid} is not a row of this document (a foreign row)")
+            plain = re.sub(r"[`*_]", "", rid)
+            bad.append(f"line {n}: row {rid} is written in code or emphasis markup; write "
+                       f"the row_id plain" if plain in want and plain != rid else
+                       f"line {n}: row {rid} is not a row of this document (a foreign row)")
             continue
         if seen[rid] > 1:
             bad.append(f"line {n}: row {rid} appears {seen[rid]} times; exactly once")
@@ -551,8 +600,8 @@ def parse_document(text: str, rows: list, label: str) -> dict:
     lines = text.split("\n")
     fenced = _fenced(lines)
     _, cited = sha_failures(lines, None)
-    hit = [t for t in tables(lines, fenced) if t[0] == LEDGER_HEAD]
-    ids = [c[0] for _, c in hit[0][1] if len(c) == len(LEDGER_HEAD)] if len(hit) == 1 else []
+    hit = [t for t in tables(lines, fenced)[0] if _ledger_like(t[2])]
+    ids = [c[0] for _, c in hit[0][3] if len(c) == len(LEDGER_HEAD)] if len(hit) == 1 else []
     _, counts, _ = ledger(lines, fenced, rows)
     return {"label": label, "sha": cited, "rows": ids, "counts": counts,
             "word": verdict_of(counts) if counts else None}
