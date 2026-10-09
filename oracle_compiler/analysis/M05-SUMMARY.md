@@ -2,7 +2,7 @@ refs.json sha256: 497d399005cefd631922aa62ce3298a98a0eb7b4863aae9000e2385502f67e
 
 # M05 summary -- the C04 reference audit
 
-Wave M05.ORACLE-COMPILER-REFERENCE-SEMANTIC-AUDIT, unit M05-SUMMARY, base e70c47d77d559ad816c833af2a26f9e73412a775 (M05-FIX landed on top as 158e2dd), issue 1 checkpoint 6078322895 task 6051725880.
+Wave M05.ORACLE-COMPILER-REFERENCE-SEMANTIC-AUDIT, unit M05-SUMMARY, base e70c47d77d559ad816c833af2a26f9e73412a775 (M05-FIX landed on top as 158e2dd), issue 1 checkpoint 6078322895 task 6051725880. Revised in wave M05.ORACLE-COMPILER-REFERENCE-SEMANTIC-AUDIT.AR1 (issue 1 checkpoint 6078583171, reviewer verdict 6078576859) after the AR1 M05-FIX repair landed as c2037e4: the fixture document's blob is updated, and the candidate-label discrepancy that repair recorded is carried below. No count or verdict changed.
 
 This summary re-judges no row. Every count and verdict below is what `m05_check.py --rule` aggregates from the accepted part documents, or what the fixture document's ledger gives. Every finding is quoted from the document that records it.
 
@@ -33,7 +33,7 @@ This summary re-judges no row. Every count and verdict below is what `m05_check.
 | M05-E4-P4-READ.md | 3f2dada5ea8c3bce6bf446adc98ac0028ce0b77e | 112 | 0 | 0 | 0 | 0 |
 | M05-E4-P5-READ.md | 1fe86acd95c0c02ffe96fb5f36ffc14e59272429 | 113 | 0 | 0 | 0 | 0 |
 | M05-E5-P1-READ.md | e7023be0ccb73a700b7e550341e4f0f215e0efd5 | 119 | 0 | 0 | 0 | 0 |
-| M05-FIXTURES-READ.md | 90624ffa5f40faec09e733d13660d666f18b1e8b | 10 | 0 | 0 | 2 | 0 |
+| M05-FIXTURES-READ.md | 284590d681e5c7241e49c31b77594e40eb3d6453 | 10 | 0 | 0 | 2 | 0 |
 
 Every part document's own verdict is the PART VERDICT its ledger gives, and every one of the 17 documents states the same verdict word as the rule lines below. The read set is 1,903 rule rows (E1 529, E2 498, E3 196, E4 561, E5 119, the §I5.4 figures) plus 10 fixture rows, 3 of which are also E1 or E2 rows.
 
@@ -65,7 +65,7 @@ Both are in M05-FIXTURES-READ.md, in clause 008d5896-6fc9-4aaa-8c6f-a44c2feb98bb
 - 008d5896-6fc9-4aaa-8c6f-a44c2feb98bb:0:1:0@57:intervening-if (class none, E6 OUT-OF-SCOPE)
 - 008d5896-6fc9-4aaa-8c6f-a44c2feb98bb:0:1:0@60:it (class E4:it, UNRESOLVED continuity)
 
-Context from M05-E4-P2-READ.md: eight E4:it rows of that part share their span with an E6 intervening-if candidate. E6 rows are outside the rule read set, so there they were not duplicates. The fixture read set does hold an E6 row, which is why this pair alone is recorded.
+Context from M05-E4-P2-READ.md: eight E4:it rows of that part share their span with an E6 conditionality candidate (P4 label phrase "intervening-if"; see the label finding below). E6 rows are outside the rule read set, so there they were not duplicates. The fixture read set does hold an E6 row, which is why this pair alone is recorded.
 
 ## Cannot-judge reasons
 
@@ -73,6 +73,10 @@ Both are in M05-E1-P2-READ.md, class E1:exile, ENDPOINT cell cannot-judge, KIND 
 
 - 0179bc62-823e-46b9-b536-342904fedafc:0:0:1@57:this way -- the reference means the effect exile. But the clause's one exile region is headed by the cost exile and also spans the effect, whose verb has no region of its own. The reader could not decide whether a region headed by another operation is the meant event (a region-granularity question).
 - 8d4e0866-d8f5-4eb6-a0fd-3fa9d4b9cf4a:0:1:2@70:this way -- the endpoint is the unkicked exile instruction. The kicked "instead" exile has no region and replaces it under CR 614.6, so when kicked the counted cards come from an exile the endpoint does not name. The reader could not decide whether the replaced instruction is the event meant.
+
+## Finding: candidate-label discrepancy (frozen data, not changed)
+
+Recorded by the AR1 repair of M05-FIXTURES-READ.md (reviewer verdict 6078576859, finding 3). The E6 candidate 008d5896-6fc9-4aaa-8c6f-a44c2feb98bb:0:1:0@57:intervening-if carries the P4 label phrase "intervening-if", but under CR 603.4 its "if" is not an intervening "if": that rule applies only to an "if" immediately after a trigger condition, and this one follows the exile instruction. It is an ordinary condition on the exile, checked as the ability resolves (CR 608.2c). The label and row_id are frozen candidate data and stay as they are. No verdict cell depends on the label: E6 OUT-OF-SCOPE rests on the candidate being a delay-flagged conditionality marker (§I5.8 ruling 1), which it is. The same repair corrected the fixture document's citation for the "that card" return in the same paragraph: it is a delayed triggered ability under CR 603.7 and 603.7c, not a CR 610.3 "until" return.
 
 ## Other findings from the read documents (no ruling sought by their readers)
 
@@ -87,3 +91,4 @@ These are carried from the read documents unchanged; this summary adds no ruling
 2. E1 replaced instruction (M05-E1-P2-READ.md, row 8d4e0866-d8f5-4eb6-a0fd-3fa9d4b9cf4a:0:1:2@70:this way). Is an endpoint naming only the instruction that a kicker "instead" replaces what the reference means, or a missed competing antecedent? The same consequence holds for E1:exile.
 3. E2 same-ability "exiled with ~" kind label (M05-E2-P4-READ.md, the three KIND-no rows above). Should it carry LINKED rather than COREFERENT? §I5.8 ruling 5 currently says same-ability "the exiled card" is COREFERENT; this is a measurement-label question only.
 4. Fixture duplicate test (M05-FIXTURES-READ.md, the two DUPLICATE-no rows above). Should an E6 conditionality marker, whose phrase is a label and which claims no reference, count against an E4 pronoun span under §I4 identity and §I5.1 overlap?
+5. P4 conditionality label (M05-FIXTURES-READ.md, row 008d5896-6fc9-4aaa-8c6f-a44c2feb98bb:0:1:0@57:intervening-if). Its "if" follows the exile instruction, so CR 603.4 does not make it an intervening "if", yet P4 labels it so. Should P4 conditionality labelling distinguish an intervening "if" from an "if" inside the effect, and how many of the 723 delay-flagged E6 candidates carry the same mislabel? No verdict here depends on the answer.
